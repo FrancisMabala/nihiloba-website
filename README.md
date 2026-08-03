@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NIHILOBA website
 
-## Getting Started
+The bilingual English/French production website for NIHILOBA, built with Next.js App Router, TypeScript and Tailwind CSS. The project exports to a fully static site for deployment on Render.
 
-First, run the development server:
+## Requirements
+
+- Node.js 20 or newer
+- npm
+
+## Installation
+
+```bash
+npm install
+```
+
+## Local development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in a browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Production build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+The build creates the static site in the `out` directory. To check the code separately, run:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy as a Render Static Site
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Push this repository to a Git provider supported by Render.
+2. In Render, create a new **Static Site** and connect the repository.
+3. Use these deployment settings:
+   - Build command: `npm install && npm run build`
+   - Publish directory: `out`
+4. Deploy the site.
+5. Add `nihiloba.com` as the custom domain when DNS is ready.
 
-## Deploy on Vercel
+The project uses `output: "export"` in `next.config.ts`, so no Node.js server is required in production.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Routes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `/`
+- `/en` and `/fr`
+- `/en/about` and `/fr/about`
+- `/en/products` and `/fr/products`
+- `/en/shida` and `/fr/shida`
+- `/en/education` and `/fr/education`
+- `/en/contact` and `/fr/contact`
+- `/en/privacy` and `/fr/privacy`
+- `/en/terms` and `/fr/terms`
+
+The root route `/` serves the English homepage as the default. Each localized page includes canonical and alternate-language metadata.
+
+## Content requiring confirmation before wider launch
+
+- Final legal review of the preliminary privacy notice and website terms
+- Official NIHILOBA social profile URLs
+- Professional `@nihiloba.com` email address
+- Timing and scope of planned SHIDA features
+- Programme details for the planned NIHILOBA Education initiative

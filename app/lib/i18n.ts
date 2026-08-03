@@ -1,0 +1,70 @@
+import type { Metadata } from "next";
+
+export const locales = ["en", "fr"] as const;
+export type Locale = (typeof locales)[number];
+
+export function isLocale(value: string): value is Locale {
+  return locales.includes(value as Locale);
+}
+
+export function localizedPath(locale: Locale, path = "") {
+  return `/${locale}${path}`;
+}
+
+const pageTitles = {
+  en: { home: "Practical digital solutions with roots and purpose", about: "About", products: "Products", shida: "SHIDA", education: "Education", contact: "Contact", privacy: "Privacy", terms: "Terms" },
+  fr: { home: "Des solutions numériques utiles, ancrées dans une vision", about: "À propos", products: "Produits", shida: "SHIDA", education: "Éducation", contact: "Contact", privacy: "Confidentialité", terms: "Conditions" },
+};
+
+const descriptions = {
+  en: {
+    home: "NIHILOBA develops practical digital technology rooted in real needs, beginning with the WhatsApp-based SHIDA platform.",
+    about: "Discover NIHILOBA's purpose, its name and baobab-inspired identity, and founder Francis Mabala.",
+    products: "Explore SHIDA, the first digital product developed by NIHILOBA.",
+    shida: "SHIDA connects people to employment, services, housing and transport through WhatsApp.",
+    education: "NIHILOBA Education is a planned nonprofit initiative focused on practical digital learning.",
+    contact: "Contact NIHILOBA about SHIDA, collaboration and partnerships.",
+    privacy: "Preliminary privacy information for the NIHILOBA website.",
+    terms: "Preliminary terms for using the NIHILOBA website.",
+  },
+  fr: {
+    home: "NIHILOBA développe des technologies numériques utiles, ancrées dans des besoins réels, en commençant par SHIDA sur WhatsApp.",
+    about: "Découvrez la mission de NIHILOBA, l'origine de son nom, le symbole du baobab et son fondateur Francis Mabala.",
+    products: "Découvrez SHIDA, le premier produit numérique développé par NIHILOBA.",
+    shida: "SHIDA relie les personnes à l'emploi, aux services, au logement et au transport via WhatsApp.",
+    education: "NIHILOBA Education est une initiative à but non lucratif en projet, consacrée à l'apprentissage numérique pratique.",
+    contact: "Contactez NIHILOBA au sujet de SHIDA, d'une collaboration ou d'un partenariat.",
+    privacy: "Informations préliminaires sur la confidentialité du site NIHILOBA.",
+    terms: "Conditions préliminaires d'utilisation du site NIHILOBA.",
+  },
+};
+
+export type PageKey = keyof typeof pageTitles.en;
+
+export function pageMetadata(locale: Locale, page: PageKey, path = ""): Metadata {
+  const canonical = `/${locale}${path}`;
+  return {
+    title: pageTitles[locale][page],
+    description: descriptions[locale][page],
+    alternates: {
+      canonical,
+      languages: {
+        "en": `/en${path}`,
+        "fr": `/fr${path}`,
+        "x-default": `/en${path}`,
+      },
+    },
+    openGraph: {
+      locale: locale === "fr" ? "fr_FR" : "en_US",
+      url: canonical,
+      title: pageTitles[locale][page],
+      description: descriptions[locale][page],
+      images: ["https://nihiloba.com/NIHILOBA_logo.png"],
+    },
+  };
+}
+
+export const nav = {
+  en: { home: "Home", about: "About", products: "Products", shida: "SHIDA", education: "Education", contact: "Contact", privacy: "Privacy", terms: "Terms", company: "Company", product: "Product", legal: "Legal", open: "Open on WhatsApp", tagline: "Roots. Impact. Future.", rights: "All rights reserved.", skip: "Skip to content", menuOpen: "Open navigation", menuClose: "Close navigation", primaryNav: "Primary navigation" },
+  fr: { home: "Accueil", about: "À propos", products: "Produits", shida: "SHIDA", education: "Éducation", contact: "Contact", privacy: "Confidentialité", terms: "Conditions", company: "Entreprise", product: "Produit", legal: "Mentions légales", open: "Ouvrir sur WhatsApp", tagline: "Racines. Impact. Avenir.", rights: "Tous droits réservés.", skip: "Aller au contenu", menuOpen: "Ouvrir la navigation", menuClose: "Fermer la navigation", primaryNav: "Navigation principale" },
+};
