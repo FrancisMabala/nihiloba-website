@@ -4,8 +4,8 @@ import type { Locale } from "../../lib/i18n";
 import { localizedPath } from "../../lib/i18n";
 import { LegalSidebar, type LegalNavItem } from "./legal-sidebar";
 
-export function LegalMetadata({ updated, readingTime }: { updated: string; readingTime: string }) {
-  return <div className="legal-metadata"><span>{updated}</span><span aria-hidden="true">·</span><span>{readingTime}</span></div>;
+export function LegalMetadata({ updated, readingTime, appliesTo }: { updated: string; readingTime: string; appliesTo: string }) {
+  return <div className="legal-metadata"><span>{updated}</span><span aria-hidden="true">·</span><span>{readingTime}</span><span aria-hidden="true">·</span><span>{appliesTo}</span></div>;
 }
 
 export function LegalPage({ locale, eyebrow, title, updated, readingTime, toc, children, related = true }: {
@@ -13,8 +13,9 @@ export function LegalPage({ locale, eyebrow, title, updated, readingTime, toc, c
   toc: readonly LegalNavItem[]; children: ReactNode; related?: boolean;
 }) {
   const onThisPage = locale === "en" ? "On this page" : "Sur cette page";
+  const appliesTo = locale === "en" ? "Applies to: Website · SHIDA · NIHILOBA" : "S’applique à : Site internet · SHIDA · NIHILOBA";
   return <>
-    <section className="legal-hero"><div className="container"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><LegalMetadata updated={updated} readingTime={readingTime}/></div></section>
+    <section className="legal-hero"><div className="container"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><LegalMetadata updated={updated} readingTime={readingTime} appliesTo={appliesTo}/></div></section>
     <section className="section legal-page-section"><div className="container legal-doc-layout"><LegalSidebar items={toc} label={onThisPage}/><article className="legal-doc-content">{children}{related&&<LegalRelatedLinks locale={locale}/>}</article></div></section>
   </>;
 }
@@ -31,26 +32,29 @@ export function LegalCallout({ label, children }: { label: string; children: Rea
   return <aside className="legal-callout" role="note"><p className="legal-callout-label">{label}</p><div>{children}</div></aside>;
 }
 
-function trustPath(locale: Locale, resource: "privacy"|"data"|"security"|"terms"|"faq"|"acceptable") {
+type TrustResource = "privacy"|"data"|"security"|"terms"|"faq"|"acceptable"|"contact";
+
+function trustPath(locale: Locale, resource: TrustResource) {
   const dataPath = locale === "en" ? "/data-protection" : "/protection-des-donnees";
   const paths = {
     privacy: "/privacy",
     data: dataPath,
     security: locale === "en" ? "/security" : "/securite",
-    terms: "/terms",
-    faq: "/privacy#contact",
-    acceptable: "/terms#acceptable-use",
+    terms: locale === "en" ? "/terms" : "/conditions-utilisation",
+    faq: "/faq",
+    acceptable: locale === "en" ? "/acceptable-use" : "/utilisation-acceptable",
+    contact: "/contact",
   };
   return localizedPath(locale, paths[resource]);
 }
 
-export function LegalRelatedLinks({ locale, current }: { locale: Locale; current?: "privacy"|"data"|"security"|"terms"|"faq"|"acceptable" }) {
+export function LegalRelatedLinks({ locale, current, includeContact = false }: { locale: Locale; current?: TrustResource; includeContact?: boolean }) {
   const english = locale === "en";
-  const links: { key: "privacy"|"data"|"security"|"terms"|"faq"|"acceptable"; label: string }[] = english ? [
-    {key:"privacy",label:"Privacy Policy"},{key:"data",label:"Data Protection & Privacy"},{key:"security",label:"Security"},{key:"terms",label:"Terms of Use"},{key:"faq",label:"Frequently Asked Questions"},{key:"acceptable",label:"Acceptable Use Policy"},
+  const links: { key: TrustResource; label: string }[] = english ? [
+    {key:"privacy",label:"Privacy Policy"},{key:"data",label:"Data Protection & Privacy"},{key:"security",label:"Security"},{key:"terms",label:"Terms of Use"},{key:"faq",label:"Frequently Asked Questions"},{key:"acceptable",label:"Acceptable Use Policy"},{key:"contact",label:"Contact"},
   ] : [
-    {key:"privacy",label:"Politique de confidentialité"},{key:"data",label:"Protection des données et de la vie privée"},{key:"security",label:"Sécurité"},{key:"terms",label:"Conditions d’utilisation"},{key:"faq",label:"Questions fréquentes"},{key:"acceptable",label:"Politique d’utilisation acceptable"},
+    {key:"privacy",label:"Politique de confidentialité"},{key:"data",label:"Protection des données et de la vie privée"},{key:"security",label:"Sécurité"},{key:"terms",label:"Conditions d’utilisation"},{key:"faq",label:"Questions fréquentes"},{key:"acceptable",label:"Politique d’utilisation acceptable"},{key:"contact",label:"Contact"},
   ];
-  const heading = english ? "Related trust resources" : "Ressources associées";
-  return <nav className="legal-related" aria-label={heading}><h2>{heading}</h2><div>{links.filter((link)=>link.key!==current).map((link)=><Link key={link.key} href={trustPath(locale,link.key)}>{link.label}<span aria-hidden="true">↗</span></Link>)}</div></nav>;
+  const heading = english ? "Explore the Trust Center" : "Explorer le Centre de confiance";
+  return <nav className="legal-related" aria-label={heading}><h2>{heading}</h2><div>{links.filter((link)=>link.key!==current&&(includeContact||link.key!=="contact")).map((link)=><Link key={link.key} href={trustPath(locale,link.key)}>{link.label}<span aria-hidden="true">↗</span></Link>)}</div></nav>;
 }

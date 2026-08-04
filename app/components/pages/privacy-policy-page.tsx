@@ -1,5 +1,5 @@
 import type { Locale } from "../../lib/i18n";
-import { LegalList, LegalPage, LegalSection } from "../legal/legal-document";
+import { LegalList, LegalPage, LegalRelatedLinks, LegalSection } from "../legal/legal-document";
 
 type PolicyBlock =
   | { type: "paragraph"; text: string }
@@ -123,13 +123,13 @@ const policy: Record<Locale, {
     ],
     finalTitle: "Final Note",
     finalParagraphs: ["This Privacy Policy reflects the current design and operation of NIHILOBA and SHIDA. It is intended to explain our practices in clear language.", "As new products and features are introduced, this policy will be reviewed and updated so that it remains accurate, transparent and aligned with applicable privacy laws."],
-    resourcesTitle: "Related trust resources",
+    resourcesTitle: "Explore the Trust Center",
     resources: [
       { label: "GDPR & Data Protection", path: "/privacy#your-rights" },
       { label: "Security", path: "/security" },
       { label: "Terms of Use", path: "/terms" },
-      { label: "Frequently Asked Questions", path: "/privacy#contact" },
-      { label: "Acceptable Use Policy", path: "/terms#acceptable-use" },
+      { label: "Frequently Asked Questions", path: "/faq" },
+      { label: "Acceptable Use Policy", path: "/acceptable-use" },
     ],
   },
   fr: {
@@ -233,13 +233,13 @@ const policy: Record<Locale, {
     ],
     finalTitle: "Note finale",
     finalParagraphs: ["La présente Politique de confidentialité reflète la conception et le fonctionnement actuels de NIHILOBA et de SHIDA. Elle a pour objectif d’expliquer nos pratiques dans un langage clair.", "À mesure que de nouveaux produits et de nouvelles fonctionnalités seront introduits, cette politique sera révisée et mise à jour afin de rester exacte, transparente et conforme aux lois applicables en matière de protection des données."],
-    resourcesTitle: "Ressources associées",
+    resourcesTitle: "Explorer le Centre de confiance",
     resources: [
       { label: "RGPD et protection des données", path: "/privacy#your-rights" },
       { label: "Sécurité", path: "/securite" },
-      { label: "Conditions d’utilisation", path: "/terms" },
-      { label: "Questions fréquentes", path: "/privacy#contact" },
-      { label: "Politique d’utilisation acceptable", path: "/terms#acceptable-use" },
+      { label: "Conditions d’utilisation", path: "/conditions-utilisation" },
+      { label: "Questions fréquentes", path: "/faq" },
+      { label: "Politique d’utilisation acceptable", path: "/utilisation-acceptable" },
     ],
   },
 };
@@ -260,9 +260,10 @@ export function PrivacyPolicyPage({ locale }: { locale: Locale }) {
   const content = policy[locale];
   const toc=content.sections.map(({id,title})=>({id,label:title.replace(/^\d+\.\s*/,"")}));
   return (
-    <LegalPage locale={locale} eyebrow={content.eyebrow} title={content.title} updated={content.effectiveDate} readingTime={locale==="en"?"7 min read":"7 min de lecture"} toc={toc}>
+    <LegalPage locale={locale} eyebrow={locale==="en"?"Trust Center":"Centre de confiance"} title={content.title} updated={content.effectiveDate} readingTime={locale==="en"?"7 min read":"7 min de lecture"} toc={toc} related={false}>
       {content.sections.map((section)=><LegalSection id={section.id} title={section.title} key={section.id}>{section.blocks.map((block,index)=><PolicyBlockView block={block} key={`${section.id}-${index}`}/>)}</LegalSection>)}
       <LegalSection id="final-note" title={content.finalTitle}>{content.finalParagraphs.map((paragraph)=><p key={paragraph}>{paragraph}</p>)}</LegalSection>
+      <LegalRelatedLinks locale={locale} current="privacy" />
     </LegalPage>
   );
 }

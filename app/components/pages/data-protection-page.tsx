@@ -1,11 +1,11 @@
 import type { Locale } from "../../lib/i18n";
-import { LegalCallout, LegalList, LegalPage, LegalSection } from "../legal/legal-document";
+import { LegalCallout, LegalList, LegalPage, LegalRelatedLinks, LegalSection } from "../legal/legal-document";
 
 type Section = { id: string; title: string; before: readonly string[]; items?: readonly string[]; after?: readonly string[]; callout?: boolean };
 
 const content: Record<Locale,{eyebrow:string;title:string;updated:string;reading:string;sections:readonly Section[];closingTitle:string;closing:readonly string[]}> = {
   en: {
-    eyebrow:"Trust centre", title:"Data Protection & Privacy", updated:"Last updated: August 2026", reading:"7 min read",
+    eyebrow:"Trust Center", title:"Data Protection & Privacy", updated:"Effective date: August 2026", reading:"7 min read",
     sections:[
       {id:"our-commitment",title:"Our Commitment",before:["At NIHILOBA, protecting personal information is a fundamental part of how we design and develop our digital products.","Although SHIDA continues to evolve, privacy and data protection are considered from the earliest stages of product development rather than being added afterwards.","Our objective is to build services that are transparent, respectful of users and aligned with internationally recognised privacy principles, including the General Data Protection Regulation where applicable."]},
       {id:"what-is-data-protection",title:"What Is Data Protection?",before:["Data protection refers to the principles, practices and safeguards used to manage personal information responsibly.","It includes decisions about:"],items:["what information is collected;","why the information is needed;","how it is used;","who may access it;","how long it is retained;","how it is protected;","how users can exercise control over it."],after:["At NIHILOBA, data protection is treated as both a product responsibility and an engineering responsibility."]},
@@ -28,7 +28,7 @@ const content: Record<Locale,{eyebrow:string;title:string;updated:string;reading
     closingTitle:"Closing Statement",closing:["Protecting personal information is both a legal responsibility and an essential part of building technology that people can trust.","As NIHILOBA grows, we remain committed to developing products that balance accessibility, innovation and responsible data protection for individuals, professionals, businesses and institutions."],
   },
   fr: {
-    eyebrow:"Centre de confiance", title:"Protection des données et de la vie privée", updated:"Dernière mise à jour : août 2026", reading:"7 min de lecture",
+    eyebrow:"Centre de confiance", title:"Protection des données et de la vie privée", updated:"Date d’entrée en vigueur : août 2026", reading:"7 min de lecture",
     sections:[
       {id:"our-commitment",title:"Notre engagement",before:["Chez NIHILOBA, la protection des données personnelles fait partie intégrante de la manière dont nous concevons et développons nos produits numériques.","Même si SHIDA continue d’évoluer, la protection de la vie privée et des données est prise en compte dès les premières étapes du développement, et non ajoutée après la conception du produit.","Notre objectif est de créer des services transparents, respectueux des utilisateurs et alignés sur des principes reconnus de protection des données, notamment ceux du Règlement général sur la protection des données lorsque celui-ci est applicable."]},
       {id:"what-is-data-protection",title:"Qu’est-ce que la protection des données ?",before:["La protection des données désigne l’ensemble des principes, pratiques et mesures utilisés pour gérer les données personnelles de manière responsable.","Elle concerne notamment les décisions relatives :"],items:["aux informations collectées ;","aux raisons pour lesquelles elles sont nécessaires ;","à la manière dont elles sont utilisées ;","aux personnes autorisées à y accéder ;","à leur durée de conservation ;","aux mesures mises en place pour les protéger ;","aux moyens permettant aux utilisateurs de garder le contrôle sur leurs informations."],after:["Chez NIHILOBA, la protection des données constitue à la fois une responsabilité liée au produit et une responsabilité d’ingénierie."]},
@@ -55,11 +55,12 @@ const content: Record<Locale,{eyebrow:string;title:string;updated:string;reading
 export function DataProtectionPage({locale}:{locale:Locale}) {
   const c=content[locale];
   const toc=c.sections.map(({id,title})=>({id,label:title}));
-  return <LegalPage locale={locale} eyebrow={c.eyebrow} title={c.title} updated={c.updated} readingTime={c.reading} toc={toc}>
+  return <LegalPage locale={locale} eyebrow={c.eyebrow} title={c.title} updated={c.updated} readingTime={c.reading} toc={toc} related={false}>
     {c.sections.map((section)=>{
       const body=<>{section.before.map(p=><p key={p}>{p}</p>)}{section.items&&<LegalList items={section.items}/>} {section.after?.map(p=><p key={p}>{p}</p>)}</>;
       return <LegalSection id={section.id} title={section.title} key={section.id}>{section.callout?<LegalCallout label={section.title}>{body}</LegalCallout>:body}</LegalSection>;
     })}
     <LegalSection id="closing-statement" title={c.closingTitle}>{c.closing.map(p=><p key={p}>{p}</p>)}</LegalSection>
+    <LegalRelatedLinks locale={locale} current="data" />
   </LegalPage>;
 }

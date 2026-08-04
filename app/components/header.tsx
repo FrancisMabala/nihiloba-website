@@ -37,6 +37,18 @@ export function Header({ locale }: { locale: Locale }) {
         ? "/fr/securite"
         : comparableSuffix === "/securite"
           ? "/en/security"
+          : comparableSuffix === "/terms"
+            ? "/fr/conditions-utilisation"
+            : comparableSuffix === "/conditions-utilisation"
+              ? "/en/terms"
+              : comparableSuffix === "/acceptable-use"
+                ? "/fr/utilisation-acceptable"
+                : comparableSuffix === "/utilisation-acceptable"
+                  ? "/en/acceptable-use"
+                  : comparableSuffix === "/trust"
+                    ? "/fr/confiance"
+                    : comparableSuffix === "/confiance"
+                      ? "/en/trust"
       : `/${otherLocale}${suffix}`;
 
   return (

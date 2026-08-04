@@ -24,7 +24,7 @@ const content: Record<Locale, {
 }> = {
   en: {
     title: "Security",
-    updated: "Last updated: August 2026",
+    updated: "Effective date: August 2026",
     readingTime: "5 min read",
     sections: [
       { id: "our-approach", title: "Our Approach", paragraphs: ["Security is an essential part of how NIHILOBA designs and develops its products.", "Every day, individuals, professionals, businesses and institutions trust SHIDA to help manage appointments, services, employment opportunities and other important interactions. Protecting that trust is one of our highest priorities.", "Rather than treating security as a single feature, we view it as a continuous process that evolves alongside the platform."] },
@@ -44,7 +44,7 @@ const content: Record<Locale, {
   },
   fr: {
     title: "Sécurité",
-    updated: "Dernière mise à jour : août 2026",
+    updated: "Date d’entrée en vigueur : août 2026",
     readingTime: "5 min de lecture",
     sections: [
       { id: "notre-approche", title: "Notre approche", paragraphs: ["La sécurité est un élément essentiel de la manière dont NIHILOBA conçoit et développe ses produits.", "Chaque jour, des particuliers, des professionnels, des entreprises et des institutions font confiance à SHIDA pour les aider à gérer des rendez-vous, des services, des opportunités d’emploi et d’autres interactions importantes. Protéger cette confiance constitue l’une de nos plus grandes priorités.", "Plutôt que de considérer la sécurité comme une fonctionnalité isolée, nous la concevons comme un processus continu qui évolue avec la plateforme."] },
