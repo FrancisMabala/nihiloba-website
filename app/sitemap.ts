@@ -3,9 +3,11 @@ import type { MetadataRoute } from "next";
 export const dynamic = "force-static";
 
 const pages = ["", "/about", "/products", "/shida", "/education", "/contact", "/privacy"];
-const routes = [...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)), "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance"];
+const routes = [...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance"];
 
 const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
+  "/shida": { en: "/shida", fr: "/fr/shida" },
+  "/fr/shida": { en: "/shida", fr: "/fr/shida" },
   "/en/data-protection": { en: "/en/data-protection", fr: "/fr/protection-des-donnees" },
   "/fr/protection-des-donnees": { en: "/en/data-protection", fr: "/fr/protection-des-donnees" },
   "/en/security": { en: "/en/security", fr: "/fr/securite" },

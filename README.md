@@ -65,7 +65,5 @@ The root route `/` serves the English homepage as the default. Each localized pa
 ## Content requiring confirmation before wider launch
 
 - Final legal review of the preliminary website terms
-- Official NIHILOBA social profile URLs
-- Professional `@nihiloba.com` email address
 - Timing and scope of planned SHIDA features
 - Programme details for the planned NIHILOBA Education initiative

@@ -1,4 +1,5 @@
 import type { Locale } from "../../lib/i18n";
+import { CONTACT_EMAILS } from "../../lib/brand";
 import { LegalList, LegalPage, LegalRelatedLinks, LegalSection } from "../legal/legal-document";
 
 type Section = {
@@ -35,7 +36,7 @@ const content: Record<Locale, {
       { id: "account-suspension", title: "13. Account Suspension", paragraphs: ["NIHILOBA may suspend or terminate access where necessary to:"], items: ["protect users;", "investigate abuse;", "maintain platform security;", "comply with legal obligations."], after: ["Whenever reasonably possible, appropriate explanations will be provided."] },
       { id: "changes-to-terms", title: "14. Changes to These Terms", paragraphs: ["As SHIDA evolves, these Terms may be updated.", "The effective date at the top of this page indicates the latest version.", "Continued use of the platform following updates constitutes acceptance of the revised Terms."] },
       { id: "governing-law", title: "15. Governing Law", paragraphs: ["These Terms are intended to comply with applicable laws.", "As NIHILOBA expands internationally, specific legal requirements may vary depending on the country in which services are offered.", "Where required, additional country-specific terms may be introduced."] },
-      { id: "contact", title: "16. Contact", paragraphs: ["Questions regarding these Terms may be sent to:", "Email:", "shida.nihiloba@gmail.com", "A dedicated legal contact under @nihiloba.com will be introduced as NIHILOBA continues to grow."] },
+      { id: "contact", title: "16. Contact", paragraphs: ["Questions regarding these Terms may be sent to:", "Email:", CONTACT_EMAILS.legal] },
       { id: "closing-statement", title: "Closing Statement", paragraphs: ["NIHILOBA was created to develop practical technology that makes everyday services easier to access.", "These Terms are intended to establish a clear and fair relationship between NIHILOBA and every individual, professional, business and institution using our services.", "As our products continue to evolve, these Terms will evolve with them while remaining guided by the same principles of transparency, responsibility and respect."] },
     ],
   },
@@ -59,7 +60,7 @@ const content: Record<Locale, {
       { id: "suspension-compte", title: "13. Suspension du compte", paragraphs: ["NIHILOBA peut suspendre ou résilier l’accès lorsque cela est nécessaire pour :"], items: ["protéger les utilisateurs ;", "enquêter sur des abus ;", "maintenir la sécurité de la plateforme ;", "respecter des obligations légales."], after: ["Dans la mesure du raisonnable, des explications appropriées seront fournies."] },
       { id: "modifications-conditions", title: "14. Modifications des présentes Conditions", paragraphs: ["À mesure que SHIDA évolue, les présentes Conditions pourront être mises à jour.", "La date d’entrée en vigueur indiquée en haut de cette page correspond à la version la plus récente.", "La poursuite de l’utilisation de la plateforme après une mise à jour vaut acceptation des Conditions révisées."] },
       { id: "droit-applicable", title: "15. Droit applicable", paragraphs: ["Les présentes Conditions sont destinées à respecter les lois applicables.", "À mesure que NIHILOBA se développe à l’international, les exigences juridiques particulières peuvent varier selon le pays dans lequel les services sont proposés.", "Lorsque cela est nécessaire, des conditions supplémentaires propres à certains pays pourront être introduites."] },
-      { id: "contact", title: "16. Contact", paragraphs: ["Les questions relatives aux présentes Conditions peuvent être envoyées à :", "E-mail :", "shida.nihiloba@gmail.com", "Une adresse de contact juridique dédiée sous le domaine @nihiloba.com sera introduite à mesure que NIHILOBA se développe."] },
+      { id: "contact", title: "16. Contact", paragraphs: ["Les questions relatives aux présentes Conditions peuvent être envoyées à :", "E-mail :", CONTACT_EMAILS.legal] },
       { id: "declaration-finale", title: "Déclaration finale", paragraphs: ["NIHILOBA a été créé afin de développer des technologies pratiques qui facilitent l’accès aux services du quotidien.", "Les présentes Conditions visent à établir une relation claire et équitable entre NIHILOBA et chaque particulier, professionnel, entreprise et institution utilisant nos services.", "À mesure que nos produits continuent d’évoluer, les présentes Conditions évolueront avec eux tout en restant guidées par les mêmes principes de transparence, de responsabilité et de respect."] },
     ],
   },

@@ -18,10 +18,11 @@ export function ButtonLink({
   className = "",
 }: ButtonLinkProps) {
   const classes = `button button-${variant} ${className}`;
+  const isExternal = external || href.startsWith("http://") || href.startsWith("https://");
   const content = (
     <>
       <span>{children}</span>
-      {external ? (
+      {isExternal ? (
         <ArrowUpRightIcon className="button-icon" />
       ) : (
         <ArrowRightIcon className="button-icon" />
@@ -29,13 +30,13 @@ export function ButtonLink({
     </>
   );
 
-  if (external || href.startsWith("mailto:") || href.startsWith("http")) {
+  if (isExternal || href.startsWith("mailto:")) {
     return (
       <a
         className={classes}
         href={href}
-        target={external ? "_blank" : undefined}
-        rel={external ? "noopener noreferrer" : undefined}
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noopener noreferrer" : undefined}
       >
         {content}
       </a>

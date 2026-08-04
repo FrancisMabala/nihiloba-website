@@ -1,4 +1,5 @@
 import type { Locale } from "../../lib/i18n";
+import { CONTACT_EMAILS } from "../../lib/brand";
 import { LegalList, LegalPage, LegalRelatedLinks, LegalSection } from "../legal/legal-document";
 
 type PolicyBlock =
@@ -117,8 +118,7 @@ const policy: Record<Locale, {
       ] },
       { id: "contact", title: "16. Contact", blocks: [
         { type: "paragraph", text: "If you have questions about this Privacy Policy or how your information is handled, you may contact us at:" },
-        { type: "paragraph", text: "Email: shida.nihiloba@gmail.com" },
-        { type: "paragraph", text: "A dedicated privacy email address under @nihiloba.com will be introduced as the platform continues to grow." },
+        { type: "paragraph", text: `Email: ${CONTACT_EMAILS.privacy}` },
       ] },
     ],
     finalTitle: "Final Note",
@@ -227,8 +227,7 @@ const policy: Record<Locale, {
       ] },
       { id: "contact", title: "16. Contact", blocks: [
         { type: "paragraph", text: "Pour toute question concernant cette Politique de confidentialité ou le traitement de vos informations, vous pouvez nous contacter à l’adresse suivante :" },
-        { type: "paragraph", text: "E-mail : shida.nihiloba@gmail.com" },
-        { type: "paragraph", text: "Une adresse dédiée à la protection des données sous le domaine @nihiloba.com sera introduite à mesure que la plateforme se développe." },
+        { type: "paragraph", text: `E-mail : ${CONTACT_EMAILS.privacy}` },
       ] },
     ],
     finalTitle: "Note finale",

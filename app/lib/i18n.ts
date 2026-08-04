@@ -8,6 +8,7 @@ export function isLocale(value: string): value is Locale {
 }
 
 export function localizedPath(locale: Locale, path = "") {
+  if (locale === "en" && path === "/shida") return "/shida";
   return `/${locale}${path}`;
 }
 
@@ -42,16 +43,19 @@ const descriptions = {
 export type PageKey = keyof typeof pageTitles.en;
 
 export function pageMetadata(locale: Locale, page: PageKey, path = ""): Metadata {
-  const canonical = `/${locale}${path}`;
+  const isShida = page === "shida";
+  const englishPath = isShida ? "/shida" : `/en${path}`;
+  const frenchPath = `/fr${path}`;
+  const canonical = locale === "en" ? englishPath : frenchPath;
   return {
     title: pageTitles[locale][page],
     description: descriptions[locale][page],
     alternates: {
       canonical,
       languages: {
-        "en": `/en${path}`,
-        "fr": `/fr${path}`,
-        "x-default": `/en${path}`,
+        "en": englishPath,
+        "fr": frenchPath,
+        "x-default": englishPath,
       },
     },
     openGraph: {
