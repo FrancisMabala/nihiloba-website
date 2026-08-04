@@ -59,7 +59,7 @@ export function pageMetadata(locale: Locale, page: PageKey, path = ""): Metadata
       url: canonical,
       title: pageTitles[locale][page],
       description: descriptions[locale][page],
-      images: ["https://nihiloba.com/NIHILOBA_logo.png"],
+      images: [{ url: "/NIHILOBA_logo.png", width: 1536, height: 1024, alt: "NIHILOBA — Roots. Impact. Future." }],
     },
   };
 }

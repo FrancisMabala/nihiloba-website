@@ -4,7 +4,7 @@ The bilingual English/French production website for NIHILOBA, built with Next.js
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 22.13 or newer
 - npm
 
 ## Installation
@@ -38,10 +38,12 @@ npm run lint
 1. Push this repository to a Git provider supported by Render.
 2. In Render, create a new **Static Site** and connect the repository.
 3. Use these deployment settings:
-   - Build command: `npm install && npm run build`
+   - Build command: `npm ci && npm run build`
    - Publish directory: `out`
 4. Deploy the site.
 5. Add `nihiloba.com` as the custom domain when DNS is ready.
+
+The repository includes a `render.yaml` Blueprint with the production security headers. Connect or synchronize that Blueprint in Render so the CSP, HSTS and other response-header rules are applied to the existing static site.
 
 The project uses `output: "export"` in `next.config.ts`, so no Node.js server is required in production.
 

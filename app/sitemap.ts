@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export const dynamic = "force-static";
 
 const pages = ["", "/about", "/products", "/shida", "/education", "/contact", "/privacy"];
-const routes = ["", ...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)), "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance"];
+const routes = [...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)), "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance"];
 
 const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
   "/en/data-protection": { en: "/en/data-protection", fr: "/fr/protection-des-donnees" },
@@ -23,9 +23,9 @@ const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
 export default function sitemap(): MetadataRoute.Sitemap {
   return routes.map((route) => ({
     url: `https://nihiloba.com${route}`,
-    changeFrequency: route.endsWith("/shida") || route === "" ? "monthly" : "yearly",
-    priority: route === "" ? 0.8 : route.endsWith("/shida") ? 0.9 : route === "/en" || route === "/fr" ? 1 : 0.7,
-    alternates: route === "" ? undefined : localizedTrustRoutes[route] ? {
+    changeFrequency: route.endsWith("/shida") ? "monthly" : "yearly",
+    priority: route.endsWith("/shida") ? 0.9 : route === "/en" || route === "/fr" ? 1 : 0.7,
+    alternates: localizedTrustRoutes[route] ? {
       languages: {
         en: `https://nihiloba.com${localizedTrustRoutes[route].en}`,
         fr: `https://nihiloba.com${localizedTrustRoutes[route].fr}`,

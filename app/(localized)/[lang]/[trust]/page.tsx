@@ -40,7 +40,7 @@ export async function generateMetadata({params}:{params:Promise<{lang:string;tru
     title,
     description,
     alternates:{canonical,languages},
-    openGraph:{url:canonical,locale:french?"fr_FR":"en_US",title:`${title} | NIHILOBA`,description,images:["https://nihiloba.com/NIHILOBA_logo.png"]},
+    openGraph:{url:canonical,locale:french?"fr_FR":"en_US",title:`${title} | NIHILOBA`,description,images:[{url:"/NIHILOBA_logo.png",width:1536,height:1024,alt:"NIHILOBA — Roots. Impact. Future."}]},
   };
 }
 
