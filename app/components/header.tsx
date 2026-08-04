@@ -27,7 +27,17 @@ export function Header({ locale }: { locale: Locale }) {
   const suffix =
     pathname.replace(/^\/(en|fr)(?=\/|$)/, "") || "/";
 
-  const languageHref = `/${otherLocale}${suffix}`;
+  const comparableSuffix = suffix === "/" ? suffix : suffix.replace(/\/$/, "");
+
+  const languageHref = comparableSuffix === "/data-protection"
+    ? "/fr/protection-des-donnees"
+    : comparableSuffix === "/protection-des-donnees"
+      ? "/en/data-protection"
+      : comparableSuffix === "/security"
+        ? "/fr/securite"
+        : comparableSuffix === "/securite"
+          ? "/en/security"
+      : `/${otherLocale}${suffix}`;
 
   return (
     <header className="site-header">

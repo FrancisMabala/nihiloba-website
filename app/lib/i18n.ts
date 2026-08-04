@@ -12,8 +12,8 @@ export function localizedPath(locale: Locale, path = "") {
 }
 
 const pageTitles = {
-  en: { home: "Practical digital solutions with roots and purpose", about: "About", products: "Products", shida: "SHIDA", education: "Education", contact: "Contact", privacy: "Privacy", terms: "Terms" },
-  fr: { home: "Des solutions numériques utiles, ancrées dans une vision", about: "À propos", products: "Produits", shida: "SHIDA", education: "Éducation", contact: "Contact", privacy: "Confidentialité", terms: "Conditions" },
+  en: { home: "Practical digital solutions with roots and purpose", about: "About", products: "Products", shida: "SHIDA", education: "Education", contact: "Contact", privacy: "Privacy Policy", terms: "Terms" },
+  fr: { home: "Des solutions numériques utiles, ancrées dans une vision", about: "À propos", products: "Produits", shida: "SHIDA", education: "Éducation", contact: "Contact", privacy: "Politique de confidentialité", terms: "Conditions" },
 };
 
 const descriptions = {
@@ -24,7 +24,7 @@ const descriptions = {
     shida: "SHIDA connects people to employment, services, housing and transport through WhatsApp.",
     education: "NIHILOBA Education is a planned nonprofit initiative focused on practical digital learning.",
     contact: "Contact NIHILOBA about SHIDA, collaboration and partnerships.",
-    privacy: "Preliminary privacy information for the NIHILOBA website.",
+    privacy: "Learn how NIHILOBA and SHIDA collect, use, store and protect personal information.",
     terms: "Preliminary terms for using the NIHILOBA website.",
   },
   fr: {
@@ -34,7 +34,7 @@ const descriptions = {
     shida: "SHIDA relie les personnes à l'emploi, aux services, au logement et au transport via WhatsApp.",
     education: "NIHILOBA Education est une initiative à but non lucratif en projet, consacrée à l'apprentissage numérique pratique.",
     contact: "Contactez NIHILOBA au sujet de SHIDA, d'une collaboration ou d'un partenariat.",
-    privacy: "Informations préliminaires sur la confidentialité du site NIHILOBA.",
+    privacy: "Découvrez comment NIHILOBA et SHIDA collectent, utilisent, conservent et protègent les données personnelles.",
     terms: "Conditions préliminaires d'utilisation du site NIHILOBA.",
   },
 };
@@ -65,6 +65,6 @@ export function pageMetadata(locale: Locale, page: PageKey, path = ""): Metadata
 }
 
 export const nav = {
-  en: { home: "Home", about: "About", products: "Products", shida: "SHIDA", education: "Education", contact: "Contact", privacy: "Privacy", terms: "Terms", company: "Company", product: "Product", legal: "Legal", open: "Open on WhatsApp", tagline: "Roots. Impact. Future.", rights: "All rights reserved.", skip: "Skip to content", menuOpen: "Open navigation", menuClose: "Close navigation", primaryNav: "Primary navigation" },
-  fr: { home: "Accueil", about: "À propos", products: "Produits", shida: "SHIDA", education: "Éducation", contact: "Contact", privacy: "Confidentialité", terms: "Conditions", company: "Entreprise", product: "Produit", legal: "Mentions légales", open: "Ouvrir sur WhatsApp", tagline: "Racines. Impact. Avenir.", rights: "Tous droits réservés.", skip: "Aller au contenu", menuOpen: "Ouvrir la navigation", menuClose: "Fermer la navigation", primaryNav: "Navigation principale" },
+  en: { home: "Home", about: "About", products: "Products", shida: "SHIDA", education: "Education", contact: "Contact", privacy: "Privacy", dataProtection: "Data Protection", security: "Security", terms: "Terms", company: "Company", product: "Product", legal: "Legal", open: "Open on WhatsApp", tagline: "Roots. Impact. Future.", rights: "All rights reserved.", skip: "Skip to content", menuOpen: "Open navigation", menuClose: "Close navigation", primaryNav: "Primary navigation" },
+  fr: { home: "Accueil", about: "À propos", products: "Produits", shida: "SHIDA", education: "Éducation", contact: "Contact", privacy: "Confidentialité", dataProtection: "Protection des données", security: "Sécurité", terms: "Conditions", company: "Entreprise", product: "Produit", legal: "Mentions légales", open: "Ouvrir sur WhatsApp", tagline: "Racines. Impact. Avenir.", rights: "Tous droits réservés.", skip: "Aller au contenu", menuOpen: "Ouvrir la navigation", menuClose: "Fermer la navigation", primaryNav: "Navigation principale" },
 };

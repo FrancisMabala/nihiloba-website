@@ -55,13 +55,14 @@ The project uses `output: "export"` in `next.config.ts`, so no Node.js server is
 - `/en/education` and `/fr/education`
 - `/en/contact` and `/fr/contact`
 - `/en/privacy` and `/fr/privacy`
+- `/en/data-protection` and `/fr/protection-des-donnees`
 - `/en/terms` and `/fr/terms`
 
 The root route `/` serves the English homepage as the default. Each localized page includes canonical and alternate-language metadata.
 
 ## Content requiring confirmation before wider launch
 
-- Final legal review of the preliminary privacy notice and website terms
+- Final legal review of the preliminary website terms
 - Official NIHILOBA social profile URLs
 - Professional `@nihiloba.com` email address
 - Timing and scope of planned SHIDA features
