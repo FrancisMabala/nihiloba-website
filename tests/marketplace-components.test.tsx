@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ApartmentCard, ApartmentDetail, HotelDetail } from "../app/components/shida/marketplace";
+import { availabilityLabel } from "../app/components/shida/marketplace-primitives";
 import type { ApartmentListing, HotelListing } from "../app/types/shida-public";
 
 const apartment: ApartmentListing = {
@@ -22,6 +23,18 @@ describe("marketplace presentation", () => {
     expect(html).toContain("Bright flat");
     expect(html).toContain("Centre, Gombe, Kinshasa");
     expect(html).toContain("/shida/appartements/bright-flat");
+    expect(html).toContain("marketplace-card");
+    expect(html).toContain("Available");
+  });
+
+  it("localizes backend availability values without exposing raw status codes", () => {
+    const html = renderToStaticMarkup(<ApartmentCard listing={{ ...apartment, availability_state: "AVAILABLE" }} locale="fr"/>);
+    expect(availabilityLabel("AVAILABLE", "fr")).toBe("Disponible");
+    expect(availabilityLabel("RENTED", "fr")).toBe("Loué");
+    expect(availabilityLabel("INACTIVE", "en")).toBe("Unavailable");
+    expect(html).toContain("Disponible");
+    expect(html).not.toContain(">AVAILABLE<");
+    expect(html).toContain("/fr/shida/appartements/bright-flat");
   });
 
   it("uses backend action URLs unchanged with safe external-link attributes", () => {
@@ -29,6 +42,22 @@ describe("marketplace presentation", () => {
     expect(html).toContain("https://wa.me/46769709059?text=visit");
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).toContain("Request a visit with SHIDA");
+    expect(html).toContain('aria-label="Breadcrumb"');
+    expect(html).toContain("Home");
+    expect(html).toContain("Image unavailable");
+  });
+
+  it("renders a lightweight multi-image gallery with an image count", () => {
+    const images = [1, 2, 3].map((number) => ({
+      url: `https://res.cloudinary.com/dbrxpvmzp/image/upload/v1/shida/apartments/${number}.jpg`,
+      alt: `Apartment view ${number}`,
+    }));
+    const html = renderToStaticMarkup(<ApartmentDetail listing={{ ...apartment, images }} locale="fr"/>);
+    expect(html).toContain("1 / 3");
+    expect(html).toContain('aria-label="Photos de l’appartement"');
+    expect(html).toContain("Demander une visite avec SHIDA");
+    expect(html).toContain('aria-label="Fil d’Ariane"');
   });
 
   it("renders hotel room data and suppresses an unsafe booking URL", () => {

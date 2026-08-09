@@ -3,8 +3,11 @@ import type { Locale } from "../../lib/i18n";
 import { safePublicActionUrl, safePublicImageUrl } from "../../lib/safe-public-url";
 import type { ApartmentListing, HotelListing } from "../../types/shida-public";
 import { ButtonLink } from "../button-link";
+import { ImageGallery } from "./image-gallery";
 import { marketplaceCopy } from "./marketplace-copy";
 import { MarketplaceImage } from "./marketplace-image";
+import { AvailabilityBadge, availabilityLabel, MarketplaceBreadcrumb, MarketplaceFacts } from "./marketplace-primitives";
+import type { MarketplaceFact } from "./marketplace-primitives";
 
 export function marketplacePath(locale: Locale, path: string): string {
   return locale === "en" ? path : `/${locale}${path}`;
@@ -42,17 +45,18 @@ export function MarketplaceState({ children }: { children: string }) {
 export function ApartmentCard({ listing, locale }: { listing: ApartmentListing; locale: Locale }) {
   const t = marketplaceCopy[locale];
   const location = publicLocation(listing.quartier, listing.commune, listing.area, listing.city);
+  const price = formatPrice(listing.rent, listing.currency, locale);
   const image = listing.images.map((item) => ({ ...item, safeUrl: safePublicImageUrl(item.url) })).find((item) => item.safeUrl);
   return <article className="marketplace-card">
     <Link className="marketplace-card-image" href={marketplacePath(locale, `/shida/appartements/${listing.slug}`)}>
       <MarketplaceImage src={image?.safeUrl ?? null} alt={image?.alt || listing.title} fallback={t.imageUnavailable} />
     </Link>
     <div className="marketplace-card-body">
-      {listing.availability_state && <span className="marketplace-status">{listing.availability_state}</span>}
+      <AvailabilityBadge state={listing.availability_state} locale={locale}/>
       <h2><Link href={marketplacePath(locale, `/shida/appartements/${listing.slug}`)}>{listing.title}</Link></h2>
       {location && <p className="marketplace-location">{location}</p>}
-      <div className="marketplace-facts">
-        {formatPrice(listing.rent, listing.currency, locale) && <strong>{formatPrice(listing.rent, listing.currency, locale)}</strong>}
+      <div className="marketplace-card-facts">
+        {price && <strong>{price} <small>/ {t.perMonth}</small></strong>}
         {listing.number_of_rooms != null && <span>{listing.number_of_rooms} {t.rooms}</span>}
       </div>
       {listing.description && <p className="marketplace-description">{listing.description}</p>}
@@ -64,22 +68,50 @@ export function ApartmentCard({ listing, locale }: { listing: ApartmentListing; 
 export function ApartmentDetail({ listing, locale }: { listing: ApartmentListing; locale: Locale }) {
   const t = marketplaceCopy[locale];
   const location = publicLocation(listing.quartier, listing.commune, listing.area, listing.city);
+  const price = formatPrice(listing.rent, listing.currency, locale);
+  const status = availabilityLabel(listing.availability_state, locale);
   const action = safePublicActionUrl(listing.visit_url);
-  const images = listing.images.map((item) => ({ ...item, safeUrl: safePublicImageUrl(item.url) })).filter((item) => item.safeUrl);
+  const images = listing.images.flatMap((item) => {
+    const url = safePublicImageUrl(item.url);
+    return url ? [{ url, alt: item.alt }] : [];
+  });
+  const facts: MarketplaceFact[] = [];
+  if (price) facts.push({ label: t.price, value: `${price} / ${t.perMonth}` });
+  if (listing.number_of_rooms != null) facts.push({ label: t.rooms, value: `${listing.number_of_rooms} ${t.rooms}` });
+  if (location) facts.push({ label: t.location, value: location });
+  if (status) facts.push({ label: t.availability, value: status });
+  const locationDetails = [
+    listing.quartier ? { label: "Quartier", value: listing.quartier } : null,
+    listing.commune ? { label: "Commune", value: listing.commune } : null,
+    listing.area && listing.area !== listing.commune ? { label: locale === "fr" ? "Zone" : "Area", value: listing.area } : null,
+    listing.city ? { label: locale === "fr" ? "Ville" : "City", value: listing.city } : null,
+  ].filter((fact): fact is { label: string; value: string } => fact !== null);
   return <>
     <section className="marketplace-detail-hero"><div className="container">
-      <Link className="marketplace-back" href={marketplacePath(locale, "/shida/appartements")}>← {t.backApartments}</Link>
-      <p className="eyebrow">SHIDA · {t.apartments}</p><h1>{listing.title}</h1>{location && <p>{location}</p>}
+      <MarketplaceBreadcrumb label={t.breadcrumb} items={[
+        { label: t.home, href: locale === "en" ? "/" : `/${locale}` },
+        { label: "SHIDA", href: marketplacePath(locale, "/shida") },
+        { label: t.apartments, href: marketplacePath(locale, "/shida/appartements") },
+        { label: listing.title },
+      ]}/>
+      <h1>{listing.title}</h1>{location && <p className="marketplace-detail-location">{location}</p>}
     </div></section>
-    <section className="section"><div className="container marketplace-detail">
-      <div className="marketplace-gallery">{images.length ? images.map((item, index) => <div className="marketplace-gallery-image" key={`${item.url}-${index}`}><MarketplaceImage src={item.safeUrl} alt={item.alt || listing.title} fallback={t.imageUnavailable}/></div>) : <div className="marketplace-gallery-image"><MarketplaceImage src={null} alt="" fallback={t.imageUnavailable}/></div>}</div>
-      <aside className="marketplace-detail-copy">
-        {listing.availability_state && <p><strong>{t.availability}:</strong> {listing.availability_state}</p>}
-        {formatPrice(listing.rent, listing.currency, locale) && <p className="marketplace-price">{formatPrice(listing.rent, listing.currency, locale)}</p>}
-        {listing.number_of_rooms != null && <p>{listing.number_of_rooms} {t.rooms}</p>}
-        {listing.description && <p>{listing.description}</p>}
-        {action ? <ButtonLink href={action} external>{t.visit}</ButtonLink> : <p className="marketplace-action-unavailable">{t.actionUnavailable}</p>}
-      </aside>
+    <section className="marketplace-gallery-section"><div className="container"><ImageGallery images={images} title={listing.title} fallback={t.imageUnavailable} photosLabel={t.photos}/></div></section>
+    <section className="section marketplace-property-section"><div className="container">
+      <MarketplaceFacts facts={facts}/>
+      <div className="marketplace-detail">
+        <aside className="marketplace-action-card">
+          <AvailabilityBadge state={listing.availability_state} locale={locale}/>
+          {price && <p className="marketplace-price">{price}<small>/ {t.perMonth}</small></p>}
+          {listing.number_of_rooms != null && <p>{listing.number_of_rooms} {t.rooms}</p>}
+          <h2>{t.visitTitle}</h2><p>{t.visitText}</p>
+          {action ? <ButtonLink href={action} external className="marketplace-visit-button">{t.visit}</ButtonLink> : <p className="marketplace-action-unavailable">{t.actionUnavailable}</p>}
+        </aside>
+        <div className="marketplace-property-content">
+          {listing.description && <section><h2>{t.descriptionTitle}</h2><p className="lead-copy">{listing.description}</p></section>}
+          {locationDetails.length > 0 && <section><h2>{t.detailsTitle}</h2><dl className="marketplace-property-details">{locationDetails.map((detail) => <div key={detail.label}><dt>{detail.label}</dt><dd>{detail.value}</dd></div>)}</dl></section>}
+        </div>
+      </div>
     </div></section>
   </>;
 }
