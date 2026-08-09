@@ -30,9 +30,11 @@ export type HotelRoomType = {
   name: string;
   price: number | null;
   currency: string | null;
+  rental_period: string | null;
   capacity: number | null;
   total_rooms: number | null;
   image_reference: string | null;
+  image_references: string[];
   description: string | null;
 };
 

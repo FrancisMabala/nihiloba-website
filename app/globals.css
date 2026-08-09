@@ -126,9 +126,9 @@ h1, h2, h3 { text-wrap: balance; }
 .marketplace-heading + .section { padding-block: clamp(3.5rem, 6vw, 5rem); }
 .marketplace-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1.1rem, 2.2vw, 1.8rem); align-items: stretch; }
 .marketplace-card { display: grid; min-width: 0; max-width: 100%; overflow: hidden; grid-template-rows: auto 1fr; border: 1px solid rgba(8, 49, 39, 0.16); border-radius: 2px; background: #fff; }
-.marketplace-card-image, .marketplace-gallery-main, .marketplace-thumbnail, .marketplace-room-image { position: relative; display: block; overflow: hidden; background: #e9e6de; }
+.marketplace-card-image, .marketplace-gallery-main, .marketplace-thumbnail { position: relative; display: block; overflow: hidden; background: #e9e6de; }
 .marketplace-card-image { aspect-ratio: 4 / 3; }
-.marketplace-card-image img, .marketplace-gallery-main img, .marketplace-thumbnail img, .marketplace-room-image img { object-fit: cover; }
+.marketplace-card-image img, .marketplace-gallery-main img, .marketplace-thumbnail img { object-fit: cover; }
 .marketplace-image-fallback { display: grid; width: 100%; height: 100%; min-height: 180px; place-items: center; color: #52625d; background: linear-gradient(145deg, #ece9e0, #dedbd2); }
 .marketplace-card-body { display: flex; min-width: 0; align-items: flex-start; flex-direction: column; padding: clamp(1.1rem, 2.2vw, 1.5rem); overflow-wrap: anywhere; }
 .marketplace-card-body h2 { margin: 0.55rem 0 0.25rem; color: var(--forest); font-family: Georgia,"Times New Roman",serif; font-size: clamp(1.25rem, 2vw, 1.55rem); font-weight: 500; line-height: 1.2; }
@@ -188,7 +188,12 @@ h1, h2, h3 { text-wrap: balance; }
 .marketplace-hotel-detail > .lead-copy { max-width: 800px; }
 .marketplace-room-grid { display: grid; gap: 1.5rem; margin: 2rem 0; }
 .marketplace-room { display: grid; grid-template-columns: minmax(180px, 0.4fr) minmax(0, 0.6fr); gap: 1.5rem; padding: 1rem; border: 1px solid rgba(8, 49, 39, 0.14); }
-.marketplace-room-image { min-height: 220px; }
+.marketplace-room-gallery, .marketplace-room-copy { min-width: 0; }
+.marketplace-room-gallery .marketplace-gallery-main { aspect-ratio: 4 / 3; }
+.marketplace-room-gallery .marketplace-gallery-main .marketplace-image-fallback { min-height: 220px; }
+.marketplace-room-gallery .marketplace-thumbnail { width: 72px; min-width: 72px; }
+.marketplace-room-copy h3 { margin-top: 0; color: var(--forest); font-family: Georgia,"Times New Roman",serif; font-size: 1.35rem; font-weight: 500; }
+.marketplace-room-copy p { color: var(--muted); }
 
 @media (max-width: 1050px) {
   .marketplace-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }

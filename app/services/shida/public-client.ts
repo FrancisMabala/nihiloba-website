@@ -50,6 +50,15 @@ function number(value: unknown): number | null {
   throw new ShidaApiError("malformed");
 }
 
+function textList(value: unknown): string[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) throw new ShidaApiError("malformed");
+  return value.map((item) => {
+    if (typeof item !== "string") throw new ShidaApiError("malformed");
+    return item.trim();
+  }).filter(Boolean);
+}
+
 function image(value: unknown): PublicImage {
   const item = record(value);
   return { url: text(item.url, true)!, alt: text(item.alt) };
@@ -69,9 +78,13 @@ function apartment(value: unknown): ApartmentListing {
 
 function roomType(value: unknown): HotelRoomType {
   const item = record(value);
+  const legacyImageReference = text(item.image_reference);
+  const normalizedImageReferences = textList(item.image_references);
   return {
     name: text(item.name, true)!, price: number(item.price), currency: text(item.currency),
-    capacity: number(item.capacity), total_rooms: number(item.total_rooms), image_reference: text(item.image_reference),
+    rental_period: text(item.rental_period), capacity: number(item.capacity), total_rooms: number(item.total_rooms),
+    image_reference: legacyImageReference,
+    image_references: normalizedImageReferences ?? legacyImageReference?.split(/\r?\n/).map((reference) => reference.trim()).filter(Boolean) ?? [],
     description: text(item.description),
   };
 }

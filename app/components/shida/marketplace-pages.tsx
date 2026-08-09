@@ -5,6 +5,7 @@ import { safePublicImageUrl } from "../../lib/safe-public-url";
 import { getApartment, getApartments, getHotel, getHotels, ShidaApiError } from "../../services/shida/public-client";
 import { ApartmentCard, ApartmentDetail, HotelCard, HotelDetail, marketplacePath, MarketplaceState, publicLocation } from "./marketplace";
 import { marketplaceCopy } from "./marketplace-copy";
+import { firstHotelRoomImage } from "./hotel-room-images";
 
 function marketplaceMetadata(locale: Locale, kind: "apartments" | "hotels"): Metadata {
   const t = marketplaceCopy[locale];
@@ -94,7 +95,7 @@ export async function apartmentDetailMetadata(locale: Locale, slug: string): Pro
 export async function hotelDetailMetadata(locale: Locale, slug: string): Promise<Metadata> {
   try {
     const listing = await getHotel(slug);
-    const image = listing.room_types.map((room) => safePublicImageUrl(room.image_reference)).find(Boolean) ?? null;
+    const image = firstHotelRoomImage(listing.room_types, listing.name);
     const location = publicLocation(listing.city, listing.country_code);
     const title = location ? `${listing.name} ${locale === "fr" ? "à" : "in"} ${location}` : listing.name;
     return detailMetadata(locale, `/shida/hotels/${listing.slug}`, title, listing.description, image);

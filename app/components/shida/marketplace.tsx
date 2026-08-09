@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { Locale } from "../../lib/i18n";
 import { safePublicActionUrl, safePublicImageUrl } from "../../lib/safe-public-url";
-import type { ApartmentListing, HotelListing } from "../../types/shida-public";
+import type { ApartmentListing, HotelListing, HotelRoomType } from "../../types/shida-public";
 import { ButtonLink } from "../button-link";
+import { firstHotelRoomImage, resolveHotelRoomImages } from "./hotel-room-images";
 import { ImageGallery } from "./image-gallery";
 import { marketplaceCopy } from "./marketplace-copy";
 import { MarketplaceImage } from "./marketplace-image";
@@ -96,7 +97,7 @@ export function ApartmentDetail({ listing, locale }: { listing: ApartmentListing
       ]}/>
       <h1>{listing.title}</h1>{location && <p className="marketplace-detail-location">{location}</p>}
     </div></section>
-    <section className="marketplace-gallery-section"><div className="container"><ImageGallery images={images} title={listing.title} fallback={t.imageUnavailable} photosLabel={t.photos}/></div></section>
+    <section className="marketplace-gallery-section"><div className="container"><ImageGallery images={images} title={listing.title} fallback={t.imageUnavailable} photosLabel={t.photos} preload/></div></section>
     <section className="section marketplace-property-section"><div className="container">
       <MarketplaceFacts facts={facts}/>
       <div className="marketplace-detail">
@@ -117,11 +118,32 @@ export function ApartmentDetail({ listing, locale }: { listing: ApartmentListing
 }
 
 function hotelImage(listing: HotelListing): string | null {
-  for (const room of listing.room_types) {
-    const image = safePublicImageUrl(room.image_reference);
-    if (image) return image;
-  }
-  return null;
+  return firstHotelRoomImage(listing.room_types, listing.name);
+}
+
+function rentalPeriodLabel(period: string | null, locale: Locale): string | null {
+  if (!period) return null;
+  const labels: Record<Locale, Record<string, string>> = {
+    en: { night: "night", day: "day", week: "week", month: "month" },
+    fr: { night: "nuit", day: "jour", week: "semaine", month: "mois" },
+  };
+  return labels[locale][period.trim().toLowerCase()] ?? null;
+}
+
+export function HotelRoomCard({ room, hotelName, locale }: { room: HotelRoomType; hotelName: string; locale: Locale }) {
+  const t = marketplaceCopy[locale];
+  const images = resolveHotelRoomImages(room, hotelName);
+  const price = formatPrice(room.price, room.currency, locale);
+  const period = rentalPeriodLabel(room.rental_period, locale);
+  return <article className="marketplace-room">
+    <div className="marketplace-room-gallery"><ImageGallery images={images} title={`${room.name} - ${hotelName}`} fallback={t.imageUnavailable} photosLabel={`${t.roomPhotos}: ${room.name}`} sizes="(max-width: 720px) calc(100vw - 64px), 34vw"/></div>
+    <div className="marketplace-room-copy"><h3>{room.name}</h3>
+      {price && <p className="marketplace-price">{price}{period && <small> / {period}</small>}</p>}
+      {room.capacity != null && <p>{t.capacity}: {room.capacity} {t.guests}</p>}
+      {room.total_rooms != null && <p>{room.total_rooms} {t.availableRooms}</p>}
+      {room.description && <p>{room.description}</p>}
+    </div>
+  </article>;
 }
 
 export function HotelCard({ listing, locale }: { listing: HotelListing; locale: Locale }) {
@@ -151,10 +173,7 @@ export function HotelDetail({ listing, locale }: { listing: HotelListing; locale
       {listing.description && <p className="lead-copy">{listing.description}</p>}
       {listing.landmark && <p><strong>{t.landmark}:</strong> {listing.landmark}</p>}
       <h2>{t.roomTypes}</h2>
-      <div className="marketplace-room-grid">{listing.room_types.map((room, index) => <article className="marketplace-room" key={`${room.name}-${index}`}>
-        <div className="marketplace-room-image"><MarketplaceImage src={safePublicImageUrl(room.image_reference)} alt={room.name} fallback={t.imageUnavailable}/></div>
-        <div><h3>{room.name}</h3>{formatPrice(room.price, room.currency, locale) && <p className="marketplace-price">{formatPrice(room.price, room.currency, locale)}</p>}{room.capacity != null && <p>{t.capacity}: {room.capacity} {t.guests}</p>}{room.total_rooms != null && <p>{room.total_rooms} {t.availableRooms}</p>}{room.description && <p>{room.description}</p>}</div>
-      </article>)}</div>
+      <div className="marketplace-room-grid">{listing.room_types.map((room, index) => <HotelRoomCard room={room} hotelName={listing.name} locale={locale} key={`${room.name}-${index}`}/>)}</div>
       {action ? <ButtonLink href={action} external>{t.book}</ButtonLink> : <p className="marketplace-action-unavailable">{t.actionUnavailable}</p>}
     </div></section>
   </>;

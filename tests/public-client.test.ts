@@ -12,7 +12,7 @@ const apartment = {
 const hotel = {
   public_ref: "HOT-1", slug: "hotel-one", name: "Hotel One", description: "A hotel", country_code: "CD",
   city: "Kinshasa", area: null, commune: "Gombe", quartier: null, address_line: "Public avenue", landmark: null,
-  room_types: [{ name: "Standard", price: 80, currency: "USD", capacity: 2, total_rooms: 4, image_reference: null, description: null }],
+  room_types: [{ name: "Standard", price: 80, currency: "USD", rental_period: "night", capacity: 2, total_rooms: 4, image_reference: null, image_references: [], description: null }],
   public_detail_url: "https://nihiloba.com/shida/hotels/hotel-one", booking_url: "https://wa.me/2",
 };
 
@@ -53,5 +53,36 @@ describe("SHIDA public client", () => {
       .mockRejectedValueOnce(new Error("private network details")));
     await expect(getApartment("missing-detail-test")).rejects.toMatchObject({ kind: "not-found", status: 404 });
     await expect(getHotel("network-failure-detail-test")).rejects.toMatchObject({ kind: "unavailable" });
+  });
+
+  it("prefers normalized Hotel room image arrays and filters blanks", async () => {
+    const normalizedHotel = { ...hotel, room_types: [{
+      ...hotel.room_types[0],
+      image_reference: "https://res.cloudinary.com/dbrxpvmzp/image/upload/legacy.jpg",
+      image_references: [" https://res.cloudinary.com/dbrxpvmzp/image/upload/one.jpg ", "", "https://res.cloudinary.com/dbrxpvmzp/image/upload/two.jpg"],
+    }] };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [normalizedHotel], count: 1 }), { status: 200 })));
+    expect((await getHotels()).items[0].room_types[0].image_references).toEqual([
+      "https://res.cloudinary.com/dbrxpvmzp/image/upload/one.jpg",
+      "https://res.cloudinary.com/dbrxpvmzp/image/upload/two.jpg",
+    ]);
+  });
+
+  it("accepts an authoritative empty array without reviving a legacy value", async () => {
+    const emptyHotel = { ...hotel, room_types: [{ ...hotel.room_types[0], image_reference: "https://res.cloudinary.com/dbrxpvmzp/image/upload/legacy.jpg", image_references: [] }] };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [emptyHotel], count: 1 }), { status: 200 })));
+    expect((await getHotels()).items[0].room_types[0].image_references).toEqual([]);
+  });
+
+  it("falls back to newline-separated legacy images only when the normalized field is absent", async () => {
+    const legacyRoom = { ...hotel.room_types[0], image_reference: "https://res.cloudinary.com/dbrxpvmzp/image/upload/a.jpg\n\nhttps://res.cloudinary.com/dbrxpvmzp/image/upload/b.jpg" };
+    const olderRoom = { ...legacyRoom };
+    Reflect.deleteProperty(olderRoom, "image_references");
+    const legacyHotel = { ...hotel, room_types: [olderRoom] };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [legacyHotel], count: 1 }), { status: 200 })));
+    expect((await getHotels()).items[0].room_types[0].image_references).toEqual([
+      "https://res.cloudinary.com/dbrxpvmzp/image/upload/a.jpg",
+      "https://res.cloudinary.com/dbrxpvmzp/image/upload/b.jpg",
+    ]);
   });
 });
