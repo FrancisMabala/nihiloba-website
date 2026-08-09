@@ -9,6 +9,7 @@ import { CtaSection } from "../cta-section";
 import { Hero } from "../hero";
 import { BookIcon, BriefcaseIcon, CarIcon, CheckIcon, HomeIcon, LightbulbIcon, MailIcon, ToolsIcon } from "../icons";
 import { SectionHeading } from "../section-heading";
+import { MarketplaceGateway } from "../shida/marketplace";
 
 const copy = {
   en: {
@@ -143,6 +144,7 @@ export function ShidaPage({ locale }: { locale: Locale }) {
   const t=copy[locale]; const s=t.shida;
   const markets=[[s.employment,s.employmentText],[s.services,s.servicesText],[s.housing,s.housingText],[s.transport,s.transportText],[s.bookingCapability,s.bookingCapabilityText]];
   return <><section className="shida-hero"><div className="container shida-hero-grid"><div><p className="eyebrow">{s.eyebrow}</p><h1>{s.title}</h1><p>{s.description}</p><ButtonLink href={OFFICIAL_CHANNELS.whatsapp} external>{t.common.open}</ButtonLink></div><div className="shida-hero-logo"><BrandLogo brand="shida" eager/><p>{s.first}</p></div></div></section>
+    <MarketplaceGateway locale={locale}/>
     <section className="section how-section"><div className="container"><SectionHeading eyebrow={locale==="en"?"Four simple steps":"Quatre étapes simples"} title={s.howTitle}/><ol className="how-steps">{s.howSteps.map((step,i)=><li key={step}><span>{String(i+1).padStart(2,"0")}</span><p>{step}</p></li>)}</ol></div></section>
     <section className="section journey-section"><div className="container"><SectionHeading eyebrow={locale==="en"?"A guided WhatsApp journey":"Un parcours guidé sur WhatsApp"} title={s.actionTitle} description={s.actionIntro}/><div className="screenshot-journey">{s.journey.map(([title,caption,src],i)=><figure className="journey-step" key={title}><div className="journey-meta"><span>{locale==="en"?"Step":"Étape"} {i+1}</span><h3>{title}</h3></div><div className="screenshot-frame"><Image src={src} alt={caption} width={921} height={2048} sizes="(max-width: 700px) 86vw, 420px" /></div><figcaption>{caption}</figcaption></figure>)}</div></div></section>
     <section className="section available-section"><div className="container"><SectionHeading eyebrow={t.common.available} title={s.availableTitle} description={s.availableIntro}/><div className="available-list">{markets.map((m,i)=><article key={m[0]}><span className="available-number">{String(i+1).padStart(2,"0")}</span><div>{i<4 && <div className="feature-icon">{marketIcons[i]}</div>}<h3>{m[0]}</h3><p>{m[1]}</p></div></article>)}</div></div></section>

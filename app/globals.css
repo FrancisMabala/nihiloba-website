@@ -115,3 +115,43 @@ h1, h2, h3 { text-wrap: balance; }
   .plain-features, .plain-features.three { grid-template-columns: 1fr; }.plain-features article, .plain-features article+article { padding: 25px 0; border-bottom: 1px solid var(--line); border-left: 0; }.plain-features h3 { margin-top: 25px; }.planned-rows>div { grid-template-columns: 1fr; gap: 5px; }.how-steps { grid-template-columns: 1fr 1fr; }.how-steps li { min-height: 160px; padding: 20px 18px 20px 0; border-bottom: 1px solid var(--line); }.how-steps li+li { padding-left: 18px; }.how-steps li:nth-child(3) { padding-left: 0; border-left: 0; }.how-steps p { margin-top: 28px; font-size: .9rem; }.screenshot-journey { grid-template-columns: 1fr; gap: 60px; }.screenshot-frame,.journey-meta,.journey-step figcaption { max-width: 390px; }.available-list article { grid-template-columns: 45px 1fr; gap: 10px; }.available-list article>div,.available-list article:last-child>div { grid-template-columns: 38px 1fr; gap: 10px; }.available-list article>div p { grid-column: 1/-1; }.business-layer { grid-template-columns: 1fr; gap: 22px; padding: 25px; }.roadmap-list { grid-template-columns: 1fr; }.roadmap-list article,.roadmap-list article:nth-child(even) { padding: 26px 0; border-left: 0; }.cta-panel { align-items: flex-start; flex-direction: column; padding: 30px; }.footer-grid { grid-template-columns: 1fr 1fr; gap: 38px 25px; }.footer-intro { grid-column: 1/-1; }.footer-column:last-child { grid-column: auto; }.footer-bottom { align-items: flex-start; flex-direction: column; gap: 5px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *,*::before,*::after { transition-duration: .01ms !important; } }
+
+/* SHIDA public marketplace browsing */
+.marketplace-gateway { background: var(--color-surface, #f4f1e8); }
+.marketplace-gateway .container > p:not(.eyebrow) { max-width: 720px; }
+.marketplace-gateway-links { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1.5rem; }
+.marketplace-heading, .marketplace-detail-hero { padding: clamp(4.5rem, 9vw, 8rem) 0 clamp(2.5rem, 5vw, 4.5rem); background: var(--color-surface, #f4f1e8); }
+.marketplace-heading h1, .marketplace-detail-hero h1 { max-width: 900px; margin-bottom: 1rem; }
+.marketplace-heading p:last-child, .marketplace-detail-hero p:last-child { max-width: 720px; font-size: 1.08rem; }
+.marketplace-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1.25rem, 3vw, 2.5rem); }
+.marketplace-card { overflow: hidden; border: 1px solid rgba(8, 49, 39, 0.14); background: #fff; }
+.marketplace-card-image, .marketplace-gallery-image, .marketplace-room-image { position: relative; display: block; overflow: hidden; background: #e9e6de; }
+.marketplace-card-image { aspect-ratio: 4 / 3; }
+.marketplace-card-image img, .marketplace-gallery-image img, .marketplace-room-image img { object-fit: cover; }
+.marketplace-image-fallback { display: grid; width: 100%; height: 100%; min-height: 180px; place-items: center; color: #52625d; background: linear-gradient(145deg, #ece9e0, #dedbd2); }
+.marketplace-card-body { padding: clamp(1.2rem, 3vw, 2rem); }
+.marketplace-card-body h2 { margin: 0.65rem 0; font-size: clamp(1.35rem, 2.5vw, 2rem); }
+.marketplace-card-body h2 a { color: inherit; text-decoration: none; }
+.marketplace-status { display: inline-block; color: var(--color-green, #083127); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.marketplace-location { color: #52625d; }
+.marketplace-facts { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; }
+.marketplace-description { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.marketplace-state { padding-block: 2rem; text-align: center; }
+.marketplace-back { display: inline-block; margin-bottom: 2rem; color: inherit; }
+.marketplace-detail { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr); gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+.marketplace-gallery { display: grid; gap: 1rem; }
+.marketplace-gallery-image { min-height: 320px; aspect-ratio: 4 / 3; }
+.marketplace-detail-copy { position: sticky; top: 7rem; }
+.marketplace-detail-copy > * + * { margin-top: 1rem; }
+.marketplace-price { font-size: clamp(1.35rem, 3vw, 2rem); font-weight: 700; }
+.marketplace-action-unavailable { padding: 1rem; border-left: 3px solid #b78b34; background: #f5f0e5; }
+.marketplace-hotel-detail > .lead-copy { max-width: 800px; }
+.marketplace-room-grid { display: grid; gap: 1.5rem; margin: 2rem 0; }
+.marketplace-room { display: grid; grid-template-columns: minmax(180px, 0.4fr) minmax(0, 0.6fr); gap: 1.5rem; padding: 1rem; border: 1px solid rgba(8, 49, 39, 0.14); }
+.marketplace-room-image { min-height: 220px; }
+
+@media (max-width: 720px) {
+  .marketplace-grid, .marketplace-detail, .marketplace-room { grid-template-columns: 1fr; }
+  .marketplace-detail-copy { position: static; }
+  .marketplace-gallery-image { min-height: 240px; }
+}

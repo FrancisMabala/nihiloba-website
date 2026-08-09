@@ -8,7 +8,7 @@ export function isLocale(value: string): value is Locale {
 }
 
 export function localizedPath(locale: Locale, path = "") {
-  if (locale === "en" && path === "/shida") return "/shida";
+  if (locale === "en" && path.startsWith("/shida")) return path;
   return `/${locale}${path}`;
 }
 

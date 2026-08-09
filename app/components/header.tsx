@@ -47,9 +47,11 @@ export function Header({ locale }: { locale: Locale }) {
                   ? "/en/acceptable-use"
                   : comparableSuffix === "/trust"
                     ? "/fr/confiance"
-                    : comparableSuffix === "/confiance"
+                  : comparableSuffix === "/confiance"
                       ? "/en/trust"
-      : `/${otherLocale}${suffix}`;
+      : otherLocale === "en" && comparableSuffix.startsWith("/shida")
+        ? suffix
+        : `/${otherLocale}${suffix}`;
 
   return (
     <header className="site-header">
