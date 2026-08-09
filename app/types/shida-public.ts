@@ -3,6 +3,34 @@ export type PublicCollection<T> = {
   count: number;
 };
 
+export const apartmentPropertyTypes = [
+  "apartment", "house", "studio", "room", "office", "commercial", "land", "other",
+] as const;
+
+export type ApartmentPropertyType = (typeof apartmentPropertyTypes)[number];
+
+export type ApartmentSearch = {
+  query?: string;
+  city?: string;
+  area?: string;
+  property_type?: ApartmentPropertyType;
+  bedrooms?: number;
+  min_price?: number;
+  max_price?: number;
+  page?: number;
+  page_size?: number;
+};
+
+export type PublicApartmentOwnerSummary = {
+  public_ref: string;
+  slug: string | null;
+  public_name: string;
+  city: string | null;
+  area: string | null;
+  active_listing_count: number | null;
+  public_detail_url: string | null;
+};
+
 export type PublicImage = {
   url: string;
   alt: string | null;
@@ -20,10 +48,31 @@ export type ApartmentListing = {
   currency: string | null;
   number_of_rooms: number | null;
   description: string | null;
+  property_type: ApartmentPropertyType | null;
   availability_state: string | null;
   images: PublicImage[];
+  owner: PublicApartmentOwnerSummary | null;
   public_detail_url: string;
   visit_url: string | null;
+};
+
+export type ApartmentCollection = PublicCollection<ApartmentListing> & {
+  total: number;
+  page: number;
+  page_size: number;
+  filters: { property_types: ApartmentPropertyType[] };
+};
+
+export type PublicApartmentOwnerProfile = {
+  public_ref: string;
+  slug: string | null;
+  public_name: string;
+  city: string | null;
+  area: string | null;
+  description: string | null;
+  active_apartment_count: number;
+  apartments: ApartmentListing[];
+  public_detail_url: string | null;
 };
 
 export type HotelRoomType = {

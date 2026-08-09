@@ -28,11 +28,25 @@ const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
 };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const dynamicRoutes: string[] = [];
+  const dynamicRoutes = new Set<string>();
   try {
-    const [apartments, hotels] = await Promise.all([getApartments(), getHotels()]);
-    for (const listing of apartments.items) dynamicRoutes.push(`/shida/appartements/${listing.slug}`, `/fr/shida/appartements/${listing.slug}`);
-    for (const hotel of hotels.items) dynamicRoutes.push(`/shida/hotels/${hotel.slug}`, `/fr/shida/hotels/${hotel.slug}`);
+    const [firstApartments, hotels] = await Promise.all([getApartments({ page: 1, page_size: 50 }), getHotels()]);
+    const apartmentPages = [firstApartments];
+    const totalPages = Math.ceil(firstApartments.total / firstApartments.page_size);
+    for (let page = 2; page <= totalPages; page += 1) apartmentPages.push(await getApartments({ page, page_size: 50 }));
+    for (const listing of apartmentPages.flatMap((collection) => collection.items)) {
+      dynamicRoutes.add(`/shida/appartements/${listing.slug}`);
+      dynamicRoutes.add(`/fr/shida/appartements/${listing.slug}`);
+      if (listing.owner) {
+        const owner = encodeURIComponent(listing.owner.slug || listing.owner.public_ref);
+        dynamicRoutes.add(`/shida/appartements/proprietaires/${owner}`);
+        dynamicRoutes.add(`/fr/shida/appartements/proprietaires/${owner}`);
+      }
+    }
+    for (const hotel of hotels.items) {
+      dynamicRoutes.add(`/shida/hotels/${hotel.slug}`);
+      dynamicRoutes.add(`/fr/shida/hotels/${hotel.slug}`);
+    }
   } catch {
     // The static sitemap remains available when the public marketplace API is temporarily unavailable.
   }

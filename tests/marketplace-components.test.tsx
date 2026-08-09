@@ -1,14 +1,15 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ApartmentCard, ApartmentDetail, HotelCard, HotelDetail, HotelRoomCard } from "../app/components/shida/marketplace";
+import { ApartmentFilters, ApartmentOwnerProfile, ApartmentPagination } from "../app/components/shida/apartment-marketplace";
 import { resolveHotelRoomImages } from "../app/components/shida/hotel-room-images";
 import { availabilityLabel } from "../app/components/shida/marketplace-primitives";
-import type { ApartmentListing, HotelListing } from "../app/types/shida-public";
+import type { ApartmentCollection, ApartmentListing, HotelListing, PublicApartmentOwnerProfile } from "../app/types/shida-public";
 
 const apartment: ApartmentListing = {
   public_ref: "APT-1", slug: "bright-flat", title: "Bright flat", city: "Kinshasa", area: null, commune: "Gombe",
   quartier: "Centre", rent: 500, currency: "USD", number_of_rooms: 2, description: "A public description",
-  availability_state: "available", images: [], public_detail_url: "https://nihiloba.com/shida/appartements/bright-flat",
+  property_type: "apartment", availability_state: "available", images: [], owner: null, public_detail_url: "https://nihiloba.com/shida/appartements/bright-flat",
   visit_url: "https://wa.me/46769709059?text=visit",
 };
 const hotel: HotelListing = {
@@ -16,6 +17,10 @@ const hotel: HotelListing = {
   area: null, commune: "Gombe", quartier: null, address_line: "Public avenue", landmark: "Central square",
   room_types: [{ name: "Standard", price: 80, currency: "USD", rental_period: "night", capacity: 2, total_rooms: 4, image_reference: null, image_references: [], description: "Quiet room" }],
   public_detail_url: "https://nihiloba.com/shida/hotels/hotel-one", booking_url: "https://wa.me/46769709059?text=book",
+};
+const owner = {
+  public_ref: "AOP-1", slug: "bright-agency", public_name: "Bright Agency", city: "Kinshasa", area: "Gombe",
+  active_listing_count: 2, public_detail_url: "https://nihiloba.com/shida/appartements/proprietaires/bright-agency",
 };
 
 describe("marketplace presentation", () => {
@@ -47,6 +52,56 @@ describe("marketplace presentation", () => {
     expect(html).toContain('aria-label="Breadcrumb"');
     expect(html).toContain("Home");
     expect(html).toContain("Image unavailable");
+  });
+
+  it("links safe owner summaries from apartment cards and details without breaking legacy listings", () => {
+    const owned = { ...apartment, owner };
+    const card = renderToStaticMarkup(<ApartmentCard listing={owned} locale="fr"/>);
+    const detail = renderToStaticMarkup(<ApartmentDetail listing={owned} locale="en"/>);
+    const legacy = renderToStaticMarkup(<ApartmentDetail listing={apartment} locale="en"/>);
+    expect(card).toContain("Publié par");
+    expect(card).toContain("/fr/shida/appartements/proprietaires/bright-agency");
+    expect(detail).toContain("View all homes from");
+    expect(detail).toContain("/shida/appartements/proprietaires/bright-agency");
+    expect(legacy).not.toContain("Published by");
+  });
+
+  it("renders URL-driven filters and preserves them in pagination links", () => {
+    const filters = renderToStaticMarkup(<ApartmentFilters locale="en" search={{ query: "Gombe", city: "Kinshasa", bedrooms: 2 }} propertyTypes={["apartment", "studio"]}/>);
+    const collection: ApartmentCollection = { items: [apartment], count: 1, total: 25, page: 2, page_size: 12, filters: { property_types: ["apartment", "studio"] } };
+    const pagination = renderToStaticMarkup(<ApartmentPagination locale="en" search={{ query: "Gombe", city: "Kinshasa", bedrooms: 2 }} collection={collection}/>);
+    expect(filters).toContain('name="query"');
+    expect(filters).toContain('value="Gombe"');
+    expect(filters).toContain('name="property_type"');
+    expect(filters).toContain("Apartment");
+    expect(pagination).toContain("query=Gombe&amp;city=Kinshasa&amp;bedrooms=2");
+    expect(pagination).toContain("page=3");
+  });
+
+  it("renders a public owner profile and only its reusable apartment cards", () => {
+    const profile: PublicApartmentOwnerProfile = {
+      public_ref: owner.public_ref, slug: owner.slug, public_name: owner.public_name, city: owner.city, area: owner.area,
+      description: "A trusted public agency", active_apartment_count: 2,
+      apartments: [{ ...apartment, owner }, { ...apartment, public_ref: "APT-2", slug: "second-flat", title: "Second flat", owner }],
+      public_detail_url: owner.public_detail_url,
+    };
+    const html = renderToStaticMarkup(<ApartmentOwnerProfile locale="en" profile={profile}/>);
+    expect(html).toContain("Bright Agency");
+    expect(html).toContain("Kinshasa");
+    expect(html).toContain("2 available homes");
+    expect(html).toContain("Bright flat");
+    expect(html).toContain("Second flat");
+    for (const privateLabel of ["phone", "email", "business ID", "WhatsApp identifier", "private address"]) expect(html).not.toContain(privateLabel);
+  });
+
+  it("renders a valid owner with zero listings as an empty profile, not a missing profile", () => {
+    const profile: PublicApartmentOwnerProfile = {
+      public_ref: owner.public_ref, slug: owner.slug, public_name: owner.public_name, city: null, area: null,
+      description: null, active_apartment_count: 0, apartments: [], public_detail_url: owner.public_detail_url,
+    };
+    const html = renderToStaticMarkup(<ApartmentOwnerProfile locale="fr" profile={profile}/>);
+    expect(html).toContain("Aucun logement n’est actuellement disponible pour ce profil.");
+    expect(html).not.toContain("introuvable");
   });
 
   it("renders a lightweight multi-image gallery with an image count", () => {

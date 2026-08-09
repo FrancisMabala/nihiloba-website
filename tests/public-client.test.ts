@@ -1,13 +1,30 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getApartment, getApartments, getHotel, getHotels, ShidaApiError } from "../app/services/shida/public-client";
+import {
+  apartmentSearchQuery,
+  getApartment,
+  getApartmentOwner,
+  getApartments,
+  getHotel,
+  getHotels,
+  parseApartmentSearchParams,
+  ShidaApiError,
+} from "../app/services/shida/public-client";
+
+const owner = {
+  public_ref: "AOP-1", slug: "bright-agency", public_name: "Bright Agency", city: "Kinshasa", area: "Gombe",
+  active_listing_count: 1, public_detail_url: "https://nihiloba.com/shida/appartements/proprietaires/bright-agency",
+};
 
 const apartment = {
   public_ref: "APT-1", slug: "bright-flat", title: "Bright flat", city: "Kinshasa", area: null,
   commune: "Gombe", quartier: null, rent: 500, currency: "USD", number_of_rooms: 2,
-  description: "A public description", availability_state: "available",
+  description: "A public description", property_type: "apartment", availability_state: "available",
   images: [{ url: "https://res.cloudinary.com/dbrxpvmzp/image/upload/v1/shida/apartments/a.jpg", alt: "Flat" }],
+  owner,
   public_detail_url: "https://nihiloba.com/shida/appartements/bright-flat", visit_url: "https://wa.me/1",
 };
+
+const apartmentCollection = { items: [apartment], count: 1, total: 1, page: 1, page_size: 12, filters: { property_types: ["apartment", "studio"] } };
 
 const hotel = {
   public_ref: "HOT-1", slug: "hotel-one", name: "Hotel One", description: "A hotel", country_code: "CD",
@@ -21,11 +38,41 @@ afterEach(() => vi.unstubAllGlobals());
 describe("SHIDA public client", () => {
   it("parses apartment and hotel collections", async () => {
     const fetchMock = vi.fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [apartment], count: 1 }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(apartmentCollection), { status: 200 }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ items: [hotel], count: 1 }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
     expect((await getApartments()).items[0].title).toBe("Bright flat");
     expect((await getHotels()).items[0].room_types[0].name).toBe("Standard");
+  });
+
+  it("serializes every supported apartment filter safely", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(apartmentCollection), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await getApartments({ query: "2 bedrooms", city: "Kinshasa", area: "Gombe", property_type: "apartment", bedrooms: 2, min_price: 300, max_price: 700, page: 2, page_size: 12 });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.nihiloba.com/api/public/shida/apartments?query=2+bedrooms&city=Kinshasa&area=Gombe&property_type=apartment&bedrooms=2&min_price=300&max_price=700&page=2&page_size=12",
+      expect.any(Object),
+    );
+  });
+
+  it("omits malformed numeric URL parameters and unsupported property types", () => {
+    expect(parseApartmentSearchParams({ bedrooms: "2x", min_price: "-1", max_price: "Infinity", page: "0", page_size: "1000", property_type: "villa", query: [" Gombe ", "ignored"] })).toEqual({ query: "Gombe" });
+    expect(apartmentSearchQuery({ query: "Gombe & Limete", page: 2 })).toBe("?query=Gombe+%26+Limete&page=2");
+  });
+
+  it("parses owner summaries and profiles while discarding all private fields", async () => {
+    const profile = {
+      public_ref: owner.public_ref, slug: owner.slug, public_name: owner.public_name, city: owner.city, area: owner.area,
+      description: "Public agency description", active_apartment_count: 1, apartments: [{ ...apartment, owner_phone: "+000", private_address: "secret" }],
+      public_detail_url: owner.public_detail_url, whatsapp_url: "https://wa.me/private", email: "private@example.com", business_id: 99, user_id: 42,
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(profile), { status: 200 })));
+    const parsed = await getApartmentOwner("bright-agency-profile-test");
+    expect(parsed.public_name).toBe("Bright Agency");
+    expect(parsed.apartments[0].owner?.public_name).toBe("Bright Agency");
+    for (const privateField of ["whatsapp_url", "email", "business_id", "user_id"]) expect(parsed).not.toHaveProperty(privateField);
+    expect(parsed.apartments[0]).not.toHaveProperty("owner_phone");
+    expect(parsed.apartments[0]).not.toHaveProperty("private_address");
   });
 
   it("parses detail responses without retaining extra private fields", async () => {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Locale } from "../../lib/i18n";
 import { safePublicActionUrl, safePublicImageUrl } from "../../lib/safe-public-url";
-import type { ApartmentListing, HotelListing, HotelRoomType } from "../../types/shida-public";
+import type { ApartmentListing, HotelListing, HotelRoomType, PublicApartmentOwnerSummary } from "../../types/shida-public";
 import { ButtonLink } from "../button-link";
 import { firstHotelRoomImage, resolveHotelRoomImages } from "./hotel-room-images";
 import { ImageGallery } from "./image-gallery";
@@ -12,6 +12,15 @@ import type { MarketplaceFact } from "./marketplace-primitives";
 
 export function marketplacePath(locale: Locale, path: string): string {
   return locale === "en" ? path : `/${locale}${path}`;
+}
+
+export function apartmentOwnerPath(locale: Locale, owner: Pick<PublicApartmentOwnerSummary, "public_ref" | "slug">): string {
+  const identifier = owner.slug || owner.public_ref;
+  return marketplacePath(locale, `/shida/appartements/proprietaires/${encodeURIComponent(identifier)}`);
+}
+
+export function propertyTypeLabel(type: ApartmentListing["property_type"], locale: Locale): string | null {
+  return type ? marketplaceCopy[locale].propertyTypes[type] : null;
 }
 
 export function formatPrice(amount: number | null, currency: string | null, locale: Locale): string | null {
@@ -47,6 +56,7 @@ export function ApartmentCard({ listing, locale }: { listing: ApartmentListing; 
   const t = marketplaceCopy[locale];
   const location = publicLocation(listing.quartier, listing.commune, listing.area, listing.city);
   const price = formatPrice(listing.rent, listing.currency, locale);
+  const type = propertyTypeLabel(listing.property_type, locale);
   const image = listing.images.map((item) => ({ ...item, safeUrl: safePublicImageUrl(item.url) })).find((item) => item.safeUrl);
   return <article className="marketplace-card">
     <Link className="marketplace-card-image" href={marketplacePath(locale, `/shida/appartements/${listing.slug}`)}>
@@ -58,9 +68,11 @@ export function ApartmentCard({ listing, locale }: { listing: ApartmentListing; 
       {location && <p className="marketplace-location">{location}</p>}
       <div className="marketplace-card-facts">
         {price && <strong>{price} <small>/ {t.perMonth}</small></strong>}
+        {type && <span>{type}</span>}
         {listing.number_of_rooms != null && <span>{listing.number_of_rooms} {t.rooms}</span>}
       </div>
       {listing.description && <p className="marketplace-description">{listing.description}</p>}
+      {listing.owner && <ApartmentOwnerSummary owner={listing.owner} locale={locale}/>}
       <ButtonLink href={marketplacePath(locale, `/shida/appartements/${listing.slug}`)} variant="text">{t.details}</ButtonLink>
     </div>
   </article>;
@@ -111,10 +123,25 @@ export function ApartmentDetail({ listing, locale }: { listing: ApartmentListing
         <div className="marketplace-property-content">
           {listing.description && <section><h2>{t.descriptionTitle}</h2><p className="lead-copy">{listing.description}</p></section>}
           {locationDetails.length > 0 && <section><h2>{t.detailsTitle}</h2><dl className="marketplace-property-details">{locationDetails.map((detail) => <div key={detail.label}><dt>{detail.label}</dt><dd>{detail.value}</dd></div>)}</dl></section>}
+          {listing.owner && <section><ApartmentOwnerSummary owner={listing.owner} locale={locale} extended/></section>}
         </div>
       </div>
     </div></section>
   </>;
+}
+
+export function ApartmentOwnerSummary({ locale, owner, extended = false }: {
+  locale: Locale;
+  owner: PublicApartmentOwnerSummary;
+  extended?: boolean;
+}) {
+  const t = marketplaceCopy[locale];
+  const href = apartmentOwnerPath(locale, owner);
+  return <div className={extended ? "marketplace-owner-summary marketplace-owner-summary-detail" : "marketplace-owner-summary"}>
+    <span>{t.publishedBy}</span>
+    <Link href={href}>{owner.public_name}</Link>
+    {extended && <ButtonLink href={href} variant="text">{t.ownerListings} {owner.public_name}</ButtonLink>}
+  </div>;
 }
 
 function hotelImage(listing: HotelListing): string | null {

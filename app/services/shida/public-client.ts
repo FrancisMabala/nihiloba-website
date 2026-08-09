@@ -1,11 +1,17 @@
 import { cache } from "react";
 import type {
+  ApartmentCollection,
   ApartmentListing,
+  ApartmentPropertyType,
+  ApartmentSearch,
   HotelListing,
   HotelRoomType,
+  PublicApartmentOwnerProfile,
+  PublicApartmentOwnerSummary,
   PublicCollection,
   PublicImage,
 } from "../../types/shida-public";
+import { apartmentPropertyTypes } from "../../types/shida-public";
 
 const DEFAULT_API_BASE_URL = "https://api.nihiloba.com";
 const REQUEST_TIMEOUT_MS = 8_000;
@@ -50,6 +56,20 @@ function number(value: unknown): number | null {
   throw new ShidaApiError("malformed");
 }
 
+function integer(value: unknown, required = false): number | null {
+  const parsed = number(value);
+  if (parsed == null && !required) return null;
+  if (parsed == null || !Number.isInteger(parsed) || parsed < 0) throw new ShidaApiError("malformed");
+  return parsed;
+}
+
+function propertyType(value: unknown): ApartmentPropertyType | null {
+  const parsed = text(value);
+  if (parsed == null) return null;
+  if (!apartmentPropertyTypes.includes(parsed as ApartmentPropertyType)) throw new ShidaApiError("malformed");
+  return parsed as ApartmentPropertyType;
+}
+
 function textList(value: unknown): string[] | undefined {
   if (value === undefined) return undefined;
   if (!Array.isArray(value)) throw new ShidaApiError("malformed");
@@ -64,6 +84,20 @@ function image(value: unknown): PublicImage {
   return { url: text(item.url, true)!, alt: text(item.alt) };
 }
 
+function apartmentOwner(value: unknown): PublicApartmentOwnerSummary | null {
+  if (value == null) return null;
+  const item = record(value);
+  return {
+    public_ref: text(item.public_ref, true)!,
+    slug: text(item.slug),
+    public_name: text(item.public_name, true)!,
+    city: text(item.city),
+    area: text(item.area),
+    active_listing_count: integer(item.active_listing_count),
+    public_detail_url: text(item.public_detail_url),
+  };
+}
+
 function apartment(value: unknown): ApartmentListing {
   const item = record(value);
   if (!Array.isArray(item.images)) throw new ShidaApiError("malformed");
@@ -71,8 +105,25 @@ function apartment(value: unknown): ApartmentListing {
     public_ref: text(item.public_ref, true)!, slug: text(item.slug, true)!, title: text(item.title, true)!,
     city: text(item.city), area: text(item.area), commune: text(item.commune), quartier: text(item.quartier),
     rent: number(item.rent), currency: text(item.currency), number_of_rooms: number(item.number_of_rooms),
-    description: text(item.description), availability_state: text(item.availability_state),
-    images: item.images.map(image), public_detail_url: text(item.public_detail_url, true)!, visit_url: text(item.visit_url),
+    description: text(item.description), property_type: propertyType(item.property_type), availability_state: text(item.availability_state),
+    images: item.images.map(image), owner: apartmentOwner(item.owner),
+    public_detail_url: text(item.public_detail_url, true)!, visit_url: text(item.visit_url),
+  };
+}
+
+function apartmentOwnerProfile(value: unknown): PublicApartmentOwnerProfile {
+  const item = record(value);
+  if (!Array.isArray(item.apartments)) throw new ShidaApiError("malformed");
+  return {
+    public_ref: text(item.public_ref, true)!,
+    slug: text(item.slug),
+    public_name: text(item.public_name, true)!,
+    city: text(item.city),
+    area: text(item.area),
+    description: text(item.description),
+    active_apartment_count: integer(item.active_apartment_count, true)!,
+    apartments: item.apartments.map(apartment),
+    public_detail_url: text(item.public_detail_url),
   };
 }
 
@@ -121,12 +172,86 @@ async function request(path: string, revalidate: number | false): Promise<unknow
 
 function collection<T>(value: unknown, parse: (item: unknown) => T): PublicCollection<T> {
   const data = record(value);
-  if (!Array.isArray(data.items) || typeof data.count !== "number") throw new ShidaApiError("malformed");
+  if (!Array.isArray(data.items) || typeof data.count !== "number" || !Number.isInteger(data.count) || data.count < 0) throw new ShidaApiError("malformed");
   return { items: data.items.map(parse), count: data.count };
 }
 
-export async function getApartments(): Promise<PublicCollection<ApartmentListing>> {
-  return collection(await request("/api/public/shida/apartments", 60), apartment);
+const searchTextKeys = ["query", "city", "area"] as const;
+
+function firstQueryValue(value: string | string[] | undefined): string | undefined {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  const normalized = candidate?.trim();
+  return normalized ? normalized.slice(0, 120) : undefined;
+}
+
+function numericQuery(value: string | string[] | undefined, options: { integer?: boolean; min?: number; max?: number } = {}): number | undefined {
+  const candidate = firstQueryValue(value);
+  if (!candidate || !/^(?:\d+\.?\d*|\.\d+)$/.test(candidate)) return undefined;
+  const parsed = Number(candidate);
+  if (!Number.isFinite(parsed) || (options.integer && !Number.isInteger(parsed))) return undefined;
+  if (parsed < (options.min ?? 0) || parsed > (options.max ?? Number.MAX_SAFE_INTEGER)) return undefined;
+  return parsed;
+}
+
+export type ApartmentRawSearchParams = Record<string, string | string[] | undefined>;
+
+export function parseApartmentSearchParams(value: ApartmentRawSearchParams): ApartmentSearch {
+  const result: ApartmentSearch = {};
+  for (const key of searchTextKeys) {
+    const parsed = firstQueryValue(value[key]);
+    if (parsed) result[key] = parsed;
+  }
+  const type = firstQueryValue(value.property_type);
+  if (type && apartmentPropertyTypes.includes(type as ApartmentPropertyType)) result.property_type = type as ApartmentPropertyType;
+  const bedrooms = numericQuery(value.bedrooms, { integer: true, min: 1, max: 100 });
+  const minPrice = numericQuery(value.min_price, { integer: true, min: 0, max: 1_000_000_000 });
+  const maxPrice = numericQuery(value.max_price, { integer: true, min: 0, max: 1_000_000_000 });
+  const page = numericQuery(value.page, { integer: true, min: 1, max: 100_000 });
+  const pageSize = numericQuery(value.page_size, { integer: true, min: 1, max: 50 });
+  if (bedrooms != null) result.bedrooms = bedrooms;
+  if (minPrice != null) result.min_price = minPrice;
+  if (maxPrice != null) result.max_price = maxPrice;
+  if (page != null) result.page = page;
+  if (pageSize != null) result.page_size = pageSize;
+  return result;
+}
+
+export function apartmentSearchQuery(search: ApartmentSearch): string {
+  const params = new URLSearchParams();
+  for (const key of searchTextKeys) {
+    const value = search[key]?.trim();
+    if (value) params.set(key, value.slice(0, 120));
+  }
+  if (search.property_type && apartmentPropertyTypes.includes(search.property_type)) params.set("property_type", search.property_type);
+  for (const key of ["bedrooms", "min_price", "max_price", "page", "page_size"] as const) {
+    const value = search[key];
+    const maximum = key === "page_size" ? 50 : key === "bedrooms" ? 100 : key === "page" ? 100_000 : 1_000_000_000;
+    const minimum = key === "bedrooms" || key === "page" || key === "page_size" ? 1 : 0;
+    if (value != null && Number.isInteger(value) && value >= minimum && value <= maximum) params.set(key, String(value));
+  }
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
+function apartmentCollection(value: unknown): ApartmentCollection {
+  const data = record(value);
+  const base = collection(value, apartment);
+  const filters = record(data.filters);
+  if (!Array.isArray(filters.property_types)) throw new ShidaApiError("malformed");
+  const page = integer(data.page, true)!;
+  const pageSize = integer(data.page_size, true)!;
+  if (page < 1 || pageSize < 1 || pageSize > 50) throw new ShidaApiError("malformed");
+  return {
+    ...base,
+    total: integer(data.total, true)!,
+    page,
+    page_size: pageSize,
+    filters: { property_types: filters.property_types.map(propertyType).filter((item): item is ApartmentPropertyType => item !== null) },
+  };
+}
+
+export async function getApartments(search: ApartmentSearch = {}): Promise<ApartmentCollection> {
+  return apartmentCollection(await request(`/api/public/shida/apartments${apartmentSearchQuery(search)}`, 60));
 }
 
 export async function getHotels(): Promise<PublicCollection<HotelListing>> {
@@ -135,6 +260,10 @@ export async function getHotels(): Promise<PublicCollection<HotelListing>> {
 
 export const getApartment = cache(async (slug: string): Promise<ApartmentListing> =>
   apartment(await request(`/api/public/shida/apartments/${encodeURIComponent(slug)}`, false)),
+);
+
+export const getApartmentOwner = cache(async (refOrSlug: string): Promise<PublicApartmentOwnerProfile> =>
+  apartmentOwnerProfile(await request(`/api/public/shida/apartment-owners/${encodeURIComponent(refOrSlug)}`, false)),
 );
 
 export const getHotel = cache(async (slug: string): Promise<HotelListing> =>
