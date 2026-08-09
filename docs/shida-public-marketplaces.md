@@ -36,7 +36,7 @@ Collections and currently published detail pages are included in the sitemap whe
 
 ## Render migration
 
-`render.yaml` now defines a Node web service, not a static service. If the existing Render service cannot change runtime type in place, create the Node service from the blueprint, validate it on its temporary hostname, then move the `nihiloba.com` custom domain to it. Keep the existing security headers during the cutover.
+`render.yaml` now defines a Node web service, not a static service. If the existing Render service cannot change runtime type in place, create the Node service from the blueprint, validate it on its temporary hostname, then move the `nihiloba.com` custom domain to it. Security headers are applied to every route by the Next.js `headers()` configuration; the Blueprint intentionally has no unsupported Web Service `headers` section.
 
 Wenze browsing is intentionally outside this release. Add it only after a separate public backend contract exists.
 

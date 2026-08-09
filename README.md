@@ -46,7 +46,7 @@ npm test
 4. Deploy the site.
 5. Add `nihiloba.com` as the custom domain when DNS is ready.
 
-The repository includes a `render.yaml` Blueprint with the production runtime configuration and security headers. Connect or synchronize that Blueprint so the CSP, HSTS and other response-header rules are retained.
+The repository includes a `render.yaml` Blueprint with the production runtime configuration. CSP, HSTS and the other security response headers are applied by Next.js through `next.config.ts`, because Render Blueprint headers are not supported on Node Web Services.
 
 See `docs/shida-public-marketplaces.md` for API boundaries, caching and migration notes.
 
