@@ -5,6 +5,8 @@ import { ApartmentFilters, ApartmentOwnerProfile, ApartmentPagination } from "..
 import { resolveHotelRoomImages } from "../app/components/shida/hotel-room-images";
 import { availabilityLabel } from "../app/components/shida/marketplace-primitives";
 import type { ApartmentCollection, ApartmentListing, HotelListing, PublicApartmentOwnerProfile } from "../app/types/shida-public";
+import { wenzePrice } from "../app/components/shida/wenze";
+import { WENZE_VARIANT_CHIP_LIMIT, WenzeVariantSelector } from "../app/components/shida/wenze-variant-selector";
 
 const apartment: ApartmentListing = {
   public_ref: "APT-1", slug: "bright-flat", title: "Bright flat", city: "Kinshasa", area: null, commune: "Gombe",
@@ -24,6 +26,8 @@ const owner = {
 };
 
 describe("marketplace presentation", () => {
+  it("normalizes embedded Wenze currency without duplicating it",()=>{expect(wenzePrice("150USD","USD")).toBe("150 USD");expect(wenzePrice("25","USD")).toBe("25 USD")});
+  it("renders accessible variant chips, disables sold-out choices, and requires selection",()=>{const variants=[{public_ref:"V1",label:"40",variant_type:"shoe_size",stock_quantity:2,available_stock:2,is_available:true},{public_ref:"V2",label:"41",variant_type:"shoe_size",stock_quantity:0,available_stock:0,is_available:false}];const html=renderToStaticMarkup(<WenzeVariantSelector variants={variants} type="shoe_size" action="https://wa.me/1" l="fr"/>);expect(html).toContain("Pointure");expect(html).toContain("Épuisé");expect(html).toContain("disabled");expect(html).toContain("Acheter sur SHIDA");expect(html).toContain("Choisissez d’abord");expect(WENZE_VARIANT_CHIP_LIMIT).toBe(8)});
   it("renders public apartment fields and canonical local detail link", () => {
     const html = renderToStaticMarkup(<ApartmentCard listing={apartment} locale="en"/>);
     expect(html).toContain("Bright flat");

@@ -105,7 +105,8 @@ export type HotelListing = {
 };
 
 export type WenzeImage = PublicImage & { display_order: number };
+export type WenzeProductVariant = { public_ref:string; label:string; variant_type:string|null; stock_quantity:number|null; available_stock:number|null; is_available:boolean };
 export type WenzeStoreSummary = { public_ref:string; slug:string|null; name:string; description:string|null; category:string|null; country_code:string|null; city:string|null; area:string|null; commune:string|null; quartier:string|null; address:string|null; landmark:string|null; public_detail_url:string; whatsapp_url:string|null };
-export type WenzeProduct = { public_ref:string; slug:string|null; name:string; description:string|null; category:string|null; price:string|null; currency:string|null; price_negotiable:boolean; available_stock:number|null; images:WenzeImage[]; public_detail_url:string; buy_url:string|null; store:WenzeStoreSummary|null };
+export type WenzeProduct = { public_ref:string; slug:string|null; name:string; description:string|null; category:string|null; price:string|null; currency:string|null; price_negotiable:boolean; available_stock:number|null; has_variants:boolean; variant_type:string|null; variants:WenzeProductVariant[]; images:WenzeImage[]; public_detail_url:string; buy_url:string|null; store:WenzeStoreSummary|null };
 export type WenzeStore = WenzeStoreSummary & { products:WenzeProduct[] };
 export type WenzeSearch = { query?:string; city?:string; area?:string; category?:string; limit?:number };

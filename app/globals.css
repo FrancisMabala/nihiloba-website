@@ -217,6 +217,29 @@ h1, h2, h3 { text-wrap: balance; }
 .marketplace-room-copy h3 { margin-top: 0; color: var(--forest); font-family: Georgia,"Times New Roman",serif; font-size: 1.35rem; font-weight: 500; }
 .marketplace-room-copy p { color: var(--muted); }
 .marketplace-room-booking { width: 100%; margin-top: 1rem; }
+.wenze-product-card .marketplace-card-image { aspect-ratio: 1 / 1; }
+.wenze-product-card .marketplace-card-body { gap: .45rem; }
+.wenze-product-card .marketplace-card-body h2 { margin-bottom: .2rem; }
+.wenze-card-price { color: var(--forest); font-size: clamp(1.15rem,2vw,1.4rem); }
+.wenze-card-meta, .wenze-category { margin: 0; color: var(--muted); font-size: .82rem; }
+.wenze-product-card .button-primary { width: 100%; margin-top: auto; }
+.wenze-store-card .eyebrow { margin-bottom: 0; }
+.wenze-store-hero .button { margin-top: 1.25rem; }
+.wenze-location-section { padding: 2rem 0; border-bottom: 1px solid var(--line); background: var(--ivory); }
+.wenze-location-section h2 { color: var(--forest); font-family: Georgia,"Times New Roman",serif; font-weight: 500; }
+.wenze-buy-card { position: sticky; }
+.wenze-price-badge { display: inline-flex; padding: .3rem .55rem; background: #eef5f1; color: var(--forest)!important; font-size: .78rem; font-weight: 700; }
+.wenze-variant-selector fieldset { margin: 1.2rem 0; padding: 0; border: 0; }
+.wenze-variant-selector legend { margin-bottom: .65rem; color: var(--forest); font-weight: 750; }
+.wenze-variant-chips { display: flex; flex-wrap: wrap; gap: .55rem; }
+.wenze-variant-chips button { min-width: 48px; min-height: 46px; padding: .55rem .7rem; border: 1px solid var(--forest); background: #fff; color: var(--forest); cursor: pointer; }
+.wenze-variant-chips button[aria-pressed="true"] { background: var(--forest); color: #fff; }
+.wenze-variant-chips button:disabled { border-color: #aaa; color: #777; cursor: not-allowed; text-decoration: line-through; }
+.wenze-variant-chips small { display: block; font-size: .6rem; text-decoration: none; }
+.wenze-variant-selector select { width: 100%; min-height: 46px; padding: .7rem; border: 1px solid var(--forest); background: #fff; }
+.wenze-buy-button { width: 100%; }
+.wenze-buy-button:disabled { cursor: not-allowed; opacity: .55; }
+.wenze-variant-prompt { margin: .6rem 0 0; font-size: .82rem; }
 .marketplace-owner-count { margin: 1rem 0 0; color: var(--forest); font-weight: 700; }
 .marketplace-owner-description { white-space: pre-line; }
 .marketplace-owner-listings { padding-top: clamp(3rem, 6vw, 5rem); }
@@ -232,6 +255,9 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 @media (max-width: 720px) {
+  .wenze-product-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: .8rem; }
+  .wenze-product-card .marketplace-card-body { padding: .85rem; }
+  .wenze-product-card .marketplace-card-body h2 { font-size: 1.05rem; }
   .marketplace-search-row { grid-template-columns: minmax(0,1fr); }
   .marketplace-search-row .button { width: 100%; }
   .marketplace-filter-grid { grid-template-columns: minmax(0,1fr); }
