@@ -216,6 +216,7 @@ h1, h2, h3 { text-wrap: balance; }
 .marketplace-room-gallery .marketplace-thumbnail { width: 72px; min-width: 72px; }
 .marketplace-room-copy h3 { margin-top: 0; color: var(--forest); font-family: Georgia,"Times New Roman",serif; font-size: 1.35rem; font-weight: 500; }
 .marketplace-room-copy p { color: var(--muted); }
+.marketplace-room-booking { width: 100%; margin-top: 1rem; }
 .marketplace-owner-count { margin: 1rem 0 0; color: var(--forest); font-weight: 700; }
 .marketplace-owner-description { white-space: pre-line; }
 .marketplace-owner-listings { padding-top: clamp(3rem, 6vw, 5rem); }

@@ -44,6 +44,7 @@ export function MarketplaceGateway({ locale }: { locale: Locale }) {
     <div className="marketplace-gateway-links">
       <ButtonLink href={marketplacePath(locale, "/shida/appartements")}>{t.apartments}</ButtonLink>
       <ButtonLink href={marketplacePath(locale, "/shida/hotels")} variant="secondary">{t.hotels}</ButtonLink>
+      <ButtonLink href={marketplacePath(locale, "/shida/wenze")} variant="secondary">{t.wenze}</ButtonLink>
     </div>
   </div></section>;
 }
@@ -157,11 +158,12 @@ function rentalPeriodLabel(period: string | null, locale: Locale): string | null
   return labels[locale][period.trim().toLowerCase()] ?? null;
 }
 
-export function HotelRoomCard({ room, hotelName, locale }: { room: HotelRoomType; hotelName: string; locale: Locale }) {
+export function HotelRoomCard({ room, hotelName, locale, bookingUrl = null }: { room: HotelRoomType; hotelName: string; locale: Locale; bookingUrl?: string | null }) {
   const t = marketplaceCopy[locale];
   const images = resolveHotelRoomImages(room, hotelName);
   const price = formatPrice(room.price, room.currency, locale);
   const period = rentalPeriodLabel(room.rental_period, locale);
+  const action = safePublicActionUrl(bookingUrl);
   return <article className="marketplace-room">
     <div className="marketplace-room-gallery"><ImageGallery images={images} title={`${room.name} - ${hotelName}`} fallback={t.imageUnavailable} photosLabel={`${t.roomPhotos}: ${room.name}`} sizes="(max-width: 720px) calc(100vw - 64px), 34vw"/></div>
     <div className="marketplace-room-copy"><h3>{room.name}</h3>
@@ -169,6 +171,7 @@ export function HotelRoomCard({ room, hotelName, locale }: { room: HotelRoomType
       {room.capacity != null && <p>{t.capacity}: {room.capacity} {t.guests}</p>}
       {room.total_rooms != null && <p>{room.total_rooms} {t.availableRooms}</p>}
       {room.description && <p>{room.description}</p>}
+      {action && <ButtonLink href={action} external className="marketplace-room-booking">{t.bookRoom}</ButtonLink>}
     </div>
   </article>;
 }
@@ -200,8 +203,8 @@ export function HotelDetail({ listing, locale }: { listing: HotelListing; locale
       {listing.description && <p className="lead-copy">{listing.description}</p>}
       {listing.landmark && <p><strong>{t.landmark}:</strong> {listing.landmark}</p>}
       <h2>{t.roomTypes}</h2>
-      <div className="marketplace-room-grid">{listing.room_types.map((room, index) => <HotelRoomCard room={room} hotelName={listing.name} locale={locale} key={`${room.name}-${index}`}/>)}</div>
-      {action ? <ButtonLink href={action} external>{t.book}</ButtonLink> : <p className="marketplace-action-unavailable">{t.actionUnavailable}</p>}
+      <div className="marketplace-room-grid">{listing.room_types.map((room, index) => <HotelRoomCard room={room} hotelName={listing.name} locale={locale} bookingUrl={listing.booking_url} key={`${room.name}-${index}`}/>)}</div>
+      {action ? <ButtonLink href={action} external variant="secondary">{t.book}</ButtonLink> : <p className="marketplace-action-unavailable">{t.actionUnavailable}</p>}
     </div></section>
   </>;
 }

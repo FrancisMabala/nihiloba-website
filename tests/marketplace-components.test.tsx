@@ -163,6 +163,7 @@ describe("marketplace presentation", () => {
     expect(html).toContain("standard-b.jpg");
     expect(html).toContain("suite-c.jpg");
     expect(html).not.toContain(">null<");
+    expect((html.match(/Réserver cette chambre sur SHIDA/g) ?? [])).toHaveLength(2);
   });
 
   it("rejects unsupported room image URLs and keeps the collection fallback safe", () => {
@@ -181,5 +182,8 @@ describe("marketplace presentation", () => {
     expect(french).toContain("/fr/shida/hotels");
     expect(english).toContain("https://wa.me/46769709059?text=book");
     expect(french).toContain("https://wa.me/46769709059?text=book");
+    expect((english.match(/Book this room on SHIDA/g) ?? [])).toHaveLength(1);
+    expect(english).toContain("rooms offered");
+    expect(english).not.toContain("rooms available");
   });
 });

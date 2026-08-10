@@ -6,6 +6,7 @@ import {
   getApartments,
   getHotel,
   getHotels,
+  getWenzeProduct, getWenzeStore, getWenzeStores,
   parseApartmentSearchParams,
   ShidaApiError,
 } from "../app/services/shida/public-client";
@@ -131,5 +132,14 @@ describe("SHIDA public client", () => {
       "https://res.cloudinary.com/dbrxpvmzp/image/upload/a.jpg",
       "https://res.cloudinary.com/dbrxpvmzp/image/upload/b.jpg",
     ]);
+  });
+
+  it("parses public Wenze stores and products without retaining seller PII", async () => {
+    const product={public_ref:"WNP-1",slug:"dress",name:"Dress",description:null,category:"fashion_clothing",price:"25",currency:"USD",price_negotiable:true,available_stock:3,images:[{url:"https://res.cloudinary.com/dbrxpvmzp/image/upload/wenze/a.jpg",alt:"Product",display_order:1}],public_detail_url:"https://nihiloba.com/shida/wenze/products/dress",buy_url:"https://wa.me/1"};
+    const store={public_ref:"WNZ-1",slug:"mado",name:"Mado",description:null,category:"fashion_clothing",country_code:"CD",city:"Kinshasa",area:"Gombe",commune:null,quartier:null,address:"Commerce 12",landmark:null,products:[product],public_detail_url:"https://nihiloba.com/shida/wenze/mado",whatsapp_url:"https://wa.me/1",owner_phone:"private"};
+    vi.stubGlobal("fetch",vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({items:[store],count:1}))).mockResolvedValueOnce(new Response(JSON.stringify(store))).mockResolvedValueOnce(new Response(JSON.stringify({...product,store}))));
+    expect((await getWenzeStores({city:"Kinshasa",category:"fashion_clothing"})).items[0]).not.toHaveProperty("owner_phone");
+    expect((await getWenzeStore("mado-test")).products[0].available_stock).toBe(3);
+    expect((await getWenzeProduct("dress-test")).store?.name).toBe("Mado");
   });
 });

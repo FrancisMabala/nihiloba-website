@@ -2,13 +2,13 @@ import type { Locale } from "../../lib/i18n";
 
 export const marketplaceCopy = {
   en: {
-    apartments: "Apartments", hotels: "Hotels", browse: "Browse on NIHILOBA", gateway: "Explore SHIDA listings",
+    apartments: "Apartments", hotels: "Hotels", wenze: "Wenze", browse: "Browse on NIHILOBA", gateway: "Explore SHIDA listings",
     gatewayText: "Browse public apartments and hotels, then continue securely through SHIDA on WhatsApp.",
     apartmentTitle: "Available homes on SHIDA", hotelTitle: "Hotels available through SHIDA",
     apartmentIntro: "Discover currently available homes and request a visit directly through SHIDA.",
     hotelIntro: "Explore public hotels and room options, then continue to the official SHIDA booking journey.",
     details: "View details", visit: "Request a visit with SHIDA", book: "Book on WhatsApp", rooms: "rooms", perMonth: "per month",
-    roomTypes: "Room options", roomPhotos: "Room photos", capacity: "Capacity", guests: "guests", availableRooms: "rooms listed",
+    roomTypes: "Room options", roomPhotos: "Room photos", capacity: "Capacity", guests: "guests", availableRooms: "rooms offered", bookRoom: "Book this room on SHIDA",
     unavailable: "This marketplace is temporarily unavailable. Please try again shortly.",
     emptyApartments: "No apartments are publicly listed right now.", emptyHotels: "No hotels are publicly listed right now.",
     actionUnavailable: "The SHIDA action link is temporarily unavailable.", notFound: "This listing could not be found.",
@@ -25,13 +25,13 @@ export const marketplaceCopy = {
     propertyTypes: { apartment: "Apartment", house: "House", studio: "Studio", room: "Room", office: "Office", commercial: "Commercial property", land: "Land", other: "Other" },
   },
   fr: {
-    apartments: "Appartements", hotels: "Hôtels", browse: "Parcourir sur NIHILOBA", gateway: "Explorer les annonces SHIDA",
+    apartments: "Appartements", hotels: "Hôtels", wenze: "Wenze", browse: "Parcourir sur NIHILOBA", gateway: "Explorer les annonces SHIDA",
     gatewayText: "Parcourez les appartements et hôtels publics, puis continuez en toute sécurité avec SHIDA sur WhatsApp.",
     apartmentTitle: "Logements disponibles sur SHIDA", hotelTitle: "Hôtels disponibles avec SHIDA",
     apartmentIntro: "Découvrez les logements actuellement disponibles et demandez une visite directement via SHIDA.",
     hotelIntro: "Explorez les hôtels et les chambres, puis continuez vers le parcours officiel de réservation SHIDA.",
     details: "Voir les détails", visit: "Demander une visite avec SHIDA", book: "Réserver sur WhatsApp", rooms: "pièces", perMonth: "par mois",
-    roomTypes: "Options de chambre", roomPhotos: "Photos de la chambre", capacity: "Capacité", guests: "personnes", availableRooms: "chambres indiquées",
+    roomTypes: "Options de chambre", roomPhotos: "Photos de la chambre", capacity: "Capacité", guests: "personnes", availableRooms: "chambres proposées", bookRoom: "Réserver cette chambre sur SHIDA",
     unavailable: "Ce marché est temporairement indisponible. Veuillez réessayer dans quelques instants.",
     emptyApartments: "Aucun appartement n’est publié pour le moment.", emptyHotels: "Aucun hôtel n’est publié pour le moment.",
     actionUnavailable: "Le lien d’action SHIDA est temporairement indisponible.", notFound: "Cette annonce est introuvable.",

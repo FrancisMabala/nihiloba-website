@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getApartments, getHotels } from "./services/shida/public-client";
+import { getApartments, getHotels, getWenzeStores } from "./services/shida/public-client";
 
 export const revalidate = 3600;
 
@@ -29,8 +29,10 @@ const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const dynamicRoutes = new Set<string>();
+  dynamicRoutes.add("/shida/wenze");
+  dynamicRoutes.add("/fr/shida/wenze");
   try {
-    const [firstApartments, hotels] = await Promise.all([getApartments({ page: 1, page_size: 50 }), getHotels()]);
+    const [firstApartments, hotels, wenze] = await Promise.all([getApartments({ page: 1, page_size: 50 }), getHotels(), getWenzeStores({ limit: 50 })]);
     const apartmentPages = [firstApartments];
     const totalPages = Math.ceil(firstApartments.total / firstApartments.page_size);
     for (let page = 2; page <= totalPages; page += 1) apartmentPages.push(await getApartments({ page, page_size: 50 }));
@@ -46,6 +48,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const hotel of hotels.items) {
       dynamicRoutes.add(`/shida/hotels/${hotel.slug}`);
       dynamicRoutes.add(`/fr/shida/hotels/${hotel.slug}`);
+    }
+    for (const store of wenze.items) {
+      const key = encodeURIComponent(store.slug || store.public_ref);
+      dynamicRoutes.add(`/shida/wenze/${key}`);
+      dynamicRoutes.add(`/fr/shida/wenze/${key}`);
     }
   } catch {
     // The static sitemap remains available when the public marketplace API is temporarily unavailable.

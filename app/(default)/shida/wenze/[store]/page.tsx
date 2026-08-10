@@ -1,0 +1,1 @@
+import{WenzeStorePage,wenzeStoreMetadata}from"../../../../components/shida/wenze";export async function generateMetadata({params}:{params:Promise<{store:string}>}){return wenzeStoreMetadata("en",(await params).store)} export default async function Page({params}:{params:Promise<{store:string}>}){return <WenzeStorePage l="en" id={(await params).store}/>}

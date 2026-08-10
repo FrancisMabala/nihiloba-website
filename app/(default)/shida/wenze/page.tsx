@@ -1,0 +1,1 @@
+import{WenzeCollection,wenzeMetadata}from"../../../components/shida/wenze"; export const metadata=wenzeMetadata("en"); export default async function Page({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){return <WenzeCollection l="en" search={await searchParams}/>}

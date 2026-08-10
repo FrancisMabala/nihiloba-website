@@ -10,6 +10,7 @@ import type {
   PublicApartmentOwnerSummary,
   PublicCollection,
   PublicImage,
+  WenzeImage, WenzeProduct, WenzeSearch, WenzeStore, WenzeStoreSummary,
 } from "../../types/shida-public";
 import { apartmentPropertyTypes } from "../../types/shida-public";
 
@@ -151,6 +152,11 @@ function hotel(value: unknown): HotelListing {
   };
 }
 
+function flag(value:unknown):boolean { if(typeof value!=="boolean") throw new ShidaApiError("malformed"); return value; }
+function wenzeImage(value:unknown):WenzeImage { const item=record(value); return {url:text(item.url,true)!,alt:text(item.alt),display_order:integer(item.display_order)??0}; }
+function wenzeStore(value:unknown, detail=false):WenzeStore { const item=record(value); const products=item.products??[]; if(!Array.isArray(products)) throw new ShidaApiError("malformed"); const base:WenzeStoreSummary={public_ref:text(item.public_ref,true)!,slug:text(item.slug),name:text(item.name,true)!,description:text(item.description),category:text(item.category),country_code:text(item.country_code),city:text(item.city),area:text(item.area),commune:text(item.commune),quartier:text(item.quartier),address:text(item.address),landmark:text(item.landmark),public_detail_url:text(item.public_detail_url,true)!,whatsapp_url:text(item.whatsapp_url)}; return {...base,products:detail?products.map((p)=>wenzeProduct(p)):[]}; }
+function wenzeProduct(value:unknown):WenzeProduct { const item=record(value); if(!Array.isArray(item.images)) throw new ShidaApiError("malformed"); return {public_ref:text(item.public_ref,true)!,slug:text(item.slug),name:text(item.name,true)!,description:text(item.description),category:text(item.category),price:text(item.price),currency:text(item.currency),price_negotiable:flag(item.price_negotiable),available_stock:integer(item.available_stock),images:item.images.map(wenzeImage).sort((a,b)=>a.display_order-b.display_order),public_detail_url:text(item.public_detail_url,true)!,buy_url:text(item.buy_url),store:item.store==null?null:wenzeStore(item.store)}; }
+
 async function request(path: string, revalidate: number | false): Promise<unknown> {
   let response: Response;
   try {
@@ -269,3 +275,7 @@ export const getApartmentOwner = cache(async (refOrSlug: string): Promise<Public
 export const getHotel = cache(async (slug: string): Promise<HotelListing> =>
   hotel(await request(`/api/public/shida/hotels/${encodeURIComponent(slug)}`, false)),
 );
+
+export async function getWenzeStores(search:WenzeSearch={}):Promise<PublicCollection<WenzeStore>> { const params=new URLSearchParams(); for(const key of ["query","city","area","category"] as const){const value=search[key]?.trim();if(value)params.set(key,value.slice(0,120));} if(search.limit&&Number.isInteger(search.limit)&&search.limit>0&&search.limit<=50)params.set("limit",String(search.limit)); const suffix=params.size?`?${params}`:""; return collection(await request(`/api/public/shida/wenze/stores${suffix}`,60),(v)=>wenzeStore(v)); }
+export const getWenzeStore=cache(async(key:string)=>wenzeStore(await request(`/api/public/shida/wenze/stores/${encodeURIComponent(key)}`,false),true));
+export const getWenzeProduct=cache(async(key:string)=>wenzeProduct(await request(`/api/public/shida/wenze/products/${encodeURIComponent(key)}`,false)));
