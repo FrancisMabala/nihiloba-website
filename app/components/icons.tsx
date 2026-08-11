@@ -101,6 +101,23 @@ export function BookIcon(props: IconProps) {
   );
 }
 
+export function StoreIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 10v10h16V10M3 10l2-6h14l2 6M8 20v-6h8v6" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10a3 3 0 0 0 5 2 3 3 0 0 0 4 0 3 3 0 0 0 4 0 3 3 0 0 0 5-2" />
+    </svg>
+  );
+}
+
+export function QrCodeIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h2v2h-2v-2Zm4 0h2v4h-2v-4Zm-4 4h4v2h-4v-2Z" />
+    </svg>
+  );
+}
+
 export function LightbulbIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>

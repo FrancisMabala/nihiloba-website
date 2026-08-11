@@ -3,7 +3,7 @@ import type { Locale } from "../../lib/i18n";
 export const marketplaceCopy = {
   en: {
     apartments: "Apartments", hotels: "Hotels", wenze: "Wenze", browse: "Browse on NIHILOBA", gateway: "Explore SHIDA listings",
-    gatewayText: "Browse public apartments and hotels, then continue securely through SHIDA on WhatsApp.",
+    gatewayText: "Browse public apartments, hotels and Wenze shops, then continue securely through SHIDA on WhatsApp.",
     apartmentTitle: "Available homes on SHIDA", hotelTitle: "Hotels available through SHIDA",
     apartmentIntro: "Discover currently available homes and request a visit directly through SHIDA.",
     hotelIntro: "Explore public hotels and room options, then continue to the official SHIDA booking journey.",
@@ -26,7 +26,7 @@ export const marketplaceCopy = {
   },
   fr: {
     apartments: "Appartements", hotels: "Hôtels", wenze: "Wenze", browse: "Parcourir sur NIHILOBA", gateway: "Explorer les annonces SHIDA",
-    gatewayText: "Parcourez les appartements et hôtels publics, puis continuez en toute sécurité avec SHIDA sur WhatsApp.",
+    gatewayText: "Parcourez les appartements, les hôtels et les boutiques Wenze, puis continuez en toute sécurité avec SHIDA sur WhatsApp.",
     apartmentTitle: "Logements disponibles sur SHIDA", hotelTitle: "Hôtels disponibles avec SHIDA",
     apartmentIntro: "Découvrez les logements actuellement disponibles et demandez une visite directement via SHIDA.",
     hotelIntro: "Explorez les hôtels et les chambres, puis continuez vers le parcours officiel de réservation SHIDA.",
