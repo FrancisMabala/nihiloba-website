@@ -240,6 +240,12 @@ h1, h2, h3 { text-wrap: balance; }
 .wenze-buy-button { width: 100%; }
 .wenze-buy-button:disabled { cursor: not-allowed; opacity: .55; }
 .wenze-variant-prompt { margin: .6rem 0 0; font-size: .82rem; }
+.wenze-fulfillment { margin: 1.25rem 0; padding: 1rem; border: 1px solid rgba(8,49,39,.16); background: rgba(255,255,255,.65); }
+.wenze-fulfillment ul { display: grid; gap: .45rem; margin: 0; padding: 0; list-style: none; color: var(--forest); font-weight: 650; }
+.wenze-fulfillment-compact { margin: 1rem 0; padding: .8rem; }
+.wenze-delivery-areas { margin-top: .9rem; color: var(--muted); font-size: .8rem; }
+.wenze-delivery-areas > div { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+.wenze-delivery-areas span { padding: .28rem .55rem; border: 1px solid #aac4b6; background: #eef5f1; color: var(--forest); }
 .marketplace-owner-count { margin: 1rem 0 0; color: var(--forest); font-weight: 700; }
 .marketplace-owner-description { white-space: pre-line; }
 .marketplace-owner-listings { padding-top: clamp(3rem, 6vw, 5rem); }
