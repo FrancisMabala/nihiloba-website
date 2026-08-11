@@ -4,9 +4,9 @@ import { ApartmentCard, ApartmentDetail, HotelCard, HotelDetail, HotelRoomCard }
 import { ApartmentFilters, ApartmentOwnerProfile, ApartmentPagination } from "../app/components/shida/apartment-marketplace";
 import { resolveHotelRoomImages } from "../app/components/shida/hotel-room-images";
 import { availabilityLabel } from "../app/components/shida/marketplace-primitives";
-import type { ApartmentCollection, ApartmentListing, HotelListing, PublicApartmentOwnerProfile } from "../app/types/shida-public";
-import { wenzePrice } from "../app/components/shida/wenze";
-import { WENZE_VARIANT_CHIP_LIMIT, WenzeVariantSelector } from "../app/components/shida/wenze-variant-selector";
+import type { ApartmentCollection, ApartmentListing, HotelListing, PublicApartmentOwnerProfile, WenzeProduct } from "../app/types/shida-public";
+import { ProductCard, wenzePrice } from "../app/components/shida/wenze";
+import { variantPurchaseUrl, WENZE_VARIANT_CHIP_LIMIT, WenzeVariantSelector } from "../app/components/shida/wenze-variant-selector";
 
 const apartment: ApartmentListing = {
   public_ref: "APT-1", slug: "bright-flat", title: "Bright flat", city: "Kinshasa", area: null, commune: "Gombe",
@@ -27,7 +27,8 @@ const owner = {
 
 describe("marketplace presentation", () => {
   it("normalizes embedded Wenze currency without duplicating it",()=>{expect(wenzePrice("150USD","USD")).toBe("150 USD");expect(wenzePrice("25","USD")).toBe("25 USD")});
-  it("renders accessible variant chips, disables sold-out choices, and requires selection",()=>{const variants=[{public_ref:"V1",label:"40",variant_type:"shoe_size",stock_quantity:2,available_stock:2,is_available:true},{public_ref:"V2",label:"41",variant_type:"shoe_size",stock_quantity:0,available_stock:0,is_available:false}];const html=renderToStaticMarkup(<WenzeVariantSelector variants={variants} type="shoe_size" action="https://wa.me/1" l="fr"/>);expect(html).toContain("Pointure");expect(html).toContain("Épuisé");expect(html).toContain("disabled");expect(html).toContain("Acheter sur SHIDA");expect(html).toContain("Choisissez d’abord");expect(WENZE_VARIANT_CHIP_LIMIT).toBe(8)});
+  it("renders accessible variant chips, disables sold-out choices, and requires selection",()=>{const variants=[{public_ref:"V1",label:"40",variant_type:"shoe_size",stock_quantity:2,available_stock:2,is_available:true,buy_url:"https://wa.me/variant-40"},{public_ref:"V2",label:"41",variant_type:"shoe_size",stock_quantity:0,available_stock:0,is_available:false,buy_url:"https://wa.me/variant-41"}];const html=renderToStaticMarkup(<WenzeVariantSelector variants={variants} type="shoe_size" l="fr"/>);expect(html).toContain("Pointure");expect(html).toContain("Épuisé");expect(html).toContain("disabled");expect(html).toContain("Acheter sur SHIDA");expect(html).toContain("Choisissez d’abord");expect(html).not.toContain("variant-40");expect(variantPurchaseUrl(variants[0])).toBe("https://wa.me/variant-40");expect(variantPurchaseUrl(variants[1])).toBeNull();expect(variantPurchaseUrl({...variants[0],buy_url:"javascript:alert(1)"})).toBeNull();expect(WENZE_VARIANT_CHIP_LIMIT).toBe(8)});
+  it("uses direct backend URLs only for simple product cards and routes variant products to selection",()=>{const product:WenzeProduct={public_ref:"P1",slug:"shoe",name:"Shoe",description:null,category:"shoes_accessories",price:"20",currency:"USD",price_negotiable:false,available_stock:2,has_variants:false,variant_type:null,variants:[],images:[],public_detail_url:"https://nihiloba.com/shida/wenze/products/shoe",buy_url:"https://wa.me/simple-product",store:null};const simple=renderToStaticMarkup(<ProductCard p={product} l="en"/>),variant=renderToStaticMarkup(<ProductCard p={{...product,has_variants:true,variant_type:"shoe_size",variants:[{public_ref:"V1",label:"42",variant_type:"shoe_size",stock_quantity:1,available_stock:1,is_available:true,buy_url:"https://wa.me/variant-42"}]}} l="fr"/>);expect(simple).toContain("Buy on SHIDA");expect(simple).toContain("https://wa.me/simple-product");expect(variant).toContain("Voir le produit");expect(variant).not.toContain("simple-product");expect(variant).not.toContain("variant-42")});
   it("renders public apartment fields and canonical local detail link", () => {
     const html = renderToStaticMarkup(<ApartmentCard listing={apartment} locale="en"/>);
     expect(html).toContain("Bright flat");
