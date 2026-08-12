@@ -46,3 +46,17 @@ export function WenzeFulfillmentInfo({ fulfillment, locale, city, compact = fals
     </div>}
   </div>;
 }
+
+export function WenzeDeliveryAreas({ fulfillment, locale, city }: {
+  fulfillment: WenzeFulfillment;
+  locale: Locale;
+  city: string | null;
+}) {
+  const areas = fulfillment.delivery?.areas ?? [];
+  if (!fulfillment.methods.includes("delivery") || areas.length === 0) return null;
+  const t = copy[locale];
+  return <div className="wenze-delivery-areas">
+    <strong>{city?.toLowerCase() === "kinshasa" ? t.communes : t.areas}</strong>
+    <div>{areas.map((area) => <span key={area}>{area}</span>)}</div>
+  </div>;
+}
