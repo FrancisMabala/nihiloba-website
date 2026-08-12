@@ -48,6 +48,65 @@ export type ServiceAvailability = {
 export type PublicServiceReview = { rating: number; comment: string; reviewer_display: "verified_customer"; created_at: string | null };
 export type ServiceReviewCollection = PublicCollection<PublicServiceReview> & { total: number; page: number; page_size: number };
 
+export type JobSearch = {
+  query?: string;
+  city?: string;
+  area?: string;
+  commune?: string;
+  page?: number;
+  page_size?: number;
+};
+
+export type PublicJobEmployerSummary = {
+  public_ref: string;
+  slug: string;
+  name: string;
+  profile_image: PublicImage | null;
+  city: string | null;
+  area: string | null;
+};
+
+export type PublicJobLocation = {
+  country_code: string | null;
+  city: string | null;
+  area: string | null;
+  commune: string | null;
+  quartier: string | null;
+  display: string | null;
+};
+
+export type PublicJobSummary = {
+  public_ref: string;
+  slug: string;
+  title: string;
+  employer: PublicJobEmployerSummary;
+  location: PublicJobLocation;
+  description_preview: string | null;
+  compensation: string | null;
+  published_at: string | null;
+  status: "open";
+  public_url: string;
+  apply_url: string | null;
+  apply_label: { fr: string; en: string };
+};
+
+export type PublicJob = PublicJobSummary & {
+  description: string | null;
+  requirements_document: { available: boolean; url: null };
+  public_social_link: string | null;
+};
+
+export type PublicJobEmployer = PublicJobEmployerSummary & {
+  description: string | null;
+  open_job_count: number;
+  jobs: PublicJobSummary[];
+};
+
+export type JobCollection = {
+  items: PublicJobSummary[];
+  pagination: { page: number; page_size: number; total_items: number; total_pages: number };
+};
+
 export const apartmentPropertyTypes = [
   "apartment", "house", "studio", "room", "office", "commercial", "land", "other",
 ] as const;

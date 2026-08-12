@@ -12,6 +12,7 @@ describe("SHIDA public presentation", () => {
     expect(html).toContain('href="/shida/appartements"');
     expect(html).toContain('href="/shida/hotels"');
     expect(html).toContain('href="/shida/wenze"');
+    expect(html).toContain('href="/shida/emplois"');
     expect(html).not.toContain("Wenze Marketplace");
   });
 
@@ -49,6 +50,7 @@ describe("SHIDA public presentation", () => {
     expect(html).toContain('href="/fr/shida/appartements"');
     expect(html).toContain('href="/fr/shida/hotels"');
     expect(html).toContain('href="/fr/shida/wenze"');
+    expect(html).toContain('href="/fr/shida/emplois"');
   });
 
   it("updates SHIDA metadata without changing canonical language routing", () => {

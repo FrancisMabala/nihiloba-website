@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
-import { getApartments, getHotels, getServices, getWenzeStores } from "./services/shida/public-client";
+import { getApartments, getHotels, getJobs, getServices, getWenzeStores } from "./services/shida/public-client";
 
 export const revalidate = 3600;
 
 const pages = ["", "/about", "/products", "/shida", "/education", "/contact", "/privacy"];
-const routes = [...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/shida/appartements", "/fr/shida/appartements", "/shida/hotels", "/fr/shida/hotels", "/shida/services", "/fr/shida/services", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance"];
+const routes = [...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/shida/emplois", "/fr/shida/emplois", "/shida/appartements", "/fr/shida/appartements", "/shida/hotels", "/fr/shida/hotels", "/shida/services", "/fr/shida/services", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance"];
 
 const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
   "/shida": { en: "/shida", fr: "/fr/shida" },
@@ -67,6 +67,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {
     // The static sitemap remains available when the public marketplace API is temporarily unavailable.
+  }
+  try {
+    const jobPages=[await getJobs({page:1,page_size:50})];
+    for(let page=2;page<=jobPages[0].pagination.total_pages;page+=1)jobPages.push(await getJobs({page,page_size:50}));
+    for(const job of jobPages.flatMap((collection)=>collection.items)){
+      const jobKey=encodeURIComponent(job.slug||job.public_ref),employerKey=encodeURIComponent(job.employer.slug||job.employer.public_ref);
+      dynamicRoutes.add(`/shida/emplois/${jobKey}`);
+      dynamicRoutes.add(`/fr/shida/emplois/${jobKey}`);
+      dynamicRoutes.add(`/shida/emplois/employeurs/${employerKey}`);
+      dynamicRoutes.add(`/fr/shida/emplois/employeurs/${employerKey}`);
+    }
+  } catch {
+    // Jobs collection remains indexed even if dynamic job enumeration is unavailable.
   }
   return [...routes, ...dynamicRoutes].map((route) => {
     const localizedSuffix = route.replace(/^\/(en|fr)/, "");
