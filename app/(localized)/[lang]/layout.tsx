@@ -4,7 +4,7 @@ import { SiteDocument } from "../../components/site-document";
 import { isLocale, locales } from "../../lib/i18n";
 import "../../globals.css";
 
-export const dynamicParams = false;
+
 export function generateStaticParams() { return locales.map((lang) => ({ lang })); }
 
 export const metadata: Metadata = {

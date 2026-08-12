@@ -6,7 +6,7 @@ import { TermsOfUsePage } from "../../../components/pages/terms-of-use-page";
 import { AcceptableUsePage, FaqPage, TrustCenterPage } from "../../../components/pages/trust-center-pages";
 import { isLocale } from "../../../lib/i18n";
 
-export const dynamicParams = false;
+
 
 export function generateStaticParams({ params }: { params: { lang: string } }) {
   return params.lang === "fr"
