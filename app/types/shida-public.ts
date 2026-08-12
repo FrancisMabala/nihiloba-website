@@ -3,6 +3,49 @@ export type PublicCollection<T> = {
   count: number;
 };
 
+export const serviceCategories = [
+  "beauty_wellness", "health", "home_housing", "repair_maintenance", "transport",
+  "education_training", "photo_video", "food_catering", "restaurant",
+  "professional_services", "public_services", "church_pastoral", "cleaning", "other",
+] as const;
+
+export type ServiceCategory = (typeof serviceCategories)[number];
+export type ServiceSearch = {
+  query?: string; city?: string; area?: string; commune?: string; category?: string;
+  location_type?: string; min_rating?: number; page?: number; page_size?: number;
+};
+export type ServiceLocation = {
+  country_code: string | null; city: string | null; area: string | null;
+  commune: string | null; quartier: string | null; address_visibility: "public" | "private";
+  address: string | null; landmark: string | null;
+};
+export type ServiceRating = { average_rating: number | null; rating_count: number };
+export type ServiceProviderSummary = { public_ref: string; slug: string; name: string; profile_image: PublicImage | null };
+export type ServiceOffering = { name: string; duration_minutes: number | null; price: string | null; currency: string | null; description: string | null };
+export type PublicServiceSummary = {
+  public_ref: string; slug: string; provider: ServiceProviderSummary; service_name: string;
+  category: string; short_description: string | null; duration_minutes: number | null;
+  starting_price: ServiceOffering | null; location: ServiceLocation; location_type: string | null;
+  external_intervention_available: boolean; availability_mode: "time_slots" | "flexible";
+  rating: ServiceRating; image_preview: PublicImage | null; public_detail_url: string; booking_url: string | null;
+};
+export type PublicService = PublicServiceSummary & {
+  description: string | null; offerings: ServiceOffering[]; images: PublicImage[];
+  social_link: string | null; completion_mode: string | null; availability_endpoint: string;
+};
+export type PublicServiceProvider = {
+  public_ref: string; slug: string; name: string; profile_image: PublicImage | null;
+  location: ServiceLocation; categories: string[]; service_count: number; rating: ServiceRating;
+  services: PublicServiceSummary[];
+};
+export type ServiceCollection = PublicCollection<PublicServiceSummary> & { total: number; page: number; page_size: number };
+export type ServiceAvailabilitySlot = { date: string; start_time: string; end_time: string; is_available: boolean; booking_url: string | null };
+export type ServiceAvailability = {
+  service_ref: string; availability_mode: "time_slots" | "flexible";
+  requested_time_requires_provider_confirmation: boolean; from: string | null; to: string | null;
+  slots: ServiceAvailabilitySlot[]; booking_url: string | null;
+};
+
 export const apartmentPropertyTypes = [
   "apartment", "house", "studio", "room", "office", "commercial", "land", "other",
 ] as const;

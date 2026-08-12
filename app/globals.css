@@ -205,6 +205,28 @@ h1, h2, h3 { text-wrap: balance; }
 .marketplace-action-card .marketplace-status { margin-bottom: 1.2rem; }
 .marketplace-action-card h2 { margin: 1.8rem 0 0.5rem; font-size: 1.45rem; }
 .marketplace-action-card > p { color: var(--muted); }
+.service-category { margin: 0 0 .45rem; color: var(--gold); font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.service-provider-line { margin: .35rem 0; color: var(--muted); font-size: .9rem; }
+.service-provider-line a { color: var(--forest); font-weight: 700; }
+.service-provider-mini { position: relative; display: inline-block; width: 32px; height: 32px; margin-right: .5rem; overflow: hidden; border-radius: 50%; vertical-align: middle; }
+.service-provider-mini .marketplace-image-fallback { height: 100%; padding: 0; font-size: .75rem; }
+.service-provider-header { display: flex; gap: 1.25rem; align-items: center; margin-top: 1.5rem; }
+.service-provider-header h1 { margin-bottom: .45rem; }
+.service-provider-avatar { position: relative; width: 96px; height: 96px; flex: 0 0 96px; overflow: hidden; border: 1px solid rgba(8,49,39,.16); border-radius: 50%; background: var(--cream); }
+.service-provider-avatar .marketplace-image-fallback { height: 100%; padding: .5rem; font-size: .68rem; text-align: center; }
+.service-offerings { display: grid; gap: 1rem; grid-template-columns: repeat(2,minmax(0,1fr)); }
+.service-offerings article { padding: 1.1rem; border: 1px solid rgba(8,49,39,.16); background: var(--cream); }
+.service-offerings h3 { margin: 0 0 .45rem; color: var(--forest); font-family: Georgia,"Times New Roman",serif; }
+.service-offerings p:last-child { margin-bottom: 0; }
+.service-availability h2 { margin-top: 0; }
+.service-date-grid, .service-slot-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .45rem; margin: 1rem 0; }
+.service-date-grid button, .service-slot-grid button { min-height: 42px; padding: .5rem; border: 1px solid rgba(8,49,39,.3); background: #fff; color: var(--forest); font: inherit; font-size: .78rem; cursor: pointer; }
+.service-date-grid button.is-selected, .service-slot-grid button.is-selected { border-color: var(--forest); background: var(--forest); color: #fff; }
+.service-date-grid button:disabled { cursor: not-allowed; opacity: .38; text-decoration: line-through; }
+.service-confirmation-note { font-size: .82rem; line-height: 1.5; }
+.service-availability .button { width: 100%; margin-top: .5rem; text-align: center; }
+.service-availability .button:disabled { cursor: not-allowed; opacity: .45; }
+.service-period-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem; font-size: .78rem; }
 .marketplace-price { font-size: clamp(1.35rem, 3vw, 2rem); font-weight: 700; }
 .marketplace-action-card .marketplace-price { margin: 0 0 0.25rem; color: var(--forest); }
 .marketplace-visit-button { width: 100%; margin-top: 1rem; }
@@ -273,6 +295,7 @@ h1, h2, h3 { text-wrap: balance; }
   .marketplace-grid, .marketplace-detail, .marketplace-room { grid-template-columns: minmax(0,1fr); }
   .marketplace-detail { grid-template-areas: "action" "content"; gap: 3rem; }
   .marketplace-action-card { position: static; }
+  .service-offerings { grid-template-columns: minmax(0,1fr); }
   .marketplace-gallery-main { aspect-ratio: 4 / 3; }
   .marketplace-gallery-main .marketplace-image-fallback { min-height: 230px; }
   .marketplace-thumbnail { width: 86px; min-width: 86px; }

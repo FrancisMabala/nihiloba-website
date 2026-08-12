@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
-import { getApartments, getHotels, getWenzeStores } from "./services/shida/public-client";
+import { getApartments, getHotels, getServices, getWenzeStores } from "./services/shida/public-client";
 
 export const revalidate = 3600;
 
 const pages = ["", "/about", "/products", "/shida", "/education", "/contact", "/privacy"];
-const routes = [...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/shida/appartements", "/fr/shida/appartements", "/shida/hotels", "/fr/shida/hotels", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance"];
+const routes = [...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/shida/appartements", "/fr/shida/appartements", "/shida/hotels", "/fr/shida/hotels", "/shida/services", "/fr/shida/services", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance"];
 
 const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
   "/shida": { en: "/shida", fr: "/fr/shida" },
@@ -13,6 +13,8 @@ const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
   "/fr/shida/appartements": { en: "/shida/appartements", fr: "/fr/shida/appartements" },
   "/shida/hotels": { en: "/shida/hotels", fr: "/fr/shida/hotels" },
   "/fr/shida/hotels": { en: "/shida/hotels", fr: "/fr/shida/hotels" },
+  "/shida/services": { en: "/shida/services", fr: "/fr/shida/services" },
+  "/fr/shida/services": { en: "/shida/services", fr: "/fr/shida/services" },
   "/en/data-protection": { en: "/en/data-protection", fr: "/fr/protection-des-donnees" },
   "/fr/protection-des-donnees": { en: "/en/data-protection", fr: "/fr/protection-des-donnees" },
   "/en/security": { en: "/en/security", fr: "/fr/securite" },
@@ -32,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dynamicRoutes.add("/shida/wenze");
   dynamicRoutes.add("/fr/shida/wenze");
   try {
-    const [firstApartments, hotels, wenze] = await Promise.all([getApartments({ page: 1, page_size: 50 }), getHotels(), getWenzeStores({ limit: 50 })]);
+    const [firstApartments, hotels, wenze, firstServices] = await Promise.all([getApartments({ page: 1, page_size: 50 }), getHotels(), getWenzeStores({ limit: 50 }), getServices({ page: 1, page_size: 50 })]);
     const apartmentPages = [firstApartments];
     const totalPages = Math.ceil(firstApartments.total / firstApartments.page_size);
     for (let page = 2; page <= totalPages; page += 1) apartmentPages.push(await getApartments({ page, page_size: 50 }));
@@ -53,6 +55,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const key = encodeURIComponent(store.slug || store.public_ref);
       dynamicRoutes.add(`/shida/wenze/${key}`);
       dynamicRoutes.add(`/fr/shida/wenze/${key}`);
+    }
+    const servicePages=[firstServices];
+    const servicePageCount=Math.ceil(firstServices.total/firstServices.page_size);
+    for(let page=2;page<=servicePageCount;page+=1)servicePages.push(await getServices({page,page_size:50}));
+    for(const service of servicePages.flatMap((collection)=>collection.items)){
+      dynamicRoutes.add(`/shida/services/${service.slug}`);
+      dynamicRoutes.add(`/fr/shida/services/${service.slug}`);
+      dynamicRoutes.add(`/shida/services/providers/${service.provider.slug}`);
+      dynamicRoutes.add(`/fr/shida/services/providers/${service.provider.slug}`);
     }
   } catch {
     // The static sitemap remains available when the public marketplace API is temporarily unavailable.

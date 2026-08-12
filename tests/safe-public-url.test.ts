@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safePublicActionUrl, safePublicImageUrl } from "../app/lib/safe-public-url";
+import { safePublicActionUrl, safePublicExternalUrl, safePublicImageUrl } from "../app/lib/safe-public-url";
 
 describe("public URL allowlists", () => {
   it("preserves approved action URLs exactly", () => {
@@ -18,5 +18,11 @@ describe("public URL allowlists", () => {
     expect(safePublicImageUrl("https://res.cloudinary.com/dbrxpvmzp/image/upload/v1/shida/apartments/a.jpg")).toBeTruthy();
     expect(safePublicImageUrl("https://res.cloudinary.com/another/image/upload/a.jpg")).toBeNull();
     expect(safePublicImageUrl("https://example.com/a.jpg")).toBeNull();
+  });
+
+  it("allows only credential-free HTTPS provider links", () => {
+    expect(safePublicExternalUrl("https://example.com/provider")).toBe("https://example.com/provider");
+    expect(safePublicExternalUrl("http://example.com/provider")).toBeNull();
+    expect(safePublicExternalUrl("https://user:pass@example.com/provider")).toBeNull();
   });
 });
