@@ -7,7 +7,7 @@ import {
   getHotel,
   getHotels,
   getWenzeProduct, getWenzeStore, getWenzeStores,
-  getService, getServiceAvailability, getServiceProvider, getServices, parseServiceSearchParams, serviceSearchQuery,
+  getService, getServiceAvailability, getServiceProvider, getServiceReviews, getServices, parseServiceSearchParams, serviceSearchQuery,
   parseApartmentSearchParams,
   ShidaApiError,
 } from "../app/services/shida/public-client";
@@ -149,7 +149,7 @@ describe("SHIDA public client", () => {
   it("parses service marketplace DTOs, availability and filters without retaining private fields", async () => {
     const location={country_code:"CD",city:"Kinshasa",area:null,commune:"Gombe",quartier:null,address_visibility:"private",address:null,landmark:null};
     const profileImage={url:"https://res.cloudinary.com/dbrxpvmzp/image/upload/shida/services/provider.jpg",alt:"Patrick"},workImage={url:"https://res.cloudinary.com/dbrxpvmzp/image/upload/shida/services/work.jpg",alt:"Consultation"};
-    const summary={public_ref:"SVC-1",slug:"consultation",provider:{public_ref:"SVP-1",slug:"patrick",name:"Patrick",profile_image:profileImage},service_name:"Consultation",category:"health",short_description:"Public summary",duration_minutes:30,starting_price:{name:"Consultation",duration_minutes:30,price:"50000",currency:"CDF",description:null},location,location_type:"public_place",external_intervention_available:false,availability_mode:"time_slots",rating:{average_rating:4,rating_count:1},image_preview:workImage,public_detail_url:"https://nihiloba.com/shida/services/consultation",booking_url:"https://wa.me/service",private_phone:"secret"};
+    const summary={public_ref:"SVC-1",slug:"consultation",provider:{public_ref:"SVP-1",slug:"patrick",name:"Patrick",profile_image:profileImage},service_name:"Consultation",category:"health",short_description:"Public summary",duration_minutes:30,starting_price:{public_ref:"SPK-1",name:"Consultation",duration_minutes:30,price:"50000",currency:"CDF",description:null,booking_url:"https://wa.me/package"},location,location_type:"public_place",external_intervention_available:false,availability_mode:"time_slots",rating:{average_rating:4,rating_count:1},image_preview:workImage,public_detail_url:"https://nihiloba.com/shida/services/consultation",booking_url:"https://wa.me/service",private_phone:"secret"};
     const detail={...summary,description:"Full description",offerings:[summary.starting_price],images:[workImage],social_link:"https://example.com",completion_mode:null,availability_endpoint:"/api/public/shida/services/consultation/availability"};
     const provider={public_ref:"SVP-1",slug:"patrick",name:"Patrick",profile_image:profileImage,location,categories:["health"],service_count:1,rating:summary.rating,services:[summary],private_phone:"secret"};
     const availability={service_ref:"SVC-1",availability_mode:"time_slots",requested_time_requires_provider_confirmation:true,from:"2026-08-12",to:"2026-09-11",slots:[{date:"2026-08-12",start_time:"10:30",end_time:"11:00",is_available:true,booking_url:"https://wa.me/exact-slot"}],booking_url:null};
@@ -161,4 +161,5 @@ describe("SHIDA public client", () => {
     expect(parseServiceSearchParams({query:" health ",min_rating:"4",page:"0",page_size:"51"})).toEqual({query:"health",min_rating:4});
     expect(serviceSearchQuery({query:"home care",commune:"Gombe",page:2})).toBe("?query=home+care&commune=Gombe&page=2");
   });
+  it("requests package-aware availability and parses only anonymized public reviews",async()=>{const availability={service_ref:"SVC-1",offering_ref:"SPK-1",availability_mode:"flexible",requested_time_requires_provider_confirmation:true,slots:[],booking_url:"https://wa.me/package",private_id:99},reviews={items:[{rating:5,comment:"Excellent",reviewer_display:"verified_customer",created_at:"2026-08-10",rater_phone:"private",service_request_id:7}],count:1,total:1,page:1,page_size:10};const fetchMock=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(availability))).mockResolvedValueOnce(new Response(JSON.stringify(reviews)));vi.stubGlobal("fetch",fetchMock);expect((await getServiceAvailability("consultation","2026-08-12","2026-09-11","SPK-1")).booking_url).toBe("https://wa.me/package");const parsed=await getServiceReviews("consultation");expect(parsed.items[0]).toEqual({rating:5,comment:"Excellent",reviewer_display:"verified_customer",created_at:"2026-08-10"});expect(parsed.items[0]).not.toHaveProperty("rater_phone");expect(fetchMock.mock.calls[0][0]).toContain("offering=SPK-1");});
 });

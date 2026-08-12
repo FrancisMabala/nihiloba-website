@@ -218,6 +218,22 @@ h1, h2, h3 { text-wrap: balance; }
 .service-offerings article { padding: 1.1rem; border: 1px solid rgba(8,49,39,.16); background: var(--cream); }
 .service-offerings h3 { margin: 0 0 .45rem; color: var(--forest); font-family: Georgia,"Times New Roman",serif; }
 .service-offerings p:last-child { margin-bottom: 0; }
+.service-option-selector { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(8,49,39,.18); }
+.service-option-selector h2 { margin-top: 0; }
+.service-option-grid { display: grid; gap: .65rem; }
+.service-option { display: grid; grid-template-columns: auto 1fr; gap: .7rem; width: 100%; padding: .85rem; border: 2px solid rgba(8,49,39,.25); background: #fff; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.service-option:hover, .service-option:focus-visible { border-color: var(--forest); outline: none; }
+.service-option.is-selected { border-color: var(--forest); box-shadow: inset 4px 0 0 var(--gold); }
+.service-option-check { color: var(--forest); font-size: 1.1rem; font-weight: 800; }
+.service-option strong, .service-option small { display: block; }
+.service-option small { margin-top: .22rem; color: var(--muted); line-height: 1.4; }
+.service-selection-summary { display: grid; gap: .2rem; margin: .75rem 0 1rem; padding: .85rem; border-left: 4px solid var(--gold); background: #fff; }
+.service-selection-summary span, .service-selection-summary small { color: var(--muted); font-size: .78rem; }
+.service-reviews { scroll-margin-top: 7rem; }
+.service-reviews article { padding: 1rem 0; border-top: 1px solid var(--line); }
+.service-reviews article > div { color: var(--gold); letter-spacing: .08em; }
+.service-reviews article p { margin: .55rem 0; }
+.service-reviews footer { color: var(--muted); font-size: .8rem; }
 .service-availability h2 { margin-top: 0; }
 .service-date-grid, .service-slot-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .45rem; margin: 1rem 0; }
 .service-date-grid button, .service-slot-grid button { min-height: 42px; padding: .5rem; border: 1px solid rgba(8,49,39,.3); background: #fff; color: var(--forest); font: inherit; font-size: .78rem; cursor: pointer; }

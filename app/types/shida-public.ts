@@ -21,7 +21,7 @@ export type ServiceLocation = {
 };
 export type ServiceRating = { average_rating: number | null; rating_count: number };
 export type ServiceProviderSummary = { public_ref: string; slug: string; name: string; profile_image: PublicImage | null };
-export type ServiceOffering = { name: string; duration_minutes: number | null; price: string | null; currency: string | null; description: string | null };
+export type ServiceOffering = { public_ref: string; name: string; duration_minutes: number | null; price: string | null; currency: string | null; description: string | null; booking_url: string | null };
 export type PublicServiceSummary = {
   public_ref: string; slug: string; provider: ServiceProviderSummary; service_name: string;
   category: string; short_description: string | null; duration_minutes: number | null;
@@ -41,10 +41,12 @@ export type PublicServiceProvider = {
 export type ServiceCollection = PublicCollection<PublicServiceSummary> & { total: number; page: number; page_size: number };
 export type ServiceAvailabilitySlot = { date: string; start_time: string; end_time: string; is_available: boolean; booking_url: string | null };
 export type ServiceAvailability = {
-  service_ref: string; availability_mode: "time_slots" | "flexible";
+  service_ref: string; offering_ref?: string | null; availability_mode: "time_slots" | "flexible";
   requested_time_requires_provider_confirmation: boolean; from: string | null; to: string | null;
   slots: ServiceAvailabilitySlot[]; booking_url: string | null;
 };
+export type PublicServiceReview = { rating: number; comment: string; reviewer_display: "verified_customer"; created_at: string | null };
+export type ServiceReviewCollection = PublicCollection<PublicServiceReview> & { total: number; page: number; page_size: number };
 
 export const apartmentPropertyTypes = [
   "apartment", "house", "studio", "room", "office", "commercial", "land", "other",
