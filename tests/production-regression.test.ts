@@ -36,5 +36,7 @@ describe("production architecture regressions", () => {
     expect(config).not.toContain('output: "export"');
     expect(config).toContain('hostname: "res.cloudinary.com"');
     expect(config).toContain('pathname: "/dbrxpvmzp/image/upload/**"');
+    expect(nextConfig.poweredByHeader).toBe(false);
+    expect(nextConfig.productionBrowserSourceMaps).toBe(false);
   });
 });

@@ -12,12 +12,19 @@ describe("public URL allowlists", () => {
     expect(safePublicActionUrl("javascript:alert(1)")).toBeNull();
     expect(safePublicActionUrl("http://wa.me/123")).toBeNull();
     expect(safePublicActionUrl("https://wa.me.evil.example/123")).toBeNull();
+    expect(safePublicActionUrl("https://api.nihiloba.com/admin")).toBeNull();
+    expect(safePublicActionUrl("https://api.nihiloba.com/go/a/b")).toBeNull();
+    expect(safePublicActionUrl("https://api.nihiloba.com/go/abc?token=extra")).toBeNull();
+    expect(safePublicActionUrl("https://user:pass@api.nihiloba.com/go/abc")).toBeNull();
+    expect(safePublicActionUrl("https://wa.me/123?redirect=https://example.com")).toBeNull();
   });
 
   it("accepts only the configured Cloudinary account path", () => {
     expect(safePublicImageUrl("https://res.cloudinary.com/dbrxpvmzp/image/upload/v1/shida/apartments/a.jpg")).toBeTruthy();
     expect(safePublicImageUrl("https://res.cloudinary.com/another/image/upload/a.jpg")).toBeNull();
     expect(safePublicImageUrl("https://example.com/a.jpg")).toBeNull();
+    expect(safePublicImageUrl("https://user:pass@res.cloudinary.com/dbrxpvmzp/image/upload/a.jpg")).toBeNull();
+    expect(safePublicImageUrl("https://res.cloudinary.com/dbrxpvmzp/image/upload/a.jpg#fragment")).toBeNull();
   });
 
   it("allows only credential-free HTTPS provider links", () => {

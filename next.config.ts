@@ -8,7 +8,7 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "frame-src 'none'",
-  "img-src 'self' data:",
+  "img-src 'self' data: https://res.cloudinary.com",
   "manifest-src 'self'",
   "media-src 'self'",
   "object-src 'none'",
@@ -34,6 +34,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  productionBrowserSourceMaps: false,
   trailingSlash: true,
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
