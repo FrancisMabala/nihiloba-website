@@ -231,8 +231,8 @@ h1, h2, h3 { text-wrap: balance; }
 .service-selection-summary span, .service-selection-summary small { color: var(--muted); font-size: .78rem; }
 .service-reviews { scroll-margin-top: 7rem; }
 .service-reviews article { padding: 1rem 0; border-top: 1px solid var(--line); }
-.service-reviews article > div { color: var(--gold); letter-spacing: .08em; }
-.service-reviews article p { margin: .55rem 0; }
+.service-reviews article > div { color: #846326; letter-spacing: .08em; }
+.service-reviews article p { margin: .55rem 0; color: var(--ink); font-size: 1rem; line-height: 1.65; overflow-wrap: anywhere; white-space: pre-line; }
 .service-reviews footer { color: var(--muted); font-size: .8rem; }
 .service-availability h2 { margin-top: 0; }
 .service-date-grid, .service-slot-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .45rem; margin: 1rem 0; }
