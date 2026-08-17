@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safePublicActionUrl, safePublicExternalUrl, safePublicImageUrl } from "../app/lib/safe-public-url";
+import { safePublicActionUrl, safePublicExternalUrl, safePublicImageUrl, safePublicWebsiteUrl } from "../app/lib/safe-public-url";
 
 describe("public URL allowlists", () => {
   it("preserves approved action URLs exactly", () => {
@@ -31,5 +31,12 @@ describe("public URL allowlists", () => {
     expect(safePublicExternalUrl("https://example.com/provider")).toBe("https://example.com/provider");
     expect(safePublicExternalUrl("http://example.com/provider")).toBeNull();
     expect(safePublicExternalUrl("https://user:pass@example.com/provider")).toBeNull();
+  });
+
+  it("accepts only canonical NIHILOBA marketplace detail URLs", () => {
+    expect(safePublicWebsiteUrl("https://nihiloba.com/shida/services/SVC_123")).toBe("https://nihiloba.com/shida/services/SVC_123");
+    expect(safePublicWebsiteUrl("/fr/shida/wenze/boutique")).toBe("/fr/shida/wenze/boutique");
+    expect(safePublicWebsiteUrl("https://evil.example/shida/services/SVC_123")).toBeNull();
+    expect(safePublicWebsiteUrl("https://nihiloba.com/shida/services/x?token=private")).toBeNull();
   });
 });

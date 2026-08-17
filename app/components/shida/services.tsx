@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Locale } from "../../lib/i18n";
-import { safePublicExternalUrl, safePublicImageUrl } from "../../lib/safe-public-url";
+import { safePublicExternalUrl, safePublicImageUrl, safePublicWebsiteUrl } from "../../lib/safe-public-url";
 import { getService, getServiceAvailability, getServiceProvider, getServiceReviews, getServices, ShidaApiError, serviceSearchQuery } from "../../services/shida/public-client";
 import { serviceCategories, type PublicService, type PublicServiceProvider, type PublicServiceSummary, type ServiceAvailability, type ServiceLocation, type ServiceOffering, type ServiceSearch } from "../../types/shida-public";
 import { ButtonLink } from "../button-link";
@@ -22,18 +22,19 @@ const copy={
 export function serviceCategoryLabel(value:string,locale:Locale):string { return categoryLabels[value]?.[locale]??value.replaceAll("_"," "); }
 function providerPath(locale:Locale,slug:string){return marketplacePath(locale,`/shida/services/providers/${encodeURIComponent(slug)}`);}
 function servicePath(locale:Locale,slug:string){return marketplacePath(locale,`/shida/services/${encodeURIComponent(slug)}`);}
+function servicePublicPath(item:PublicServiceSummary,locale:Locale){return safePublicWebsiteUrl(item.public_detail_url)??servicePath(locale,item.slug);}
 function broadLocation(location:ServiceLocation){return publicLocation(location.quartier,location.commune,location.area,location.city);}
 function serviceMode(item:PublicServiceSummary,locale:Locale){const t=copy[locale];if(item.location_type==="public_place"&&item.external_intervention_available)return t.both;if(item.location_type==="public_place")return t.atProvider;if(item.external_intervention_available)return t.atCustomer;return null;}
 function ratingText(item:PublicServiceSummary["rating"],locale:Locale){return item.average_rating!=null&&item.rating_count>0?`${item.average_rating.toLocaleString(locale,{maximumFractionDigits:1})}/5 (${item.rating_count})`:null;}
 function offeringPrice(option:ServiceOffering){if(!option.price)return null;return /[A-Za-z]{3}|[$€£]|CDF/i.test(option.price)?option.price:`${option.price}${option.currency?` ${option.currency}`:""}`;}
 export function serviceDuration(minutes:number):string { if(minutes<60)return `${minutes} min`;const hours=Math.floor(minutes/60),rest=minutes%60;return `${hours} h${rest?` ${rest}`:""}`; }
 
-export function ServiceCard({item,locale}:{item:PublicServiceSummary;locale:Locale}) { const t=copy[locale],image=safePublicImageUrl(item.image_preview?.url),location=broadLocation(item.location),rating=ratingText(item.rating,locale),mode=serviceMode(item,locale),price=item.starting_price?offeringPrice(item.starting_price):null;return <article className="marketplace-card service-card">
-  <Link className="marketplace-card-image" href={servicePath(locale,item.slug)}><MarketplaceImage src={image} alt={item.image_preview?.alt||item.service_name} fallback={t.image}/></Link>
-  <div className="marketplace-card-body"><p className="service-category">{serviceCategoryLabel(item.category,locale)}</p><h2><Link href={servicePath(locale,item.slug)}>{item.service_name}</Link></h2>
+export function ServiceCard({item,locale}:{item:PublicServiceSummary;locale:Locale}) { const t=copy[locale],image=safePublicImageUrl(item.image_preview?.url),location=broadLocation(item.location),rating=ratingText(item.rating,locale),mode=serviceMode(item,locale),price=item.starting_price?offeringPrice(item.starting_price):null,href=servicePublicPath(item,locale);return <article className="marketplace-card service-card">
+  <Link className="marketplace-card-image" href={href}><MarketplaceImage src={image} alt={item.image_preview?.alt||item.service_name} fallback={t.image}/></Link>
+  <div className="marketplace-card-body"><p className="service-category">{serviceCategoryLabel(item.category,locale)}</p><h2><Link href={href}>{item.service_name}</Link></h2>
     <div className="service-provider-line">{item.provider.profile_image&&<span className="service-provider-mini"><MarketplaceImage src={safePublicImageUrl(item.provider.profile_image.url)} alt={item.provider.profile_image.alt||item.provider.name} fallback={item.provider.name.slice(0,1)} sizes="32px"/></span>}<span>{t.provider}: </span><Link href={providerPath(locale,item.provider.slug)}>{item.provider.name}</Link></div>{location&&<p className="marketplace-location">{location}</p>}
     <div className="marketplace-card-facts">{price&&<strong>{price}</strong>}{item.duration_minutes!=null&&<span>{serviceDuration(item.duration_minutes)}</span>}{rating&&<span aria-label={t.ratingLabel}>★ {rating}</span>}{mode&&<span>{mode}</span>}</div>
-    {item.short_description&&<p className="marketplace-description">{item.short_description}</p>}<ButtonLink href={servicePath(locale,item.slug)} variant="text">{t.details}</ButtonLink>
+    {item.short_description&&<p className="marketplace-description">{item.short_description}</p>}<ButtonLink href={href} variant="text">{t.details}</ButtonLink>
   </div></article>; }
 
 function hasSearch(search:ServiceSearch){return Object.entries(search).some(([key,value])=>key!=="page_size"&&value!=null&&value!=="");}
@@ -71,5 +72,7 @@ export async function ServiceDetailPage({locale,slug,from,option}:{locale:Locale
 
 function metadataBase(locale:Locale,path:string,title:string,description:string|undefined,image?:string|null):Metadata{const canonical=marketplacePath(locale,path);return {title,description,alternates:{canonical,languages:{en:path,fr:`/fr${path}`,"x-default":path}},openGraph:{title,description,url:canonical,images:[{url:image||"/NIHILOBA_logo.png",alt:title}]}};}
 export function servicesMetadata(locale:Locale):Metadata{const t=copy[locale];return metadataBase(locale,"/shida/services",t.title,t.intro);}
-export async function serviceMetadata(locale:Locale,slug:string):Promise<Metadata>{try{const item=await getService(slug),image=item.images.map((v)=>safePublicImageUrl(v.url)).find(Boolean)||safePublicImageUrl(item.image_preview?.url),location=broadLocation(item.location),title=`${item.service_name} | ${item.provider.name}`,base=item.short_description||item.description||undefined,description=base&&location?`${base} · ${location}`:base||location||undefined;return metadataBase(locale,`/shida/services/${item.slug}`,title,description,image);}catch{return {title:copy[locale].notFound,robots:{index:false,follow:false}};}}
+export async function serviceMetadata(locale:Locale,slug:string):Promise<Metadata>{try{const item=await getService(slug),image=item.images.map((v)=>safePublicImageUrl(v.url)).find(Boolean)||safePublicImageUrl(item.image_preview?.url),location=broadLocation(item.location),title=`${item.service_name} | ${item.provider.name}`,base=item.short_description||item.description||undefined,description=base&&location?`${base} · ${location}`:base||location||undefined,canonical=safePublicWebsiteUrl(item.public_detail_url)??servicePath(locale,item.slug);return{...metadataBase(locale,`/shida/services/${item.slug}`,title,description,image),alternates:{canonical},openGraph:{title,description,url:canonical,images:[{url:image||"/NIHILOBA_logo.png",alt:title}]}};}catch{return {title:copy[locale].notFound,robots:{index:false,follow:false}};}}
+
+export function ServiceDetailLoading({locale}:{locale:Locale}){return <section className="section"><div className="container marketplace-loading" role="status" aria-live="polite" aria-busy="true"><span className="marketplace-loading-mark" aria-hidden="true"/><p>{locale==="fr"?"Chargement du service…":"Loading service…"}</p></div></section>;}
 export async function serviceProviderMetadata(locale:Locale,slug:string):Promise<Metadata>{try{const item=await getServiceProvider(slug),description=locale==="fr"?`Découvrez les services publics proposés par ${item.name} sur SHIDA.`:`Discover public services offered by ${item.name} on SHIDA.`;return metadataBase(locale,`/shida/services/providers/${item.slug}`,`${item.name} | SHIDA`,description,safePublicImageUrl(item.profile_image?.url));}catch{return {title:copy[locale].providerNotFound,robots:{index:false,follow:false}};}}

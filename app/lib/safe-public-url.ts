@@ -2,6 +2,7 @@ const CLOUDINARY_HOST = "res.cloudinary.com";
 const CLOUDINARY_PREFIX = "/dbrxpvmzp/image/upload/";
 const PUBLIC_GO_PATH = /^\/go\/[A-Za-z0-9_-]+\/?$/;
 const WHATSAPP_PATH = /^\/[A-Za-z0-9_-]+\/?$/;
+const WEBSITE_ORIGIN = "https://nihiloba.com";
 
 export function safePublicActionUrl(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -42,6 +43,18 @@ export function safePublicExternalUrl(value: string | null | undefined): string 
   try {
     const url = new URL(value);
     return url.protocol === "https:" && !url.username && !url.password ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+export function safePublicWebsiteUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value, WEBSITE_ORIGIN);
+    const isMarketplacePath = url.pathname.startsWith("/shida/") || url.pathname.startsWith("/fr/shida/");
+    if (url.origin !== WEBSITE_ORIGIN || url.username || url.password || url.port || url.search || url.hash || !isMarketplacePath) return null;
+    return value;
   } catch {
     return null;
   }
