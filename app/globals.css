@@ -185,6 +185,28 @@ h1, h2, h3 { text-wrap: balance; }
 .marketplace-thumbnail { width: 108px; min-width: 108px; aspect-ratio: 4 / 3; padding: 0; border: 2px solid transparent; border-radius: 2px; cursor: pointer; }
 .marketplace-thumbnail-active { border-color: var(--gold); }
 .marketplace-thumbnail .marketplace-image-fallback { min-height: 0; font-size: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.marketplace-gallery-portfolio .marketplace-gallery-main { height: clamp(360px,68svh,700px); min-height: 360px; aspect-ratio: auto; isolation: isolate; background: #061d18; touch-action: pan-y; }
+.marketplace-gallery-backdrop, .marketplace-lightbox-backdrop { position: absolute; z-index: 0; inset: -2rem; overflow: hidden; pointer-events: none; }
+.marketplace-gallery-backdrop::after, .marketplace-lightbox-backdrop::after { position: absolute; background: rgba(2,17,14,.58); content: ""; inset: 0; }
+.marketplace-gallery-backdrop img, .marketplace-lightbox-backdrop img { object-fit: cover; filter: blur(24px) saturate(.8); transform: scale(1.08); }
+.marketplace-gallery-open { position: absolute; z-index: 1; padding: 0; border: 0; background: transparent; cursor: zoom-in; inset: 0; }
+.marketplace-gallery-open img, .marketplace-lightbox-image img { object-fit: contain; }
+.marketplace-gallery-open .marketplace-image-fallback { min-height: 100%; background: transparent; color: #fff; }
+.marketplace-gallery-control, .marketplace-lightbox-close { position: absolute; z-index: 3; display: grid; width: 48px; height: 48px; padding: 0; place-items: center; border: 1px solid rgba(255,255,255,.55); border-radius: 50%; background: rgba(4,30,25,.82); color: #fff; font: inherit; cursor: pointer; }
+.marketplace-gallery-control { top: 50%; transform: translateY(-50%); font-family: Georgia,"Times New Roman",serif; font-size: 2rem; line-height: 1; }
+.marketplace-gallery-previous { left: 1rem; }
+.marketplace-gallery-next { right: 1rem; }
+.marketplace-gallery-control:hover, .marketplace-gallery-control:focus-visible, .marketplace-lightbox-close:hover, .marketplace-lightbox-close:focus-visible, .marketplace-gallery-open:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; background-color: var(--forest); }
+.marketplace-gallery-portfolio .marketplace-image-count { z-index: 3; }
+.marketplace-gallery-portfolio .marketplace-thumbnail { width: 88px; min-width: 88px; aspect-ratio: 4 / 5; }
+.marketplace-gallery-portfolio .marketplace-thumbnail img { object-fit: cover; }
+.marketplace-lightbox { position: fixed; z-index: 1000; display: grid; padding: clamp(.75rem,2vw,1.5rem); place-items: center; background: rgba(1,12,10,.94); inset: 0; }
+.marketplace-lightbox-panel { position: relative; width: 100%; height: 100%; max-width: 1440px; max-height: 100%; overflow: hidden; isolation: isolate; touch-action: pan-y; }
+.marketplace-lightbox-image { position: absolute; z-index: 1; inset: clamp(1rem,4vw,3rem); }
+.marketplace-lightbox-image .marketplace-image-fallback { min-height: 100%; background: transparent; color: #fff; }
+.marketplace-lightbox-close { top: .75rem; right: .75rem; font-size: 1.9rem; line-height: 1; }
+.marketplace-lightbox .marketplace-image-count { z-index: 3; }
 .marketplace-property-section { padding-top: clamp(3rem, 6vw, 5rem); }
 .marketplace-facts-row { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); margin: 0 0 clamp(2.5rem, 5vw, 4rem); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .marketplace-facts-row > div { min-width: 0; padding: 1.2rem 1.25rem; }
@@ -350,6 +372,13 @@ h1, h2, h3 { text-wrap: balance; }
   .marketplace-gallery-main { aspect-ratio: 4 / 3; }
   .marketplace-gallery-main .marketplace-image-fallback { min-height: 230px; }
   .marketplace-thumbnail { width: 86px; min-width: 86px; }
+  .marketplace-gallery-portfolio .marketplace-gallery-main { height: clamp(340px,68svh,700px); min-height: 340px; aspect-ratio: auto; }
+  .marketplace-gallery-portfolio .marketplace-thumbnail { width: 80px; min-width: 80px; }
+  .marketplace-gallery-portfolio .marketplace-gallery-control { width: 44px; height: 44px; }
+  .marketplace-gallery-portfolio .marketplace-gallery-previous, .marketplace-lightbox .marketplace-gallery-previous { left: .5rem; }
+  .marketplace-gallery-portfolio .marketplace-gallery-next, .marketplace-lightbox .marketplace-gallery-next { right: .5rem; }
+  .marketplace-lightbox { padding: .35rem; }
+  .marketplace-lightbox-image { inset: 3.5rem .5rem; }
   .marketplace-facts-row { grid-template-columns: 1fr 1fr; }
   .marketplace-facts-row > div { padding: 0.9rem; }
   .marketplace-breadcrumb { margin-bottom: 2rem; }
@@ -363,4 +392,8 @@ h1, h2, h3 { text-wrap: balance; }
 @media (max-width: 500px) {
   .wenze-product-grid { grid-template-columns: minmax(0,1fr); }
   .wenze-product-card { max-width: 100%; }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .marketplace-gallery-portfolio .marketplace-gallery-main { height: calc(100svh - 48px); min-height: 260px; }
 }
