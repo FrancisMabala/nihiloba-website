@@ -2,6 +2,17 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRightIcon, ArrowUpRightIcon } from "./icons";
 
+const WEBSITE_ORIGIN = "https://nihiloba.com";
+
+function absoluteHttpUrl(href: string): URL | null {
+  try {
+    const url = new URL(href);
+    return url.protocol === "http:" || url.protocol === "https:" ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 type ButtonLinkProps = {
   href: string;
   children: ReactNode;
@@ -18,7 +29,12 @@ export function ButtonLink({
   className = "",
 }: ButtonLinkProps) {
   const classes = `button button-${variant} ${className}`;
-  const isExternal = external || href.startsWith("http://") || href.startsWith("https://");
+  const absoluteUrl = absoluteHttpUrl(href);
+  const isSameWebsite = absoluteUrl?.origin === WEBSITE_ORIGIN;
+  const isExternal = external || Boolean(absoluteUrl && !isSameWebsite);
+  const linkHref = isSameWebsite && !external
+    ? `${absoluteUrl.pathname}${absoluteUrl.search}${absoluteUrl.hash}`
+    : href;
   const content = (
     <>
       <span>{children}</span>
@@ -44,7 +60,7 @@ export function ButtonLink({
   }
 
   return (
-    <Link className={classes} href={href}>
+    <Link className={classes} href={linkHref}>
       {content}
     </Link>
   );
