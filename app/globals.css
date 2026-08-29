@@ -41,6 +41,9 @@ button { font: inherit; }
 .language-switcher { display: flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 999px; font-size: .69rem; font-weight: 700; letter-spacing: .08em; }
 .language-switcher a, .language-switcher span { display: grid; width: 31px; height: 27px; place-items: center; border-radius: 999px; }
 .language-switcher span { background: var(--forest); color: white; }.language-switcher a:hover { background: var(--paper); }
+.header-cart-link { display: inline-flex; min-height: 40px; align-items: center; gap: .35rem; padding: .35rem .45rem; color: var(--forest); font-size: .76rem; font-weight: 700; }
+.header-cart-link>svg { width: 20px; height: 20px; }
+.header-cart-count { display: grid; min-width: 23px; height: 23px; padding-inline: 4px; place-items: center; border-radius: 999px; background: var(--forest); color: #fff; font-size: .67rem; font-variant-numeric: tabular-nums; }
 .menu-button { display: none; width: 44px; height: 44px; padding: 12px; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--forest); }
 .menu-line { display: block; height: 1px; margin: 6px 0; background: currentColor; transition: transform .16s ease; }.menu-line-open:first-child { transform: translateY(3.5px) rotate(45deg); }.menu-line-open:last-child { transform: translateY(-3.5px) rotate(-45deg); }
 
@@ -309,6 +312,34 @@ h1, h2, h3 { text-wrap: balance; }
 .wenze-delivery-areas { margin-top: .9rem; color: var(--muted); font-size: .8rem; }
 .wenze-delivery-areas > div { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
 .wenze-delivery-areas span { padding: .28rem .55rem; border: 1px solid #aac4b6; background: #eef5f1; color: var(--forest); }
+.wenze-cart-actions { display: grid; width: 100%; gap: .55rem; margin-top: 1rem; }
+.wenze-cart-action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }
+.wenze-cart-actions-compact .wenze-cart-action-buttons { grid-template-columns: 1fr; }
+.wenze-cart-action-buttons .button { width: 100%; padding-inline: .65rem; }
+.wenze-cart-action-status, .wenze-cart-action-error { margin: 0; font-size: .78rem; line-height: 1.45; }
+.wenze-cart-action-status { color: var(--green); }.wenze-cart-action-status a { font-weight: 750; text-decoration: underline; text-underline-offset: 3px; }
+.wenze-cart-action-error, .wenze-cart-line-error { color: #8a251d; }
+.wenze-cart-hero h1 { max-width: 850px; }
+.wenze-cart-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(290px,360px); gap: clamp(2rem,5vw,4.5rem); align-items: start; }
+.wenze-cart-groups { min-width: 0; }.wenze-cart-group { margin-bottom: 1.5rem; border: 1px solid var(--line); background: #fff; }
+.wenze-cart-group>header, .wenze-cart-group>footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; background: var(--cream); }
+.wenze-cart-group>header { border-bottom: 1px solid var(--line); }.wenze-cart-group>header h2 { margin: 0; color: var(--forest); font-family: Georgia,"Times New Roman",serif; font-size: 1.35rem; font-weight: 500; }
+.wenze-cart-group>header span { display: grid; min-width: 27px; height: 27px; place-items: center; border-radius: 50%; background: var(--forest); color: #fff; font-size: .72rem; }
+.wenze-cart-group>footer { border-top: 1px solid var(--line); color: var(--forest); font-size: .88rem; }
+.wenze-cart-item { display: grid; grid-template-columns: 96px minmax(0,1fr) auto; gap: 1rem; align-items: start; padding: 1.25rem; }
+.wenze-cart-item+.wenze-cart-item { border-top: 1px solid var(--line); }
+.wenze-cart-item-image { position: relative; width: 96px; aspect-ratio: 1; overflow: hidden; background: var(--paper); }.wenze-cart-item-image img { object-fit: cover; }.wenze-cart-item-image .marketplace-image-fallback { min-height: 96px; padding: .4rem; font-size: .65rem; text-align: center; }
+.wenze-cart-item-main { min-width: 0; }.wenze-cart-item-main h3 { margin: 0 0 .2rem; color: var(--forest); font-size: 1rem; overflow-wrap: anywhere; }.wenze-cart-item-main>p { margin: 0 0 .4rem; color: var(--muted); font-size: .78rem; }.wenze-cart-item-main>strong { color: var(--forest); font-size: .88rem; }
+.wenze-cart-line-total { color: var(--forest); white-space: nowrap; }
+.wenze-cart-quantity { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: .75rem; }.wenze-cart-quantity>span { margin-right: .25rem; color: var(--muted); font-size: .72rem; }
+.wenze-cart-quantity button, .wenze-cart-quantity input { width: 42px; min-height: 42px; border: 1px solid var(--line); background: #fff; color: var(--forest); text-align: center; }.wenze-cart-quantity input { appearance: textfield; }.wenze-cart-quantity input::-webkit-inner-spin-button { appearance: none; }
+.wenze-cart-remove, .wenze-cart-secondary-actions button { padding: .25rem 0; border: 0; border-bottom: 1px solid var(--gold); background: transparent; color: var(--forest); font-size: .75rem; cursor: pointer; }
+.wenze-cart-line-error { margin-top: .65rem!important; font-size: .76rem!important; }
+.wenze-cart-secondary-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }.wenze-cart-secondary-actions a { color: var(--forest); font-size: .82rem; font-weight: 700; text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 4px; }
+.wenze-cart-summary { position: sticky; top: 7rem; padding: 1.5rem; border: 1px solid var(--forest); background: var(--cream); }.wenze-cart-summary h2 { margin: 0 0 1.2rem; color: var(--forest); font-family: Georgia,"Times New Roman",serif; font-weight: 500; }.wenze-cart-summary dl { margin: 0 0 1.25rem; }.wenze-cart-summary dl>div { display: flex; justify-content: space-between; gap: 1rem; padding: .55rem 0; color: var(--muted); font-size: .84rem; }.wenze-cart-summary dd { margin: 0; color: var(--forest); font-weight: 700; text-align: right; }.wenze-cart-summary .wenze-cart-grand-total { margin-top: .5rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--forest); font-size: 1rem; }
+.wenze-cart-conflicts { margin: 1rem 0; padding: 1rem; border-left: 3px solid #a43b31; background: #fff5f2; }.wenze-cart-conflicts h3 { margin: 0 0 .5rem; color: #6f1e18; font-size: .9rem; }.wenze-cart-conflicts p { margin: .35rem 0; color: #782820; font-size: .78rem; }.wenze-cart-conflicts .button { width: 100%; margin-top: .75rem; }
+.wenze-cart-handoff { width: 100%; }.wenze-cart-handoff-help { margin: .8rem 0 0; color: var(--muted); font-size: .76rem; line-height: 1.55; }
+.wenze-cart-empty { display: grid; max-width: 650px; justify-items: start; gap: 1rem; }.wenze-cart-empty>svg { width: 44px; color: var(--gold); }.wenze-cart-empty h1 { margin: 0; color: var(--forest); font-family: Georgia,"Times New Roman",serif; font-size: clamp(2rem,5vw,3.5rem); font-weight: 500; }.wenze-cart-empty p { margin: 0; color: var(--muted); }
 .marketplace-loading { display: flex; min-height: 260px; align-items: center; justify-content: center; gap: .8rem; color: var(--muted); }
 .marketplace-loading-mark { width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--forest); border-radius: 50%; animation: marketplace-loading-spin .8s linear infinite; }
 @keyframes marketplace-loading-spin { to { transform: rotate(360deg); } }
@@ -396,4 +427,19 @@ h1, h2, h3 { text-wrap: balance; }
 
 @media (max-height: 520px) and (orientation: landscape) {
   .marketplace-gallery-portfolio .marketplace-gallery-main { height: calc(100svh - 48px); min-height: 260px; }
+}
+
+@media (max-width: 900px) {
+  .wenze-cart-layout { grid-template-columns: minmax(0,1fr); }
+  .wenze-cart-summary { position: static; }
+}
+
+@media (max-width: 700px) {
+  .header-cart-link { justify-content: flex-start; padding: .65rem .5rem; }
+  .wenze-cart-item { grid-template-columns: 76px minmax(0,1fr); padding: 1rem; }
+  .wenze-cart-item-image { width: 76px; }.wenze-cart-item-image .marketplace-image-fallback { min-height: 76px; }
+  .wenze-cart-line-total { grid-column: 2; grid-row: 2; margin-top: .35rem; }
+  .wenze-cart-group>header, .wenze-cart-group>footer { padding-inline: 1rem; }
+  .wenze-cart-action-buttons { grid-template-columns: 1fr; }
+  .wenze-cart-secondary-actions { align-items: flex-start; flex-direction: column; }
 }

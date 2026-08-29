@@ -6,6 +6,9 @@ import { useState } from "react";
 import type { Locale } from "../lib/i18n";
 import { localizedPath, nav } from "../lib/i18n";
 import { BrandLogo } from "./brand-logo";
+import { CartIcon } from "./icons";
+import { useCart } from "./shida/cart-provider";
+import { wenzeCartCopy, wenzeCartPath } from "./shida/wenze-cart-copy";
 
 const links = [
   ["home", ""],
@@ -19,6 +22,7 @@ const links = [
 export function Header({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { cart, loading: cartLoading } = useCart();
 
   const t = nav[locale];
   const otherLocale: Locale = locale === "en" ? "fr" : "en";
@@ -47,8 +51,12 @@ export function Header({ locale }: { locale: Locale }) {
                   ? "/en/acceptable-use"
                   : comparableSuffix === "/trust"
                     ? "/fr/confiance"
-                  : comparableSuffix === "/confiance"
+                    : comparableSuffix === "/confiance"
                       ? "/en/trust"
+                      : comparableSuffix === "/shida/wenze/cart"
+                        ? "/fr/shida/wenze/panier"
+                        : comparableSuffix === "/shida/wenze/panier"
+                          ? "/shida/wenze/cart"
       : otherLocale === "en" && comparableSuffix.startsWith("/shida")
         ? suffix
         : `/${otherLocale}${suffix}`;
@@ -103,6 +111,12 @@ export function Header({ locale }: { locale: Locale }) {
           })}
 
           <span className="nav-divider" aria-hidden="true" />
+
+          <Link className="header-cart-link" href={wenzeCartPath(locale)} onClick={() => setOpen(false)} aria-label={`${wenzeCartCopy[locale].cart}: ${cart?.item_count ?? 0}`}>
+            <CartIcon />
+            <span>{wenzeCartCopy[locale].cart}</span>
+            <span className="header-cart-count" aria-live="polite" aria-busy={cartLoading}>{cartLoading ? "·" : cart?.item_count ?? 0}</span>
+          </Link>
 
           <div
             className="language-switcher"

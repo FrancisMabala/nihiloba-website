@@ -110,6 +110,16 @@ export function StoreIcon(props: IconProps) {
   );
 }
 
+export function CartIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h2l2.1 10.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20 8H6" />
+      <circle cx="10" cy="20" r="1" fill="currentColor" stroke="none" />
+      <circle cx="17" cy="20" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function QrCodeIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>

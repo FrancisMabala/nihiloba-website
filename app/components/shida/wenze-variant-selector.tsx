@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Locale } from "../../lib/i18n";
 import { safePublicActionUrl } from "../../lib/safe-public-url";
 import type { WenzeProductVariant } from "../../types/shida-public";
+import { WenzeCartActions } from "./wenze-cart-actions";
 
 export const WENZE_VARIANT_CHIP_LIMIT = 8;
 
@@ -22,7 +23,7 @@ export function variantPurchaseUrl(variant: WenzeProductVariant | null) {
     : null;
 }
 
-export function WenzeVariantSelector({ variants, type, l: locale }: { variants: WenzeProductVariant[]; type: string | null; l: Locale }) {
+export function WenzeVariantSelector({ variants, type, l: locale, productReference, priceNegotiable = false }: { variants: WenzeProductVariant[]; type: string | null; l: Locale; productReference?: string; priceNegotiable?: boolean }) {
   const [selected, setSelected] = useState("");
   const t = labels[locale];
   const available = (variant: WenzeProductVariant) => variant.is_available && variant.available_stock !== 0;
@@ -35,8 +36,14 @@ export function WenzeVariantSelector({ variants, type, l: locale }: { variants: 
         ? <div className="wenze-variant-chips">{variants.map((variant) => <button type="button" key={variant.public_ref} disabled={!available(variant)} aria-pressed={selectedVariant?.public_ref === variant.public_ref} onClick={() => setSelected(variant.public_ref)}>{variant.label}{!available(variant) && <small>{t.sold}</small>}</button>)}</div>
         : <select aria-label={variantTypeLabel(type, locale)} value={selectedVariant?.public_ref ?? ""} onChange={(event) => setSelected(event.target.value)}><option value="">—</option>{variants.map((variant) => <option key={variant.public_ref} value={variant.public_ref} disabled={!available(variant)}>{variant.label}{!available(variant) ? ` — ${t.sold}` : ""}</option>)}</select>}
     </fieldset>
-    {purchaseUrl
-      ? <a className="button button-primary wenze-buy-button" href={purchaseUrl} target="_blank" rel="noopener noreferrer">{t.buy}</a>
-      : <><button className="button button-primary wenze-buy-button" type="button" disabled>{t.buy}</button><p className="wenze-variant-prompt" role="status">{selectedVariant ? t.unavailable : t.choose}</p></>}
+    {priceNegotiable
+      ? purchaseUrl
+        ? <WenzeCartActions locale={locale} productReference={productReference ?? "negotiation"} negotiationUrl={purchaseUrl}/>
+        : <><button className="button button-primary wenze-buy-button" type="button" disabled>{t.buy}</button><p className="wenze-variant-prompt" role="status">{selectedVariant ? t.unavailable : t.choose}</p></>
+      : productReference
+        ? <><WenzeCartActions locale={locale} productReference={productReference} variantReference={selectedVariant?.public_ref ?? null} disabled={!selectedVariant}/>{!selectedVariant && <p className="wenze-variant-prompt" role="status">{t.choose}</p>}</>
+        : purchaseUrl
+          ? <a className="button button-primary wenze-buy-button" href={purchaseUrl} target="_blank" rel="noopener noreferrer">{t.buy}</a>
+          : <><button className="button button-primary wenze-buy-button" type="button" disabled>{t.buy}</button><p className="wenze-variant-prompt" role="status">{selectedVariant ? t.unavailable : t.choose}</p></>}
   </div>;
 }
