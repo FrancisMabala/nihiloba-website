@@ -32,6 +32,19 @@ describe("same-origin cart BFF", () => {
     expect(response.status).toBe(403);expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("accepts the canonical website origin behind Render's internal proxy origin", async () => {
+    const fetchMock = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.endsWith("/api/v1/carts")) return new Response(JSON.stringify({ cart_token:"opaque-secret",cart:emptyCart }),{status:201});
+      if (url.includes("/api/public/")) return new Response(JSON.stringify({public_detail_url:"https://nihiloba.com/shida/wenze/products/shoe",images:[]}));
+      return new Response(JSON.stringify({cart:filledCart}));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const response = await addItem(new Request("https://nihiloba-website.onrender.com/api/shida/cart/items/", { method:"POST", headers:{ origin:"https://nihiloba.com", "content-type":"application/json" }, body:JSON.stringify({ product_reference:"WNP-PRODUCT" }) }));
+    expect(response.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalled();
+  });
+
   it("restores a cart from the HttpOnly cookie and clears an expired token",async()=>{
     storedToken="opaque-secret";
     vi.stubGlobal("fetch",vi.fn(async(input:string|URL|Request)=>String(input).includes("/api/public/")?new Response(JSON.stringify({public_detail_url:"https://nihiloba.com/shida/wenze/products/shoe",images:[]})):new Response(JSON.stringify({cart:filledCart}))));

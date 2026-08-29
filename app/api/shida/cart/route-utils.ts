@@ -3,6 +3,7 @@ import { CommerceApiError } from "../../../services/shida/commerce-client";
 
 const CART_COOKIE = "nihiloba_shida_cart";
 const REFERENCE = /^[A-Za-z0-9_-]{4,80}$/;
+const PRODUCTION_WEBSITE_ORIGIN = "https://nihiloba.com";
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store, max-age=0", Pragma: "no-cache" };
 
 export async function cartToken(): Promise<string | null> {
@@ -34,7 +35,9 @@ export function assertSameOrigin(request: Request): Response | null {
   const origin = request.headers.get("origin");
   if (!origin) return null;
   try {
-    if (new URL(origin).origin !== new URL(request.url).origin) return privateJson({ error: { code: "forbidden" } }, 403);
+    const suppliedOrigin = new URL(origin).origin;
+    const requestOrigin = new URL(request.url).origin;
+    if (suppliedOrigin !== requestOrigin && suppliedOrigin !== PRODUCTION_WEBSITE_ORIGIN) return privateJson({ error: { code: "forbidden" } }, 403);
   } catch { return privateJson({ error: { code: "forbidden" } }, 403); }
   return null;
 }
