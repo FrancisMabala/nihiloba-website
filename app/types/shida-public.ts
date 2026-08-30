@@ -57,6 +57,16 @@ export type JobSearch = {
   page_size?: number;
 };
 
+export type PublicJobOfferType = "enterprise" | "individual";
+export type JobPromotionDuration = 7 | 14 | 30;
+export type PublicJobPromotion = { duration_days: JobPromotionDuration; starts_at: string; ends_at: string };
+export type PublicJobSalary = {
+  minimum: string | null;
+  maximum: string | null;
+  currency: string | null;
+  period: string | null;
+};
+
 export type PublicJobEmployerSummary = {
   public_ref: string;
   slug: string;
@@ -79,6 +89,14 @@ export type PublicJobSummary = {
   public_ref: string;
   slug: string;
   title: string;
+  offer_type: PublicJobOfferType;
+  professional_category: string | null;
+  vacancies: number | null;
+  contract_type: string | null;
+  seniority: string | null;
+  work_mode: string | null;
+  work_schedule: string | null;
+  application_deadline: string | null;
   employer: PublicJobEmployerSummary;
   location: PublicJobLocation;
   description_preview: string | null;
@@ -92,6 +110,11 @@ export type PublicJobSummary = {
 
 export type PublicJob = PublicJobSummary & {
   description: string | null;
+  short_summary: string | null;
+  workplace_reference: string | null;
+  start_date: string | null;
+  benefits: string | null;
+  salary: PublicJobSalary | null;
   requirements_document: { available: boolean; url: null };
   public_social_link: string | null;
 };

@@ -1,6 +1,6 @@
 # SHIDA public marketplace browsing
 
-The NIHILOBA website is the public visual browsing layer for SHIDA Apartments and Hotels. The SHIDA backend remains the source of truth for listings, availability and WhatsApp actions. The website does not access the SHIDA database, validate entry tokens or reproduce booking and visit workflows.
+The NIHILOBA website is the public visual browsing layer for SHIDA Jobs, Services, Wenze, Apartments and Hotels. The SHIDA backend remains the source of truth for listings, availability and WhatsApp actions. The website does not access the SHIDA database, validate entry tokens or reproduce backend workflows.
 
 ## Runtime and configuration
 
@@ -16,6 +16,9 @@ Only an HTTPS origin is accepted. Production falls back to the same official ori
 
 The website consumes only:
 
+- `GET /api/public/shida/jobs`
+- `GET /api/public/shida/jobs/{ref_or_slug}`
+- `GET /api/public/shida/jobs/employers/{ref_or_slug}`
 - `GET /api/public/shida/apartments`
 - `GET /api/public/shida/apartments/{slug}`
 - `GET /api/public/shida/hotels`
@@ -37,8 +40,6 @@ Collections and currently published detail pages are included in the sitemap whe
 ## Render migration
 
 `render.yaml` now defines a Node web service, not a static service. If the existing Render service cannot change runtime type in place, create the Node service from the blueprint, validate it on its temporary hostname, then move the `nihiloba.com` custom domain to it. Security headers are applied to every route by the Next.js `headers()` configuration; the Blueprint intentionally has no unsupported Web Service `headers` section.
-
-Wenze browsing is intentionally outside this release. Add it only after a separate public backend contract exists.
 
 ## End-to-end handoff check
 
