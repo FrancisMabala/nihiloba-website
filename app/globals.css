@@ -17,6 +17,80 @@
   --max-width: 1180px;
 }
 
+/* Private SHIDA Employment candidate workspace */
+.candidate-employment-hero { padding: clamp(7.5rem, 12vw, 10rem) 0 3rem; background: linear-gradient(145deg, #eef4ef 0%, #f7f2e9 100%); border-bottom: 1px solid rgba(8,49,39,.14); }
+.candidate-employment-hero h1 { max-width: 900px; margin: .65rem 0 .75rem; font-size: clamp(2.2rem, 5vw, 4.8rem); }
+.candidate-employment-hero p { max-width: 720px; }
+.candidate-employment-section { min-height: 55vh; background: #fbfaf6; }
+.candidate-session { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.75rem; padding-top: 1rem; border-top: 1px solid rgba(8,49,39,.18); }
+.candidate-session button, .candidate-text-button { padding: 0; border: 0; background: transparent; color: var(--forest); font: inherit; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.candidate-private-panel { padding: clamp(1.25rem, 3vw, 2rem); border: 1px solid rgba(8,49,39,.2); background: rgba(255,255,255,.8); box-shadow: 0 14px 40px rgba(8,49,39,.05); }
+.candidate-login { max-width: 620px; margin-inline: auto; }
+.candidate-login form { display: grid; gap: .8rem; margin-top: 1.35rem; }
+.candidate-login label { font-weight: 800; }
+.candidate-login input { min-height: 50px; padding: .7rem .85rem; border: 1px solid rgba(8,49,39,.35); border-radius: 0; background: #fff; color: var(--forest); font: inherit; }
+.candidate-login .button { justify-self: start; margin-top: .3rem; }
+.candidate-form-message { margin-top: 1rem; color: var(--forest); font-weight: 700; }
+.candidate-profile-overview { display: grid; grid-template-columns: minmax(260px, 1.4fr) repeat(2, minmax(210px, .8fr)); gap: 1rem; margin-bottom: 2rem; }
+.candidate-profile-overview > div, .candidate-profile-overview article { padding: 1.25rem; border: 1px solid rgba(8,49,39,.18); background: #fff; }
+.candidate-profile-overview article { display: grid; align-content: start; gap: .45rem; }
+.candidate-profile-overview strong { font-family: Georgia, "Times New Roman", serif; font-size: 1.2rem; }
+.candidate-profile-overview small { color: #765b2a; font-weight: 750; }
+.candidate-application-list { display: grid; gap: .9rem; }
+.candidate-application-card { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 1.5rem; padding: 1.2rem 1.3rem; border: 1px solid rgba(8,49,39,.18); background: #fff; }
+.candidate-application-card h2 { margin: .45rem 0 .2rem; font-size: clamp(1.2rem, 2vw, 1.6rem); }
+.candidate-application-card p { margin: 0; }
+.candidate-application-card dl { display: flex; gap: 1.5rem; margin: 0; }
+.candidate-application-card dl div { display: grid; gap: .2rem; }
+.candidate-application-card dt { color: #5b655f; font-size: .78rem; font-weight: 750; text-transform: uppercase; letter-spacing: .04em; }
+.candidate-application-card dd { margin: 0; font-weight: 700; }
+.candidate-status { display: inline-flex; width: fit-content; padding: .3rem .5rem; background: #e8f1eb; color: var(--forest); font-size: .75rem; font-weight: 850; letter-spacing: .03em; text-transform: uppercase; }
+.candidate-status-rejected, .candidate-status-withdrawn, .candidate-status-closed { background: #f0ece7; color: #61564a; }
+.candidate-status-hired, .candidate-status-offered { background: #e6f5e8; color: #145a2c; }
+.candidate-status-interview_proposed, .candidate-status-interview_confirmed { background: #fff2ce; color: #6d4b00; }
+.candidate-detail-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(260px, .75fr); align-items: start; gap: 1.25rem; }
+.candidate-detail-main, .candidate-detail-aside { display: grid; gap: 1.25rem; }
+.candidate-detail-aside { position: sticky; top: 110px; }
+.candidate-timeline { display: grid; gap: 0; margin: 1rem 0 0; padding: 0; list-style: none; }
+.candidate-timeline li { position: relative; display: grid; gap: .15rem; min-height: 58px; padding: 0 0 1.2rem 1.7rem; }
+.candidate-timeline li::before { content: ""; position: absolute; top: .28rem; left: .15rem; width: .65rem; height: .65rem; border-radius: 50%; background: var(--forest); }
+.candidate-timeline li:not(:last-child)::after { content: ""; position: absolute; top: 1rem; bottom: 0; left: .43rem; width: 1px; background: rgba(8,49,39,.25); }
+.candidate-timeline span, .candidate-message time { color: #68716b; font-size: .8rem; }
+.candidate-messages { display: grid; gap: .8rem; margin-top: 1rem; }
+.candidate-message { max-width: 88%; padding: .9rem 1rem; background: #f0f3ef; }
+.candidate-message-you { justify-self: end; background: #e5f1e9; }
+.candidate-message-system { max-width: 100%; border-left: 3px solid #b78b35; background: #f7f0df; }
+.candidate-message p { margin: .35rem 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.candidate-detail-aside dl { display: grid; gap: .8rem; }
+.candidate-detail-aside dl div { display: grid; gap: .15rem; }
+.candidate-detail-aside dt { color: #68716b; font-size: .8rem; font-weight: 750; text-transform: uppercase; }
+.candidate-detail-aside dd { margin: 0; }
+.candidate-authority-note { padding: 1rem; border-left: 3px solid #b78b35; background: #f7f0df; font-size: .9rem; }
+.candidate-empty, .candidate-state { display: grid; justify-items: start; gap: 1rem; }
+.candidate-skeleton, .candidate-route-loading { display: grid; gap: .8rem; padding: 2rem; }
+.candidate-skeleton span, .candidate-route-loading span { display: block; height: 72px; background: linear-gradient(90deg,#edf0eb,#f8f7f2,#edf0eb); background-size: 200% 100%; animation: candidate-shimmer 1.4s infinite; }
+@keyframes candidate-shimmer { to { background-position: -200% 0; } }
+
+@media (max-width: 900px) {
+  .candidate-profile-overview { grid-template-columns: 1fr 1fr; }
+  .candidate-profile-overview > div { grid-column: 1 / -1; }
+  .candidate-application-card { grid-template-columns: 1fr auto; }
+  .candidate-application-card dl { grid-column: 1 / -1; grid-row: 2; }
+  .candidate-detail-grid { grid-template-columns: 1fr; }
+  .candidate-detail-aside { position: static; }
+}
+
+@media (max-width: 620px) {
+  .candidate-employment-hero { padding-top: 6.75rem; }
+  .candidate-session { align-items: flex-start; flex-direction: column; }
+  .candidate-profile-overview { grid-template-columns: 1fr; }
+  .candidate-profile-overview > div { grid-column: auto; }
+  .candidate-application-card { grid-template-columns: 1fr; gap: 1rem; }
+  .candidate-application-card dl { grid-column: auto; grid-row: auto; flex-wrap: wrap; }
+  .candidate-application-card .button { width: 100%; }
+  .candidate-message { max-width: 96%; }
+}
+
 @theme inline { --font-sans: var(--font-sans); --font-mono: var(--font-mono); }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }

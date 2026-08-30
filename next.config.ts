@@ -33,12 +33,23 @@ const securityHeaders = [
   { key: "X-XSS-Protection", value: "0" },
 ];
 
+const privatePageHeaders = [
+  { key: "Cache-Control", value: "private, no-store, max-age=0" },
+  { key: "Pragma", value: "no-cache" },
+  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+];
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   trailingSlash: true,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/shida/my-applications/:path*", headers: privatePageHeaders },
+      { source: "/en/shida/my-applications/:path*", headers: privatePageHeaders },
+      { source: "/fr/shida/mes-candidatures/:path*", headers: privatePageHeaders },
+      { source: "/:path*", headers: securityHeaders },
+    ];
   },
   images: {
     remotePatterns: [

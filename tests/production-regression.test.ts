@@ -19,9 +19,9 @@ describe("production architecture regressions", () => {
   it("applies the hardened headers from Next.js to every route", async () => {
     expect(nextConfig.headers).toBeTypeOf("function");
     const rules = await nextConfig.headers!();
-    expect(rules).toHaveLength(1);
-    expect(rules[0]).toMatchObject({ source: "/:path*" });
-    const headers = "headers" in rules[0] ? rules[0].headers : [];
+    const globalRule = rules.find((rule) => rule.source === "/:path*");
+    expect(globalRule).toBeDefined();
+    const headers = globalRule && "headers" in globalRule ? globalRule.headers : [];
     const headerMap = new Map(headers.map(({ key, value }) => [key, value]));
     for (const header of [
       "Content-Security-Policy", "Strict-Transport-Security", "Referrer-Policy", "Permissions-Policy",
@@ -29,6 +29,13 @@ describe("production architecture regressions", () => {
     ]) expect(headerMap.has(header)).toBe(true);
     expect(headerMap.get("Content-Security-Policy")).toContain("frame-ancestors 'none'");
     expect(headerMap.get("Strict-Transport-Security")).toBe("max-age=31536000");
+    const candidateRules = rules.filter((rule) => rule.source.includes("my-applications") || rule.source.includes("mes-candidatures"));
+    expect(candidateRules).toHaveLength(3);
+    for (const rule of candidateRules) {
+      const privateHeaders = new Map(("headers" in rule ? rule.headers : []).map(({ key, value }) => [key, value]));
+      expect(privateHeaders.get("Cache-Control")).toContain("no-store");
+      expect(privateHeaders.get("X-Robots-Tag")).toContain("noindex");
+    }
   });
 
   it("does not regress to static export and keeps the exact image allowlist", () => {

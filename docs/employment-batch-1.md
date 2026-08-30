@@ -1,6 +1,6 @@
 # SHIDA Employment frontend — Batch 1
 
-Status: implemented for public discovery and public job detail only. Candidate dashboards and recruiter application management are deferred.
+Status: implemented for public discovery and public job detail. The backend-supported candidate application workspace is documented in `docs/employment-batch-2.md`; recruiter application management remains deferred.
 
 ## Routes
 
