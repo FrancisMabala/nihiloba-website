@@ -88,7 +88,38 @@
   .candidate-application-card { grid-template-columns: 1fr; gap: 1rem; }
   .candidate-application-card dl { grid-column: auto; grid-row: auto; flex-wrap: wrap; }
   .candidate-application-card .button { width: 100%; }
-  .candidate-message { max-width: 96%; }
+.candidate-message { max-width: 96%; }
+}
+
+/* Immutable, versioned SHIDA legal documents */
+.versioned-legal-header { padding: clamp(6.5rem, 10vw, 9rem) 0 clamp(2.5rem, 5vw, 4rem); border-bottom: 1px solid var(--line); background: var(--cream); }
+.versioned-legal-header h1 { max-width: 920px; margin: 1rem 0 1.5rem; color: var(--forest); font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.6rem, 5.5vw, 5rem); font-weight: 500; letter-spacing: -.04em; line-height: 1.05; }
+.versioned-legal-meta { display: flex; flex-wrap: wrap; gap: .55rem; max-width: 1000px; }
+.versioned-legal-meta span { padding: .42rem .62rem; border: 1px solid rgba(8,45,37,.2); background: rgba(255,255,255,.55); color: var(--muted); font-size: .74rem; }
+.versioned-legal-meta strong { color: var(--forest); }
+.versioned-legal-draft { max-width: 850px; margin-top: 1.25rem; padding: .9rem 1rem; border-left: 3px solid var(--gold); background: #fff8e9; color: #684f22; font-size: .88rem; }
+.versioned-legal-links { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; margin-top: 1.25rem; }
+.versioned-legal-links a { color: var(--forest); font-size: .84rem; font-weight: 700; text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 4px; }
+.versioned-legal-section { background: var(--ivory); }
+.versioned-legal-content { max-width: 780px; }
+.versioned-legal-introduction { margin-bottom: 3.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--line); }
+.versioned-legal-introduction p { color: var(--muted); font-size: 1rem; line-height: 1.82; }
+.versioned-legal-content .legal-section { margin-bottom: 3.25rem; }
+.versioned-legal-content .legal-section h2 { font-size: clamp(1.45rem, 2.7vw, 2rem); }
+
+@media print {
+  @page { margin: 18mm; }
+  .site-header, .site-footer, .skip-link, .legal-sidebar, .legal-mobile-toc, .versioned-legal-links { display: none !important; }
+  body, .versioned-legal-header, .versioned-legal-section { background: #fff !important; color: #000 !important; }
+  .versioned-legal-header { padding: 0 0 12mm; border-bottom: 1px solid #777; }
+  .versioned-legal-header h1 { color: #000; font-size: 28pt; }
+  .versioned-legal-section { padding: 12mm 0 0; }
+  .legal-doc-layout { display: block; }
+  .versioned-legal-content { max-width: none; }
+  .versioned-legal-content .legal-section { break-inside: avoid; }
+  .versioned-legal-content p, .versioned-legal-content li { color: #111 !important; font-size: 10.5pt; }
+  .versioned-legal-draft { border: 1px solid #777; background: #fff; color: #111; }
+  a { color: #000 !important; text-decoration: none !important; }
 }
 
 @theme inline { --font-sans: var(--font-sans); --font-mono: var(--font-mono); }

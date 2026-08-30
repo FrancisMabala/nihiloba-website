@@ -4,9 +4,26 @@ import { getApartments, getHotels, getJobs, getServices, getWenzeStores } from "
 export const revalidate = 3600;
 
 const pages = ["", "/about", "/products", "/shida", "/education", "/contact", "/privacy"];
-const routes = [...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/shida/emplois", "/fr/shida/emplois", "/shida/appartements", "/fr/shida/appartements", "/shida/hotels", "/fr/shida/hotels", "/shida/services", "/fr/shida/services", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance"];
+const legalRoutes = [
+  "/shida/terms", "/shida/terms/1.0", "/fr/shida/conditions", "/fr/shida/conditions/1.0",
+  "/shida/privacy", "/shida/privacy/1.0", "/fr/shida/confidentialite", "/fr/shida/confidentialite/1.0",
+  "/shida/business/terms", "/shida/business/terms/1.0", "/fr/shida/business/conditions", "/fr/shida/business/conditions/1.0",
+];
+const routes = [...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/shida/emplois", "/fr/shida/emplois", "/shida/appartements", "/fr/shida/appartements", "/shida/hotels", "/fr/shida/hotels", "/shida/services", "/fr/shida/services", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance", ...legalRoutes];
 
 const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
+  "/shida/terms": { en: "/shida/terms", fr: "/fr/shida/conditions" },
+  "/fr/shida/conditions": { en: "/shida/terms", fr: "/fr/shida/conditions" },
+  "/shida/terms/1.0": { en: "/shida/terms/1.0", fr: "/fr/shida/conditions/1.0" },
+  "/fr/shida/conditions/1.0": { en: "/shida/terms/1.0", fr: "/fr/shida/conditions/1.0" },
+  "/shida/privacy": { en: "/shida/privacy", fr: "/fr/shida/confidentialite" },
+  "/fr/shida/confidentialite": { en: "/shida/privacy", fr: "/fr/shida/confidentialite" },
+  "/shida/privacy/1.0": { en: "/shida/privacy/1.0", fr: "/fr/shida/confidentialite/1.0" },
+  "/fr/shida/confidentialite/1.0": { en: "/shida/privacy/1.0", fr: "/fr/shida/confidentialite/1.0" },
+  "/shida/business/terms": { en: "/shida/business/terms", fr: "/fr/shida/business/conditions" },
+  "/fr/shida/business/conditions": { en: "/shida/business/terms", fr: "/fr/shida/business/conditions" },
+  "/shida/business/terms/1.0": { en: "/shida/business/terms/1.0", fr: "/fr/shida/business/conditions/1.0" },
+  "/fr/shida/business/conditions/1.0": { en: "/shida/business/terms/1.0", fr: "/fr/shida/business/conditions/1.0" },
   "/shida": { en: "/shida", fr: "/fr/shida" },
   "/fr/shida": { en: "/shida", fr: "/fr/shida" },
   "/shida/appartements": { en: "/shida/appartements", fr: "/fr/shida/appartements" },

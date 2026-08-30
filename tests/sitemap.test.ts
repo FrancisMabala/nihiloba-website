@@ -44,5 +44,9 @@ describe("marketplace sitemap", () => {
     expect(urls).toContain("https://nihiloba.com/fr/shida/emplois");
     expect(urls).toContain("https://nihiloba.com/shida/emplois/it-support");
     expect(urls).toContain("https://nihiloba.com/fr/shida/emplois/employeurs/rawbank");
+    expect(urls).toContain("https://nihiloba.com/shida/terms");
+    expect(urls).toContain("https://nihiloba.com/shida/terms/1.0");
+    expect(urls).toContain("https://nihiloba.com/fr/shida/confidentialite/1.0");
+    expect(urls).toContain("https://nihiloba.com/fr/shida/business/conditions");
   });
 });
