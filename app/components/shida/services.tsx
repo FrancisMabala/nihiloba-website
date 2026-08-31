@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import type { Locale } from "../../lib/i18n";
 import { safePublicExternalUrl, safePublicImageUrl, safePublicWebsiteUrl } from "../../lib/safe-public-url";
 import { getService, getServiceAvailability, getServiceProvider, getServiceReviews, getServices, ShidaApiError, serviceSearchQuery } from "../../services/shida/public-client";
-import { serviceCategories, type PublicService, type PublicServiceProvider, type PublicServiceSummary, type ServiceAvailability, type ServiceLocation, type ServiceOffering, type ServiceSearch } from "../../types/shida-public";
+import { serviceCategories, type PublicService, type PublicServiceProvider, type PublicServiceSummary, type ServiceAvailability, type ServiceLocation, type ServiceOffering, type ServiceReviewCollection, type ServiceSearch } from "../../types/shida-public";
 import { ButtonLink } from "../button-link";
 import { ImageGallery } from "./image-gallery";
 import { marketplacePath, MarketplaceState, publicLocation } from "./marketplace";
@@ -12,6 +13,7 @@ import { MarketplaceImage } from "./marketplace-image";
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import { ServiceAvailabilityPanel } from "./service-availability";
 import { ServiceOptionSelector } from "./service-options";
+import { ServicesAdSlot } from "./services-ad-slot";
 
 const categoryLabels:Record<string,{en:string;fr:string}>={beauty_wellness:{en:"Beauty & Wellness",fr:"Beauté & bien-être"},barber:{en:"Beauty & Wellness",fr:"Beauté & bien-être"},hairdresser:{en:"Beauty & Wellness",fr:"Beauté & bien-être"},health:{en:"Health",fr:"Santé"},home_housing:{en:"Home & Housing",fr:"Maison & habitat"},repair_maintenance:{en:"Repair & Maintenance",fr:"Réparation & maintenance"},transport:{en:"Transport",fr:"Transport"},education_training:{en:"Education & Training",fr:"Éducation & formation"},photo_video:{en:"Photo & Video",fr:"Photo & vidéo"},food_catering:{en:"Food & Catering",fr:"Restauration & cuisine"},restaurant:{en:"Restaurant & Table reservation",fr:"Restaurant & réservation de table"},professional_services:{en:"Professional services",fr:"Services professionnels"},public_services:{en:"Administration & Public services",fr:"Administration & services publics"},church_pastoral:{en:"Church & Pastoral support",fr:"Église & accompagnement pastoral"},cleaning:{en:"Cleaning",fr:"Nettoyage"},other:{en:"Other",fr:"Autre"}};
 const copy={
@@ -29,13 +31,26 @@ function ratingText(item:PublicServiceSummary["rating"],locale:Locale){return it
 function offeringPrice(option:ServiceOffering){if(!option.price)return null;return /[A-Za-z]{3}|[$€£]|CDF/i.test(option.price)?option.price:`${option.price}${option.currency?` ${option.currency}`:""}`;}
 export function serviceDuration(minutes:number):string { if(minutes<60)return `${minutes} min`;const hours=Math.floor(minutes/60),rest=minutes%60;return `${hours} h${rest?` ${rest}`:""}`; }
 
-export function ServiceCard({item,locale}:{item:PublicServiceSummary;locale:Locale}) { const t=copy[locale],image=safePublicImageUrl(item.image_preview?.url),location=broadLocation(item.location),rating=ratingText(item.rating,locale),mode=serviceMode(item,locale),price=item.starting_price?offeringPrice(item.starting_price):null,href=servicePublicPath(item,locale);return <article className="marketplace-card service-card">
-  <Link className="marketplace-card-image" href={href}><MarketplaceImage src={image} alt={item.image_preview?.alt||item.service_name} fallback={t.image}/></Link>
-  <div className="marketplace-card-body"><p className="service-category">{serviceCategoryLabel(item.category,locale)}</p><h2><Link href={href}>{item.service_name}</Link></h2>
-    <div className="service-provider-line">{item.provider.profile_image&&<span className="service-provider-mini"><MarketplaceImage src={safePublicImageUrl(item.provider.profile_image.url)} alt={item.provider.profile_image.alt||item.provider.name} fallback={item.provider.name.slice(0,1)} sizes="32px"/></span>}<span>{t.provider}: </span><Link href={providerPath(locale,item.provider.slug)}>{item.provider.name}</Link></div>{location&&<p className="marketplace-location">{location}</p>}
-    <div className="marketplace-card-facts">{price&&<strong>{price}</strong>}{item.duration_minutes!=null&&<span>{serviceDuration(item.duration_minutes)}</span>}{rating&&<span aria-label={t.ratingLabel}>★ {rating}</span>}{mode&&<span>{mode}</span>}</div>
-    {item.short_description&&<p className="marketplace-description">{item.short_description}</p>}<ButtonLink href={href} variant="text">{t.details}</ButtonLink>
-  </div></article>; }
+export function ServiceCard({item,locale}:{item:PublicServiceSummary;locale:Locale}) {
+  const t=copy[locale],serviceImage=safePublicImageUrl(item.image_preview?.url),providerImage=safePublicImageUrl(item.provider.profile_image?.url),image=serviceImage??providerImage,location=broadLocation(item.location),rating=ratingText(item.rating,locale),mode=serviceMode(item,locale),price=item.starting_price?offeringPrice(item.starting_price):null,href=servicePublicPath(item,locale),category=serviceCategoryLabel(item.category,locale);
+  const imageAlt=serviceImage?(item.image_preview?.alt||item.service_name):(item.provider.profile_image?.alt||item.provider.name);
+  return <article className="marketplace-card service-card">
+    <Link className="marketplace-card-image service-card-image" href={href}><MarketplaceImage src={image} fallbackSrc={serviceImage?providerImage:null} alt={imageAlt} fallback={category} sizes="(max-width: 720px) 112px, (max-width: 1050px) 180px, 210px"/></Link>
+    <div className="marketplace-card-body"><p className="service-category">{category}</p><h2><Link href={href}>{item.service_name}</Link></h2>
+      <div className="service-provider-line"><span className="service-provider-mini"><MarketplaceImage src={providerImage} alt={item.provider.profile_image?.alt||item.provider.name} fallback={item.provider.name.slice(0,1).toUpperCase()} sizes="36px"/></span><Link href={providerPath(locale,item.provider.slug)}>{item.provider.name}</Link></div>
+      {location&&<p className="marketplace-location">{location}</p>}
+      <div className="marketplace-card-facts">{price&&<strong>{price}</strong>}{item.duration_minutes!=null&&<span>{serviceDuration(item.duration_minutes)}</span>}{rating&&<span aria-label={t.ratingLabel}>★ {rating}</span>}{mode&&<span>{mode}</span>}</div>
+      {item.short_description&&<p className="marketplace-description">{item.short_description}</p>}<ButtonLink href={href} variant="text">{t.details}</ButtonLink>
+    </div>
+  </article>;
+}
+
+export function ServiceResults({items,locale,ad}:{items:PublicServiceSummary[];locale:Locale;ad?:ReactNode}) {
+  return <div className="marketplace-grid service-results-grid">{items.flatMap((item,index)=>[
+    <ServiceCard item={item} locale={locale} key={item.public_ref}/>,
+    index===3?<ServicesAdSlot locale={locale} key="services-results-ad">{ad}</ServicesAdSlot>:null,
+  ])}</div>;
+}
 
 function hasSearch(search:ServiceSearch){return Object.entries(search).some(([key,value])=>key!=="page_size"&&value!=null&&value!=="");}
 function pageHref(locale:Locale,search:ServiceSearch,page:number){return `${marketplacePath(locale,"/shida/services")}${serviceSearchQuery({...search,page})}`;}
@@ -46,29 +61,50 @@ export async function ServiceCollectionPage({locale,search}:{locale:Locale;searc
     <label>{t.locationType}<select name="location_type" defaultValue={search.location_type||""}><option value="">{t.any}</option><option value="public_place">{t.atProvider}</option></select></label>
     <label>{t.rating}<select name="min_rating" defaultValue={search.min_rating?.toString()||""}><option value="">{t.any}</option>{[4,3,2,1].map((rating)=><option value={rating} key={rating}>{rating}+</option>)}</select></label>
   </div></details><div className="marketplace-filter-actions"><button className="button" type="submit">{t.apply}</button>{hasSearch(search)&&<Link className="button button-secondary" href={marketplacePath(locale,"/shida/services")}>{t.clear}</Link>}</div></form>
-  {result?<><p className="marketplace-result-count" role="status">{result.total} {t.results}</p>{result.items.length?<div className="marketplace-grid">{result.items.map((item)=><ServiceCard item={item} locale={locale} key={item.public_ref}/>)}</div>:<MarketplaceState>{t.empty}</MarketplaceState>}
+  {result?<><p className="marketplace-result-count" role="status">{result.total} {t.results}</p>{result.items.length?<ServiceResults items={result.items} locale={locale}/>:<MarketplaceState>{t.empty}</MarketplaceState>}
     {pages>1&&<nav className="marketplace-pagination" aria-label={`${t.page} ${result.page} ${t.of} ${pages}`}><span>{result.page>1?<Link href={pageHref(locale,search,result.page-1)}>{t.previous}</Link>:t.previous}</span><span>{t.page} {result.page} {t.of} {pages}</span><span>{result.page<pages?<Link href={pageHref(locale,search,result.page+1)}>{t.next}</Link>:t.next}</span></nav>}</>:<MarketplaceState>{t.unavailable}</MarketplaceState>}
   </div></section></>; }
 
 function providerHeader(profile:PublicServiceProvider,locale:Locale){const t=copy[locale],image=safePublicImageUrl(profile.profile_image?.url),location=broadLocation(profile.location),rating=ratingText(profile.rating,locale),isPublic=profile.location.address_visibility==="public";return <div className="service-provider-header"><div className="service-provider-avatar"><MarketplaceImage src={image} alt={profile.profile_image?.alt||profile.name} fallback={t.profileImage} sizes="96px"/></div><div><p className="eyebrow">{t.providerProfile}</p><h1>{profile.name}</h1>{location&&<p>{location}</p>}{isPublic&&profile.location.address&&<p>{profile.location.address}</p>}{isPublic&&profile.location.landmark&&<p>{t.landmark}: {profile.location.landmark}</p>}{rating&&<p>★ {rating} · {t.ratingLabel}</p>}</div></div>;}
-export async function ServiceProviderPage({locale,slug}:{locale:Locale;slug:string}){const t=copy[locale];let profile;try{profile=await getServiceProvider(slug);}catch(error){if(error instanceof ShidaApiError&&error.kind==="not-found")notFound();if(!(error instanceof ShidaApiError))throw error;}if(!profile)return <MarketplaceState>{t.unavailable}</MarketplaceState>;return <><section className="marketplace-detail-hero"><div className="container"><MarketplaceBreadcrumb label="Breadcrumb" items={[{label:"SHIDA",href:marketplacePath(locale,"/shida")},{label:t.services,href:marketplacePath(locale,"/shida/services")},{label:profile.name}]}/>{providerHeader(profile,locale)}</div></section><section className="section"><div className="container"><h2>{t.providerServices}</h2>{profile.services.length?<div className="marketplace-grid">{profile.services.map((item)=><ServiceCard item={item} locale={locale} key={item.public_ref}/>)}</div>:<MarketplaceState>{t.noProviderServices}</MarketplaceState>}</div></section></>;}
+export async function ServiceProviderPage({locale,slug}:{locale:Locale;slug:string}){const t=copy[locale];let profile;try{profile=await getServiceProvider(slug);}catch(error){if(error instanceof ShidaApiError&&error.kind==="not-found")notFound();if(!(error instanceof ShidaApiError))throw error;}if(!profile)return <MarketplaceState>{t.unavailable}</MarketplaceState>;return <><section className="marketplace-detail-hero"><div className="container"><MarketplaceBreadcrumb label={locale==="fr"?"Fil d’Ariane":"Breadcrumb"} items={[{label:"SHIDA",href:marketplacePath(locale,"/shida")},{label:t.services,href:marketplacePath(locale,"/shida/services")},{label:profile.name}]}/>{providerHeader(profile,locale)}</div></section><section className="section"><div className="container"><h2>{t.providerServices}</h2>{profile.services.length?<ServiceResults items={profile.services} locale={locale}/>:<MarketplaceState>{t.noProviderServices}</MarketplaceState>}</div></section></>;}
 
 export function serviceAvailabilityRange(from?:string,today=new Date()){const valid=from&&/^\d{4}-\d{2}-\d{2}$/.test(from)?new Date(`${from}T12:00:00Z`):null,start=valid&&!Number.isNaN(valid.getTime())?valid:new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()));const end=new Date(start);end.setUTCDate(end.getUTCDate()+30);return {from:start.toISOString().slice(0,10),to:end.toISOString().slice(0,10)};}
 const reviewCopy={en:{title:"Customer reviews",verified:"Verified customer",none:"No public reviews yet."},fr:{title:"Avis clients",verified:"Client vérifié",none:"Pas encore d’avis public."}} as const;
-export async function ServiceDetailPage({locale,slug,from,option}:{locale:Locale;slug:string;from?:string;option?:string}){const t=copy[locale],rt=reviewCopy[locale];let item:PublicService|undefined,availability:ServiceAvailability|null=null,reviews;try{item=await getService(slug);}catch(error){if(error instanceof ShidaApiError&&error.kind==="not-found")notFound();if(!(error instanceof ShidaApiError))throw error;}if(!item)return <MarketplaceState>{t.unavailable}</MarketplaceState>;
+const discoveryCopy={
+  en:{other:"Other services from this provider",all:"View all services",breadcrumb:"Breadcrumb"},
+  fr:{other:"Autres services de ce prestataire",all:"Voir tous les services",breadcrumb:"Fil d’Ariane"},
+} as const;
+
+export async function ServiceDetailPage({locale,slug,from,option}:{locale:Locale;slug:string;from?:string;option?:string}){
+  const t=copy[locale],rt=reviewCopy[locale],dt=discoveryCopy[locale];
+  let item:PublicService|undefined;
+  try{item=await getService(slug);}catch(error){if(error instanceof ShidaApiError&&error.kind==="not-found")notFound();if(!(error instanceof ShidaApiError))throw error;}
+  if(!item)return <MarketplaceState>{t.unavailable}</MarketplaceState>;
+
   const selectedOption=item.offerings.length===1?item.offerings[0]:item.offerings.find((offering)=>offering.public_ref===option)||null,requiresOption=item.offerings.length>0,range=serviceAvailabilityRange(from);
-  if(!requiresOption||selectedOption){try{availability=await getServiceAvailability(item.slug,range.from,range.to,selectedOption?.public_ref);}catch{/* Service details remain useful when availability is temporarily unavailable. */}}
-  try{reviews=await getServiceReviews(item.slug,1,10);}catch{/* Reviews are secondary and must not break booking. */}
-  const images=item.images.flatMap((image)=>{const url=safePublicImageUrl(image.url);return url?[{url,alt:image.alt}]:[];}),location=broadLocation(item.location),mode=serviceMode(item,locale),rating=ratingText(item.rating,locale),social=safePublicExternalUrl(item.social_link),path=servicePath(locale,item.slug);
-  return <><section className="marketplace-detail-hero"><div className="container"><MarketplaceBreadcrumb label="Breadcrumb" items={[{label:"SHIDA",href:marketplacePath(locale,"/shida")},{label:t.services,href:marketplacePath(locale,"/shida/services")},{label:item.service_name}]}/><p className="eyebrow">{serviceCategoryLabel(item.category,locale)}</p><h1>{item.service_name}</h1><p>{t.provider}: <Link href={providerPath(locale,item.provider.slug)}>{item.provider.name}</Link></p></div></section>
-  <section className="marketplace-gallery-section"><div className="container"><ImageGallery images={images} title={item.service_name} fallback={t.image} photosLabel={t.services} preload variant="portfolio" locale={locale}/></div></section>
-  <section className="section"><div className="container marketplace-detail"><aside className="marketplace-action-card service-booking-flow"><ServiceOptionSelector locale={locale} options={item.offerings} selected={selectedOption} path={path}/><ServiceAvailabilityPanel locale={locale} availability={availability} bookingUrl={selectedOption?.booking_url||item.booking_url} path={path} requiresOption={requiresOption} selectedOption={selectedOption} flexible={item.availability_mode==="flexible"}/></aside><div className="marketplace-property-content">
-    <dl className="marketplace-property-details">{item.duration_minutes!=null&&<div><dt>{t.duration}</dt><dd>{serviceDuration(item.duration_minutes)}</dd></div>}{location&&<div><dt>{t.location}</dt><dd>{location}</dd></div>}{mode&&<div><dt>{t.locationType}</dt><dd>{mode}</dd></div>}{rating&&<div><dt>{t.ratingLabel}</dt><dd><a href="#reviews">★ {rating}</a></dd></div>}</dl>
-    {item.description&&<section><h2>{t.description}</h2>{item.description.split(/\r?\n/).filter(Boolean).map((paragraph,index)=><p key={index}>{paragraph}</p>)}</section>}
-    {item.location.address_visibility==="public"&&(item.location.address||item.location.landmark)&&<section><h2>{t.address}</h2>{item.location.address&&<p>{item.location.address}</p>}{item.location.landmark&&<p><strong>{t.landmark}:</strong> {item.location.landmark}</p>}</section>}
-    {social&&<p><a href={social} target="_blank" rel="noopener noreferrer">{t.external}</a></p>}
-    <section id="reviews" className="service-reviews" tabIndex={-1}><h2>{rt.title}</h2>{reviews?.items.length?reviews.items.map((review,index)=><article key={`${review.created_at}-${index}`}><div aria-label={`${review.rating} out of 5`}>{"★".repeat(review.rating)}{"☆".repeat(5-review.rating)}</div><p>{review.comment}</p><footer>{rt.verified}{review.created_at?` · ${new Intl.DateTimeFormat(locale,{dateStyle:"medium"}).format(new Date(`${review.created_at}T12:00:00Z`))}`:""}</footer></article>):<p>{rt.none}</p>}</section>
-  </div></div></section></>;}
+  const availabilityRequest=!requiresOption||selectedOption?getServiceAvailability(item.slug,range.from,range.to,selectedOption?.public_ref):Promise.resolve(null);
+  const [availabilityResult,reviewsResult,providerResult]=await Promise.allSettled([availabilityRequest,getServiceReviews(item.slug,1,10),getServiceProvider(item.provider.slug)]);
+  const availability:ServiceAvailability|null=availabilityResult.status==="fulfilled"?availabilityResult.value:null;
+  const reviews:ServiceReviewCollection|undefined=reviewsResult.status==="fulfilled"?reviewsResult.value:undefined;
+  const providerServices=providerResult.status==="fulfilled"?providerResult.value.services.filter((service)=>service.public_ref!==item.public_ref&&service.slug!==item.slug):[];
+  const otherServices=providerServices.slice(0,3),hasMoreProviderServices=providerServices.length>otherServices.length;
+  const images=item.images.flatMap((image)=>{const url=safePublicImageUrl(image.url);return url?[{url,alt:image.alt}]:[];}),preview=safePublicImageUrl(item.image_preview?.url),detailImages=images.length>0?images:preview?[{url:preview,alt:item.image_preview?.alt??item.service_name}]:[],providerImage=safePublicImageUrl(item.provider.profile_image?.url),location=broadLocation(item.location),mode=serviceMode(item,locale),rating=ratingText(item.rating,locale),social=safePublicExternalUrl(item.social_link),path=servicePath(locale,item.slug),providerHref=providerPath(locale,item.provider.slug);
+
+  return <>
+    <section className="marketplace-detail-hero service-detail-header"><div className="container"><MarketplaceBreadcrumb label={dt.breadcrumb} items={[{label:"SHIDA",href:marketplacePath(locale,"/shida")},{label:t.services,href:marketplacePath(locale,"/shida/services")},{label:item.service_name}]}/><p className="eyebrow">{serviceCategoryLabel(item.category,locale)}</p><h1>{item.service_name}</h1><div className="service-detail-provider"><span className="service-detail-provider-avatar"><MarketplaceImage src={providerImage} alt={item.provider.profile_image?.alt||item.provider.name} fallback={item.provider.name.slice(0,1).toUpperCase()} sizes="52px"/></span><div><Link href={providerHref}>{item.provider.name}</Link>{rating&&<small>★ {rating}</small>}</div></div></div></section>
+    {detailImages.length>0&&<section className="marketplace-gallery-section service-gallery-section"><div className="container"><ImageGallery images={detailImages} title={item.service_name} fallback={t.image} photosLabel={t.services} sizes="(max-width: 720px) calc(100vw - 32px), 920px" variant="portfolio" locale={locale} thumbnailLimit={4}/></div></section>}
+    <section className="section service-detail-section"><div className="container">
+      <div className="marketplace-detail service-detail-layout"><div className="marketplace-property-content service-detail-content">
+        <dl className="marketplace-property-details">{item.duration_minutes!=null&&<div><dt>{t.duration}</dt><dd>{serviceDuration(item.duration_minutes)}</dd></div>}{location&&<div><dt>{t.location}</dt><dd>{location}</dd></div>}{mode&&<div><dt>{t.locationType}</dt><dd>{mode}</dd></div>}{rating&&<div><dt>{t.ratingLabel}</dt><dd><a href="#reviews">★ {rating}</a></dd></div>}</dl>
+        {item.description&&<section><h2>{t.description}</h2>{item.description.split(/\r?\n/).filter(Boolean).map((paragraph,index)=><p key={index}>{paragraph}</p>)}</section>}
+        {item.location.address_visibility==="public"&&(item.location.address||item.location.landmark)&&<section><h2>{t.address}</h2>{item.location.address&&<p>{item.location.address}</p>}{item.location.landmark&&<p><strong>{t.landmark}:</strong> {item.location.landmark}</p>}</section>}
+        {social&&<p><a href={social} target="_blank" rel="noopener noreferrer">{t.external}</a></p>}
+      </div><aside className="marketplace-action-card service-booking-flow"><ServiceOptionSelector locale={locale} options={item.offerings} selected={selectedOption} path={path}/><ServiceAvailabilityPanel locale={locale} availability={availability} bookingUrl={selectedOption?.booking_url||item.booking_url} path={path} requiresOption={requiresOption} selectedOption={selectedOption} flexible={item.availability_mode==="flexible"}/></aside></div>
+      <section id="reviews" className="service-reviews service-detail-followup" tabIndex={-1}><h2>{rt.title}</h2>{reviews?.items.length?reviews.items.map((review,index)=><article key={`${review.created_at}-${index}`}><div aria-label={`${review.rating} out of 5`}>{"★".repeat(review.rating)}{"☆".repeat(5-review.rating)}</div><p>{review.comment}</p><footer>{rt.verified}{review.created_at?` · ${new Intl.DateTimeFormat(locale,{dateStyle:"medium"}).format(new Date(`${review.created_at}T12:00:00Z`))}`:""}</footer></article>):<p>{rt.none}</p>}</section>
+      {otherServices.length>0&&<section className="service-related service-detail-followup"><div className="service-related-heading"><h2>{dt.other}</h2>{hasMoreProviderServices&&<ButtonLink href={providerHref} variant="text">{dt.all}</ButtonLink>}</div><ServiceResults items={otherServices} locale={locale}/></section>}
+    </div></section>
+  </>;
+}
 
 function metadataBase(locale:Locale,path:string,title:string,description:string|undefined,image?:string|null):Metadata{const canonical=marketplacePath(locale,path);return {title,description,alternates:{canonical,languages:{en:path,fr:`/fr${path}`,"x-default":path}},openGraph:{title,description,url:canonical,images:[{url:image||"/NIHILOBA_logo.png",alt:title}]}};}
 export function servicesMetadata(locale:Locale):Metadata{const t=copy[locale];return metadataBase(locale,"/shida/services",t.title,t.intro);}

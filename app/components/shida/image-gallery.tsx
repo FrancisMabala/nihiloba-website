@@ -52,9 +52,10 @@ type ImageGalleryProps = {
   sizes?: string;
   variant?: "default" | "portfolio";
   locale?: "en" | "fr";
+  thumbnailLimit?: number;
 };
 
-export function ImageGallery({ images, title, fallback, photosLabel, preload = false, sizes = "(max-width: 720px) calc(100vw - 32px), 1180px", variant = "default", locale = "en" }: ImageGalleryProps) {
+export function ImageGallery({ images, title, fallback, photosLabel, preload = false, sizes = "(max-width: 720px) calc(100vw - 32px), 1180px", variant = "default", locale = "en", thumbnailLimit }: ImageGalleryProps) {
   const [state, dispatch] = useReducer(galleryReducer, { selected: 0, lightboxOpen: false });
   const touchStart = useRef<number | null>(null);
   const didSwipe = useRef(false);
@@ -80,6 +81,12 @@ export function ImageGallery({ images, title, fallback, photosLabel, preload = f
   const imageAlt = active.alt || `${title} — ${activeIndex + 1}`;
   const galleryClass = portfolio ? "marketplace-gallery marketplace-gallery-portfolio" : "marketplace-gallery";
   const showPosition = portfolio || images.length > 1;
+  const allThumbnailIndexes = images.map((_, index) => index);
+  const limitedThumbnailIndexes = thumbnailLimit && thumbnailLimit > 0 && images.length > thumbnailLimit
+    ? activeIndex < thumbnailLimit
+      ? allThumbnailIndexes.slice(0, thumbnailLimit)
+      : [...allThumbnailIndexes.slice(0, Math.max(0, thumbnailLimit - 1)), activeIndex]
+    : allThumbnailIndexes;
 
   function closeLightbox() {
     dispatch({ type: "close-lightbox" });
@@ -148,9 +155,9 @@ export function ImageGallery({ images, title, fallback, photosLabel, preload = f
       {showPosition && <span className="marketplace-image-count" aria-live="polite">{activeIndex + 1} / {images.length}</span>}
     </div>
     {images.length > 1 && <div className="marketplace-thumbnails" aria-label={photosLabel}>
-      {images.map((image, index) => <button className={index === activeIndex ? "marketplace-thumbnail marketplace-thumbnail-active" : "marketplace-thumbnail"} type="button" key={`${image.url}-${index}`} onClick={() => dispatch({ type: "select", index, length: images.length })} aria-label={`${index + 1} / ${images.length}`} aria-pressed={index === activeIndex}>
+      {limitedThumbnailIndexes.map((index) => { const image=images[index]; return <button className={index === activeIndex ? "marketplace-thumbnail marketplace-thumbnail-active" : "marketplace-thumbnail"} type="button" key={`${image.url}-${index}`} onClick={() => dispatch({ type: "select", index, length: images.length })} aria-label={`${index + 1} / ${images.length}`} aria-pressed={index === activeIndex}>
         <MarketplaceImage src={image.url} alt="" fallback={fallback} sizes="120px"/>
-      </button>)}
+      </button>;})}
     </div>}
     {portfolio && state.lightboxOpen && <div className="marketplace-lightbox" role="dialog" aria-modal="true" aria-labelledby={dialogTitleId} onClick={closeLightbox} onKeyDown={handleLightboxKeyDown}>
       <h2 className="sr-only" id={dialogTitleId}>{text.dialog}: {title}</h2>

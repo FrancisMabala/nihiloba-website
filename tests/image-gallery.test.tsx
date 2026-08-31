@@ -40,6 +40,13 @@ describe("service portfolio image gallery", () => {
     expect(html).toContain('aria-pressed="true"');
   });
 
+  it("can limit initial thumbnails while preserving the full gallery count", () => {
+    const images = Array.from({ length: 6 }, (_, index) => ({ ...portrait, url: `${portrait.url}?image=${index}` }));
+    const html = renderToStaticMarkup(<ImageGallery images={images} title="Portfolio" fallback="Fallback" photosLabel="Photos" variant="portfolio" thumbnailLimit={4}/>);
+    expect(html).toContain("1 / 6");
+    expect((html.match(/<button class="marketplace-thumbnail/g) || [])).toHaveLength(4);
+  });
+
   it("selects thumbnails and wraps previous/next navigation", () => {
     const selected = galleryReducer(initial, { type: "select", index: 1, length: 3 });
     expect(selected.selected).toBe(1);

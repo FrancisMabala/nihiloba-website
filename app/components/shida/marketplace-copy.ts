@@ -2,7 +2,7 @@ import type { Locale } from "../../lib/i18n";
 
 export const marketplaceCopy = {
   en: {
-    apartments: "Apartments", hotels: "Hotels", wenze: "Wenze", services: "Services", jobs: "💼 Jobs", browse: "Browse on NIHILOBA", gateway: "Explore SHIDA listings",
+    apartments: "Apartments", hotels: "Hotels", wenze: "Wenze", services: "Services", jobs: "Jobs", browse: "Browse on NIHILOBA", gateway: "Explore SHIDA listings",
     gatewayText: "Browse public jobs, apartments, hotels, services and Wenze shops, then continue securely through SHIDA on WhatsApp.",
     apartmentTitle: "Available homes on SHIDA", hotelTitle: "Hotels available through SHIDA",
     apartmentIntro: "Discover currently available homes and request a visit directly through SHIDA.",
@@ -25,7 +25,7 @@ export const marketplaceCopy = {
     propertyTypes: { apartment: "Apartment", house: "House", studio: "Studio", room: "Room", office: "Office", commercial: "Commercial property", land: "Land", other: "Other" },
   },
   fr: {
-    apartments: "Appartements", hotels: "Hôtels", wenze: "Wenze", services: "Services", jobs: "💼 Emplois", browse: "Parcourir sur NIHILOBA", gateway: "Explorer les annonces SHIDA",
+    apartments: "Appartements", hotels: "Hôtels", wenze: "Wenze", services: "Services", jobs: "Emplois", browse: "Parcourir sur NIHILOBA", gateway: "Explorer les annonces SHIDA",
     gatewayText: "Parcourez les offres d’emploi, les appartements, les hôtels, les services et les boutiques Wenze, puis continuez en toute sécurité avec SHIDA sur WhatsApp.",
     apartmentTitle: "Logements disponibles sur SHIDA", hotelTitle: "Hôtels disponibles avec SHIDA",
     apartmentIntro: "Découvrez les logements actuellement disponibles et demandez une visite directement via SHIDA.",

@@ -42,8 +42,8 @@ export function MarketplaceGateway({ locale }: { locale: Locale }) {
   return <section className="section marketplace-gateway"><div className="container">
     <p className="eyebrow">{t.browse}</p><h2>{t.gateway}</h2><p>{t.gatewayText}</p>
     <div className="marketplace-gateway-links">
-      <ButtonLink href={marketplacePath(locale, "/shida/emplois")}>{t.jobs}</ButtonLink>
-      <ButtonLink href={marketplacePath(locale, "/shida/appartements")}>{t.apartments}</ButtonLink>
+      <ButtonLink href={marketplacePath(locale, "/shida/emplois")} variant="secondary">{t.jobs}</ButtonLink>
+      <ButtonLink href={marketplacePath(locale, "/shida/appartements")} variant="secondary">{t.apartments}</ButtonLink>
       <ButtonLink href={marketplacePath(locale, "/shida/hotels")} variant="secondary">{t.hotels}</ButtonLink>
       <ButtonLink href={marketplacePath(locale, "/shida/services")} variant="secondary">{t.services}</ButtonLink>
       <ButtonLink href={marketplacePath(locale, "/shida/wenze")} variant="secondary">{t.wenze}</ButtonLink>

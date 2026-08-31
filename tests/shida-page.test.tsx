@@ -13,6 +13,9 @@ describe("SHIDA public presentation", () => {
     expect(html).toContain('href="/shida/hotels"');
     expect(html).toContain('href="/shida/wenze"');
     expect(html).toContain('href="/shida/emplois"');
+    expect(html).not.toContain("💼");
+    const gateway = html.match(/marketplace-gateway-links">([\s\S]*?)<\/div>/)?.[1] ?? "";
+    expect((gateway.match(/button-secondary/g) || [])).toHaveLength(5);
     expect(html).not.toContain("Wenze Marketplace");
   });
 
