@@ -10,7 +10,7 @@ import { ButtonLink } from "../button-link";
 import { ImageGallery } from "./image-gallery";
 import { marketplacePath, MarketplaceState, publicLocation } from "./marketplace";
 import { MarketplaceImage } from "./marketplace-image";
-import { MarketplaceBreadcrumb } from "./marketplace-primitives";
+import { MarketplaceBreadcrumb, MarketplaceSectionBreadcrumb } from "./marketplace-primitives";
 import { ServiceAvailabilityPanel } from "./service-availability";
 import { ServiceOptionSelector } from "./service-options";
 import { ServicesAdSlot } from "./services-ad-slot";
@@ -54,7 +54,7 @@ export function ServiceResults({items,locale,ad}:{items:PublicServiceSummary[];l
 
 function hasSearch(search:ServiceSearch){return Object.entries(search).some(([key,value])=>key!=="page_size"&&value!=null&&value!=="");}
 function pageHref(locale:Locale,search:ServiceSearch,page:number){return `${marketplacePath(locale,"/shida/services")}${serviceSearchQuery({...search,page})}`;}
-export async function ServiceCollectionPage({locale,search}:{locale:Locale;search:ServiceSearch}) { const t=copy[locale];let result;try{result=await getServices({...search,page:search.page??1,page_size:search.page_size??12});}catch(error){if(!(error instanceof ShidaApiError)||error.kind==="not-found")throw error;}const pages=result?Math.max(1,Math.ceil(result.total/result.page_size)):1;return <><section className="marketplace-heading"><div className="container"><p className="eyebrow">SHIDA · {t.services}</p><h1>{t.title}</h1><p>{t.intro}</p></div></section><section className="section marketplace-collection"><div className="container">
+export async function ServiceCollectionPage({locale,search}:{locale:Locale;search:ServiceSearch}) { const t=copy[locale];let result;try{result=await getServices({...search,page:search.page??1,page_size:search.page_size??12});}catch(error){if(!(error instanceof ShidaApiError)||error.kind==="not-found")throw error;}const pages=result?Math.max(1,Math.ceil(result.total/result.page_size)):1;return <><section className="marketplace-heading"><div className="container"><MarketplaceSectionBreadcrumb locale={locale} current={t.services}/><h1>{t.title}</h1><p>{t.intro}</p></div></section><section className="section marketplace-collection"><div className="container">
   <form className="marketplace-filters" action={marketplacePath(locale,"/shida/services")} method="get"><div className="marketplace-filter-search"><label htmlFor="service-query">{t.search}</label><input id="service-query" name="query" defaultValue={search.query} placeholder={t.placeholder}/></div><div className="marketplace-filter-grid">
     <label>{t.city}<input name="city" defaultValue={search.city}/></label><label>{t.category}<select name="category" defaultValue={search.category||""}><option value="">{t.any}</option>{serviceCategories.map((category)=><option value={category} key={category}>{serviceCategoryLabel(category,locale)}</option>)}</select></label>
   </div><details className="marketplace-advanced-filters" open={Boolean(search.area||search.commune||search.location_type||search.min_rating)||undefined}><summary>{t.filters}</summary><div className="marketplace-filter-grid"><label>{t.area}<input name="area" defaultValue={search.area}/></label><label>{t.commune}<input name="commune" defaultValue={search.commune}/></label>

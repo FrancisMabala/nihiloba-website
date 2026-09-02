@@ -281,6 +281,7 @@ h1, h2, h3 { text-wrap: balance; }
 .marketplace-pagination > :last-child { justify-self: end; }
 .marketplace-pagination > span { color: var(--muted); font-size: 0.85rem; text-align: center; }
 .marketplace-breadcrumb { margin-bottom: clamp(2rem, 4vw, 3.25rem); color: var(--muted); font-size: 0.76rem; }
+.marketplace-heading .marketplace-breadcrumb { margin-bottom: 1rem; }
 .marketplace-breadcrumb ol { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
 .marketplace-breadcrumb li { display: flex; align-items: center; gap: 0.35rem; }
 .marketplace-breadcrumb li:not(:last-child)::after { color: var(--gold); content: "/"; }

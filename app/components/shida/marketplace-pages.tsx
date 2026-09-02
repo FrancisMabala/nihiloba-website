@@ -9,6 +9,7 @@ import { apartmentPropertyTypes } from "../../types/shida-public";
 import { ApartmentFilters, ApartmentOwnerProfile, ApartmentPagination, hasApartmentSearch } from "./apartment-marketplace";
 import { ApartmentCard, ApartmentDetail, HotelCard, HotelDetail, marketplacePath, MarketplaceState, publicLocation } from "./marketplace";
 import { marketplaceCopy } from "./marketplace-copy";
+import { MarketplaceSectionBreadcrumb } from "./marketplace-primitives";
 import { firstHotelRoomImage } from "./hotel-room-images";
 
 function marketplaceMetadata(locale: Locale, kind: "apartments" | "hotels"): Metadata {
@@ -39,7 +40,7 @@ export async function ApartmentCollectionPage({ locale, search = {} }: { locale:
   } catch (error) {
     if (!unavailable(error)) throw error;
   }
-  return <><section className="marketplace-heading"><div className="container"><p className="eyebrow">SHIDA · {t.apartments}</p><h1>{t.apartmentTitle}</h1><p>{t.apartmentIntro}</p></div></section>
+  return <><section className="marketplace-heading"><div className="container"><MarketplaceSectionBreadcrumb locale={locale} current={t.apartments}/><h1>{t.apartmentTitle}</h1><p>{t.apartmentIntro}</p></div></section>
     <section className="section marketplace-collection"><div className="container">
       <ApartmentFilters locale={locale} search={search} propertyTypes={listings?.filters.property_types ?? [...apartmentPropertyTypes]}/>
       {listings ? <>
@@ -60,7 +61,7 @@ export async function HotelCollectionPage({ locale }: { locale: Locale }) {
   } catch (error) {
     if (!unavailable(error)) throw error;
   }
-  return <><section className="marketplace-heading"><div className="container"><p className="eyebrow">SHIDA · {t.hotels}</p><h1>{t.hotelTitle}</h1><p>{t.hotelIntro}</p></div></section>
+  return <><section className="marketplace-heading"><div className="container"><MarketplaceSectionBreadcrumb locale={locale} current={t.hotels}/><h1>{t.hotelTitle}</h1><p>{t.hotelIntro}</p></div></section>
     <section className="section">{listings ? <><div className="container marketplace-grid">{listings.items.map((listing) => <HotelCard key={listing.public_ref} listing={listing} locale={locale}/>)}</div>{listings.items.length === 0 && <MarketplaceState>{t.emptyHotels}</MarketplaceState>}</> : <MarketplaceState>{t.unavailable}</MarketplaceState>}</section></>;
 }
 

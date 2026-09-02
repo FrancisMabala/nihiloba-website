@@ -27,6 +27,13 @@ export function MarketplaceBreadcrumb({ label, items }: { label: string; items: 
   </nav>;
 }
 
+export function MarketplaceSectionBreadcrumb({ locale, current }: { locale: Locale; current: string }) {
+  return <MarketplaceBreadcrumb
+    label={locale === "fr" ? "Fil d’Ariane" : "Breadcrumb"}
+    items={[{ label: "SHIDA", href: locale === "fr" ? "/fr/shida" : "/shida" }, { label: current }]}
+  />;
+}
+
 export type MarketplaceFact = { label: string; value: string };
 
 export function MarketplaceFacts({ facts }: { facts: MarketplaceFact[] }) {

@@ -200,7 +200,7 @@ export function HotelDetail({ listing, locale }: { listing: HotelListing; locale
   const location = publicLocation(listing.address_line, listing.quartier, listing.commune, listing.area, listing.city, listing.country_code);
   const action = safePublicActionUrl(listing.booking_url);
   return <>
-    <section className="marketplace-detail-hero"><div className="container"><Link className="marketplace-back" href={marketplacePath(locale, "/shida/hotels")}>← {t.backHotels}</Link><p className="eyebrow">SHIDA · {t.hotels}</p><h1>{listing.name}</h1>{location && <p>{location}</p>}</div></section>
+    <section className="marketplace-detail-hero"><div className="container"><MarketplaceBreadcrumb label={t.breadcrumb} items={[{label:"SHIDA",href:marketplacePath(locale,"/shida")},{label:t.hotels,href:marketplacePath(locale,"/shida/hotels")},{label:listing.name}]}/><h1>{listing.name}</h1>{location && <p>{location}</p>}</div></section>
     <section className="section"><div className="container marketplace-hotel-detail">
       {listing.description && <p className="lead-copy">{listing.description}</p>}
       {listing.landmark && <p><strong>{t.landmark}:</strong> {listing.landmark}</p>}

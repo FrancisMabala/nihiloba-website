@@ -9,6 +9,7 @@ import type { CommerceCartConflict, CommerceCartItem } from "../../types/shida-c
 import { CartIcon } from "../icons";
 import { useCart } from "./cart-provider";
 import { MarketplaceImage } from "./marketplace-image";
+import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import { commerceErrorMessage, wenzeCartCopy } from "./wenze-cart-copy";
 
 export function formatCommerceMoney(amount: string | null, currency: string | null, locale: Locale): string | null {
@@ -73,7 +74,7 @@ export function WenzeCartPage({ locale }: { locale: Locale }) {
   const priceChanges = conflicts.filter((conflict) => conflict.code === "price_changed");
   const hasBlockingConflict = conflicts.some((conflict) => conflict.code !== "price_changed");
   const globalConflicts = conflicts.filter((conflict) => !conflict.item_reference);
-  return <><section className="marketplace-detail-hero wenze-cart-hero"><div className="container"><p className="eyebrow">SHIDA · Wenze</p><h1>{t.title}</h1><p>{t.intro}</p></div></section><section className="section wenze-cart-page"><div className="container wenze-cart-layout">
+  return <><section className="marketplace-detail-hero wenze-cart-hero"><div className="container"><MarketplaceBreadcrumb label={locale==="fr"?"Fil d’Ariane":"Breadcrumb"} items={[{label:"SHIDA",href:locale==="fr"?"/fr/shida":"/shida"},{label:"Wenze",href:shoppingPath},{label:t.title}]}/><h1>{t.title}</h1><p>{t.intro}</p></div></section><section className="section wenze-cart-page"><div className="container wenze-cart-layout">
     <div className="wenze-cart-groups">
       {cart.seller_groups.map((group) => <section className="wenze-cart-group" key={group.store_reference} aria-labelledby={`store-${group.store_reference}`}><header><h2 id={`store-${group.store_reference}`}>{group.store_name}</h2><span>{group.items.reduce((sum, item) => sum + item.quantity, 0)}</span></header>
         <div>{group.items.map((item) => { const productUrl = safePublicWebsiteUrl(item.product_url); const image = safePublicImageUrl(item.image?.url); const conflict = conflicts.find((value) => value.item_reference === item.reference); return <article className="wenze-cart-item" key={item.reference}>

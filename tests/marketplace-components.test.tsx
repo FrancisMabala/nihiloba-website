@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApartmentCard, ApartmentDetail, HotelCard, HotelDetail, HotelRoomCard } from "../app/components/shida/marketplace";
 import { ApartmentFilters, ApartmentOwnerProfile, ApartmentPagination } from "../app/components/shida/apartment-marketplace";
 import { resolveHotelRoomImages } from "../app/components/shida/hotel-room-images";
-import { availabilityLabel } from "../app/components/shida/marketplace-primitives";
+import { availabilityLabel, MarketplaceSectionBreadcrumb } from "../app/components/shida/marketplace-primitives";
 import type { ApartmentCollection, ApartmentListing, HotelListing, PublicApartmentOwnerProfile, WenzeFulfillment, WenzeProduct } from "../app/types/shida-public";
 import { ProductCard, WenzeCollection, WenzeProductPage, WenzeStorePage, wenzePrice } from "../app/components/shida/wenze";
 import { WenzeFulfillmentInfo } from "../app/components/shida/wenze-fulfillment";
@@ -31,6 +31,7 @@ const owner = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("marketplace presentation", () => {
+  it("gives every marketplace heading a localized clickable SHIDA parent",()=>{const en=renderToStaticMarkup(<MarketplaceSectionBreadcrumb locale="en" current="Jobs"/>),fr=renderToStaticMarkup(<MarketplaceSectionBreadcrumb locale="fr" current="Emplois"/>);expect(en).toContain('href="/shida"');expect(en).toContain('aria-current="page">Jobs');expect(fr).toContain('href="/fr/shida"');expect(fr).toContain('aria-current="page">Emplois');});
   it("normalizes embedded Wenze currency without duplicating it",()=>{expect(wenzePrice("150USD","USD")).toBe("150 USD");expect(wenzePrice("25","USD")).toBe("25 USD");expect(wenzePrice("30 USD","CDF")).toBe("30 USD")});
   it("localizes Wenze pickup, delivery fees, and served areas",()=>{const fulfillment:WenzeFulfillment={methods:["pickup","delivery"],delivery:{fee_type:"fixed",fee:"5000",currency:"CDF",areas:["Gombe","Lingwala"]}};const fr=renderToStaticMarkup(<WenzeFulfillmentInfo fulfillment={fulfillment} locale="fr" city="Kinshasa"/>),free=renderToStaticMarkup(<WenzeFulfillmentInfo fulfillment={{methods:["delivery"],delivery:{fee_type:"free",fee:"0",currency:"USD",areas:[]}}} locale="en" city="Goma"/>);expect(fr).toContain("Retrait en boutique");expect(fr).toContain("Livraison :");expect(fr).toContain("5");expect(fr).toContain("000 CDF");expect(fr).toContain("Communes desservies");expect(fr).toContain("Gombe");expect(free).toContain("Free delivery");expect(free).not.toContain("0 USD")});
   it("renders pickup-only and delivery-only fulfillment independently",()=>{const pickup=renderToStaticMarkup(<WenzeFulfillmentInfo fulfillment={{methods:["pickup"],delivery:null}} locale="en" city="Kinshasa"/>),delivery=renderToStaticMarkup(<WenzeFulfillmentInfo fulfillment={{methods:["delivery"],delivery:{fee_type:"fixed",fee:"12.5",currency:"USD",areas:["Centre"]}}} locale="en" city="Goma"/>);expect(pickup).toContain("Pickup available");expect(pickup).not.toContain("Delivery available");expect(delivery).toContain("Delivery: 12.5 USD");expect(delivery).not.toContain("Pickup available");expect(delivery).toContain("Delivery areas")});
