@@ -114,7 +114,7 @@ export type PublicJobLocation = {
 
 export type PublicJobSummary = {
   public_ref: string;
-  slug: string;
+  slug: string | null;
   title: string;
   offer_type: PublicJobOfferType;
   origin: PublicJobOrigin;
