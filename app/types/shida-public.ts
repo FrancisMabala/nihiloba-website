@@ -69,11 +69,37 @@ export type PublicJobSalary = {
 
 export type PublicJobEmployerSummary = {
   public_ref: string;
-  slug: string;
+  slug: string | null;
   name: string;
   profile_image: PublicImage | null;
   city: string | null;
   area: string | null;
+  identity_type: "shida_employer" | "organization_directory";
+};
+
+export type PublicJobOrigin = "direct" | "external";
+export type PublicJobLifecycle = "published" | "active" | "open" | "expired" | "archived" | "closed" | "source_invalid";
+export type PublicJobExternalAction = {
+  mode: "redirect" | "instructions";
+  action: "redirect" | "instructions";
+  endpoint: string;
+};
+export type PublicJobRelationships = {
+  can_save: boolean;
+  save_target_type: "job";
+  save_target_ref: string;
+  can_share: boolean;
+  can_follow_employer: boolean;
+  follow_target_type: "organization_directory" | null;
+  follow_target_ref: string | null;
+};
+export type PublicEntityActions = {
+  target_type: string;
+  public_ref: string;
+  can_save_in_shida: boolean;
+  can_follow_in_shida: boolean;
+  save_url: string | null;
+  follow_url: string | null;
 };
 
 export type PublicJobLocation = {
@@ -90,6 +116,8 @@ export type PublicJobSummary = {
   slug: string;
   title: string;
   offer_type: PublicJobOfferType;
+  origin: PublicJobOrigin;
+  capabilities: string[];
   professional_category: string | null;
   vacancies: number | null;
   contract_type: string | null;
@@ -102,10 +130,17 @@ export type PublicJobSummary = {
   description_preview: string | null;
   compensation: string | null;
   published_at: string | null;
-  status: "open";
+  status: PublicJobLifecycle;
+  lifecycle_state: PublicJobLifecycle;
   public_url: string;
   apply_url: string | null;
   apply_label: { fr: string; en: string };
+  deadline_label: string | null;
+  relationship_capabilities: PublicJobRelationships;
+  external_application_action: PublicJobExternalAction | null;
+  external_verified_label: string | null;
+  external_verified: boolean;
+  application_available: boolean;
 };
 
 export type PublicJob = PublicJobSummary & {
@@ -117,6 +152,14 @@ export type PublicJob = PublicJobSummary & {
   salary: PublicJobSalary | null;
   requirements_document: { available: boolean; url: null };
   public_social_link: string | null;
+  external_source: null | {
+    explanation: string;
+    canonical_url: string | null;
+    source_label: string;
+    application_mode: "redirect" | "instructions" | "email_assisted";
+    application_instructions: string | null;
+    email_assisted_available: boolean;
+  };
 };
 
 export type PublicJobEmployer = PublicJobEmployerSummary & {
