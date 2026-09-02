@@ -53,6 +53,7 @@ export type JobSearch = {
   city?: string;
   area?: string;
   commune?: string;
+  view?: "professional" | "individual";
   page?: number;
   page_size?: number;
 };

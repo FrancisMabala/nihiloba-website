@@ -493,7 +493,11 @@ h1, h2, h3 { text-wrap: balance; }
 .marketplace-section-heading a { font-weight: 700; text-underline-offset: 4px; }
 .job-marketplace-heading { padding-bottom: 2rem; }
 .job-offer-tabs { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.5rem; }
-.job-offer-tabs a { padding: .65rem .9rem; border: 1px solid rgba(255,255,255,.42); color: inherit; font-size: .82rem; font-weight: 750; text-decoration: none; }
+.job-offer-tabs a { padding: .65rem .9rem; border: 1px solid rgba(255,255,255,.42); color: inherit; font-size: .82rem; font-weight: 750; text-decoration: none; transition: background-color .18s ease, border-color .18s ease, color .18s ease; }
+.job-offer-tabs a:hover,
+.job-offer-tabs a:focus-visible,
+.job-offer-tabs a.job-offer-tab-active { border-color: var(--forest); background: var(--forest); color: #fff; }
+.job-offer-tabs a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .job-marketplace-layout { display: grid; grid-template-columns: minmax(210px,260px) minmax(0,1fr); gap: clamp(1.5rem,4vw,3rem); align-items: start; }
 .job-filter-column { position: sticky; top: 96px; }
 .job-filter-sheet { border: 1px solid var(--line); background: #fff; }
@@ -504,6 +508,8 @@ h1, h2, h3 { text-wrap: balance; }
 .job-filter-sheet input:focus-visible { outline: 3px solid rgba(183,139,52,.35); outline-offset: 1px; }
 .job-clear-filters { color: var(--forest); font-size: .8rem; font-weight: 700; text-align: center; }
 .job-results { min-width: 0; }
+.job-view-empty { display: grid; justify-items: center; gap: 1rem; padding-block: 1rem; text-align: center; }
+.job-view-empty .marketplace-state { padding-bottom: 0; }
 .job-result-group { scroll-margin-top: 100px; }
 .job-result-group + .job-result-group { margin-top: 2.5rem; }
 .job-result-group > h2 { display: flex; align-items: center; gap: .65rem; margin-bottom: 1rem; font-size: clamp(1.5rem,2.6vw,2rem); }
