@@ -134,7 +134,7 @@ export type PublicJobSummary = {
   lifecycle_state: PublicJobLifecycle;
   public_url: string;
   apply_url: string | null;
-  apply_label: { fr: string; en: string };
+  apply_label: string;
   deadline_label: string | null;
   relationship_capabilities: PublicJobRelationships;
   external_application_action: PublicJobExternalAction | null;
