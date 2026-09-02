@@ -550,6 +550,9 @@ h1, h2, h3 { text-wrap: balance; }
 .job-personal-employer { color: var(--muted); }
 .job-detail-dates { display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; margin-top: .7rem; color: var(--muted); font-size: .8rem; }
 .job-detail-primary-actions { margin-top: 1.5rem; }
+.job-detail-primary-actions > .job-public-actions { display: contents; }
+.job-detail-primary-actions > .button,
+.job-detail-primary-actions > .job-public-actions .job-action-button { align-self: stretch; min-height: 52px; display: inline-flex; align-items: center; justify-content: center; }
 .job-detail-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(250px,330px); gap: clamp(2rem,5vw,4rem); align-items: start; }
 .job-detail-content { min-width: 0; }
 .job-detail-content > section + section { margin-top: 2.75rem; }
@@ -638,6 +641,7 @@ h1, h2, h3 { text-wrap: balance; }
   .job-detail-primary-actions { align-items: stretch; flex-direction: column; }
   .job-detail-primary-actions > .button,.job-final-action .button { width: 100%; }
   .job-public-actions:not(.job-public-actions-compact) .job-action-button { flex: 1 1 auto; text-align: center; }
+  .job-detail-primary-actions .job-action-button { width: 100%; }
   .job-employer-identity-large .job-employer-image { width: 76px; height: 76px; flex-basis: 76px; }
 }
 
