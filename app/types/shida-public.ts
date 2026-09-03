@@ -67,6 +67,9 @@ export type PublicJobSalary = {
   currency: string | null;
   period: string | null;
 };
+export type PublicJobSalaryVisibility = "visible" | "hidden" | "not_provided";
+export type PublicJobApplicationMode = "shida" | "redirect" | "email_assisted" | "instructions" | null;
+export type PublicJobApplicationCapability = "shida_application" | "external_redirect" | "external_instructions" | "none";
 
 export type PublicJobEmployerSummary = {
   public_ref: string;
@@ -85,13 +88,25 @@ export type PublicJobExternalAction = {
   action: "redirect" | "instructions";
   endpoint: string;
 };
+export type PublicJobApplication = {
+  mode: PublicJobApplicationMode;
+  available: boolean;
+  capability: PublicJobApplicationCapability;
+  apply_url: string | null;
+  external_action: PublicJobExternalAction | null;
+};
+export type PublicJobExperience = {
+  text: string | null;
+  minimum_years: number | null;
+  requirement_kind: "required" | "preferred" | "approximate" | "not_required" | "unspecified";
+};
 export type PublicJobRelationships = {
   can_save: boolean;
   save_target_type: "job";
   save_target_ref: string;
   can_share: boolean;
   can_follow_employer: boolean;
-  follow_target_type: "organization_directory" | null;
+  follow_target_type: "organization_directory" | "company" | null;
   follow_target_ref: string | null;
 };
 export type PublicEntityActions = {
@@ -120,20 +135,29 @@ export type PublicJobSummary = {
   origin: PublicJobOrigin;
   capabilities: string[];
   professional_category: string | null;
+  category: string | null;
   vacancies: number | null;
   contract_type: string | null;
+  contract_type_raw: string | null;
   seniority: string | null;
   work_mode: string | null;
+  work_mode_raw: string | null;
   work_schedule: string | null;
   application_deadline: string | null;
   employer: PublicJobEmployerSummary;
   location: PublicJobLocation;
+  short_summary: string | null;
+  summary_preview: string | null;
   description_preview: string | null;
   compensation: string | null;
+  salary: PublicJobSalary | null;
+  salary_visibility: PublicJobSalaryVisibility;
   published_at: string | null;
   status: PublicJobLifecycle;
   lifecycle_state: PublicJobLifecycle;
   public_url: string;
+  application: PublicJobApplication;
+  application_mode: PublicJobApplicationMode;
   apply_url: string | null;
   apply_label: string;
   deadline_label: string | null;
@@ -146,11 +170,18 @@ export type PublicJobSummary = {
 
 export type PublicJob = PublicJobSummary & {
   description: string | null;
-  short_summary: string | null;
+  description_fallback: string | null;
   workplace_reference: string | null;
   start_date: string | null;
+  responsibilities: string | null;
+  qualifications: string | null;
+  experience: PublicJobExperience;
+  education: string | null;
+  skills: string | null;
+  personal_qualities: string | null;
+  languages: string | null;
   benefits: string | null;
-  salary: PublicJobSalary | null;
+  employment_conditions: string | null;
   requirements_document: { available: boolean; url: null };
   public_social_link: string | null;
   external_source: null | {

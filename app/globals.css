@@ -517,7 +517,7 @@ h1, h2, h3 { text-wrap: balance; }
 .job-result-list { display: grid; gap: .8rem; }
 .job-result { padding: clamp(1rem,2vw,1.35rem); border: 1px solid rgba(8,49,39,.18); background: #fff; }
 .job-result h3 { margin: .55rem 0 .25rem; font-size: clamp(1.2rem,2vw,1.5rem); }
-.job-result h3 a { color: var(--forest); text-decoration: none; }
+.job-result h3 a { display: -webkit-box; overflow: hidden; color: var(--forest); overflow-wrap: anywhere; text-decoration: none; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .job-result h3 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .job-result-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
 .job-type-label { display: inline-flex; width: fit-content; padding: .35rem .55rem; background: rgba(183,139,52,.12); color: var(--forest); font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
@@ -553,7 +553,7 @@ h1, h2, h3 { text-wrap: balance; }
 .job-employer-identity-large .job-employer-name { margin: 0; color: var(--forest); font-family: Georgia,"Times New Roman",serif; font-size: clamp(1.5rem,3vw,2.2rem); font-weight: 500; }
 .job-employer-identity-large p { margin: .3rem 0 0; color: var(--muted); }
 .job-detail-hero { padding-bottom: clamp(2.5rem,5vw,3.8rem); }
-.job-detail-hero h1 { margin-top: .8rem; }
+.job-detail-hero h1 { max-width: 900px; margin-top: .8rem; overflow-wrap: anywhere; }
 .job-personal-employer { color: var(--muted); }
 .job-detail-dates { display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; margin-top: .7rem; color: var(--muted); font-size: .8rem; }
 .job-detail-primary-actions { margin-top: 1.5rem; }
@@ -564,6 +564,10 @@ h1, h2, h3 { text-wrap: balance; }
 .job-detail-content { min-width: 0; }
 .job-detail-content > section + section { margin-top: 2.75rem; }
 .job-authored-copy { white-space: pre-line; }
+.job-structured-copy { display: grid; gap: .8rem; color: var(--muted); }
+.job-structured-copy p { margin: 0; white-space: pre-line; }
+.job-structured-list { display: grid; gap: .55rem; margin: 0; padding-left: 1.25rem; color: var(--muted); }
+.job-structured-list li::marker { color: var(--gold); }
 .job-detail-summary { position: sticky; top: 96px; padding: 1.2rem; border: 1px solid var(--line); background: var(--sand); }
 .job-detail-summary h2 { font-size: 1.35rem; }
 .job-detail-summary dl { display: grid; gap: 0; margin: 0; }
