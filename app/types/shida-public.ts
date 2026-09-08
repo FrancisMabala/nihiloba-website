@@ -78,7 +78,7 @@ export type PublicJobEmployerSummary = {
   profile_image: PublicImage | null;
   city: string | null;
   area: string | null;
-  identity_type: "shida_employer" | "organization_directory" | "unknown";
+  identity_type: "shida_employer" | "organization_directory" | "individual" | "unknown";
 };
 
 export type PublicJobOrigin = "direct" | "external";
