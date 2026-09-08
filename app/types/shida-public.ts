@@ -78,7 +78,7 @@ export type PublicJobEmployerSummary = {
   profile_image: PublicImage | null;
   city: string | null;
   area: string | null;
-  identity_type: "shida_employer" | "organization_directory";
+  identity_type: "shida_employer" | "organization_directory" | "unknown";
 };
 
 export type PublicJobOrigin = "direct" | "external";
@@ -165,6 +165,8 @@ export type PublicJobSummary = {
   external_application_action: PublicJobExternalAction | null;
   external_verified_label: string | null;
   external_verified: boolean;
+  organization_verified_label: string | null;
+  organization_verified: boolean;
   application_available: boolean;
 };
 
