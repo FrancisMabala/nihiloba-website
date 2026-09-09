@@ -7,7 +7,7 @@ import { BrandLogo } from "./brand-logo";
 export function Footer({ locale }: { locale: Locale }) {
   const t = nav[locale];
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" lang={locale}>
       <div className="container footer-grid">
         <div className="footer-intro"><Link className="footer-logo" href={localizedPath(locale)}><BrandLogo /></Link><p>{t.tagline}</p></div>
         <div className="footer-column"><p className="footer-label">{t.company}</p><Link href={localizedPath(locale,"/about")}>{t.about}</Link><Link href={localizedPath(locale,"/products")}>{t.products}</Link><Link href={localizedPath(locale,"/education")}>{t.education}</Link><Link href={localizedPath(locale,"/contact")}>{t.contact}</Link></div>

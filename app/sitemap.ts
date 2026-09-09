@@ -48,6 +48,7 @@ const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const dynamicRoutes = new Set<string>();
+  for (const prefix of ["", "/fr", "/ln", "/sw"]) dynamicRoutes.add(`${prefix}/shida/restaurants`);
   dynamicRoutes.add("/shida/wenze");
   dynamicRoutes.add("/fr/shida/wenze");
   try {
@@ -110,7 +111,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: route.includes("/shida/") ? "daily" : route.endsWith("/shida") ? "monthly" : "yearly",
       priority: route.includes("/shida/") ? 0.8 : route.endsWith("/shida") ? 0.9 : route === "/en" || route === "/fr" ? 1 : 0.7,
       alternates: {
-        languages: {
+        languages: route.endsWith("/shida/restaurants") ? {
+          en: "https://nihiloba.com/shida/restaurants",
+          fr: "https://nihiloba.com/fr/shida/restaurants",
+          ln: "https://nihiloba.com/ln/shida/restaurants",
+          sw: "https://nihiloba.com/sw/shida/restaurants",
+        } : {
           en: `https://nihiloba.com${pair.en}`,
           fr: `https://nihiloba.com${pair.fr}`,
         },

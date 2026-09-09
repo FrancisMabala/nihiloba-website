@@ -5,9 +5,9 @@ import { Footer } from "./footer";
 import { Header } from "./header";
 import { CartProvider } from "./shida/cart-provider";
 
-export function SiteDocument({ children, locale }: { children: ReactNode; locale: Locale }) {
+export function SiteDocument({ children, locale, documentLanguage = locale }: { children: ReactNode; locale: Locale; documentLanguage?: string }) {
   return (
-    <html lang={locale}>
+    <html lang={documentLanguage}>
       <body>
         <a className="skip-link" href="#main-content">{nav[locale].skip}</a>
         <CartProvider>

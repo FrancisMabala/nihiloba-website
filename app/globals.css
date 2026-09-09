@@ -679,3 +679,30 @@ h1, h2, h3 { text-wrap: balance; }
   .wenze-cart-action-buttons { grid-template-columns: 1fr; }
   .wenze-cart-secondary-actions { align-items: flex-start; flex-direction: column; }
 }
+
+/* Restaurant public browsing: no ordering or management controls. */
+.restaurant-public { overflow-wrap: anywhere; }
+.restaurant-public h1 { font-size: clamp(2rem, 4vw, 3.5rem); margin-block: 1.5rem; }
+.restaurant-public h2 { margin-block: 1.5rem 1rem; }
+.restaurant-languages, .restaurant-actions, .restaurant-pagination { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-block: 1.5rem; }
+.restaurant-languages a { padding: .5rem; text-underline-offset: .3em; }
+.restaurant-languages a[aria-current] { border-bottom: 2px solid #b18a42; font-weight: 700; }
+.restaurant-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: .75rem 1rem; border: 1px solid #63736b; background: transparent; color: #132f27; text-decoration: none; font: inherit; font-weight: 600; cursor: pointer; }
+.restaurant-link:hover { background: #132f27; color: #fff; }
+.restaurant-public :focus-visible { outline: 3px solid #b18a42; outline-offset: 3px; }
+.restaurant-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; padding: 1.25rem; margin-block: 2rem; border: 1px solid #d8d5ca; }
+.restaurant-filters label { display: flex; flex-direction: column; gap: .4rem; }
+.restaurant-filters input, .restaurant-filters select { width: 100%; min-width: 0; min-height: 44px; border: 1px solid #85918b; padding: .65rem; background: white; color: #132f27; font: inherit; }
+.restaurant-filters .restaurant-checkbox { flex-direction: row; align-items: center; }
+.restaurant-checkbox input { width: 1.25rem; flex: 0 0 1.25rem; }
+.restaurant-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.restaurant-photo { display: block; position: relative; aspect-ratio: 4 / 3; background: #eeeade; overflow: hidden; }
+.restaurant-photo img { object-fit: contain; }
+.restaurant-photo .marketplace-image-fallback { height: 100%; min-height: 0; }
+.restaurant-hero-photo { max-width: 720px; max-height: 420px; margin-top: 1.5rem; }
+.restaurant-hours { margin-block: 2rem; padding: 1.25rem; background: #f2f0e7; }
+.restaurant-note { font-size: .875rem; }
+.restaurant-activities { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.restaurant-activities li { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; }
+@media (max-width: 1050px) { .restaurant-grid, .restaurant-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .restaurant-grid, .restaurant-filters { grid-template-columns: minmax(0, 1fr); } .restaurant-actions > a { width: 100%; } }

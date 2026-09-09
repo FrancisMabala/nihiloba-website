@@ -29,7 +29,7 @@ export function Header({ locale }: { locale: Locale }) {
 
   // Remove the current language prefix while preserving the page path
   const suffix =
-    pathname.replace(/^\/(en|fr)(?=\/|$)/, "") || "/";
+    pathname.replace(/^\/(en|fr|ln|sw)(?=\/|$)/, "") || "/";
 
   const comparableSuffix = suffix === "/" ? suffix : suffix.replace(/\/$/, "");
 
@@ -62,7 +62,7 @@ export function Header({ locale }: { locale: Locale }) {
         : `/${otherLocale}${suffix}`;
 
   return (
-    <header className="site-header">
+    <header className="site-header" lang={locale}>
       <div className="container nav-shell">
         <Link
           className="header-logo"

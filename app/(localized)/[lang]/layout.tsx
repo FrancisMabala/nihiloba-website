@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SiteDocument } from "../../components/site-document";
 import { isLocale, locales } from "../../lib/i18n";
+import { isRestaurantLocale } from "../../lib/restaurant-i18n";
 import "../../globals.css";
 
 
@@ -16,6 +17,6 @@ export const metadata: Metadata = {
 
 export default async function LocalizedLayout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {
   const { lang } = await params;
-  if (!isLocale(lang)) notFound();
-  return <SiteDocument locale={lang}>{children}</SiteDocument>;
+  if (!isRestaurantLocale(lang)) notFound();
+  return <SiteDocument locale={isLocale(lang) ? lang : "fr"} documentLanguage={lang}>{children}</SiteDocument>;
 }

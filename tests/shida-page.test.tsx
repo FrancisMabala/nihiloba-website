@@ -15,7 +15,8 @@ describe("SHIDA public presentation", () => {
     expect(html).toContain('href="/shida/emplois"');
     expect(html).not.toContain("💼");
     const gateway = html.match(/marketplace-gateway-links">([\s\S]*?)<\/div>/)?.[1] ?? "";
-    expect((gateway.match(/button-secondary/g) || [])).toHaveLength(5);
+    expect((gateway.match(/button-secondary/g) || [])).toHaveLength(6);
+    expect(gateway).toContain('href="/shida/restaurants"');
     expect(html).not.toContain("Wenze Marketplace");
   });
 
