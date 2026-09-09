@@ -90,3 +90,51 @@ Before release, execute the requested browser journey matrix at common phone/tab
 Dashboard integration, OPEN-05 review policy, delegated establishment access, missing instrumentation and remaining release acceptance are still open. The next bounded step is R3B.1 browser/live-integration acceptance with test recipients and an available browser, not ordering or a Dashboard expansion. No complete canonical R3/public-release claim, Git commit or deployment is made.
 
 Suggested commit: `feat(restaurants): integrate public discovery menus and Business profiles`
+
+## R3B.2 — bounded follow-up (2026-09-09)
+
+Status: independent review and bounded fixes completed; **browser/mobile acceptance BLOCKED**, not verified. This section supersedes the verification status only where explicitly stated. The initial worktree was clean; the existing R3B.1 implementation was retained.
+
+### Browser availability and scenario coverage
+
+Browser discovery returned `apps: [], browsers: []`; selecting a browser for the isolated localhost Restaurant journey returned `No browser is available`. No browser controls were exercised. Per the R3B.2 boundary, no additional HTTP journeys were substituted for browser acceptance, and the historical R3B.1 HTTP checks above are not upgraded to browser evidence.
+
+All requested browser scenarios remain blocked: discovery with combined filters/pagination; detail/menu/Back; Business and activity destinations; unit/amount/unknown prices; sold-out/expired/unknown hours; absent images/menu; unavailable targets; save/follow authentication; WhatsApp reporting; direct/menu/QR entry. No live WhatsApp links were followed, messages sent, production mutations performed, or deployment initiated.
+
+Representative 390px phone, 768px tablet and 1440px desktop checks remain to be performed. Actual focus order, keyboard activation, viewport overflow, image rendering, loading transitions, refresh-on-return and scroll restoration are unverified. Source review confirms existing 600/1050px layout breakpoints, minmax columns, wrapping, labeled form inputs, native controls, focus-visible styling and 44px action sizing; these observations are not visual/accessibility acceptance.
+
+### Demonstrated defects corrected
+
+1. Detail-load failure previously offered a collection link as “Try again,” losing the chosen establishment. Menu-load failure rebuilt a retry URL without the current menu page. A narrow client `RestaurantRetry` now reloads the exact current document, retaining route/query/position while avoiding echoing potentially private legacy slugs into rendered markup. No token or identity state is added.
+2. A photo-less card's image link was named only “No photo available.” Its accessible name now identifies the action and actual establishment using existing localized labels.
+3. Following a Restaurant activity from the Business profile dropped the originating filtered-result context. That link now carries the already-normalized `back` query.
+4. The shared French skip link on LN/SW documents lacked its own language annotation. It now declares the actual chrome language, like the existing header/footer. This fixes the language annotation, not the missing translation.
+
+Changed files: `app/components/shida/restaurants.tsx`, new `restaurant-retry.tsx`, `app/components/site-document.tsx`, `tests/restaurants-marketplace.test.tsx`, and this report. No CSS/layout redesign, backend changes, dependencies, schema, grants, identity endpoints or feature expansion.
+
+### Localization coverage and remaining gaps
+
+EN/FR/LN/SW Restaurant route/copy mapping and context-preserving local language links were inspected; existing four-language render tests passed. This is **partial LN/SW coverage**, not complete support. Header/footer, skip-link text, cart chrome and linked non-Restaurant marketplaces still use French fallback for LN/SW. Lingala weekday labels remain French; generic not-found/loading presentation and native-speaker review also need attention. The Restaurant-specific language switch remains separate from the EN/FR chrome switch. A broader shared-localization batch must address these essential navigation translations explicitly; no site-wide rewrite was attempted here.
+
+### Exact build warning investigation
+
+A temporary Node fetch wrapper was used during `npm run build` to log only failed origin/path/error code, omitting queries, credentials, bodies and headers, then rethrow unchanged. It was removed after diagnosis; no diagnostic logging or suppression remains in the application.
+
+The reproduced raw warning was `TypeError: fetch failed`, caused by `connect EACCES 216.24.57.7:443`. The trace identified failed `https://api.nihiloba.com/api/public/shida/hotels` requests during static generation. Other denied build requests were `/api/public/shida/apartments`, `/services`, `/wenze/stores`, and `/jobs`; Next's separate `https://telemetry.nextjs.org/api/v1/record` calls were also sandbox-denied. No Restaurant endpoint was fetched during this build.
+
+Source chain: `public-client.ts:getHotels()` requests the Hotels collection with `revalidate: 60`; default/localized hotel collection pages use that function during prerendering. `HotelCollectionPage` catches the shared unavailable error and renders the existing unavailable state. `sitemap.ts` also requests Hotels and other marketplaces, catching failures and retaining static routes. The installed Next fetch implementation includes a pending-revalidation `catch(console.error)` path, so application error handling does not imply every framework fetch warning is silent. No framework file was changed.
+
+The observed failure is an environment-denied build-time connection, not a demonstrated Restaurant parser or rendering defect. In an affected build, Hotels may use an existing cached response or render unavailable, and dynamically enumerated sitemap entries can be absent. Restaurant pages remain request-time/no-store. If production also cannot reach the API, backend-backed functionality would likewise fail; the build warning alone cannot prove production API health. The user's supplied Render log showed a successful build/start and no corresponding warning, but live data behavior was not tested here. No warning was suppressed, security restriction weakened or caching policy changed.
+
+### Final checks and stop boundary
+
+- `npm run test`: **180 passed, 19 files**, including 16 Restaurant cases. Three new tests cover exact-document retry wiring, named photo-less links and Business activity return context. These are unit/server-render checks, not browser interaction.
+- `npm run typecheck` and `npm run lint`: passed.
+- `npm run build`: passed on the final application state; the separate traced diagnostic build also passed despite sandbox-denied fetches.
+- `git diff --check`: passed, with Windows line-ending notices only.
+
+No backend regression/migration tests were needed or run because no backend code changed. The inherited 70-failure backend baseline remains as recorded above, not a passing suite. Local Node remains below the declared >=22.13.0 requirement; repeat acceptance on the supported CI/runtime.
+
+Next bounded step: supply an available browser and isolated backend/test-recipient environment, then execute the blocked scenario/viewport matrix and native-language review. Dashboard, OPEN-05/reviews, delegated access, instrumentation, ordering and deployment remain excluded. R3B.2 does not establish public-release acceptance.
+
+Suggested commit: `fix(restaurants): preserve retry context and improve accessible navigation`

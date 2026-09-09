@@ -6,6 +6,7 @@ import { businessPath, restaurantCopy, restaurantLocales, restaurantPath, restau
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import { MarketplaceImage } from "./marketplace-image";
 import { RestaurantRevalidation } from "./restaurant-revalidation";
+import { RestaurantRetry } from "./restaurant-retry";
 
 // Native document navigation deliberately re-reads eligibility rather than prefetching public projections.
 function Internal({ href, children }: { href: string; children: React.ReactNode }) { return <a className="restaurant-link" href={href}>{children}</a>; }
@@ -33,7 +34,7 @@ export async function restaurantDetailMetadata(locale: RestaurantLocale, id: str
     return { ...restaurantMetadata(locale), robots: { index: false, follow: false } };
   }
 }
-function Failure({ locale, href }: { locale: RestaurantLocale; href: string }) { return <div role="status"><p>{restaurantCopy[locale].error}</p><Internal href={href}>{restaurantCopy[locale].retry}</Internal></div>; }
+function Failure({ locale, href }: { locale: RestaurantLocale; href?: string }) { return <div role="status"><p>{restaurantCopy[locale].error}</p>{href ? <Internal href={href}>{restaurantCopy[locale].retry}</Internal> : <RestaurantRetry label={restaurantCopy[locale].retry}/>}</div>; }
 function Pagination({ locale, page, page_size, total, href }: { locale: RestaurantLocale; page: number; page_size: number; total: number; href: (page: number) => string }) {
   const t = restaurantCopy[locale];
   return <nav className="restaurant-pagination" aria-label={t.page}>{page > 1 && <Internal href={href(page - 1)}>{t.previous}</Internal>}<span aria-current="page">{t.page} {page} / {Math.max(1, Math.ceil(total / page_size))}</span>{page * page_size < total && <Internal href={href(page + 1)}>{t.next}</Internal>}</nav>;
@@ -86,7 +87,7 @@ export async function RestaurantListPage({ locale, search = {} }: { locale: Rest
     <div className="restaurant-grid">{result.items.map((item) => {
       const href = `${path}/${encodeURIComponent(item.public_ref)}?${new URLSearchParams({ back: params.toString() })}`;
       return <article className="marketplace-card" id={`restaurant-${item.public_ref}`} key={item.public_ref}>
-        <a className="restaurant-photo" href={href}><MarketplaceImage src={item.images[0]?.url ?? item.logo?.url ?? null} alt={item.images[0]?.alt || item.name || t.title} fallback={t.photo}/></a>
+        <a className="restaurant-photo" href={href} aria-label={`${t.details}: ${item.name || t.title}`}><MarketplaceImage src={item.images[0]?.url ?? item.logo?.url ?? null} alt={item.images[0]?.alt || item.name || t.title} fallback={t.photo}/></a>
         <div className="marketplace-card-body"><p className="eyebrow">{item.type_label}</p><h2><a href={href}>{item.name || t.title}</a></h2><Status locale={locale} hours={item.hours}/><p>{item.location}</p><p>{item.description}</p>{item.menu_summary && <p>{t.menu}: {t.available} {item.menu_summary.available} · {t.sold_out} {item.menu_summary.sold_out} · {t.temporarily_unavailable} {item.menu_summary.temporarily_unavailable}</p>}<Internal href={href}>{t.details}</Internal></div>
       </article>;
     })}</div><Pagination locale={locale} {...result} href={(page) => { const next = new URLSearchParams(params); next.set("page", String(page)); return `${path}?${next}`; }}/>
@@ -96,7 +97,7 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
   const t = restaurantCopy[locale], back = restaurantReturn(search), context = new URLSearchParams({ back });
   const menuPage = restaurantQuery(search).get("page") ?? "1";
   let establishment;
-  try { establishment = await getRestaurant(locale, id); } catch (error) { if (error instanceof ShidaApiError && error.kind === "not-found") notFound(); return <Shell locale={locale} title={t.title}><Failure locale={locale} href={restaurantPath(locale)}/></Shell>; }
+  try { establishment = await getRestaurant(locale, id); } catch (error) { if (error instanceof ShidaApiError && error.kind === "not-found") notFound(); return <Shell locale={locale} title={t.title}><Failure locale={locale}/></Shell>; }
   const suffix = `/${encodeURIComponent(establishment.public_ref)}${menuOnly ? "/menu" : ""}`;
   const [menuResult, actionsResult] = await Promise.allSettled([getRestaurantMenu(locale, establishment.public_ref, menuPage), getRestaurantActions(locale, establishment.public_ref)]);
   // A newly withdrawn parent must not leave a stale detail visible after a menu eligibility check fails.
@@ -115,7 +116,7 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
     </>}
     <RestaurantHours locale={locale} hours={menuResult.status === "fulfilled" ? menuResult.value.hours : establishment.hours}/>
     <section><h2>{t.menu}</h2>{!menuOnly && <p><Internal href={`${detailPath}/menu?${context}`}>{t.menu}</Internal></p>}
-      {menuResult.status === "fulfilled" ? <><RestaurantMenu locale={locale} items={menuResult.value.items}/><Pagination locale={locale} {...menuResult.value} href={(page) => `${detailPath}/menu?${context}&page=${page}`}/></> : <Failure locale={locale} href={`${restaurantPath(locale, suffix)}?${context}`}/>}
+      {menuResult.status === "fulfilled" ? <><RestaurantMenu locale={locale} items={menuResult.value.items}/><Pagination locale={locale} {...menuResult.value} href={(page) => `${detailPath}/menu?${context}&page=${page}`}/></> : <Failure locale={locale}/>}
     </section>
     <div className="restaurant-actions">{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.share && <a className="restaurant-link" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menuWhatsapp}</a>}</div>
     <p>{actions?.share ? t.report : t.actionsUnavailable}</p>
@@ -132,7 +133,7 @@ export async function RestaurantBusinessPage({ locale, id, search = {} }: { loca
     <h2>{t.activities}</h2>{!business.activities.items.length && <p>{t.noActivities}</p>}
     <ul className="restaurant-activities">{business.activities.items.map((activity) => {
       // These are the four reviewed backend adapters, not all Business modules.
-      const path = activity.marketplace === "restaurants" ? restaurantPath(locale, `/${encodeURIComponent(activity.public_ref)}`) : `${locale === "en" ? "" : "/fr"}/shida/${activity.marketplace === "jobs" ? "emplois" : activity.marketplace}/${encodeURIComponent(activity.public_ref)}`;
+      const path = activity.marketplace === "restaurants" ? `${restaurantPath(locale, `/${encodeURIComponent(activity.public_ref)}`)}?${new URLSearchParams({ back })}` : `${locale === "en" ? "" : "/fr"}/shida/${activity.marketplace === "jobs" ? "emplois" : activity.marketplace}/${encodeURIComponent(activity.public_ref)}`;
       return <li key={`${activity.marketplace}-${activity.public_ref}`}><Internal href={path}>{activity.name || activity.public_ref}</Internal> <span>{activity.marketplace === "restaurants" ? t.title : t[activity.marketplace]}</span></li>;
     })}</ul><Pagination locale={locale} {...business.activities} href={(next) => `${businessPath(locale, id)}?${context}&page=${next}`}/>
   </Shell>;

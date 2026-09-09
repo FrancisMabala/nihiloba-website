@@ -4,6 +4,7 @@ import { getRestaurantActions, getRestaurantMenu, getRestaurants, parseBusiness,
 import { RestaurantBusinessPage, RestaurantDetailPage, RestaurantHours, RestaurantListPage, RestaurantMenu, RestaurantPrice, restaurantMetadata } from "../app/components/shida/restaurants";
 import { restaurantReturn, restaurantLocales, restaurantCopy } from "../app/lib/restaurant-i18n";
 import { actions, business, category, collection, dated, hours, menu, monetary, restaurant, unit, unknown } from "./fixtures/restaurants.mjs";
+import { RestaurantRetry } from "../app/components/shida/restaurant-retry";
 
 vi.mock("next/navigation", async (original) => ({ ...await original<typeof import("next/navigation")>(), useRouter: () => ({ refresh: vi.fn() }) }));
 
@@ -16,6 +17,28 @@ function mockApi(overrides: Record<string, unknown> = {}) {
   }); vi.stubGlobal("fetch", fetcher); return fetcher;
 }
 describe("Restaurant released public contract", () => {
+  it("retries the current document without dropping menu page or exposing a legacy slug", async () => {
+    const reload = vi.fn();
+    vi.stubGlobal("window", { location: { reload } });
+    RestaurantRetry({ label: "Retry" }).props.onClick();
+    expect(reload).toHaveBeenCalledExactlyOnceWith();
+    mockApi({ "/api/public/shida/restaurants/private-legacy-slug": new Response("unavailable", { status: 503 }) });
+    const html = renderToStaticMarkup(await RestaurantDetailPage({ locale: "en", id: "private-legacy-slug", search: { page: "3", back: "city=Kinshasa&page=2" } }));
+    expect(html).toContain('type="button"');
+    expect(html).toContain("Try again");
+    expect(html).not.toContain("private-legacy-slug");
+  });
+  it("names photo-less discovery links with their actual establishment", async () => {
+    mockApi();
+    const html = renderToStaticMarkup(await RestaurantListPage({ locale: "en" }));
+    expect(html).toContain('aria-label="View establishment: Test Malewa"');
+    expect(html).toContain("No photo available");
+  });
+  it("preserves results context when following a Business Restaurant activity", async () => {
+    mockApi();
+    const html = renderToStaticMarkup(await RestaurantBusinessPage({ locale: "sw", id: "BUS-TEST1", search: { back: "city=Kinshasa&page=2" } }));
+    expect(html).toContain('/sw/shida/restaurants/RST-TEST1?back=city%3DKinshasa%26page%3D2');
+  });
   it("allowlists fields and honors public location consent", () => {
     expect(JSON.stringify(parseRestaurant(restaurant))).not.toContain("PRIVATE_");
     expect(parseRestaurant({ ...restaurant, location: { ...restaurant.location, address_visibility: "public", address: "Public venue", landmark: null } }).location).toContain("Public venue");

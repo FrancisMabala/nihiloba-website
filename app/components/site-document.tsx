@@ -9,7 +9,7 @@ export function SiteDocument({ children, locale, documentLanguage = locale }: { 
   return (
     <html lang={documentLanguage}>
       <body>
-        <a className="skip-link" href="#main-content">{nav[locale].skip}</a>
+        <a className="skip-link" lang={locale} href="#main-content">{nav[locale].skip}</a>
         <CartProvider>
           <Header locale={locale} />
           <main id="main-content">{children}</main>
