@@ -31,3 +31,4 @@
 .rst input, .rst select, .rst textarea { color: var(--ink); border-color: var(--line); border-radius: 3px; }
 .rst .rst-card, .rst .rst-row { border-color: var(--line); }
 .rst dt { color: var(--muted); }
+.rst-session-boundary { border: 0; padding: 0; margin: 0; min-width: 0; }

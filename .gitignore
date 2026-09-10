@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/.s3a-local/
 /.pnp
 .pnp.*
 .yarn/*

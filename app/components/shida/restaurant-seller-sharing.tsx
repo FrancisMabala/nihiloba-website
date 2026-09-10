@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import QRCode from "qrcode";
 import { request } from "../../lib/restaurant-seller-browser";
 import { validShare } from "../../lib/restaurant-seller-contract";
 import { sellerChrome, restaurantText } from "../../lib/restaurant-seller-copy";
@@ -10,7 +9,13 @@ export function RestaurantSharing({ establishment, binding, locale, onFailure }:
  const [link, setLink] = useState<{ public_url: string; qr_content: string; destination: string } | null>(null), [busy, setBusy] = useState(false);
  const alive = useRef(false), canvas = useRef<HTMLCanvasElement>(null); const t = sellerChrome[locale];
  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
- useEffect(() => { if (link?.destination === "menu" && canvas.current) void QRCode.toCanvas(canvas.current, link.qr_content, { width: 256, margin: 4, errorCorrectionLevel: "M" }).catch(onFailure); }, [link, onFailure]);
+ useEffect(() => {
+  let cancelled = false;
+  if (link?.destination === "menu") void import("qrcode").then(QRCode => {
+   if (!cancelled && canvas.current) return QRCode.toCanvas(canvas.current, link.qr_content, { width: 256, margin: 4, errorCorrectionLevel: "M" });
+  }).catch(error => { if (!cancelled) onFailure(error); });
+  return () => { cancelled = true; };
+ }, [link, onFailure]);
  async function prepare(destination: "restaurant" | "menu") {
   if (busy) return; setBusy(true); setLink(null);
   try { const value = await request(`personal/restaurants/${encodeURIComponent(establishment)}/links/${destination}`, { method: "POST" }, binding); if (!validShare(value, establishment, destination)) throw new Error("invalid_share"); if (alive.current) setLink(value); }

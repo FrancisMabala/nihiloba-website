@@ -6,6 +6,7 @@ async function fixture(page: Page) {
  const state = { establishment: structuredClone(establishment), writes: [] as { path: string; method: string; body: Record<string, unknown> | null }[], stale: false, fail: false, denied: false, session: true, binding: "a".repeat(64), items: [] as Record<string, unknown>[], offerings: [] as Record<string, unknown>[] };
  await page.route("**/*", async route => {
   const req = route.request(), url = new URL(req.url());
+  url.pathname = url.pathname.replace(/\/$/, "");
   if (url.origin !== "http://127.0.0.1:3013") return route.abort();
   if (!url.pathname.startsWith("/api/")) return route.continue();
   const reply = (json: unknown, status = 200) => route.fulfill({ status, json });
@@ -40,6 +41,31 @@ async function fixture(page: Page) {
  return state;
 }
 async function open(page: Page) { await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Edit", exact: true }).click(); }
+test("failed logout still clears this tab and focus cannot restore private content", async ({ page }) => {
+ await fixture(page); await open(page);
+ await page.route("**/api/shida/employment/logout", route => route.abort());
+ await page.getByRole("button", { name: "Sign out / change account", exact: true }).click();
+ await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+ await expect(page.getByRole("heading", { name: "Sign in to SHIDA", exact: true })).toBeVisible();
+ await expect(page.getByRole("heading", { name: "Isolated Malewa", exact: true })).toHaveCount(0);
+ await page.getByLabel("WhatsApp phone number", { exact: true }).fill("+00000000000"); await page.getByRole("button", { name: "Request sign-in code", exact: true }).click();
+ await page.route("**/api/shida/employment/auth/verify-code", route => route.fulfill({ status: 503, json: {} }));
+ await page.getByLabel("Six-digit code", { exact: true }).fill("123456"); await page.getByRole("button", { name: "Sign in", exact: true }).click();
+ await expect(page.getByText("Unable to continue. Please try again.", { exact: true })).toBeVisible();
+ await page.evaluate(() => window.dispatchEvent(new Event("focus"))); await expect(page.getByRole("heading", { name: "Isolated Malewa", exact: true })).toHaveCount(0);
+});
+test("transient session failure preserves input, deduplicates checks and confirmed expiry clears it", async ({ page }) => {
+ const s = await fixture(page); await open(page); await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Same tab only");
+ let calls = 0;
+ await page.route("**/api/shida/employment/session/", async route => { calls++; await new Promise(resolve => setTimeout(resolve, 300)); await route.fulfill({ status: 503, json: {} }); });
+ await page.evaluate(() => { for (let i = 0; i < 5; i++) window.dispatchEvent(new Event("focus")); });
+ await expect(page.getByText(/Connection interrupted/)).toBeVisible(); expect(calls).toBe(1);
+ await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Same tab only"); await expect(page.getByLabel("Name", { exact: true })).toBeDisabled();
+ await page.unroute("**/api/shida/employment/session/"); await page.evaluate(() => window.dispatchEvent(new Event("online")));
+ await expect(page.getByLabel("Name", { exact: true })).toBeEnabled(); await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Same tab only");
+ s.session = false; await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+ await expect(page.getByRole("heading", { name: "Sign in to SHIDA", exact: true })).toBeVisible(); await expect(page.getByLabel("Name", { exact: true })).toHaveCount(0);
+});
 test("selection, pagination, private draft and changed-field profile edit", async ({ page }) => {
  const s = await fixture(page); await page.goto("/shida/seller/restaurants");
  await page.getByRole("button", { name: "Next page", exact: true }).click(); await page.getByRole("button", { name: "Previous page", exact: true }).click();
