@@ -43,7 +43,7 @@ The discovery picture uses media sources at <=600px / <=900px and width
 descriptors with sizes=100vw. The master PNG is never referenced by the page.
 Empty alt marks it decorative; it never replaces an establishment image.
 
-## Public discovery: La table partagée (current)
+## Public discovery: La table partagée (superseded)
 
 `table-partagee.png` is the unchanged supplied `03-la-table-partagee.png` from
 `restaurant-marketplace-scenes/`: 2170 × 725, opaque cream, 2,826,021 bytes.
@@ -63,3 +63,13 @@ The picture reserves the original aspect ratio, uses width descriptors with
 720px. Height scales naturally, with contain rather than cover. Phones see the
 same complete illustration. Empty alt is intentional. Neither master PNG nor
 superseded liboko assets are requested by this component.
+
+## Public discovery: La terrasse du quartier (current)
+
+The user subsequently selected the supplied terrace scene. `terrasse-quartier.png`
+is an unchanged copy of `restaurant-marketplace-scenes/02-la-terrasse-du-quartier.png`
+(2171 × 724, opaque cream). Complete uncropped Sharp WebP derivatives at quality 80:
+480px: 27,260 bytes; 720px: 55,088; 1080px: 111,226; 1440px: 184,746.
+The same responsive 720px maximum-width picture uses these variants with empty alt
+and the original reserved aspect ratio. Previous artwork remains archived but is
+not rendered. No new generation, behavior or layout change.

@@ -1,5 +1,19 @@
 # Restaurant discovery — La table partagée
 
+## Subsequent artwork replacement
+
+The user selected `02-la-terrasse-du-quartier.png` after this implementation.
+Discovery now uses `terrasse-quartier-*` variants, preserving the same layout,
+complete scene and empty alt. The original table artwork remains archived.
+On Node 22.23.2, typecheck, lint and production build passed after replacement;
+all 12 discovery browser tests passed against the local production fixture server.
+At 390px, actual encoded/transfer bytes were 27,260 / 27,560; at 768px and 1440px,
+55,088 / 55,388 (DPR 1). Final screenshots:
+`.s3a-local/terrasse-quartier-390.png`, `terrasse-quartier-768.png` and
+`terrasse-quartier-1440.png` in that same directory. Mobile and desktop visually
+inspected; no cropping or overflow. No deployment or messages.
+The original report below describes the preceding shared-table selection.
+
 ## Implementation
 
 Replaced the previous liboko image in the existing single decorative picture.

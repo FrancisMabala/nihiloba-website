@@ -21,7 +21,7 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
  </div>
  <picture className="rd-painted-band">
   {/* Complete approved scene, proportionally resized through the local WebP pipeline. */}
-  <img src="/images/restaurants/table-partagee-720.webp" srcSet="/images/restaurants/table-partagee-480.webp 480w, /images/restaurants/table-partagee-720.webp 720w, /images/restaurants/table-partagee-1080.webp 1080w, /images/restaurants/table-partagee-1440.webp 1440w" sizes="(max-width: 720px) 100vw, 720px" width={2170} height={725} alt="" decoding="async"/>
+  <img src="/images/restaurants/terrasse-quartier-720.webp" srcSet="/images/restaurants/terrasse-quartier-480.webp 480w, /images/restaurants/terrasse-quartier-720.webp 720w, /images/restaurants/terrasse-quartier-1080.webp 1080w, /images/restaurants/terrasse-quartier-1440.webp 1440w" sizes="(max-width: 720px) 100vw, 720px" width={2171} height={724} alt="" decoding="async"/>
  </picture>
  <div className="container">
   <form action={path} method="get" className="rd-search">
