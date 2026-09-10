@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
 import { createHash } from "node:crypto";
+import { personalRequestOrigin } from "../../../lib/personal-request-origin";
 import { EmploymentApiError } from "../../../services/shida/employment-client";
 
 export const EMPLOYMENT_SESSION_COOKIE = "shida_dashboard_session";
 export const PERSONAL_SESSION_COOKIE = "nihiloba_personal_session";
 export const PRIVATE_HEADERS = { "Cache-Control": "private, no-store, max-age=0", Pragma: "no-cache", Vary: "Cookie, Origin", "X-Robots-Tag": "noindex, nofollow, noarchive" };
-const PRODUCTION_WEBSITE_ORIGIN = "https://nihiloba.com";
 
 export async function employmentToken(): Promise<string | null> {
   const jar = await cookies();
@@ -44,15 +44,7 @@ export function privateEmploymentJson(value: unknown, status = 200): Response {
 }
 
 export function assertEmploymentSameOrigin(request: Request): Response | null {
-  if (request.headers.get("sec-fetch-site") === "cross-site") return privateEmploymentJson({ error: { code: "forbidden" } }, 403);
-  const origin = request.headers.get("origin");
-  if (!origin) return privateEmploymentJson({ error: { code: "forbidden" } }, 403);
-  try {
-    const supplied = new URL(origin).origin;
-    const expected = new URL(request.url).origin;
-    if (supplied !== expected && supplied !== PRODUCTION_WEBSITE_ORIGIN) return privateEmploymentJson({ error: { code: "forbidden" } }, 403);
-  } catch { return privateEmploymentJson({ error: { code: "forbidden" } }, 403); }
-  return null;
+  return personalRequestOrigin(request) ? null : privateEmploymentJson({ error: { code: "forbidden" } }, 403);
 }
 
 export async function employmentRequestBody(request: Request): Promise<Record<string, unknown> | null> {

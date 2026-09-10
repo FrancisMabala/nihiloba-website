@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { personalRequestOrigin } from "../../../../../../lib/personal-request-origin";
 import { clearEmploymentToken, privateEmploymentJson, setEmploymentToken } from "../../../../employment/route-utils";
 
 export const dynamic = "force-dynamic";
@@ -20,9 +21,8 @@ function upstreamCookie(response: Response, name: string): string | null {
 }
 
 async function handle(request: Request, context: Context) {
-  // Exact same-origin even for reads: challenge status is private browser-bound data.
-  const sameOriginRead = request.method === "GET" && request.headers.get("sec-fetch-site") === "same-origin" && !request.headers.has("origin");
-  if (request.headers.get("sec-fetch-site") === "cross-site" || (!sameOriginRead && request.headers.get("origin") !== new URL(request.url).origin))
+  const publicOrigin = personalRequestOrigin(request, true);
+  if (!publicOrigin)
     return privateEmploymentJson({ error: { code: "forbidden" } }, 403);
   const path = (await context.params).path ?? [];
   const create = !path.length && request.method === "POST";
@@ -45,7 +45,7 @@ async function handle(request: Request, context: Context) {
     if (origin.protocol !== "https:" || origin.username || origin.password) throw new Error();
     const response = await fetch(`${origin.origin}/api/dashboard/auth/whatsapp-challenge${path.length ? `/${path.join("/")}` : ""}`, {
       method: request.method, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(8000),
-      headers: { Accept: "application/json", Origin: new URL(request.url).origin,
+      headers: { Accept: "application/json", Origin: publicOrigin,
         ...(!create ? { Cookie: `shida_dashboard_challenge=${verifier}` } : {}) },
     });
     if (!response.ok) return privateEmploymentJson({ error: { code: response.status === 429 ? "rate_limited" : response.status === 404 ? "expired" : response.status === 409 ? "cancelled" : "unavailable" } }, response.status >= 400 ? response.status : 502);

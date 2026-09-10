@@ -29,7 +29,7 @@ membership is introduced. The Backend's current prepared command remains
 | DELETE `/api/shida/personal/auth/whatsapp/{ref}/` | No upstream request: remove this browser's matching binding |
 
 Only these exact methods/paths are allowed; queries are rejected. Mutations require
-the exact request Origin. Reads require exact Origin or browser `Sec-Fetch-Site:
+an explicitly trusted public Origin (see the correction below). Reads require trusted Origin or browser `Sec-Fetch-Site:
 same-origin`; cross-site reads fail. No caller-supplied identity/body or arbitrary
 cookie is forwarded. Upstream requests use the existing HTTPS `SHIDA_API_BASE_URL`,
 manual redirects, no-store and an eight-second timeout. Origin is forwarded for
@@ -150,17 +150,104 @@ deployment cookie configuration before rollout. Backend IP limits remain active;
 without trusted proxy-IP handling upstream, gateway traffic can share one source-IP
 bucket. Do not forward untrusted client IP headers to bypass this.
 
-Read-only Backend finding: `_expire` in `dashboard_whatsapp_auth_service.py` expires
-only `pending` challenges; `exchange_dashboard_whatsapp_challenge` does not separately
-check `expires_at` for a `verified` challenge. It also does not rerun
-`_account_is_eligible` at exchange after the earlier signed-message verification.
-The NIHILOBA adapter enforces the returned deadline, but that is not a Backend-wide
-remediation. Authoritative verified-expiry and eligibility-change behavior need a
-separate Backend review/correction before asserting those stronger global guarantees.
-No Backend source was changed under this website-only batch.
+Historical read-only Backend finding: only pending challenges expired, and exchange
+did not separately enforce verified-challenge expiry or rerun current eligibility.
+The subsequent `Backend/docs/personal_whatsapp_auth_hardening.md` correction implements
+those authoritative protections locally; see the rollout status below. The website
+timer alone is not a Backend-wide remediation. No Backend source was changed under
+this website-only batch, and local hardening is not proof of its deployment.
 
 Preserve OPEN-05, Dashboard/delegated-access and other release gaps from prior reports.
 No deployment, live messages, ordering, payments, app-install requirement or unrelated
 feature work was performed. Rollback may require reauthentication as described in S3-A;
 an OTP-only rollback remains unusable until its Authentication template is available.
 The local development server and isolated PostgreSQL container were stopped after checks.
+
+## Proxy-origin correction — 10 September 2026
+
+Fresh credential-free live probes still returned website **403 forbidden** and
+Backend **403 Invalid origin**, both with `Origin: https://nihiloba.com`. Response
+bodies were reduced to those safe codes; no cookies, references or links were logged.
+The website rejection is its own initial origin guard; upstream errors map differently.
+The old guard compared against the internal request URL and forwarded that same URL's
+origin. Internal HTTP/proxy host mismatch is reproduced by regression tests; the exact
+production-resolved URL has NOT been inspected through hosting logs. Render's checked-in
+Blueprint declares a Node Web Service, not a static site.
+
+### Local correction and security policy
+
+- `app/lib/personal-request-origin.ts` centralizes the explicit canonical
+  `https://nihiloba.com` origin, independently of internal request scheme/host.
+  Exact localhost/127.0.0.1/IPv6-loopback origins matching a local request URL remain
+  supported for development and isolated HTTPS production-build testing.
+- Missing/null/malformed/opaque/list/credential/path/query origins fail mutation checks.
+  Arbitrary origins do not become trusted just by matching the request URL. Host,
+  Forwarded and X-Forwarded-* headers never grant trust. Cross-site requests fail.
+- `app/api/shida/personal/auth/whatsapp/[[...path]]/route.ts` forwards that validated
+  Origin. Browser same-origin GET without Origin remains supported with its HttpOnly
+  challenge binding; this read-only exception never applies to POST/DELETE.
+- `app/api/shida/personal/restaurants/[[...path]]/route.ts` uses the same write policy
+  and forwards validated Origin, retaining exact routes, input limits and session fingerprint.
+- `app/api/shida/employment/route-utils.ts` uses the same strict origin policy for
+  existing Employment mutations/logout. Session issuance/migration, both logout paths,
+  cookie properties, private/no-store, exchange/cancellation and client generation guards
+  are unchanged. No visual, OTP, Business frontend or Backend source changes.
+
+Tests changed: `tests/personal-request-origin.test.ts`,
+`tests/personal-whatsapp-login.test.ts`, `tests/restaurant-seller.test.ts`, and
+`tests/browser/personal-whatsapp-origin.browser.ts`.
+
+### Verification and limits
+
+- Node **22.23.2**: **251 tests / 23 files passed**. Typecheck, lint and production
+  build passed (80 static pages). Proxy-host/scheme, strict origin parsing, spoofed
+  forwarding, local origins, fresh creation after expiry and upstream Origin are covered.
+  Existing session/cookie/route restrictions remain tested.
+- Actual local Backend/PostgreSQL through production Next HTTPS: **2 browser tests
+  passed**, French seller at 390px and 1366px. Real challenge creation returned 201,
+  actual polling returned pending, exact Backend link was rendered, secure HttpOnly
+  challenge cookie existed, no Personal session appeared without a message, and
+  cancellation removed the cookie and showed retry. All external browser destinations
+  were blocked; popup opening was disabled. No API response mocking in these two tests.
+  The first run expected the initial button after cancellation; corrected the test to
+  assert the existing localized Retry control, not change the UI.
+- Mocked browser regressions: **31 passed in 1.4 minutes**, shared-login and seller
+  suites across EN/FR/LN/SW, phone/desktop, Employment return context, stale responses,
+  expiry, cancellation, uncertainty, logout and account switching. Initial auto-managed
+  dev-server teardown stalled after all assertions; rerunning against the same explicit
+  external local server exited successfully. This is separate from the two real-Backend
+  tests above. Final typecheck/lint passed again after adding the browser test.
+- This is NOT actual signed-message verification/session exchange. No live WhatsApp
+  message or physical-device acceptance was attempted. Successful exchange, expired,
+  onboarding, uncertain responses, supersession and session isolation have separate
+  existing mocked rendered regression coverage, not live delivery evidence.
+- Read the current Backend hardening report and confirmed local service contains
+  current-eligibility rechecking and wall-clock consumption protection. Its recorded
+  PostgreSQL result is 86 passed; full baseline remains 4,291 passed / 53 existing
+  failures / 472 skipped. These are Backend report evidence, NOT reruns in this batch.
+  Public origin probes cannot establish which revision every worker runs.
+- Production build did not reproduce the historical sandbox fetch warning. Development
+  browser runs retain the known React debug eval/CSP and NO_COLOR warnings; no CSP relaxation.
+
+### Exact remaining production steps (not performed; approval required)
+
+1. Deploy this website correction. No website environment change or migration is needed.
+2. On the Backend service, append exact `https://nihiloba.com` to the existing comma-separated
+   `DASHBOARD_ALLOWED_ORIGINS` if absent. Preserve all legitimate existing Business/local
+   entries; do not replace the value with only NIHILOBA or add a wildcard. The actual
+   existing value is not available here and no environment file was dumped.
+3. Confirm the corrected `dashboard_whatsapp_auth_service.py` from
+   `Backend/docs/personal_whatsapp_auth_hardening.md` is included in the deployed artifact
+   on ALL workers, restart/redeploy to load the allowed-origin setting, and verify active
+   revision consistency via hosting access. No authentication migration is required.
+   An old worker may retain verified-expiry/current-eligibility defects even if login works.
+4. Repeat safe origin diagnostics and the live rendered seller and Employment challenge
+   creation journeys. Complete message verification only with an authorized test account
+   and the user's participation. No unattended message sending.
+
+Live authentication remains **unresolved pending authorized rollout/configuration**.
+Runtime worker revision and loaded setting are unverified, not inferred from local files.
+Retain S2-D/S3-A rollout/session-cookie rollback guidance and Backend warning that reverting
+its hardening reintroduces expiry/eligibility defects. No commit, deploy or data migration.
+
+Suggested commit: `fix(auth): trust public origin behind proxy for Personal WhatsApp login`

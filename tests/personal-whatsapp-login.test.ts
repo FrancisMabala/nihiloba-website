@@ -11,6 +11,19 @@ const req = (method: string, origin = "https://nihiloba.com") => new Request("ht
 function bound() { jar.set("nihiloba_personal_challenge", `${ref}.${Date.now() + 300000}.${verifier}`); }
 beforeEach(() => { jar.clear(); set.mockClear(); vi.unstubAllGlobals(); });
 describe("Personal WhatsApp restricted gateway", () => {
+  it("forwards public Origin behind the hosting proxy, never its internal URL or spoofed headers", async () => {
+    bound();
+    const fetcher = vi.fn(async () => Response.json({ status: "pending" })); vi.stubGlobal("fetch", fetcher);
+    const request = new Request("http://internal-render:10000/api/shida/personal/auth/whatsapp/", { headers: { origin: "https://nihiloba.com", "x-forwarded-host": "attacker.example" } });
+    expect((await GET(request, ctx([ref]))).status).toBe(200);
+    expect(fetcher).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ headers: { Accept: "application/json", Origin: "https://nihiloba.com", Cookie: `shida_dashboard_challenge=${verifier}` } }));
+  });
+  it("creates a fresh attempt after an expired binding through an internal HTTP URL", async () => {
+    jar.set("nihiloba_personal_challenge", `${ref}.1.${verifier}`);
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ challenge_ref: ref, expires_at: new Date(Date.now() + 300000).toISOString(), whatsapp_url: "https://wa.me/243000000000?text=fixture" }, { headers: { "set-cookie": `shida_dashboard_challenge=${verifier}; HttpOnly` } })));
+    expect((await POST(new Request("http://internal-render:10000/api/shida/personal/auth/whatsapp/", { method: "POST", headers: { origin: "https://nihiloba.com" } }), ctx())).status).toBe(201);
+    expect(jar.get("nihiloba_personal_challenge")).not.toContain(".1.");
+  });
   it("creates without identity or OTP; stores only HttpOnly verifier and preserves exact returned link", async () => {
     const link = "https://wa.me/243000000000?text=SHIDA%20BUSINESS%20LOGIN%20fixture";
     const fetcher = vi.fn(async () => Response.json({ challenge_ref: ref, expires_at: new Date(Date.now() + 300000).toISOString(), whatsapp_url: link, private: "hidden" }, { headers: { "set-cookie": `shida_dashboard_challenge=${verifier}; HttpOnly; Path=/` } })); vi.stubGlobal("fetch", fetcher);

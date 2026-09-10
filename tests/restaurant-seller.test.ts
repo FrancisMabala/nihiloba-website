@@ -20,6 +20,12 @@ const ctx = (path = "") => ({ params: Promise.resolve({ path: path ? path.split(
 beforeEach(() => { jar.clear(); jar.set(PERSONAL_SESSION_COOKIE, token); set.mockClear(); vi.unstubAllGlobals(); });
 
 describe("Personal Restaurant restricted gateway", () => {
+ it("accepts a protected public-origin edit behind an internal proxy and forwards the validated origin", async () => {
+  const fetcher = vi.fn(async () => Response.json({ revision })); vi.stubGlobal("fetch", fetcher);
+  const request = new Request("http://internal-render:10000/api/shida/personal/restaurants/RST_a", { method: "PATCH", headers: { origin: "https://nihiloba.com", "x-shida-session": personalSessionBinding(token), "content-type": "application/json", "x-forwarded-host": "attacker.example" }, body: JSON.stringify({ expected_updated_at: revision, fields: { name: "Updated fixture" } }) });
+  expect((await PATCH(request, ctx("RST_a"))).status).toBe(200);
+  expect(fetcher).toHaveBeenCalledWith(expect.any(URL), expect.objectContaining({ headers: expect.objectContaining({ Origin: "https://nihiloba.com", Cookie: `shida_dashboard_session=${token}` }) }));
+ });
  it.each(["businesses/BUS_other/restaurants", "RST_a/orders", "RST_a/menu/items/RMC_wrong", "../restaurants", "RST_a/links/menu/extra", "suggestions"])("rejects unsupported path %s before fetching", async path => {
   const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher); const result = await GET(req(), ctx(path)); expect(result.status).toBe(404); expect(fetcher).not.toHaveBeenCalled();
  });
