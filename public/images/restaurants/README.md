@@ -18,3 +18,24 @@ Authenticated screens do not render this picture. Empty alternative text keeps
 its decorative words out of the functional sign-in instructions.
 
 No new image dependency, external image service or runtime generation is added.
+
+## Public discovery: La frise peinte
+
+`liboko-kwanga-banner.png` is the unchanged approved standalone source from
+`restaurant-liboko-concepts/assets/` (2172 × 724; 2,910,937 bytes).
+The supplied assets README explicitly supersedes mockup extraction: this source
+was previously derived using image generation and is not a pixel-identical
+mockup crop. No artwork was generated or redesigned during implementation.
+
+Sharp WebP quality 78 derivatives (crop coordinates in source pixels):
+
+| Family | Left, top, width, height | Output widths | File bytes |
+| --- | --- | --- | --- |
+| mobile | 300, 120, 1600, 410 | 480 / 960 | 20,956 / 65,132 |
+| tablet | 0, 130, 2172, 396 | 960 / 1440 | 51,398 / 95,434 |
+| desktop | 0, 230, 2172, 245 | 960 / 1440 / 2172 | 33,076 / 61,630 / 104,640 |
+
+Reproduce each using the installed Sharp: `sharp(source).extract(rect).resize(width).webp({quality:78}).toFile(destination)`.
+The discovery picture uses media sources at <=600px / <=900px and width
+descriptors with sizes=100vw. The master PNG is never referenced by the page.
+Empty alt marks it decorative; it never replaces an establishment image.

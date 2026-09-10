@@ -18,6 +18,14 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
   <RestaurantRevalidation/>
   <div className="rd-top"><MarketplaceBreadcrumb label={t.breadcrumb} items={[{ label: "SHIDA", href: locale === "en" ? "/shida" : "/fr/shida" }, { label: t.title }]}/><div className="rd-tools"><a href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{d.seller}</a><DiscoveryLanguage locale={locale} search={params.toString()}/></div></div>
   <header className="rd-intro"><h1>{d.headline}</h1><p>{d.hint}</p></header>
+ </div>
+ <picture className="rd-painted-band">
+  <source media="(max-width: 600px)" srcSet="/images/restaurants/liboko-mobile-480.webp 480w, /images/restaurants/liboko-mobile-960.webp 960w" sizes="100vw"/>
+  <source media="(max-width: 900px)" srcSet="/images/restaurants/liboko-tablet-960.webp 960w, /images/restaurants/liboko-tablet-1440.webp 1440w" sizes="100vw"/>
+  {/* Pre-sized, art-directed WebP variants follow the local illustrated-asset pipeline. */}
+  <img src="/images/restaurants/liboko-desktop-1440.webp" srcSet="/images/restaurants/liboko-desktop-960.webp 960w, /images/restaurants/liboko-desktop-1440.webp 1440w, /images/restaurants/liboko-desktop-2172.webp 2172w" sizes="100vw" width={1440} height={162} alt="" decoding="async"/>
+ </picture>
+ <div className="container">
   <form action={path} method="get" className="rd-search">
    <div className="rd-primary"><label><span className="rd-primary-label">{t.search}</span><input name="query" placeholder={d.query} defaultValue={params.get("query") ?? ""} maxLength={200}/></label><label><span className="rd-primary-label">{t.city}</span><input name="city" placeholder={t.city} defaultValue={params.get("city") ?? ""} maxLength={200}/></label><button className="rd-submit" type="submit">{t.search}</button></div>
    <fieldset className="rd-types"><legend className="sr-only">{t.type}</legend>{(["", "malewa", "restaurant", "cafe"] as const).map(type => <label className="rd-chip" key={type}><input type="radio" name="food_type" value={type} defaultChecked={(params.get("food_type") ?? "") === type}/><span>{type ? t[type] : t.all}</span></label>)}<label className="rd-chip rd-open"><input type="checkbox" name="open_now" value="true" defaultChecked={params.get("open_now") === "true"}/><span>{t.openOnly.split(" — ")[0]}</span></label></fieldset>
