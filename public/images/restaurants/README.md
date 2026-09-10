@@ -21,6 +21,9 @@ No new image dependency, external image service or runtime generation is added.
 
 ## Public discovery: La frise peinte
 
+Superseded by La table partagée below. These older assets are retained for
+historical reference but are no longer rendered or downloaded by discovery.
+
 `liboko-kwanga-banner.png` is the unchanged approved standalone source from
 `restaurant-liboko-concepts/assets/` (2172 × 724; 2,910,937 bytes).
 The supplied assets README explicitly supersedes mockup extraction: this source
@@ -39,3 +42,24 @@ Reproduce each using the installed Sharp: `sharp(source).extract(rect).resize(wi
 The discovery picture uses media sources at <=600px / <=900px and width
 descriptors with sizes=100vw. The master PNG is never referenced by the page.
 Empty alt marks it decorative; it never replaces an establishment image.
+
+## Public discovery: La table partagée (current)
+
+`table-partagee.png` is the unchanged supplied `03-la-table-partagee.png` from
+`restaurant-marketplace-scenes/`: 2170 × 725, opaque cream, 2,826,021 bytes.
+No regeneration, transparency conversion, extraction or crop was applied.
+Existing Sharp produces complete proportional WebP variants at quality 80:
+
+| File | Dimensions | Bytes |
+| --- | --- | ---: |
+| table-partagee-480.webp | 480 × 160 | 25,882 |
+| table-partagee-720.webp | 720 × 241 | 52,974 |
+| table-partagee-1080.webp | 1080 × 361 | 110,572 |
+| table-partagee-1440.webp | 1440 × 481 | 181,970 |
+
+Reproduction: `sharp(source).resize(width).webp({quality:80}).toFile(destination)`.
+The picture reserves the original aspect ratio, uses width descriptors with
+`sizes="(max-width: 720px) 100vw, 720px"`, and is centered at a maximum width of
+720px. Height scales naturally, with contain rather than cover. Phones see the
+same complete illustration. Empty alt is intentional. Neither master PNG nor
+superseded liboko assets are requested by this component.

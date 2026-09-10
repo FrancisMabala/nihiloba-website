@@ -20,10 +20,8 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
   <header className="rd-intro"><h1>{d.headline}</h1><p>{d.hint}</p></header>
  </div>
  <picture className="rd-painted-band">
-  <source media="(max-width: 600px)" srcSet="/images/restaurants/liboko-mobile-480.webp 480w, /images/restaurants/liboko-mobile-960.webp 960w" sizes="100vw"/>
-  <source media="(max-width: 900px)" srcSet="/images/restaurants/liboko-tablet-960.webp 960w, /images/restaurants/liboko-tablet-1440.webp 1440w" sizes="100vw"/>
-  {/* Pre-sized, art-directed WebP variants follow the local illustrated-asset pipeline. */}
-  <img src="/images/restaurants/liboko-desktop-1440.webp" srcSet="/images/restaurants/liboko-desktop-960.webp 960w, /images/restaurants/liboko-desktop-1440.webp 1440w, /images/restaurants/liboko-desktop-2172.webp 2172w" sizes="100vw" width={1440} height={162} alt="" decoding="async"/>
+  {/* Complete approved scene, proportionally resized through the local WebP pipeline. */}
+  <img src="/images/restaurants/table-partagee-720.webp" srcSet="/images/restaurants/table-partagee-480.webp 480w, /images/restaurants/table-partagee-720.webp 720w, /images/restaurants/table-partagee-1080.webp 1080w, /images/restaurants/table-partagee-1440.webp 1440w" sizes="(max-width: 720px) 100vw, 720px" width={2170} height={725} alt="" decoding="async"/>
  </picture>
  <div className="container">
   <form action={path} method="get" className="rd-search">

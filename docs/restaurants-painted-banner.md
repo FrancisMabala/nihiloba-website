@@ -1,5 +1,9 @@
 # Restaurants & Malewa — La frise peinte
 
+Historical evidence: artwork and shallow crop superseded by
+`restaurants-table-partagee.md`. Keep the validation below as the previous state,
+not the current design or transfer measurements.
+
 Implemented locally, 2026-09-10. No deployment, Git commit, Backend changes or messages.
 
 ## Change and reference fidelity

@@ -1,3 +1,147 @@
+# Personal WhatsApp production rollout
+
+## Allowed-origin correction attempt - 2026-09-10
+
+**Still blocked. No production configuration was changed and no restart or
+deployment was triggered.** Application code, migrations and dependencies remain
+unchanged. No WhatsApp message was sent and no session exchange was attempted.
+
+### Current access and revision evidence
+
+The user supplied the targeted Render page for `shida-backend`:
+https://dashboard.render.com/web/srv-d9s8g1c9v7es73effevg/events .
+
+The browser connector returned an empty inventory and "No browser is available".
+The separate installed computer-use runtime found Chrome, but automatic approval
+review rejected activating/reading its existing Restaurants window because it
+could inspect unrelated browser state. After the user provided the exact Render
+URL, the narrower navigation attempt timed out waiting for computer-use app
+approval. Follow-up window inventories found no Render-titled window. No Render
+connector or Render CLI was available. Therefore authenticated Render access,
+effective environment values, live revision/deployment ID and per-instance
+consistency could not be verified.
+
+The user previously reported website service `nihiloba-website-zfmp` live at
+`eb74fe9` and Backend `shida-backend` live at `846bbdf`, with authentication
+hardening already included. These are supplied prior observations, **not freshly
+reconfirmed live revisions**. Local Backend HEAD during this check was
+`8f930f42eee22f5086670df574228ab9be802523`; it must not be mistaken for the live
+revision or automatically deployed. Do not roll back to `4f70f30`.
+
+### Parser and smallest authorized correction
+
+Inspected `Backend/app/config.py` and
+`Backend/app/services/dashboard_auth_service.py::require_dashboard_csrf_origin`.
+`DASHBOARD_ALLOWED_ORIGINS` is a comma-separated string, not a JSON array.
+The validator splits on commas, trims surrounding whitespace and trailing
+slashes, then requires exact origin membership (or the request's own origin).
+The same setting supplies CORS origins at application startup. Settings are
+instantiated at import time; editing a hosting value alone does not prove existing
+workers loaded it. Process environment settings override dotenv values.
+
+Using authenticated Render access:
+
+1. Record the actually live Backend deployment ID, complete commit SHA and
+   instance status before changing anything.
+2. In this service's Environment configuration, inspect only
+   `DASHBOARD_ALLOWED_ORIGINS` privately, including any linked environment-group
+   source/service override. Preserve every legitimate existing entry, especially
+   the actual Business Dashboard origin.
+3. If the normalized exact entry `https://nihiloba.com` is absent, append it with
+   a comma. For example, the *shape* is
+   `<unchanged existing origins>,https://nihiloba.com`; do not enter the placeholder.
+   Do not replace the list, add a wildcard, or add JSON brackets/outer quote
+   characters. Do not blindly add a duplicate if an equivalent trailing-slash
+   entry already exists.
+4. If present, investigate the effective source, literal quoting/separators and
+   whether running instances predate the configuration. Correct only the
+   demonstrated source/parsing/stale-instance issue.
+5. Apply the configuration through a restart or a deployment **pinned to the
+   currently verified live revision**. Do not select "latest commit" unless its
+   SHA is proved to be that same live revision. Wait for the configuration-bearing
+   deployment to be live and all prior serving instances to be replaced. Record
+   deployment ID, SHA, time and instance evidence without dumping environment
+   values.
+6. Repeat canonical-origin, untrusted-origin and the *actual retained Business
+   Dashboard origin* probes. Confirm the seller page in a real browser offers
+   its WhatsApp continuation, but do not follow/send the message as another user.
+   Repeated HTTP probes alone cannot establish all-instance configuration.
+
+No prior environment value was inspected or saved in this report. A precise final
+replacement string cannot safely be supplied until the existing list is known.
+
+### Fresh production checks
+
+HTTP probes used no user credentials. Responses were reduced to status, safe error
+codes and cookie/cache attributes. No tokens, cookies, challenge references,
+challenge URLs, full headers or environment exports were recorded.
+
+At 2026-09-10 16:48 UTC:
+
+| Probe | Result |
+| --- | --- |
+| Backend challenge POST, Origin `https://nihiloba.com` | 403, `Invalid origin`; no cookie |
+| Backend challenge POST, Origin `https://untrusted-origin.invalid` | 403, `Invalid origin`; no cookie |
+| Website Personal challenge gateway POST, canonical Origin | 403, safe `unavailable` error; `private, no-store, max-age=0`; no cookie |
+| Website Personal challenge gateway POST, untrusted Origin | 403, safe `forbidden` error; `private, no-store, max-age=0`; no cookie |
+| French seller page GET | 200 HTML; not a rendered-browser acceptance test |
+
+At 2026-09-10 16:56 UTC, an explicit same-origin Backend control
+(`Origin: https://api.nihiloba.com`) created one disposable challenge:
+
+- Creation returned 201 with the expected reference/expiry/link fields; values
+  were not logged and the WhatsApp link was not opened.
+- The originating HTTP client's verifier-bound status read returned 200 pending.
+- A separate client without that verifier returned 404.
+- No session cookie was issued. No exchange, signed sender test or user login
+  was performed; the unused challenge is left to its existing five-minute expiry.
+- The verifier cookie was HttpOnly, SameSite=Lax, Path=/, Max-Age=300, but **Secure
+  was absent**. Thus the direct Backend production Secure-cookie check did not pass.
+- Direct Backend challenge creation/status responses had **no Cache-Control
+  header**. This is an observed missing explicit cache policy, not evidence that
+  an intermediary actually cached a response.
+
+These last two findings prevent claiming all production cookie/cache protections
+are intact. They were observed without making any configuration change. Current
+source selects Secure via `is_production()`; `ENV` takes precedence over
+`APP_ENV`, and the effective value must be exactly `production`. The live revision
+and these settings remain unverified, so the cause is not established. Inspect
+them privately before a separate bounded correction; do not blindly modify
+unrelated settings or claim an allowed-origin edit fixes cache headers.
+Website gateway error responses do retain private/no-store, but a successful
+website challenge cookie could not be verified while its upstream rejects Origin.
+
+Three local checks of the actual origin-validator function passed using a
+synthetic comma-separated list: canonical website accepted, documented example
+Dashboard origin accepted, and untrusted origin rejected. This establishes parser
+format, not the live allowlist or the identity of the actual Business origin.
+No full regression suite was run for this configuration-only attempt.
+
+### Remaining acceptance and verdict
+
+**Still blocked on authenticated, targeted Render access.** The canonical origin
+failure is freshly reproduced. Browser binding works in the direct same-origin
+control; untrusted origins are rejected. The actual Business Dashboard origin,
+live revisions, effective origin setting, all-instance rollout, successful seller
+browser continuation and production cookie/cache corrections remain unverified
+or unresolved.
+
+After configuration and protection checks succeed, the user must perform the
+remaining real WhatsApp login: open the seller page, choose Continue with WhatsApp,
+send the exact offered message from their controlled account, return to the same
+browser and confirm the intended Personal session. Challenge creation alone is
+not end-to-end login acceptance.
+
+Suggested documentation commit text (no commit created):
+`docs(auth): record production origin blocker and sanitized verification`
+
+---
+
+## Historical preflight evidence
+
+The following preflight predates the user-supplied live-deployment observations.
+Its candidate/deployment statements are retained as history, not current status.
+
 # Personal WhatsApp production rollout — preflight
 
 2026-09-10. Production rollout authorized by the user, but **not executed**.

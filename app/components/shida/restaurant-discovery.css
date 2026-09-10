@@ -63,7 +63,6 @@ body:has(.restaurant-discovery) .site-header .language-switcher { display:none; 
  .rd-photo:has(.marketplace-image-fallback) { height:100%; }
  .rd-card-body { padding:10px;gap:6px; } .rd-card h3 { font-size:1.1rem; } .rd-card p { font-size:.8rem; } .rd-menu { padding:8px;font-size:.85rem; }
 }
-.rd-painted-band{display:block;width:100%;height:160px;margin-bottom:20px;overflow:hidden;background:#c89023}
-.rd-painted-band img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
-@media(max-width:900px){.rd-painted-band{height:140px}}
-@media(max-width:600px){.rd-painted-band{height:100px;margin-bottom:12px}}
+.rd-painted-band{display:block;width:100%;max-width:720px;margin:0 auto 20px;background:#fffcf7}
+.rd-painted-band img{display:block;width:100%;height:auto;aspect-ratio:2170/725;object-fit:contain}
+@media(max-width:600px){.rd-painted-band{margin-bottom:12px}}
