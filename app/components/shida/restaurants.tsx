@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ShidaApiError } from "../../services/shida/public-client";
 import { getRestaurant, getRestaurantActions, getRestaurantBusiness, getRestaurantMenu, getRestaurants, restaurantQuery, type Restaurant, type RestaurantLocale, type RestaurantMenuItem, type RestaurantSearch } from "../../services/shida/restaurants-client";
@@ -76,6 +77,7 @@ export async function RestaurantListPage({ locale, search = {} }: { locale: Rest
   let result;
   try { result = await getRestaurants(locale, search); } catch { return <Shell locale={locale} title={t.title} search={params.toString()}><Failure locale={locale} href={`${path}?${params}`}/></Shell>; }
   return <Shell locale={locale} title={t.title} search={params.toString()}><p>{t.intro}</p>
+    <p><Link className="button button-secondary" href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{({ en: "Personal seller area", fr: "Espace vendeur Personnel", ln: "Esika ya moteki Personnel", sw: "Eneo la muuzaji Binafsi" })[locale]}</Link></p>
     <form action={path} method="get" className="restaurant-filters">
       {(["query", "name", "city", "area", "dish"] as const).map((key) => <label key={key}>{key === "query" ? t.search : t[key]}<input name={key} defaultValue={params.get(key) ?? ""} maxLength={200}/></label>)}
       <label>{t.type}<select name="food_type" defaultValue={params.get("food_type") ?? ""}><option value="">{t.all}</option>{(["restaurant", "malewa", "cafe", "fast_food", "catering"] as const).map((type) => <option key={type} value={type}>{t[type]}</option>)}</select></label>

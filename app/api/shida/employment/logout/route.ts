@@ -9,6 +9,6 @@ export async function POST(request: Request) {
   const token = await employmentToken();
   try { if (token) await logoutEmploymentSession(token); }
   catch (error) { if (!(error instanceof Error && "status" in error && error.status === 401)) return employmentError(error); }
-  await clearEmploymentToken();
+  finally { await clearEmploymentToken(); }
   return privateEmploymentJson({ authenticated: false });
 }

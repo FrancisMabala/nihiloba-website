@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   beginEmploymentLogin,
   completeEmploymentLogin,
@@ -77,8 +77,30 @@ function LoginPanel({ locale, onAuthenticated }: { locale: Locale; onAuthenticat
 
 export function CandidateEmploymentWorkspace({ locale, applicationReference }: { locale: Locale; applicationReference?: string }) {
   const t = copy[locale]; const [session, setSession] = useState<EmploymentSession | null>(null); const [applications, setApplications] = useState<CandidateApplication[] | null>(null); const [application, setApplication] = useState<CandidateApplication | null>(null); const [state, setState] = useState<"loading" | "login" | "ready" | "not-found" | "error">("loading");
-  const load = useCallback(async () => { try { const current = await restoreEmploymentSession(); setSession(current); if (applicationReference) setApplication(await loadCandidateApplication(applicationReference)); else setApplications(await loadCandidateApplications()); setState("ready"); } catch (error) { if (error instanceof EmploymentBrowserError && error.status === 401) { setSession(null); setState("login"); } else if (error instanceof EmploymentBrowserError && error.status === 404) setState("not-found"); else setState("error"); } }, [applicationReference]);
-  useEffect(() => { let active = true; void restoreEmploymentSession().then(async (current) => { const detail = applicationReference ? await loadCandidateApplication(applicationReference) : null; const list = applicationReference ? null : await loadCandidateApplications(); if (!active) return; setSession(current); setApplication(detail); setApplications(list); setState("ready"); }).catch((error) => { if (!active) return; if (error instanceof EmploymentBrowserError && error.status === 401) setState("login"); else if (error instanceof EmploymentBrowserError && error.status === 404) setState("not-found"); else setState("error"); }); return () => { active = false; }; }, [applicationReference]);
+  const [refreshVersion, setRefreshVersion] = useState(0);
+  const load = () => setRefreshVersion(value => value + 1);
+  useEffect(() => {
+    let active = true, generation = 0;
+    const refresh = () => {
+      const epoch = ++generation;
+      setSession(null); setApplications(null); setApplication(null); setState("loading");
+      void restoreEmploymentSession().then(async current => {
+        const detail = applicationReference ? await loadCandidateApplication(applicationReference) : null;
+        const list = applicationReference ? null : await loadCandidateApplications();
+        if (!active || epoch !== generation) return;
+        setSession(current); setApplication(detail); setApplications(list); setState("ready");
+      }).catch(error => {
+        if (!active || epoch !== generation) return;
+        setState(error instanceof EmploymentBrowserError && error.status === 401 ? "login" : error instanceof EmploymentBrowserError && error.status === 404 ? "not-found" : "error");
+      });
+    };
+    const storage = (event: StorageEvent) => { if (event.key === "shida-personal-session-changed") refresh(); };
+    refresh();
+    window.addEventListener("shida-personal-session-changed", refresh);
+    window.addEventListener("storage", storage);
+    window.addEventListener("focus", refresh);
+    return () => { active = false; ++generation; window.removeEventListener("shida-personal-session-changed", refresh); window.removeEventListener("storage", storage); window.removeEventListener("focus", refresh); };
+  }, [applicationReference, refreshVersion]);
   async function logout() { try { await endEmploymentSession(); } finally { setSession(null); setApplications(null); setApplication(null); setState("login"); } }
   return <><section className="candidate-employment-hero"><div className="container"><span className="eyebrow">{t.eyebrow}</span><h1>{application?.job_title ?? t.title}</h1><p>{application ? application.employer_name : t.intro}</p>{application && <><span className={`candidate-status candidate-status-${application.status}`}>{candidateStatusLabel(locale, application.status)}</span><p><Link href={candidateApplicationsPath(locale)}>{t.back}</Link></p></>}{session && <div className="candidate-session"><span>{t.signedIn} <strong>{session.display_name}</strong></span><button type="button" onClick={logout}>{t.signOut}</button></div>}</div></section><section className="section candidate-employment-section"><div className="container">{state === "loading" && <div className="candidate-skeleton" aria-label={locale === "fr" ? "Chargement" : "Loading"}><span/><span/><span/></div>}{state === "login" && <LoginPanel locale={locale} onAuthenticated={() => { setState("loading"); void load(); }}/>} {state === "error" && <div className="candidate-private-panel candidate-state"><p>{t.genericError}</p><button className="button button-secondary" onClick={() => { setState("loading"); void load(); }}>{t.retry}</button></div>}{state === "not-found" && <div className="candidate-private-panel candidate-state"><p>{t.unavailable}</p><Link className="button button-secondary" href={candidateApplicationsPath(locale)}>{t.back}</Link></div>}{state === "ready" && !applicationReference && applications && <><section className="candidate-profile-overview"><div><h2>{t.profiles}</h2><p>{t.profilesText}</p></div><article><strong>{t.professional}</strong><span>{t.oneEach}</span><small>{t.notAvailable}</small></article><article><strong>{t.occasional}</strong><span>{t.oneEach}</span><small>{t.notAvailable}</small></article></section><CandidateApplicationsView locale={locale} applications={applications}/></>}{state === "ready" && application && <CandidateApplicationDetailView locale={locale} application={application}/>}</div></section></>;
 }

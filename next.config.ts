@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/shida/my-applications/:path*", headers: privatePageHeaders },
+      { source: "/shida/seller/:path*", headers: privatePageHeaders },
+      { source: "/:lang(en|fr|ln|sw)/shida/seller/:path*", headers: privatePageHeaders },
       { source: "/en/shida/my-applications/:path*", headers: privatePageHeaders },
       { source: "/fr/shida/mes-candidatures/:path*", headers: privatePageHeaders },
       { source: "/:path*", headers: securityHeaders },

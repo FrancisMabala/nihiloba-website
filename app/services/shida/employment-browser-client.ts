@@ -1,4 +1,5 @@
 import { parseCandidateApplication } from "./employment-client";
+import { announcePersonalSessionChange } from "../../lib/personal-session-browser";
 import type { CandidateApplication, EmploymentSession } from "../../types/shida-employment";
 
 export class EmploymentBrowserError extends Error {
@@ -50,11 +51,14 @@ export async function beginEmploymentLogin(phone: string): Promise<string> {
 }
 
 export async function completeEmploymentLogin(challengeRef: string, code: string): Promise<EmploymentSession> {
-  return session((await request("/auth/verify-code", { method: "POST", body: JSON.stringify({ challenge_ref: challengeRef, code }) })).user);
+  const result = session((await request("/auth/verify-code", { method: "POST", body: JSON.stringify({ challenge_ref: challengeRef, code }) })).user);
+  announcePersonalSessionChange();
+  return result;
 }
 
 export async function endEmploymentSession(): Promise<void> {
-  await request("/logout", { method: "POST", body: "{}" });
+  try { await request("/logout", { method: "POST", body: "{}" }); }
+  finally { announcePersonalSessionChange(); }
 }
 
 export async function loadCandidateApplications(): Promise<CandidateApplication[]> {

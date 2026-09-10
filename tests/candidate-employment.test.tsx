@@ -119,7 +119,8 @@ describe("candidate Employment BFF authorization", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ authenticated: true, user: { account_type: "personal", display_name: "Candidate" } }), { headers: { "Set-Cookie": "shida_dashboard_session=opaque_verified_session_token; Path=/; HttpOnly; Secure; SameSite=Lax" } })));
     const response = await verifyCode(new Request("https://nihiloba.com/api/shida/employment/auth/verify-code", { method: "POST", headers: { origin: "https://nihiloba.com", "content-type": "application/json" }, body: JSON.stringify({ challenge_ref: "DLC_safechallenge", code: "123456" }) }));
     expect(response.status).toBe(200);
-    expect(setCookie).toHaveBeenCalledWith("shida_dashboard_session", "opaque_verified_session_token", expect.objectContaining({ httpOnly: true, sameSite: "lax", path: "/api/shida/employment", priority: "high" }));
+    expect(setCookie).toHaveBeenCalledWith("nihiloba_personal_session", "opaque_verified_session_token", expect.objectContaining({ httpOnly: true, sameSite: "lax", path: "/api/shida", priority: "high" }));
+    expect(setCookie).toHaveBeenCalledWith("shida_dashboard_session", "", expect.objectContaining({ path: "/api/shida/employment", maxAge: 0 }));
     expect(JSON.stringify(await response.json())).not.toContain("opaque_verified_session_token");
   });
 });

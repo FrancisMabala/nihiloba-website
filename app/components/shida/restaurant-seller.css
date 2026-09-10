@@ -1,0 +1,33 @@
+.rst { max-width: 1200px; }
+.rst .rst-actions { display:flex; flex-wrap:wrap; gap:12px; align-items:end; margin:16px 0; }
+.rst .rst-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); gap:16px; }
+.rst .rst-card { background:var(--surface,white); border:1px solid #d7dde5; border-radius:16px; padding:24px; margin:16px 0; min-width:0; overflow-wrap:anywhere; }
+.rst h2,.rst h3 { margin:12px 0; }
+.rst label { display:flex; flex-direction:column; gap:8px; min-width:0; }
+.rst input,.rst select,.rst textarea { border:1px solid #8d99a8; border-radius:8px; padding:10px; min-height:44px; max-width:100%; width:100%; background:white; color:#17243a; }
+.rst input[type=checkbox] { width:24px; min-height:24px; }
+.rst textarea { min-height:100px; }
+.rst .rst-fields { border:0; padding:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.rst .rst-wide { grid-column:1/-1; }
+.rst .rst-row { display:flex; flex-wrap:wrap; gap:12px; align-items:end; border-bottom:1px solid #d7dde5; padding:16px 0; }
+.rst .rst-row label { flex:1 1 140px; }
+.rst .rst-details { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.rst dt { font-size:.85rem; color:#58677d; }
+.rst dd { margin:4px 0 8px; white-space:pre-wrap; }
+.rst .rst-current { border-left:4px solid #b87510; padding:16px; margin-top:20px; }
+.rst button { min-height:44px; white-space:normal; }
+.rst button:disabled { opacity:.55; cursor:not-allowed; }
+.rst button[aria-pressed=true] { outline:2px solid #2f7257; }
+.rst :focus-visible { outline:3px solid #217c5a; outline-offset:3px; }
+@media(max-width:600px) { .rst .rst-fields,.rst .rst-details { grid-template-columns:1fr; } .rst .rst-card { padding:16px; } .rst .rst-actions>* { max-width:100%; } }
+
+
+.rst { padding-block: 40px; color: var(--ink, #14332b); }
+.rst .rst-card { border-radius: 2px; }
+.rst .rst-qr { display: block; width: 256px; max-width: 100%; height: auto; }
+.rst nav { display:flex; flex-wrap:wrap; gap:16px; }
+.rst h1 { margin: 20px 0 16px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.9rem, 4vw, 3rem); line-height: 1.15; color: var(--forest); }
+.rst h2 { font-size: 1.35rem; line-height: 1.35; overflow-wrap: anywhere; }
+.rst input, .rst select, .rst textarea { color: var(--ink); border-color: var(--line); border-radius: 3px; }
+.rst .rst-card, .rst .rst-row { border-color: var(--line); }
+.rst dt { color: var(--muted); }
