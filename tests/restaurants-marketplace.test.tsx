@@ -17,6 +17,13 @@ function mockApi(overrides: Record<string, unknown> = {}) {
   }); vi.stubGlobal("fetch", fetcher); return fetcher;
 }
 describe("Restaurant released public contract", () => {
+  it.each(restaurantLocales)("keeps the shared header and truthful unpublished menu in %s", async locale => {
+    mockApi({ "/api/public/shida/restaurants/RST-TEST1/menu": { ...menu, ...collection([]) }, "/api/public/shida/restaurants/RST-TEST1": { ...restaurant, owning_business: null } });
+    const html = renderToStaticMarkup(await RestaurantDetailPage({ locale, id: "RST-TEST1", menuOnly: true }));
+    expect(html).toContain("restaurant-table-header-240.webp"); expect(html).toContain('alt=""');
+    expect(html).toContain("restaurant-menu-empty"); expect(html).not.toContain("restaurant-pagination");
+    expect(html).not.toContain(restaurantCopy[locale].noBusiness); expect(html).not.toContain("Lingála"); expect(html).toContain("Lingala");
+  });
   it("discovery uses only collection data and distinguishes zero and unavailable menus", async () => {
     const fetcher = mockApi({ "/api/public/shida/restaurants": { ...collection([
       { ...restaurant, menu_summary: { available_count: 0, sold_out_count: 0, temporarily_unavailable_count: 0 } },

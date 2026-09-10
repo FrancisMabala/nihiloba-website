@@ -1,0 +1,52 @@
+.restaurant-detail{padding:20px 0 40px;background:#fffcf7;color:#082d25}
+.restaurant-detail .container{max-width:1240px}
+.restaurant-detail-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.restaurant-detail-top>.restaurant-link{border:0;padding-left:0;font-weight:400}
+.restaurant-detail .restaurant-languages{margin:0;gap:4px}
+.restaurant-detail .restaurant-languages a{min-height:44px;display:inline-flex;align-items:center}
+.restaurant-detail-header{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:24px;align-items:center;margin:16px 0}
+.restaurant-detail .restaurant-detail-header h1{font-family:Georgia,serif;font-size:clamp(2rem,3.4vw,3rem);line-height:1.1;margin:0 0 12px}
+.restaurant-detail-header p{margin:0 0 12px}
+.restaurant-header-art{display:block;width:420px;max-width:100%}
+.restaurant-header-art img{display:block;width:100%;height:auto;aspect-ratio:1983/793;object-fit:contain}
+.restaurant-current-status{display:inline-block;padding:4px 10px;background:#eee9dd;border-radius:4px}
+.restaurant-current-status.status-closed,.restaurant-detail .availability-sold_out,.restaurant-detail .availability-temporarily_unavailable{background:#f7e4d9;color:#82391f}
+.restaurant-current-status.status-open{background:#e7eee6;color:#17462d}
+.restaurant-detail .restaurant-hours-status.status-closed{background:#f7e4d9;color:#82391f}
+.restaurant-detail .restaurant-hours-status.status-unknown{background:#eee9dd;color:#5c594e}
+.restaurant-detail .restaurant-hours-status:before{display:none}
+.restaurant-detail-tabs{display:flex;gap:16px;border-bottom:1px solid #cfc8ba;margin-bottom:22px}
+.restaurant-detail-tabs a{display:inline-flex;align-items:center;min-height:44px;padding:10px 12px;text-decoration:none;border-bottom:3px solid transparent}
+.restaurant-detail-tabs a[aria-current]{border-color:#b58a38;font-weight:700}
+.restaurant-detail-columns{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:36px;align-items:start}
+.restaurant-detail h2,.restaurant-detail h3{font-family:Georgia,serif}
+.restaurant-detail .restaurant-menu-panel>h2,.restaurant-detail .restaurant-establishment>h2{margin:0 0 12px;font-size:2rem}
+.restaurant-detail .restaurant-categories{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:16px}
+.restaurant-detail .restaurant-categories a{min-height:44px;display:flex;align-items:center;text-underline-offset:6px}
+.restaurant-detail .restaurant-menu-sections section{scroll-margin-top:110px}
+.restaurant-detail .restaurant-menu-sections h2{display:flex;gap:12px;align-items:center;font-size:1.4rem;margin:20px 0 0}
+.restaurant-detail .restaurant-menu-sections h2:after{content:"";height:1px;background:#bcb8a9;flex:1}
+.restaurant-detail .restaurant-grid{display:block}
+.restaurant-detail .restaurant-menu-item{display:flex;gap:12px;border:0;border-bottom:1px solid #ddd5c8;border-radius:0;background:transparent;box-shadow:none;padding:16px 0;scroll-margin-top:110px}
+.restaurant-detail .restaurant-menu-item .restaurant-photo{width:80px;flex:0 0 80px;height:80px;aspect-ratio:auto}
+.restaurant-detail .restaurant-menu-item .marketplace-card-body{padding:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,45%);gap:8px 16px;flex:1;min-width:0}
+.restaurant-detail .restaurant-menu-item h3{margin:0 0 4px;font-size:1.15rem;font-weight:700}
+.restaurant-detail .restaurant-menu-item p{margin:3px 0;line-height:1.5}
+.restaurant-detail .restaurant-menu-item .eyebrow{font-size:.7rem;letter-spacing:.06em;color:#645f52}
+.restaurant-detail .restaurant-item-price{text-align:right;font-size:.94rem}
+.restaurant-detail .restaurant-item-price strong{font-weight:500}
+.restaurant-detail .restaurant-item-price .marketplace-status{display:inline-block;margin-top:6px;font-size:.8rem}
+.restaurant-detail .restaurant-menu-item .marketplace-card-body>p{grid-column:1/-1;font-size:.85rem}
+.restaurant-detail .restaurant-practical{background:#f7f4ed;border:1px solid #e3ddd0;border-radius:8px;padding:20px}
+.restaurant-detail .restaurant-practical>h2{font-size:1.3rem;margin:0 0 14px}
+.restaurant-detail .restaurant-hours-disclosure summary{min-height:44px;cursor:pointer;padding:12px 0;border-block:1px solid #ddd5c8}
+.restaurant-detail .restaurant-hours{margin:12px 0;padding:0;background:transparent;font-size:.9rem}
+.restaurant-detail .restaurant-hours h2{font-size:1.15rem;margin:12px 0}
+.restaurant-detail .restaurant-hours ul{padding-left:18px}
+.restaurant-detail .restaurant-actions{display:grid;gap:10px;margin:18px 0}
+.restaurant-detail .restaurant-actions a{font-size:.9rem;white-space:normal}
+.restaurant-detail .restaurant-whatsapp{background:#083d32;color:white;border-color:#083d32}
+.restaurant-detail .restaurant-menu-empty{padding:36px 22px;border:1px solid #e3ddd0;border-radius:8px;text-align:center;background:#f9f6ef}
+.restaurant-detail .restaurant-menu-empty h3{font-size:1.7rem;margin:0 0 16px}
+@media(max-width:900px){.restaurant-detail-header{grid-template-columns:minmax(0,1fr) 280px;gap:16px}.restaurant-header-art{width:280px}.restaurant-detail-columns{grid-template-columns:minmax(0,1fr) 250px;gap:20px}}
+@media(max-width:600px){.restaurant-detail{padding-top:10px}.restaurant-detail-top{gap:0}.restaurant-detail-header{grid-template-columns:1fr;gap:10px;margin:12px 0}.restaurant-header-art{width:200px;justify-self:end}.restaurant-detail-columns{grid-template-columns:1fr;gap:22px}.restaurant-detail-tabs{margin-bottom:16px}.restaurant-detail .restaurant-practical{padding:16px}.restaurant-detail .restaurant-menu-item .marketplace-card-body{gap:8px;grid-template-columns:minmax(0,1fr) minmax(120px,45%)}.restaurant-detail .restaurant-menu-item:has(.restaurant-photo){flex-wrap:wrap}.restaurant-detail .restaurant-menu-item .restaurant-photo{width:64px;height:64px;flex-basis:64px}.restaurant-detail .restaurant-menu-empty{padding:24px 16px}}

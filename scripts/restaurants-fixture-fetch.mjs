@@ -10,6 +10,19 @@ globalThis.fetch = async (input, init) => {
     throw new Error("External network disabled in Restaurant fixture process");
   }
   const path = url.pathname;
+  // Detail redesign fixtures: isolated public references, never production data.
+  const detailRef = path.match(/RST-(EMPTY|ERROR|HOURS|WITHDRAWN|PAGED)/)?.[0];
+  if (detailRef) {
+    const detailHours = { ...restaurant.hours, status: "closed", basis: "exceptional_closure", schedule: { windows: [{ weekday: 0, start: "09:00", end: "17:00" }, { weekday: 5, start: "20:00", end: "02:00" }] }, exceptional_closures: [{ starts_at: "2026-09-09T00:00:00Z", ends_at: "2026-09-10T00:00:00Z" }] };
+    if (path.endsWith("/menu")) {
+      if (detailRef === "RST-WITHDRAWN") return new Response("not found", { status: 404 });
+      if (detailRef === "RST-ERROR") return new Response("unavailable", { status: 503 });
+      const page = Number(url.searchParams.get("page") || 1);
+      return Response.json({ ...menu, ...collection(detailRef === "RST-EMPTY" ? [] : menu.items.map(item => ({ ...item, establishment_ref: detailRef })), page, detailRef === "RST-EMPTY" ? 0 : detailRef === "RST-PAGED" ? 8 : 4, 4), establishment_ref: detailRef, hours: detailHours });
+    }
+    if (path.includes("entity-actions")) return Response.json({ ...actions, public_ref: detailRef, can_save_in_shida: false, can_follow_in_shida: false, link_destination_available: false });
+    return Response.json({ ...restaurant, public_ref: detailRef, owning_business: null, hours: detailHours });
+  }
   let payload;
   if (path.includes("RST-UNAVAILABLE") || path.includes("BUS-UNAVAILABLE")) return new Response("not found", { status: 404 });
   if (url.searchParams.get("query") === "failure") return new Response("unavailable", { status: 503 });

@@ -1,5 +1,17 @@
 # Seller sign-in illustration
 
+## Public detail/menu shared header
+
+`restaurant-table-header.png` is the exact approved full-table artwork from
+`restaurant-detail-design/assets/`: 1983 × 793, opaque cream, 2,263,106 bytes.
+No cropping, regeneration, substitutions or transparency conversion.
+Existing Sharp pipeline: `sharp(source).resize(width).webp({quality:80})`.
+Derivatives: 240 × 96 (7,370 bytes), 480 × 192 (23,286 bytes), 960 × 384 (73,542 bytes).
+One shared header uses all three width descriptors with sizes 200px on phone,
+280px tablet, 420px desktop. Complete artwork, empty alt, reserved source ratio.
+The original PNG is not referenced by rendered pages. This header is independent
+of the terrace illustration on marketplace discovery and the seller artwork.
+
 `malewa-comptoir.png` is the approved, unchanged standalone v2 artwork supplied
 from `seller-design-concepts-v2/assets/`. It is decorative generated artwork,
 not a photograph of a real seller and not a screenshot of the interface.

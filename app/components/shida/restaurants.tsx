@@ -7,11 +7,13 @@ import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import { MarketplaceImage } from "./marketplace-image";
 import { RestaurantRevalidation } from "./restaurant-revalidation";
 import { RestaurantRetry } from "./restaurant-retry";
+import { restaurantDetailCopy, restaurantLanguageNames } from "../../lib/restaurant-detail-copy";
+import "./restaurant-detail.css";
 
 // Native document navigation deliberately re-reads eligibility rather than prefetching public projections.
 function Internal({ href, children }: { href: string; children: React.ReactNode }) { return <a className="restaurant-link" href={href}>{children}</a>; }
 function Languages({ locale, suffix = "", search = "", business }: { locale: RestaurantLocale; suffix?: string; search?: string; business?: string }) {
-  return <nav className="restaurant-languages" aria-label={restaurantCopy[locale].language}>{restaurantLocales.map((lang) => <a key={lang} href={`${business ? businessPath(lang, business) : restaurantPath(lang, suffix)}${search ? `?${search}` : ""}`} hrefLang={lang} lang={lang} aria-current={locale === lang ? "page" : undefined}>{({ en: "English", fr: "Français", ln: "Lingála", sw: "Kiswahili" })[lang]}</a>)}</nav>;
+  return <nav className="restaurant-languages" aria-label={restaurantCopy[locale].language}>{restaurantLocales.map((lang) => <a key={lang} href={`${business ? businessPath(lang, business) : restaurantPath(lang, suffix)}${search ? `?${search}` : ""}`} hrefLang={lang} lang={lang} aria-current={locale === lang ? "page" : undefined}>{restaurantLanguageNames[lang]}</a>)}</nav>;
 }
 function Shell({ locale, title, children, suffix, search, business }: { locale: RestaurantLocale; title: string; children: React.ReactNode; suffix?: string; search?: string; business?: string }) {
   const t = restaurantCopy[locale];
@@ -39,14 +41,14 @@ function Pagination({ locale, page, page_size, total, href }: { locale: Restaura
   const t = restaurantCopy[locale];
   return <nav className="restaurant-pagination" aria-label={t.page}>{page > 1 && <Internal href={href(page - 1)}>{t.previous}</Internal>}<span aria-current="page">{t.page} {page} / {Math.max(1, Math.ceil(total / page_size))}</span>{page * page_size < total && <Internal href={href(page + 1)}>{t.next}</Internal>}</nav>;
 }
-function Status({ locale, hours }: { locale: RestaurantLocale; hours: Restaurant["hours"] }) { return <span className="marketplace-status">{restaurantCopy[locale][hours.status]}</span>; }
+function Status({ locale, hours }: { locale: RestaurantLocale; hours: Restaurant["hours"] }) { return <span className={`marketplace-status restaurant-hours-status status-${hours.status}`}>{restaurantCopy[locale][hours.status]}</span>; }
 export function RestaurantHours({ locale, hours }: { locale: RestaurantLocale; hours: Restaurant["hours"] }) {
   const t = restaurantCopy[locale];
   return <section className="restaurant-hours"><h2>{t.hours}</h2><Status locale={locale} hours={hours}/><p>{t.information}</p>
     {hours.timezone_name && <p>{t.timezone}: {hours.timezone_name}</p>}
-    {hours.windows.length > 0 && <ul>{hours.windows.map((window, index) => <li key={index}>{t.days[window.weekday]}: {window.start} – {window.end}</li>)}</ul>}
+    {hours.windows.length > 0 && <ul>{hours.windows.map((window, index) => <li key={index}>{t.days[window.weekday]}: {window.start} – {window.end}{window.end < window.start && <> ({restaurantDetailCopy[locale].nextDay})</>}</li>)}</ul>}
     {!!hours.closures.length && <><h3>{t.closures}</h3><ul>{hours.closures.map((closure, index) => <li key={index}><DateValue value={closure.starts_at} timezone={hours.timezone_name} locale={locale}/> – <DateValue value={closure.ends_at} timezone={hours.timezone_name} locale={locale}/></li>)}</ul></>}
-    {hours.evaluated_at && <p className="restaurant-note">{t.evaluated}: <DateValue value={hours.evaluated_at} timezone={hours.timezone_name} locale={locale}/></p>}
+    {hours.evaluated_at && <p className="restaurant-note">{restaurantDetailCopy[locale].evaluated}: <DateValue value={hours.evaluated_at} timezone={hours.timezone_name} locale={locale}/></p>}
   </section>;
 }
 function DateValue({ value, timezone, locale }: { value: string; timezone: string | null; locale: RestaurantLocale }) {
@@ -65,13 +67,22 @@ export function RestaurantMenu({ items, locale }: { items: RestaurantMenuItem[];
   if (!items.length) return <p role="status">{t.noMenu}</p>;
   const categories = new Map<string, { name: string | null; items: RestaurantMenuItem[] }>();
   for (const item of items) { const category = categories.get(item.category.public_ref) ?? { name: item.category.name, items: [] }; category.items.push(item); categories.set(item.category.public_ref, category); }
-  return <div>{[...categories].map(([ref, category]) => <section key={ref}><h2>{category.name || t.menu}</h2><div className="restaurant-grid">{category.items.map((item) => <article key={item.public_ref} id={`item-${item.public_ref}`} className="marketplace-card restaurant-menu-item">
+  return <div className="restaurant-menu-sections"><nav className="restaurant-categories" aria-label={restaurantDetailCopy[locale].categories}>{[...categories].map(([ref, category]) => <a key={ref} href={`#category-${ref}`}>{category.name || t.menu}</a>)}</nav>{[...categories].map(([ref, category]) => <section key={ref} id={`category-${ref}`}><h2>{category.name || t.menu}</h2><div className="restaurant-grid">{category.items.map((item) => <article key={item.public_ref} id={`item-${item.public_ref}`} className="marketplace-card restaurant-menu-item">
     {item.image_url && <div className="restaurant-photo"><MarketplaceImage src={item.image_url} alt={item.name || t.menu} fallback={t.photo}/></div>}
-    <div className="marketplace-card-body"><p className="eyebrow">{item.presentation === "component" ? t.component : t.fixed}</p><h3>{item.name || t.menu}</h3><span className="marketplace-status">{t[item.availability]}</span>{item.description && <p>{item.description}</p>}<RestaurantPrice item={item} locale={locale}/>
+    <div className="marketplace-card-body"><div className="restaurant-item-description"><p className="eyebrow">{item.presentation === "component" ? t.component : t.fixed}</p><h3>{item.name || t.menu}</h3>{item.description && <p>{item.description}</p>}</div><div className="restaurant-item-price"><RestaurantPrice item={item} locale={locale}/><span className={`marketplace-status availability-${item.availability}`}>{t[item.availability]}</span></div>
       {item.dated_offering && <p>{t.dated}: <DateValue value={item.dated_offering.starts_at} timezone={item.dated_offering.timezone_name} locale={locale}/> {t.until} <DateValue value={item.dated_offering.ends_at} timezone={item.dated_offering.timezone_name} locale={locale}/> ({item.dated_offering.timezone_name})</p>}
     </div></article>)}</div></section>)}</div>;
 }
 export { RestaurantDiscovery as RestaurantListPage } from "./restaurant-discovery";
+function RestaurantHeader({ locale, establishment, hours }: { locale: RestaurantLocale; establishment: Restaurant; hours: Restaurant["hours"] }) {
+  const t = restaurantCopy[locale];
+  return <header className="restaurant-detail-header">
+    <div><h1>{establishment.name || t.title}</h1><p>{[establishment.type_label, establishment.location].filter(Boolean).join(" · ")}</p><span className={`restaurant-current-status status-${hours.status}`}>{t[hours.status]}</span></div>
+    <picture className="restaurant-header-art">
+      <img src="/images/restaurants/restaurant-table-header-480.webp" srcSet="/images/restaurants/restaurant-table-header-240.webp 240w, /images/restaurants/restaurant-table-header-480.webp 480w, /images/restaurants/restaurant-table-header-960.webp 960w" sizes="(max-width: 600px) 200px, (max-width: 900px) 280px, 420px" width={1983} height={793} alt="" decoding="async"/>
+    </picture>
+  </header>;
+}
 export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly = false }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch; menuOnly?: boolean }) {
   const t = restaurantCopy[locale], back = restaurantReturn(search), context = new URLSearchParams({ back });
   const menuPage = restaurantQuery(search).get("page") ?? "1";
@@ -84,22 +95,33 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
   if (actionsResult.status === "rejected" && actionsResult.reason instanceof ShidaApiError && actionsResult.reason.kind === "not-found") notFound();
   const actions = actionsResult.status === "fulfilled" ? actionsResult.value : null;
   const detailPath = restaurantPath(locale, `/${encodeURIComponent(establishment.public_ref)}`);
-  return <Shell locale={locale} title={establishment.name || t.title} suffix={suffix} search={`${context}${menuOnly ? `&page=${menuPage}` : ""}`}>
-    <Internal href={`${restaurantPath(locale)}${back ? `?${back}` : ""}#restaurant-${establishment.public_ref}`}>{t.back}</Internal>
-    {menuOnly ? <p><Internal href={`${detailPath}?${context}`}>{t.details}</Internal></p> : <>
+  const copy = restaurantDetailCopy[locale], routeContext = `${context}&page=${menuPage}`;
+  const currentHours = menuResult.status === "fulfilled" ? menuResult.value.hours : establishment.hours;
+  return <section className="restaurant-public restaurant-detail" lang={locale}><div className="container">
+    <RestaurantRevalidation/>
+    <div className="restaurant-detail-top"><Internal href={`${restaurantPath(locale)}${back ? `?${back}` : ""}#restaurant-${establishment.public_ref}`}>← {t.back}</Internal><Languages locale={locale} suffix={suffix} search={routeContext}/></div>
+    <RestaurantHeader locale={locale} establishment={establishment} hours={currentHours}/>
+    <nav className="restaurant-detail-tabs" aria-label={t.title}><a href={`${detailPath}/menu?${routeContext}`} aria-current={menuOnly ? "page" : undefined}>{t.menu}</a><a href={`${detailPath}?${routeContext}`} aria-current={!menuOnly ? "page" : undefined}>{copy.establishment}</a></nav>
+    <div className="restaurant-detail-columns"><div className="restaurant-detail-content">
+    {!menuOnly ? <section className="restaurant-establishment"><h2>{copy.establishment}</h2>
       {establishment.images[0] && <div className="restaurant-photo restaurant-hero-photo"><MarketplaceImage src={establishment.images[0].url} alt={establishment.images[0].alt || establishment.name || t.title} fallback={t.photo}/></div>}
-      <p>{establishment.type_label}</p><p>{establishment.description}</p><p>{establishment.location}</p>
+      {establishment.description && <p>{establishment.description}</p>}
       {establishment.service_modes.length > 0 && <p>{t.mode}: {establishment.service_modes.join(" · ")}</p>}
       {establishment.opening_information && <p>{establishment.opening_information}</p>}
-      <section><h2>{t.owner}</h2>{establishment.owning_business ? <Internal href={`${businessPath(locale, establishment.owning_business.public_ref)}?${new URLSearchParams({ establishment: establishment.public_ref, back })}`}>{establishment.owning_business.name || t.business}</Internal> : <p>{t.noBusiness}</p>}</section>
-    </>}
-    <RestaurantHours locale={locale} hours={menuResult.status === "fulfilled" ? menuResult.value.hours : establishment.hours}/>
-    <section><h2>{t.menu}</h2>{!menuOnly && <p><Internal href={`${detailPath}/menu?${context}`}>{t.menu}</Internal></p>}
-      {menuResult.status === "fulfilled" ? <><RestaurantMenu locale={locale} items={menuResult.value.items}/><Pagination locale={locale} {...menuResult.value} href={(page) => `${detailPath}/menu?${context}&page=${page}`}/></> : <Failure locale={locale}/>}
-    </section>
-    <div className="restaurant-actions">{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.share && <a className="restaurant-link" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menuWhatsapp}</a>}</div>
-    <p>{actions?.share ? t.report : t.actionsUnavailable}</p>
-  </Shell>;
+      {establishment.owning_business && <section><h2>{t.owner}</h2><Internal href={`${businessPath(locale, establishment.owning_business.public_ref)}?${new URLSearchParams({ establishment: establishment.public_ref, back })}`}>{establishment.owning_business.name || t.business}</Internal></section>}
+      <Internal href={`${detailPath}/menu?${routeContext}`}>{t.menu}</Internal>
+    </section> : <section className="restaurant-menu-panel"><h2>{t.menu}</h2>
+      {menuResult.status === "fulfilled" ? <>
+        {menuResult.value.items.length ? <RestaurantMenu locale={locale} items={menuResult.value.items}/> : <div className="restaurant-menu-empty" role="status"><h3>{menuResult.value.total === 0 ? copy.emptyTitle : copy.pageEmpty}</h3>{menuResult.value.total === 0 && <p>{copy.empty}</p>}<Internal href={`${detailPath}?${routeContext}`}>{t.details}</Internal></div>}
+        {menuResult.value.total > 0 && <Pagination locale={locale} {...menuResult.value} href={(page) => `${detailPath}/menu?${context}&page=${page}`}/>}
+      </> : <div className="restaurant-menu-empty" role="status"><p>{copy.menuError}</p><RestaurantRetry label={t.retry}/></div>}
+    </section>}
+    </div><aside className="restaurant-practical"><h2>{copy.practical}</h2>{establishment.location && <p>{establishment.location}</p>}
+    <details className="restaurant-hours-disclosure"><summary>{t.hours}</summary><RestaurantHours locale={locale} hours={currentHours}/></details>
+    <div className="restaurant-actions">{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menuWhatsapp}</a>}</div>
+    <p className="restaurant-note">{actions?.share ? t.report : t.actionsUnavailable}</p>
+    </aside></div>
+  </div></section>;
 }
 export async function RestaurantBusinessPage({ locale, id, search = {} }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch }) {
   const t = restaurantCopy[locale], page = restaurantQuery(search).get("page") ?? "1", back = restaurantReturn(search);
