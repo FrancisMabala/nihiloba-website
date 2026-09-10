@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ShidaApiError } from "../../services/shida/public-client";
-import { getRestaurant, getRestaurantActions, getRestaurantBusiness, getRestaurantMenu, getRestaurants, restaurantQuery, type Restaurant, type RestaurantLocale, type RestaurantMenuItem, type RestaurantSearch } from "../../services/shida/restaurants-client";
+import { getRestaurant, getRestaurantActions, getRestaurantBusiness, getRestaurantMenu, restaurantQuery, type Restaurant, type RestaurantLocale, type RestaurantMenuItem, type RestaurantSearch } from "../../services/shida/restaurants-client";
 import { businessPath, restaurantCopy, restaurantLocales, restaurantPath, restaurantReturn } from "../../lib/restaurant-i18n";
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import { MarketplaceImage } from "./marketplace-image";
@@ -72,29 +71,7 @@ export function RestaurantMenu({ items, locale }: { items: RestaurantMenuItem[];
       {item.dated_offering && <p>{t.dated}: <DateValue value={item.dated_offering.starts_at} timezone={item.dated_offering.timezone_name} locale={locale}/> {t.until} <DateValue value={item.dated_offering.ends_at} timezone={item.dated_offering.timezone_name} locale={locale}/> ({item.dated_offering.timezone_name})</p>}
     </div></article>)}</div></section>)}</div>;
 }
-export async function RestaurantListPage({ locale, search = {} }: { locale: RestaurantLocale; search?: RestaurantSearch }) {
-  const t = restaurantCopy[locale], params = restaurantQuery(search), path = restaurantPath(locale);
-  let result;
-  try { result = await getRestaurants(locale, search); } catch { return <Shell locale={locale} title={t.title} search={params.toString()}><Failure locale={locale} href={`${path}?${params}`}/></Shell>; }
-  return <Shell locale={locale} title={t.title} search={params.toString()}><p>{t.intro}</p>
-    <p><Link className="button button-secondary" href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{({ en: "Personal seller area", fr: "Espace vendeur Personnel", ln: "Esika ya moteki Personnel", sw: "Eneo la muuzaji Binafsi" })[locale]}</Link></p>
-    <form action={path} method="get" className="restaurant-filters">
-      {(["query", "name", "city", "area", "dish"] as const).map((key) => <label key={key}>{key === "query" ? t.search : t[key]}<input name={key} defaultValue={params.get(key) ?? ""} maxLength={200}/></label>)}
-      <label>{t.type}<select name="food_type" defaultValue={params.get("food_type") ?? ""}><option value="">{t.all}</option>{(["restaurant", "malewa", "cafe", "fast_food", "catering"] as const).map((type) => <option key={type} value={type}>{t[type]}</option>)}</select></label>
-      <label>{t.mode}<select name="service_mode" defaultValue={params.get("service_mode") ?? ""}><option value="">{t.all}</option>{[...new Set([...(params.get("service_mode") ? [params.get("service_mode")!] : []), ...result.service_mode_options])].map((mode) => <option key={mode} value={mode}>{mode}</option>)}</select></label>
-      <label className="restaurant-checkbox"><input type="checkbox" name="open_now" value="true" defaultChecked={params.get("open_now") === "true"}/>{t.openOnly}</label>
-      <button type="submit" className="restaurant-link">{t.search}</button><Internal href={path}>{t.reset}</Internal>
-    </form><p role="status">{result.total} {t.results}</p>
-    {!result.items.length && <p>{t.empty} <Internal href={locale === "en" ? "/shida" : "/fr/shida"}>SHIDA</Internal></p>}
-    <div className="restaurant-grid">{result.items.map((item) => {
-      const href = `${path}/${encodeURIComponent(item.public_ref)}?${new URLSearchParams({ back: params.toString() })}`;
-      return <article className="marketplace-card" id={`restaurant-${item.public_ref}`} key={item.public_ref}>
-        <a className="restaurant-photo" href={href} aria-label={`${t.details}: ${item.name || t.title}`}><MarketplaceImage src={item.images[0]?.url ?? item.logo?.url ?? null} alt={item.images[0]?.alt || item.name || t.title} fallback={t.photo}/></a>
-        <div className="marketplace-card-body"><p className="eyebrow">{item.type_label}</p><h2><a href={href}>{item.name || t.title}</a></h2><Status locale={locale} hours={item.hours}/><p>{item.location}</p><p>{item.description}</p>{item.menu_summary && <p>{t.menu}: {t.available} {item.menu_summary.available} · {t.sold_out} {item.menu_summary.sold_out} · {t.temporarily_unavailable} {item.menu_summary.temporarily_unavailable}</p>}<Internal href={href}>{t.details}</Internal></div>
-      </article>;
-    })}</div><Pagination locale={locale} {...result} href={(page) => { const next = new URLSearchParams(params); next.set("page", String(page)); return `${path}?${next}`; }}/>
-  </Shell>;
-}
+export { RestaurantDiscovery as RestaurantListPage } from "./restaurant-discovery";
 export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly = false }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch; menuOnly?: boolean }) {
   const t = restaurantCopy[locale], back = restaurantReturn(search), context = new URLSearchParams({ back });
   const menuPage = restaurantQuery(search).get("page") ?? "1";

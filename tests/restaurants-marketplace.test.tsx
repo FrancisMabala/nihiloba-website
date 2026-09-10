@@ -17,6 +17,15 @@ function mockApi(overrides: Record<string, unknown> = {}) {
   }); vi.stubGlobal("fetch", fetcher); return fetcher;
 }
 describe("Restaurant released public contract", () => {
+  it("discovery uses only collection data and distinguishes zero and unavailable menus", async () => {
+    const fetcher = mockApi({ "/api/public/shida/restaurants": { ...collection([
+      { ...restaurant, menu_summary: { available_count: 0, sold_out_count: 0, temporarily_unavailable_count: 0 } },
+      { ...restaurant, public_ref: "RST-SECOND", menu_summary: { available_count: 0, sold_out_count: 2, temporarily_unavailable_count: 0 } },
+    ]), service_mode_options: [] } });
+    const html = renderToStaticMarkup(await RestaurantListPage({ locale: "fr", search: { name: "Exact", dish: "pondu", area: "Gombe", food_type: "catering", service_mode: "Sur place" } }));
+    expect(fetcher).toHaveBeenCalledTimes(1); expect(html).toContain("Pas encore de menu publié"); expect(html).toContain("Éléments du menu indisponibles actuellement");
+    expect(html).toContain("Horaires à confirmer"); expect(html).toContain('name="dish" value="pondu"'); expect(html).toContain('value="catering"'); expect(html).not.toContain("PRIVATE_");
+  });
   it("retries the current document without dropping menu page or exposing a legacy slug", async () => {
     const reload = vi.fn();
     vi.stubGlobal("window", { location: { reload } });
@@ -32,7 +41,7 @@ describe("Restaurant released public contract", () => {
     mockApi();
     const html = renderToStaticMarkup(await RestaurantListPage({ locale: "en" }));
     expect(html).toContain('aria-label="View establishment: Test Malewa"');
-    expect(html).toContain("No photo available");
+    expect(html).toContain("Photo unavailable");
   });
   it("preserves results context when following a Business Restaurant activity", async () => {
     mockApi();
