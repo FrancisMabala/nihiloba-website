@@ -1,0 +1,38 @@
+export const personalLoginCopy = {
+  en: {
+    title: "Sign in with SHIDA", start: "Continue with WhatsApp", open: "Open SHIDA on WhatsApp",
+    help: "Send the prepared message to SHIDA, then return to this browser. Opening WhatsApp alone does not sign you in.",
+    pending: "Waiting for you to send the message…", creating: "Preparing secure sign-in…", exchanging: "Message verified. Finishing sign-in…",
+    expired: "This sign-in attempt expired. Start again.", onboarding_required: "Complete your SHIDA account setup in WhatsApp, then try again.",
+    cancelled: "Sign-in cancelled or replaced by another attempt.", unavailable: "Sign-in is unavailable. Please try again.",
+    uncertain: "Sign-in could not be confirmed. Sign out before starting again.", rate_limited: "Please wait before trying again.",
+    retry: "Try again", cancel: "Cancel sign-in", reset: "Sign out and retry",
+  },
+  fr: {
+    title: "Se connecter avec SHIDA", start: "Continuer avec WhatsApp", open: "Ouvrir SHIDA sur WhatsApp",
+    help: "Envoyez le message préparé à SHIDA, puis revenez dans ce navigateur. Ouvrir WhatsApp ne suffit pas pour se connecter.",
+    pending: "En attente de l’envoi du message…", creating: "Préparation de la connexion sécurisée…", exchanging: "Message vérifié. Connexion en cours…",
+    expired: "Cette tentative a expiré. Recommencez.", onboarding_required: "Terminez la création de votre compte SHIDA dans WhatsApp, puis réessayez.",
+    cancelled: "Connexion annulée ou remplacée par une autre tentative.", unavailable: "Connexion indisponible. Veuillez réessayer.",
+    uncertain: "La connexion n’a pas pu être confirmée. Déconnectez-vous avant de recommencer.", rate_limited: "Veuillez patienter avant de réessayer.",
+    retry: "Réessayer", cancel: "Annuler la connexion", reset: "Se déconnecter et réessayer",
+  },
+  ln: {
+    title: "Kokɔta na SHIDA", start: "Kokoba na WhatsApp", open: "Fungola SHIDA na WhatsApp",
+    help: "Tindá nsango oyo ebongisami na SHIDA, mpe zongá na navigateur oyo. Kofungola WhatsApp kaka ekokɔtisa yo te.",
+    pending: "Tozali kozela otinda nsango…", creating: "Tozali kobongisa kokɔta na bokengi…", exchanging: "Nsango endimami. Tozali kokɔtisa yo…",
+    expired: "Ntango ya kokɔta esili. Bandá lisusu.", onboarding_required: "Silisá kofungola compte na yo ya SHIDA na WhatsApp, mpe meká lisusu.",
+    cancelled: "Kokɔta elongolami to emekamelo mosusu ezwi esika na yango.", unavailable: "Kokɔta ezali kosala te. Meká lisusu.",
+    uncertain: "Tokoki kondima kokɔta te. Bimá liboso ya komeka lisusu.", rate_limited: "Zelá mwa moke liboso ya komeka lisusu.",
+    retry: "Meká lisusu", cancel: "Longola kokɔta", reset: "Bimá mpe meká lisusu",
+  },
+  sw: {
+    title: "Ingia na SHIDA", start: "Endelea na WhatsApp", open: "Fungua SHIDA kwenye WhatsApp",
+    help: "Tuma ujumbe ulioandaliwa kwa SHIDA, kisha urudi kwenye kivinjari hiki. Kufungua WhatsApp pekee hakukuingizi.",
+    pending: "Tunasubiri utume ujumbe…", creating: "Tunaandaa kuingia kwa usalama…", exchanging: "Ujumbe umethibitishwa. Tunakamilisha kuingia…",
+    expired: "Jaribio hili limeisha muda. Anza tena.", onboarding_required: "Kamilisha usajili wa akaunti yako ya SHIDA kwenye WhatsApp, kisha ujaribu tena.",
+    cancelled: "Kuingia kumefutwa au kubadilishwa na jaribio jingine.", unavailable: "Kuingia hakupatikani. Tafadhali jaribu tena.",
+    uncertain: "Kuingia hakukuthibitishwa. Toka kabla ya kujaribu tena.", rate_limited: "Tafadhali subiri kabla ya kujaribu tena.",
+    retry: "Jaribu tena", cancel: "Ghairi kuingia", reset: "Toka na ujaribu tena",
+  },
+} as const;

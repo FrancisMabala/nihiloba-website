@@ -83,9 +83,13 @@ def cross_channel(ref: str):
     return {"ok": bool(result)}
 
 if __name__ == "__main__":
-    if "--checks" in sys.argv:
+    if "--checks" in sys.argv or "--auth-checks" in sys.argv:
         import pytest
         files = ["test_restaurant_personal_api.py", "test_restaurant_personal_lifecycle.py", "test_restaurant_personal_menu.py", "test_restaurant_personal_api_postgres.py", "test_restaurant_personal_lifecycle_postgres.py", "test_restaurant_personal_menu_postgres.py", "test_restaurant_personal_whatsapp.py", "test_restaurant_personal_menu_whatsapp.py"]
+        if "--auth-checks" in sys.argv:
+            files = ["test_dashboard_whatsapp_auth.py"]
+            # Explicitly absent: this flow must not require an outbound OTP template.
+            settings.dashboard_login_otp_template = None
         raise SystemExit(pytest.main([*[str(BACKEND / "tests" / file) for file in files], "-q", "-p", "no:cacheprovider"]))
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=3443, ssl_keyfile=str(ROOT / ".s3a-local/key.pem"), ssl_certfile=str(ROOT / ".s3a-local/cert.pem"), access_log=False)

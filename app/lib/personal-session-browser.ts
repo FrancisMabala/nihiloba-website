@@ -1,3 +1,4 @@
+import { personalAuthBusy, loginUnconfirmed } from "./personal-login-browser";
 export const PERSONAL_SESSION_EVENT = "shida-personal-session-changed";
 // Notification only: no credentials, identity, drafts or Personal data in storage.
 export function announcePersonalSessionChange() {
@@ -9,6 +10,8 @@ export class PersonalSessionError extends Error {
   constructor(public readonly status: number) { super("session_unavailable"); }
 }
 export async function restorePersonalSession(signal?: AbortSignal): Promise<PersonalSession> {
+  if (await personalAuthBusy()) throw new PersonalSessionError(503);
+  if (loginUnconfirmed()) throw new PersonalSessionError(401);
   // This endpoint also migrates the legacy Employment-path cookie after validation.
   const response = await fetch("/api/shida/employment/session/", { cache: "no-store", credentials: "same-origin", signal });
   if (!response.ok) throw new PersonalSessionError(response.status);

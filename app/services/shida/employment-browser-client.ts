@@ -1,5 +1,6 @@
 import { parseCandidateApplication } from "./employment-client";
 import { announcePersonalSessionChange } from "../../lib/personal-session-browser";
+import { announceLoginAttempt, authMutation, personalAuthBusy, loginUnconfirmed, markLoginUnconfirmed } from "../../lib/personal-login-browser";
 import type { CandidateApplication, EmploymentSession } from "../../types/shida-employment";
 
 export class EmploymentBrowserError extends Error {
@@ -41,6 +42,8 @@ function session(value: unknown): EmploymentSession {
 }
 
 export async function restoreEmploymentSession(): Promise<EmploymentSession> {
+  if (await personalAuthBusy()) throw new EmploymentBrowserError("api_unavailable", 503);
+  if (loginUnconfirmed()) throw new EmploymentBrowserError("unauthorized", 401);
   return session((await request("/session")).user);
 }
 
@@ -57,7 +60,8 @@ export async function completeEmploymentLogin(challengeRef: string, code: string
 }
 
 export async function endEmploymentSession(): Promise<void> {
-  try { await request("/logout", { method: "POST", body: "{}" }); }
+  announceLoginAttempt();
+  try { await authMutation(async () => { markLoginUnconfirmed(true); await request("/logout/", { method: "POST", body: "{}" }); markLoginUnconfirmed(false); }); }
   finally { announcePersonalSessionChange(); }
 }
 

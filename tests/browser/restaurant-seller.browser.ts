@@ -3,6 +3,7 @@ import QRCode from "qrcode";
 const revision = "2026-09-10T10:00:00.123456+00:00";
 const establishment = { public_ref: "RST_fixture", revision, status: "draft", profile: { name: "Isolated Malewa", description: "Synthetic fixture only", city: "Test city", commune: "Test commune", quartier: "Test district", food_business_type: "malewa", address_visibility: "broad", timezone_name: "Africa/Kinshasa" }, menu_currency: "CDF", location_confirmed: true, missing_publication_fields: [], actions: ["read", "edit", "preview", "menu", "hours", "publish", "links"], preview: { name: "Isolated Malewa", description: "Synthetic fixture only" } };
 async function fixture(page: Page) {
+ await page.addInitScript(() => { window.open = () => null; });
  const state = { establishment: structuredClone(establishment), writes: [] as { path: string; method: string; body: Record<string, unknown> | null }[], stale: false, fail: false, denied: false, session: true, binding: "a".repeat(64), items: [] as Record<string, unknown>[], offerings: [] as Record<string, unknown>[] };
  await page.route("**/*", async route => {
   const req = route.request(), url = new URL(req.url());
@@ -12,6 +13,9 @@ async function fixture(page: Page) {
   const reply = (json: unknown, status = 200) => route.fulfill({ status, json });
   if (url.pathname.endsWith("/employment/session")) return state.session ? reply({ user: { display_name: "Synthetic seller" }, binding: state.binding }) : reply({}, 401);
   if (url.pathname.endsWith("/employment/logout")) { state.session = false; return reply({ authenticated: false }); }
+  if (url.pathname === "/api/shida/personal/auth/whatsapp") return reply({ challenge_ref: "DWC_fixture_only", expires_at: new Date(Date.now()+300000).toISOString(), whatsapp_url: "https://wa.me/243000000000?text=fixture" });
+  if (url.pathname === "/api/shida/personal/auth/whatsapp/DWC_fixture_only") return reply({ status: "verified" });
+  if (url.pathname === "/api/shida/personal/auth/whatsapp/DWC_fixture_only/session") { state.session = true; return reply({ authenticated: true }); }
   if (url.pathname.endsWith("/auth/request-code")) return reply({ challenge_ref: "DLC_fixture_only" });
   if (url.pathname.endsWith("/auth/verify-code")) { state.session = true; return reply({ user: { display_name: "Synthetic seller" } }); }
   const path = url.pathname.replace("/api/shida/personal/restaurants", "");
@@ -43,15 +47,14 @@ async function fixture(page: Page) {
 async function open(page: Page) { await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Edit", exact: true }).click(); }
 test("failed logout still clears this tab and focus cannot restore private content", async ({ page }) => {
  await fixture(page); await open(page);
- await page.route("**/api/shida/employment/logout", route => route.abort());
+ await page.route("**/api/shida/employment/logout/", route => route.abort());
  await page.getByRole("button", { name: "Sign out / change account", exact: true }).click();
  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
- await expect(page.getByRole("heading", { name: "Sign in to SHIDA", exact: true })).toBeVisible();
+ await expect(page.getByRole("heading", { name: "Sign in with SHIDA", exact: true })).toBeVisible();
  await expect(page.getByRole("heading", { name: "Isolated Malewa", exact: true })).toHaveCount(0);
- await page.getByLabel("WhatsApp phone number", { exact: true }).fill("+00000000000"); await page.getByRole("button", { name: "Request sign-in code", exact: true }).click();
- await page.route("**/api/shida/employment/auth/verify-code", route => route.fulfill({ status: 503, json: {} }));
- await page.getByLabel("Six-digit code", { exact: true }).fill("123456"); await page.getByRole("button", { name: "Sign in", exact: true }).click();
- await expect(page.getByText("Unable to continue. Please try again.", { exact: true })).toBeVisible();
+ await page.route("**/api/shida/personal/auth/whatsapp/", route => route.fulfill({ status: 503, json: {} }));
+ await page.getByRole("button", { name: "Continue with WhatsApp", exact: true }).click();
+ await expect(page.getByText("Sign-in is unavailable. Please try again.", { exact: true })).toBeVisible();
  await page.evaluate(() => window.dispatchEvent(new Event("focus"))); await expect(page.getByRole("heading", { name: "Isolated Malewa", exact: true })).toHaveCount(0);
 });
 test("transient session failure preserves input, deduplicates checks and confirmed expiry clears it", async ({ page }) => {
@@ -64,7 +67,7 @@ test("transient session failure preserves input, deduplicates checks and confirm
  await page.unroute("**/api/shida/employment/session/"); await page.evaluate(() => window.dispatchEvent(new Event("online")));
  await expect(page.getByLabel("Name", { exact: true })).toBeEnabled(); await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Same tab only");
  s.session = false; await page.evaluate(() => window.dispatchEvent(new Event("focus")));
- await expect(page.getByRole("heading", { name: "Sign in to SHIDA", exact: true })).toBeVisible(); await expect(page.getByLabel("Name", { exact: true })).toHaveCount(0);
+ await expect(page.getByRole("heading", { name: "Sign in with SHIDA", exact: true })).toBeVisible(); await expect(page.getByLabel("Name", { exact: true })).toHaveCount(0);
 });
 test("selection, pagination, private draft and changed-field profile edit", async ({ page }) => {
  const s = await fixture(page); await page.goto("/shida/seller/restaurants");
@@ -77,7 +80,7 @@ test("selection, pagination, private draft and changed-field profile edit", asyn
 });
 test("uncertain retry is identical and stale edit requires reconciliation", async ({ page }) => {
  const s = await fixture(page); await open(page); await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Keep this input"); s.fail = true;
- await page.getByRole("button", { name: "Save changes", exact: true }).click(); await page.getByRole("button", { name: "Retry the same operation", exact: true }).click(); expect(s.writes[0]).toEqual(s.writes[1]);
+ await page.getByRole("button", { name: "Save changes", exact: true }).click(); await page.getByRole("button", { name: "Retry the same operation", exact: true }).click(); await expect.poll(() => s.writes.length).toBe(2); expect(s.writes[0]).toEqual(s.writes[1]);
  await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Reconciled"); s.stale = true; await page.getByRole("button", { name: "Save changes", exact: true }).click();
  await expect(page.getByLabel("Name", { exact: true })).toBeDisabled(); await page.getByRole("button", { name: "Load current values", exact: true }).click(); await page.getByRole("button", { name: "Keep my changes against these current values", exact: true }).click(); await page.getByRole("button", { name: "Save changes", exact: true }).click();
  expect(s.writes.at(-1)?.body?.expected_updated_at).toBe("2026-09-10T10:01:00.999999+00:00");
@@ -113,14 +116,14 @@ test("expired offering copy stays unconfirmed until a separate confirmation", as
  expect(s.writes[0].body?.fields).toEqual({ copy_from: "RDO_fixture", starts_at: "2027-01-01T10:00:00+01:00", ends_at: "2027-01-01T12:00:00+01:00" });
  await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("I confirm these changes", { exact: true }).check(); await page.getByRole("button", { name: "Save changes", exact: true }).click(); expect(s.writes[1].body?.fields).toEqual({ confirm: true });
 });
-test("isolated OTP sign-in, shared session and logout", async ({ page }) => {
- const s = await fixture(page); s.session = false; await page.goto("/shida/seller/restaurants"); await page.getByLabel("WhatsApp phone number", { exact: true }).fill("+00000000000"); await page.getByRole("button", { name: "Request sign-in code", exact: true }).click(); await page.getByLabel("Six-digit code", { exact: true }).fill("123456"); await page.getByRole("button", { name: "Sign in", exact: true }).click(); await expect(page.getByText("Isolated Malewa", { exact: true })).toBeVisible();
- await page.getByRole("button", { name: "Sign out / change account", exact: true }).click(); await expect(page.getByLabel("WhatsApp phone number", { exact: true })).toBeVisible(); await expect(page.getByText("Isolated Malewa", { exact: true })).toHaveCount(0);
+test("isolated WhatsApp challenge sign-in, shared session and logout", async ({ page }) => {
+ const s = await fixture(page); s.session = false; await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Continue with WhatsApp", exact: true }).click(); await expect(page.getByText("Isolated Malewa", { exact: true })).toBeVisible();
+ await page.getByRole("button", { name: "Sign out / change account", exact: true }).click(); await expect(page.getByRole("button", { name: "Continue with WhatsApp", exact: true })).toBeVisible(); await expect(page.getByText("Isolated Malewa", { exact: true })).toHaveCount(0);
 });
 test("lost access and account switching clear editor values", async ({ page }) => {
  const s = await fixture(page); await open(page); s.denied = true; await page.getByRole("button", { name: "Edit", exact: true }).click(); await expect(page.getByText("Synthetic fixture only", { exact: true })).toHaveCount(0);
  s.denied = false; await page.reload(); await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Private unsaved name");
- s.session = false; await page.evaluate(() => window.dispatchEvent(new Event("shida-personal-session-changed"))); await expect(page.getByLabel("WhatsApp phone number", { exact: true })).toBeVisible(); await expect(page.locator('input[value="Private unsaved name"]')).toHaveCount(0);
+ s.session = false; await page.evaluate(() => window.dispatchEvent(new Event("shida-personal-session-changed"))); await expect(page.getByRole("button", { name: "Continue with WhatsApp", exact: true })).toBeVisible(); await expect(page.locator('input[value="Private unsaved name"]')).toHaveCount(0);
 });
 for (const locale of ["en", "fr", "ln", "sw"]) test(`phone and desktop layout / ${locale}`, async ({ page }) => {
  await fixture(page); await page.setViewportSize({ width: 390, height: 844 }); await page.goto(`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`);

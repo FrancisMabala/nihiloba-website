@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { PersonalWhatsAppLogin } from "./personal-whatsapp-login";
+import { useEffect, useState, useRef } from "react";
 import {
-  beginEmploymentLogin,
-  completeEmploymentLogin,
   EmploymentBrowserError,
   endEmploymentSession,
   loadCandidateApplication,
@@ -68,26 +67,22 @@ export function CandidateApplicationDetailView({ locale, application }: { locale
 
 function Detail({ label, value }: { label: string; value: string | null }) { return value ? <div><dt>{label}</dt><dd>{value}</dd></div> : null; }
 
-function LoginPanel({ locale, onAuthenticated }: { locale: Locale; onAuthenticated: (session: EmploymentSession) => void }) {
-  const t = copy[locale]; const [challenge, setChallenge] = useState<string | null>(null); const [pending, setPending] = useState(false); const [message, setMessage] = useState<string | null>(null);
-  async function submitPhone(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setPending(true); setMessage(null); const data = new FormData(event.currentTarget); try { setChallenge(await beginEmploymentLogin(String(data.get("phone") ?? ""))); setMessage(t.codeSent); } catch (error) { setMessage(error instanceof EmploymentBrowserError && error.code === "rate_limited" ? t.rate : t.genericError); } finally { setPending(false); } }
-  async function submitCode(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (!challenge) return; setPending(true); setMessage(null); const data = new FormData(event.currentTarget); try { onAuthenticated(await completeEmploymentLogin(challenge, String(data.get("code") ?? ""))); } catch (error) { setMessage(error instanceof EmploymentBrowserError && (error.status === 401 || error.code === "invalid_request") ? t.invalidCode : t.genericError); } finally { setPending(false); } }
-  return <section className="candidate-login candidate-private-panel"><h2>{t.signIn}</h2><p>{t.signInHelp}</p>{challenge ? <form onSubmit={submitCode}><label htmlFor="candidate-code">{t.code}</label><input id="candidate-code" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" minLength={6} maxLength={6} required/><button className="button button-primary" disabled={pending}>{t.verify}</button><button className="candidate-text-button" type="button" onClick={() => { setChallenge(null); setMessage(null); }}>{t.another}</button></form> : <form onSubmit={submitPhone}><label htmlFor="candidate-phone">{t.phone}</label><input id="candidate-phone" name="phone" type="tel" autoComplete="tel" minLength={8} maxLength={32} required/><button className="button button-primary" disabled={pending}>{t.send}</button></form>}{message && <p role="status" className="candidate-form-message">{message}</p>}</section>;
-}
-
 export function CandidateEmploymentWorkspace({ locale, applicationReference }: { locale: Locale; applicationReference?: string }) {
   const t = copy[locale]; const [session, setSession] = useState<EmploymentSession | null>(null); const [applications, setApplications] = useState<CandidateApplication[] | null>(null); const [application, setApplication] = useState<CandidateApplication | null>(null); const [state, setState] = useState<"loading" | "login" | "ready" | "not-found" | "error">("loading");
+  const signedOut = useRef(false);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const load = () => setRefreshVersion(value => value + 1);
   useEffect(() => {
-    let active = true, generation = 0;
+    let active = true, generation = 0, authenticated = false;
     const refresh = () => {
+      if (signedOut.current) return;
       const epoch = ++generation;
       setSession(null); setApplications(null); setApplication(null); setState("loading");
       void restoreEmploymentSession().then(async current => {
         const detail = applicationReference ? await loadCandidateApplication(applicationReference) : null;
         const list = applicationReference ? null : await loadCandidateApplications();
         if (!active || epoch !== generation) return;
+        authenticated = true;
         setSession(current); setApplication(detail); setApplications(list); setState("ready");
       }).catch(error => {
         if (!active || epoch !== generation) return;
@@ -98,9 +93,10 @@ export function CandidateEmploymentWorkspace({ locale, applicationReference }: {
     refresh();
     window.addEventListener("shida-personal-session-changed", refresh);
     window.addEventListener("storage", storage);
-    window.addEventListener("focus", refresh);
-    return () => { active = false; ++generation; window.removeEventListener("shida-personal-session-changed", refresh); window.removeEventListener("storage", storage); window.removeEventListener("focus", refresh); };
+    const focus = () => { if (authenticated) refresh(); };
+    window.addEventListener("focus", focus);
+    return () => { active = false; ++generation; window.removeEventListener("shida-personal-session-changed", refresh); window.removeEventListener("storage", storage); window.removeEventListener("focus", focus); };
   }, [applicationReference, refreshVersion]);
-  async function logout() { try { await endEmploymentSession(); } finally { setSession(null); setApplications(null); setApplication(null); setState("login"); } }
-  return <><section className="candidate-employment-hero"><div className="container"><span className="eyebrow">{t.eyebrow}</span><h1>{application?.job_title ?? t.title}</h1><p>{application ? application.employer_name : t.intro}</p>{application && <><span className={`candidate-status candidate-status-${application.status}`}>{candidateStatusLabel(locale, application.status)}</span><p><Link href={candidateApplicationsPath(locale)}>{t.back}</Link></p></>}{session && <div className="candidate-session"><span>{t.signedIn} <strong>{session.display_name}</strong></span><button type="button" onClick={logout}>{t.signOut}</button></div>}</div></section><section className="section candidate-employment-section"><div className="container">{state === "loading" && <div className="candidate-skeleton" aria-label={locale === "fr" ? "Chargement" : "Loading"}><span/><span/><span/></div>}{state === "login" && <LoginPanel locale={locale} onAuthenticated={() => { setState("loading"); void load(); }}/>} {state === "error" && <div className="candidate-private-panel candidate-state"><p>{t.genericError}</p><button className="button button-secondary" onClick={() => { setState("loading"); void load(); }}>{t.retry}</button></div>}{state === "not-found" && <div className="candidate-private-panel candidate-state"><p>{t.unavailable}</p><Link className="button button-secondary" href={candidateApplicationsPath(locale)}>{t.back}</Link></div>}{state === "ready" && !applicationReference && applications && <><section className="candidate-profile-overview"><div><h2>{t.profiles}</h2><p>{t.profilesText}</p></div><article><strong>{t.professional}</strong><span>{t.oneEach}</span><small>{t.notAvailable}</small></article><article><strong>{t.occasional}</strong><span>{t.oneEach}</span><small>{t.notAvailable}</small></article></section><CandidateApplicationsView locale={locale} applications={applications}/></>}{state === "ready" && application && <CandidateApplicationDetailView locale={locale} application={application}/>}</div></section></>;
+  async function logout() { signedOut.current = true; setSession(null); setApplications(null); setApplication(null); setState("login"); try { await endEmploymentSession(); } finally { setSession(null); setApplications(null); setApplication(null); setState("login"); } }
+  return <><section className="candidate-employment-hero"><div className="container"><span className="eyebrow">{t.eyebrow}</span><h1>{application?.job_title ?? t.title}</h1><p>{application ? application.employer_name : t.intro}</p>{application && <><span className={`candidate-status candidate-status-${application.status}`}>{candidateStatusLabel(locale, application.status)}</span><p><Link href={candidateApplicationsPath(locale)}>{t.back}</Link></p></>}{session && <div className="candidate-session"><span>{t.signedIn} <strong>{session.display_name}</strong></span><button type="button" onClick={logout}>{t.signOut}</button></div>}</div></section><section className="section candidate-employment-section"><div className="container">{state === "loading" && <div className="candidate-skeleton" aria-label={locale === "fr" ? "Chargement" : "Loading"}><span/><span/><span/></div>}{state === "login" && <PersonalWhatsAppLogin locale={locale} onAuthenticated={() => { signedOut.current = false; setState("loading"); void load(); }}/>} {state === "error" && <div className="candidate-private-panel candidate-state"><p>{t.genericError}</p><button className="button button-secondary" onClick={() => { setState("loading"); void load(); }}>{t.retry}</button></div>}{state === "not-found" && <div className="candidate-private-panel candidate-state"><p>{t.unavailable}</p><Link className="button button-secondary" href={candidateApplicationsPath(locale)}>{t.back}</Link></div>}{state === "ready" && !applicationReference && applications && <><section className="candidate-profile-overview"><div><h2>{t.profiles}</h2><p>{t.profilesText}</p></div><article><strong>{t.professional}</strong><span>{t.oneEach}</span><small>{t.notAvailable}</small></article><article><strong>{t.occasional}</strong><span>{t.oneEach}</span><small>{t.notAvailable}</small></article></section><CandidateApplicationsView locale={locale} applications={applications}/></>}{state === "ready" && application && <CandidateApplicationDetailView locale={locale} application={application}/>}</div></section></>;
 }
