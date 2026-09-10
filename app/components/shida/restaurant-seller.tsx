@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { sellerDesignCopy } from "../../lib/restaurant-seller-design-copy";
 import { PersonalWhatsAppLogin } from "./personal-whatsapp-login";
 import { useEffect, useState, useRef } from "react";
 import { endEmploymentSession } from "../../services/shida/employment-browser-client";
@@ -14,6 +15,7 @@ import "./restaurant-seller.css";
 export const sellerPath = (locale: RestaurantLocale) => `${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`;
 export function RestaurantSeller({ locale }: { locale: RestaurantLocale }) {
  const t = sellerChrome[locale];
+ const design = sellerDesignCopy[locale];
  const [session, setSession] = useState<PersonalSession | null>(null);
  const [connectionLost, setConnectionLost] = useState(false);
  const [loading, setLoading] = useState(true), [pending, setPending] = useState(false), [message, setMessage] = useState("");
@@ -49,9 +51,10 @@ export function RestaurantSeller({ locale }: { locale: RestaurantLocale }) {
   return () => { alive.current = false; invalidate(); inFlight?.abort(); clearInterval(timer); window.removeEventListener(PERSONAL_SESSION_EVENT, changed); window.removeEventListener("storage", storage); window.removeEventListener("focus", focus); window.removeEventListener("online", focus); window.removeEventListener("offline", offline); document.removeEventListener("visibilitychange", visible); };
  }, []);
  async function logout() { signedOut.current = true; setSession(null); ++generation.current; setPending(true); try { await endEmploymentSession(); } catch { setMessage(t.unavailable); } finally { if (alive.current) setPending(false); } }
- return <div lang={locale}>
-  <section className="rst container"><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)} hrefLang={lang} aria-current={locale === lang ? "page" : undefined}>{lang.toUpperCase()}</Link>)}<Link prefetch={false} href={restaurantPath(locale)}>{t.browse}</Link></nav><h1>{t.title}</h1><p>{t.intro}</p>{session && <p>{session.user.display_name} <button className="button button-secondary" disabled={pending} onClick={logout}>{t.logout}</button></p>}
-   {loading ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && <PersonalWhatsAppLogin locale={locale} onAuthenticated={() => { signedOut.current = false; }}/>}
+ return <div lang={locale} className="rst-seller">
+<section className="rst container rst-shell"><div className="rst-topline"><nav aria-label={design.area}><Link prefetch={false} href={`${locale === "en" ? "" : `/${locale}`}/shida`}>SHIDA</Link><span aria-hidden="true">/</span><Link prefetch={false} href={restaurantPath(locale)}>{restaurantText(locale, "restaurants")}</Link></nav><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)} hrefLang={lang} aria-current={locale === lang ? "page" : undefined}>{lang.toUpperCase()}</Link>)}</nav>{session && <span className="rst-session-name">{session.user.display_name} <button className="rst-text-button" disabled={pending} onClick={logout}>{t.logout}</button></span>}</div>
+   {loading ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && <div className="rst-signin"><picture className="rst-signin-art"><source media="(min-width: 900px)" srcSet="/images/restaurants/malewa-comptoir-480.webp 480w, /images/restaurants/malewa-comptoir-800.webp 800w" sizes="(min-width: 1300px) 580px, 45vw"/>{/* Mobile deliberately receives only an inline pixel, not a hidden large download. */}
+    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" width="1122" height="1402" decoding="async"/></picture><div className="rst-signin-content"><p className="eyebrow">SHIDA / {design.area}</p><h1>{design.title}</h1><p className="rst-signin-intro">{design.intro}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={() => { signedOut.current = false; }}/><p className="rst-personal-note">{design.personal}</p><Link className="rst-browse-link" prefetch={false} href={restaurantPath(locale)}>{t.browse} <span aria-hidden="true">→</span></Link></div></div>}
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
   </section>
