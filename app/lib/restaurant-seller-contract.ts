@@ -1,5 +1,7 @@
-// Exact S2-C surface, not a general Dashboard proxy.
+import { isOrderPath, orderRoutes, validOrderBody, validOrderQuery } from './restaurant-orders-contract';
+// Exact Personal seller surface, not a general Dashboard proxy.
 export const sellerRoutes: [RegExp, readonly string[]][] = [
+  ...orderRoutes,
   [/^$/, ["GET", "POST"]],
   [/^RST_[A-Za-z0-9_-]+$/, ["GET", "PATCH"]],
   [/^RST_[A-Za-z0-9_-]+\/preview$/, ["GET"]],
@@ -17,6 +19,7 @@ export function allowedSellerRoute(path: string, method: string): boolean {
   return path.length < 400 && sellerRoutes.some(([pattern, methods]) => pattern.test(path) && methods.includes(method));
 }
 export function validSellerQuery(path: string, method: string, query: URLSearchParams): boolean {
+  if (isOrderPath(path)) return validOrderQuery(path, method, query);
   const list = method === "GET" && (!path || /\/menu\/(categories|items|offerings)$/.test(path));
   const allowed = /\/links\//.test(path) ? [] : ["language", ...(list ? ["page", "page_size", ...(!path ? ["status"] : [])] : [])];
   for (const [key, value] of query) {
@@ -29,6 +32,7 @@ export function validSellerQuery(path: string, method: string, query: URLSearchP
 }
 function object(value: unknown): value is Record<string, unknown> { return !!value && typeof value === "object" && !Array.isArray(value); }
 export function validSellerBody(path: string, method: string, value: unknown): boolean {
+  if (isOrderPath(path)) return validOrderBody(path, value);
   if (!object(value)) return false;
   const create = path === "";
   const lifecycle = path.includes("/lifecycle/");
@@ -53,3 +57,5 @@ export function validShare(value: unknown, ref: string, destination: string): va
     try { const url = new URL(input); return ["https://api.nihiloba.com", "https://nihiloba.com"].includes(url.origin) && /^\/go\/[A-Za-z0-9_-]+$/.test(url.pathname) && !url.search && !url.hash && !url.username && !url.password; } catch { return false; }
   });
 }
+
+for (const code of ['restaurant_feed_refresh_required','restaurant_quote_changed','restaurant_order_state_conflict','restaurant_operation_expired','restaurant_intake_closed','restaurant_category_review_required','restaurant_item_review_required','restaurant_selection_invalid','restaurant_confirmation_required','restaurant_reason_required','restaurant_order_unknown_price','restaurant_order_item_unavailable']) sellerErrorCodes.add(code);

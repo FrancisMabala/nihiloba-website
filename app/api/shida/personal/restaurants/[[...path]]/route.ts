@@ -27,7 +27,7 @@ async function handle(request: Request, context: Context) {
     const reader = request.body?.getReader(); const chunks: Uint8Array[] = []; let size = 0;
     if (reader) for (;;) { const part = await reader.read(); if (part.done) break; size += part.value.length; if (size > 65536) { await reader.cancel(); return fail(413); } chunks.push(part.value); }
     body = Buffer.concat(chunks).toString("utf8");
-    if (path.includes("/links/")) { if (body) return fail(422, "restaurant_invalid_input"); body = undefined; }
+    if (path.includes("/links/") || path.endsWith("/order-measurement")) { if (body) return fail(422, "restaurant_invalid_input"); body = undefined; }
     else {
       if (!request.headers.get("content-type")?.startsWith("application/json")) return fail(415);
       try { if (!validSellerBody(path, request.method, JSON.parse(body))) return fail(422, "restaurant_invalid_input"); } catch { return fail(422, "restaurant_invalid_input"); }
@@ -51,3 +51,7 @@ export const GET = handle;
 export const POST = handle;
 export const PATCH = handle;
 export const PUT = handle;
+
+export const DELETE = () => fail(405);
+export const HEAD = DELETE;
+export const OPTIONS = DELETE;

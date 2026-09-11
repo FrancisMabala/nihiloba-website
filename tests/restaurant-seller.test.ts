@@ -3,6 +3,7 @@ const jar = new Map<string, string>();
 const set = vi.fn((key: string, value: string) => { if (value) jar.set(key, value); else jar.delete(key); });
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: (key: string) => jar.has(key) ? { value: jar.get(key) } : undefined, set }) }));
 import { GET, POST, PATCH } from "../app/api/shida/personal/restaurants/[[...path]]/route";
+import { GET as customerReceipt, POST as customerWrite } from "../app/api/shida/personal/restaurant-orders/[[...path]]/route";
 import { GET as session } from "../app/api/shida/employment/session/route";
 import { POST as logout } from "../app/api/shida/employment/logout/route";
 import { personalSessionBinding, PERSONAL_SESSION_COOKIE, EMPLOYMENT_SESSION_COOKIE } from "../app/api/shida/employment/route-utils";
@@ -26,7 +27,7 @@ describe("Personal Restaurant restricted gateway", () => {
   expect((await PATCH(request, ctx("RST_a"))).status).toBe(200);
   expect(fetcher).toHaveBeenCalledWith(expect.any(URL), expect.objectContaining({ headers: expect.objectContaining({ Origin: "https://nihiloba.com", Cookie: `shida_dashboard_session=${token}` }) }));
  });
- it.each(["businesses/BUS_other/restaurants", "RST_a/orders", "RST_a/menu/items/RMC_wrong", "../restaurants", "RST_a/links/menu/extra", "suggestions"])("rejects unsupported path %s before fetching", async path => {
+ it.each(["businesses/BUS_other/restaurants", "RST_a/orders/export/all", "RST_a/menu/items/RMC_wrong", "../restaurants", "RST_a/links/menu/extra", "suggestions"])("rejects unsupported path %s before fetching", async path => {
   const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher); const result = await GET(req(), ctx(path)); expect(result.status).toBe(404); expect(fetcher).not.toHaveBeenCalled();
  });
  it("allowlists only exact methods and selectors", () => {
@@ -106,5 +107,21 @@ describe("seller values and retries", () => {
  });
  it.each(["en", "fr", "ln", "sw"] as const)("has localized critical seller controls in %s", locale => {
   for (const key of ["create", "save", "conflict", "confirm_location", "pricing_model", "hours", "copyHelp", "unauthorized"]) expect(restaurantText(locale, key)).not.toBe("—"); expect(sellerChrome[locale].shareNote).toContain("WhatsApp");
+ });
+});
+
+describe('C1-E customer receipt gateway',()=>{
+ it('allows only a bound receipt read and never seller or customer writes',async()=>{
+  const fetcher=vi.fn(async()=>Response.json({order_ref:'ROR_a',payment_verified:false}));vi.stubGlobal('fetch',fetcher);
+  expect((await customerReceipt(req(),ctx('ROR_a/receipt'))).status).toBe(200);
+  expect((fetcher.mock.calls as unknown as [URL][])[0][0].toString()).toContain('/api/dashboard/personal/restaurant-orders/ROR_a/receipt');
+  for(const path of ['ROR_a','RST_a/orders','ROR_a/destination','baskets'])expect((await customerReceipt(req(),ctx(path))).status).toBe(404);
+  expect((await customerWrite()).status).toBe(405);
+  jar.clear();expect((await customerReceipt(req(),ctx('ROR_a/receipt'))).status).toBe(401);
+ });
+ it('forwards unauthorized receipt rejection without caching or payload disclosure',async()=>{
+  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({detail:'private data'},{status:404})));
+  const response=await customerReceipt(req(),ctx('ROR_foreign/receipt'));
+  expect(response.status).toBe(404);expect(response.headers.get('cache-control')).toContain('private, no-store');expect(await response.json()).toEqual({detail:'restaurant_unavailable'});
  });
 });

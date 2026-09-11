@@ -48,6 +48,10 @@ from fastapi import HTTPException
 settings.public_base_url = "https://api.nihiloba.com"
 settings.shida_whatsapp_number = "243000000000"  # Never send or follow externally.
 
+if os.environ.get('RESTAURANT_C1E_FIXTURE_SCHEMA') == 'c1e_web':
+    from app.database.connection import Base, engine
+    Base.metadata.create_all(engine)
+
 actors = {}
 for label, phone in (("personal", "243000000001"), ("other", "243000000002")):
     with SessionLocal() as db:

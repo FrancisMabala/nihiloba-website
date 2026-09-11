@@ -121,3 +121,17 @@
  .rst-editor .rst-actions>button { width:100%; }
  .rst-pricing-model { flex-direction:column; gap:4px; }
 }
+
+/* C1-E additions reuse the existing seller palette and controls. */
+.rst-work { min-width: 0; }
+.rst-work fieldset { border: 0; min-width: 0; padding: 0; }
+.rst-work input, .rst-work select { max-width: 100%; }
+.rst-work button { min-height: 44px; padding: .55rem .9rem; }
+.rst-work label { display: flex; flex-direction: column; gap: .4rem; margin: .5rem 0; }
+.rst-order-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.3fr); gap: 1rem; align-items: start; }
+.rst-order-layout .rst-card { margin-bottom: 1rem; overflow-wrap: anywhere; }
+.rst-work .rst-batch-row { border-bottom: 1px solid var(--border, #ded9d0); padding: 1rem 0; }
+.rst-confirm, .rst-notice { padding: 1rem; background: #f7f2e8; border-radius: .5rem; }
+@media (max-width: 760px) { .rst-order-layout { grid-template-columns: minmax(0,1fr); } .rst-work .rst-row { flex-wrap: wrap; } }
+
+@media (max-width: 600px) { .rst-work .rst-row > label { flex: 1 1 100%; width: 100%; } .rst-work input[type="datetime-local"] { width: 100%; } }

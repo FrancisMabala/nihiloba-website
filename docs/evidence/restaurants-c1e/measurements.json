@@ -1,0 +1,338 @@
+{
+  "idle": [
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 163,
+      "at": 1789142484237
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 162,
+      "at": 1789142499329
+    }
+  ],
+  "reconnect": [
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 162,
+      "at": 1789142500931
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-configuration/",
+      "bytes": 265,
+      "at": 1789142500996
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/",
+      "bytes": 89,
+      "at": 1789142501068
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 163,
+      "at": 1789142501148
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/",
+      "bytes": 1182,
+      "at": 1789142501208
+    }
+  ],
+  "all": [
+    {
+      "path": "/api/shida/personal/restaurants/",
+      "bytes": 7589,
+      "at": 1789142464949
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/",
+      "bytes": 623,
+      "at": 1789142465205
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/menu/items/",
+      "bytes": 764,
+      "at": 1789142465279
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 162,
+      "at": 1789142465446
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-configuration/",
+      "bytes": 265,
+      "at": 1789142465510
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/",
+      "bytes": 391,
+      "at": 1789142465663
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 163,
+      "at": 1789142465714
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/",
+      "bytes": 1180,
+      "at": 1789142465838
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/actions/accept/",
+      "bytes": 1280,
+      "at": 1789142466156
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 162,
+      "at": 1789142466219
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-configuration/",
+      "bytes": 265,
+      "at": 1789142466269
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/",
+      "bytes": 89,
+      "at": 1789142466344
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 163,
+      "at": 1789142466424
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/",
+      "bytes": 1181,
+      "at": 1789142466501
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/actions/start/",
+      "bytes": 1282,
+      "at": 1789142466684
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 162,
+      "at": 1789142466766
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-configuration/",
+      "bytes": 265,
+      "at": 1789142466825
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/",
+      "bytes": 89,
+      "at": 1789142466894
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 163,
+      "at": 1789142466972
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/",
+      "bytes": 1182,
+      "at": 1789142467046
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/actions/ready/",
+      "bytes": 1274,
+      "at": 1789142468083
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 162,
+      "at": 1789142468151
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-configuration/",
+      "bytes": 265,
+      "at": 1789142468208
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/",
+      "bytes": 89,
+      "at": 1789142468282
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 163,
+      "at": 1789142468359
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/",
+      "bytes": 1178,
+      "at": 1789142468435
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/actions/complete/",
+      "bytes": 1282,
+      "at": 1789142468638
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 162,
+      "at": 1789142468791
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 162,
+      "at": 1789142468914
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-configuration/",
+      "bytes": 265,
+      "at": 1789142468971
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/",
+      "bytes": 89,
+      "at": 1789142469033
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 163,
+      "at": 1789142469100
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/",
+      "bytes": 1182,
+      "at": 1789142469159
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 163,
+      "at": 1789142484237
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 162,
+      "at": 1789142499329
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 162,
+      "at": 1789142500931
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-configuration/",
+      "bytes": 265,
+      "at": 1789142500996
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/",
+      "bytes": 89,
+      "at": 1789142501068
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-feed/",
+      "bytes": 163,
+      "at": 1789142501148
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_FG4KPEP5/",
+      "bytes": 1182,
+      "at": 1789142501208
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/menu/items/",
+      "bytes": 764,
+      "at": 1789142502045
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/order-configuration/",
+      "bytes": 265,
+      "at": 1789142502064
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/counter-baskets/",
+      "bytes": 249,
+      "at": 1789142502188
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/counter-baskets/RBA_PGIIYGAV/quote/",
+      "bytes": 1104,
+      "at": 1789142503353
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/counter-baskets/RBA_PGIIYGAV/finalize/",
+      "bytes": 1189,
+      "at": 1789142505015
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/menu/items/",
+      "bytes": 764,
+      "at": 1789142505361
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/",
+      "bytes": 623,
+      "at": 1789142505526
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/menu/categories/",
+      "bytes": 281,
+      "at": 1789142505583
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/menu/items/",
+      "bytes": 764,
+      "at": 1789142505642
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/menu-batches/",
+      "bytes": 29,
+      "at": 1789142507839
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/",
+      "bytes": 630,
+      "at": 1789142508014
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/menu/categories/",
+      "bytes": 281,
+      "at": 1789142508070
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/menu/items/",
+      "bytes": 764,
+      "at": 1789142508134
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/menu-batches/",
+      "bytes": 299,
+      "at": 1789142508365
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_DMKPDSDR/receipt/",
+      "bytes": 1089,
+      "at": 1789142508767
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/orders/ROD_DMKPDSDR/receipt/",
+      "bytes": 35,
+      "at": 1789142509878
+    },
+    {
+      "path": "/api/shida/personal/restaurants/",
+      "bytes": 7596,
+      "at": 1789142510877
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/",
+      "bytes": 630,
+      "at": 1789142511292
+    },
+    {
+      "path": "/api/shida/personal/restaurants/RST_1EW3DRXN/menu/items/",
+      "bytes": 1364,
+      "at": 1789142511529
+    }
+  ]
+}

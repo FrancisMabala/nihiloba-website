@@ -2,7 +2,9 @@
 import Link from "next/link";
 import { sellerDesignCopy } from "../../lib/restaurant-seller-design-copy";
 import { PersonalWhatsAppLogin } from "./personal-whatsapp-login";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { ProtectedReceipt } from './restaurant-receipt';
+import { DashboardApiError } from '@/app/lib/restaurant-seller-browser';
 import { endEmploymentSession } from "../../services/shida/employment-browser-client";
 import { restorePersonalSession, PersonalSessionError, PERSONAL_SESSION_EVENT, type PersonalSession } from "../../lib/personal-session-browser";
 import { sellerConnectionText } from "../../lib/restaurant-seller-copy";
@@ -13,13 +15,14 @@ import { RestaurantWorkspace } from "./restaurant-seller-workspace";
 import "./restaurant-seller.css";
 
 export const sellerPath = (locale: RestaurantLocale) => `${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`;
-export function RestaurantSeller({ locale }: { locale: RestaurantLocale }) {
+export function RestaurantSeller({ locale, receipt }: { locale: RestaurantLocale; receipt?: {orderRef:string;establishment?:string} }) {
  const t = sellerChrome[locale];
  const design = sellerDesignCopy[locale];
  const [session, setSession] = useState<PersonalSession | null>(null);
  const [connectionLost, setConnectionLost] = useState(false);
  const [loading, setLoading] = useState(true), [pending, setPending] = useState(false), [message, setMessage] = useState("");
  const generation = useRef(0), alive = useRef(false), signedOut = useRef(false);
+ const receiptFailure = useCallback((e:unknown)=>{if(e instanceof DashboardApiError && e.status===401)setSession(null);},[]);
  useEffect(() => {
   alive.current = true;
   let inFlight: AbortController | null = null;
@@ -52,12 +55,12 @@ export function RestaurantSeller({ locale }: { locale: RestaurantLocale }) {
  }, []);
  async function logout() { signedOut.current = true; setSession(null); ++generation.current; setPending(true); try { await endEmploymentSession(); } catch { setMessage(t.unavailable); } finally { if (alive.current) setPending(false); } }
  return <div lang={locale} className="rst-seller">
-<section className="rst container rst-shell"><div className="rst-topline"><nav aria-label={design.area}><Link prefetch={false} href={`${locale === "en" ? "" : `/${locale}`}/shida`}>SHIDA</Link><span aria-hidden="true">/</span><Link prefetch={false} href={restaurantPath(locale)}>{restaurantText(locale, "restaurants")}</Link></nav><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)} hrefLang={lang} aria-current={locale === lang ? "page" : undefined}>{lang.toUpperCase()}</Link>)}</nav>{session && <span className="rst-session-name">{session.user.display_name} <button className="rst-text-button" disabled={pending} onClick={logout}>{t.logout}</button></span>}</div>
+<section className="rst container rst-shell"><div className="rst-topline"><nav aria-label={design.area}><Link prefetch={false} href={`${locale === "en" ? "" : `/${locale}`}/shida`}>SHIDA</Link><span aria-hidden="true">/</span><Link prefetch={false} href={restaurantPath(locale)}>{restaurantText(locale, "restaurants")}</Link></nav><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)} hrefLang={lang} aria-current={locale === lang ? "page" : undefined}>{lang === "ln" ? "Lingala" : lang.toUpperCase()}</Link>)}</nav>{session && <span className="rst-session-name">{session.user.display_name} <button className="rst-text-button" disabled={pending} onClick={logout}>{t.logout}</button></span>}</div>
    {loading ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && <div className="rst-signin"><picture className="rst-signin-art"><source media="(min-width: 900px)" srcSet="/images/restaurants/malewa-comptoir-480.webp 480w, /images/restaurants/malewa-comptoir-800.webp 800w" sizes="(min-width: 1300px) 580px, 45vw"/>{/* Mobile deliberately receives only an inline pixel, not a hidden large download. */}
     <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" width="1122" height="1402" decoding="async"/></picture><div className="rst-signin-content"><p className="eyebrow">SHIDA / {design.area}</p><h1>{design.title}</h1><p className="rst-signin-intro">{design.intro}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={() => { signedOut.current = false; }}/><p className="rst-personal-note">{design.personal}</p><Link className="rst-browse-link" prefetch={false} href={restaurantPath(locale)}>{t.browse} <span aria-hidden="true">→</span></Link></div></div>}
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
   </section>
-  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><RestaurantWorkspace key={`${session.binding}:${locale}`} binding={session.binding} locale={locale}/></fieldset>}
+  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}>{receipt ? <div className="rst container"><ProtectedReceipt key={`${session.binding}:${locale}:${receipt.orderRef}:${receipt.establishment}`} binding={session.binding} locale={locale} orderRef={receipt.orderRef} establishment={receipt.establishment} onFailure={receiptFailure}/></div> : <RestaurantWorkspace key={`${session.binding}:${locale}`} binding={session.binding} locale={locale}/>}</fieldset>}
  </div>;
 }
