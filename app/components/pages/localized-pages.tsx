@@ -22,13 +22,6 @@ const copy = {
       educationTitle: "Practical learning can widen opportunity.", educationText: "NIHILOBA Education is a planned nonprofit initiative focused on digital literacy, accessible learning and useful technology skills.",
       ctaTitle: "Have a question or an idea to discuss?", ctaText: "We welcome conversations with users, communities, companies, institutions and potential partners.",
     },
-    about: {
-      eyebrow: "About NIHILOBA", title: "Purpose gives technology direction.", description: "NIHILOBA develops accessible digital products that respond to practical needs. We want technology to help more people participate, connect and move forward.",
-      purposeTitle: "Why NIHILOBA exists", purpose: ["Access to digital tools is growing, but access to useful outcomes is still uneven. Finding work, reaching a service or learning a practical skill can remain unnecessarily difficult.", "NIHILOBA focuses on this gap. We create clear digital pathways for people, professionals and institutions. SHIDA is our first product and the beginning of that work."],
-      storyTitle: "The story behind the name", story: ["NIHILOBA is inspired by creatio ex nihilo, meaning creation out of nothing, and rooted in the symbolic power of the baobab, represented by ‘BA’.", "In many Bantu cultures, the baobab is more than a tree. It represents protection, wisdom, resilience, continuity and spiritual connection. It is a place where communities gather, exchange knowledge, share stories and grow stronger together.", "NIHILOBA carries this meaning forward as a symbol of support, belonging, collective strength and the ability to create lasting impact from an idea."],
-      inspirationNote: "This is the meaning and symbolism chosen for the NIHILOBA brand. It is not presented as a linguistic derivation.",
-      founderTitle: "Francis Mabala", founderRole: "Founder of NIHILOBA and SHIDA", founder: ["Francis Mabala is an engineer and the founder of NIHILOBA and SHIDA. Born in the Democratic Republic of the Congo and now based in Stockholm, he created NIHILOBA to develop practical digital tools that respond to everyday realities.", "His first product, SHIDA, grew from a simple observation: access to opportunities and essential services is often made more difficult by fragmented systems, long waiting times and digital tools that do not reflect how people already communicate. By building directly on WhatsApp, Francis aims to make technology more accessible to individuals, professionals, businesses and institutions.", "His work combines engineering, product development and a long-term commitment to useful and inclusive digital transformation."],
-    },
     products: { eyebrow: "Our products", title: "Start with a real need. Keep the experience simple.", description: "NIHILOBA develops products that help people reach useful information and services through accessible technology.", shida: "SHIDA is the first digital product developed by NIHILOBA. It connects people to employment, services, housing and transport through WhatsApp.", futureTitle: "What comes next", future: "We will develop new products carefully and share them when their purpose, scope and value are clear. For now, our focus is SHIDA." },
     shida: {
       eyebrow: "A product by NIHILOBA", title: "Everyday opportunities, available through WhatsApp.", description: "Jobs, services, housing, transport and local commerce are accessible with SHIDA in a familiar WhatsApp conversation. Users do not need to install a new application.",
@@ -60,13 +53,6 @@ const copy = {
       educationTitle: "L’apprentissage pratique peut élargir les possibilités.", educationText: "NIHILOBA Education est une initiative à but non lucratif en projet, consacrée à la culture numérique, à l’apprentissage accessible et aux compétences technologiques utiles.",
       ctaTitle: "Une question ou une idée à partager ?", ctaText: "Nous échangeons volontiers avec les utilisateurs, les communautés, les entreprises, les institutions et les partenaires potentiels.",
     },
-    about: {
-      eyebrow: "À propos de NIHILOBA", title: "La vision donne une direction à la technologie.", description: "NIHILOBA développe des produits numériques accessibles qui répondent à des besoins concrets. Nous voulons aider davantage de personnes à participer, à se connecter et à avancer.",
-      purposeTitle: "Pourquoi NIHILOBA existe", purpose: ["L’accès aux outils numériques progresse, mais leurs bénéfices restent inégalement répartis. Trouver un emploi, accéder à un service ou acquérir une compétence pratique peut encore être inutilement compliqué.", "NIHILOBA agit sur cet écart. Nous créons des parcours numériques clairs pour les personnes, les professionnels et les institutions. SHIDA est notre premier produit et le point de départ de ce travail."],
-      storyTitle: "L’histoire derrière le nom", story: ["NIHILOBA s’inspire de l’expression latine creatio ex nihilo, qui signifie créer à partir de rien, et de la force symbolique du baobab, représentée par « BA ».", "Dans de nombreuses cultures bantoues, le baobab est bien plus qu’un arbre. Il symbolise la protection, la sagesse, la résilience, la continuité et le lien spirituel. C’est un lieu où les communautés se rassemblent, transmettent leurs connaissances, partagent leurs histoires et deviennent plus fortes ensemble.", "NIHILOBA prolonge cette symbolique en représentant le soutien, l’appartenance, la force collective et la capacité de transformer une idée en impact durable."],
-      inspirationNote: "Il s’agit du sens et de la symbolique choisis pour la marque NIHILOBA. Nous ne les présentons pas comme une dérivation linguistique.",
-      founderTitle: "Francis Mabala", founderRole: "Fondateur de NIHILOBA et de SHIDA", founder: ["Francis Mabala est ingénieur et fondateur de NIHILOBA et de SHIDA. Né en République démocratique du Congo et aujourd’hui basé à Stockholm, il a créé NIHILOBA afin de développer des outils numériques pratiques qui répondent aux réalités du quotidien.", "Son premier produit, SHIDA, est né d’un constat simple : l’accès aux opportunités et aux services essentiels est souvent compliqué par des systèmes fragmentés, de longues attentes et des outils numériques qui ne correspondent pas toujours aux habitudes des utilisateurs. En développant une solution directement accessible sur WhatsApp, Francis souhaite rendre la technologie plus accessible aux particuliers, aux professionnels, aux entreprises et aux institutions.", "Son travail réunit ingénierie, développement de produit et engagement à long terme en faveur d’une transformation numérique utile et inclusive."],
-    },
     products: { eyebrow: "Nos produits", title: "Partir d’un besoin réel. Garder une expérience simple.", description: "NIHILOBA développe des produits qui facilitent l’accès à des informations et à des services utiles grâce à des technologies accessibles.", shida: "SHIDA est le premier produit numérique développé par NIHILOBA. Il relie les personnes à l’emploi, aux services, au logement et au transport via WhatsApp.", futureTitle: "La suite", future: "Nous développerons de nouveaux produits avec soin et les présenterons lorsque leur objectif, leur portée et leur valeur seront clairs. Pour le moment, nous nous concentrons sur SHIDA." },
     shida: {
       eyebrow: "Un produit NIHILOBA", title: "Les opportunités du quotidien, accessibles sur WhatsApp.", description: "L’emploi, les services, le logement, le transport et le commerce local sont accessibles avec SHIDA dans une conversation WhatsApp familière. Aucune nouvelle application n’est nécessaire.",
@@ -90,26 +76,6 @@ const copy = {
   },
 } as const;
 
-function Story({ locale, full = false }: { locale: Locale; full?: boolean }) {
-  const t = copy[locale];
-  const paragraphs = full ? t.about.story : [t.home.story];
-  return (
-    <section className="section story-section">
-      <div className="container story-grid">
-        <div className="story-symbol"><BrandLogo /></div>
-        <div className="story-copy">
-          <p className="eyebrow">{locale === "en" ? "Our name" : "Notre nom"}</p>
-          <h2>{full ? t.about.storyTitle : t.home.storyTitle}</h2>
-          {paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-          {full && <p className="inspiration-note">{t.about.inspirationNote}</p>}
-          {!full && <ButtonLink href={localizedPath(locale,"/about")} variant="text">{t.home.storyLink}</ButtonLink>}
-        </div>
-        {full && <div className="name-breakdown"><div><strong>NIHILO</strong><span>{locale === "en" ? "Creation from nothing" : "Créer à partir de rien"}</span></div><div><strong>BA</strong><span>{locale === "en" ? "Baobab, roots, wisdom and collective strength" : "Baobab, racines, sagesse et force collective"}</span></div></div>}
-      </div>
-    </section>
-  );
-}
-
 function ShidaPanel({ locale }: { locale: Locale }) {
   const t = copy[locale];
   return <article className="shida-panel"><div className="shida-logo-wrap"><BrandLogo brand="shida" /></div><div className="shida-preview-shot"><Image src="/shida-marketplace-menu.jpeg" alt={locale === "en" ? "SHIDA marketplace menu in WhatsApp" : "Menu des marchés SHIDA dans WhatsApp"} width={921} height={2048} sizes="(max-width: 700px) 72vw, 240px" /></div><div className="shida-panel-copy"><span className="availability"><span />{t.common.available}</span><p>{t.products.shida}</p><div className="preview-actions"><ButtonLink href={localizedPath(locale,"/shida")} variant="text">{t.home.primary}</ButtonLink><ButtonLink href={OFFICIAL_CHANNELS.whatsapp} variant="text" external>{t.common.open}</ButtonLink></div></div></article>;
@@ -117,15 +83,7 @@ function ShidaPanel({ locale }: { locale: Locale }) {
 
 export { HomePage } from "./home-page";
 
-export function AboutPage({ locale }: { locale: Locale }) {
-  const t = copy[locale];
-  return <><Hero compact eyebrow={t.about.eyebrow} title={t.about.title} description={t.about.description} />
-    <section className="section"><div className="container editorial-split"><span className="section-index">01</span><div><SectionHeading title={t.about.purposeTitle} />{t.about.purpose.map(p=><p className="lead-copy" key={p}>{p}</p>)}</div></div></section>
-    <Story locale={locale} full />
-    <section className="section founder-section"><div className="container founder-row"><figure className="founder-portrait"><Image src="/founder-francis-mabala.jpeg" alt={locale === "en" ? "Francis Mabala, founder of NIHILOBA and SHIDA" : "Francis Mabala, fondateur de NIHILOBA et de SHIDA"} width={709} height={1536} sizes="(max-width: 700px) 78vw, 380px" /></figure><div className="founder-copy"><p className="eyebrow">{locale === "en" ? "Founder" : "Fondateur"}</p><h2>{t.about.founderTitle}</h2><p className="founder-role">{t.about.founderRole}</p>{t.about.founder.map(paragraph=><p key={paragraph}>{paragraph}</p>)}<p><a href={`mailto:${CONTACT_EMAILS.founder}`}>{CONTACT_EMAILS.founder}</a></p></div></div></section>
-    <CtaSection eyebrow={t.common.talk} href={localizedPath(locale,"/contact")} label={t.common.contact} title={t.home.ctaTitle} description={t.home.ctaText} />
-  </>;
-}
+export { AboutPage } from "./about-page";
 
 export function ProductsPage({ locale }: { locale: Locale }) {
   const t = copy[locale];
