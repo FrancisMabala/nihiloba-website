@@ -40,3 +40,10 @@ Desktop combines an asymmetric split hero, approach/name columns and a three-col
 - Business/management statements are qualified by marketplace availability because existing SHIDA content describes further business capabilities as planned. The requested name copy is presented as brand symbolism.
 - Internal destination pages responded successfully, but marketplace data availability depends on the external backend. No WhatsApp message was sent.
 - Existing unrelated restaurant changes and supplied untracked assets were left intact. No deployment or commit was performed.
+
+
+## Mockup follow-up
+
+Added the supplied `skills.png` Education illustration with EN/FR alt text, and updated the renamed `people-organisation.png` reference. The hero is now edge-to-edge with a cream fade behind the live text. Education and Contact share a desktop row, and the contact city illustration blends beneath its copy. Mobile uses a vertical hero fade and stacks the closing sections. The artwork itself is unchanged; blending is CSS-only. The planned status remains explicit in the Education copy.
+
+The supplied mockup is now available as the composition reference. Shared header/footer behavior remains preserved. Browser evidence is refreshed for 13 images in both languages at all four sizes.

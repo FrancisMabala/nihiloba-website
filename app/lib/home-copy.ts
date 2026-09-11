@@ -7,7 +7,7 @@ type HomeCopy = {
   shidaTitle: string; shidaText: string; whatsapp: string; availability: string;
   peopleLabel: string; peopleTitle: string; people: string; peopleText: string;
   organisations: string; organisationsText: string; how: string;
-  educationTitle: string; educationText: string; planned: string;
+  skillsAlt: string; educationTitle: string; educationText: string; planned: string;
   contactLabel: string; contactTitle: string; contactText: string; contact: string;
   markets: readonly (readonly [string, string])[];
   alts: readonly string[];
@@ -28,12 +28,14 @@ export const homeCopy = {
     peopleLabel: "For people and organisations", peopleTitle: "Built for individuals and organisations.",
     people: "For people", peopleText: "Find work, services, products, housing, places to stay and other everyday opportunities from one connected platform.",
     organisations: "For organisations", organisationsText: "Recruit, manage services, operate shops and inventory, handle reservations and organise day-to-day activity with the tools available in your marketplace.", how: "See how SHIDA works",
+    skillsAlt: "Illustration of books labelled Skills, Opportunity, Community and A Brighter Tomorrow beside a plant",
     educationTitle: "Practical learning can widen opportunity.", educationText: "NIHILOBA Education is a planned initiative focused on practical learning, skills, knowledge and personal development, with a long-term focus on Africa and its diaspora.", planned: "Planned initiative",
     contactLabel: "Let’s build together", contactTitle: "Start a conversation.", contactText: "We work with partners, companies, institutions and communities to create practical digital solutions around real needs.", contact: "Contact us",
     markets: [["Employment", "Jobs and opportunities"], ["Services", "Local professionals"], ["Wenze", "Shops and products"], ["Housing", "Homes and rentals"], ["Hotels", "Places to stay"], ["Restaurants", "Food and dining"], ["Transport", "Everyday mobility"]],
     alts: ["Illustration of a woman overlooking a busy Kinshasa boulevard", "Illustration of a pedestrian among Kinshasa’s street markets", "An illustrated baobab with a broad trunk and spreading branches", "Illustration of two colleagues working together at a laptop", "Illustration of a city skyline across the water"],
   },
   fr: {
+    skillsAlt: "Illustration de livres sur les compétences, les opportunités, la communauté et un avenir meilleur, près d’une plante",
     title: "Créer des solutions numériques utiles, ancrées dans une vision.",
     description: "NIHILOBA développe des produits numériques conçus autour de besoins concrets du quotidien. Notre première plateforme, SHIDA, relie particuliers, professionnels et organisations aux opportunités, aux services et aux outils grâce au web et à WhatsApp.",
     discover: "Découvrir SHIDA", story: "Notre histoire", learn: "En savoir plus",

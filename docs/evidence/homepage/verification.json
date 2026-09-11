@@ -2,7 +2,7 @@
   {
     "locale": "en",
     "width": 1440,
-    "images": 12,
+    "images": 13,
     "overflow": false,
     "links": [
       "/shida/",
@@ -27,7 +27,7 @@
   {
     "locale": "en",
     "width": 1024,
-    "images": 12,
+    "images": 13,
     "overflow": false,
     "links": [
       "/shida/",
@@ -52,7 +52,7 @@
   {
     "locale": "en",
     "width": 768,
-    "images": 12,
+    "images": 13,
     "overflow": false,
     "links": [
       "/shida/",
@@ -77,7 +77,7 @@
   {
     "locale": "en",
     "width": 390,
-    "images": 12,
+    "images": 13,
     "overflow": false,
     "links": [
       "/shida/",
@@ -102,7 +102,7 @@
   {
     "locale": "fr",
     "width": 1440,
-    "images": 12,
+    "images": 13,
     "overflow": false,
     "links": [
       "/fr/shida/",
@@ -127,7 +127,7 @@
   {
     "locale": "fr",
     "width": 1024,
-    "images": 12,
+    "images": 13,
     "overflow": false,
     "links": [
       "/fr/shida/",
@@ -152,7 +152,7 @@
   {
     "locale": "fr",
     "width": 768,
-    "images": 12,
+    "images": 13,
     "overflow": false,
     "links": [
       "/fr/shida/",
@@ -177,7 +177,7 @@
   {
     "locale": "fr",
     "width": 390,
-    "images": 12,
+    "images": 13,
     "overflow": false,
     "links": [
       "/fr/shida/",

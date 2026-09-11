@@ -27,9 +27,9 @@ export function HomePage({ locale }: { locale: Locale }) {
   return <div className="home-editorial">
     <section className="home-hero" aria-labelledby="home-title">
       <div className="container home-hero-grid">
-        <div><p className="home-label">NIHILOBA</p><h1 id="home-title">{t.title}</h1><p className="home-body">{t.description}</p><div className="home-actions"><ButtonLink href={shida}>{t.discover}</ButtonLink><ButtonLink href={about} variant="secondary">{t.story}</ButtonLink></div></div>
-        <HomeImage name="hero-kinshasa" alt={t.alts[0]} className="home-hero-image" eager />
+        <div className="home-hero-copy"><p className="home-label">NIHILOBA</p><h1 id="home-title">{t.title}</h1><p className="home-body">{t.description}</p><div className="home-actions"><ButtonLink href={shida}>{t.discover}</ButtonLink><ButtonLink href={about} variant="secondary">{t.story}</ButtonLink></div></div>
       </div>
+      <HomeImage name="hero-kinshasa" alt={t.alts[0]} className="home-hero-image" sizes="(max-width: 700px) 100vw, 75vw" eager />
     </section>
 
     <div className="container home-origins">
@@ -49,10 +49,17 @@ export function HomePage({ locale }: { locale: Locale }) {
       })}</ul>
     </div></section>
 
-    <section className="container home-people" aria-labelledby="home-people-title"><HomeImage name="people-organization" alt={t.alts[3]} /><div><p className="home-label">{t.peopleLabel}</p><h2 id="home-people-title">{t.peopleTitle}</h2><div className="home-audiences"><div><h3>{t.people}</h3><p className="home-body">{t.peopleText}</p></div><div><h3>{t.organisations}</h3><p className="home-body">{t.organisationsText}</p></div></div><ButtonLink href={shida} variant="text">{t.how}</ButtonLink></div></section>
+    <section className="container home-people" aria-labelledby="home-people-title"><HomeImage name="people-organisation" alt={t.alts[3]} /><div><p className="home-label">{t.peopleLabel}</p><h2 id="home-people-title">{t.peopleTitle}</h2><div className="home-audiences"><div><h3>{t.people}</h3><p className="home-body">{t.peopleText}</p></div><div><h3>{t.organisations}</h3><p className="home-body">{t.organisationsText}</p></div></div><ButtonLink href={shida} variant="text">{t.how}</ButtonLink></div></section>
 
-    <section className="education-strip home-education" aria-labelledby="home-education-title"><div className="container editorial-split"><div><p className="home-label">NIHILOBA EDUCATION</p><span className="planned-label">{t.planned}</span></div><div><h2 id="home-education-title">{t.educationTitle}</h2><p className="home-body">{t.educationText}</p><ButtonLink href={localizedPath(locale, "/education")} variant="text">{t.learn}</ButtonLink></div></div></section>
-
-    <section className="container home-contact" aria-labelledby="home-contact-title"><div><p className="home-label">{t.contactLabel}</p><h2 id="home-contact-title">{t.contactTitle}</h2><p className="home-body">{t.contactText}</p><ButtonLink href={localizedPath(locale, "/contact")}>{t.contact}</ButtonLink></div><HomeImage name="contact-city" alt={t.alts[4]} /></section>
+    <div className="home-closing"><div className="container home-closing-grid">
+      <section className="home-education" aria-labelledby="home-education-title">
+        <div><p className="home-label">NIHILOBA EDUCATION</p><h2 id="home-education-title">{t.educationTitle}</h2><p className="home-body">{t.educationText}</p><ButtonLink href={localizedPath(locale, "/education")} variant="text">{t.learn}</ButtonLink></div>
+        <HomeImage name="skills" alt={t.skillsAlt} sizes="(max-width: 700px) 42vw, (max-width: 940px) 35vw, 240px" />
+      </section>
+      <section className="home-contact" aria-labelledby="home-contact-title">
+        <div className="home-contact-copy"><p className="home-label">{t.contactLabel}</p><h2 id="home-contact-title">{t.contactTitle}</h2><p className="home-body">{t.contactText}</p><ButtonLink href={localizedPath(locale, "/contact")}>{t.contact}</ButtonLink></div>
+        <HomeImage name="contact-city" alt={t.alts[4]} sizes="(max-width: 940px) 100vw, 50vw" />
+      </section>
+    </div></div>
   </div>;
 }

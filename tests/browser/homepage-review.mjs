@@ -30,7 +30,7 @@ import assert from 'node:assert/strict';
           assert.ok(await img.getAttribute('alt'));
           assert.ok(await img.getAttribute('sizes'));
         }
-        assert.equal(await page.locator('.home-editorial img').count(), 12);
+        assert.equal(await page.locator('.home-editorial img').count(), 13);
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
         assert.equal(overflow, false, `${locale} ${width}: horizontal overflow`);
         const links = await page.locator('.home-editorial a').evaluateAll(els => els.map(el => el.getAttribute('href')));
@@ -50,7 +50,7 @@ import assert from 'node:assert/strict';
         await page.waitForFunction(() => window.scrollY === 0);
         await page.screenshot({ path: `${output}/${locale}-${width}.png`, fullPage: true });
         assert.deepEqual(errors, []);
-        results.push({ locale, width, images: 12, overflow, links, errors });
+        results.push({ locale, width, images: 13, overflow, links, errors });
         await page.close();
       }
     }
