@@ -3,7 +3,7 @@ import { request, DashboardApiError } from './restaurant-seller-browser';
 import type { Operation } from './restaurant-seller';
 export type FoodLine = { key:string; item_ref:string; name:string; quantity?:number; selected_amount?:string; subtotal:string; sale_unit_label?:string };
 export type Terms = { establishment_name?:string; currency:string; food_subtotal:string; delivery_fee:string|null; order_total:string; standalone:FoodLine[]; plates:{key:string; components:FoodLine[]; subtotal:string}[]; pickup_window?:{ends_at:string;timezone_name?:string}; arrival_window?:{ends_at:string;timezone_name?:string}; timezone_name?:string };
-export type Order = { order_ref:string; revision:number; state:string; entry_source:string; fulfillment_method:string; submitted_at:string; response_deadline?:string|null; cancellation_pending:boolean; receipt_terms?:Terms; payment_verified?:false; order_total?:string; currency?:string };
+export type Order = { food_preview?:import("./restaurant-projections").FoodPreview; order_ref:string; revision:number; state:string; entry_source:string; fulfillment_method:string; submitted_at:string; response_deadline?:string|null; cancellation_pending:boolean; receipt_terms?:Terms; payment_verified?:false; order_total?:string; currency?:string };
 export type Configuration = {revision:string;intake_released:boolean;pickup:null|{enabled:boolean;windows:ServiceWindow[]};delivery:null|{enabled:boolean;windows:ServiceWindow[];fee:{amount:string;currency:string};areas:Area[]}};
 export type ServiceWindow = {starts_at:string;ends_at:string};
 export type Area = {country:string;city:string;commune:string;quartier?:string|null;scope:string};

@@ -19,7 +19,7 @@ const pageTitles = {
 
 const descriptions = {
   en: {
-    home: "NIHILOBA develops practical digital technology rooted in real needs, beginning with the WhatsApp-based SHIDA platform.",
+    home: "NIHILOBA develops practical digital solutions rooted in everyday needs. Discover SHIDA’s opportunities, services and tools on the web and WhatsApp.",
     about: "Discover NIHILOBA's purpose, its name and baobab-inspired identity, and founder Francis Mabala.",
     products: "Explore SHIDA, the first digital product developed by NIHILOBA.",
     shida: "Explore SHIDA’s WhatsApp marketplace for jobs, services, housing, hotels and Wenze local commerce, with direct-link and QR access.",
@@ -29,7 +29,7 @@ const descriptions = {
     terms: "Preliminary terms for using the NIHILOBA website.",
   },
   fr: {
-    home: "NIHILOBA développe des technologies numériques utiles, ancrées dans des besoins réels, en commençant par SHIDA sur WhatsApp.",
+    home: "NIHILOBA développe des solutions numériques utiles au quotidien. Découvrez les opportunités, services et outils de SHIDA sur le web et WhatsApp.",
     about: "Découvrez la mission de NIHILOBA, l'origine de son nom, le symbole du baobab et son fondateur Francis Mabala.",
     products: "Découvrez SHIDA, le premier produit numérique développé par NIHILOBA.",
     shida: "Découvrez le marché SHIDA sur WhatsApp pour l’emploi, les services, le logement, les hôtels et le commerce local Wenze, avec des liens directs et des QR codes.",

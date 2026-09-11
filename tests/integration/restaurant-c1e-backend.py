@@ -44,6 +44,8 @@ def seed():
             expected_updated_at=menu.managed_menu(**args)['revision'])['result']['public_ref']
     category=write('category',{'name':'Synthetic foods'})
     food=write('item',dict(name='Fufu',category_ref=category,presentation='component',pricing_model='UNIT_PRICED',currency='CDF',unit_price='1000.25',sale_unit_label='bowl'))
+    for name in ['Rice','Pondu','Thomson','Beans','Plantain']:
+        write('item',dict(name=name,category_ref=category,presentation='component',pricing_model='UNIT_PRICED',currency='CDF',unit_price='1000.25',sale_unit_label='bowl'))
     at=datetime.now(timezone(timedelta(hours=1))).replace(microsecond=0)
     windows=[dict(starts_at=(at+timedelta(minutes=5)).isoformat(),ends_at=(at+timedelta(hours=2)).isoformat())]
     intake=orders.configure_pickup(who=owner,establishment_ref=ref,enabled=True,windows=windows,
@@ -51,7 +53,7 @@ def seed():
     basket=orders.create_basket(who=actors['other'],establishment_ref=ref,entry_source='customer',operation_key=uuid4().hex)
     quote=orders.quote_basket(who=actors['other'],establishment_ref=ref,basket_ref=basket['basket_ref'],
         expected_revision=basket['revision'],operation_key=uuid4().hex,pickup_window_ref=intake['windows'][0]['public_ref'],
-        selections={'standalone':[{'key':'food','item_ref':food,'quantity':2}],'plates':[]})['basket']
+        selections={'standalone':[{'key':'food','item_ref':food,'quantity':2}],'plates':[{'key':'plate'+str(i),'components':[{'key':'component'+str(i),'item_ref':food,'quantity':1}]} for i in range(6)]})['basket']
     order=orders.submit_pickup(who=actors['other'],establishment_ref=ref,basket_ref=basket['basket_ref'],
         expected_revision=quote['revision'],operation_key=uuid4().hex,quote_ref=quote['quote_ref'],confirm=True)['current_order']
     return {'ref':ref,'name':row['name'],'order':order,'food':food}

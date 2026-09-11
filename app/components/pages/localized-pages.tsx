@@ -115,17 +115,7 @@ function ShidaPanel({ locale }: { locale: Locale }) {
   return <article className="shida-panel"><div className="shida-logo-wrap"><BrandLogo brand="shida" /></div><div className="shida-preview-shot"><Image src="/shida-marketplace-menu.jpeg" alt={locale === "en" ? "SHIDA marketplace menu in WhatsApp" : "Menu des marchés SHIDA dans WhatsApp"} width={921} height={2048} sizes="(max-width: 700px) 72vw, 240px" /></div><div className="shida-panel-copy"><span className="availability"><span />{t.common.available}</span><p>{t.products.shida}</p><div className="preview-actions"><ButtonLink href={localizedPath(locale,"/shida")} variant="text">{t.home.primary}</ButtonLink><ButtonLink href={OFFICIAL_CHANNELS.whatsapp} variant="text" external>{t.common.open}</ButtonLink></div></div></article>;
 }
 
-export function HomePage({ locale }: { locale: Locale }) {
-  const t = copy[locale];
-  return <>
-    <Hero eyebrow={t.home.eyebrow} title={t.home.title} description={t.home.description} primary={{href:localizedPath(locale,"/shida"),label:t.home.primary}} secondary={{href:localizedPath(locale,"/about"),label:t.home.secondary}} visual={<div className="hero-brand"><BrandLogo eager /><p>{locale === "en" ? "A technology company with a long view." : "Une entreprise technologique tournée vers l’avenir."}</p></div>} />
-    <section className="section"><div className="container editorial-split"><span className="section-index">01</span><div><SectionHeading title={t.home.introTitle} /><p className="lead-copy">{t.home.intro}</p></div></div></section>
-    <Story locale={locale} />
-    <section className="section"><div className="container product-feature"><div><p className="eyebrow">SHIDA</p><h2>{t.home.productTitle}</h2><p>{t.home.productText}</p></div><ShidaPanel locale={locale} /></div></section>
-    <section className="section education-strip"><div className="container editorial-split"><span className="planned-label">{t.common.planned}</span><div><h2>{t.home.educationTitle}</h2><p>{t.home.educationText}</p><ButtonLink href={localizedPath(locale,"/education")} variant="text">{t.common.learn}</ButtonLink></div></div></section>
-    <CtaSection eyebrow={t.common.talk} title={t.home.ctaTitle} description={t.home.ctaText} href={localizedPath(locale,"/contact")} label={t.common.contact} />
-  </>;
-}
+export { HomePage } from "./home-page";
 
 export function AboutPage({ locale }: { locale: Locale }) {
   const t = copy[locale];

@@ -125,3 +125,26 @@ describe('C1-E customer receipt gateway',()=>{
   expect(response.status).toBe(404);expect(response.headers.get('cache-control')).toContain('private, no-store');expect(await response.json()).toEqual({detail:'restaurant_unavailable'});
  });
 });
+
+
+describe('C1-E projection gateway',()=>{
+ const path='RST_a/menu-preview';
+ const preview={preview:true,items:[{name:'Fufu',category_name:'Food',text:'<b>Fufu</b>\n1000 CDF'}],count:1,total:1,page:1,page_size:5};
+ it('forwards exact Personal GET and private headers',async()=>{
+  const fetcher=vi.fn(async(url:unknown)=>{expect(url).toBeInstanceOf(URL);return Response.json(preview);});vi.stubGlobal('fetch',fetcher);
+  const result=await GET(req(path+'?language=sw&page=1&page_size=5'),ctx(path));
+  expect(result.status).toBe(200);expect(await result.json()).toEqual(preview);
+  expect(String(fetcher.mock.calls[0][0])).toContain('/api/dashboard/personal/restaurants/RST_a/menu-preview?language=sw&page=1&page_size=5');
+  expect(result.headers.get('cache-control')).toContain('private, no-store');
+ });
+ it.each(['page_size=0','page_size=6','page=0','page=1&page=2','language=de','account_id=1','price=1'])('rejects preview query %s',async q=>{
+  const fetcher=vi.fn();vi.stubGlobal('fetch',fetcher);expect((await GET(req(path+'?'+q),ctx(path))).status).toBe(422);expect(fetcher).not.toHaveBeenCalled();
+ });
+ it.each([{...preview,preview:false},{...preview,count:2},{...preview,owner:1},{...preview,items:[{...preview.items[0],unit_price:'1000'}]}])('rejects malformed projection',async value=>{
+  vi.stubGlobal('fetch',vi.fn(async()=>Response.json(value)));expect((await GET(req(path),ctx(path))).status).toBe(502);
+ });
+ it('rejects stale binding and unsupported method',async()=>{
+  expect((await GET(req(path,'GET',undefined,{'x-shida-session':'old'}),ctx(path))).status).toBe(401);
+  expect((await POST(req(path,'POST',{}),ctx(path))).status).toBe(404);
+ });
+});

@@ -1,0 +1,53 @@
+{
+  "unit_tests": {
+    "passed": 291,
+    "files": 25
+  },
+  "final_focused_tests": {
+    "passed": 60,
+    "files": 2
+  },
+  "mocked_browser": {
+    "passed": 30,
+    "production_build": true
+  },
+  "actual_backend_browser": {
+    "passed": 1,
+    "duration_seconds": 53.2,
+    "isolated_schema": "c1e_web",
+    "external_transports": "blocked",
+    "intake_closed_at_end": true
+  },
+  "checks": [
+    "typecheck passed",
+    "eslint passed",
+    "production build passed",
+    "git diff --check passed"
+  ],
+  "measurements": {
+    "idle": {
+      "responses": 2,
+      "bytes": 325
+    },
+    "reconnect": {
+      "responses": 5,
+      "bytes": 4237
+    },
+    "all": {
+      "responses": 62,
+      "bytes": 94860
+    }
+  },
+  "artifacts": {
+    "projection-counter-phone.png": "98332381396c1e586caa1d8341ec8a1f83bc3530c647bf22adee4e643d87882b",
+    "projection-measurements.json": "0e785579f3a7189491c8c372829f3bee69578c709958404f10f1cccbe19b3677",
+    "projection-menu-preview-phone.png": "9f6a19fe85ea67c73297fa316b3ec60b57c8624716b25606de87f98c49fdef49",
+    "projection-order-summary-desktop.png": "4ba3fd5fe1dc9299b603ca85afe2977a6b1f0b17efa267b8fdd55361c3f9efe0",
+    "projection-orders-desktop.png": "860ead25108675819b24823d0f2c51aea84fce23903012f5fd4da1fa2d241f85"
+  },
+  "limits": [
+    "Response-body bytes only; no network/monthly estimate",
+    "Safe JavaScript integer quantities required; unsafe values fail validation",
+    "Physical devices/native-language review and C1-F acceptance remain pending"
+  ]
+}

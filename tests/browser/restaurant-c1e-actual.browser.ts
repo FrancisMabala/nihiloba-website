@@ -16,9 +16,30 @@ test('actual Backend: order handling, counter handoff, protected receipts, gate 
  page.on('response',async r=>{if(r.url().includes('/api/shida/personal/restaurants/'))measurements.push({path:new URL(r.url()).pathname,bytes:(await r.body().catch(()=>Buffer.alloc(0))).length,at:Date.now()});});
  await page.goto('/shida/seller/restaurants');
  await page.locator('.rst-grid .rst-card').filter({hasText:data.name}).first().getByRole('button',{name:'Edit',exact:true}).click();
- await page.getByRole('button',{name:'Orders',exact:true}).click();await page.getByRole('button',{name:'Review',exact:true}).click();
- await expect(page.getByText(/Fufu · 2/)).toBeVisible();
+ const binding=(await (await page.request.get('/api/shida/employment/session')).json()).binding;
+ const previewUrl=`/api/shida/personal/restaurants/${data.ref}/menu-preview/`;
+ for(const language of ['en','fr','ln','sw']){
+  const response=await page.request.get(previewUrl+`?language=${language}&page=1&page_size=1`,{headers:{'x-shida-session':binding}});
+  expect(response.status()).toBe(200);expect(response.headers()['cache-control']).toContain('private, no-store');
+  const menu=await response.json();expect(menu.preview).toBe(true);expect(menu.items).toHaveLength(1);expect(Object.keys(menu.items[0]).sort()).toEqual(['category_name','name','text']);
+ }
+ expect((await page.request.get(previewUrl+'?page_size=6',{headers:{'x-shida-session':binding}})).status()).toBe(422);
+ await page.getByRole('button',{name:'Public preview',exact:true}).first().click();
+ await expect(page.getByRole('heading',{name:'Private menu preview',exact:true})).toBeVisible();
+ await expect(page.locator('.rst-menu-preview').getByText(/Fufu/).first()).toBeVisible();
+ await page.locator('.rst-menu-preview').getByRole('button',{name:'Next',exact:true}).click();
+ await expect(page.locator('.rst-menu-preview').getByRole('button',{name:'Next',exact:true})).toBeDisabled();
+ await page.setViewportSize({width:390,height:844});await expect(page.locator('.rst-menu-preview').getByRole('button',{name:'Previous',exact:true})).toBeEnabled();await page.evaluate(()=>{(document.activeElement as HTMLElement)?.blur();window.scrollTo({top:0,behavior:'instant'});});await page.waitForTimeout(500);await page.screenshot({path:info.outputPath('menu-preview-phone.png'),fullPage:true});
+ await page.getByRole('button',{name:'Orders',exact:true}).click();
+ await expect(page.locator('.rst-food-summary').getByText(/Fufu/).first()).toBeVisible();
  await expect(page.getByText(/Respond before/)).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Plate 1',exact:true})).toBeVisible();
+ await expect(page.getByText(/Foods omitted in total: 4/)).toBeVisible();
+ expect(measurements.some(m=>/\/orders\/[^/]+/.test(m.path))).toBe(false);
+ await page.setViewportSize({width:1440,height:1000});await expect(page.getByRole('button',{name:'Review',exact:true})).toBeEnabled();await page.evaluate(()=>{(document.activeElement as HTMLElement)?.blur();window.scrollTo({top:0,behavior:'instant'});});await page.waitForTimeout(500);await page.screenshot({path:info.outputPath('order-summary-desktop.png'),fullPage:true});
+ await page.getByRole('button',{name:'Review',exact:true}).click();
+ await expect(page.getByText(/Fufu · 2/).last()).toBeVisible();
+ await expect(page.getByText(/Respond before/).last()).toBeVisible();
  for(const action of ['Accept order','Start preparation','Food is ready','Confirm food handoff']){
   await page.getByRole('button',{name:action,exact:true}).click();await page.getByRole('button',{name:'Confirm',exact:true}).click();
   await expect(page.getByRole('button',{name:'Confirm',exact:true})).toHaveCount(0);
@@ -27,7 +48,7 @@ test('actual Backend: order handling, counter handoff, protected receipts, gate 
  await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:info.outputPath('orders-desktop.png'),fullPage:true});
  const reconciled=page.waitForResponse(r=>r.url().includes('/orders/'+data.order.order_ref+'/') && r.request().method()==='GET');await page.getByRole('button',{name:'Refresh',exact:true}).click();await reconciled;await page.waitForTimeout(500);await page.screenshot({path:info.outputPath('orders-desktop.png'),fullPage:true});const start=Date.now();await page.waitForTimeout(31000);const idle=measurements.filter(m=>m.at>=start);console.log('C1E idle',JSON.stringify(idle));expect(idle.filter(m=>m.path.includes('order-feed')).length).toBe(2);expect(idle.some(m=>/\/orders\//.test(m.path))).toBe(false);
  const reconnectStart=Date.now();await context.setOffline(true);await expect(page.getByText(/Connection interrupted/)).toBeVisible();await context.setOffline(false);await expect(page.getByText(/Current state: Handed over.*Pickup/)).toBeVisible();await expect(page.getByRole('button',{name:'Counter sale',exact:true})).toBeEnabled();await page.waitForTimeout(1000);const reconnect=measurements.filter(m=>m.at>=reconnectStart);
- await page.getByRole('button',{name:'Counter sale',exact:true}).click();await page.getByRole('button',{name:'New counter sale',exact:true}).click();await page.getByRole('button',{name:'Add',exact:true}).click();
+ await page.getByRole('button',{name:'Counter sale',exact:true}).click();await page.getByRole('button',{name:'New counter sale',exact:true}).click();await page.getByRole('button',{name:'Add',exact:true}).first().click();
  await page.getByRole('button',{name:'Calculate exact total',exact:true}).click();await expect(page.getByText('1000.25 CDF',{exact:true}).first()).toBeVisible();
  await page.getByRole('button',{name:'Confirm food handoff',exact:true}).click();await expect(page.getByRole('link',{name:'Receipt',exact:true})).toBeVisible();await expect(page.getByText('Payment not verified. This receipt is not proof of payment.')).toBeVisible();
  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:info.outputPath('counter-phone.png'),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -35,7 +56,7 @@ test('actual Backend: order handling, counter handoff, protected receipts, gate 
  await page.getByRole('button',{name:'My menu',exact:true}).click();await page.getByRole('button',{name:'Add several foods',exact:true}).click();
  await page.getByRole('combobox',{name:'Category',exact:true}).selectOption({label:'Synthetic foods'});
  const batchRows=page.locator('.rst-batch-row');
- for(let i=0;i<2;i++){await batchRows.nth(i).getByLabel('Food name',{exact:true}).fill(['Fufu','Rice'][i]);await batchRows.nth(i).getByRole('textbox',{name:'Price',exact:true}).fill('1000.25');await batchRows.nth(i).getByLabel('Unit (e.g. bowl)',{exact:true}).fill('bowl');}
+ for(let i=0;i<2;i++){await batchRows.nth(i).getByLabel('Food name',{exact:true}).fill(['Fufu','Cassava'][i]);await batchRows.nth(i).getByRole('textbox',{name:'Price',exact:true}).fill('1000.25');await batchRows.nth(i).getByLabel('Unit (e.g. bowl)',{exact:true}).fill('bowl');}
  await batchRows.first().getByRole('combobox',{name:'Review',exact:true}).selectOption(data.food);
  await page.getByRole('button',{name:'Review',exact:true}).click();await api.post(`/__s3a/cross-channel/${data.ref}`);
  await page.getByRole('button',{name:'Confirm',exact:true}).click();await expect(page.getByText('Things changed. Refresh, review your inputs and confirm again.')).toBeVisible();
@@ -44,7 +65,7 @@ test('actual Backend: order handling, counter handoff, protected receipts, gate 
  await page.goto(receipt!);await expect(page.getByText('Payment not verified. This receipt is not proof of payment.')).toBeVisible();await page.getByRole('button',{name:'Show receipt QR',exact:true}).click();await expect(page.getByRole('img',{name:'Show receipt QR'})).toBeVisible();
  // Same owner has no customer receipt right. Forwarded counter receipt denied.
  await page.goto(`/shida/restaurant-orders/${data.order.order_ref}/receipt`);await expect(page.getByText('Unavailable. Try refreshing.')).toBeVisible();
- await session(context,'other');await page.reload();await expect(page.getByText('Payment not verified. This receipt is not proof of payment.')).toBeVisible();
+ await session(context,'other');const otherBinding=(await (await page.request.get('/api/shida/employment/session')).json()).binding;expect((await page.request.get(previewUrl,{headers:{'x-shida-session':otherBinding}})).status()).toBe(404);await page.reload();await expect(page.getByText('Payment not verified. This receipt is not proof of payment.')).toBeVisible();
  await page.goto(receipt!);await expect(page.getByText('Unavailable. Try refreshing.')).toBeVisible();
  await context.clearCookies();await page.reload();await expect(page.getByRole('button',{name:'Continue with WhatsApp',exact:true})).toBeVisible();
  await session(context);await api.post('/__c1e/close');await page.goto('/shida/seller/restaurants');await page.locator('.rst-grid .rst-card').filter({hasText:data.name}).first().getByRole('button',{name:'Edit',exact:true}).click();await page.getByRole('button',{name:'Counter sale',exact:true}).click();await expect(page.getByRole('button',{name:'New counter sale',exact:true})).toBeDisabled();

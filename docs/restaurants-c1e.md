@@ -1,4 +1,4 @@
-# Restaurant C1-E — NIHILOBA Personal seller workspace
+# Restaurant C1-E â€” NIHILOBA Personal seller workspace
 
 11 September 2026. Website scope only. Production intake remains disabled.
 No Backend or Business Dashboard repository edits, deployment, live messages or Git commit.
@@ -34,7 +34,7 @@ Repeated clocks require an occurrence choice; nonexistent clocks cannot silently
 shift. Expected revision strings never pass through Date.
 
 Fast menu maintenance offers existing/custom categories and five localized category
-suggestions. It has 1–20 editable rows, unit/amount/unknown prices, existing currency,
+suggestions. It has 1â€“20 editable rows, unit/amount/unknown prices, existing currency,
 compact review and one atomic batch POST. Name collisions require explicit
 update/skip/separate choices. Unreviewed existing fields remain omitted and creation
 defaults are disclosed. Technical bounds are not commercial quotas.
@@ -62,8 +62,8 @@ rows and known item fields. Other order operation keys retain their 200-characte
 limit. Quantities, selections, windows, areas, fee, reasons and confirmations have
 bounded allowlisted shapes. Decimal numbers must be strings.
 
-Repeated states are allowed only for list/feed. Lists have page/page_size ≤50; feeds
-have cursor/limit ≤50; summaries require from_date/to_date with documented optional
+Repeated states are allowed only for list/feed. Lists have page/page_size â‰¤50; feeds
+have cursor/limit â‰¤50; summaries require from_date/to_date with documented optional
 offsets and pagination. No account ID, Business path or arbitrary proxy is accepted.
 The existing validated canonical Origin and trusted session are forwarded. Responses,
 errors and unsupported-method handlers remain private/no-store.
@@ -120,7 +120,7 @@ user action. It releases on hidden/disable/unmount/logout; reacquisition require
 the current session choice. Unsupported/denied/released states show a settings
 fallback without promising lock prevention or extended authentication.
 
-## Verification
+## Original C1-E verification (before projection follow-up)
 
 - Supported Node 22.23.2 final checks; initial system Node was 22.12.0.
 - Vitest: 262 tests / 24 files passed.
@@ -151,14 +151,10 @@ typed offsets into textboxes. No CSP weakening or application TLS bypass was add
 
 ## Remaining contract and acceptance limits
 
-1. Backend C1-C `summary_row()` omits food/plate names and response deadlines. Lists
-   show reference/state/method/total; selected detail shows the real food/deadline.
-   Full food/deadline on every incoming row needs a bounded summary projection
-   extension. Fetching every order detail would violate the low-data requirement.
-2. Protected preview uses privacy-safe `_food_dto` profile data, not a private draft
-   menu projection. Existing profile preview is preserved. A complete customer-style
-   private draft menu needs an authorized Backend adapter; browser eligibility rules
-   were not invented.
+1. **Closed by the projection follow-up below:** authorized list/feed rows now
+   provide bounded food/plate summaries and stored response deadlines.
+2. **Closed by the projection follow-up below:** the Personal gateway now consumes
+   the actual private customer-style menu projection alongside profile preview.
 3. Full delivery/reason combinations, physical-device wake behavior, long-running
    cursor expiry and broad revocation races are
    not claimed as fresh end-to-end browser acceptance. Native-language review and
@@ -175,7 +171,7 @@ cadence/capacity/backlog and restore acceptance. Production intake must stay dis
 
 ## Reproduction
 
-Use Node ≥22.13.0 for test/typecheck/lint/build. Direct CLI equivalents were used
+Use Node â‰¥22.13.0 for test/typecheck/lint/build. Direct CLI equivalents were used
 with cached Node 22.23.2 to avoid the older system npm wrapper.
 
 Mocked browsers: existing test server on 127.0.0.1:3013,
@@ -230,7 +226,7 @@ frontends, then C1-F acceptance. No deployment or commit is part of this task.
 - `tests/restaurant-c1e.test.ts`
 - `tests/restaurant-seller.test.ts`
 
-## Captured evidence and request measurements
+## Original captured evidence and request measurements
 
 Screenshots were visually inspected at desktop and phone widths:
 
@@ -266,3 +262,99 @@ were blocked throughout. No physical phone or live WhatsApp delivery is claimed.
 Cleanup: the local Next development server, HTTPS production test server and
 Backend fixture server were stopped after verification. The disposable PostgreSQL
 container was stopped; synthetic schema and screenshots remain for reproduction.
+
+
+## Projection follow-up (11 September 2026)
+
+The two NIHILOBA projection gaps are closed against the actual current Backend
+contract in `../Backend/docs/restaurants_c1e_projections.md`. No Backend or Business
+source was changed. Production intake remains disabled; only the existing isolated
+synthetic test process temporarily enables intake and closes it after the journey.
+
+Order list/feed cards render `food_preview` directly: standalone selections retain
+one group, each plate retains its ordinal, and monetary portions remain decimal
+strings with currency rather than invented quantities. Validation enforces three
+groups and six lines, bounded names/units, exclusive unit/amount fields and consistent
+remaining counts. Per-group omitted lines are shown separately; top-level omitted
+lines already include unshown groups and are never added twice. Truncation explicitly
+requires opening full detail before preparation. Missing/unavailable projections
+show an unavailable summary, never guessed food. Unsafe numeric quantities are
+rejected instead of displayed with lost precision.
+
+Only pending rows say `Respond before`, using the stored deadline unchanged.
+Accepted/historical detail and receipts label a retained deadline as saved, with no
+response-due implication. Missing/null deadlines produce no invented deadline.
+Cursor-first synchronization, complete changed-row replacement, removals, bounded
+page refill, selected detail, polling/backoff, wake lock and mutation recovery remain.
+
+The exact GET `{RST}/menu-preview` gateway accepts only `language=en|fr|ln|sw`,
+positive page and page_size 1-5, with no duplicate or authority parameters. It checks
+the trusted session binding, forwards to the Personal route and validates the exact
+preview envelope/item keys and pagination. Successes and errors are private/no-store.
+The UI renders returned customer text with preserved newlines as React text, never
+HTML or editable pricing. The private label explicitly disclaims publication and
+order enablement; eligibility remains entirely in Backend. Pages load on demand.
+Focus/visibility/reconnect reauthorize; stale preview text is withheld, and ownership
+or authentication loss clears the workspace. Scope, language and binding changes
+remount the preview and ignore previous in-flight results. The existing profile
+preview and all management/atomic batch APIs remain intact.
+
+### Follow-up verification
+
+- Full Vitest suite: 291 tests / 25 files passed; focused projection/gateway rerun:
+  60 tests passed after final validation tightening.
+- TypeScript, ESLint and Next 16.3.4 production build passed with Node 22.23.2.
+- 30 mocked browser journeys passed together against the production build, including
+  retained C1-E/seller cases and new plain-text/pagination/access-loss/summary cases.
+- Actual isolated Backend/PostgreSQL journey passed: standalone plus six plates,
+  truthful four omitted lines/groups, card deadline without per-order detail,
+  private six-food menu pagination, four-language GETs, oversized query rejection,
+  current ownership rejection, acceptance through handoff, counter receipt/QR,
+  customer receipt authorization, atomic batch conflict/recovery and closed intake.
+- Whitespace check passed. No migrations, live transports, deployment or Git commit.
+
+Intermediate test issues were corrected: an incorrect preview-button label, a
+no-detail assertion that also matched the list's trailing slash, an unintended Rice
+name collision in the expanded fixture, and an immediate DOM count that raced intake
+loading. The DOM assertion now waits for the four controls. A development runner
+finished its cases but hung during Windows server teardown; the final mocked run
+used a separately controlled production server and exited successfully. Screenshots
+wait for authorized data and enabled controls after viewport changes.
+
+The isolated harness remains loopback-only with dotenv and external sockets disabled,
+using the existing disposable PostgreSQL `c1e_web` schema. This is application
+integration evidence, not production or migration acceptance. Existing C1-F,
+Organization, device/native-language and transport acceptance limits above remain.
+
+### Follow-up artifacts and measurements
+
+- [Bounded incoming order card](evidence/restaurants-c1e/projection-order-summary-desktop.png)
+- [Private customer menu / phone](evidence/restaurants-c1e/projection-menu-preview-phone.png)
+- [Completed order detail](evidence/restaurants-c1e/projection-orders-desktop.png)
+- [Counter receipt / phone](evidence/restaurants-c1e/projection-counter-phone.png)
+- [Raw response measurements](evidence/restaurants-c1e/projection-measurements.json)
+- [Verification record and artifact hashes](evidence/restaurants-c1e/projection-verification.json)
+
+| Final phase | Seller responses | JSON body bytes |
+| --- | ---: | ---: |
+| Foreground idle, 31 seconds | 2 | 325 |
+| Offline/reconnect reconciliation | 5 | 4,237 |
+| Complete active journey including idle/reconnect | 62 | 94,860 |
+
+These measurements come from the final successful synthetic journey.
+Page browser response events count seller API bodies only; direct authorization/query
+checks made by Playwright's API client are outside these measurements. HTTP/TLS,
+assets, session/customer receipt calls and compression are excluded. The expanded
+fixture contains six menu foods and seven food selections across seven groups, so
+active totals are not directly comparable to the earlier single-food fixture. Idle
+still contains only incremental feed responses. No monthly-data estimate is implied.
+
+Reproduce with the existing harness/server instructions above and
+`restaurant-projections.browser.ts` added to the mocked suite. Final artifact outputs
+are `.s3a-local/c1e-projections-mocked-final` and `.s3a-local/c1e-projections-actual`.
+
+Suggested commit (not created):
+`feat(restaurants): integrate bounded order and private menu projections`
+
+Cleanup: both website test servers and the Backend fixture process were stopped.
+The disposable `nihiloba-s3a-isolated` PostgreSQL container was stopped.

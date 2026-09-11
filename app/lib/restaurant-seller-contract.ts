@@ -2,6 +2,7 @@ import { isOrderPath, orderRoutes, validOrderBody, validOrderQuery } from './res
 // Exact Personal seller surface, not a general Dashboard proxy.
 export const sellerRoutes: [RegExp, readonly string[]][] = [
   ...orderRoutes,
+  [/^RST_[A-Za-z0-9_-]+\/menu-preview$/, ["GET"]],
   [/^$/, ["GET", "POST"]],
   [/^RST_[A-Za-z0-9_-]+$/, ["GET", "PATCH"]],
   [/^RST_[A-Za-z0-9_-]+\/preview$/, ["GET"]],
@@ -20,13 +21,14 @@ export function allowedSellerRoute(path: string, method: string): boolean {
 }
 export function validSellerQuery(path: string, method: string, query: URLSearchParams): boolean {
   if (isOrderPath(path)) return validOrderQuery(path, method, query);
-  const list = method === "GET" && (!path || /\/menu\/(categories|items|offerings)$/.test(path));
+  const preview = path.endsWith("/menu-preview");
+  const list = preview || method === "GET" && (!path || /\/menu\/(categories|items|offerings)$/.test(path));
   const allowed = /\/links\//.test(path) ? [] : ["language", ...(list ? ["page", "page_size", ...(!path ? ["status"] : [])] : [])];
   for (const [key, value] of query) {
     if (!allowed.includes(key) || query.getAll(key).length !== 1) return false;
     if (key === "language" && !["en", "fr", "ln", "sw"].includes(value)) return false;
     if (key === "status" && !["draft", "active", "inactive"].includes(value)) return false;
-    if (["page", "page_size"].includes(key) && (!/^[1-9]\d{0,6}$/.test(value) || (key === "page_size" && Number(value) > 50))) return false;
+    if (["page", "page_size"].includes(key) && (!/^[1-9]\d{0,6}$/.test(value) || (key === "page_size" && Number(value) > (preview ? 5 : 50)))) return false;
   }
   return true;
 }

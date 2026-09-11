@@ -1,3 +1,4 @@
+import { validMenuPreview, validOrderProjections } from "../../../../../lib/restaurant-projections";
 import { cookies } from "next/headers";
 import { personalRequestOrigin } from "../../../../../lib/personal-request-origin";
 import { allowedSellerRoute, validSellerBody, validSellerQuery, validShare, sellerErrorCodes } from "../../../../../lib/restaurant-seller-contract";
@@ -44,6 +45,11 @@ async function handle(request: Request, context: Context) {
     if (!response.ok) return fail(response.status >= 400 && response.status < 600 ? response.status : 502, sellerErrorCodes.has(value?.detail) ? value.detail : "restaurant_unavailable");
     if (!value || typeof value !== "object" || Array.isArray(value)) return fail(502);
     if (path.includes("/links/") && !validShare(value, segments[0], segments[2])) return fail(502);
+    if (path.endsWith('/menu-preview') && !validMenuPreview(value, query)) return fail(502);
+    if (/\/(orders|order-feed)$/.test(path)) {
+      const rows = path.endsWith('/orders') ? value.items : value.changed;
+      if (!Array.isArray(rows) || rows.length > 50 || !rows.every(validOrderProjections)) return fail(502);
+    }
     return Response.json(value, { headers: PRIVATE_HEADERS });
   } catch { return fail(503); }
 }

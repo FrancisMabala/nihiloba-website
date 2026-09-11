@@ -13,7 +13,7 @@ test('atomic batch: frozen retry and explicit collision review; local intake tim
  await expect(page.getByText('Confirmation is missing. Retry the same request to recover its outcome.')).toBeVisible();await expect(rows.first().getByLabel('Food name',{exact:true})).toBeDisabled();
  await page.getByRole('button',{name:'Retry the original request',exact:true}).click();expect(bodies).toHaveLength(2);expect(bodies[0]).toBe(bodies[1]);expect(JSON.parse(bodies[0]).expected_updated_at).toBe(state.establishment.revision);
  await page.route('**/RST_fixture/order-configuration/',route=>route.fulfill({json:{revision:state.establishment.revision,intake_released:false,pickup:{enabled:false,windows:[{starts_at:'2027-01-01T10:00:00Z',ends_at:'2027-01-01T12:00:00Z'},{starts_at:'2027-01-02T10:00:00Z',ends_at:'2027-01-02T12:00:00Z'}]},delivery:null}}));
- await page.getByRole('button',{name:'Order intake',exact:true}).click();await expect(page.getByLabel('Accept new orders',{exact:true})).toBeDisabled();expect(await page.locator('input[type=datetime-local]').count()).toBe(4);
+ await page.getByRole('button',{name:'Order intake',exact:true}).click();await expect(page.getByLabel('Accept new orders',{exact:true})).toBeDisabled();await expect(page.locator('input[type=datetime-local]')).toHaveCount(4);
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:info.outputPath('intake-phone.png'),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 for(const locale of ['en','fr','ln','sw'] as const)test(`C1-E localized work navigation / ${locale}`,async({page},info)=>{
