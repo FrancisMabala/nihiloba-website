@@ -34,3 +34,7 @@ describe('C1-E bounded Personal contracts',()=>{
   expect(actionsFor({...o,state:'ready',fulfillment_method:'delivery'})).toEqual(['dispatch','cancel']);
  });
 });
+
+import { sellerErrorCodes } from '../app/lib/restaurant-seller-contract';
+import { intakeErrorCodes, workText } from '../app/lib/restaurant-work-copy';
+it('preserves localized intake errors through the Personal gateway',()=>{for(const code of intakeErrorCodes){expect(sellerErrorCodes.has(code)).toBe(true);for(const locale of ['en','fr','ln','sw'] as const)expect(workText(locale,code)).not.toBe(code);}});

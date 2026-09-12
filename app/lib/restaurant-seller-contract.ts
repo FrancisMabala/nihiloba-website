@@ -61,3 +61,5 @@ export function validShare(value: unknown, ref: string, destination: string): va
 }
 
 for (const code of ['restaurant_feed_refresh_required','restaurant_quote_changed','restaurant_order_state_conflict','restaurant_operation_expired','restaurant_intake_closed','restaurant_category_review_required','restaurant_item_review_required','restaurant_selection_invalid','restaurant_confirmation_required','restaurant_reason_required','restaurant_order_unknown_price','restaurant_order_item_unavailable']) sellerErrorCodes.add(code);
+
+for (const code of ["restaurant_window_past", "restaurant_window_bounds", "restaurant_window_hours", "restaurant_window_closure", "restaurant_time_invalid", "restaurant_time_ambiguous", "restaurant_timezone_unavailable", "restaurant_time_overlap", "restaurant_stale", "restaurant_intake_closed"]) sellerErrorCodes.add(code);

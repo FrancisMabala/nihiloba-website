@@ -7,7 +7,7 @@ export async function fixture(page: Page) {
  await page.route("**/*", async route => {
   const req = route.request(), url = new URL(req.url());
   url.pathname = url.pathname.replace(/\/$/, "");
-  if (url.origin !== "http://127.0.0.1:3013") return route.abort();
+  if (url.origin !== new URL(process.env.RESTAURANT_TEST_BASE_URL ?? "http://127.0.0.1:3013").origin) return route.abort();
   if (!url.pathname.startsWith("/api/")) return route.continue();
   const reply = (json: unknown, status = 200) => route.fulfill({ status, json });
   if (url.pathname.endsWith("/employment/session")) return state.session ? reply({ user: { display_name: "Synthetic seller" }, binding: state.binding }) : reply({}, 401);

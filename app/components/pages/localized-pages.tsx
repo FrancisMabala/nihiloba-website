@@ -22,7 +22,6 @@ const copy = {
       educationTitle: "Practical learning can widen opportunity.", educationText: "NIHILOBA Education is a planned nonprofit initiative focused on digital literacy, accessible learning and useful technology skills.",
       ctaTitle: "Have a question or an idea to discuss?", ctaText: "We welcome conversations with users, communities, companies, institutions and potential partners.",
     },
-    products: { eyebrow: "Our products", title: "Start with a real need. Keep the experience simple.", description: "NIHILOBA develops products that help people reach useful information and services through accessible technology.", shida: "SHIDA is the first digital product developed by NIHILOBA. It connects people to employment, services, housing and transport through WhatsApp.", futureTitle: "What comes next", future: "We will develop new products carefully and share them when their purpose, scope and value are clear. For now, our focus is SHIDA." },
     shida: {
       eyebrow: "A product by NIHILOBA", title: "Everyday opportunities, available through WhatsApp.", description: "Jobs, services, housing, transport and local commerce are accessible with SHIDA in a familiar WhatsApp conversation. Users do not need to install a new application.",
       first: "SHIDA is the first digital product developed by NIHILOBA.", marketsTitle: "What you can explore today", marketsDesc: "SHIDA currently supports practical marketplaces and booking journeys.", employment: "Employment", employmentText: "Find and explore relevant employment opportunities.", services: "Services", servicesText: "Connect with professionals and everyday services.", housing: "Housing", housingText: "Access housing information through a direct channel.", transport: "Transport", transportText: "Explore useful transport options and information.", wenze: "Wenze", wenzeText: "Discover shops and products available through SHIDA, explore their offers and continue the relevant journey with SHIDA.",
@@ -53,7 +52,6 @@ const copy = {
       educationTitle: "L’apprentissage pratique peut élargir les possibilités.", educationText: "NIHILOBA Education est une initiative à but non lucratif en projet, consacrée à la culture numérique, à l’apprentissage accessible et aux compétences technologiques utiles.",
       ctaTitle: "Une question ou une idée à partager ?", ctaText: "Nous échangeons volontiers avec les utilisateurs, les communautés, les entreprises, les institutions et les partenaires potentiels.",
     },
-    products: { eyebrow: "Nos produits", title: "Partir d’un besoin réel. Garder une expérience simple.", description: "NIHILOBA développe des produits qui facilitent l’accès à des informations et à des services utiles grâce à des technologies accessibles.", shida: "SHIDA est le premier produit numérique développé par NIHILOBA. Il relie les personnes à l’emploi, aux services, au logement et au transport via WhatsApp.", futureTitle: "La suite", future: "Nous développerons de nouveaux produits avec soin et les présenterons lorsque leur objectif, leur portée et leur valeur seront clairs. Pour le moment, nous nous concentrons sur SHIDA." },
     shida: {
       eyebrow: "Un produit NIHILOBA", title: "Les opportunités du quotidien, accessibles sur WhatsApp.", description: "L’emploi, les services, le logement, le transport et le commerce local sont accessibles avec SHIDA dans une conversation WhatsApp familière. Aucune nouvelle application n’est nécessaire.",
       first: "SHIDA est le premier produit numérique développé par NIHILOBA.", marketsTitle: "Ce que vous pouvez explorer aujourd’hui", marketsDesc: "SHIDA prend actuellement en charge des marchés pratiques et des parcours de réservation.", employment: "Emploi", employmentText: "Trouvez et explorez des opportunités d’emploi pertinentes.", services: "Services", servicesText: "Entrez en contact avec des professionnels et des services du quotidien.", housing: "Logement", housingText: "Accédez à des informations sur le logement par un canal direct.", transport: "Transport", transportText: "Explorez des options et des informations utiles sur le transport.", wenze: "Wenze", wenzeText: "Découvrez des boutiques et des produits proposés sur SHIDA, consultez les offres disponibles et poursuivez votre parcours avec SHIDA.",
@@ -76,22 +74,11 @@ const copy = {
   },
 } as const;
 
-function ShidaPanel({ locale }: { locale: Locale }) {
-  const t = copy[locale];
-  return <article className="shida-panel"><div className="shida-logo-wrap"><BrandLogo brand="shida" /></div><div className="shida-preview-shot"><Image src="/shida-marketplace-menu.jpeg" alt={locale === "en" ? "SHIDA marketplace menu in WhatsApp" : "Menu des marchés SHIDA dans WhatsApp"} width={921} height={2048} sizes="(max-width: 700px) 72vw, 240px" /></div><div className="shida-panel-copy"><span className="availability"><span />{t.common.available}</span><p>{t.products.shida}</p><div className="preview-actions"><ButtonLink href={localizedPath(locale,"/shida")} variant="text">{t.home.primary}</ButtonLink><ButtonLink href={OFFICIAL_CHANNELS.whatsapp} variant="text" external>{t.common.open}</ButtonLink></div></div></article>;
-}
-
 export { HomePage } from "./home-page";
 
 export { AboutPage } from "./about-page";
 
-export function ProductsPage({ locale }: { locale: Locale }) {
-  const t = copy[locale];
-  return <><Hero compact eyebrow={t.products.eyebrow} title={t.products.title} description={t.products.description} />
-    <section className="section"><div className="container"><ShidaPanel locale={locale}/><div className="future-note"><span className="section-index">02</span><div><h2>{t.products.futureTitle}</h2><p>{t.products.future}</p></div></div></div></section>
-    <CtaSection eyebrow={t.common.talk} href={localizedPath(locale,"/contact")} label={t.common.contact} title={t.home.ctaTitle} description={t.home.ctaText}/>
-  </>;
-}
+export { ProductsPage } from "./products-page";
 
 const marketIcons: ReactNode[] = [<BriefcaseIcon key="a"/>,<ToolsIcon key="b"/>,<HomeIcon key="c"/>,<CarIcon key="d"/>,<BookIcon key="e"/>,<StoreIcon key="f"/>];
 export function ShidaPage({ locale }: { locale: Locale }) {

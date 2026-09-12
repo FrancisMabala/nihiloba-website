@@ -21,7 +21,7 @@ const descriptions = {
   en: {
     home: "NIHILOBA develops practical digital solutions rooted in everyday needs. Discover SHIDA’s opportunities, services and tools on the web and WhatsApp.",
     about: "Discover NIHILOBA's purpose, its name and baobab-inspired identity, and founder Francis Mabala.",
-    products: "Explore SHIDA, the first digital product developed by NIHILOBA.",
+    products: "Discover SHIDA, the planned NIHILOBA Education initiative, and our approach to practical digital products built around real needs.",
     shida: "Explore SHIDA’s WhatsApp marketplace for jobs, services, housing, hotels and Wenze local commerce, with direct-link and QR access.",
     education: "NIHILOBA Education is a planned nonprofit initiative focused on practical digital learning.",
     contact: "Contact NIHILOBA about SHIDA, collaboration and partnerships.",
@@ -31,7 +31,7 @@ const descriptions = {
   fr: {
     home: "NIHILOBA développe des solutions numériques utiles au quotidien. Découvrez les opportunités, services et outils de SHIDA sur le web et WhatsApp.",
     about: "Découvrez la mission de NIHILOBA, l'origine de son nom, le symbole du baobab et son fondateur Francis Mabala.",
-    products: "Découvrez SHIDA, le premier produit numérique développé par NIHILOBA.",
+    products: "Découvrez SHIDA, le projet d’apprentissage NIHILOBA Education et notre approche de produits numériques utiles, conçus autour de vrais besoins.",
     shida: "Découvrez le marché SHIDA sur WhatsApp pour l’emploi, les services, le logement, les hôtels et le commerce local Wenze, avec des liens directs et des QR codes.",
     education: "NIHILOBA Education est une initiative à but non lucratif en projet, consacrée à l'apprentissage numérique pratique.",
     contact: "Contactez NIHILOBA au sujet de SHIDA, d'une collaboration ou d'un partenariat.",

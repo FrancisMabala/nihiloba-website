@@ -1,3 +1,4 @@
+import { intakeErrorCodes } from './restaurant-work-copy';
 import { useEffect, useRef, useState } from 'react';
 import { request, DashboardApiError } from './restaurant-seller-browser';
 import type { Operation } from './restaurant-seller';
@@ -38,8 +39,8 @@ export function useWorkRequest(binding:string,onFailure:(e:unknown)=>void) {
    if(operation){setPending(null);setMessage('saved');} return value;
   } catch(e) {if(!alive.current)return;
    if(e instanceof DashboardApiError && [401,403,404].includes(e.status)){setPending(null);failure.current(e);}
-   else if(e instanceof DashboardApiError && e.status === 409){setConflict(true);setMessage('conflict');}
-   else if(e instanceof DashboardApiError && e.status === 422){setPending(null);setMessage('validation');}
+   else if(e instanceof DashboardApiError && e.status === 409){setConflict(true);setMessage(/\/(pickup|delivery)-intake$/.test(path) && e.detail && intakeErrorCodes.has(e.detail) ? e.detail : 'conflict');}
+   else if(e instanceof DashboardApiError && e.status === 422){setPending(null);setMessage(/\/(pickup|delivery)-intake$/.test(path) && e.detail && intakeErrorCodes.has(e.detail) ? e.detail : 'validation');}
    else setMessage(operation ? 'uncertain' : 'unavailable');
   } finally {lock.current=false;if(alive.current)setBusy(false);}
  }
