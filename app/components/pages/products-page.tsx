@@ -48,7 +48,7 @@ export function ProductsPage({ locale }: { locale: Locale }) {
             <ButtonLink href={contact} variant="secondary">{t.contact}</ButtonLink>
           </div>
         </div>
-        <ProductImage name="product-hero" alt={t.alts.hero} className="products-hero-image" sizes="(max-width: 700px) calc(100vw - 32px), (max-width: 940px) calc(100vw - 48px), (max-width: 1228px) 52vw, 650px" eager />
+        <ProductImage name="product-hero" alt={t.alts.hero} className="products-hero-image" sizes="(max-width: 700px) 100vw, 72vw" eager />
       </div>
     </section>
 
@@ -64,7 +64,7 @@ export function ProductsPage({ locale }: { locale: Locale }) {
       </div>
       <div className="products-marketplace">
         <div className="products-market-images" role="region" aria-label={t.marketplaceLabel} tabIndex={0}>
-          {marketImages.map(name => <ProductImage key={name} name={`products-shida-${name}`} alt={t.alts[name]} sizes="(max-width: 700px) 42vw, (max-width: 940px) 18vw, (max-width: 1228px) 10vw, 115px" />)}
+          {marketImages.map(name => <ProductImage key={name} name={`products-shida-${name}`} alt={t.alts[name]} sizes="(max-width: 700px) 42vw, (max-width: 940px) 18vw, 14vw" />)}
         </div>
         <ul className="products-markets">
           {t.markets.map((label, i) => { const Icon = marketIcons[i]; return <li key={label}><Icon /><span>{label}</span></li>; })}
@@ -77,9 +77,9 @@ export function ProductsPage({ locale }: { locale: Locale }) {
     </section>
 
     <section className="products-rule" aria-labelledby="products-whatsapp-title">
-      <div className="container products-section">
-        <SectionLabel number="02">{t.whatsappLabel}</SectionLabel>
-        <div className="products-intro"><h2 id="products-whatsapp-title">{t.whatsappTitle}</h2><p className="products-body">{t.whatsappText}</p></div>
+      <div className="container products-section products-row">
+        <div><SectionLabel number="02">{t.whatsappLabel}</SectionLabel>
+        <h2 id="products-whatsapp-title">{t.whatsappTitle}</h2><p className="products-body">{t.whatsappText}</p></div>
         <div className="products-principles">
           {t.principles.map(([title, description], i) => { const Icon = principleIcons[i]; return <article key={title}><Icon /><div><h3>{title}</h3><p className="products-body">{description}</p></div></article>; })}
         </div>
@@ -87,21 +87,24 @@ export function ProductsPage({ locale }: { locale: Locale }) {
     </section>
 
     <section className="container products-section products-education" aria-labelledby="products-education-title">
-      <SectionLabel number="03">{t.educationLabel}</SectionLabel>
-      <div className="products-intro"><div><p className="products-name">NIHILOBA Education</p><h2 id="products-education-title">{t.educationTitle}</h2></div><div>{t.education.map(p => <p className="products-body" key={p}>{p}</p>)}</div></div>
+      <div>
+        <SectionLabel number="03">{t.educationLabel}</SectionLabel>
+        <h2 id="products-education-title">{t.educationTitle}</h2>
+        {t.education.map(p => <p className="products-body" key={p}>{p}</p>)}
+        <ButtonLink href={localizedPath(locale, "/education")} variant="secondary">{t.discoverEducation}</ButtonLink>
+      </div>
       <div className="products-education-grid">
-        <ProductImage name="products-education-women-learning" alt={t.alts.education} sizes="(max-width: 700px) calc(100vw - 32px), (max-width: 940px) calc(100vw - 48px), (max-width: 1228px) 60vw, 710px" />
+        <ProductImage name="products-education-women-learning" alt={t.alts.education} sizes="(max-width: 700px) calc(100vw - 32px), (max-width: 940px) 60vw, 36vw" />
         <div>
           <div className="products-themes">{t.themes.map(([title, description], i) => { const Icon = themeIcons[i]; return <article key={title}><Icon /><div><h3>{title}</h3><p className="products-body">{description}</p></div></article>; })}</div>
-          <ButtonLink href={localizedPath(locale, "/education")} variant="text">{t.discoverEducation}</ButtonLink>
         </div>
       </div>
     </section>
 
     <section className="products-rule" aria-labelledby="products-approach-title">
-      <div className="container products-section">
-        <SectionLabel number="04">{t.approachLabel}</SectionLabel>
-        <div className="products-intro"><h2 id="products-approach-title">{t.approachTitle}</h2><div>{t.approach.map(p => <p className="products-body" key={p}>{p}</p>)}</div></div>
+      <div className="container products-section products-row products-approach">
+        <div><SectionLabel number="04">{t.approachLabel}</SectionLabel>
+        <h2 id="products-approach-title">{t.approachTitle}</h2>{t.approach.map(p => <p className="products-body" key={p}>{p}</p>)}</div>
         <ol className="products-process">
           {t.process.map(([title, description], i) => { const Icon = processIcons[i]; return <li key={title}><div className="products-process-icon"><Icon />{i < t.process.length - 1 && <ArrowRightIcon className="products-process-arrow" />}</div><h3>{title}</h3><p className="products-body">{description}</p></li>; })}
         </ol>
@@ -110,8 +113,8 @@ export function ProductsPage({ locale }: { locale: Locale }) {
 
     <section className="products-closing" aria-labelledby="products-contact-title">
       <div className="container products-section products-closing-copy">
-        <div><SectionLabel>{t.closingLabel}</SectionLabel><h2 id="products-contact-title">{t.closingTitle}</h2></div>
-        <div><p className="products-body">{t.closingText}</p><ButtonLink href={contact}>{t.contact}</ButtonLink></div>
+        <div><SectionLabel>{t.closingLabel}</SectionLabel><h2 id="products-contact-title">{t.closingTitle}</h2>
+        <p className="products-body">{t.closingText}</p><ButtonLink href={contact}>{t.contact}</ButtonLink></div>
       </div>
       <ProductImage name="products-closing-pont-marechal" alt={t.alts.closing} className="products-closing-image" sizes="100vw" />
     </section>

@@ -21,11 +21,11 @@ Pre-existing restaurant edits and tests were left untouched. The supplied `publi
 ## Sections and assets
 
 1. **Our products:** split copy/image hero, portfolio anchor and contact CTA; `/product/product-hero.png`.
-2. **01 — SHIDA:** portfolio explanation, discovery and WhatsApp links, five staggered square images, seven monochrome marketplace labels, Discover/Manage dimensions and an availability note. Images: `/product/products-shida-vendor.png`, `/product/products-shida-services.png`, `/product/products-shida-housing.png`, `/product/products-shida-hotels.png`, `/product/products-shida-transport.png`.
+2. **01 — SHIDA:** portfolio explanation, discovery and WhatsApp links, five aligned portrait image panels, seven monochrome marketplace labels, Discover/Manage dimensions and an availability note. Images: `/product/products-shida-vendor.png`, `/product/products-shida-services.png`, `/product/products-shida-housing.png`, `/product/products-shida-hotels.png`, `/product/products-shida-transport.png`.
 3. **02 — WhatsApp:** three editorial principles, with familiar, guided and connected themes.
 4. **03 — Education:** explicitly planned nonprofit initiative, older-women learning focus, three learning themes and localized Education CTA; `/product/products-education-women-learning.png` retains all three women.
 5. **04 — Product approach:** need → useful solution → simple experience → long-term value, with line icons and supporting text.
-6. **Let’s build together:** contact invitation above the full-width `/product/products-closing-pont-marechal.png` scene.
+6. **Let’s build together:** contact invitation beside the integrated wide `/product/products-closing-pont-marechal.png` scene.
 
 The existing `SiteDocument`, header, footer, cart, language switcher, `ButtonLink`, navigation helpers, official WhatsApp URL and shared line icons are reused. No new dependencies or client-side page logic were added. No images were generated, fetched or replaced.
 
@@ -33,15 +33,15 @@ The existing `SiteDocument`, header, footer, cart, language switcher, `ButtonLin
 
 The supplied English and French copy is implemented, including localized alt text and accessible labels. French wording was lightly refined for the guided-journey and accessible-learning themes. SHIDA management copy includes “where these tools are available” and the same availability qualification used on Home. Marketplace labels describe scope without inventing individual destination routes or promising production availability. Education is consistently described as planned/in preparation.
 
-The attachment available in this session contained the written brief only. No separate mockup image was present, so exact visual differences from the mockup cannot be assessed. Layout decisions follow the brief and existing Home/About typography, colors, spacing, breakpoints and buttons. Text sits separately from the images; no gradients or overlays were added. The closing scene is exactly the supplied Pont Maréchal asset. The existing English SHIDA route is `/shida/`; French remains `/fr/shida/`.
+The mockup supplied in the follow-up is now the layout reference: integrated edge-to-edge hero and closing imagery, tall aligned marketplace panels with seven labels beneath, and compact horizontal editorial rows. Existing NIHILOBA green/ivory colors and the shared header/footer are preserved. These differ from the reference's blue palette and compact footer. Full required copy, Discover/Manage dimensions and the availability note are retained, making some rows taller. Soft image-edge masks reproduce the reference's image-to-paper transition. Original supplied imagery, including Pont Marechal, is retained rather than regenerated. English SHIDA remains `/shida/`; French remains `/fr/shida/`.
 
 ## Responsive, accessibility and SEO
 
-- Desktop/laptop: split hero and SHIDA sections, three WhatsApp columns, Education image beside themes, four horizontal process steps.
-- At 940px and below: hero, SHIDA and Education image/themes stack; hero and Education preserve their full image proportions.
-- At 700px and below: horizontally scrollable marketplace imagery, two-column marketplace labels, stacked principles, vertical process arrows and stacked closing copy. The closing image uses a central crop retaining the bridge.
+- Desktop/laptop: integrated hero and closing imagery; SHIDA copy beside tall image panels; WhatsApp copy beside three principles; Education copy/image/themes in one row; approach copy beside four process steps.
+- At 940px and below: section copy stacks above supporting content. Education image and themes remain side by side until mobile.
+- At 700px and below: hero and closing images stack without masks; marketplace imagery scrolls horizontally; labels use two columns; principles, Education and process steps stack. The closing crop retains the bridge.
 - One H1, sequential section headings, semantic sections/lists, localized nonempty alt text, decorative SVGs hidden from assistive technology, and keyboard-focusable image scrolling.
-- Existing visible focus styling and skip navigation retained; all page CTAs have at least 44px height. Main hero/SHIDA/contact buttons are at least 48px.
+- Existing visible focus styling and skip navigation retained; all page CTAs have at least 44px height. All page buttons remain at least 44px.
 - Next Image handles responsive source sizes, eager/high-priority hero loading and lazy loading elsewhere. Explicit aspect ratios reserve layout space.
 - Canonical URLs, language alternates, titles and OpenGraph images are preserved. Products meta/OpenGraph descriptions now cover SHIDA, planned Education and the product approach.
 
