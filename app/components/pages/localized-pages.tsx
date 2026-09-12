@@ -1,15 +1,11 @@
-import Image from "next/image";
-import type { ReactNode } from "react";
 import type { Locale } from "../../lib/i18n";
 import { localizedPath } from "../../lib/i18n";
-import { CONTACT_EMAILS, OFFICIAL_CHANNELS, SOCIAL_LINKS } from "../../lib/brand";
-import { BrandLogo } from "../brand-logo";
+import { CONTACT_EMAILS, SOCIAL_LINKS } from "../../lib/brand";
 import { ButtonLink } from "../button-link";
 import { CtaSection } from "../cta-section";
 import { Hero } from "../hero";
-import { BookIcon, BriefcaseIcon, CarIcon, CheckIcon, HomeIcon, LightbulbIcon, MailIcon, QrCodeIcon, StoreIcon, ToolsIcon } from "../icons";
+import { BookIcon, CheckIcon, LightbulbIcon, MailIcon } from "../icons";
 import { SectionHeading } from "../section-heading";
-import { MarketplaceGateway } from "../shida/marketplace";
 
 const copy = {
   en: {
@@ -80,24 +76,7 @@ export { AboutPage } from "./about-page";
 
 export { ProductsPage } from "./products-page";
 
-const marketIcons: ReactNode[] = [<BriefcaseIcon key="a"/>,<ToolsIcon key="b"/>,<HomeIcon key="c"/>,<CarIcon key="d"/>,<BookIcon key="e"/>,<StoreIcon key="f"/>];
-export function ShidaPage({ locale }: { locale: Locale }) {
-  const t=copy[locale]; const s=t.shida;
-  const markets=[[s.employment,s.employmentText],[s.services,s.servicesText],[s.housing,s.housingText],[s.transport,s.transportText],[s.bookingCapability,s.bookingCapabilityText],[s.wenze,s.wenzeText]];
-  return <><section className="shida-hero"><div className="container shida-hero-grid"><div><p className="eyebrow">{s.eyebrow}</p><h1>{s.title}</h1><p>{s.description}</p><ButtonLink href={OFFICIAL_CHANNELS.whatsapp} external>{t.common.open}</ButtonLink></div><div className="shida-hero-logo"><BrandLogo brand="shida" eager/><p>{s.first}</p></div></div></section>
-    <MarketplaceGateway locale={locale}/>
-    <section className="section shida-access-section"><div className="container"><SectionHeading eyebrow={s.qrEyebrow} title={s.qrTitle} description={s.qrIntro}/><div className="shida-access-grid">
-      <article className="shida-access-card"><div className="shida-access-card-heading"><QrCodeIcon/><div><span>01</span><h3>{s.qrDirectTitle}</h3></div></div><p>{s.qrDirectText}</p><div className="shida-access-examples">{s.qrExamples.map(([title,description])=><div key={title}><strong>{title}</strong><p>{description}</p></div>)}</div><p className="shida-access-flow">{s.qrDirectFlow}</p></article>
-      <article className="shida-access-card"><div className="shida-access-card-heading"><CheckIcon/><div><span>02</span><h3>{s.qrConfirmationTitle}</h3></div></div><p>{s.qrConfirmationText}</p><ul className="shida-confirmation-list"><li>{locale==="en"?"Service confirmation":"Confirmation de service"}</li><li>{locale==="en"?"Hotel booking":"Réservation d’hôtel"}</li><li>{locale==="en"?"Wenze purchase or order":"Achat ou commande Wenze"}</li></ul><p className="shida-access-flow">{s.qrConfirmationFlow}</p><p className="shida-access-safety">{s.qrSafety}</p></article>
-    </div></div></section>
-    <section className="section how-section"><div className="container"><SectionHeading eyebrow={locale==="en"?"Four simple steps":"Quatre étapes simples"} title={s.howTitle}/><ol className="how-steps">{s.howSteps.map((step,i)=><li key={step}><span>{String(i+1).padStart(2,"0")}</span><p>{step}</p></li>)}</ol></div></section>
-    <section className="section journey-section"><div className="container"><SectionHeading eyebrow={locale==="en"?"A guided WhatsApp journey":"Un parcours guidé sur WhatsApp"} title={s.actionTitle} description={s.actionIntro}/><div className="screenshot-journey">{s.journey.map(([title,caption,src],i)=><figure className="journey-step" key={title}><div className="journey-meta"><span>{locale==="en"?"Step":"Étape"} {i+1}</span><h3>{title}</h3></div><div className="screenshot-frame"><Image src={src} alt={caption} width={921} height={2048} sizes="(max-width: 700px) 86vw, 420px" /></div><figcaption>{caption}</figcaption></figure>)}</div></div></section>
-    <section className="section available-section"><div className="container"><SectionHeading eyebrow={t.common.available} title={s.availableTitle} description={s.availableIntro}/><div className="available-list">{markets.map((m,i)=><article key={m[0]}><span className="available-number">{String(i+1).padStart(2,"0")}</span><div><div className="feature-icon">{marketIcons[i]}</div><h3>{m[0]}</h3><p>{m[1]}</p></div></article>)}</div></div></section>
-    <section className="section audience-section"><div className="container editorial-split"><span className="section-index">{locale==="en"?"For people and organisations":"Pour les personnes et les organisations"}</span><div><h2>{s.audienceTitle}</h2><p className="lead-copy">{s.audience}</p><div className="audience-list">{s.audiences.map(item=><span key={item}>{item}</span>)}</div></div></div></section>
-    <section className="section roadmap-section"><div className="container"><SectionHeading eyebrow={locale==="en"?"Roadmap":"Feuille de route"} title={s.comingTitle} description={s.comingIntro}/><article className="business-layer"><span className="roadmap-status next">{s.businessLabel}</span><div><h3>{s.businessTitle}</h3><p>{s.business}</p></div></article><div className="roadmap-list">{s.roadmap.map(([title,description])=><article key={title}><span className="roadmap-status">{s.plannedLabel}</span><h3>{title}</h3><p>{description}</p></article>)}</div></div></section>
-    <CtaSection eyebrow="WhatsApp" title={s.ctaTitle} description={s.ctaText} href={OFFICIAL_CHANNELS.whatsapp} label={t.common.open}/>
-  </>;
-}
+export { ShidaPage } from "./shida-page";
 
 export function EducationPage({ locale }: { locale: Locale }) {
   const t=copy[locale], e=t.education; const areas=[[<BookIcon key="a"/>,e.literacy,e.literacyText],[<LightbulbIcon key="b"/>,e.practical,e.practicalText],[<CheckIcon key="c"/>,e.access,e.accessText]] as const;
