@@ -76,6 +76,22 @@ describe("Personal Restaurant restricted gateway", () => {
   expect((await POST(req("", "POST", { name: "x".repeat(66000) }), ctx())).status).toBe(413); expect(fetcher).not.toHaveBeenCalled();
  });
 });
+describe("Personal Restaurant inventory gateway", () => {
+ it("allows only exact item and binding routes with bounded queries and bodies", async () => {
+  const path = "RST_a/inventory/items/RII_one/movements";
+  expect(allowedSellerRoute(path, "POST")).toBe(true);
+  expect(allowedSellerRoute("RST_a/inventory/items/RII_one/erase", "POST")).toBe(false);
+  expect(validSellerQuery("RST_a/inventory/items/RII_one/history", "GET", new URLSearchParams("days=730&page_size=50&language=ln"))).toBe(true);
+  expect(validSellerQuery("RST_a/inventory/items/RII_one/history", "GET", new URLSearchParams("days=731"))).toBe(false);
+  const body = { operation_key: "stable", action: "count", amount: "0", expected_revision: 2 };
+  expect(validSellerBody(path, "POST", body)).toBe(true);
+  expect(validSellerBody(path, "POST", { ...body, actor_ref: "USR_other" })).toBe(false);
+  const fetcher = vi.fn(async () => Response.json({ item_ref: "RII_one" })); vi.stubGlobal("fetch", fetcher);
+  expect((await POST(req(path, "POST", body), ctx(path))).status).toBe(200);
+  expect((fetcher.mock.calls[0] as unknown as [URL])[0].pathname).toBe("/api/dashboard/personal/restaurants/" + path);
+ });
+});
+
 describe("shared Employment session compatibility", () => {
  it("migrates only an authenticated legacy cookie to a distinct name/path", async () => {
   jar.clear(); jar.set(EMPLOYMENT_SESSION_COOKIE, token);
@@ -110,13 +126,14 @@ describe("seller values and retries", () => {
  });
 });
 
-describe('C1-E customer receipt gateway',()=>{
- it('allows only a bound receipt read and never seller or customer writes',async()=>{
+describe('customer order gateway',()=>{
+ it('allows bound customer reads and checkout writes but no seller routes',async()=>{
   const fetcher=vi.fn(async()=>Response.json({order_ref:'ROR_a',payment_verified:false}));vi.stubGlobal('fetch',fetcher);
   expect((await customerReceipt(req(),ctx('ROR_a/receipt'))).status).toBe(200);
   expect((fetcher.mock.calls as unknown as [URL][])[0][0].toString()).toContain('/api/dashboard/personal/restaurant-orders/ROR_a/receipt');
-  for(const path of ['ROR_a','RST_a/orders','ROR_a/destination','baskets'])expect((await customerReceipt(req(),ctx(path))).status).toBe(404);
-  expect((await customerWrite()).status).toBe(405);
+  for(const path of ['RST_a/orders','ROR_a/verify-pickup','baskets/RBA_a/submit/counter'])expect((await customerReceipt(req(),ctx(path))).status).toBe(404);
+  expect((await customerWrite(req('', 'POST', {establishment_ref:'RST_a',operation_key:'create'}),ctx('baskets'))).status).toBe(200);
+  expect((await customerWrite(req('', 'POST', {},{origin:'https://attacker.example'}),ctx('baskets'))).status).toBe(403);
   jar.clear();expect((await customerReceipt(req(),ctx('ROR_a/receipt'))).status).toBe(401);
  });
  it('forwards unauthorized receipt rejection without caching or payload disclosure',async()=>{

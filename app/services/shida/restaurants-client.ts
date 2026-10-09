@@ -38,6 +38,7 @@ function hours(value: unknown) {
 export function parseRestaurant(value: unknown) {
   const data = object(value), location = object(data.location);
   const summary = data.menu_summary == null ? null : object(data.menu_summary);
+  const reviewSummary = data.review_summary == null ? null : object(data.review_summary);
   const logo = data.logo == null ? null : object(data.logo);
   return {
     ...identity(data), description: text(data.description), type_label: text(data.type_label),
@@ -48,6 +49,11 @@ export function parseRestaurant(value: unknown) {
     images: array(data.images ?? []).map((value) => { const row = object(value); return { url: safePublicImageUrl(text(row.url)), alt: text(row.alt) }; }).filter((image) => image.url),
     logo: logo ? { url: safePublicImageUrl(text(logo.url)), alt: text(logo.alt) } : null,
     menu_summary: summary ? { available: integer(summary.available_count), sold_out: integer(summary.sold_out_count), temporarily_unavailable: integer(summary.temporarily_unavailable_count) } : null,
+    review_summary: reviewSummary && reviewSummary.available === true ? {
+      average: reviewSummary.average == null ? null : Number(reviewSummary.average),
+      count: integer(reviewSummary.count),
+    } : null,
+    ordering_available: data.ordering_available === true,
     owning_business: data.owning_business == null ? null : identity(data.owning_business),
   };
 }
@@ -63,6 +69,7 @@ export function parseMenuItem(value: unknown) {
     presentation: choice(data.presentation, ["fixed_dish", "component"]),
     pricing_model: choice(data.pricing_model, ["UNKNOWN", "UNIT_PRICED", "AMOUNT_PRICED"]),
     currency: data.currency == null ? null : choice(data.currency, ["CDF", "USD"]),
+    amount_mode: data.amount_mode == null ? "configured" : choice(data.amount_mode,["configured","flexible"]), amount_step: amount(data.amount_step),
     unit_price: amount(data.unit_price), allowed_amounts: data.allowed_amounts == null ? [] : array(data.allowed_amounts).map((value) => { const result = amount(value); if (result === null) throw new ShidaApiError("malformed"); return result; }), minimum_amount: amount(data.minimum_amount),
     sale_unit_label: text(data.sale_unit_label), availability: choice(data.availability, ["available", "sold_out", "temporarily_unavailable"]),
     dated_offering: dated ? { starts_at: required(dated.starts_at), ends_at: required(dated.ends_at), timezone_name: required(dated.timezone_name) } : null,
@@ -91,6 +98,18 @@ export async function getRestaurants(locale: RestaurantLocale, raw: RestaurantSe
   return { ...envelope(data, parseRestaurant), service_mode_options: array(data.service_mode_options ?? []).map(required) };
 }
 export async function getRestaurant(locale: RestaurantLocale, id: string) { return parseRestaurant(await request(`${root}/restaurants/${encodeURIComponent(id)}${query(locale)}`, false)); }
+export async function getRestaurantReviews(id: string, page = "1") {
+  const data = object(await request(`${root}/restaurants/${encodeURIComponent(id)}/reviews?page=${encodeURIComponent(page)}&page_size=5`, false));
+  return envelope(data, (value) => {
+    const row = object(value);
+    const rating = integer(row.rating);
+    if (rating < 1 || rating > 5) throw new ShidaApiError("malformed");
+    return {review_ref: reference(row.review_ref), rating, comment: text(row.comment),
+      verified_experience: row.verified_experience === true,
+      seller_response: text(row.seller_response), reviewer: text(row.reviewer),
+      created_at: required(row.created_at)};
+  });
+}
 export async function getRestaurantMenu(locale: RestaurantLocale, id: string, page = "1") {
   const data = object(await request(`${root}/restaurants/${encodeURIComponent(id)}/menu${query(locale, restaurantQuery({ page }))}`, false));
   if (data.establishment_ref !== id) throw new ShidaApiError("malformed");
@@ -98,6 +117,19 @@ export async function getRestaurantMenu(locale: RestaurantLocale, id: string, pa
   if (result.items.some((item) => item.establishment_ref !== id)) throw new ShidaApiError("malformed");
   return { ...result, hours: hours(data.hours) };
 }
+export async function getRestaurantWebOptions(id: string) {
+  const data = object(await request(`${root}/restaurants/${encodeURIComponent(id)}/ordering-options`, false));
+  const methods = object(data.methods);
+  const parseWindow = (value: unknown) => { const row = object(value); return { public_ref: reference(row.public_ref), starts_at: required(row.starts_at), ends_at: required(row.ends_at), timezone_name: text(row.timezone_name) }; };
+  const pickup = methods.pickup == null ? null : object(methods.pickup);
+  const delivery = methods.delivery == null ? null : object(methods.delivery);
+  const areas = delivery ? array(delivery.areas).map(value => { const row = object(value); return { country: required(row.country), city: required(row.city), commune: required(row.commune), quartier: text(row.quartier), scope: choice(row.scope, ["whole_commune", "quartier"]) }; }) : [];
+  const fee = delivery ? object(delivery.fee) : null;
+  return { available: data.available === true,
+    pickup: pickup ? { windows: array(pickup.windows).map(parseWindow) } : null,
+    delivery: delivery && fee ? { windows: array(delivery.windows).map(parseWindow), areas, fee: { amount: required(fee.amount), currency: choice(fee.currency, ["CDF", "USD"]) } } : null };
+}
+export type RestaurantWebOptions = Awaited<ReturnType<typeof getRestaurantWebOptions>>;
 export async function getRestaurantActions(locale: RestaurantLocale, id: string) {
   const data = object(await request(`${root}/entity-actions/restaurant/${encodeURIComponent(id)}${query(locale)}`, false));
   if (data.public_ref !== id || data.target_type !== "restaurant") throw new ShidaApiError("malformed");

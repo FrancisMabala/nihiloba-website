@@ -3,6 +3,19 @@ import { allowedSellerRoute,validSellerBody,validSellerQuery } from '../app/lib/
 import { localCandidates } from '../app/components/shida/restaurant-local-time';
 import { actionsFor, type Order } from '../app/lib/restaurant-work';
 describe('C1-E bounded Personal contracts',()=>{
+ it('bounds seller review read, response and report without accepting authority fields',()=>{
+  const list='RST_a/reviews', response='RST_a/reviews/RVW_a/response', report='RST_a/reviews/RVW_a/report';
+  expect(allowedSellerRoute(list,'GET')).toBe(true);
+  expect(allowedSellerRoute(response,'PUT')).toBe(true);
+  expect(allowedSellerRoute(report,'POST')).toBe(true);
+  expect(allowedSellerRoute(response,'DELETE')).toBe(false);
+  expect(validSellerQuery(list,'GET',new URLSearchParams('page=2&page_size=20'))).toBe(true);
+  expect(validSellerQuery(list,'GET',new URLSearchParams('page_size=51'))).toBe(false);
+  expect(validSellerBody(response,'PUT',{expected_revision:1,response:'Thank you'})).toBe(true);
+  expect(validSellerBody(response,'PUT',{expected_revision:1,response:'Thank you',author_ref:'USR_x'})).toBe(false);
+  expect(validSellerBody(report,'POST',{reason:'privacy',message:null})).toBe(true);
+  expect(validSellerBody(report,'POST',{reason:'hide',message:null})).toBe(false);
+ });
  it('permits exact routes and repeated states while rejecting authority injection',()=>{
   expect(allowedSellerRoute('RST_a/orders/ROR_a/actions/accept','POST')).toBe(true);
   expect(allowedSellerRoute('RST_a/orders/ROR_a/actions/paid','POST')).toBe(false);

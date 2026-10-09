@@ -1,5 +1,6 @@
 import { restaurantCopy, restaurantPath } from "../../lib/restaurant-i18n";
 import { discoveryCopy } from "../../lib/restaurant-discovery-copy";
+import { restaurantReviewCopy } from "../../lib/restaurant-review-copy";
 import { getRestaurants, restaurantQuery, type RestaurantLocale, type RestaurantSearch } from "../../services/shida/restaurants-client";
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import { MarketplaceImage } from "./marketplace-image";
@@ -39,7 +40,7 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
     const message = summary ? summary.available > 0 ? null : summary.sold_out + summary.temporarily_unavailable > 0 ? d.unavailableMenu : d.emptyMenu : null;
     return <article className="rd-card" id={`restaurant-${item.public_ref}`} key={item.public_ref}>
      <a className="rd-photo" href={`${href}?${back}`} aria-label={`${t.details}: ${item.name || t.title}`}><MarketplaceImage src={item.images[0]?.url ?? item.logo?.url ?? null} alt={item.images[0]?.alt || item.name || t.title} fallback={d.photo} sizes="(max-width: 600px) 104px, (max-width: 1050px) 45vw, 380px"/></a>
-     <div className="rd-card-body"><h3><a href={`${href}?${back}`}>{item.name || t.title}</a></h3><p>{[item.type_label, item.location].filter(Boolean).join(" · ")}</p><p className={`rd-status rd-status-${item.hours.status}`}><span aria-hidden="true"/>{item.hours.status === "unknown" ? d.unknown : t[item.hours.status]}</p>{message && <p className="rd-menu-note">{message}</p>}<a className="rd-menu" href={`${href}/menu?${back}`}>{d.menu}<span aria-hidden="true"> →</span></a></div>
+     <div className="rd-card-body"><h3><a href={`${href}?${back}`}>{item.name || t.title}</a></h3><p>{[item.type_label, item.location].filter(Boolean).join(" · ")}</p>{item.review_summary&&<p>{item.review_summary.count?`${item.review_summary.average} ★ · ${item.review_summary.count} ${restaurantReviewCopy[locale].reviews}`:restaurantReviewCopy[locale].noReviews}</p>}<p className={`rd-status rd-status-${item.hours.status}`}><span aria-hidden="true"/>{item.hours.status === "unknown" ? d.unknown : t[item.hours.status]}</p>{message && <p className="rd-menu-note">{message}</p>}<a className="rd-menu" href={`${href}/menu?${back}`}>{d.menu}<span aria-hidden="true"> →</span></a></div>
     </article>;
    })}</div>
    <nav className="restaurant-pagination" aria-label={t.page}>{result.page > 1 && <a className="restaurant-link" href={`${path}?${new URLSearchParams({ ...Object.fromEntries(params), page: String(result.page - 1) })}`}>{t.previous}</a>}<span aria-current="page">{t.page} {result.page} / {Math.max(1, Math.ceil(result.total / result.page_size))}</span>{result.page * result.page_size < result.total && <a className="restaurant-link" href={`${path}?${new URLSearchParams({ ...Object.fromEntries(params), page: String(result.page + 1) })}`}>{t.next}</a>}</nav>

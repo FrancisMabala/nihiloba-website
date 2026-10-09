@@ -25,9 +25,10 @@ export function money(value: string): string {
   return normalized;
 }
 export function pricing(fields: Record<string, string>): Fields {
-  const common = { pricing_model: fields.pricing_model, currency: fields.pricing_model === "UNKNOWN" ? null : fields.currency, unit_price: null, allowed_amounts: null, minimum_amount: null, sale_unit_label: null };
+  const common = { pricing_model: fields.pricing_model, currency: fields.pricing_model === "UNKNOWN" ? null : fields.currency, amount_mode: "configured", amount_step: null, unit_price: null, allowed_amounts: null, minimum_amount: null, sale_unit_label: null };
   if (fields.pricing_model === "UNIT_PRICED") return { ...common, unit_price: money(fields.unit_price), sale_unit_label: fields.sale_unit_label.trim() };
-  if (fields.pricing_model === "AMOUNT_PRICED") return { ...common, allowed_amounts: fields.allowed_amounts.split(/[;\n]/).filter(s => s.trim()).map(money), minimum_amount: fields.minimum_amount ? money(fields.minimum_amount) : null };
+  if (fields.pricing_model === "AMOUNT_PRICED" && fields.amount_mode === "flexible") return { ...common, amount_mode: "flexible", amount_step: fields.amount_step ? money(fields.amount_step) : null, minimum_amount: money(fields.minimum_amount), allowed_amounts: [] };
+  if (fields.pricing_model === "AMOUNT_PRICED") return { ...common, amount_mode: "configured", amount_step: null, allowed_amounts: fields.allowed_amounts.split(/[;\n]/).filter(s => s.trim()).map(money), minimum_amount: fields.minimum_amount ? money(fields.minimum_amount) : null };
   return common;
 }
 // Convert returned UTC instants for display/editing in the establishment zone.

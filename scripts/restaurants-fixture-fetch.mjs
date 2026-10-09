@@ -1,6 +1,6 @@
 // Opt-in, process-local fixtures for the production-server smoke check only.
 // This module is never imported by the application or deployment scripts.
-import { actions, business, collection, menu, restaurant } from "../tests/fixtures/restaurants.mjs";
+import { actions, business, collection, menu, restaurant, unit, monetary } from "../tests/fixtures/restaurants.mjs";
 if (process.env.RESTAURANT_FIXTURE_MODE !== "1" || process.env.SHIDA_API_BASE_URL !== "https://restaurant-fixture.invalid") throw new Error("Restaurant fixtures require the isolated test configuration");
 const originalFetch = globalThis.fetch;
 globalThis.fetch = async (input, init) => {
@@ -10,6 +10,13 @@ globalThis.fetch = async (input, init) => {
     throw new Error("External network disabled in Restaurant fixture process");
   }
   const path = url.pathname;
+  if (path.includes("RST-CHECKOUT")) {
+    const establishment_ref="RST-CHECKOUT";
+    if (path.endsWith("/ordering-options")) return Response.json({available:true,methods:{pickup:{windows:[{public_ref:"RWI-CHECKOUT",starts_at:"2027-01-01T10:00:00Z",ends_at:"2027-01-01T12:00:00Z",timezone_name:"Africa/Kinshasa"}]},delivery:{windows:[{public_ref:"RWD-CHECKOUT",starts_at:"2027-01-01T10:00:00Z",ends_at:"2027-01-01T12:00:00Z",timezone_name:"Africa/Kinshasa"}],areas:[{country:"CD",city:"Kinshasa",commune:"Gombe",quartier:null,scope:"whole_commune"}],fee:{amount:"500.00",currency:"CDF"}}},evaluated_at:"2026-10-08T10:00:00Z"});
+    if (path.endsWith("/menu")) return Response.json({...menu,...collection([{...unit,public_ref:"RMI-FIXED",establishment_ref,currency:"CDF",unit_price:"1000.00",name:"Fufu"},{...monetary,public_ref:"RMI-PONDU",establishment_ref,availability:"available",name:"Pondu"}],1,2),establishment_ref});
+    if (path.includes("entity-actions")) return Response.json({...actions,public_ref:establishment_ref});
+    return Response.json({...restaurant,public_ref:establishment_ref,name:"Checkout Malewa",ordering_available:true});
+  }
   // Detail redesign fixtures: isolated public references, never production data.
   const detailRef = path.match(/RST-(EMPTY|ERROR|HOURS|WITHDRAWN|PAGED)/)?.[0];
   if (detailRef) {

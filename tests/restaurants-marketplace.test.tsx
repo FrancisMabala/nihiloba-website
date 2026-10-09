@@ -1,10 +1,12 @@
+import { basicText } from "../app/lib/restaurant-basic-copy";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { getRestaurantActions, getRestaurantMenu, getRestaurants, parseBusiness, parseMenuItem, parseRestaurant, restaurantQuery } from "../app/services/shida/restaurants-client";
+import { getRestaurantActions, getRestaurantMenu, getRestaurantReviews, getRestaurants, parseBusiness, parseMenuItem, parseRestaurant, restaurantQuery } from "../app/services/shida/restaurants-client";
 import { RestaurantBusinessPage, RestaurantDetailPage, RestaurantHours, RestaurantListPage, RestaurantMenu, RestaurantPrice, restaurantMetadata } from "../app/components/shida/restaurants";
 import { restaurantReturn, restaurantLocales, restaurantCopy } from "../app/lib/restaurant-i18n";
 import { actions, business, category, collection, dated, hours, menu, monetary, restaurant, unit, unknown } from "./fixtures/restaurants.mjs";
 import { RestaurantRetry } from "../app/components/shida/restaurant-retry";
+import { restaurantReviewCopy } from "../app/lib/restaurant-review-copy";
 
 vi.mock("next/navigation", async (original) => ({ ...await original<typeof import("next/navigation")>(), useRouter: () => ({ refresh: vi.fn() }) }));
 
@@ -17,6 +19,34 @@ function mockApi(overrides: Record<string, unknown> = {}) {
   }); vi.stubGlobal("fetch", fetcher); return fetcher;
 }
 describe("Restaurant released public contract", () => {
+  it.each(restaurantLocales)("shows bounded reviews and a truthful empty rating in %s", async locale => {
+    mockApi({
+      "/api/public/shida/restaurants/RST-TEST1": {...restaurant, review_summary:{available:true,average:null,count:0}},
+      "/api/public/shida/restaurants/RST-TEST1/reviews": {items:[],total:0,page:1,page_size:5},
+    });
+    const html=renderToStaticMarkup(await RestaurantDetailPage({locale,id:"RST-TEST1"}));
+    expect(html).toContain(restaurantReviewCopy[locale].noReviews);
+    expect(html).not.toContain('0 ★');
+    const fetched=await getRestaurantReviews('RST-TEST1');
+    expect(fetched.total).toBe(0);
+  });
+  it("renders one verified review without private order details", async () => {
+    mockApi({
+      "/api/public/shida/restaurants/RST-TEST1": {...restaurant,review_summary:{available:true,average:4.5,count:2}},
+      "/api/public/shida/restaurants/RST-TEST1/reviews": {items:[{review_ref:'RVW_TEST',rating:5,comment:'Good food',seller_response:'Thank you',reviewer:'SHIDA customer',verified_experience:true,created_at:'2026-10-08T00:00:00Z',order_ref:'PRIVATE_ORDER',phone:'PRIVATE_PHONE'}],total:2,page:1,page_size:5},
+    });
+    const html=renderToStaticMarkup(await RestaurantDetailPage({locale:'en',id:'RST-TEST1'}));
+    expect(html).toContain('4.5 ★');expect(html).toContain('Verified SHIDA order');expect(html).toContain('Thank you');
+    expect(html).not.toContain('PRIVATE_ORDER');expect(html).not.toContain('PRIVATE_PHONE');
+  });
+  it.each(restaurantLocales)("renders explicit flexible amounts without inventing fixed choices in %s", locale => {
+    const item=parseMenuItem({...monetary,amount_mode:'flexible',minimum_amount:'500.00',amount_step:'100.00',allowed_amounts:[]});
+    const html=renderToStaticMarkup(<RestaurantPrice item={item} locale={locale}/>);
+    expect(html).toContain(basicText(locale,'flexibleFrom'));
+    expect(html).toContain('500.00 CDF');expect(html).toContain('100.00 CDF');
+    expect(html).not.toContain(restaurantCopy[locale].amounts);
+    expect(html).not.toContain('AMOUNT_PRICED');
+  });
   it.each(restaurantLocales)("keeps the shared header and truthful unpublished menu in %s", async locale => {
     mockApi({ "/api/public/shida/restaurants/RST-TEST1/menu": { ...menu, ...collection([]) }, "/api/public/shida/restaurants/RST-TEST1": { ...restaurant, owning_business: null } });
     const html = renderToStaticMarkup(await RestaurantDetailPage({ locale, id: "RST-TEST1", menuOnly: true }));

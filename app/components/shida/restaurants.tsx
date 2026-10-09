@@ -1,13 +1,17 @@
+import { basicText } from "../../lib/restaurant-basic-copy";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ShidaApiError } from "../../services/shida/public-client";
-import { getRestaurant, getRestaurantActions, getRestaurantBusiness, getRestaurantMenu, restaurantQuery, type Restaurant, type RestaurantLocale, type RestaurantMenuItem, type RestaurantSearch } from "../../services/shida/restaurants-client";
+import { getRestaurant, getRestaurantActions, getRestaurantBusiness, getRestaurantMenu, getRestaurantReviews, restaurantQuery, type Restaurant, type RestaurantLocale, type RestaurantMenuItem, type RestaurantSearch } from "../../services/shida/restaurants-client";
+import { checkoutCopy } from "../../lib/restaurant-checkout-copy";
 import { businessPath, restaurantCopy, restaurantLocales, restaurantPath, restaurantReturn } from "../../lib/restaurant-i18n";
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import { MarketplaceImage } from "./marketplace-image";
 import { RestaurantRevalidation } from "./restaurant-revalidation";
 import { RestaurantRetry } from "./restaurant-retry";
 import { restaurantDetailCopy, restaurantLanguageNames } from "../../lib/restaurant-detail-copy";
+import { restaurantReviewCopy } from "../../lib/restaurant-review-copy";
+import { RestaurantReviewForm, RestaurantReviewReport } from "./restaurant-review-form";
 import "./restaurant-detail.css";
 
 // Native document navigation deliberately re-reads eligibility rather than prefetching public projections.
@@ -59,6 +63,7 @@ function DateValue({ value, timezone, locale }: { value: string; timezone: strin
 export function RestaurantPrice({ item, locale }: { item: RestaurantMenuItem; locale: RestaurantLocale }) {
   const t = restaurantCopy[locale];
   if (item.pricing_model === "UNIT_PRICED" && item.unit_price !== null && item.currency) return <p><strong>{t.unit}: {item.unit_price} {item.currency}</strong>{item.sale_unit_label && <> / {item.sale_unit_label}</>}</p>;
+  if (item.pricing_model === "AMOUNT_PRICED" && item.amount_mode === "flexible" && item.minimum_amount !== null && item.currency) return <div><p>{basicText(locale,"flexibleFrom")}: {item.minimum_amount} {item.currency}</p>{item.amount_step && <p>{basicText(locale,"amount_step")}: {item.amount_step} {item.currency}</p>}</div>;
   if (item.pricing_model === "AMOUNT_PRICED" && item.currency && (item.allowed_amounts.length || item.minimum_amount !== null)) return <div><p><strong>{t.amounts}</strong>{item.sale_unit_label && <> · {item.sale_unit_label}</>}</p>{item.allowed_amounts.length > 0 && <p>{item.allowed_amounts.map((amount) => `${amount} ${item.currency}`).join(" · ")}</p>}{item.minimum_amount !== null && <p>{t.minimum}: {item.minimum_amount} {item.currency}</p>}</div>;
   return <p>{t.unknownPrice}</p>;
 }
@@ -77,7 +82,7 @@ export { RestaurantDiscovery as RestaurantListPage } from "./restaurant-discover
 function RestaurantHeader({ locale, establishment, hours }: { locale: RestaurantLocale; establishment: Restaurant; hours: Restaurant["hours"] }) {
   const t = restaurantCopy[locale];
   return <header className="restaurant-detail-header">
-    <div><h1>{establishment.name || t.title}</h1><p>{[establishment.type_label, establishment.location].filter(Boolean).join(" · ")}</p><span className={`restaurant-current-status status-${hours.status}`}>{t[hours.status]}</span></div>
+    <div><h1>{establishment.name || t.title}</h1><p>{[establishment.type_label, establishment.location].filter(Boolean).join(" · ")}</p><span className={`restaurant-current-status status-${hours.status}`}>{t[hours.status]}</span>{establishment.review_summary&&<p>{establishment.review_summary.count ? `${establishment.review_summary.average} ★ · ${establishment.review_summary.count} ${restaurantReviewCopy[locale].reviews}` : restaurantReviewCopy[locale].noReviews}</p>}</div>
     <picture className="restaurant-header-art">
       <img src="/images/restaurants/restaurant-table-header-480.webp" srcSet="/images/restaurants/restaurant-table-header-240.webp 240w, /images/restaurants/restaurant-table-header-480.webp 480w, /images/restaurants/restaurant-table-header-960.webp 960w" sizes="(max-width: 600px) 200px, (max-width: 900px) 280px, 420px" width={1983} height={793} alt="" decoding="async"/>
     </picture>
@@ -86,10 +91,12 @@ function RestaurantHeader({ locale, establishment, hours }: { locale: Restaurant
 export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly = false }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch; menuOnly?: boolean }) {
   const t = restaurantCopy[locale], back = restaurantReturn(search), context = new URLSearchParams({ back });
   const menuPage = restaurantQuery(search).get("page") ?? "1";
+  const rawReviewPage = Array.isArray(search.review_page) ? search.review_page[0] : search.review_page;
+  const reviewPage = rawReviewPage && /^[1-9]\d{0,3}$/.test(rawReviewPage) ? rawReviewPage : "1";
   let establishment;
   try { establishment = await getRestaurant(locale, id); } catch (error) { if (error instanceof ShidaApiError && error.kind === "not-found") notFound(); return <Shell locale={locale} title={t.title}><Failure locale={locale}/></Shell>; }
   const suffix = `/${encodeURIComponent(establishment.public_ref)}${menuOnly ? "/menu" : ""}`;
-  const [menuResult, actionsResult] = await Promise.allSettled([getRestaurantMenu(locale, establishment.public_ref, menuPage), getRestaurantActions(locale, establishment.public_ref)]);
+  const [menuResult, actionsResult, reviewsResult] = await Promise.allSettled([getRestaurantMenu(locale, establishment.public_ref, menuPage), getRestaurantActions(locale, establishment.public_ref), menuOnly ? Promise.resolve(null) : getRestaurantReviews(establishment.public_ref, reviewPage)]);
   // A newly withdrawn parent must not leave a stale detail visible after a menu eligibility check fails.
   if (menuResult.status === "rejected" && menuResult.reason instanceof ShidaApiError && menuResult.reason.kind === "not-found") notFound();
   if (actionsResult.status === "rejected" && actionsResult.reason instanceof ShidaApiError && actionsResult.reason.kind === "not-found") notFound();
@@ -110,6 +117,14 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
       {establishment.opening_information && <p>{establishment.opening_information}</p>}
       {establishment.owning_business && <section><h2>{t.owner}</h2><Internal href={`${businessPath(locale, establishment.owning_business.public_ref)}?${new URLSearchParams({ establishment: establishment.public_ref, back })}`}>{establishment.owning_business.name || t.business}</Internal></section>}
       <Internal href={`${detailPath}/menu?${routeContext}`}>{t.menu}</Internal>
+      <section id="reviews" className="restaurant-public-reviews"><h2>{restaurantReviewCopy[locale].reviews}</h2>
+       {reviewsResult.status === "fulfilled" && reviewsResult.value ? <>
+        {!reviewsResult.value.total&&<p>{restaurantReviewCopy[locale].noReviews}</p>}
+        {reviewsResult.value.items.map(item=><article key={item.review_ref} className="rst-card"><p><strong>{item.rating} ★</strong> · {restaurantReviewCopy[locale].reviewer}{item.verified_experience&&<> · {restaurantReviewCopy[locale].verified}</>}</p>{item.comment&&<p>{item.comment}</p>}{item.seller_response&&<p><strong>{restaurantReviewCopy[locale].response}:</strong> {item.seller_response}</p>}<RestaurantReviewReport locale={locale} establishmentRef={establishment.public_ref} reviewRef={item.review_ref}/></article>)}
+        {reviewsResult.value.total>5&&<Pagination locale={locale} {...reviewsResult.value} href={(page)=>`${detailPath}?${new URLSearchParams({back,review_page:String(page)})}#reviews`}/>}
+       </>:<p role="status">{restaurantReviewCopy[locale].failed}</p>}
+       <RestaurantReviewForm locale={locale} establishmentRef={establishment.public_ref} establishmentName={establishment.name||t.title}/>
+      </section>
     </section> : <section className="restaurant-menu-panel"><h2>{t.menu}</h2>
       {menuResult.status === "fulfilled" ? <>
         {menuResult.value.items.length ? <RestaurantMenu locale={locale} items={menuResult.value.items}/> : <div className="restaurant-menu-empty" role="status"><h3>{menuResult.value.total === 0 ? copy.emptyTitle : copy.pageEmpty}</h3>{menuResult.value.total === 0 && <p>{copy.empty}</p>}<Internal href={`${detailPath}?${routeContext}`}>{t.details}</Internal></div>}
@@ -118,7 +133,7 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
     </section>}
     </div><aside className="restaurant-practical"><h2>{copy.practical}</h2>{establishment.location && <p>{establishment.location}</p>}
     <details className="restaurant-hours-disclosure"><summary>{t.hours}</summary><RestaurantHours locale={locale} hours={currentHours}/></details>
-    <div className="restaurant-actions">{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menuWhatsapp}</a>}</div>
+    <div className="restaurant-actions">{establishment.ordering_available && <a className="restaurant-link" href={`${detailPath}/order`}>{checkoutCopy[locale].order}</a>}{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menuWhatsapp}</a>}</div>
     <p className="restaurant-note">{actions?.share ? t.report : t.actionsUnavailable}</p>
     </aside></div>
   </div></section>;
