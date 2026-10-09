@@ -108,7 +108,9 @@ describe("Restaurant released public contract", () => {
     mockApi({ "/api/public/shida/entity-actions/restaurant/RST-TEST1": { ...actions, public_ref: "RST-OTHER" } });
     await expect(getRestaurantActions("en", "RST-TEST1")).rejects.toMatchObject({ kind: "malformed" });
     mockApi({ "/api/public/shida/entity-actions/restaurant/RST-TEST1": { ...actions, save_url: "https://evil.test/go/TEST", link_destination_available: false } });
-    expect(await getRestaurantActions("en", "RST-TEST1")).toMatchObject({ save: null, share: null, menu: null });
+    expect(await getRestaurantActions("en", "RST-TEST1")).toMatchObject({ save: null, share: null, menu: actions.menu_share_url });
+    mockApi({ "/api/public/shida/entity-actions/restaurant/RST-TEST1": { ...actions, menu_share_url: "https://evil.test/go/TEST", link_destination_available: false } });
+    expect((await getRestaurantActions("en", "RST-TEST1")).menu).toBeNull();
   });
   it("rejects hidden or expired records and cross-establishment menu payloads", async () => {
     expect(() => parseMenuItem({ ...unit, visible: false })).toThrow();

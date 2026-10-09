@@ -1,0 +1,211 @@
+{
+  "batch": "RM-V11-09B2",
+  "verified_date": "2026-10-09",
+  "website_original_head": "7fd60052a1b32befb05fca0ce941202d7ce6a813",
+  "repositories": {
+    "website": "Guest interface, HTTPS proxy, localization, shared menu selector, tests and evidence",
+    "backend": "No 09B2 changes"
+  },
+  "backend_sole_alembic_head": "0138",
+  "deployed": false,
+  "committed": false,
+  "pushed": false,
+  "frontend": {
+    "node": "24.19.0",
+    "next": "16.3.4",
+    "production_build": "passed",
+    "typescript": "passed",
+    "targeted_eslint": "passed",
+    "units": {
+      "passed": 336,
+      "failed": 4,
+      "total": 340,
+      "failures": [
+        "SHIDA public presentation presents Wenze as current and preserves English marketplace routes",
+        "SHIDA public presentation distinguishes direct-entry links from confirmation QR references",
+        "SHIDA public presentation keeps personal QR and payment capabilities clearly future-facing",
+        "SHIDA public presentation keeps the French page synchronized with localized marketplace routes"
+      ],
+      "baseline": "Four SHIDA presentation failures documented in docs/restaurants-basic-release.md; test and component unchanged from HEAD"
+    },
+    "guest_unit_tests": 11,
+    "lint": {
+      "errors": 9,
+      "warnings": 2,
+      "baseline_reproduced": {
+        "errors": 9,
+        "warnings": 2
+      },
+      "files": [
+        {
+          "file": "app\\components\\shida\\restaurant-checkout.tsx",
+          "errors": 1,
+          "warnings": 1
+        },
+        {
+          "file": "app\\components\\shida\\restaurant-customer-orders.tsx",
+          "errors": 2,
+          "warnings": 1
+        },
+        {
+          "file": "app\\components\\shida\\restaurant-inventory.tsx",
+          "errors": 1,
+          "warnings": 0
+        },
+        {
+          "file": "app\\components\\shida\\restaurant-review-form.tsx",
+          "errors": 1,
+          "warnings": 0
+        },
+        {
+          "file": "app\\components\\shida\\restaurant-seller-reviews.tsx",
+          "errors": 1,
+          "warnings": 0
+        },
+        {
+          "file": "tests\\browser\\restaurant-checkout.browser.ts",
+          "errors": 3,
+          "warnings": 0
+        }
+      ]
+    }
+  },
+  "browser": {
+    "guest": {
+      "passed": 16,
+      "failed": 0,
+      "transport": "Loopback HTTPS website and real 09B1 Backend",
+      "database": "Disposable ordinarily durable SQLite; no guest account",
+      "viewports": [
+        {
+          "locale": "fr",
+          "width": 320
+        },
+        {
+          "locale": "en",
+          "width": 390
+        },
+        {
+          "locale": "ln",
+          "width": 768
+        },
+        {
+          "locale": "sw",
+          "width": 1280
+        }
+      ],
+      "constrained_phone": {
+        "width": 390,
+        "latency_ms": 200,
+        "download_bytes_per_second": 32768,
+        "upload_bytes_per_second": 16384,
+        "passed": true
+      }
+    },
+    "existing_regression": {
+      "selected": 31,
+      "initial": {
+        "passed": 13,
+        "failed": 18,
+        "workers": 1
+      },
+      "original_head": {
+        "passed": 14,
+        "failed": 17,
+        "workers": 3
+      },
+      "supplemental_detail": {
+        "passed": 4,
+        "failed": 0
+      },
+      "final_aggregate": {
+        "passed": 14,
+        "failed": 17
+      },
+      "baseline_failed_nodes": [
+        "tests\\browser\\restaurant-intake-window.browser.ts:4:57 › Personal intake errors and retained values: en",
+        "tests\\browser\\restaurant-intake-window.browser.ts:4:57 › Personal intake errors and retained values: fr",
+        "tests\\browser\\restaurant-intake-window.browser.ts:4:57 › Personal intake errors and retained values: ln",
+        "tests\\browser\\restaurant-intake-window.browser.ts:4:57 › Personal intake errors and retained values: sw",
+        "tests\\browser\\restaurant-seller.browser.ts:111:5 › expired offering copy stays unconfirmed until a separate confirmation",
+        "tests\\browser\\restaurant-seller.browser.ts:123:5 › lost access and account switching clear editor values",
+        "tests\\browser\\restaurant-seller.browser.ts:135:5 › phone editor, long labels, focus and screenshot",
+        "tests\\browser\\restaurant-seller.browser.ts:166:6 › v2 menu-first selection and focused portion editor / 1440",
+        "tests\\browser\\restaurant-seller.browser.ts:166:6 › v2 menu-first selection and focused portion editor / 390",
+        "tests\\browser\\restaurant-seller.browser.ts:166:6 › v2 menu-first selection and focused portion editor / 768",
+        "tests\\browser\\restaurant-seller.browser.ts:191:5 › menu pagination uses the server page and locale links remain reachable",
+        "tests\\browser\\restaurant-seller.browser.ts:48:5 › failed logout still clears this tab and focus cannot restore private content",
+        "tests\\browser\\restaurant-seller.browser.ts:60:5 › transient session failure preserves input, deduplicates checks and confirmed expiry clears it",
+        "tests\\browser\\restaurant-seller.browser.ts:72:5 › selection, pagination, private draft and changed-field profile edit",
+        "tests\\browser\\restaurant-seller.browser.ts:81:5 › uncertain retry is identical and stale edit requires reconciliation",
+        "tests\\browser\\restaurant-seller.browser.ts:88:5 › unit, configured amount and unknown pricing retain exact values",
+        "tests\\browser\\restaurant-seller.browser.ts:98:5 › hours unknown versus closed, publication and exact QR destination"
+      ],
+      "baseline_comparison": "All 17 remaining failure nodes reproduced on original HEAD; initial extra geometry race fixed by instant scroll in test",
+      "clean_gate": false,
+      "signed_checkout": "Both committed and unreceived signed-in checkout recovery checks passed on current source and HEAD"
+    }
+  },
+  "backend": {
+    "supported_focused": {
+      "passed": 101,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "run": "05c706313b0c451a8a74f1b9737f1c25",
+      "source_revision": "a4ec866f69beb1cfb2ee4364f78741e63a39e09e",
+      "selections": [
+        "tests/test_restaurant_guest_visits.py",
+        "tests/test_restaurant_guest_http.py",
+        "tests/test_restaurant_guest_migration.py",
+        "tests/test_restaurant_r3a2.py",
+        "tests/test_restaurant_personal_api.py"
+      ],
+      "postgres": false,
+      "fast_sqlite": false
+    },
+    "inherited_full_suite": {
+      "rerun": false,
+      "passed": 7586,
+      "failed": 293,
+      "skipped": 890,
+      "source": "Backend/docs/restaurants_rm_v11_09b1_guest_visits.md",
+      "clean_gate": false
+    }
+  },
+  "evidence": {
+    "screenshots": [
+      "restaurant-guest-phone.png",
+      "restaurant-guest-fr-320.png",
+      "restaurant-guest-en-390.png",
+      "restaurant-guest-ln-768.png",
+      "restaurant-guest-sw-1280.png"
+    ],
+    "local_logs": [
+      ".s3a-local/09b2-build-release.log",
+      ".s3a-local/09b2-unit-release.json",
+      ".s3a-local/09b2-lint-release.json",
+      ".s3a-local/09b2-head-lint.json",
+      ".s3a-local/09b2-browser-release.log",
+      ".s3a-local/09b2-browser-regression.log",
+      ".s3a-local/09b2-browser-head.log",
+      ".s3a-local/09b2-detail-release.log",
+      ".s3a-local/09b2-backend-checks-release.log"
+    ],
+    "physical_device": false,
+    "native_speaker_review": false
+  },
+  "remaining_risks": [
+    "Inherited release-gate failures",
+    "Physical-device and human FR/EN/LN/SW acceptance pending",
+    "Production TLS/Origin/cookie configuration acceptance pending",
+    "Shared proxy egress consumes Backend source limits; operational capacity review required",
+    "Original uncertain-action envelope is memory-only and does not survive closing the tab"
+  ],
+  "deployment_order": [
+    "Backend migration 0138",
+    "All guest-aware Backend instances and maintenance processes, with coordinated existing intake gates",
+    "HTTPS website proxy/interface and actual QR/private-cookie acceptance",
+    "Phone/localization/reconnect/seller pickup acceptance, then intended existing intake scopes"
+  ]
+}

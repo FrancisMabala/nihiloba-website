@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ShidaApiError } from "../../services/shida/public-client";
 import { getRestaurant, getRestaurantActions, getRestaurantBusiness, getRestaurantMenu, getRestaurantReviews, restaurantQuery, type Restaurant, type RestaurantLocale, type RestaurantMenuItem, type RestaurantSearch } from "../../services/shida/restaurants-client";
 import { checkoutCopy } from "../../lib/restaurant-checkout-copy";
+import { RestaurantGuest } from "./restaurant-guest";
+import { guestText } from "../../lib/restaurant-guest-copy";
 import { businessPath, restaurantCopy, restaurantLocales, restaurantPath, restaurantReturn } from "../../lib/restaurant-i18n";
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import { MarketplaceImage } from "./marketplace-image";
@@ -133,9 +135,10 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
     </section>}
     </div><aside className="restaurant-practical"><h2>{copy.practical}</h2>{establishment.location && <p>{establishment.location}</p>}
     <details className="restaurant-hours-disclosure"><summary>{t.hours}</summary><RestaurantHours locale={locale} hours={currentHours}/></details>
-    <div className="restaurant-actions">{establishment.ordering_available && <a className="restaurant-link" href={`${detailPath}/order`}>{checkoutCopy[locale].order}</a>}{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menuWhatsapp}</a>}</div>
+    <div className="restaurant-actions"><a className="restaurant-link" href="#guest-order">{guestText(locale,"title")}</a>{establishment.ordering_available && <a className="restaurant-link" href={`${detailPath}/order`}>{checkoutCopy[locale].order}</a>}{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menu}</a>}</div>
     <p className="restaurant-note">{actions?.share ? t.report : t.actionsUnavailable}</p>
     </aside></div>
+    <RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} menu={menuResult.status === "fulfilled" ? menuResult.value : null}/>
   </div></section>;
 }
 export async function RestaurantBusinessPage({ locale, id, search = {} }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch }) {

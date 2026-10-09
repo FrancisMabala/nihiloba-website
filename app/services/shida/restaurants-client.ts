@@ -137,7 +137,7 @@ export async function getRestaurantActions(locale: RestaurantLocale, id: string)
     save: data.can_save_in_shida === true ? safePublicActionUrl(text(data.save_url)) : null,
     follow: data.can_follow_in_shida === true ? safePublicActionUrl(text(data.follow_url)) : null,
     share: data.link_destination_available === true ? safePublicActionUrl(text(data.share_url)) : null,
-    menu: data.link_destination_available === true ? safePublicActionUrl(text(data.menu_share_url)) : null,
+    menu: safePublicActionUrl(text(data.menu_share_url)),
   };
 }
 export function parseBusiness(value: unknown) {

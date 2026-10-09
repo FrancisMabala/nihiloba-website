@@ -6,7 +6,8 @@ import { readFileSync } from "node:fs";
 const app = next({ dev: false, hostname: "localhost", port: 3014 });
 await app.prepare();
 const handle = app.getRequestHandler();
-https.createServer({ key: readFileSync(".s3a-local/key.pem"), cert: readFileSync(".s3a-local/cert.pem") }, (req, res) => {
+const tlsDirectory = process.env.RESTAURANT_TEST_TLS_DIR ?? ".s3a-local";
+https.createServer({ key: readFileSync(`${tlsDirectory}/key.pem`), cert: readFileSync(`${tlsDirectory}/cert.pem`) }, (req, res) => {
  // Match a trusted TLS terminator: overwrite, never trust a client-supplied value.
  req.headers["x-forwarded-proto"] = "https";
  return handle(req, res);

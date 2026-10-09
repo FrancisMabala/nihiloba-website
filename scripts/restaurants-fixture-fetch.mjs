@@ -10,6 +10,8 @@ globalThis.fetch = async (input, init) => {
     throw new Error("External network disabled in Restaurant fixture process");
   }
   const path = url.pathname;
+  // Existing signed-in/public smoke fixtures do not model private guest visits.
+  if (path.startsWith("/api/restaurant-guests/")) return Response.json({detail:"restaurant_intake_closed"},{status:409,headers:{"Cache-Control":"private, no-store",Vary:"Cookie, Origin"}});
   if (path.includes("RST-CHECKOUT")) {
     const establishment_ref="RST-CHECKOUT";
     if (path.endsWith("/ordering-options")) return Response.json({available:true,methods:{pickup:{windows:[{public_ref:"RWI-CHECKOUT",starts_at:"2027-01-01T10:00:00Z",ends_at:"2027-01-01T12:00:00Z",timezone_name:"Africa/Kinshasa"}]},delivery:{windows:[{public_ref:"RWD-CHECKOUT",starts_at:"2027-01-01T10:00:00Z",ends_at:"2027-01-01T12:00:00Z",timezone_name:"Africa/Kinshasa"}],areas:[{country:"CD",city:"Kinshasa",commune:"Gombe",quartier:null,scope:"whole_commune"}],fee:{amount:"500.00",currency:"CDF"}}},evaluated_at:"2026-10-08T10:00:00Z"});
