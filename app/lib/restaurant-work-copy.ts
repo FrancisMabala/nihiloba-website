@@ -25,6 +25,12 @@ const copy: Record<string, [string,string,string,string]> = {
  device_unavailable:['Customer device unavailable','Appareil du client indisponible','Téléphone ya client ezali te','Kifaa cha mteja hakipatikani'],
  code_delivery_unavailable:['Code delivery unavailable','Code non reçu','Code ekomi te','Msimbo haujafika'],
 
+ pos:['Point of sale','Point de vente','Esika ya koteka','Sehemu ya mauzo'],
+ posAccessLost:['POS access ended. Continue in the basic counter.','Accès au point de vente terminé. Continuez au comptoir simple.','Accès ya esika ya koteka esili. Koba na comptoir ya pamba.','Ufikiaji wa sehemu ya mauzo umeisha. Endelea kwenye kaunta ya kawaida.'],
+ posSearch:['Search food','Rechercher un plat','Luka bilei','Tafuta chakula'],
+ posCategory:['All categories','Toutes les catégories','Biteni nyonso','Makundi yote'],
+ posRecent:['Recent counter sales','Ventes récentes au comptoir','Boteki ya sika na esika','Mauzo ya karibuni kaunta'],
+ preferenceHelp:['Optional preparation request. Not an allergy guarantee.','Demande de préparation facultative. Aucune garantie concernant les allergies.','Bosenga ya ndenge ya kolamba, soki olingi. Ezali ndanga te mpo na allergie.','Ombi la maandalizi ni hiari. Si dhamana kuhusu mzio.'],
  foodPreference:['Food preference','Préférence de préparation','Ndenge olingi bilei','Ombi la chakula'],
  deliveryInstruction:['Delivery instruction','Instruction de livraison','Malako ya komema','Maelekezo ya kufikisha'],
  restaurant_window_past:["The window must start in the future.", "Le cr\u00e9neau doit commencer dans le futur.", "Ebandeli ya eleko esengeli kozala na ngonga oyo ezali koya.", "Kipindi lazima kianze wakati ujao."],

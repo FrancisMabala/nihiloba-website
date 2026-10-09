@@ -6,6 +6,10 @@ export const pickupExceptionReasons = ['customer_code_unavailable', 'device_unav
 export const deliveryExceptionReasons = [...pickupExceptionReasons, 'recipient_handoff_without_code'];
 const ref = '[A-Za-z0-9_-]{1,64}';
 export const orderRoutes: [RegExp, readonly string[]][] = [
+  [new RegExp(`^RST_${ref}/pos$`), ['GET']],
+  [new RegExp(`^RST_${ref}/pos/counter-baskets$`), ['POST']],
+  [new RegExp(`^RST_${ref}/pos/counter-baskets/${ref}$`), ['GET','PATCH']],
+  [new RegExp(`^RST_${ref}/pos/counter-baskets/${ref}/(quote|finalize)$`), ['POST']],
   [new RegExp(`^RST_${ref}/kitchen/(orders|feed)$`), ['GET']],
   [new RegExp(`^RST_${ref}/kitchen/orders/${ref}$`), ['GET']],
   [new RegExp(`^RST_${ref}/kitchen/orders/${ref}/actions/(start|ready)$`), ['POST']],
@@ -17,7 +21,7 @@ export const orderRoutes: [RegExp, readonly string[]][] = [
   [new RegExp(`^RST_${ref}/counter-baskets/${ref}$`), ['GET', 'PATCH']],
   [new RegExp(`^RST_${ref}/counter-baskets/${ref}/(quote|finalize)$`), ['POST']],
 ];
-export const isOrderPath = (path: string) => /\/(orders|order-|counter-baskets|pickup-intake|delivery-intake|menu-batches|kitchen)/.test(path);
+export const isOrderPath = (path: string) => /\/(orders|order-|counter-baskets|pickup-intake|delivery-intake|menu-batches|kitchen|pos)/.test(path);
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const str = (v: unknown, n = 200): v is string => typeof v === 'string' && !!v.trim() && v.length <= n;
 const exact = (v: Record<string, unknown>, keys: string[]) => Object.keys(v).every(k => keys.includes(k));
@@ -75,5 +79,5 @@ export function validOrderBody(path: string, value: unknown): boolean {
   if (!Number.isSafeInteger(v.expected_revision) || Number(v.expected_revision)<1) return false;
   if (path.includes('/actions/')) return exact(v,['operation_key','expected_revision','reason','pickup_code','delivery_code','confirm']) && (v.reason == null || enumOf(v.reason,orderReasons)) && (path.endsWith('/verify_pickup') ? typeof v.pickup_code === 'string' && /^[0-9]{6}$/.test(v.pickup_code) && v.reason == null : v.pickup_code == null) && (path.endsWith('/verify_delivery') ? typeof v.delivery_code === 'string' && /^[0-9]{6}$/.test(v.delivery_code) && v.reason == null : v.delivery_code == null) && (!path.endsWith('/pickup_exception') || enumOf(v.reason,pickupExceptionReasons)) && (path.endsWith('/delivery_exception') ? enumOf(v.reason,deliveryExceptionReasons) && v.confirm === true : v.confirm == null);
   if (path.endsWith('/finalize')) return exact(v,['operation_key','expected_revision','quote_ref','confirm','handoff_confirmed','fulfillment_method']) && str(v.quote_ref,64) && v.confirm === true && v.handoff_confirmed === true && enumOf(v.fulfillment_method,['on_premise','takeaway']);
-  return exact(v,['operation_key','expected_revision','selections','fulfillment_method','window_ref']) && enumOf(v.fulfillment_method,['on_premise','takeaway']) && v.window_ref == null && obj(v.selections) && exact(v.selections,['standalone','plates']) && list(v.selections.standalone,50,line) && list(v.selections.plates,20,p=>obj(p) && exact(p,['key','components']) && str(p.key,64) && list(p.components,20,line,1));
+  return exact(v,['operation_key','expected_revision','selections','fulfillment_method','window_ref','food_preference']) && (v.food_preference == null || typeof v.food_preference === 'string' && v.food_preference.length <= 400 && !/[\u0000-\u0009\u000b-\u001f\u007f]/.test(v.food_preference)) && enumOf(v.fulfillment_method,['on_premise','takeaway']) && v.window_ref == null && obj(v.selections) && exact(v.selections,['standalone','plates']) && list(v.selections.standalone,50,line) && list(v.selections.plates,20,p=>obj(p) && exact(p,['key','components']) && str(p.key,64) && list(p.components,20,line,1));
 }
