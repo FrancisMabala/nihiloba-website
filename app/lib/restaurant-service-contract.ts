@@ -2,6 +2,7 @@
 const reference = '[A-Za-z0-9_-]{1,64}';
 const parent = 'RST_[A-Za-z0-9_-]+';
 const prefix = parent + '/(?:service|stations/service)';
+const ownerPrefix=parent+'/service';
 export const serviceRoutes: [RegExp, readonly string[]][] = [
  [new RegExp('^'+prefix+'$'), ['GET']],
  [new RegExp('^'+prefix+'/baskets$'), ['POST']],
@@ -13,6 +14,12 @@ export const serviceRoutes: [RegExp, readonly string[]][] = [
  [new RegExp('^'+prefix+'/groups$'), ['GET','POST']],
  [new RegExp('^'+prefix+'/groups/'+reference+'$'), ['GET']],
  [new RegExp('^'+prefix+'/groups/'+reference+'/(close|proposals)$'), ['POST']],
+ [new RegExp('^'+prefix+'/groups/'+reference+'/(bill|receipt|payment-methods)$'), ['GET']],
+ [new RegExp('^'+prefix+'/groups/'+reference+'/(checkout|reopen)$'), ['POST']],
+ [new RegExp('^'+prefix+'/groups/'+reference+'/money/(receipts|recover)$'), ['POST']],
+ [new RegExp('^'+ownerPrefix+'/groups/'+reference+'/money/(reversals|refunds|reconcile-excess)$'), ['POST']],
+ [new RegExp('^'+ownerPrefix+'/payment-methods$'), ['GET','POST']],
+ [new RegExp('^'+ownerPrefix+'/payment-methods/'+reference+'$'), ['PUT']],
 ];
 export const isServicePath = (path:string) => serviceRoutes.some(([pattern])=>pattern.test(path));
 const obj = (v:unknown):v is Record<string,unknown> => !!v && typeof v==='object' && !Array.isArray(v);
@@ -31,7 +38,7 @@ export function serviceSelections(v:unknown):boolean {
 }
 export function validServiceQuery(path:string,method:string,q:URLSearchParams):boolean {
  const worker=path.includes('/stations/service');
- const allowed=[...(worker?['assignment_ref','assignment_revision']:[]),...(method==='GET'&&path.endsWith('/groups')?['page']:[]),...(method==='GET'&&/\/(?:stations\/)?service$/.test(path)?['language']:[])];
+ const allowed=[...(worker?['assignment_ref','assignment_revision']:[]),...(method==='GET'&&path.endsWith('/groups')?['page']:[]),...(method==='GET'&&(/\/(?:stations\/)?service$/.test(path)||path.endsWith('/receipt'))?['language']:[])];
  for(const [k,v] of q){
   if(!allowed.includes(k)||q.getAll(k).length!==1)return false;
   if(k==='assignment_ref'){if(!ref(v))return false;}
@@ -41,7 +48,21 @@ export function validServiceQuery(path:string,method:string,q:URLSearchParams):b
  return !worker || q.has('assignment_ref')&&q.has('assignment_revision');
 }
 export function validServiceBody(path:string,v:unknown):boolean {
- if(!obj(v)||!key(v.operation_key))return false;
+ if(!obj(v))return false;
+ if(path.includes('/payment-methods'))return exact(v,['expected_revision','label','kind','currencies','enabled'])&&Number.isSafeInteger(v.expected_revision)&&Number(v.expected_revision)>=0&&typeof v.label==='string'&&v.label.trim().length>0&&v.label.length<=80&&['cash','external_mobile_money'].includes(String(v.kind))&&Array.isArray(v.currencies)&&v.currencies.length>0&&v.currencies.every(c=>['CDF','USD'].includes(c))&&new Set(v.currencies).size===v.currencies.length&&typeof v.enabled==='boolean';
+ if(!key(v.operation_key))return false;
+ if(path.includes('/money/')){
+  const suffix=path.split('/').pop(),kind=suffix==='recover'?v.kind:({receipts:'receipt',reversals:'reversal',refunds:'refund','reconcile-excess':'reconciliation'} as Record<string,string>)[suffix??''];
+  if(!['receipt','reversal','refund','reconciliation'].includes(String(kind))||suffix==='recover'&&typeof v.kind!=='string'||path.includes('/stations/service/')&&kind!=='receipt')return false;
+  const allowed=['operation_key','method_ref','currency','amount','change_returned','expected_bill_revision','expected_payment_revision',...(kind==='reversal'||kind==='refund'?['target_ref','reason']:[]),...(kind==='refund'?['actually_returned']:[]),...(kind==='reconciliation'?['order_ref','reason']:[]),...(suffix==='recover'?['kind']:[])];
+  return exact(v,allowed)&&typeof v.operation_key==='string'&&v.operation_key.length<=64&&ref(v.method_ref)&&['CDF','USD'].includes(String(v.currency))&&typeof v.amount==='string'&&/^\d{1,15}(?:\.\d{1,2})?$/.test(v.amount)&&Number(v.amount)>0&&
+   (v.change_returned===undefined||typeof v.change_returned==='string'&&/^\d{1,15}(?:\.\d{1,2})?$/.test(v.change_returned))&&typeof v.expected_bill_revision==='string'&&/^[0-9a-f]{64}$/.test(v.expected_bill_revision)&&Number.isSafeInteger(v.expected_payment_revision)&&Number(v.expected_payment_revision)>=0&&
+   (kind!=='reversal'&&kind!=='refund'||ref(v.target_ref)&&typeof v.reason==='string'&&!!v.reason.trim()&&v.reason.length<=240)&&
+   (kind!=='refund'||v.actually_returned===true)&&
+   (kind!=='reconciliation'||ref(v.order_ref)&&v.reason==='received_before_conflict');
+ }
+ if(path.endsWith('/reopen'))return exact(v,['operation_key','expected_revision','expected_payment_revision'])&&positive(v.expected_revision)&&Number.isSafeInteger(v.expected_payment_revision)&&Number(v.expected_payment_revision)>=0;
+ if(path.endsWith('/checkout'))return exact(v,['operation_key','expected_revision'])&&positive(v.expected_revision);
  if(/\/(groups|baskets)$/.test(path))return exact(v,['operation_key']);
  if(!positive(v.expected_revision))return false;
  if(path.endsWith('/assisted_handover'))return exact(v,['operation_key','expected_revision','confirm'])&&v.confirm===true;
@@ -54,7 +75,7 @@ export function validServiceBody(path:string,v:unknown):boolean {
 }
 export type ServiceAssignment={assignment_ref:string;assignment_revision:number};
 export type ServiceRound={preparation?:import("./restaurant-preparation-contract").Preparation;order_ref:string;entry_source:string;channel:string;fulfillment_method:string;state:string;revision:number;cancellation_pending:boolean;currency:'CDF'|'USD';amount:string;submitted_at:string;payment_verified:false};
-export type ServiceGroup={group_ref:string;revision:number;state:'open'|'closed';guest_confirmed:boolean;can_add_round:boolean;order_until:string;rounds:ServiceRound[];payment_verified:false};
+export type ServiceGroup={group_ref:string;revision:number;state:'open'|'checkout'|'closed';guest_confirmed:boolean;can_add_round:boolean;order_until:string;rounds:ServiceRound[];payment_verified:false};
 export type ServiceEnvelope=Readonly<{path:string;method:string;body:string}>;
 export function servicePath(path:string,suffix:string,assignment?:ServiceAssignment,query:Record<string,string>={}){
  const q=new URLSearchParams(query);

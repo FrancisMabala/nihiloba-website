@@ -9,7 +9,7 @@ export function guestRoute(path: string, method: string) {
   const rules: [string, string[]][] = [
     [`${base}/entry`, ["GET"]], [`${base}/visits`, ["POST"]],
     [visit, ["GET", "DELETE"]],
-    [visit+'/service-proposals',['GET']], [visit+'/service-group',['GET']],
+    [visit+'/service-proposals',['GET']], [visit+'/service-group',['GET']], [visit+'/service-payment',['GET']],
     [visit+'/service-proposals/'+ref+'/approve',['POST']], [`${visit}/close`, ["POST"]],
     [`${visit}/baskets`, ["POST"]], [`${visit}/baskets/${ref}`, ["GET", "PATCH"]],
     [`${visit}/baskets/${ref}/(?:quote|submit)`, ["POST"]],

@@ -5,6 +5,7 @@ import { guestText, type GuestCopyKey } from "../../lib/restaurant-guest-copy";
 import { guestReference } from "../../lib/restaurant-guest-contract";
 import { emptyGuestSelections, GuestError, guestAction, guestRequest, replayGuestAction, type GuestAction, type GuestBasket, type GuestEntry, type GuestLine, type GuestSelections, type GuestVisit } from "../../lib/restaurant-guest-browser";
 import {serviceText} from "../../lib/restaurant-service-copy";
+import {moneyText} from "../../lib/restaurant-money-copy";
 import type {ServiceGroup} from "../../lib/restaurant-service-contract";
 import { dateText, type Order, type Terms } from "../../lib/restaurant-work";
 import { workText } from "../../lib/restaurant-work-copy";
@@ -16,6 +17,7 @@ import "./restaurant-guest.css";
 
 type Proposal={proposal_ref:string;group_ref:string;order_ref:string;group_revision:number;visit_revision:number;expires_at:string};
 type Proposals={items:Proposal[];copy:Record<string,string>};
+type ServicePayment={group:{rounds:{order_ref:string;state:string;currency:'CDF'|'USD';amount:string}[];payment_methods:{label:string;kind:string;currency:'CDF'|'USD';net_recorded:string;provider_verified:false}[];currencies:Record<'CDF'|'USD',{balance_due:string;refund_owed:string}>;payment_statement:string;payment_verified:false}};
 type Menu = Awaited<ReturnType<typeof getRestaurantMenu>>;
 const key = () => crypto.randomUUID();
 export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{locale:RestaurantLocale;establishmentRef:string;menu:Menu|null}) {
@@ -23,7 +25,7 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
   const proposalRefs=useRef<string[]>([]);
   const [approvalNotice,setApprovalNotice]=useState('');
   const [approvalNow,setApprovalNow]=useState(()=>Date.now());
-  const [proposals,setProposals]=useState<Proposals|null>(null),[serviceGroup,setServiceGroup]=useState<ServiceGroup|null>(null),[declined,setDeclined]=useState<string[]>([]);
+  const [proposals,setProposals]=useState<Proposals|null>(null),[serviceGroup,setServiceGroup]=useState<ServiceGroup|null>(null),[servicePayment,setServicePayment]=useState<ServicePayment|null>(null),[declined,setDeclined]=useState<string[]>([]);
   const st=(k:string)=>serviceText(locale,k);
   const [entry,setEntry]=useState<GuestEntry|null>(null),[visitRef,setVisitRef]=useState<string|null>(null),[visit,setVisit]=useState<GuestVisit|null>(null);
   const [basket,setBasket]=useState<GuestBasket|null>(null),[selections,setSelections]=useState<GuestSelections>(emptyGuestSelections),[labels,setLabels]=useState<Record<string,string>>({});
@@ -44,7 +46,7 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
   const clearPrivate=useCallback(()=>{
     generation.current++; publicRefs.current={visit:null,basket:null};
     try { sessionStorage.removeItem(storage); } catch {}
-    proposalRefs.current=[];setApprovalNotice('');setProposals(null);setServiceGroup(null);setDeclined([]);setVisitRef(null);setVisit(null);setBasket(null);setSelections(emptyGuestSelections());setLabels({});setPreference("");setWindowRef("");setCode(null);setPending(null);setFresh(false);setStep("edit");setForgetting(false);forgettingRef.current=false;
+    proposalRefs.current=[];setApprovalNotice('');setProposals(null);setServiceGroup(null);setServicePayment(null);setDeclined([]);setVisitRef(null);setVisit(null);setBasket(null);setSelections(emptyGuestSelections());setLabels({});setPreference("");setWindowRef("");setCode(null);setPending(null);setFresh(false);setStep("edit");setForgetting(false);forgettingRef.current=false;
   },[storage]);
   const handleError=useCallback((e:unknown,uncertain=false)=>{
     if(e instanceof GuestError && e.authorityRequest && [401,403,404].includes(e.status)) {clearPrivate();setMessage(guestText(locale,"lost"));return;}
@@ -65,14 +67,15 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
       const value=await guestRequest<GuestVisit>(establishmentRef,`/visits/${v}`);
       const proposed=await guestRequest<Proposals>(establishmentRef,'/visits/'+v+'/service-proposals?language='+locale);
       const associated=await guestRequest<{group:ServiceGroup|null}>(establishmentRef,'/visits/'+v+'/service-group');
+      const payment=associated.group?await guestRequest<ServicePayment>(establishmentRef,'/visits/'+v+'/service-payment?language='+locale):null;
       if(!mounted.current || generation.current!==epoch || forgettingRef.current)return;
       const refs=proposed.items.map(p=>p.proposal_ref),removed=proposalRefs.current.some(ref=>!refs.includes(ref));proposalRefs.current=refs;
       setApprovalNotice(old=>associated.group||refs.length?'':removed?serviceText(locale,'expired'):old);
-      setProposals(proposed);setServiceGroup(associated.group);setApprovalNow(Date.now());
+      setProposals(proposed);setServiceGroup(associated.group);setServicePayment(payment);setApprovalNow(Date.now());
       activePoll.current=true;
       setVisit(value);setFresh(true);setCode(old=>old && value.rounds.some(o=>o.order_ref===old.order && o.revision===old.revision && o.state==="ready") ? old : null);
       return value;
-    } catch(e) {if(mounted.current && generation.current===epoch){setFresh(false);setCode(null);handleError(e);}throw e;}
+    } catch(e) {if(mounted.current && generation.current===epoch){setFresh(false);setServicePayment(null);setCode(null);handleError(e);}throw e;}
   },[establishmentRef,handleError,locale]);
   useEffect(()=>{
     mounted.current=true;
@@ -242,6 +245,7 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
       {serviceGroup&&<section aria-label={st('groups')}><h3>{st('confirmed')}</h3><p>{st('rounds')}</p>{!serviceGroup.can_add_round&&<p>{st('closed')}</p>}
         {serviceGroup.rounds.map(r=><article className="rst-guest-round" key={r.order_ref}><p>{r.entry_source==='assisted'?proposals?.copy.restaurant_service_staff_round||st('staffRound'):st('guestRound')} · {r.order_ref}</p><p>{workText(locale,r.state)} · {r.amount} {r.currency}</p>{r.cancellation_pending&&<p>{workText(locale,'cancellation')}</p>}</article>)}
       </section>}
+      {servicePayment&&fresh&&<section className="rst-guest-payment" aria-label={moneyText(locale,'title')}><h3>{moneyText(locale,'title')}</h3><p>{servicePayment.group.payment_statement}</p><p>{moneyText(locale,'mobile')}</p><h4>{st('rounds')}</h4>{servicePayment.group.rounds.map(r=><p key={r.order_ref}>{r.order_ref} · {workText(locale,r.state)} · {r.amount} {r.currency}</p>)}<h4>{moneyText(locale,'methods')}</h4>{servicePayment.group.payment_methods.map((m,i)=><p key={i}>{m.label} · {moneyText(locale,m.kind)} · {m.net_recorded} {m.currency}</p>)}{(['CDF','USD'] as const).map(c=><div key={c}><h4>{c}</h4><p>{moneyText(locale,'due')}: {servicePayment.group.currencies[c].balance_due}</p><p>{moneyText(locale,'owed')}: {servicePayment.group.currencies[c].refund_owed}</p></div>)}</section>}
       {visit && <section aria-label={g("summary")}><h3>{g("summary")}</h3><p>{g("amounts")}</p>{fresh && <dl className="rst-guest-totals">{(["completed","active","excluded"] as const).map(kind=><div key={kind}><dt>{g(kind)}</dt><dd>{visit.totals[kind].CDF} CDF · {visit.totals[kind].USD} USD</dd></div>)}</dl>}
         {visit.rounds.map(order=><section key={order.order_ref} className="rst-guest-round" aria-label={`${t.orderRef} ${order.order_ref}`}><ReceiptCard order={order} locale={locale}/>{order.cancellation_pending && <p>{workText(locale,"cancellation")}</p>}
           {order.entry_source!=="assisted" && !order.cancellation_pending && ["pending","accepted","preparing","ready"].includes(order.state) && <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>void work(async()=>{const action=["pending","accepted"].includes(order.state)?"cancel":"request_cancellation";await mutate(guestAction(`/visits/${visitRef}/orders/${order.order_ref}/${action}`,"POST",{operation_key:key(),expected_revision:order.revision,...(action==="cancel"?{reason:"customer_cancelled"}:{})}));})}>{["pending","accepted"].includes(order.state)?t.cancel:t.requestCancel}</button>}
@@ -252,7 +256,7 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
       </section>}
       {(!basket||step==="summary") && <button disabled={blocked} onClick={()=>void work(async()=>{await refresh();await readEntry();await mutate(guestAction(`/visits/${visitRef}/baskets`,"POST",{operation_key:key()}));})}>{g("more")}</button>}
       <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>{if(window.confirm(g("closeWarning")))void work(async()=>{await mutate(guestAction(`/visits/${visitRef}/close`,"POST"));});}}>{g("close")}</button>
-      <button disabled={busy||!!pending||!!retryAt} onClick={()=>{if(window.confirm(g("forgetWarning")))void work(async()=>{invalidate();forgettingRef.current=true;setForgetting(true);proposalRefs.current=[];setApprovalNotice('');setProposals(null);setServiceGroup(null);setDeclined([]);setVisit(null);setBasket(null);setSelections(emptyGuestSelections());setPreference("");setWindowRef("");setLabels({});setCode(null);await mutate(guestAction(`/visits/${visitRef}`,"DELETE"));});}}>{g("forget")}</button>
+      <button disabled={busy||!!pending||!!retryAt} onClick={()=>{if(window.confirm(g("forgetWarning")))void work(async()=>{invalidate();forgettingRef.current=true;setForgetting(true);proposalRefs.current=[];setApprovalNotice('');setProposals(null);setServiceGroup(null);setServicePayment(null);setDeclined([]);setVisit(null);setBasket(null);setSelections(emptyGuestSelections());setPreference("");setWindowRef("");setLabels({});setCode(null);await mutate(guestAction(`/visits/${visitRef}`,"DELETE"));});}}>{g("forget")}</button>
     </>}
   </section>;
 }

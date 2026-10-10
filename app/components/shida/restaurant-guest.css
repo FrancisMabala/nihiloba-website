@@ -10,3 +10,5 @@
 .rst-guest-code strong { font-size: 1.7rem; letter-spacing: .15em; }
 .rst-guest p, .rst-guest h3, .rst-guest h4, .rst-guest span { overflow-wrap: anywhere; }
 @media (max-width: 480px) { .rst-guest { padding: .8rem; } .rst-guest .rst-checkout-items { grid-template-columns: minmax(0, 1fr); } }
+.rst-guest-payment{border:1px solid #a4b9ad;border-radius:12px;padding:1rem;margin:1rem 0;background:#f7faf7;overflow-wrap:anywhere}
+.rst-guest-payment div{display:inline-block;min-width:min(100%,12rem);margin:.4rem 1rem .4rem 0}

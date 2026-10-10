@@ -60,13 +60,15 @@ test('real guest consent: two same-QR visits, explicit decline/approval, cookie 
  await propose();await gp.evaluate(()=>window.dispatchEvent(new Event('focus')));let original:string|null=null,tries=0;await gp.route('**/service-proposals/*/approve/',async route=>{tries++;if(tries===1){original=route.request().postData();await route.fetch();return route.abort();}expect(route.request().postData()).toBe(original);await route.continue();});
  await guest(gp).getByRole('button',{name:'Approve',exact:true}).click();await expect(guest(gp).getByRole('button',{name:guestText('en','retry')})).toBeVisible();await guestContext.setOffline(true);await guestContext.setOffline(false);await guest(gp).getByRole('button',{name:guestText('en','retry')}).click();await expect(guest(gp).getByRole('button',{name:guestText('en','retry')})).toHaveCount(0);expect(tries).toBe(2);
  await expect(guest(gp).getByRole('heading',{name:'Guest link approved'})).toBeVisible();const group=guest(gp).getByRole('region',{name:'Service groups'});await expect(group.getByText(/Order entered by staff/)).toHaveCount(2);
+ await expect(guest(gp).locator('.rst-guest-payment')).toBeVisible();await expect(guest(gp).locator('.rst-guest-payment').getByText(/Balance due/).first()).toBeVisible();
  expect(await group.getByRole('button').count()).toBe(0);
  const approvedUrl=gc.path+'/service-group/';expect((await another.request.get(approvedUrl)).status()).toBe(404);
+ expect((await another.request.get(gc.path+'/service-payment/?language=en')).status()).toBe(404);
  const deny=await guestContext.request.post(gc.path+'/service-proposals/forged/approve/',{data:{operation_key:'bad',group_revision:1,visit_revision:1,confirm:true}});expect(deny.status()).toBe(403);
  expect(await gp.evaluate(()=>document.cookie.includes('__Secure-restaurant-visit'))).toBe(false);
  expect(await gp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await gp.screenshot({path:'.s3a-local/rm-v11-10f1/guest-phone.png',fullPage:true});const storage=await gp.evaluate(()=>Object.values(sessionStorage).join(' '));expect(storage).not.toContain('No salt');expect(storage).not.toContain('receipt_terms');
- await guestContext.clearCookies();await gp.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(guest(gp).getByText(guestText('en','lost'))).toBeVisible();
+ await guestContext.clearCookies();await gp.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(guest(gp).getByText(guestText('en','lost'))).toBeVisible();await expect(guest(gp).locator('.rst-guest-payment')).toHaveCount(0);
  await another.close();await guestContext.close();
 });
 

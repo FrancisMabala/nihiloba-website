@@ -1,0 +1,12 @@
+.rst-money{border:1px solid #a4b9ad;border-radius:12px;padding:1rem;margin:1rem 0;background:#f7faf7;color:#173629}
+.rst-money section{margin:.7rem 0;padding:.4rem 0;border-top:1px solid #d4e2d8}
+.rst-money button,.rst-money select,.rst-money input:not([type=checkbox]),.rst-money textarea{min-height:44px;max-width:100%}
+.rst-money button{margin:.35rem .35rem .35rem 0;padding:.55rem .8rem;white-space:normal}
+.rst-money label{display:flex;flex-direction:column;gap:.3rem;margin:.7rem 0;max-width:30rem}
+.rst-money label:has(input[type=checkbox]){flex-direction:row;align-items:center}
+.rst-money input[type=checkbox]{width:24px;height:24px}
+.rst-money-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1rem}
+.rst-money-totals dl div{display:flex;justify-content:space-between;gap:1rem;padding:.25rem 0}
+.rst-money-totals dd{margin:0;font-weight:700}
+.rst-money-receipt{border:2px solid #234a35;padding:1rem;background:white;overflow-wrap:anywhere}
+@media print{body:has(.rst-money-receipt) *{visibility:hidden!important}body:has(.rst-money-receipt) .rst-money-receipt,body:has(.rst-money-receipt) .rst-money-receipt *{visibility:visible!important}body:has(.rst-money-receipt) .rst-money-receipt{position:absolute;inset:0;border:0}body:has(.rst-money-receipt) .rst-money-print{display:none!important}}

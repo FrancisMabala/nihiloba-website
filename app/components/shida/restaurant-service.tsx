@@ -7,6 +7,7 @@ import {workText} from '../../lib/restaurant-work-copy';
 import {serviceText} from '../../lib/restaurant-service-copy';
 import {serviceEnvelope,servicePath,serviceSelections,type ServiceAssignment,type ServiceEnvelope,type ServiceGroup} from '../../lib/restaurant-service-contract';
 import {FoodTerms,ReceiptCard} from './restaurant-receipt';
+import {RestaurantMoney} from './restaurant-money';
 import './restaurant-service.css';
 
 type Item={public_ref:string;name:string;presentation:string;pricing_model:string;currency:string;unit_price?:string;minimum_amount?:string;allowed_amounts?:string[];amount_mode?:string;amount_step?:string;sale_unit_label?:string;availability:string;category?:{public_ref:string;name:string}};
@@ -127,6 +128,7 @@ export function RestaurantService({path,binding,locale,assignment}:{path:string;
  {group&&<section><h3>{group.group_ref}</h3><p>{group.guest_confirmed?s('confirmed'):s('staffOnly')}</p><p>{s('rounds')}</p>
  {!group.can_add_round&&<p>{s('closed')}</p>}<p>{dateText(group.order_until,locale)}</p>
  {group.rounds.map(r=><section className="rst-service-round" key={r.order_ref}><p>{r.order_ref} · {r.entry_source==='assisted'?s('staffRound'):s('guestRound')}</p><p>{t(r.state)} · {r.amount} {r.currency}</p>{r.preparation&&<StationStates preparation={r.preparation} state={r.state} locale={locale}/>} {r.cancellation_pending&&<p>{t('cancellation')}</p>}{r.entry_source==='assisted'&&<><button disabled={locked} onClick={()=>void detail(r.order_ref)}>{t('receipt')}</button>{r.state==='ready'&&<button disabled={locked} onClick={()=>{if(window.confirm(s('handoverConfirm')))void action('/orders/'+r.order_ref+'/actions/assisted_handover',{operation_key:crypto.randomUUID(),expected_revision:r.revision,confirm:true});}}>{s('handover')}</button>}</>}</section>)}
+ <RestaurantMoney key={`${binding}:${path}:${group.group_ref}`} path={path} groupRef={group.group_ref} groupRevision={group.revision} binding={binding} locale={locale} onChanged={()=>void read()}/>
  {order&&<><ReceiptCard order={order} locale={locale}/>{order.assisted_handover&&<p>{s('attested')} · {dateText(order.assisted_handover.at,locale)}</p>}</>}
  {!basket&&<button disabled={locked||!canAdd} onClick={()=>void action('/baskets',{operation_key:crypto.randomUUID()})}>{s('more')}</button>}
  {group.can_add_round&&!group.guest_confirmed&&<fieldset disabled={locked||!!basket}><legend>{s('propose')}</legend><p>{s('proposalHelp')}</p><label>{s('anchor')}<input maxLength={64} value={anchor} onChange={e=>setAnchor(e.target.value)}/></label><button disabled={!/^[A-Za-z0-9_-]{1,64}$/.test(anchor)} onClick={()=>void action('/groups/'+group.group_ref+'/proposals',{operation_key:crypto.randomUUID(),expected_revision:group.revision,order_ref:anchor})}>{s('propose')}</button></fieldset>}

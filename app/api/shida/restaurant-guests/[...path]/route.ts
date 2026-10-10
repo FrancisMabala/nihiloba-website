@@ -34,7 +34,7 @@ async function handle(request: Request, context: Context) {
   // Production must be reached through HTTPS (the TLS terminator owns this header).
   if (url.protocol !== "https:" && request.headers.get("x-forwarded-proto") !== "https") return fail(503);
   const query = url.searchParams;
-  if ([...query].some(([k,v]) => !(path.endsWith("/entry") || path.endsWith("/service-proposals")) || k !== "language" || !["fr","en","ln","sw"].includes(v)) || query.getAll("language").length > 1) return fail(422);
+  if ([...query].some(([k,v]) => !(path.endsWith("/entry") || path.endsWith("/service-proposals") || path.endsWith("/service-payment")) || k !== "language" || !["fr","en","ln","sw"].includes(v)) || query.getAll("language").length > 1) return fail(422);
   if (request.headers.get("sec-fetch-site") === "cross-site") return fail(403);
   const origin = personalRequestOrigin(request);
   if (request.method !== "GET" && !origin) return fail(403);

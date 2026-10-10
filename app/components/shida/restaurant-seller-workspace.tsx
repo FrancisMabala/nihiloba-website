@@ -18,6 +18,8 @@ import { RestaurantKitchen } from './restaurant-kitchen';
 import { RestaurantSellerReviews } from './restaurant-seller-reviews';
 import { restaurantReviewCopy } from '@/app/lib/restaurant-review-copy';
 import {RestaurantService} from './restaurant-service';
+import {RestaurantMoneyRecovery,RestaurantPaymentMethods} from './restaurant-money';
+import {moneyText} from '../../lib/restaurant-money-copy';
 import {serviceText} from '../../lib/restaurant-service-copy';
 import { RestaurantCounter } from './restaurant-counter';
 import { RestaurantInventory, inventoryTitle } from './restaurant-inventory';
@@ -87,7 +89,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   }
   async function loadTab(next: string, nextPage = 1) {
     if(next!==tab && !leaveWork())return;
-    if(next==='pos'||next==='service'){const value=await readRestaurant<{capabilities:{capability:string;available:boolean}[]}>(`${path}/capabilities`,locale);const allowed=value.capabilities.some(entry=>entry.capability==='restaurant.pos'&&entry.available);setPosAvailable(allowed);setTab(allowed?next:'counter');return;}
+    if(next==='pos'||next==='service'||next==='paymentMethods'){const value=await readRestaurant<{capabilities:{capability:string;available:boolean}[]}>(`${path}/capabilities`,locale);const allowed=value.capabilities.some(entry=>entry.capability==='restaurant.pos'&&entry.available);setPosAvailable(allowed);setTab(next==='service'?next:allowed?next:'counter');return;}
     if (next === "profile") { await select(selected!.public_ref, "profile"); return; }
     if (["orders","routing","counter","inventory","intake","activity","batch","reviews"].includes(next)) { setTab(next); return; }
     if (next === "kitchen") {const value=await readRestaurant<{capabilities:{capability:string;available:boolean}[]}>(`${path}/capabilities`,locale);const allowed=value.capabilities.some(entry=>entry.capability==='restaurant.kitchen'&&entry.available);setKitchenAvailable(allowed);setTab(allowed?next:'orders');return;}
@@ -238,7 +240,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   if (denied) return <section className="rst container section"><p role="alert">{t(message)}</p><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{t("review")}</Link></section>;
   return <section className="rst container" aria-label={t("restaurants")}>
     <header className={`rst-identity${editor ? " rst-identity-editing" : ""}`}><div><h1>{selected?.profile.name ?? t("establishments")}</h1>{selected && <p>{t(selected.profile.food_business_type ?? "restaurant")} · {[selected.profile.commune, selected.profile.city].filter(Boolean).join(", ") || t("unknown")}</p>}</div>{selected && <div className="rst-identity-actions"><p className={`rst-publication rst-state-${selected.status}`}>{selected.status === "active" ? design.published : t(selected.status)}</p>{!editor && <>{button("preview", () => void run(() => loadTab("preview")))}<button type="button" className="rst-text-button" disabled={busy} onClick={() => { if(!leaveWork())return; setSelected(null); setPreview(null); void run(() => loadList()); }}>{design.change} →</button></>}</div>}</header>
-    {selected && <nav className="rst-tabs" aria-label={design.area}>{[["orders", wt("orders")], ["routing",preparationCopy[locale].routing], ...(kitchenAvailable?[["kitchen", {en:"Kitchen",fr:"Cuisine",ln:"Kuku",sw:"Jikoni"}[locale]]]:[]), ...(posAvailable?[["service",serviceText(locale,'title')],["pos",wt("pos")]]:[]), ["counter", wt("counter")], ["inventory", inventoryTitle(locale)], ["reviews", restaurantReviewCopy[locale].reviews], ["activity", wt("activity")], ["intake", wt("intake")], ["items", design.menu], ["offerings", design.daily], ["hours", design.hours], ["profile", design.profile], ["sharing", design.sharing]].map(([key, label]) => <button key={key} type="button" disabled={busy || Boolean(editor)} aria-pressed={tab === key || key === "items" && tab === "categories"} onClick={() => void run(() => loadTab(key))}>{label}</button>)}</nav>}
+    {selected && <nav className="rst-tabs" aria-label={design.area}>{[["orders", wt("orders")], ["routing",preparationCopy[locale].routing], ...(kitchenAvailable?[["kitchen", {en:"Kitchen",fr:"Cuisine",ln:"Kuku",sw:"Jikoni"}[locale]]]:[]), ["service",serviceText(locale,'title')], ...(posAvailable?[["paymentMethods",moneyText(locale,'configure')],["pos",wt("pos")]]:[]), ["counter", wt("counter")], ["inventory", inventoryTitle(locale)], ["reviews", restaurantReviewCopy[locale].reviews], ["activity", wt("activity")], ["intake", wt("intake")], ["items", design.menu], ["offerings", design.daily], ["hours", design.hours], ["profile", design.profile], ["sharing", design.sharing]].map(([key, label]) => <button key={key} type="button" disabled={busy || Boolean(editor)} aria-pressed={tab === key || key === "items" && tab === "categories"} onClick={() => void run(() => loadTab(key))}>{label}</button>)}</nav>}
     <p role={message && message !== "saved" && message !== "unsaved" ? "alert" : "status"} aria-live="polite">{busy ? t(editor?.operation ? "saving" : "loading") : message ? t(message) === "—" ? t("validation") : t(message) : editor ? t("unsaved") : ""}</p>
     {editor ? <form onSubmit={submit} className={`rst-card rst-editor${editor.kind === "items" ? " rst-portion-editor" : ""}`} aria-label={t(editor.kind)}>
       <div className="rst-editor-main"><h2>{editor.kind === "items" ? editor.fields.name || t(editor.kind) : t(editor.kind)}</h2>
@@ -274,7 +276,8 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
         {tab === 'routing' && <PreparationRouting path={path} binding={binding} locale={locale}/>}
         {tab === 'kitchen' && <RestaurantKitchen key={path} path={path} binding={binding} locale={locale} onFreeOrders={()=>setTab('orders')}/>}
         {tab === 'reviews' && <RestaurantSellerReviews key={path} path={path} binding={binding} locale={locale}/>}
-        {tab === 'service' && <RestaurantService key={path+binding} path={path} binding={binding} locale={locale}/>}
+        {tab === 'service' && (posAvailable?<RestaurantService key={path+binding} path={path} binding={binding} locale={locale}/>:<RestaurantMoneyRecovery key={path+binding} path={path} binding={binding} locale={locale}/>)}
+        {tab === 'paymentMethods' && <RestaurantPaymentMethods key={path+binding} path={path} binding={binding} locale={locale}/>}
         {tab === 'pos' && <RestaurantCounter key={`${path}/pos`} path={path} binding={binding} locale={locale} onFailure={workFailure} pos onFreeCounter={()=>{setPosAvailable(false);setTab('counter');}}/>}
         {tab === 'counter' && <RestaurantCounter key={path} path={path} binding={binding} locale={locale} onFailure={workFailure}/>}
         {tab === 'inventory' && <RestaurantInventory key={path} path={path} locale={locale} read={readRestaurant} perform={performRestaurant}/>}

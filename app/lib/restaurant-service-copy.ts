@@ -12,10 +12,10 @@ const copy:Record<string,[string,string,string,string]> = {
     "Oda zilizoingizwa na wahudumu kwa maandalizi. Kaunta huandika chakula kilichokabidhiwa tayari."
   ],
   "preparation": [
-    "Preparation is handled in the owner Kitchen. Assigned Kitchen does not handle these rounds yet.",
-    "La préparation passe par la Cuisine du responsable. La Cuisine attribuée ne traite pas encore ces commandes.",
-    "Kolamba esalemaka na Kuku ya mokambi. Kuku ya mosali etalaka commandes oyo naino te.",
-    "Maandalizi hufanywa kwenye Jikoni la msimamizi. Jikoni lililokabidhiwa halishughulikii oda hizi bado."
+    "Preparation is handled in the owner or assigned Kitchen.",
+    "La préparation passe par la Cuisine du responsable ou du personnel attribué.",
+    "Kolamba esalemaka na Kuku ya mokambi to ya mosali oyo bapesi mosala.",
+    "Maandalizi hufanywa kwenye Jikoni la msimamizi au la mhudumu aliyekabidhiwa."
   ],
   "newGroup": [
     "Open staff-only group",
@@ -42,10 +42,10 @@ const copy:Record<string,[string,string,string,string]> = {
     "Mgeni ameidhinisha kiungo"
   ],
   "rounds": [
-    "Individual rounds — payment not verified; no payable bill",
-    "Commandes individuelles — paiement non vérifié ; aucun solde à payer",
-    "Commandes moko moko — mbongo endimami te; ezali facture ya kofuta te",
-    "Oda moja moja — malipo hayajahakikiwa; si bili ya kulipa"
+    "Individual rounds and preparation status",
+    "Commandes individuelles et état de préparation",
+    "Commandes moko moko mpe ndenge kolamba ezali",
+    "Oda moja moja na hali ya maandalizi"
   ],
   "more": [
     "Add another round",
