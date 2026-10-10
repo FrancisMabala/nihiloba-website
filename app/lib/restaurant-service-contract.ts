@@ -53,7 +53,7 @@ export function validServiceBody(path:string,v:unknown):boolean {
  (v.food_preference==null||typeof v.food_preference==='string'&&v.food_preference.length<=400&&!/[\u0000-\u0009\u000b-\u001f\u007f]/.test(v.food_preference));
 }
 export type ServiceAssignment={assignment_ref:string;assignment_revision:number};
-export type ServiceRound={order_ref:string;entry_source:string;channel:string;fulfillment_method:string;state:string;revision:number;cancellation_pending:boolean;currency:'CDF'|'USD';amount:string;submitted_at:string;payment_verified:false};
+export type ServiceRound={preparation?:import("./restaurant-preparation-contract").Preparation;order_ref:string;entry_source:string;channel:string;fulfillment_method:string;state:string;revision:number;cancellation_pending:boolean;currency:'CDF'|'USD';amount:string;submitted_at:string;payment_verified:false};
 export type ServiceGroup={group_ref:string;revision:number;state:'open'|'closed';guest_confirmed:boolean;can_add_round:boolean;order_until:string;rounds:ServiceRound[];payment_verified:false};
 export type ServiceEnvelope=Readonly<{path:string;method:string;body:string}>;
 export function servicePath(path:string,suffix:string,assignment?:ServiceAssignment,query:Record<string,string>={}){

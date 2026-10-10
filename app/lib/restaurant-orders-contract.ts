@@ -1,3 +1,4 @@
+import { preparationRoutes, isPreparationPath, validPreparationBody, validPreparationQuery } from './restaurant-preparation-contract';
 // C1-C/C1-E Personal-only, bounded DTOs. Domain eligibility remains authoritative.
 export const orderStates = ['pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'completed', 'rejected', 'cancelled', 'expired', 'uncollected', 'delivery_failed'];
 export const orderActions = ['assisted_handover','accept', 'reject', 'start', 'ready', 'dispatch', 'complete', 'verify_pickup', 'pickup_exception', 'verify_delivery', 'delivery_exception', 'delivery_failed', 'cancel', 'approve_cancellation', 'deny_cancellation', 'uncollected'];
@@ -6,6 +7,7 @@ export const pickupExceptionReasons = ['customer_code_unavailable', 'device_unav
 export const deliveryExceptionReasons = [...pickupExceptionReasons, 'recipient_handoff_without_code'];
 const ref = '[A-Za-z0-9_-]{1,64}';
 export const orderRoutes: [RegExp, readonly string[]][] = [
+  ...preparationRoutes,
   [new RegExp(`^RST_${ref}/pos$`), ['GET']],
   [new RegExp(`^RST_${ref}/pos/counter-baskets$`), ['POST']],
   [new RegExp(`^RST_${ref}/pos/counter-baskets/${ref}$`), ['GET','PATCH']],
@@ -21,7 +23,7 @@ export const orderRoutes: [RegExp, readonly string[]][] = [
   [new RegExp(`^RST_${ref}/counter-baskets/${ref}$`), ['GET', 'PATCH']],
   [new RegExp(`^RST_${ref}/counter-baskets/${ref}/(quote|finalize)$`), ['POST']],
 ];
-export const isOrderPath = (path: string) => /\/(orders|order-|counter-baskets|pickup-intake|delivery-intake|menu-batches|kitchen|pos)/.test(path);
+export const isOrderPath = (path: string) => isPreparationPath(path) || /\/(orders|order-|counter-baskets|pickup-intake|delivery-intake|menu-batches|kitchen|pos)/.test(path);
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const str = (v: unknown, n = 200): v is string => typeof v === 'string' && !!v.trim() && v.length <= n;
 const exact = (v: Record<string, unknown>, keys: string[]) => Object.keys(v).every(k => keys.includes(k));
@@ -30,6 +32,7 @@ const enumOf = (v: unknown, values: string[]) => typeof v === 'string' && values
 const list = (v: unknown, max: number, check: (x: unknown) => boolean, min = 0) => Array.isArray(v) && v.length >= min && v.length <= max && v.every(check);
 const line = (v: unknown) => obj(v) && exact(v, ['key','item_ref','quantity','selected_amount']) && str(v.key,64) && str(v.item_ref,64) && (v.quantity == null || Number.isSafeInteger(v.quantity) && Number(v.quantity)>0) && (v.selected_amount == null || decimal(v.selected_amount)) && (v.quantity != null) !== (v.selected_amount != null);
 export function validOrderQuery(path: string, method: string, q: URLSearchParams) {
+  if (isPreparationPath(path)) return validPreparationQuery(path,method,q);
   const kitchen = path.includes('/kitchen/');
   const orders = method === 'GET' && /\/orders$/.test(path), feed = /\/(?:order-feed|kitchen\/feed)$/.test(path), summary = /\/order-summary$/.test(path);
   const allowed = ['language', ...(orders || summary ? ['page','page_size'] : []), ...(orders ? kitchen ? ['completed'] : ['states','as_of'] : []), ...(feed ? kitchen ? ['cursor','limit'] : ['cursor','states','limit'] : []), ...(summary ? ['from_date','to_date','start_offset','end_offset'] : [])];
@@ -64,6 +67,7 @@ function itemFields(v: unknown) {
   });
 }
 export function validOrderBody(path: string, value: unknown): boolean {
+  if (isPreparationPath(path)) return validPreparationBody(path,value);
   if (!obj(value)) return false;
   const v = value;
   if (/\/order-measurement$/.test(path)) return !Object.keys(v).length;

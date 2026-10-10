@@ -1,0 +1,140 @@
+{
+  "batch": "RM-V11-10F2",
+  "date": "2026-10-10",
+  "repository": "nihiloba-website",
+  "backend_contract": "RM-V11-10B3",
+  "backend_modified_by_this_task": false,
+  "backend_head_initial": "0141 (head)",
+  "backend_head_final": "0142 (head)",
+  "head_mismatch": "Concurrent unrelated uncommitted 10B4 stock migration 0142 follows 0141; preserved. Required sole 0141 head no longer holds. Reconcile before rollout.",
+  "deployed": false,
+  "intake_gates_changed": false,
+  "committed": false,
+  "pushed": false,
+  "focused_unit_suite": {
+    "passed": 32,
+    "failed": 0
+  },
+  "full_unit_suite": {
+    "baseline": {
+      "numPassedTests": 674,
+      "numFailedTests": 8,
+      "numPassedTestSuites": null,
+      "numFailedTestSuites": null
+    },
+    "final": {
+      "numPassedTests": 687,
+      "numFailedTests": 8,
+      "numPassedTestSuites": 140,
+      "numFailedTestSuites": 4
+    },
+    "new_failed_nodes": [],
+    "resolved_failed_nodes": [],
+    "failed_nodes": [
+      [
+        "C:/NIHILOBA/nihiloba-website/.s3a-local/09b2-head-source/tests/shida-page.test.tsx",
+        "SHIDA public presentation distinguishes direct-entry links from confirmation QR references"
+      ],
+      [
+        "C:/NIHILOBA/nihiloba-website/.s3a-local/09b2-head-source/tests/shida-page.test.tsx",
+        "SHIDA public presentation keeps personal QR and payment capabilities clearly future-facing"
+      ],
+      [
+        "C:/NIHILOBA/nihiloba-website/.s3a-local/09b2-head-source/tests/shida-page.test.tsx",
+        "SHIDA public presentation keeps the French page synchronized with localized marketplace routes"
+      ],
+      [
+        "C:/NIHILOBA/nihiloba-website/.s3a-local/09b2-head-source/tests/shida-page.test.tsx",
+        "SHIDA public presentation presents Wenze as current and preserves English marketplace routes"
+      ],
+      [
+        "C:/NIHILOBA/nihiloba-website/tests/shida-page.test.tsx",
+        "SHIDA public presentation distinguishes direct-entry links from confirmation QR references"
+      ],
+      [
+        "C:/NIHILOBA/nihiloba-website/tests/shida-page.test.tsx",
+        "SHIDA public presentation keeps personal QR and payment capabilities clearly future-facing"
+      ],
+      [
+        "C:/NIHILOBA/nihiloba-website/tests/shida-page.test.tsx",
+        "SHIDA public presentation keeps the French page synchronized with localized marketplace routes"
+      ],
+      [
+        "C:/NIHILOBA/nihiloba-website/tests/shida-page.test.tsx",
+        "SHIDA public presentation presents Wenze as current and preserves English marketplace routes"
+      ]
+    ]
+  },
+  "full_lint": {
+    "errors": 9,
+    "warnings": 2,
+    "new_findings": 0
+  },
+  "changed_file_lint": "passed",
+  "typescript": "passed",
+  "build": "passed",
+  "translations": "46 keys per FR/EN/LN/SW, parity and duplicate checks; nine Backend preparation labels match exactly",
+  "whitespace": "tracked and untracked passed",
+  "real_backend": {
+    "browser_passed": 1,
+    "storage": "fresh ordinary durable SQLite; synthetic accounts; loopback HTTPS; production Next builds",
+    "limitations": "No production/PostgreSQL or actual-device certification. Fixture-only control routes never deployed."
+  },
+  "local_evidence": ".s3a-local/rm-v11-10f2/",
+  "changed_files": [
+    "app/api/shida/personal/restaurants/[[...path]]/route.ts",
+    "app/components/shida/restaurant-kitchen.tsx",
+    "app/components/shida/restaurant-order-screen.tsx",
+    "app/components/shida/restaurant-preparation-routing.tsx",
+    "app/components/shida/restaurant-preparation.css",
+    "app/components/shida/restaurant-preparation.tsx",
+    "app/components/shida/restaurant-seller-workspace.tsx",
+    "app/components/shida/restaurant-service.tsx",
+    "app/lib/restaurant-orders-contract.ts",
+    "app/lib/restaurant-preparation-contract.ts",
+    "app/lib/restaurant-preparation-copy.ts",
+    "app/lib/restaurant-service-contract.ts",
+    "app/lib/restaurant-work.ts",
+    "docs/restaurants_rm_v11_10f2_preparation.md",
+    "docs/restaurants_rm_v11_10f2_validation.json",
+    "tests/browser/restaurant-preparation.browser.ts",
+    "tests/integration/restaurant-preparation-backend.py",
+    "tests/restaurant-kitchen.test.tsx",
+    "tests/restaurant-preparation-contract.test.ts"
+  ],
+  "evidence_files": [
+    "baseline-tests.log",
+    "final-tests.json",
+    "final-tests.log",
+    "focused-final.json",
+    "full-lint-final.log",
+    "changed-lint-final.log",
+    "typecheck-final.log",
+    "build-final.log",
+    "browser-final.log",
+    "failure-comparison.json",
+    "alembic-heads-final.log",
+    "personal-bar-390.png",
+    "personal-free-320.png"
+  ],
+  "sha256": {
+    "app/api/shida/personal/restaurants/[[...path]]/route.ts": "78533fcf32e909da6a953637a64d5656337e2dc8cc4e8fe54c39e9eafbad8fef",
+    "app/components/shida/restaurant-kitchen.tsx": "07183b12d854ce6be8dece2c85c0dd3264e7216e6ffe2681a3c6acb62eec436f",
+    "app/components/shida/restaurant-order-screen.tsx": "71fa644443ac12856d9724f75aaad5b49c284bb0a7377abcc33af4d13e0b08bf",
+    "app/components/shida/restaurant-preparation-routing.tsx": "34288b5dca6d92f7638e88eed6baf8f262f7778596beb7e4ab90ca968def0a4c",
+    "app/components/shida/restaurant-preparation.css": "b87be93a2bd10dd7b37127c817cea2b12f764a12407c6cbf603bc4c4e5e9d7cb",
+    "app/components/shida/restaurant-preparation.tsx": "be0e27dc2e558c735bc06862120f98f3ce0ea93cafa54a7c14cb45fe23687120",
+    "app/components/shida/restaurant-seller-workspace.tsx": "4255ebf6d6b0b63bc9b740910d4c8af7d8def5a38444db23c636378c1958064d",
+    "app/components/shida/restaurant-service.tsx": "fb82349073ccb8e5ad56d85e7f7fcb63bcd6afe316a450b2ebe1e2b965bedaef",
+    "app/lib/restaurant-orders-contract.ts": "b07894d3ae8fa4861648a954b7c01696f218e3b37e0cf23493a4430a334d544a",
+    "app/lib/restaurant-preparation-contract.ts": "4bf16f49910ca44e287eda6b4c03f1432dd043c5aa8359fc044760f3adf0eb5c",
+    "app/lib/restaurant-preparation-copy.ts": "696c9fc9769ea8ebc4cde0776daf87ca054895013523b66630b4e023a41cebf5",
+    "app/lib/restaurant-service-contract.ts": "a9f1a4492f1a5b5003cddea4e96e7029d993e17723a74e967d3d998a3ecc6b28",
+    "app/lib/restaurant-work.ts": "bf4bdf29016e9cc1a509a71a691602e06e8b1b01481ce8b008566caa0c6bc3ff",
+    "tests/browser/restaurant-preparation.browser.ts": "179b313fd6c82c6c23faf156bba22ef3bc972aabacfe5bede028414d0459c72d",
+    "tests/integration/restaurant-preparation-backend.py": "cda84f37db49531c49ea03df1900e9fb29144940b52b684163b31e1677d11f97",
+    "tests/restaurant-kitchen.test.tsx": "0f8b4ebb732fd435637f10ab2407dc6388a1d787b389b664983e428e6c03a925",
+    "tests/restaurant-preparation-contract.test.ts": "15738808006cfd1f16cb3401f81156cb36fcd4504e00a6ae256de2a30b8fcce4"
+  },
+  "temporary_servers_stopped": true
+}

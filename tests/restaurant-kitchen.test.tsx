@@ -14,7 +14,7 @@ describe('Personal Kitchen surface contract',()=>{
   expect(validSellerBody('RST_one/kitchen/orders/RORD_one/actions/start','POST',{expected_revision:2,operation_key:'one'})).toBe(true);
   expect(validSellerBody('RST_one/kitchen/orders/RORD_one/actions/start','POST',{expected_revision:2,operation_key:'one',customer_phone:'private'})).toBe(false);
  });
- it.each([['fr','Cuisine'],['en','Kitchen'],['ln','Kuku'],['sw','Jikoni']] as const)('renders %s copy', (locale,title)=>{
+ it.each([['fr','Cuisine'],['en','Kitchen'],['ln','Kizini'],['sw','Jikoni']] as const)('renders %s copy', (locale,title)=>{
   const html=renderToStaticMarkup(<RestaurantKitchen path="personal/restaurants/RST_one" binding="bound" locale={locale} onFreeOrders={()=>{}}/>);
   expect(html).toContain(title);
   expect(html).not.toContain('customer_phone');
