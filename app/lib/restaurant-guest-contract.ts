@@ -8,7 +8,9 @@ export function guestRoute(path: string, method: string) {
   const base = `establishments/${ref}`, visit = `${base}/visits/${ref}`;
   const rules: [string, string[]][] = [
     [`${base}/entry`, ["GET"]], [`${base}/visits`, ["POST"]],
-    [visit, ["GET", "DELETE"]], [`${visit}/close`, ["POST"]],
+    [visit, ["GET", "DELETE"]],
+    [visit+'/service-proposals',['GET']], [visit+'/service-group',['GET']],
+    [visit+'/service-proposals/'+ref+'/approve',['POST']], [`${visit}/close`, ["POST"]],
     [`${visit}/baskets`, ["POST"]], [`${visit}/baskets/${ref}`, ["GET", "PATCH"]],
     [`${visit}/baskets/${ref}/(?:quote|submit)`, ["POST"]],
     [`${visit}/orders/${ref}(?:/pickup-code)?`, ["GET"]],
@@ -30,6 +32,7 @@ export function guestBody(path: string, v: unknown) {
   if (path.endsWith("/visits")) return exact(v,["entry_context"]) && string(v.entry_context,2048);
   if (!string(v.operation_key,200)) return false;
   if (path.endsWith("/baskets")) return exact(v,["operation_key"]);
+  if(path.endsWith('/approve'))return exact(v,['operation_key','group_revision','visit_revision','confirm'])&&Number.isSafeInteger(v.group_revision)&&Number(v.group_revision)>0&&Number.isSafeInteger(v.visit_revision)&&Number(v.visit_revision)>0&&v.confirm===true;
   if (!Number.isSafeInteger(v.expected_revision) || Number(v.expected_revision) < 1) return false;
   if (path.endsWith("/submit")) return exact(v,["operation_key","expected_revision","quote_ref","confirm"]) && guestReference(v.quote_ref) && v.confirm === true;
   if (path.endsWith("/request_cancellation")) return exact(v,["operation_key","expected_revision"]);

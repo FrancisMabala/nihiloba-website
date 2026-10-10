@@ -4,6 +4,8 @@ import { checkoutCopy } from "../../lib/restaurant-checkout-copy";
 import { guestText, type GuestCopyKey } from "../../lib/restaurant-guest-copy";
 import { guestReference } from "../../lib/restaurant-guest-contract";
 import { emptyGuestSelections, GuestError, guestAction, guestRequest, replayGuestAction, type GuestAction, type GuestBasket, type GuestEntry, type GuestLine, type GuestSelections, type GuestVisit } from "../../lib/restaurant-guest-browser";
+import {serviceText} from "../../lib/restaurant-service-copy";
+import type {ServiceGroup} from "../../lib/restaurant-service-contract";
 import { dateText, type Order, type Terms } from "../../lib/restaurant-work";
 import { workText } from "../../lib/restaurant-work-copy";
 import { FoodTerms, ReceiptCard } from "./restaurant-receipt";
@@ -12,10 +14,17 @@ import type { RestaurantLocale, RestaurantMenuItem, getRestaurantMenu } from "..
 import "./restaurant-checkout.css";
 import "./restaurant-guest.css";
 
+type Proposal={proposal_ref:string;group_ref:string;order_ref:string;group_revision:number;visit_revision:number;expires_at:string};
+type Proposals={items:Proposal[];copy:Record<string,string>};
 type Menu = Awaited<ReturnType<typeof getRestaurantMenu>>;
 const key = () => crypto.randomUUID();
 export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{locale:RestaurantLocale;establishmentRef:string;menu:Menu|null}) {
   const t=checkoutCopy[locale], g=(k:GuestCopyKey)=>guestText(locale,k), storage=`restaurant-guest:${establishmentRef}`;
+  const proposalRefs=useRef<string[]>([]);
+  const [approvalNotice,setApprovalNotice]=useState('');
+  const [approvalNow,setApprovalNow]=useState(()=>Date.now());
+  const [proposals,setProposals]=useState<Proposals|null>(null),[serviceGroup,setServiceGroup]=useState<ServiceGroup|null>(null),[declined,setDeclined]=useState<string[]>([]);
+  const st=(k:string)=>serviceText(locale,k);
   const [entry,setEntry]=useState<GuestEntry|null>(null),[visitRef,setVisitRef]=useState<string|null>(null),[visit,setVisit]=useState<GuestVisit|null>(null);
   const [basket,setBasket]=useState<GuestBasket|null>(null),[selections,setSelections]=useState<GuestSelections>(emptyGuestSelections),[labels,setLabels]=useState<Record<string,string>>({});
   const [menu,setMenu]=useState(initialMenu),[preference,setPreference]=useState(""),[windowRef,setWindowRef]=useState("");
@@ -35,10 +44,10 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
   const clearPrivate=useCallback(()=>{
     generation.current++; publicRefs.current={visit:null,basket:null};
     try { sessionStorage.removeItem(storage); } catch {}
-    setVisitRef(null);setVisit(null);setBasket(null);setSelections(emptyGuestSelections());setLabels({});setPreference("");setWindowRef("");setCode(null);setPending(null);setFresh(false);setStep("edit");setForgetting(false);forgettingRef.current=false;
+    proposalRefs.current=[];setApprovalNotice('');setProposals(null);setServiceGroup(null);setDeclined([]);setVisitRef(null);setVisit(null);setBasket(null);setSelections(emptyGuestSelections());setLabels({});setPreference("");setWindowRef("");setCode(null);setPending(null);setFresh(false);setStep("edit");setForgetting(false);forgettingRef.current=false;
   },[storage]);
   const handleError=useCallback((e:unknown,uncertain=false)=>{
-    if(e instanceof GuestError && e.authorityRequest && [403,404].includes(e.status)) {clearPrivate();setMessage(guestText(locale,"lost"));return;}
+    if(e instanceof GuestError && e.authorityRequest && [401,403,404].includes(e.status)) {clearPrivate();setMessage(guestText(locale,"lost"));return;}
     if(e instanceof GuestError && e.status===429) {const at=Date.now()+Math.max(1,e.retryAfter)*1000;retryDeadline.current=at;setRetryAt(at);setMessage(guestText(locale,"rate"));return;}
     const copy=e instanceof GuestError && e.detail==="restaurant_guest_limit" ? "limit" : e instanceof GuestError && (e.status===404 || ["restaurant_guest_closed","restaurant_intake_closed"].includes(e.detail)) ? "closed" : null;
     setMessage(copy ? guestText(locale,copy) : e instanceof GuestError && e.status===409 ? checkoutCopy[locale].changed : e instanceof GuestError && e.status===422 ? checkoutCopy[locale].unavailable : guestText(locale,uncertain ? "uncertain" : "service"));
@@ -54,12 +63,17 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
     const epoch=generation.current;
     try {
       const value=await guestRequest<GuestVisit>(establishmentRef,`/visits/${v}`);
+      const proposed=await guestRequest<Proposals>(establishmentRef,'/visits/'+v+'/service-proposals?language='+locale);
+      const associated=await guestRequest<{group:ServiceGroup|null}>(establishmentRef,'/visits/'+v+'/service-group');
       if(!mounted.current || generation.current!==epoch || forgettingRef.current)return;
-      activePoll.current=value.rounds.some(o=>["pending","accepted","preparing","ready"].includes(o.state) || o.cancellation_pending);
+      const refs=proposed.items.map(p=>p.proposal_ref),removed=proposalRefs.current.some(ref=>!refs.includes(ref));proposalRefs.current=refs;
+      setApprovalNotice(old=>associated.group||refs.length?'':removed?serviceText(locale,'expired'):old);
+      setProposals(proposed);setServiceGroup(associated.group);setApprovalNow(Date.now());
+      activePoll.current=true;
       setVisit(value);setFresh(true);setCode(old=>old && value.rounds.some(o=>o.order_ref===old.order && o.revision===old.revision && o.state==="ready") ? old : null);
       return value;
     } catch(e) {if(mounted.current && generation.current===epoch){setFresh(false);setCode(null);handleError(e);}throw e;}
-  },[establishmentRef,handleError]);
+  },[establishmentRef,handleError,locale]);
   useEffect(()=>{
     mounted.current=true;
     let alive=true;
@@ -100,6 +114,7 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
     window.addEventListener("online",resume);window.addEventListener("offline",offline);window.addEventListener("focus",resume);window.addEventListener("pageshow",resume);document.addEventListener("visibilitychange",resume);
     return()=>{stopped=true;clearTimeout(timer);window.removeEventListener("online",resume);window.removeEventListener("offline",offline);window.removeEventListener("focus",resume);window.removeEventListener("pageshow",resume);document.removeEventListener("visibilitychange",resume);};
   },[visitRef,refresh,readEntry,handleError]);
+  useEffect(()=>{if(!proposals?.items.length)return;const next=Math.min(...proposals.items.map(p=>Date.parse(p.expires_at)).filter(at=>at>approvalNow));if(!Number.isFinite(next))return;const timer=setTimeout(()=>setApprovalNow(Date.now()),Math.max(0,next-Date.now()));return()=>clearTimeout(timer);},[proposals,approvalNow]);
   useEffect(()=>{if(!retryAt)return;const timer=setTimeout(()=>setRetryAt(0),Math.max(0,retryAt-Date.now()));return()=>clearTimeout(timer);},[retryAt]);
   useEffect(()=>{if(!pending)return;const warn=(e:BeforeUnloadEvent)=>e.preventDefault();window.addEventListener("beforeunload",warn);return()=>window.removeEventListener("beforeunload",warn);},[pending]);
 
@@ -141,6 +156,7 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
         if(e.status===409 || e.status===422){setBasket(old=>old?{...old,quote:null,quote_ref:null}:null);setStep("edit");if(publicRefs.current.visit)void refresh().catch(()=>{});void readEntry().catch(()=>{});}
       }
       handleError(e,!confirmed);
+      if(action.path.endsWith('/approve')&&e instanceof GuestError&&e.status===409)setMessage(serviceText(locale,'expired'));
     }
   }
   async function work(fn:()=>Promise<void>) {
@@ -215,17 +231,28 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
         </>}
         {step==="review" && basket.quote && <><h3>{t.review}</h3><FoodTerms terms={basket.quote} locale={locale}/>{quotedWindow && <p>{t.pickup} · {dateText(quotedWindow.starts_at,locale,quotedWindow.timezone_name)} – {dateText(quotedWindow.ends_at,locale,quotedWindow.timezone_name)}</p>}{pickupPoint && <p>{t.onPremise}: {pickupPoint}</p>}<p>{t.offered} {g("payment")}</p><button disabled={busy||!!pending} onClick={()=>{setStep("edit");setBasket(b=>b?{...b,quote:null,quote_ref:null}:null);}}>{t.update}</button><button disabled={blocked} onClick={()=>void work(async()=>{await mutate(guestAction(`/visits/${visitRef}/baskets/${basket.basket_ref}/submit`,"POST",{operation_key:key(),expected_revision:basket.revision,quote_ref:basket.quote_ref,confirm:true}));})}>{t.confirm}</button></>}
       </>}
+      {proposals&&<section aria-label={st('propose')}>
+        {approvalNotice&&<p role="status">{approvalNotice}</p>}
+        {proposals.items.filter(p=>!declined.includes(p.proposal_ref)).map(p=><article key={p.proposal_ref}>
+          <p>{proposals.copy.restaurant_service_approval||st('approval')}</p><p>{t.orderRef}: {p.order_ref}</p><p>{Date.parse(p.expires_at)<=approvalNow?st('expired'):st('pending')+' '+dateText(p.expires_at,locale)}</p>
+          <button disabled={busy||!!pending||!fresh||!!retryAt||Date.parse(p.expires_at)<=approvalNow} onClick={()=>void work(async()=>{await mutate(guestAction('/visits/'+visitRef+'/service-proposals/'+p.proposal_ref+'/approve','POST',{operation_key:key(),group_revision:p.group_revision,visit_revision:p.visit_revision,confirm:true}));})}>{st('approve')}</button>
+          <button disabled={busy||!!pending} onClick={()=>{setDeclined(old=>[...old,p.proposal_ref]);setMessage(st('declined'));}}>{st('decline')}</button>
+        </article>)}
+      </section>}
+      {serviceGroup&&<section aria-label={st('groups')}><h3>{st('confirmed')}</h3><p>{st('rounds')}</p>{!serviceGroup.can_add_round&&<p>{st('closed')}</p>}
+        {serviceGroup.rounds.map(r=><article className="rst-guest-round" key={r.order_ref}><p>{r.entry_source==='assisted'?proposals?.copy.restaurant_service_staff_round||st('staffRound'):st('guestRound')} · {r.order_ref}</p><p>{workText(locale,r.state)} · {r.amount} {r.currency}</p>{r.cancellation_pending&&<p>{workText(locale,'cancellation')}</p>}</article>)}
+      </section>}
       {visit && <section aria-label={g("summary")}><h3>{g("summary")}</h3><p>{g("amounts")}</p>{fresh && <dl className="rst-guest-totals">{(["completed","active","excluded"] as const).map(kind=><div key={kind}><dt>{g(kind)}</dt><dd>{visit.totals[kind].CDF} CDF · {visit.totals[kind].USD} USD</dd></div>)}</dl>}
         {visit.rounds.map(order=><section key={order.order_ref} className="rst-guest-round" aria-label={`${t.orderRef} ${order.order_ref}`}><ReceiptCard order={order} locale={locale}/>{order.cancellation_pending && <p>{workText(locale,"cancellation")}</p>}
-          {!order.cancellation_pending && ["pending","accepted","preparing","ready"].includes(order.state) && <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>void work(async()=>{const action=["pending","accepted"].includes(order.state)?"cancel":"request_cancellation";await mutate(guestAction(`/visits/${visitRef}/orders/${order.order_ref}/${action}`,"POST",{operation_key:key(),expected_revision:order.revision,...(action==="cancel"?{reason:"customer_cancelled"}:{})}));})}>{["pending","accepted"].includes(order.state)?t.cancel:t.requestCancel}</button>}
-          <p>{g("proof")}</p>{order.state==="ready" && <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>void showCode(order)}>{t.pickupCode}</button>}
+          {order.entry_source!=="assisted" && !order.cancellation_pending && ["pending","accepted","preparing","ready"].includes(order.state) && <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>void work(async()=>{const action=["pending","accepted"].includes(order.state)?"cancel":"request_cancellation";await mutate(guestAction(`/visits/${visitRef}/orders/${order.order_ref}/${action}`,"POST",{operation_key:key(),expected_revision:order.revision,...(action==="cancel"?{reason:"customer_cancelled"}:{})}));})}>{["pending","accepted"].includes(order.state)?t.cancel:t.requestCancel}</button>}
+          {order.entry_source!=="assisted"&&<p>{g("proof")}</p>}{order.entry_source!=="assisted"&&order.state==="ready" && <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>void showCode(order)}>{t.pickupCode}</button>}
           {fresh && order.state==="ready" && code?.order===order.order_ref && code.revision===order.revision && <p className="rst-guest-code">{t.pickupCode}: <strong>{code.value}</strong></p>}
         </section>)}
         <p>{g("until")}: {dateText(visit.order_until,locale)} · {g("access")}: {dateText(visit.access_until,locale)}</p>
       </section>}
       {(!basket||step==="summary") && <button disabled={blocked} onClick={()=>void work(async()=>{await refresh();await readEntry();await mutate(guestAction(`/visits/${visitRef}/baskets`,"POST",{operation_key:key()}));})}>{g("more")}</button>}
       <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>{if(window.confirm(g("closeWarning")))void work(async()=>{await mutate(guestAction(`/visits/${visitRef}/close`,"POST"));});}}>{g("close")}</button>
-      <button disabled={busy||!!pending||!!retryAt} onClick={()=>{if(window.confirm(g("forgetWarning")))void work(async()=>{invalidate();forgettingRef.current=true;setForgetting(true);setVisit(null);setBasket(null);setSelections(emptyGuestSelections());setPreference("");setWindowRef("");setLabels({});setCode(null);await mutate(guestAction(`/visits/${visitRef}`,"DELETE"));});}}>{g("forget")}</button>
+      <button disabled={busy||!!pending||!!retryAt} onClick={()=>{if(window.confirm(g("forgetWarning")))void work(async()=>{invalidate();forgettingRef.current=true;setForgetting(true);proposalRefs.current=[];setApprovalNotice('');setProposals(null);setServiceGroup(null);setDeclined([]);setVisit(null);setBasket(null);setSelections(emptyGuestSelections());setPreference("");setWindowRef("");setLabels({});setCode(null);await mutate(guestAction(`/visits/${visitRef}`,"DELETE"));});}}>{g("forget")}</button>
     </>}
   </section>;
 }

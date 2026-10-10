@@ -29,6 +29,10 @@ export const guestAction = (path:string,method:string,body?:unknown):GuestAction
 // action. Never replace its key, revision or quote with freshly read values.
 export async function replayGuestAction<T>(establishment:string,visit:string,action:GuestAction):Promise<T> {
   await guestRequest(establishment,`/visits/${visit}`);
+  if(action.path.endsWith('/approve')){
+    await guestRequest(establishment,'/visits/'+visit+'/service-proposals');
+    await guestRequest(establishment,'/visits/'+visit+'/service-group');
+  }
   const basket = action.path.match(/\/baskets\/([A-Za-z0-9_-]+)(?:\/|$)/)?.[1];
   const order = action.path.match(/\/orders\/([A-Za-z0-9_-]+)(?:\/|$)/)?.[1];
   if (basket) {

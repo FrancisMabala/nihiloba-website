@@ -1,7 +1,9 @@
 import { isOrderPath, orderRoutes, validOrderBody, validOrderQuery } from './restaurant-orders-contract';
+import {serviceRoutes,isServicePath,validServiceBody,validServiceQuery} from './restaurant-service-contract';
 // Exact Personal seller surface, not a general Dashboard proxy.
 export const sellerRoutes: [RegExp, readonly string[]][] = [
   ...orderRoutes,
+  ...serviceRoutes.map(([pattern,methods]):[RegExp,readonly string[]]=>[new RegExp(pattern.source.replace('(?:service|stations/service)','service')),methods]),
   [/^RST_[A-Za-z0-9_-]+\/capabilities$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/inventory$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/inventory\/bindings$/, ["GET"]],
@@ -62,9 +64,10 @@ function validInventoryBody(path: string, value: unknown): boolean {
 export const profileKeys = ["name", "description", "food_business_type", "city", "commune", "quartier", "public_address", "landmark", "address_visibility", "timezone_name", "opening_information", "service_modes", "logo_url", "logo_secure_url"];
 export const itemKeys = ["name", "description", "image_url", "category_ref", "presentation", "pricing_model", "currency", "sale_unit_label", "unit_price", "allowed_amounts", "minimum_amount", "amount_mode", "amount_step", "visible", "availability", "permanent"];
 export function allowedSellerRoute(path: string, method: string): boolean {
-  return path.length < 400 && sellerRoutes.some(([pattern, methods]) => pattern.test(path) && methods.includes(method));
+  return !path.includes('/stations/') && path.length < 400 && sellerRoutes.some(([pattern, methods]) => pattern.test(path) && methods.includes(method));
 }
 export function validSellerQuery(path: string, method: string, query: URLSearchParams): boolean {
+  if (isServicePath(path)) return validServiceQuery(path,method,query);
   if (isOrderPath(path)) return validOrderQuery(path, method, query);
   if (inventoryPath(path)) return validInventoryQuery(path, query);
   const preview = path.endsWith("/menu-preview");
@@ -80,6 +83,7 @@ export function validSellerQuery(path: string, method: string, query: URLSearchP
 }
 function object(value: unknown): value is Record<string, unknown> { return !!value && typeof value === "object" && !Array.isArray(value); }
 export function validSellerBody(path: string, method: string, value: unknown): boolean {
+  if (isServicePath(path)) return validServiceBody(path,value);
   if (isOrderPath(path)) return validOrderBody(path, value);
   if (inventoryPath(path)) return validInventoryBody(path, value);
   if (!object(value)) return false;
@@ -105,7 +109,7 @@ export function validSellerBody(path: string, method: string, value: unknown): b
   return Object.keys(value.fields).every(key => allowed.includes(key));
 }
 
-export const sellerErrorCodes = new Set(["restaurant_inventory_invalid_input", "restaurant_inventory_invalid_quantity", "restaurant_inventory_insufficient", "restaurant_inventory_entitlement_required", "restaurant_inventory_uninitialized", "restaurant_inventory_binding_invalid", "restaurant_inventory_legacy_obligation", "restaurant_inventory_item_in_use", "restaurant_stale", "restaurant_idempotency_conflict", "restaurant_incomplete", "restaurant_location_confirmation_required", "restaurant_invalid_profile", "restaurant_menu_invalid", "restaurant_menu_currency_conflict", "restaurant_operation_key_required", "restaurant_time_invalid", "restaurant_time_ambiguous", "restaurant_time_overlap", "restaurant_time_expired", "restaurant_time_confirmation_required", "restaurant_timezone_unavailable", "restaurant_hours_timezone_conflict", "restaurant_invalid_input", "restaurant_unavailable", "restaurant_destination_unavailable"]);
+export const sellerErrorCodes = new Set(['restaurant_service_closed','restaurant_service_limit',"restaurant_inventory_invalid_input", "restaurant_inventory_invalid_quantity", "restaurant_inventory_insufficient", "restaurant_inventory_entitlement_required", "restaurant_inventory_uninitialized", "restaurant_inventory_binding_invalid", "restaurant_inventory_legacy_obligation", "restaurant_inventory_item_in_use", "restaurant_stale", "restaurant_idempotency_conflict", "restaurant_incomplete", "restaurant_location_confirmation_required", "restaurant_invalid_profile", "restaurant_menu_invalid", "restaurant_menu_currency_conflict", "restaurant_operation_key_required", "restaurant_time_invalid", "restaurant_time_ambiguous", "restaurant_time_overlap", "restaurant_time_expired", "restaurant_time_confirmation_required", "restaurant_timezone_unavailable", "restaurant_hours_timezone_conflict", "restaurant_invalid_input", "restaurant_unavailable", "restaurant_destination_unavailable"]);
 
 export function validShare(value: unknown, ref: string, destination: string): value is { establishment_ref: string; destination: string; public_url: string; qr_content: string } {
   if (!object(value) || value.establishment_ref !== ref || value.destination !== destination) return false;

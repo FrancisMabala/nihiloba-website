@@ -1,0 +1,75 @@
+{
+  "batch": "RM-V11-10F1",
+  "date": "2026-10-10",
+  "backend_head": "0140",
+  "deployed": false,
+  "committed": false,
+  "pushed": false,
+  "new_units_passed": 13,
+  "full_unit_suite": {
+    "passed": 674,
+    "failed": 8,
+    "new_failures": 0
+  },
+  "full_lint_baseline": {
+    "errors": 9,
+    "warnings": 2,
+    "new_findings": 0
+  },
+  "typescript": "passed",
+  "build": "passed",
+  "changed_file_lint": "passed",
+  "real_backend": {
+    "storage": "fresh durable SQLite, synthetic accounts, loopback HTTPS",
+    "browser": "3 passed: Personal Service, guest consent/replay, counter POS; original pickup regression 1 passed",
+    "logs": [
+      "rm-v11-10f1-browser-acceptance.log",
+      "rm-v11-10f1-browser-personal-acceptance.log",
+      "rm-v11-10f1-pickup-browser.log"
+    ]
+  },
+  "local_evidence": ".s3a-local/rm-v11-10f1/",
+  "changed_files": [
+    "app/api/shida/restaurant-guests/[...path]/route.ts",
+    "app/components/shida/restaurant-guest.tsx",
+    "app/components/shida/restaurant-order-screen.tsx",
+    "app/components/shida/restaurant-seller-workspace.tsx",
+    "app/components/shida/restaurant-service.css",
+    "app/components/shida/restaurant-service.tsx",
+    "app/lib/restaurant-guest-browser.ts",
+    "app/lib/restaurant-guest-contract.ts",
+    "app/lib/restaurant-orders-contract.ts",
+    "app/lib/restaurant-seller-contract.ts",
+    "app/lib/restaurant-service-contract.ts",
+    "app/lib/restaurant-service-copy.ts",
+    "app/lib/restaurant-work-copy.ts",
+    "app/lib/restaurant-work.ts",
+    "docs/restaurants_rm_v11_10f1_service_ordering.md",
+    "docs/restaurants_rm_v11_10f1_validation.json",
+    "tests/browser/restaurant-service.browser.ts",
+    "tests/integration/restaurant-service-backend.py",
+    "tests/restaurant-service-contract.test.ts",
+    "tests/restaurant-service-guest.test.ts"
+  ],
+  "sha256": {
+    "app/api/shida/restaurant-guests/[...path]/route.ts": "f8a4aeb10cb380b1fc6742b00bf7a97fc9f419350b944fd5d6ea2337239ec53b",
+    "app/components/shida/restaurant-guest.tsx": "25049f08805cbe1aa1ee06a4c24b397506addf4d81b64e4d234964401679452f",
+    "app/components/shida/restaurant-order-screen.tsx": "47599f5ec7d8e26451a0243aa028ddb924180ce2017564eba5efbf2d5c6c26f0",
+    "app/components/shida/restaurant-seller-workspace.tsx": "4ab6503ee34e48ecf7af9837a0ca36afb156cc28e239cc9786477583737c7a46",
+    "app/components/shida/restaurant-service.css": "602fd4e1eb90a87aba64820594fa3acd130c86b5a17ef98494faae05c2a3a85d",
+    "app/components/shida/restaurant-service.tsx": "8867b51ec9493e27b0e721437cff62c38175d5e14d8889b7d9dc699059942e5c",
+    "app/lib/restaurant-guest-browser.ts": "6b7de34570cc9f0ccdfe7251c1a7ad98a41f1f0c5268e3cfe91e80cf4e98d2c9",
+    "app/lib/restaurant-guest-contract.ts": "7f3dcd7b8f89d671f0e41a85ddb7339bd6f4c3457be467d8b9c4845601e98d58",
+    "app/lib/restaurant-orders-contract.ts": "efaffc79211f1ae2243554674a2072087c8983450e6751d80198192b426590b1",
+    "app/lib/restaurant-seller-contract.ts": "d60e96dd38a8bdf6e33788b49be34bc2e694569adda9eff769564860e871a248",
+    "app/lib/restaurant-service-contract.ts": "21319f3cb1d7d9d1df6b1c1e44b1a1b5329502e28edccac48ac069cda114c51a",
+    "app/lib/restaurant-service-copy.ts": "fd71038f1a4bea94aeca2648caf735438230f009db32c233e26415599218b53a",
+    "app/lib/restaurant-work-copy.ts": "a6dd09d5e1dadd8408b9086baf578832ad2fd5cb093c987b9e2f3dbbb8325d0a",
+    "app/lib/restaurant-work.ts": "396da3e2374d5c9b786b64cb357bd76e9b9fa7cab86ae7f6c14a7b0d43040b85",
+    "docs/restaurants_rm_v11_10f1_service_ordering.md": "0b43b7fd38f05aae36a82983c57d33ced6248fe3433c5f19148bd7184e879fa6",
+    "tests/browser/restaurant-service.browser.ts": "7163c6fcfdd209e46dd17b71075b24170ade0d8448fa87f099b007fc997820fe",
+    "tests/integration/restaurant-service-backend.py": "bd3c0ed3f2df37f86039e414e47544914d499a77a55f0250aa5dee68cb786b0a",
+    "tests/restaurant-service-contract.test.ts": "aa36afed9f9b0c80d2f6f8a972b4f3df375d9cad8cd25e9a6283e5cc894a0d8b",
+    "tests/restaurant-service-guest.test.ts": "6139c9e628f314dcd1b135dc278c50265be12c5c513ec7438051571ba9f88120"
+  }
+}
