@@ -1,9 +1,11 @@
 import { isOrderPath, orderRoutes, validOrderBody, validOrderQuery } from './restaurant-orders-contract';
 import {serviceRoutes,isServicePath,validServiceBody,validServiceQuery} from './restaurant-service-contract';
+import {dailyRoutes,isDailyPath,validDailyBody,validDailyQuery} from './restaurant-daily-contract';
 // Exact Personal seller surface, not a general Dashboard proxy.
 export const sellerRoutes: [RegExp, readonly string[]][] = [
   ...orderRoutes,
   ...serviceRoutes.map(([pattern,methods]):[RegExp,readonly string[]]=>[new RegExp(pattern.source.replace('(?:service|stations/service)','service')),methods]),
+  ...dailyRoutes,
   [/^RST_[A-Za-z0-9_-]+\/capabilities$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/inventory$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/inventory\/bindings$/, ["GET"]],
@@ -67,6 +69,7 @@ export function allowedSellerRoute(path: string, method: string): boolean {
   return !path.includes('/stations/') && path.length < 400 && sellerRoutes.some(([pattern, methods]) => pattern.test(path) && methods.includes(method));
 }
 export function validSellerQuery(path: string, method: string, query: URLSearchParams): boolean {
+  if (isDailyPath(path)) return validDailyQuery(path,method,query);
   if (isServicePath(path)) return validServiceQuery(path,method,query);
   if (isOrderPath(path)) return validOrderQuery(path, method, query);
   if (inventoryPath(path)) return validInventoryQuery(path, query);
@@ -83,6 +86,7 @@ export function validSellerQuery(path: string, method: string, query: URLSearchP
 }
 function object(value: unknown): value is Record<string, unknown> { return !!value && typeof value === "object" && !Array.isArray(value); }
 export function validSellerBody(path: string, method: string, value: unknown): boolean {
+  if (isDailyPath(path)) return validDailyBody(path,value);
   if (isServicePath(path)) return validServiceBody(path,value);
   if (isOrderPath(path)) return validOrderBody(path, value);
   if (inventoryPath(path)) return validInventoryBody(path, value);
@@ -124,3 +128,4 @@ for (const code of ['restaurant_feed_refresh_required','restaurant_quote_changed
 
 for (const code of ["restaurant_window_past", "restaurant_window_bounds", "restaurant_window_hours", "restaurant_window_closure", "restaurant_time_invalid", "restaurant_time_ambiguous", "restaurant_timezone_unavailable", "restaurant_time_overlap", "restaurant_stale", "restaurant_intake_closed"]) sellerErrorCodes.add(code);
 for (const code of ["review_stale", "review_invalid_text", "review_invalid_reason", "review_unavailable"]) sellerErrorCodes.add(code);
+for (const code of ['restaurant_financial_conflict','restaurant_time_zone_required','restaurant_time_zone_conflict','restaurant_day_not_open','restaurant_day_not_ended','restaurant_day_incomplete','restaurant_day_acknowledgement_required','restaurant_day_closed']) sellerErrorCodes.add(code);

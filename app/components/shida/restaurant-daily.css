@@ -1,0 +1,13 @@
+.rst-daily{border:1px solid #aec6b7;border-radius:12px;background:#f7faf7;color:#173629;padding:1rem;margin:1rem 0;overflow-wrap:anywhere}
+.rst-daily section{min-width:0}
+.rst-daily-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:1rem}
+.rst-daily article{border-top:1px solid #cfdfd3;padding:.65rem 0}
+.rst-daily label{display:flex;flex-direction:column;gap:.3rem;margin:.65rem 0;max-width:30rem}
+.rst-daily .rst-daily-check{flex-direction:row;align-items:center}
+.rst-daily input:not([type=checkbox]),.rst-daily select,.rst-daily textarea,.rst-daily button{min-height:44px;max-width:100%}
+.rst-daily button{margin:.3rem .3rem .3rem 0;padding:.5rem .8rem;white-space:normal}
+.rst-daily input[type=checkbox]{width:24px;height:24px;flex:none}
+.rst-daily dl{display:grid;grid-template-columns:1fr auto;gap:.45rem;padding:.5rem;background:white}
+.rst-daily dd{margin:0;font-weight:700}
+.rst-daily-missing{color:#8e4e00;font-style:italic}
+.rst-daily aside{border:2px solid #a45b00;padding:.6rem;background:#fff7e8}

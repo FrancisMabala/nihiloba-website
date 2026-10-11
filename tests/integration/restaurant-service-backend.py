@@ -20,6 +20,9 @@ from tests.test_vertical_marketplaces import _organization
 from fastapi import HTTPException
 states={}
 allowed_refs=set()
+@app.post('/__service/day/clock')
+def day_clock():
+ return {'now':h['clock'][0].isoformat()}
 def subscribe(who):
  now=datetime.now(timezone.utc)
  with SessionLocal() as db:
