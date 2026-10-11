@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ShidaApiError } from "../../services/shida/public-client";
 import { getRestaurant, getRestaurantActions, getRestaurantBusiness, getRestaurantMenu, getRestaurantReviews, restaurantQuery, type Restaurant, type RestaurantLocale, type RestaurantMenuItem, type RestaurantSearch } from "../../services/shida/restaurants-client";
 import { checkoutCopy } from "../../lib/restaurant-checkout-copy";
+import { reservationCopy } from "../../lib/restaurant-reservation-copy";
+import { reservationAvailability } from "../../services/shida/restaurant-reservations";
 import { RestaurantGuest } from "./restaurant-guest";
 import { guestText } from "../../lib/restaurant-guest-copy";
 import { businessPath, restaurantCopy, restaurantLocales, restaurantPath, restaurantReturn } from "../../lib/restaurant-i18n";
@@ -101,7 +103,7 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
   let establishment;
   try { establishment = await getRestaurant(locale, id); } catch (error) { if (error instanceof ShidaApiError && error.kind === "not-found") notFound(); return <Shell locale={locale} title={t.title}><Failure locale={locale}/></Shell>; }
   const suffix = `/${encodeURIComponent(establishment.public_ref)}${menuOnly ? "/menu" : ""}`;
-  const [menuResult, actionsResult, reviewsResult] = await Promise.allSettled([getRestaurantMenu(locale, establishment.public_ref, menuPage), getRestaurantActions(locale, establishment.public_ref), menuOnly ? Promise.resolve(null) : getRestaurantReviews(establishment.public_ref, reviewPage)]);
+  const [menuResult, actionsResult, reviewsResult, reservationResult] = await Promise.allSettled([getRestaurantMenu(locale, establishment.public_ref, menuPage), getRestaurantActions(locale, establishment.public_ref), menuOnly ? Promise.resolve(null) : getRestaurantReviews(establishment.public_ref, reviewPage),reservationAvailability(establishment.public_ref)]);
   // A newly withdrawn parent must not leave a stale detail visible after a menu eligibility check fails.
   if (menuResult.status === "rejected" && menuResult.reason instanceof ShidaApiError && menuResult.reason.kind === "not-found") notFound();
   if (actionsResult.status === "rejected" && actionsResult.reason instanceof ShidaApiError && actionsResult.reason.kind === "not-found") notFound();
@@ -138,7 +140,7 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
     </section>}
     </div><aside className="restaurant-practical"><h2>{copy.practical}</h2>{establishment.location && <p>{establishment.location}</p>}
     <details className="restaurant-hours-disclosure"><summary>{t.hours}</summary><RestaurantHours locale={locale} hours={currentHours}/></details>
-    <div className="restaurant-actions"><a className="restaurant-link" href="#guest-order">{guestText(locale,"title")}</a>{establishment.ordering_available && <a className="restaurant-link" href={`${detailPath}/order`}>{checkoutCopy[locale].order}</a>}{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menu}</a>}</div>
+    <div className="restaurant-actions"><a className="restaurant-link" href="#guest-order">{guestText(locale,"title")}</a>{establishment.ordering_available && <a className="restaurant-link" href={`${detailPath}/order`}>{checkoutCopy[locale].order}</a>}{reservationResult.status==='fulfilled'&&reservationResult.value.available&&<a className="restaurant-link" href={`${locale==='en'?'':`/${locale}`}/shida/restaurant-reservations?establishment=${encodeURIComponent(establishment.public_ref)}`}>{reservationCopy[locale].reserve}</a>}<a className="restaurant-link" href={`${locale==='en'?'':`/${locale}`}/shida/restaurant-reservations`}>{reservationCopy[locale].mine}</a>{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menu}</a>}</div>
     <p className="restaurant-note">{actions?.share ? t.report : t.actionsUnavailable}</p>
     </aside></div>
     <RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} tableLocator={tableLocator} menu={menuResult.status === "fulfilled" ? menuResult.value : null}/>

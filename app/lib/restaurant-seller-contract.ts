@@ -3,6 +3,10 @@ import {serviceRoutes,isServicePath,validServiceBody,validServiceQuery} from './
 import {dailyRoutes,isDailyPath,validDailyBody,validDailyQuery} from './restaurant-daily-contract';
 // Exact Personal seller surface, not a general Dashboard proxy.
 export const sellerRoutes: [RegExp, readonly string[]][] = [
+  [/^RST_[A-Za-z0-9_-]+\/reservations$/, ["GET"]],
+  [/^RST_[A-Za-z0-9_-]+\/reservations\/setting$/, ["GET", "PUT"]],
+  [/^RST_[A-Za-z0-9_-]+\/reservations\/RRS_[A-Za-z0-9_-]+$/, ["GET"]],
+  [/^RST_[A-Za-z0-9_-]+\/reservations\/RRS_[A-Za-z0-9_-]+\/(accept|reject|cancel|arrive|complete)$/, ["POST"]],
   ...orderRoutes,
   ...serviceRoutes.map(([pattern,methods]):[RegExp,readonly string[]]=>[new RegExp(pattern.source.replace('(?:service|stations/service)','service')),methods]),
   ...dailyRoutes,
@@ -69,6 +73,7 @@ export function allowedSellerRoute(path: string, method: string): boolean {
   return !path.includes('/stations/') && path.length < 400 && sellerRoutes.some(([pattern, methods]) => pattern.test(path) && methods.includes(method));
 }
 export function validSellerQuery(path: string, method: string, query: URLSearchParams): boolean {
+  if (path.includes('/reservations')) return [...query].every(([key,value]) => path.endsWith('/reservations') && ['page','page_size'].includes(key) && query.getAll(key).length===1 && /^[1-9]\d{0,3}$/.test(value) && (key!=='page_size'||Number(value)<=50));
   if (isDailyPath(path)) return validDailyQuery(path,method,query);
   if (isServicePath(path)) return validServiceQuery(path,method,query);
   if (isOrderPath(path)) return validOrderQuery(path, method, query);
@@ -86,6 +91,13 @@ export function validSellerQuery(path: string, method: string, query: URLSearchP
 }
 function object(value: unknown): value is Record<string, unknown> { return !!value && typeof value === "object" && !Array.isArray(value); }
 export function validSellerBody(path: string, method: string, value: unknown): boolean {
+  if (path.includes('/reservations')) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    const row=value as Record<string,unknown>, keys=Object.keys(row).sort().join(',');
+    if (typeof row.operation_key!=='string'||!row.operation_key||row.operation_key.length>200) return false;
+    if (path.endsWith('/setting')) return method==='PUT'&&keys==='enabled,expected_revision,operation_key'&&typeof row.enabled==='boolean'&&Number.isSafeInteger(row.expected_revision)&&Number(row.expected_revision)>=0;
+    return method==='POST'&&keys==='expected_revision,operation_key'&&Number.isSafeInteger(row.expected_revision)&&Number(row.expected_revision)>=1;
+  }
   if (isDailyPath(path)) return validDailyBody(path,value);
   if (isServicePath(path)) return validServiceBody(path,value);
   if (isOrderPath(path)) return validOrderBody(path, value);
