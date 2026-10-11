@@ -37,7 +37,7 @@ def seed(mode:str):
  if mode=='personal':
   data=h['seed']();who=owners[data['ref']]
  else:
-  phone='243'+str(int(uuid4().hex[:10],16)).zfill(12)
+  phone='243'+str(int(uuid4().hex[:10],16) % 100_000_000_000).zfill(11)
   org=_organization(phone)
   replace_business_marketplaces(business_id=org['id'],actor_phone=phone,enabled_marketplaces={'restaurants'})
   with SessionLocal() as db:
@@ -64,7 +64,7 @@ def seed(mode:str):
  state={'owner':who,'data':data}
  if mode=='organization':
   with SessionLocal() as db:
-   worker=UserAccountDB(phone_number='243'+str(int(uuid4().hex[:10],16)).zfill(12),personal_name='Service Worker',account_type='personal');db.add(worker);db.flush()
+   worker=UserAccountDB(phone_number='243'+str(int(uuid4().hex[:10],16) % 100_000_000_000).zfill(11),personal_name='Service Worker',account_type='personal');db.add(worker);db.flush()
    member=BusinessMemberDB(business_id=org['id'],phone_number=worker.phone_number,personal_account_id=worker.id,personal_account_ref=worker.public_ref,role='staff',status='active');db.add(member);db.flush()
    state.update(worker=dict(actor_account_id=worker.id,actor_account_ref=worker.public_ref,active_business_id=org['id']),member=member.public_ref,phone=phone)
    db.commit()

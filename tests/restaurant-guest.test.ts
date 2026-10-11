@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { GET, POST, PATCH, DELETE, PUT, HEAD, OPTIONS, guestSetCookie } from "../app/api/shida/restaurant-guests/[...path]/route";
 import { GUEST_COOKIE, guestRoute, guestBody } from "../app/lib/restaurant-guest-contract";
 import { guestAction, replayGuestAction } from "../app/lib/restaurant-guest-browser";
+import { GUEST_BROWSER_COOKIE, GUEST_PROXY_HEADER, guestProxyIdentity } from "../app/lib/restaurant-guest-proxy-identity";
 const base="establishments/RST_one", visit=`${base}/visits/RGV_one`, basket=`${visit}/baskets/RBA_one`;
 const secret="x".repeat(43), cookie=`${GUEST_COOKIE}=${secret}`;
 const selections={standalone:[{key:"food",item_ref:"RMI_one",quantity:1}],plates:[{key:"plate",components:[{key:"pondu",item_ref:"RMI_pondu",selected_amount:"1000.00"}]}]};
@@ -11,6 +12,26 @@ function req(path:string,method="GET",body?:unknown,headers:Record<string,string
 const ctx=(path:string)=>({params:Promise.resolve({path:path.split("/")})});
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 describe("09B1 narrow private HTTPS proxy",()=>{
+  it("uses only a signed, server-issued browser identity for proxy rate limits",async()=>{
+    const shared="synthetic-restaurant-guest-proxy-secret-32-bytes";
+    vi.stubEnv("RESTAURANT_GUEST_PROXY_SECRET",shared);
+    const fetcher=vi.fn<typeof fetch>(async()=>Response.json({entry_context:"context"}));vi.stubGlobal("fetch",fetcher);
+    const path=`${base}/entry`;
+    const first=await GET(req(path),ctx(path));
+    const firstCookie=first.headers.getSetCookie().find(value=>value.startsWith(`${GUEST_BROWSER_COOKIE}=`));
+    expect(firstCookie).toContain("Secure; HttpOnly; SameSite=Strict");
+    const signed=(fetcher.mock.calls[0][1]!.headers as Record<string,string>)[GUEST_PROXY_HEADER];
+    expect(signed).toMatch(/^v1\.[0-9a-f]{32}\.[0-9]{10}\.[0-9a-f]{64}$/);
+    expect((fetcher.mock.calls[0][1]!.headers as Record<string,string>).Cookie).toBeUndefined();
+    const token=firstCookie!.split(";")[0];
+    const second=await GET(req(path,"GET",undefined,{Cookie:token}),ctx(path));
+    expect(second.headers.getSetCookie()).toHaveLength(0);
+    const secondSigned=(fetcher.mock.calls[1][1]!.headers as Record<string,string>)[GUEST_PROXY_HEADER];
+    expect(secondSigned.split(".")[1]).toBe(signed.split(".")[1]);
+    const forged=guestProxyIdentity(req(path,"GET",undefined,{Cookie:`${GUEST_BROWSER_COOKIE}=v1.${"f".repeat(32)}.${"0".repeat(64)}`}),shared);
+    expect(forged.setCookie).not.toBeNull();
+    expect(forged.header.split(".")[1]).not.toBe("f".repeat(32));
+  });
   it("allows exactly guest routes and methods",()=>{
     for(const [path,methods] of [[`${base}/entry`,["GET"]],[`${base}/visits`,["POST"]],[visit,["GET","DELETE"]],[`${visit}/close`,["POST"]],[`${visit}/baskets`,["POST"]],[basket,["GET","PATCH"]],[`${basket}/quote`,["POST"]],[`${basket}/submit`,["POST"]],[`${visit}/orders/ROD_one`,["GET"]],[`${visit}/orders/ROD_one/pickup-code`,["GET"]],[`${visit}/orders/ROD_one/cancel`,["POST"]],[`${visit}/orders/ROD_one/request_cancellation`,["POST"]]] as [string,string[]][]) {
       for(const method of ["GET","POST","PATCH","DELETE","PUT","HEAD","OPTIONS"])expect(guestRoute(path,method)).toBe(methods.includes(method));
@@ -57,6 +78,9 @@ describe("09B1 narrow private HTTPS proxy",()=>{
     vi.stubGlobal("fetch",vi.fn(async()=>Response.json({detail:"PRIVATE_SENTINEL",content:"SECRET"},{status:429,headers:{"Retry-After":"60"}})));
     const response=await PATCH(req(basket,"PATCH",{operation_key:"edit",expected_revision:1,selections,fulfillment_method:"pickup"}),ctx(basket));
     expect(response.status).toBe(429);expect(response.headers.get("retry-after")).toBe("60");expect(await response.text()).not.toContain("SECRET");expect(response.headers.get("cache-control")).toBe("private, no-store");
+    vi.stubGlobal("fetch",vi.fn(async()=>Response.json({detail:{code:"rate_limited"}},{status:429,headers:{"Retry-After":"120"}})));
+    const limited=await POST(req(`${base}/visits`,"POST",{entry_context:"context"}),ctx(`${base}/visits`));
+    expect(limited.status).toBe(429);expect(await limited.json()).toEqual({detail:"restaurant_guest_limit"});expect(limited.headers.get("retry-after")).toBe("120");
     vi.stubGlobal("fetch",vi.fn(async()=>{throw Error("secret response lost");}));const late=await GET(req(visit),ctx(visit));expect(late.status).toBe(503);expect(late.headers.get("vary")).toBe("Cookie, Origin");expect(await late.text()).not.toContain("secret");
     for(const fn of [PUT,HEAD,OPTIONS])expect(fn().headers.get("cache-control")).toBe("private, no-store");
   });

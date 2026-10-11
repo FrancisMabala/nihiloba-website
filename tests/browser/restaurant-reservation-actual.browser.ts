@@ -1,5 +1,7 @@
 import {test,expect,request} from '@playwright/test';
 
+test.skip(process.env.RESTAURANT_RESERVATION_BACKEND !== '1', 'Requires isolated real Backend reservation fixture');
+
 test('real Backend: customer, Personal seller and Organization seller reservations',async({browser})=>{
   test.setTimeout(120000);
   const api=await request.newContext({baseURL:'https://127.0.0.1:3443',ignoreHTTPSErrors:true});
@@ -22,7 +24,7 @@ test('real Backend: customer, Personal seller and Organization seller reservatio
   await buyer.getByLabel('Guests').fill('3');
   await buyer.getByRole('button',{name:'Send request'}).click();
   await expect(buyer.getByText('Request recorded. The seller must still accept it.')).toBeVisible();
-  await expect(buyer.getByText('Awaiting seller response')).toBeVisible();
+  await expect(buyer.getByText('Awaiting seller response').first()).toBeVisible();
 
   const personal=await browser.newContext({baseURL:'https://localhost:3014',ignoreHTTPSErrors:true});
   await personal.addCookies([{name:'nihiloba_personal_session',value:await session('owner'),domain:'localhost',path:'/api/shida',httpOnly:true,sameSite:'Lax',secure:true}]);

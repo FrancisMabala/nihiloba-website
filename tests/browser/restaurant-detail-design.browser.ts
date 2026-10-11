@@ -30,7 +30,7 @@ for (const width of [390, 768, 1440]) test(`shared detail artwork and states ${w
    // Global smooth scrolling otherwise makes the immediate geometry assertion
    // race the return to the top, especially on a longer guest-enabled page.
    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
-   expect(await art.boundingBox()).toEqual(baseline);
+   await expect.poll(() => art.boundingBox()).toEqual(baseline);
    await expect(page.getByText("Entreprise propriétaire", { exact: true })).toHaveCount(0);
   }
   await page.screenshot({ path: `.s3a-local/detail-${state}-${width}.png`, fullPage: true });

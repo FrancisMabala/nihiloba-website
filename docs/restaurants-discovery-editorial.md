@@ -104,4 +104,14 @@ Remaining acceptance: real-backend/live-media journey, production-network measur
 physical device/browser diversity and native-language review. No live messages,
 deployment, authentication correction or other marketplace redesign was performed.
 
+The Restaurant guest proxy can use `RESTAURANT_GUEST_PROXY_SECRET` when the same
+independent value (at least 32 UTF-8 bytes) is configured on Website and Backend.
+It issues a secure, HttpOnly, path-scoped anonymous browser cookie and forwards
+only a five-minute signed identity, never the browser cookie, to Backend.
+The Backend then applies per-browser limits and higher shared proxy-peer caps.
+Without the shared setting, the prior direct-source limits remain in force.
+Deploy both code changes before configuring the shared value; no live setting
+was changed in this repository. Clearing the cookie creates a new browser
+identity, so the aggregate proxy cap remains necessary.
+
 Suggested commit: `feat(restaurants): implement editorial public discovery redesign`

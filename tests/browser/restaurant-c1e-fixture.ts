@@ -20,6 +20,7 @@ export async function fixture(page: Page) {
   const path = url.pathname.replace("/api/shida/personal/restaurants", "");
   if (!url.pathname.startsWith("/api/shida/personal/restaurants")) return reply({}, 404);
   if (state.denied) return reply({ detail: "restaurant_unavailable" }, 404);
+  if (path.endsWith('/capabilities')) return reply({ capabilities: [] });
   const method = req.method(); const data = req.postData() ? req.postDataJSON() : null;
   if (method !== "GET") {
    state.writes.push({ path, method, body: data });

@@ -80,6 +80,7 @@ test('paid table QR keeps guests private, prepares delivery, and preserves gener
   for(const action of ['accept','start','ready','table_handover']){
     await control(request,`${s.ref}/orders/${first}/${action}`);await refresh(page);
   }
+  await page.reload();
   await expect(guest(page).getByText('Handed over',{exact:false}).first()).toBeVisible();
   const rotated=await control(request,`${s.ref}/table/${s.table.table_ref}/rotate`) as {qr_url:string};
   expect(rotated.qr_url).not.toBe(s.table.qr_url);

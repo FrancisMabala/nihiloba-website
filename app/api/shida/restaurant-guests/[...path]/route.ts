@@ -1,8 +1,10 @@
 import { personalRequestOrigin } from "../../../../lib/personal-request-origin";
 import { sellerErrorCodes } from "../../../../lib/restaurant-seller-contract";
 import { GUEST_BACKEND, GUEST_COOKIE, GUEST_PROXY, guestBody, guestReference, guestRoute } from "../../../../lib/restaurant-guest-contract";
+import { GUEST_PROXY_HEADER, guestProxyIdentity } from "../../../../lib/restaurant-guest-proxy-identity";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 const PRIVATE = { "Cache-Control": "private, no-store", Vary: "Cookie, Origin" };
 const fail = (status: number, detail = "restaurant_unavailable", extra: Record<string,string> = {}) => Response.json({detail},{status,headers:{...PRIVATE,...extra}});
 type Context = {params: Promise<{path: string[]}>};
@@ -56,11 +58,14 @@ async function handle(request: Request, context: Context) {
   try {
     const base = new URL(process.env.SHIDA_API_BASE_URL ?? "https://api.nihiloba.com");
     if (base.protocol !== "https:" || base.username || base.password) return fail(503);
+    const browser = process.env.RESTAURANT_GUEST_PROXY_SECRET
+      ? guestProxyIdentity(request, process.env.RESTAURANT_GUEST_PROXY_SECRET) : null;
     const target = new URL(`${GUEST_BACKEND}/${path}`,base.origin); target.search = query.toString();
-    const upstream = await fetch(target,{method:request.method,body,cache:"no-store",redirect:"manual",signal:AbortSignal.timeout(12000),headers:{Accept:"application/json",...(body ? {"Content-Type":"application/json"} : {}),...(origin ? {Origin:origin} : {}),...(visit ? {Cookie:tokens[0]} : {})}});
+    const upstream = await fetch(target,{method:request.method,body,cache:"no-store",redirect:"manual",signal:AbortSignal.timeout(12000),headers:{Accept:"application/json",...(body ? {"Content-Type":"application/json"} : {}),...(origin ? {Origin:origin} : {}),...(visit ? {Cookie:tokens[0]} : {}),...(browser ? {[GUEST_PROXY_HEADER]:browser.header} : {})}});
     const value = await upstream.json().catch(()=>null);
     if (value && typeof value === "object" && Object.hasOwn(value,"authority")) return fail(502);
     const headers = new Headers(PRIVATE);
+    if (browser?.setCookie) headers.append("Set-Cookie", browser.setCookie);
     const retry = upstream.headers.get("retry-after");
     if (retry && (/^\d{1,6}$/.test(retry) || Number.isFinite(Date.parse(retry)))) headers.set("Retry-After",retry);
     const cookieVisit = visit ?? (guestReference(value?.visit_ref) ? value.visit_ref : undefined);
@@ -73,7 +78,7 @@ async function handle(request: Request, context: Context) {
       headers.append("Set-Cookie",rewritten);
     }
     if (!upstream.ok) {
-      const detail = sellerErrorCodes.has(value?.detail) || ["restaurant_guest_closed","restaurant_guest_limit"].includes(value?.detail) ? value.detail : "restaurant_unavailable";
+      const detail = value?.detail?.code === "rate_limited" ? "restaurant_guest_limit" : sellerErrorCodes.has(value?.detail) || ["restaurant_guest_closed","restaurant_guest_limit"].includes(value?.detail) ? value.detail : "restaurant_unavailable";
       return Response.json({detail},{status:upstream.status >= 400 && upstream.status <= 599 ? upstream.status : 502,headers});
     }
     if (!value || typeof value !== "object" || Array.isArray(value)) return fail(502);

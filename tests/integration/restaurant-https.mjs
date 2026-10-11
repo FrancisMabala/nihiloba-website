@@ -11,4 +11,4 @@ https.createServer({ key: readFileSync(`${tlsDirectory}/key.pem`), cert: readFil
  // Match a trusted TLS terminator: overwrite, never trust a client-supplied value.
  req.headers["x-forwarded-proto"] = "https";
  return handle(req, res);
-}).listen(3014, "127.0.0.1", () => console.log("Isolated HTTPS production website ready on port 3014"));
+}).listen(3014, "::1", () => console.log("Isolated HTTPS production website ready on port 3014"));

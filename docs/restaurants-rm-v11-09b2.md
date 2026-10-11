@@ -83,6 +83,22 @@ Inherited frontend unit/lint and Backend full-suite failures still block a clean
 
 09B1 rate limits use the ASGI peer identity, never forwarded caller headers: 120 requests/minute and 10 visit creations/10 minutes per source. A same-origin proxy shares an egress peer across guests. Assess aggregate capacity and tune the existing operational policy before production traffic; this consumer does not spoof identity or weaken the limit. Synthetic fixture seeds clear only their disposable rate buckets.
 
+Pilot release correction (2026-10-11): the Website now sets a signed anonymous
+browser cookie and forwards a short-lived signed identity when the independent
+`RESTAURANT_GUEST_PROXY_SECRET` is configured on both Website and Backend.
+Backend verifies the signature and limits each browser to 120 requests/minute
+and 10 visit creations/10 minutes, with a separate shared proxy-peer cap of
+1,200 requests/minute and 300 visit creations/10 minutes. Unsigned requests
+retain the previous source limits. The Website maps a limiter rejection to the
+existing localized guest-limit copy and keeps `Retry-After`. The local HTTPS
+fixture admitted 12 independent browsers from one proxy peer, rejected the
+11th creation from one browser, and checked private cookies, no-store,
+cross-visit isolation and Origin rejection. Deployed TLS/port isolation and
+live traffic acceptance remain open; no production settings were changed.
+The final isolated current-Backend HTTPS guest browser file passed all 20
+cases, including table QR, general pickup, private visits, FR/EN/LN/SW,
+reconnect and stale/replayed actions. This remains local fixture evidence.
+
 There is no persistent offline action queue. If a tab is closed during an uncertain write, the original action envelope is lost; reopening uses public navigation references and current canonical Backend state to recover any committed round. Lost visit creation cannot recover its secret: the UI explains that no order was submitted and permits an explicit new visit. Forgotten/lost authority cannot be recovered with the general QR or order reference.
 
 For a later approved deployment:
