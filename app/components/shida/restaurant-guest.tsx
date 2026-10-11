@@ -20,7 +20,7 @@ type Proposals={items:Proposal[];copy:Record<string,string>};
 type ServicePayment={group:{rounds:{order_ref:string;state:string;currency:'CDF'|'USD';amount:string}[];payment_methods:{label:string;kind:string;currency:'CDF'|'USD';net_recorded:string;provider_verified:false}[];currencies:Record<'CDF'|'USD',{balance_due:string;refund_owed:string}>;payment_statement:string;payment_verified:false}};
 type Menu = Awaited<ReturnType<typeof getRestaurantMenu>>;
 const key = () => crypto.randomUUID();
-export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{locale:RestaurantLocale;establishmentRef:string;menu:Menu|null}) {
+export function RestaurantGuest({locale,establishmentRef,tableLocator,menu:initialMenu}:{locale:RestaurantLocale;establishmentRef:string;tableLocator?:string|null;menu:Menu|null}) {
   const t=checkoutCopy[locale], g=(k:GuestCopyKey)=>guestText(locale,k), storage=`restaurant-guest:${establishmentRef}`;
   const proposalRefs=useRef<string[]>([]);
   const [approvalNotice,setApprovalNotice]=useState('');
@@ -37,6 +37,8 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
   const publicRefs=useRef<{visit:string|null;basket:string|null}>({visit:null,basket:null});
   const invalidate=useCallback(()=>{generation.current++;},[]);
   const windows=entry?.methods.pickup?.windows ?? [];
+  const tableMode=Boolean(visit?.table || entry?.table);
+  const tableLabel=visit?.table?.label || entry?.table?.label;
   const names=new Map((menu?.items ?? []).map(i=>[i.public_ref,i.name]));
   const name=(id:string)=>names.get(id)||labels[id]||t.selected;
   function navigation(v:string|null,b:string|null) {
@@ -51,15 +53,15 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
   const handleError=useCallback((e:unknown,uncertain=false)=>{
     if(e instanceof GuestError && e.authorityRequest && [401,403,404].includes(e.status)) {clearPrivate();setMessage(guestText(locale,"lost"));return;}
     if(e instanceof GuestError && e.status===429) {const at=Date.now()+Math.max(1,e.retryAfter)*1000;retryDeadline.current=at;setRetryAt(at);setMessage(guestText(locale,"rate"));return;}
-    const copy=e instanceof GuestError && e.detail==="restaurant_guest_limit" ? "limit" : e instanceof GuestError && (e.status===404 || ["restaurant_guest_closed","restaurant_intake_closed"].includes(e.detail)) ? "closed" : null;
+    const copy=e instanceof GuestError && e.detail==="restaurant_guest_limit" ? "limit" : e instanceof GuestError && tableLocator && e.status===404 ? "tableUnavailable" : e instanceof GuestError && (e.status===404 || ["restaurant_guest_closed","restaurant_intake_closed"].includes(e.detail)) ? "closed" : null;
     setMessage(copy ? guestText(locale,copy) : e instanceof GuestError && e.status===409 ? checkoutCopy[locale].changed : e instanceof GuestError && e.status===422 ? checkoutCopy[locale].unavailable : guestText(locale,uncertain ? "uncertain" : "service"));
-  },[clearPrivate,locale]);
+  },[clearPrivate,locale,tableLocator]);
   const readEntry=useCallback(async()=>{
-    try {const value=await guestRequest<GuestEntry>(establishmentRef,`/entry?language=${locale}`);
+    try {const value=await guestRequest<GuestEntry>(establishmentRef,`/entry?language=${locale}${tableLocator?`&table=${encodeURIComponent(tableLocator)}`:''}`);
       if(!value.methods || typeof value.methods!=="object" || Array.isArray(value.methods) || value.methods.pickup && !Array.isArray(value.methods.pickup.windows) || typeof value.entry_context!=="string" || !value.copy || typeof value.copy!=="object")throw new GuestError(503,"restaurant_unavailable");
       if(mounted.current)setEntry(value);return value;
     } catch(e) {if(mounted.current)setEntry(null);throw e;}
-  },[establishmentRef,locale]);
+  },[establishmentRef,locale,tableLocator]);
   const refresh=useCallback(async(v=publicRefs.current.visit)=>{
     if(!v || forgettingRef.current)return;
     const epoch=generation.current;
@@ -134,6 +136,7 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
     }
     if(action.path.endsWith("/submit")) {
       const order=(value as {current_order:Order}).current_order;
+      setMessage(order.state==='accepted'?g('accepted'):g('awaiting'));
       // The submit response already confirms this immutable round, even if a
       // later summary read fails. Totals wait for their server projection.
       setFresh(false);setVisit(old=>old?{...old,rounds:old.rounds.some(o=>o.order_ref===order.order_ref)?old.rounds.map(o=>o.order_ref===order.order_ref?order:o):[...old.rounds,order]}:null);
@@ -169,7 +172,7 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
   }
   async function start() {
     await work(async()=>{
-      const current=await readEntry();if(!current.methods.pickup?.windows.length){setMessage(t.noWindow);return;}
+      const current=await readEntry();if(!current.table&&!current.methods.pickup?.windows.length){setMessage(t.noWindow);return;}
       await mutate(guestAction("/visits","POST",{entry_context:current.entry_context}));
       if(publicRefs.current.visit)await mutate(guestAction(`/visits/${publicRefs.current.visit}/baskets`,"POST",{operation_key:key()}));
     });
@@ -184,14 +187,15 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
     setLabels({...labels,[item.public_ref]:item.name||t.selected});setSelections(next);setBasket(b=>b?{...b,quote:null,quote_ref:null}:null);
   }
   async function quote() {
-    if(!basket || !windowRef)return;
+    if(!basket || (!tableMode&&!windowRef))return;
     await work(async()=>{
       const path=`/visits/${visitRef}/baskets/${basket.basket_ref}`;
       // Reread revision before a new explicit action; retain local public choices.
       const current=await guestRequest<GuestBasket>(establishmentRef,path);
       if(current.order_ref){setStep("summary");setBasket(null);await refresh();return;}
-      const edited=await mutate(guestAction(path,"PATCH",{operation_key:key(),expected_revision:current.revision,selections,fulfillment_method:"pickup",window_ref:windowRef,food_preference:preference||null})) as {basket:GuestBasket}|undefined;
-      if(edited)await mutate(guestAction(`${path}/quote`,"POST",{operation_key:key(),expected_revision:edited.basket.revision,selections:edited.basket.selections,fulfillment_method:"pickup",window_ref:windowRef}));
+      const method=tableMode?'table_delivery':'pickup';
+      const edited=await mutate(guestAction(path,"PATCH",{operation_key:key(),expected_revision:current.revision,selections,fulfillment_method:method,...(tableMode?{}:{window_ref:windowRef}),food_preference:preference||null})) as {basket:GuestBasket}|undefined;
+      if(edited)await mutate(guestAction(`${path}/quote`,"POST",{operation_key:key(),expected_revision:edited.basket.revision,selections:edited.basket.selections,fulfillment_method:method,...(tableMode?{}:{window_ref:windowRef})}));
     });
   }
   async function showCode(order:Order) {
@@ -210,29 +214,29 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
       const value=await response.json() as Menu; if(mounted.current)setMenu(value);
     });
   }
-  const blocked=busy || !!pending || !fresh || !!retryAt || !windows.length || !visit?.can_add_round;
+  const blocked=busy || !!pending || !fresh || !!retryAt || (!tableMode && !windows.length) || !visit?.can_add_round;
   const quotedWindow=basket?.quote?.pickup_window as {starts_at?:string;ends_at:string;timezone_name?:string}|undefined;
   const pickupPoint=(basket?.quote as (Terms&{pickup_location?:string})|null)?.pickup_location;
   const lines=(list:GuestLine[])=><ul>{list.map(l=><li key={l.key}><span>{name(l.item_ref)} · {l.quantity ?? l.selected_amount}</span><button disabled={blocked} onClick={()=>{setSelections(s=>({standalone:s.standalone.filter(x=>x.key!==l.key),plates:s.plates.map(p=>({...p,components:p.components.filter(x=>x.key!==l.key)})).filter(p=>p.components.length)}));setBasket(b=>b?{...b,quote:null,quote_ref:null}:null);}}>{t.remove}</button></li>)}</ul>;
   return <section id="guest-order" className="rst-checkout rst-guest" lang={locale} aria-label={g("title")}>
-    <h2>{g("title")}</h2><p>{entry?.copy.restaurant_guest_intro}</p><p>{entry?.copy.restaurant_guest_privacy || g("privacy")}</p><p>{entry?.copy.restaurant_guest_payment || g("payment")}</p>
+    <h2>{g("title")}</h2>{tableLabel&&<p>{g("table")}: {tableLabel}</p>}<p>{entry?.copy.restaurant_guest_intro}</p><p>{entry?.copy.restaurant_guest_privacy || g("privacy")}</p><p>{entry?.copy.restaurant_guest_payment || g("payment")}</p>
     {message && <p role="status">{message}</p>}
-    {!visitRef && <><button disabled={busy||!!retryAt} onClick={()=>void work(async()=>{try{await readEntry();setMessage("");}catch(e){handleError(e);}})}>{t.refresh}</button>{entry && (windows.length?<button disabled={busy||!!retryAt} onClick={()=>void start()}>{g("start")}</button>:<p role="status">{t.noWindow}</p>)}</>}
+    {!visitRef && <><button disabled={busy||!!retryAt} onClick={()=>void work(async()=>{try{await readEntry();setMessage("");}catch(e){handleError(e);}})}>{t.refresh}</button>{entry && ((entry.table||windows.length)?<button disabled={busy||!!retryAt} onClick={()=>void start()}>{g("start")}</button>:<p role="status">{t.noWindow}</p>)}</>}
     {visitRef && !fresh && <p role="status">{g("stale")}</p>}
     {pending && <><p>{g("uncertain")}</p><button disabled={busy||!!retryAt} onClick={()=>void work(async()=>{await mutate(pending,true);})}>{g("retry")}</button></>}
     {visitRef && !forgetting && <>
       <button disabled={busy||!!retryAt} onClick={()=>void work(async()=>{await refresh();await readEntry();setMessage("");})}>{t.refresh}</button>
-      {entry && !windows.length && <p role="status">{t.noWindow}</p>}
+      {entry && !tableMode && !windows.length && <p role="status">{t.noWindow}</p>}
       {visit && !visit.can_add_round && <p role="status">{entry?.copy.restaurant_guest_closed || g("limit")}</p>}
       {basket && step!=="summary" && <>
         {step==="edit" && <>{!menu && <p>{t.failed} <button disabled={blocked} onClick={()=>void pageMenu(1)}>{t.retry}</button></p>}<div className="rst-checkout-items">{menu?.items.map(item=><MenuChoice key={item.public_ref} item={item} locale={locale} selections={selections} busy={blocked} onAdd={(plate,quantity,amount)=>add(item,plate,quantity,amount)}/>)}</div>
           {menu && <nav aria-label={g("next")}>{menu.page>1 && <button disabled={blocked} onClick={()=>void pageMenu(menu.page-1)}>{t.back}</button>}{menu.total>menu.page*menu.page_size && <button disabled={blocked} onClick={()=>void pageMenu(menu.page+1)}>{g("next")}</button>}</nav>}
           <h3>{t.basket}</h3>{lines(selections.standalone)}{selections.plates.map((p,i)=><section key={p.key}><h4>{t.plate} {i+1}</h4>{lines(p.components)}</section>)}
-          <label>{t.window}<select disabled={blocked} value={windowRef} onChange={e=>setWindowRef(e.target.value)}><option value="">{t.choose}</option>{windows.map(w=><option key={w.public_ref} value={w.public_ref}>{dateText(w.starts_at,locale,w.timezone_name)} – {dateText(w.ends_at,locale,w.timezone_name)}</option>)}</select></label>
+          {!tableMode&&<label>{t.window}<select disabled={blocked} value={windowRef} onChange={e=>setWindowRef(e.target.value)}><option value="">{t.choose}</option>{windows.map(w=><option key={w.public_ref} value={w.public_ref}>{dateText(w.starts_at,locale,w.timezone_name)} – {dateText(w.ends_at,locale,w.timezone_name)}</option>)}</select></label>}
           <label>{t.preference}<textarea disabled={blocked} maxLength={400} value={preference} onChange={e=>setPreference(e.target.value)}/></label>
-          <button disabled={blocked||!windowRef||!(selections.standalone.length||selections.plates.length)} onClick={()=>void quote()}>{t.quote}</button>
+          <button disabled={blocked||(!tableMode&&!windowRef)||!(selections.standalone.length||selections.plates.length)} onClick={()=>void quote()}>{t.quote}</button>
         </>}
-        {step==="review" && basket.quote && <><h3>{t.review}</h3><FoodTerms terms={basket.quote} locale={locale}/>{quotedWindow && <p>{t.pickup} · {dateText(quotedWindow.starts_at,locale,quotedWindow.timezone_name)} – {dateText(quotedWindow.ends_at,locale,quotedWindow.timezone_name)}</p>}{pickupPoint && <p>{t.onPremise}: {pickupPoint}</p>}<p>{t.offered} {g("payment")}</p><button disabled={busy||!!pending} onClick={()=>{setStep("edit");setBasket(b=>b?{...b,quote:null,quote_ref:null}:null);}}>{t.update}</button><button disabled={blocked} onClick={()=>void work(async()=>{await mutate(guestAction(`/visits/${visitRef}/baskets/${basket.basket_ref}/submit`,"POST",{operation_key:key(),expected_revision:basket.revision,quote_ref:basket.quote_ref,confirm:true}));})}>{t.confirm}</button></>}
+        {step==="review" && basket.quote && <><h3>{t.review}</h3>{basket.quote.table&&<p>{g("table")}: {basket.quote.table.label}</p>}<FoodTerms terms={basket.quote} locale={locale}/>{quotedWindow && <p>{t.pickup} · {dateText(quotedWindow.starts_at,locale,quotedWindow.timezone_name)} – {dateText(quotedWindow.ends_at,locale,quotedWindow.timezone_name)}</p>}{pickupPoint && <p>{t.onPremise}: {pickupPoint}</p>}<p>{t.offered} {g("payment")}</p><button disabled={busy||!!pending} onClick={()=>{setStep("edit");setBasket(b=>b?{...b,quote:null,quote_ref:null}:null);}}>{t.update}</button><button disabled={blocked} onClick={()=>void work(async()=>{await mutate(guestAction(`/visits/${visitRef}/baskets/${basket.basket_ref}/submit`,"POST",{operation_key:key(),expected_revision:basket.revision,quote_ref:basket.quote_ref,confirm:true}));})}>{t.confirm}</button></>}
       </>}
       {proposals&&<section aria-label={st('propose')}>
         {approvalNotice&&<p role="status">{approvalNotice}</p>}
@@ -249,7 +253,7 @@ export function RestaurantGuest({locale,establishmentRef,menu:initialMenu}:{loca
       {visit && <section aria-label={g("summary")}><h3>{g("summary")}</h3><p>{g("amounts")}</p>{fresh && <dl className="rst-guest-totals">{(["completed","active","excluded"] as const).map(kind=><div key={kind}><dt>{g(kind)}</dt><dd>{visit.totals[kind].CDF} CDF · {visit.totals[kind].USD} USD</dd></div>)}</dl>}
         {visit.rounds.map(order=><section key={order.order_ref} className="rst-guest-round" aria-label={`${t.orderRef} ${order.order_ref}`}><ReceiptCard order={order} locale={locale}/>{order.cancellation_pending && <p>{workText(locale,"cancellation")}</p>}
           {order.entry_source!=="assisted" && !order.cancellation_pending && ["pending","accepted","preparing","ready"].includes(order.state) && <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>void work(async()=>{const action=["pending","accepted"].includes(order.state)?"cancel":"request_cancellation";await mutate(guestAction(`/visits/${visitRef}/orders/${order.order_ref}/${action}`,"POST",{operation_key:key(),expected_revision:order.revision,...(action==="cancel"?{reason:"customer_cancelled"}:{})}));})}>{["pending","accepted"].includes(order.state)?t.cancel:t.requestCancel}</button>}
-          {order.entry_source!=="assisted"&&<p>{g("proof")}</p>}{order.entry_source!=="assisted"&&order.state==="ready" && <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>void showCode(order)}>{t.pickupCode}</button>}
+          {order.entry_source!=="assisted"&&<p>{order.fulfillment_method==="table_delivery"?g("tableProof"):g("proof")}</p>}{order.fulfillment_method==="pickup"&&order.state==="ready" && <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>void showCode(order)}>{t.pickupCode}</button>}
           {fresh && order.state==="ready" && code?.order===order.order_ref && code.revision===order.revision && <p className="rst-guest-code">{t.pickupCode}: <strong>{code.value}</strong></p>}
         </section>)}
         <p>{g("until")}: {dateText(visit.order_until,locale)} · {g("access")}: {dateText(visit.access_until,locale)}</p>

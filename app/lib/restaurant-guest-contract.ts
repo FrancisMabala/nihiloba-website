@@ -38,7 +38,7 @@ export function guestBody(path: string, v: unknown) {
   if (path.endsWith("/request_cancellation")) return exact(v,["operation_key","expected_revision"]);
   if (path.endsWith("/cancel")) return exact(v,["operation_key","expected_revision","reason"]) && v.reason === "customer_cancelled";
   const quote = path.endsWith("/quote");
-  return exact(v,["operation_key","expected_revision","selections","fulfillment_method","window_ref",...(!quote ? ["food_preference"] : [])]) && guestSelections(v.selections) && v.fulfillment_method === "pickup" &&
-    (quote ? guestReference(v.window_ref) : v.window_ref == null || guestReference(v.window_ref)) &&
+  return exact(v,["operation_key","expected_revision","selections","fulfillment_method","window_ref",...(!quote ? ["food_preference"] : [])]) && guestSelections(v.selections) && ["pickup","table_delivery"].includes(String(v.fulfillment_method)) &&
+    (v.fulfillment_method === "table_delivery" ? v.window_ref == null : quote ? guestReference(v.window_ref) : v.window_ref == null || guestReference(v.window_ref)) &&
     (v.food_preference == null || typeof v.food_preference === "string" && v.food_preference.length <= 400 && !/[\u0000-\u0009\u000b-\u001f\u007f]/.test(v.food_preference));
 }

@@ -92,6 +92,9 @@ function RestaurantHeader({ locale, establishment, hours }: { locale: Restaurant
 }
 export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly = false }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch; menuOnly?: boolean }) {
   const t = restaurantCopy[locale], back = restaurantReturn(search), context = new URLSearchParams({ back });
+  const tableLocator = typeof search.table === 'string' && /^[A-Za-z0-9_-]{32}$/.test(search.table) ? search.table : null;
+  if ('table' in search && !tableLocator) notFound();
+  if (tableLocator) context.set('table', tableLocator);
   const menuPage = restaurantQuery(search).get("page") ?? "1";
   const rawReviewPage = Array.isArray(search.review_page) ? search.review_page[0] : search.review_page;
   const reviewPage = rawReviewPage && /^[1-9]\d{0,3}$/.test(rawReviewPage) ? rawReviewPage : "1";
@@ -138,7 +141,7 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
     <div className="restaurant-actions"><a className="restaurant-link" href="#guest-order">{guestText(locale,"title")}</a>{establishment.ordering_available && <a className="restaurant-link" href={`${detailPath}/order`}>{checkoutCopy[locale].order}</a>}{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menu}</a>}</div>
     <p className="restaurant-note">{actions?.share ? t.report : t.actionsUnavailable}</p>
     </aside></div>
-    <RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} menu={menuResult.status === "fulfilled" ? menuResult.value : null}/>
+    <RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} tableLocator={tableLocator} menu={menuResult.status === "fulfilled" ? menuResult.value : null}/>
   </div></section>;
 }
 export async function RestaurantBusinessPage({ locale, id, search = {} }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch }) {

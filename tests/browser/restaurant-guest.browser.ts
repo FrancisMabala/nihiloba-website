@@ -36,6 +36,89 @@ async function submit(page:Page,locale:RestaurantLocale="en") {
 }
 async function refresh(page:Page) {await page.evaluate(()=>window.dispatchEvent(new Event("focus")));}
 
+test('paid table QR keeps guests private, prepares delivery, and preserves general pickup QR',async({page,browser,request})=>{
+  const s=await control(request,'seed-table') as Seed & {table:{table_ref:string;label:string;qr_url:string;revision:number}};
+  await page.goto(s.table.qr_url);
+  await expect(guest(page).getByText('A1',{exact:false}).first()).toBeVisible();
+  await guest(page).getByRole('button',{name:guestText('en','start')}).click();
+  const add=async(target:Page)=>{
+    const area=guest(target),t=checkoutCopy.en;
+    await area.getByRole('article').filter({has:target.getByRole('heading',{name:'Fufu',exact:true})})
+      .getByRole('button',{name:t.add,exact:true}).click();
+    await area.getByRole('button',{name:t.quote,exact:true}).click();
+    await expect(area.getByRole('button',{name:t.confirm,exact:true})).toBeVisible();
+    return submit(target);
+  };
+  const first=await add(page);
+  await expect(guest(page).getByText(guestText('en','tableProof'))).toBeVisible();
+  await expect(guest(page).getByRole('button',{name:'Pickup code'})).toHaveCount(0);
+  const otherContext=await browser.newContext({baseURL:'https://localhost:3014',ignoreHTTPSErrors:true});
+  const other=await otherContext.newPage();await other.goto(s.table.qr_url);
+  await other.locator('#guest-order').getByRole('button',{name:guestText('en','start')}).click();
+  await expect(other.locator('.rst-guest-round')).toHaveCount(0);
+  const second=await add(other);expect(second).not.toBe(first);
+  await expect(guest(page).locator('.rst-guest-round')).toHaveCount(1);
+  for(const locale of ['fr','ln','sw'] as const){
+    const localized=await browser.newContext({baseURL:'https://localhost:3014',ignoreHTTPSErrors:true});
+    const view=await localized.newPage();
+    await view.goto(s.table.qr_url.replace('/shida/restaurants/',`/${locale}/shida/restaurants/`));
+    await expect(guest(view).getByRole('button',{name:guestText(locale,'start')})).toBeVisible();
+    await guest(view).getByRole('button',{name:guestText(locale,'start')}).click();
+    await expect(guest(view).getByRole('heading',{name:checkoutCopy[locale].basket,exact:true})).toBeVisible();
+    await guest(view).getByRole('article').filter({has:view.getByRole('heading',{name:'Fufu',exact:true})})
+      .getByRole('button',{name:checkoutCopy[locale].add,exact:true}).click();
+    await guest(view).getByRole('button',{name:checkoutCopy[locale].quote,exact:true}).click();
+    await guest(view).getByRole('button',{name:checkoutCopy[locale].confirm,exact:true}).click();
+    await expect(guest(view).locator('.rst-guest-round')).toHaveCount(1);
+    await localized.close();
+  }
+  await control(request,`${s.ref}/table/${s.table.table_ref}/rename`);
+  await guest(page).getByRole('button',{name:guestText('en','more')}).click();
+  const third=await add(page);expect(third).not.toBe(first);
+  await expect(guest(page).locator('.rst-guest-round').first()).toContainText('A1');
+  await expect(guest(page).locator('.rst-guest-round').last()).toContainText('A2');
+  for(const action of ['accept','start','ready','table_handover']){
+    await control(request,`${s.ref}/orders/${first}/${action}`);await refresh(page);
+  }
+  await expect(guest(page).getByText('Handed over',{exact:false}).first()).toBeVisible();
+  const rotated=await control(request,`${s.ref}/table/${s.table.table_ref}/rotate`) as {qr_url:string};
+  expect(rotated.qr_url).not.toBe(s.table.qr_url);
+  const old=await otherContext.newPage();await old.goto(s.table.qr_url);
+  await expect(old.locator('#guest-order').getByText(guestText('en','tableUnavailable'))).toBeVisible();
+  await control(request,`${s.ref}/table/${s.table.table_ref}/retire`);
+  const retired=await otherContext.newPage();await retired.goto(rotated.qr_url);
+  await expect(retired.locator('#guest-order').getByText(guestText('en','tableUnavailable'))).toBeVisible();
+  const malformed=await otherContext.newPage();
+  await malformed.goto(`/shida/restaurants/${s.ref}?table=broken`);
+  await expect(malformed.locator('#guest-order')).toHaveCount(0);
+  const counter=await otherContext.newPage();await enter(counter,s);
+  await quote(counter);await submit(counter);
+  await expect(counter.locator('.rst-guest-round')).toHaveCount(1);
+  await otherContext.close();
+});
+
+test('table order survives a committed submit response loss',async({page,request})=>{
+  const s=await control(request,'seed-table') as Seed & {table:{qr_url:string}};
+  await page.goto(s.table.qr_url);
+  await guest(page).getByRole('button',{name:guestText('en','start')}).click();
+  const t=checkoutCopy.en;
+  await guest(page).getByRole('article').filter({has:page.getByRole('heading',{name:'Fufu',exact:true})})
+    .getByRole('button',{name:t.add,exact:true}).click();
+  await guest(page).getByRole('button',{name:t.quote,exact:true}).click();
+  let body:string|null=null,attempts=0;
+  await page.route('**/api/shida/restaurant-guests/**/submit/',async route=>{
+    attempts++;
+    if(attempts===1){body=route.request().postData();await route.fetch();return route.abort();}
+    expect(route.request().postData()).toBe(body);return route.continue();
+  });
+  await guest(page).getByRole('button',{name:t.confirm,exact:true}).click();
+  await expect(guest(page).getByRole('button',{name:guestText('en','retry')})).toBeVisible();
+  await guest(page).getByRole('button',{name:guestText('en','retry')}).click();
+  await expect(guest(page).locator('.rst-guest-round')).toHaveCount(1);
+  await expect(guest(page).locator('.rst-guest-round')).toContainText('A1');
+  expect(attempts).toBe(1);
+});
+
 test("general QR, independent guests, immutable repeat rounds, ready-only pickup and separate currencies on phone",async({page,browser,request})=>{
   const s=await seed(request);await page.setViewportSize({width:390,height:844});await enter(page,s);
   expect(page.url()).toContain(`/shida/restaurants/${s.ref}`);
@@ -75,6 +158,38 @@ test("general QR, independent guests, immutable repeat rounds, ready-only pickup
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:"docs/evidence/restaurant-guest-phone.png",fullPage:true,mask:[page.locator(".rst-guest-code")]});
   await secondContext.close();
+});
+
+test('real Backend applies the optional setting only to newly confirmed guest rounds',async({page,request})=>{
+  const s=await seed(request);await enter(page,s);await quote(page);
+  const pending=await submit(page);
+  await expect(guest(page).getByText(guestText('en','awaiting'))).toBeVisible();
+  await control(request,`${s.ref}/auto-accept/on`);
+  await guest(page).getByRole('button',{name:guestText('en','more')}).click();await quote(page);
+  const accepted=await submit(page);
+  await expect(guest(page).getByText(guestText('en','accepted'))).toBeVisible();
+  expect(accepted).not.toBe(pending);
+  await control(request,`${s.ref}/auto-accept/off`);
+  await guest(page).getByRole('button',{name:guestText('en','more')}).click();await quote(page);
+  const later=await submit(page);
+  await expect(guest(page).getByText(guestText('en','awaiting'))).toBeVisible();
+  expect(later).not.toBe(accepted);
+  await expect(guest(page).locator('.rst-guest-round')).toHaveCount(3);
+});
+
+test('Personal owner controls guest QR acceptance in the Restaurant workspace',async({page,request,context})=>{
+  const s=await seed(request);
+  const {token}=await control(request,`${s.ref}/owner-session`);
+  await context.addCookies([{name:'nihiloba_personal_session',value:token,domain:'localhost',path:'/api/shida',httpOnly:true,sameSite:'Lax',secure:true}]);
+  await page.goto('/shida/seller/restaurants');
+  await page.getByRole('button',{name:'Edit',exact:true}).click();
+  await page.getByRole('button',{name:'Order intake',exact:true}).click();
+  const controlCard=page.locator('.rst-card').filter({has:page.getByRole('heading',{name:'Guest QR auto acceptance'})});
+  await expect(controlCard.getByText('Off: new guest orders wait for your confirmation.')).toBeVisible();
+  await controlCard.getByRole('button',{name:'Turn on'}).click();
+  await expect(controlCard.getByText('On: eligible new guest orders are accepted when submitted.')).toBeVisible();
+  await controlCard.getByRole('button',{name:'Turn off'}).click();
+  await expect(controlCard.getByText('Off: new guest orders wait for your confirmation.')).toBeVisible();
 });
 
 for(const committed of [true,false])test(`reconnect rereads state and retries original uncertain submission (${committed?"committed":"unreceived"})`,async({page,request})=>{

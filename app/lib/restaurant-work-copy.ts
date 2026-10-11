@@ -2,6 +2,8 @@ import type { RestaurantLocale } from '@/app/services/shida/restaurants-client';
 const copy: Record<string, [string,string,string,string]> = {
  assisted:['Staff-entered preparation order','Commande du personnel à préparer','Commande ya mosali mpo na kolamba','Oda ya mhudumu kwa maandalizi'],
  assisted_handover:['Attest physical handover','Attester la remise physique','Ndima bopesi ya bilei','Thibitisha kukabidhi chakula'],
+ table_handover:['Confirm delivery to table','Confirmer la remise à table','Ndima bopesi na mesa','Thibitisha kukabidhi mezani'],
+ table_delivery:['Prepared table delivery','Service préparé à table','Komema bilei ya kolamba na mesa','Huduma ya mezani baada ya maandalizi'],
  verify_delivery:['Verify delivery','Vérifier la livraison','Tala code ya bopesi','Hakiki uwasilishaji'],
  delivery_exception:['Complete without code','Terminer sans code','Silisa kozanga code','Kamilisha bila msimbo'],
  deliveryCodePrompt:['Customer delivery code','Code de réception du client','Code ya bopesi ya client','Msimbo wa kupokea wa mteja'],

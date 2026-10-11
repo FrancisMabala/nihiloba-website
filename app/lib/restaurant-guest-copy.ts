@@ -1,6 +1,11 @@
 import type { RestaurantLocale } from "../services/shida/restaurants-client";
 const copy = {
   title:["Order without an account","Commander sans compte","Somba kozanga compte","Agiza bila akaunti"],
+  table:["Delivery to table","Service à table","Komema na mesa","Kuhudumiwa mezani"],
+  tableProof:["Staff confirms physical delivery to your table. This does not verify payment.","Le personnel confirme la remise à votre table. Cela ne vérifie pas le paiement.","Mosali akondima bopesi na mesa na yo. Yango elakisi te ete ofuti.","Mhudumu anathibitisha kukabidhi mezani. Hii haithibitishi malipo."],
+  tableUnavailable:["This table QR is unavailable. Ask the restaurant for a current QR or use the general menu QR for counter pickup.","Ce QR de table est indisponible. Demandez un QR actuel ou utilisez le QR général pour le retrait au comptoir.","QR ya mesa oyo ezali kosala te. Senga QR ya sika to salela QR ya menu mpo na kozwa na comptoir.","QR ya meza hii haipatikani. Omba QR ya sasa au tumia QR ya jumla kuchukua kauntani."],
+  accepted:["Restaurant accepted this order.","Le restaurant a accepté cette commande.","Restaurant endimi commande oyo.","Mgahawa umekubali agizo hili."],
+  awaiting:["Awaiting restaurant confirmation.","En attente de confirmation du restaurant.","Ezali kozela restaurant endima.","Linasubiri uthibitisho wa mgahawa."],
   start:["Start a private visit","Commencer une visite privée","Bandela visite ya sekele","Anza ziara ya faragha"],
   more:["Order more","Commander encore","Somba lisusu","Agiza tena"],
   summary:["Your visit · every round","Votre visite · toutes les commandes","Visite na yo · bacommande nyonso","Ziara yako · kila agizo"],

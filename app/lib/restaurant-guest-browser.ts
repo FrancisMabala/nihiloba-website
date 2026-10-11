@@ -4,8 +4,8 @@ export type GuestLine = {key:string;item_ref:string;quantity?:number;selected_am
 export type GuestSelections = {standalone:GuestLine[];plates:{key:string;components:GuestLine[]}[]};
 export const emptyGuestSelections = ():GuestSelections => ({standalone:[],plates:[]});
 export type GuestBasket = {basket_ref:string;revision:number;selections:GuestSelections;quote:Terms|null;quote_ref:string|null;order_ref:string|null;food_preference:string|null;window_ref:string|null};
-export type GuestVisit = {visit_ref:string;order_until:string;access_until:string;can_add_round:boolean;rounds:Order[];totals:Record<"completed"|"active"|"excluded",Record<"CDF"|"USD",string>>};
-export type GuestEntry = {entry_context:string;expires_at:string;methods:{pickup?:{windows:{public_ref:string;starts_at:string;ends_at:string;timezone_name?:string}[]}};copy:Record<string,string>};
+export type GuestVisit = {visit_ref:string;order_until:string;access_until:string;can_add_round:boolean;table?:{label:string;method:'table_delivery'}|null;rounds:Order[];totals:Record<"completed"|"active"|"excluded",Record<"CDF"|"USD",string>>};
+export type GuestEntry = {entry_context:string;expires_at:string;table?:{label:string;method:'table_delivery'}|null;methods:{pickup?:{windows:{public_ref:string;starts_at:string;ends_at:string;timezone_name?:string}[]}};copy:Record<string,string>};
 export type GuestAction = Readonly<{path:string;method:string;body?:string}>;
 export class GuestError extends Error {
   constructor(public status:number,public detail:string,public retryAfter:number=0,public authorityRequest=false) {super("Guest request failed");}

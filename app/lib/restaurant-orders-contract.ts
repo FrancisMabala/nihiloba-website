@@ -16,6 +16,7 @@ export const orderRoutes: [RegExp, readonly string[]][] = [
   [new RegExp(`^RST_${ref}/kitchen/orders/${ref}$`), ['GET']],
   [new RegExp(`^RST_${ref}/kitchen/orders/${ref}/actions/(start|ready)$`), ['POST']],
   [new RegExp(`^RST_${ref}/(order-configuration|orders|order-feed|order-summary)$`), ['GET']],
+  [new RegExp(`^RST_${ref}/guest-auto-accept$`), ['GET','PUT']],
   [new RegExp(`^RST_${ref}/orders/${ref}(/(receipt|destination))?$`), ['GET']],
   [new RegExp(`^RST_${ref}/orders/${ref}/actions/(${orderActions.join('|')})$`), ['POST']],
   [new RegExp(`^RST_${ref}/(pickup-intake|delivery-intake)$`), ['PUT']],
@@ -23,7 +24,7 @@ export const orderRoutes: [RegExp, readonly string[]][] = [
   [new RegExp(`^RST_${ref}/counter-baskets/${ref}$`), ['GET', 'PATCH']],
   [new RegExp(`^RST_${ref}/counter-baskets/${ref}/(quote|finalize)$`), ['POST']],
 ];
-export const isOrderPath = (path: string) => isPreparationPath(path) || /\/(orders|order-|counter-baskets|pickup-intake|delivery-intake|menu-batches|kitchen|pos)/.test(path);
+export const isOrderPath = (path: string) => isPreparationPath(path) || /\/(orders|order-|counter-baskets|pickup-intake|delivery-intake|guest-auto-accept|menu-batches|kitchen|pos)/.test(path);
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const str = (v: unknown, n = 200): v is string => typeof v === 'string' && !!v.trim() && v.length <= n;
 const exact = (v: Record<string, unknown>, keys: string[]) => Object.keys(v).every(k => keys.includes(k));
@@ -73,6 +74,7 @@ export function validOrderBody(path: string, value: unknown): boolean {
   if (/\/order-measurement$/.test(path)) return !Object.keys(v).length;
   const batch = /\/menu-batches$/.test(path);
   if (!str(v.operation_key,batch ? 120 : 200)) return false;
+  if (path.endsWith('/guest-auto-accept')) return exact(v,['operation_key','enabled','expected_revision']) && typeof v.enabled === 'boolean' && Number.isSafeInteger(v.expected_revision) && Number(v.expected_revision) >= 0;
   if (batch) return exact(v,['operation_key','expected_updated_at','category_ref','category_name','rows']) && str(v.expected_updated_at,64) && (v.category_ref != null) !== (v.category_name != null) && (v.category_ref == null || str(v.category_ref,64)) && (v.category_name == null || str(v.category_name,200)) && list(v.rows,20,r => obj(r) && exact(r,['key','fields','target_ref','separate','skip']) && str(r.key,64) && (r.target_ref == null || str(r.target_ref,64)) && (r.separate === undefined || typeof r.separate === 'boolean') && (r.skip === undefined || typeof r.skip === 'boolean') && [r.target_ref != null,r.separate === true,r.skip === true].filter(Boolean).length <= 1 && (r.skip === true && r.fields === undefined || itemFields(r.fields)),1) && new Set((v.rows as Record<string,unknown>[]).map(r=>r.key)).size === (v.rows as unknown[]).length && (v.rows as Record<string,unknown>[]).some(r=>r.skip !== true);
   if (/\/counter-baskets$/.test(path)) return exact(v,['operation_key']);
   if (/\/order-operations\/recover$/.test(path)) return exact(v,['operation_key','kind','target_ref']) && str(v.target_ref,64) && enumOf(v.kind,['basket','intake','delivery_config','edit','quote','submit','destination','delivery_quote','delivery_submit','counter_handoff','action']);

@@ -26,6 +26,7 @@ import {serviceText} from '../../lib/restaurant-service-copy';
 import { RestaurantCounter } from './restaurant-counter';
 import { RestaurantInventory, inventoryTitle } from './restaurant-inventory';
 import { RestaurantIntake } from './restaurant-intake';
+import { RestaurantGuestAutoAccept } from './restaurant-guest-auto-accept';
 import { RestaurantActivity } from './restaurant-activity';
 import { RestaurantMenuBatch } from './restaurant-menu-batch';
 import { leaveWork } from '@/app/lib/restaurant-work';
@@ -284,7 +285,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
         {tab === 'pos' && <RestaurantCounter key={`${path}/pos`} path={path} binding={binding} locale={locale} onFailure={workFailure} pos onFreeCounter={()=>{setPosAvailable(false);setTab('counter');}}/>}
         {tab === 'counter' && <RestaurantCounter key={path} path={path} binding={binding} locale={locale} onFailure={workFailure}/>}
         {tab === 'inventory' && <RestaurantInventory key={path} path={path} locale={locale} read={readRestaurant} perform={performRestaurant}/>}
-        {tab === 'intake' && <RestaurantIntake key={path} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onFailure={workFailure}/>}
+        {tab === 'intake' && <><RestaurantIntake key={path} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onFailure={workFailure}/><RestaurantGuestAutoAccept path={path} binding={binding} locale={locale} onFailure={workFailure}/></>}
         {tab === 'activity' && <RestaurantActivity key={path} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onFailure={workFailure}/>}
         {tab === 'batch' && <RestaurantMenuBatch key={path} path={path} binding={binding} locale={locale} onFailure={workFailure}/>}
         {tab === "profile" && <article className="rst-card"><p>{t(selected.status)}</p>{details(selected.profile, profileKeys)}<p>{t("location_confirmed")}: {t(selected.location_confirmed ? "yes" : "no")}</p>{selected.missing_publication_fields.length > 0 && <p>{t("missing")}: {selected.missing_publication_fields.map(t).join(", ")}</p>}<div className="rst-actions">{selected.actions.includes("edit") && button("edit", () => void run(() => open("profile")))}{(["publish", "unpublish"] as const).filter(action => selected.actions.includes(action)).map(action => <span key={action}>{button(action, () => void run(() => open(action)))}</span>)}</div></article>}
