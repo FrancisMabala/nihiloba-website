@@ -8,7 +8,7 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "frame-src 'none'",
-  "img-src 'self' data: https://res.cloudinary.com",
+  "img-src 'self' data: blob: https://res.cloudinary.com https://api.nihiloba.com/api/restaurants/photos/",
   "manifest-src 'self'",
   "media-src 'self'",
   "object-src 'none'",

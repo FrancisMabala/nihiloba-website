@@ -11,7 +11,7 @@ for (const width of [390, 768, 1440]) test(`editorial discovery at ${width}px`, 
  await expect.poll(() => art.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
  const band = (await banner.boundingBox())!, intro = (await page.locator(".rd-intro").boundingBox())!, search = (await page.locator(".rd-search").boundingBox())!;
  await expect(banner).toHaveCount(1);
- expect(band.width).toBe(Math.min(width, 720)); expect(band.height).toBeCloseTo(band.width * 724 / 2171, 1);
+ expect(band.width).toBe(Math.min(width, 600)); expect(band.height).toBeCloseTo(band.width * 724 / 2171, 1);
  expect(await art.evaluate(img => getComputedStyle(img).objectFit)).toBe("contain");
  expect(band.y).toBeGreaterThanOrEqual(intro.y + intro.height); expect(search.y).toBeGreaterThan(band.y + band.height);
  const resource = await art.evaluate((img: HTMLImageElement) => ({ src: img.currentSrc, transfer: performance.getEntriesByName(img.currentSrc).map(e => ({ transfer: (e as PerformanceResourceTiming).transferSize, body: (e as PerformanceResourceTiming).encodedBodySize })) }));
@@ -35,7 +35,7 @@ test("explicit search, hidden values, native keyboard filters and type chips", a
 test("menu, details and back retain result context; language selector retains query", async ({ page }) => {
  await page.goto("/fr/shida/restaurants/?city=Kinshasa&page=2");
  await page.getByRole("combobox", { name: "Langue des restaurants" }).selectOption("sw"); await expect(page).toHaveURL(/\/sw\/shida\/restaurants\/?.*city=Kinshasa.*page=2/);
- await page.locator(".rd-menu").click(); await expect(page.locator("#item-ITM-UNIT:visible").getByText("5.00 USD", { exact: false })).toBeVisible();
+ await page.locator(".rd-menu").click(); await expect(page.locator("#item-ITM-UNIT:visible").getByText("5 USD", { exact: false })).toBeVisible();
  await page.getByRole("link", { name: "Rudi kwenye matokeo" }).click(); await expect(page).toHaveURL(/city=Kinshasa&page=2#restaurant-RST-TEST1/);
  await page.locator(".rd-card h3 a").click(); await expect(page.getByRole("heading", { name: "Biashara inayomiliki" })).toBeVisible();
 });

@@ -1,0 +1,421 @@
+{
+  "date": "2026-10-12",
+  "base_head": "b5096561ec71c7447f5c62004d8156ae1b1de6d0",
+  "scope": "Local only; no deployment, commit, push, live upload, production intake or Services marketplace change",
+  "backend_contract": {
+    "path": "C:/NIHILOBA/Backend/docs/restaurants_photo_contract.md",
+    "sha256": "74e473d588c57e4c8d57abbedfa2580e53e973aea5b2b345d1161f2e183cabca",
+    "details": "../../restaurants-mobile-photos.md"
+  },
+  "checks": {
+    "unit": {
+      "passed": 307,
+      "failed": 0,
+      "files": 30,
+      "command": "$tests=Get-ChildItem tests/restaurant*.test.* | ForEach-Object FullName; node node_modules/vitest/vitest.mjs run $tests --reporter=json --outputFile=.s3a-local/photos/unit-results.json",
+      "file_results": [
+        {
+          "file": "restaurant-basic.test.ts",
+          "status": "passed",
+          "tests": 4
+        },
+        {
+          "file": "restaurant-c1e.test.ts",
+          "status": "passed",
+          "tests": 7
+        },
+        {
+          "file": "restaurant-checkout.test.tsx",
+          "status": "passed",
+          "tests": 5
+        },
+        {
+          "file": "restaurant-daily-contract.test.ts",
+          "status": "passed",
+          "tests": 4
+        },
+        {
+          "file": "restaurant-delivery-verification.test.ts",
+          "status": "passed",
+          "tests": 2
+        },
+        {
+          "file": "restaurant-guest-auto-accept.test.ts",
+          "status": "passed",
+          "tests": 5
+        },
+        {
+          "file": "restaurant-guest.test.ts",
+          "status": "passed",
+          "tests": 12
+        },
+        {
+          "file": "restaurant-kitchen.test.tsx",
+          "status": "passed",
+          "tests": 5
+        },
+        {
+          "file": "restaurant-money-contract.test.ts",
+          "status": "passed",
+          "tests": 4
+        },
+        {
+          "file": "restaurant-photos.test.tsx",
+          "status": "passed",
+          "tests": 8
+        },
+        {
+          "file": "restaurant-pickup.test.ts",
+          "status": "passed",
+          "tests": 2
+        },
+        {
+          "file": "restaurant-pos.test.tsx",
+          "status": "passed",
+          "tests": 7
+        },
+        {
+          "file": "restaurant-preference.test.tsx",
+          "status": "passed",
+          "tests": 1
+        },
+        {
+          "file": "restaurant-preparation-contract.test.ts",
+          "status": "passed",
+          "tests": 13
+        },
+        {
+          "file": "restaurant-projections.test.ts",
+          "status": "passed",
+          "tests": 16
+        },
+        {
+          "file": "restaurant-seller.test.ts",
+          "status": "passed",
+          "tests": 45
+        },
+        {
+          "file": "restaurant-service-contract.test.ts",
+          "status": "passed",
+          "tests": 9
+        },
+        {
+          "file": "restaurant-service-guest.test.ts",
+          "status": "passed",
+          "tests": 4
+        },
+        {
+          "file": "restaurants-marketplace.test.tsx",
+          "status": "passed",
+          "tests": 30
+        },
+        {
+          "file": "restaurant-basic.test.ts",
+          "status": "passed",
+          "tests": 4
+        },
+        {
+          "file": "restaurant-c1e.test.ts",
+          "status": "passed",
+          "tests": 7
+        },
+        {
+          "file": "restaurant-checkout.test.tsx",
+          "status": "passed",
+          "tests": 5
+        },
+        {
+          "file": "restaurant-delivery-verification.test.ts",
+          "status": "passed",
+          "tests": 2
+        },
+        {
+          "file": "restaurant-kitchen.test.tsx",
+          "status": "passed",
+          "tests": 5
+        },
+        {
+          "file": "restaurant-pickup.test.ts",
+          "status": "passed",
+          "tests": 2
+        },
+        {
+          "file": "restaurant-pos.test.tsx",
+          "status": "passed",
+          "tests": 7
+        },
+        {
+          "file": "restaurant-preference.test.tsx",
+          "status": "passed",
+          "tests": 1
+        },
+        {
+          "file": "restaurant-projections.test.ts",
+          "status": "passed",
+          "tests": 16
+        },
+        {
+          "file": "restaurant-seller.test.ts",
+          "status": "passed",
+          "tests": 45
+        },
+        {
+          "file": "restaurants-marketplace.test.tsx",
+          "status": "passed",
+          "tests": 30
+        }
+      ]
+    },
+    "production_browser": {
+      "startTime": "2026-10-12T20:41:36.146Z",
+      "duration": 45676.892,
+      "expected": 37,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "command": "RESTAURANT_TEST_EXTERNAL_SERVER=1 RESTAURANT_TEST_BASE_URL=http://127.0.0.1:3014 node node_modules/@playwright/test/cli.js test --config playwright.restaurant.config.ts tests/browser/restaurant-photos.browser.ts --reporter=line,json"
+    },
+    "regression_browser": {
+      "startTime": "2026-10-12T20:40:54.912Z",
+      "duration": 77949.79800000001,
+      "expected": 39,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "command": "RESTAURANT_TEST_EXTERNAL_SERVER=1 RESTAURANT_TEST_BASE_URL=http://127.0.0.1:3013 node node_modules/@playwright/test/cli.js test --config playwright.restaurant.config.ts tests/browser/restaurant-seller.browser.ts tests/browser/restaurant-discovery.browser.ts tests/browser/restaurant-detail-design.browser.ts tests/browser/restaurant-checkout.browser.ts --reporter=line,json"
+    },
+    "build": {
+      "command": "node node_modules/next/dist/bin/next build",
+      "exit_code": 0,
+      "static_pages": 84
+    },
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "exit_code": 0
+    },
+    "lint": {
+      "command": "node node_modules/eslint/bin/eslint.js <all changed/new ts,tsx,mjs files>",
+      "errors": 0,
+      "warnings": 0
+    },
+    "translations": "New photo copy and neutral guest title provided in EN/FR/LN/SW. Typed keys, focused completeness test and all-locale public/seller/guest render checks. Seller names/descriptions/categories/units remain original. Native-speaker acceptance pending.",
+    "whitespace": "git diff --check passed; new source/report text scanned for trailing whitespace and U+FFFD replacement characters."
+  },
+  "viewports": {
+    "public": [
+      "360x1024",
+      "390x1024",
+      "430x1024",
+      "768x1024",
+      "820x1024",
+      "1024x768"
+    ],
+    "public_languages": [
+      "en",
+      "fr",
+      "ln",
+      "sw"
+    ],
+    "seller_and_private_guest": [
+      "en:360x1024",
+      "fr:430x1024",
+      "ln:768x1024",
+      "sw:1024x768"
+    ],
+    "special_phone_flows": "390x844"
+  },
+  "fixture_server": "RESTAURANT_FIXTURE_MODE=1 SHIDA_API_BASE_URL=https://restaurant-fixture.invalid NODE_OPTIONS=\"--import ./scripts/restaurants-photo-fixture-fetch.mjs\"; next dev 3013 / next start 3014. Protected seller/guest calls intercepted with synthetic isolated fixtures.",
+  "screenshots": [
+    {
+      "file": "menu-fr-390.png",
+      "width": 390,
+      "height": 1600,
+      "full_capture_height": 6869,
+      "sha256": "a1ab5c8a3987faf124279a38a57071e8c7d7ab79ffa28b253c5eb9524eb3cda1",
+      "note": "Top excerpt of full-page screenshot"
+    },
+    {
+      "file": "menu-fr-768.png",
+      "width": 768,
+      "height": 1600,
+      "full_capture_height": 4279,
+      "sha256": "9b45b87bbcdcc8a40042bb744e0cc4fa7c9c16d926661fcdfa981fd75fb008e2",
+      "note": "Top excerpt of full-page screenshot"
+    },
+    {
+      "file": "listing-390.png",
+      "width": 390,
+      "height": 1600,
+      "full_capture_height": 3104,
+      "sha256": "a3b773007ab0adc02b69529f0404be4b9bbbfd6c8916353052b62422ffca72f1",
+      "note": "Top excerpt of full-page screenshot"
+    },
+    {
+      "file": "profile-no-photo-390.png",
+      "width": 390,
+      "height": 1400,
+      "full_capture_height": 2593,
+      "sha256": "842801d4b5b3afdbfec8c76cb7447f5e6423597b15985def77f2ef2a198058a2",
+      "note": "Top excerpt of full-page screenshot"
+    },
+    {
+      "file": "seller-confirm-390.png",
+      "width": 390,
+      "height": 2400,
+      "full_capture_height": 3450,
+      "sha256": "0a308f5247590fd62e6c48fcdfe600f55e3e01b94aef579408a0e1fdca43c47a",
+      "note": "Top excerpt of full-page screenshot"
+    },
+    {
+      "file": "batch-fr-430.png",
+      "width": 430,
+      "height": 2400,
+      "full_capture_height": 4292,
+      "sha256": "16ae539eb7760dfdd5757915e91b10bcd4248b38ac89a17b8955b0396492faa7",
+      "note": "Top excerpt of full-page screenshot"
+    },
+    {
+      "file": "guest-ln-768.png",
+      "width": 720,
+      "height": 1800,
+      "full_capture_height": 3294,
+      "sha256": "f2f7702b6e6caeebb5ae0410b3eaaca69b482f03979bfc4627ea985f3169ebd0",
+      "note": "Guest section screenshot within 768px viewport"
+    },
+    {
+      "file": "one-photo-slow-390.png",
+      "width": 390,
+      "height": 1600,
+      "full_capture_height": 4755,
+      "sha256": "64a8acf95fd8b5f8b501d0c9be9c383aa799ea340373e57f78cefdbf4ee985c1",
+      "note": "Top excerpt of full-page screenshot"
+    }
+  ],
+  "limitations": [
+    "Synthetic image transport fixtures, not real establishment/dish photography or live provider acceptance.",
+    "No physical device camera/orientation acceptance or native-speaker sign-off.",
+    "Backend has no documented establishment-photo removal operation; replacement supported, item removal uses existing nullable image_url PATCH.",
+    "Organization Dashboard photo UI follow-up remains.",
+    "Slow states use delayed image/upload responses, not a physical cellular-network measurement."
+  ],
+  "tracker": {
+    "path": "C:/NIHILOBA/Backend/docs/evidence/restaurants_whatsapp_2026_10_12/release_validation_tracker.xlsx",
+    "sha256": "d01ec63ee0d92a4f1669043cf535cbb27df15c8015c6a78442d944ffb0577f65",
+    "preservation_report": "tracker-preservation.json",
+    "changed_cells": 7
+  },
+  "changed_files": [
+    {
+      "path": "app/api/shida/personal/restaurants/[[...path]]/route.ts",
+      "sha256": "2acc4d4044dbaa60c6eb9201d614fbc9312e43cfa8b3c3934ff2b55ee616cee6"
+    },
+    {
+      "path": "app/components/shida/restaurant-detail.css",
+      "sha256": "f42a59123b99fa3d0a9ca11d463ec46bd4f88e29d92c733398b3d5bddf96bd60"
+    },
+    {
+      "path": "app/components/shida/restaurant-discovery.css",
+      "sha256": "96ece65c513c191dfddb345fd2c8760226b848b3cbe1dee764ad87fa85b05b81"
+    },
+    {
+      "path": "app/components/shida/restaurant-discovery.tsx",
+      "sha256": "5910dfd52909e59ac0373ee417ee2cfeade8ccd660e6fe37bf2c7073757a8964"
+    },
+    {
+      "path": "app/components/shida/restaurant-guest.css",
+      "sha256": "cfd6ebdb795a53ea5cd9f71eff63efdacc9181d74b10365a5bdc54a6bfd4f98b"
+    },
+    {
+      "path": "app/components/shida/restaurant-menu-batch.tsx",
+      "sha256": "347df06d766540ba01a82cd84eec2f47b62b07c58486a7e2b88a97127fa4ce50"
+    },
+    {
+      "path": "app/components/shida/restaurant-menu-choice.tsx",
+      "sha256": "8f486ad994eb87fdd3e014f733f6a6617143bac8be8d33c20a3386584a039366"
+    },
+    {
+      "path": "app/components/shida/restaurant-menu-price.tsx",
+      "sha256": "6c0dfd1844f488defb93a6c7960cb1ab7fbb68fc49854ee38cfc5abb33dc8059"
+    },
+    {
+      "path": "app/components/shida/restaurant-photo-editor.tsx",
+      "sha256": "7211d66038ef1531d276d527a4574571cf68d33226b1a743da713bb4c5bbb1d1"
+    },
+    {
+      "path": "app/components/shida/restaurant-photo.tsx",
+      "sha256": "f7b8ad6381f8b9668bb7a132e172184c50aeef654fbb44a932df55751ee8699e"
+    },
+    {
+      "path": "app/components/shida/restaurant-seller-workspace.tsx",
+      "sha256": "697cf9ef136bb00d02e3c78769860172fc057b36c807631a69d8e86f3fc56dd7"
+    },
+    {
+      "path": "app/components/shida/restaurant-seller.css",
+      "sha256": "8120ad20840bebf44300a90c71b2c26b6e19c79e87a422a33142f5b1176de1b0"
+    },
+    {
+      "path": "app/components/shida/restaurants.tsx",
+      "sha256": "ab6bdf36f9e4a56c08eb96fbe16937367bc48e04ed584f67ce9845c939ddcaeb"
+    },
+    {
+      "path": "app/lib/restaurant-guest-copy.ts",
+      "sha256": "9cfed6d605931a539cf4e5a23f8da8d87250e9fd068636c0d744ee58541e89f8"
+    },
+    {
+      "path": "app/lib/restaurant-photo-browser.ts",
+      "sha256": "9f10ab0ec6b6cbb606ac11580ed22c0a10e31351f3cad06b1c3317fb2c41161c"
+    },
+    {
+      "path": "app/lib/restaurant-photo-contract.ts",
+      "sha256": "8a2c6e69d15a16876d4d1bb7997feb492d7f2e5afab3b3f375167041fe6d39a4"
+    },
+    {
+      "path": "app/lib/restaurant-photo-copy.ts",
+      "sha256": "3171acbdd1f320e4b4b8684a8c5e2d5deb35797a679cc2c73465f43587479087"
+    },
+    {
+      "path": "app/lib/restaurant-photo-public.ts",
+      "sha256": "cd435dbe5736ab62d6861c81925d88be0c17c7935253e581df04a2eef8c14499"
+    },
+    {
+      "path": "app/lib/restaurant-seller-contract.ts",
+      "sha256": "7be5ee021931da7e0da5dcae8c8b168862855d83017ac12e00e1cd4788efa3e3"
+    },
+    {
+      "path": "app/services/shida/restaurants-client.ts",
+      "sha256": "b2fbdc0641797f4022196e852ed589dfbe3cbfea24df3982480a9a378b0f195e"
+    },
+    {
+      "path": "docs/restaurants-mobile-photos.md",
+      "sha256": "2c28c4e5e821dc3ea2d11a85d4fa87bc0e5beaa4f045d5ff3e4c55c12af0af98"
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "f7dc20f779d0ce6840221623815298631ac233c75933bdfb94bdbeb76ce03a64"
+    },
+    {
+      "path": "scripts/restaurants-photo-fixture-fetch.mjs",
+      "sha256": "f4308593b8a2c4bec9541f8764ed0eb864c724f1c8decded01be8b0892581bfd"
+    },
+    {
+      "path": "tests/browser/restaurant-detail-design.browser.ts",
+      "sha256": "e557033ca3d284b0c2d32413c5df9783031677017f9d656e363fc999e14abdd6"
+    },
+    {
+      "path": "tests/browser/restaurant-discovery.browser.ts",
+      "sha256": "05f24eaa1061d89050e8cc455763e6b422aaa0fbbcd3f213e88d71abdcd23f42"
+    },
+    {
+      "path": "tests/browser/restaurant-photos.browser.ts",
+      "sha256": "0d262595a4d8933accc8af8adb1c8e24d3ffeabdf9cfe5fa53d1ad96df9f0723"
+    },
+    {
+      "path": "tests/restaurant-photos.test.tsx",
+      "sha256": "2474bb91014d606e9029265a88d5992a0c4045079cda81a4a8b769a389b9bbdd"
+    },
+    {
+      "path": "tests/restaurants-marketplace.test.tsx",
+      "sha256": "55433f3f5d0991ef7e5e9792c08b91de9f2d14ae1296dc3bcd44f7709c5240f0"
+    }
+  ]
+}

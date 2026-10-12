@@ -1,6 +1,6 @@
 import type { RestaurantLocale } from "../services/shida/restaurants-client";
 const copy = {
-  title:["Order without an account","Commander sans compte","Somba kozanga compte","Agiza bila akaunti"],
+  title:["Visit without an account","Visite sans compte","Visite kozanga compte","Ziara bila akaunti"],
   table:["Delivery to table","Service à table","Komema na mesa","Kuhudumiwa mezani"],
   tableProof:["Staff confirms physical delivery to your table. This does not verify payment.","Le personnel confirme la remise à votre table. Cela ne vérifie pas le paiement.","Mosali akondima bopesi na mesa na yo. Yango elakisi te ete ofuti.","Mhudumu anathibitisha kukabidhi mezani. Hii haithibitishi malipo."],
   tableUnavailable:["This table QR is unavailable. Ask the restaurant for a current QR or use the general menu QR for counter pickup.","Ce QR de table est indisponible. Demandez un QR actuel ou utilisez le QR général pour le retrait au comptoir.","QR ya mesa oyo ezali kosala te. Senga QR ya sika to salela QR ya menu mpo na kozwa na comptoir.","QR ya meza hii haipatikani. Omba QR ya sasa au tumia QR ya jumla kuchukua kauntani."],

@@ -26,7 +26,7 @@
 .restaurant-detail .restaurant-menu-sections section{scroll-margin-top:110px}
 .restaurant-detail .restaurant-menu-sections h2{display:flex;gap:12px;align-items:center;font-size:1.4rem;margin:20px 0 0}
 .restaurant-detail .restaurant-menu-sections h2:after{content:"";height:1px;background:#bcb8a9;flex:1}
-.restaurant-detail .restaurant-grid{display:block}
+.restaurant-detail .restaurant-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:16px}
 .restaurant-detail .restaurant-menu-item{display:flex;gap:12px;border:0;border-bottom:1px solid #ddd5c8;border-radius:0;background:transparent;box-shadow:none;padding:16px 0;scroll-margin-top:110px}
 .restaurant-detail .restaurant-menu-item .restaurant-photo{width:80px;flex:0 0 80px;height:80px;aspect-ratio:auto}
 .restaurant-detail .restaurant-menu-item .marketplace-card-body{padding:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,45%);gap:8px 16px;flex:1;min-width:0}
@@ -50,3 +50,26 @@
 .restaurant-detail .restaurant-menu-empty h3{font-size:1.7rem;margin:0 0 16px}
 @media(max-width:900px){.restaurant-detail-header{grid-template-columns:minmax(0,1fr) 280px;gap:16px}.restaurant-header-art{width:280px}.restaurant-detail-columns{grid-template-columns:minmax(0,1fr) 250px;gap:20px}}
 @media(max-width:600px){.restaurant-detail{padding-top:10px}.restaurant-detail-top{gap:0}.restaurant-detail-header{grid-template-columns:1fr;gap:10px;margin:12px 0}.restaurant-header-art{width:200px;justify-self:end}.restaurant-detail-columns{grid-template-columns:1fr;gap:22px}.restaurant-detail-tabs{margin-bottom:16px}.restaurant-detail .restaurant-practical{padding:16px}.restaurant-detail .restaurant-menu-item .marketplace-card-body{gap:8px;grid-template-columns:minmax(0,1fr) minmax(120px,45%)}.restaurant-detail .restaurant-menu-item:has(.restaurant-photo){flex-wrap:wrap}.restaurant-detail .restaurant-menu-item .restaurant-photo{width:64px;height:64px;flex-basis:64px}.restaurant-detail .restaurant-menu-empty{padding:24px 16px}}
+
+/* Phone-first food cards; the practical panel moves below the menu on tablets. */
+.restaurant-detail :is(h1,h2,h3,p,a){overflow-wrap:anywhere}
+.restaurant-detail .restaurant-detail-header h1{font-weight:400;letter-spacing:-.035em}
+.restaurant-detail .restaurant-establishment-photo{position:relative;overflow:hidden;border-radius:12px;aspect-ratio:1.9;width:100%;max-height:220px;background:#f5efe3}
+.restaurant-detail .restaurant-establishment-photo>img{height:100%;aspect-ratio:auto;object-fit:cover}
+.restaurant-photo-illustration{display:flex;width:100%;height:100%;align-items:center;justify-content:center;background:#f5efe3}
+.restaurant-photo-illustration img{width:100%;height:auto;object-fit:contain}
+.restaurant-detail .restaurant-menu-item{display:flex;flex-direction:column;gap:0;border:1px solid #e3ddd0;border-radius:12px;padding:0;overflow:hidden;background:#fffdf9}
+.restaurant-detail .restaurant-menu-item .restaurant-photo{position:relative;width:100%;height:auto;aspect-ratio:1.9;flex:0 0 auto;background:#f5efe3}
+.restaurant-detail .restaurant-menu-item .restaurant-photo:empty{display:none}
+.restaurant-detail .restaurant-menu-item .restaurant-photo img{object-fit:cover}
+.restaurant-detail .restaurant-menu-item .marketplace-card-body{display:flex;flex-direction:column;gap:12px;padding:18px;width:100%}
+.restaurant-detail .restaurant-menu-item h3{font-size:1.35rem;line-height:1.25}
+.restaurant-detail .restaurant-item-price{text-align:left;font-size:1rem;margin-top:auto;font-variant-numeric:tabular-nums}
+.restaurant-detail .restaurant-item-price strong{font-weight:650}
+.restaurant-detail .restaurant-categories{gap:8px;padding:8px 0}
+.restaurant-detail .restaurant-categories a{border:1px solid #d8cec0;border-radius:24px;padding:10px 16px;text-decoration:none;background:#f7f4ed;max-width:100%}
+.restaurant-detail .restaurant-categories a:hover{background:#e8eee5}
+.restaurant-detail :is(a,summary,button):focus-visible{outline:3px solid #b58a38;outline-offset:3px}
+@media(max-width:1100px){.restaurant-detail-columns{grid-template-columns:minmax(0,1fr)}.restaurant-detail .restaurant-practical{margin-top:8px}.restaurant-detail .restaurant-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:768px){.restaurant-detail .restaurant-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:767px){.restaurant-detail-header{grid-template-columns:minmax(0,1fr);gap:18px}.restaurant-detail .restaurant-establishment-photo{max-height:180px}.restaurant-detail .restaurant-establishment-photo:has(.restaurant-photo-illustration){max-width:260px;aspect-ratio:2.5;justify-self:end}.restaurant-detail .restaurant-actions{grid-template-columns:minmax(0,1fr)}}

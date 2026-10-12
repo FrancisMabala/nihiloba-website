@@ -1,3 +1,4 @@
+import { restaurantPhotoUrl } from '../../lib/restaurant-photo-public';
 import { request, ShidaApiError } from "./public-client";
 import { safePublicActionUrl, safePublicImageUrl } from "../../lib/safe-public-url";
 
@@ -39,6 +40,7 @@ export function parseRestaurant(value: unknown) {
   const data = object(value), location = object(data.location);
   const summary = data.menu_summary == null ? null : object(data.menu_summary);
   const reviewSummary = data.review_summary == null ? null : object(data.review_summary);
+  const photo = data.establishment_photo == null ? null : object(data.establishment_photo);
   const logo = data.logo == null ? null : object(data.logo);
   return {
     ...identity(data), description: text(data.description), type_label: text(data.type_label),
@@ -47,6 +49,7 @@ export function parseRestaurant(value: unknown) {
     hours: hours(data.hours), opening_information: text(data.opening_information),
     service_modes: array(data.service_modes ?? []).map(required),
     images: array(data.images ?? []).map((value) => { const row = object(value); return { url: safePublicImageUrl(text(row.url)), alt: text(row.alt) }; }).filter((image) => image.url),
+    establishment_photo: photo ? { url: restaurantPhotoUrl(text(photo.url)), alt: text(photo.alt) } : null,
     logo: logo ? { url: safePublicImageUrl(text(logo.url)), alt: text(logo.alt) } : null,
     menu_summary: summary ? { available: integer(summary.available_count), sold_out: integer(summary.sold_out_count), temporarily_unavailable: integer(summary.temporarily_unavailable_count) } : null,
     review_summary: reviewSummary && reviewSummary.available === true ? {
@@ -65,7 +68,7 @@ export function parseMenuItem(value: unknown) {
   if (dated && dated.state !== "current") throw new ShidaApiError("malformed");
   return {
     ...identity(data), establishment_ref: reference(data.establishment_ref),
-    category: identity(category), description: text(data.description), image_url: safePublicImageUrl(text(data.image_url)),
+    category: identity(category), description: text(data.description), image_url: restaurantPhotoUrl(text(data.image_url)),
     presentation: choice(data.presentation, ["fixed_dish", "component"]),
     pricing_model: choice(data.pricing_model, ["UNKNOWN", "UNIT_PRICED", "AMOUNT_PRICED"]),
     currency: data.currency == null ? null : choice(data.currency, ["CDF", "USD"]),

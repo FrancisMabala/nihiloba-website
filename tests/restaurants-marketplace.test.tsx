@@ -43,7 +43,7 @@ describe("Restaurant released public contract", () => {
     const item=parseMenuItem({...monetary,amount_mode:'flexible',minimum_amount:'500.00',amount_step:'100.00',allowed_amounts:[]});
     const html=renderToStaticMarkup(<RestaurantPrice item={item} locale={locale}/>);
     expect(html).toContain(basicText(locale,'flexibleFrom'));
-    expect(html).toContain('500.00 CDF');expect(html).toContain('100.00 CDF');
+    expect(html).toContain('500 CDF');expect(html).toContain('100 CDF');
     expect(html).not.toContain(restaurantCopy[locale].amounts);
     expect(html).not.toContain('AMOUNT_PRICED');
   });
@@ -78,7 +78,7 @@ describe("Restaurant released public contract", () => {
     mockApi();
     const html = renderToStaticMarkup(await RestaurantListPage({ locale: "en" }));
     expect(html).toContain('aria-label="View establishment: Test Malewa"');
-    expect(html).toContain("Photo unavailable");
+    expect(html).not.toContain("Photo unavailable"); expect(html).toContain("restaurant-photo-illustration");
   });
   it("preserves results context when following a Business Restaurant activity", async () => {
     mockApi();
@@ -120,9 +120,9 @@ describe("Restaurant released public contract", () => {
     await expect(getRestaurantMenu("en", "RST-TEST1")).rejects.toThrow();
   });
   it("renders unit prices, configured amounts, unknown prices, components and current dated states distinctly", () => {
-    expect(renderToStaticMarkup(<RestaurantPrice item={parseMenuItem(unit)} locale="en"/>)).toContain("Unit price: 5.00 USD");
+    expect(renderToStaticMarkup(<RestaurantPrice item={parseMenuItem(unit)} locale="en"/>)).toContain("5 USD");
     const html = renderToStaticMarkup(<RestaurantMenu items={[monetary, unknown, dated].map(parseMenuItem)} locale="en"/>);
-    expect(html).toContain("Available monetary amounts"); expect(html).toContain("1000.00 CDF"); expect(html).toContain("Minimum amount"); expect(html).toContain("Price not specified"); expect(html).toContain("Sold out"); expect(html).toContain("Component"); expect(html).toContain("Current dated offering");
+    expect(html).toContain("Available monetary amounts"); expect(html).toContain("1\u202f000 CDF"); expect(html).toContain("Minimum amount"); expect(html).toContain("Price not specified"); expect(html).toContain("Sold out"); expect(html).not.toContain("Component"); expect(html).toContain("Current dated offering");
     expect(html).not.toMatch(/Add to cart|Order now|rating/);
   });
   it("renders backend status without using browser time", () => {

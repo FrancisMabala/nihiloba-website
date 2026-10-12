@@ -1,3 +1,4 @@
+import { photoRoutes, isPhotoPath, validPhotoQuery, validPhotoAttachment } from './restaurant-photo-contract';
 import { isOrderPath, orderRoutes, validOrderBody, validOrderQuery } from './restaurant-orders-contract';
 import {serviceRoutes,isServicePath,validServiceBody,validServiceQuery} from './restaurant-service-contract';
 import {dailyRoutes,isDailyPath,validDailyBody,validDailyQuery} from './restaurant-daily-contract';
@@ -7,6 +8,7 @@ export const sellerRoutes: [RegExp, readonly string[]][] = [
   [/^RST_[A-Za-z0-9_-]+\/reservations\/setting$/, ["GET", "PUT"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/RRS_[A-Za-z0-9_-]+$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/RRS_[A-Za-z0-9_-]+\/(accept|reject|cancel|arrive|complete)$/, ["POST"]],
+  ...photoRoutes,
   ...orderRoutes,
   ...serviceRoutes.map(([pattern,methods]):[RegExp,readonly string[]]=>[new RegExp(pattern.source.replace('(?:service|stations/service)','service')),methods]),
   ...dailyRoutes,
@@ -73,6 +75,7 @@ export function allowedSellerRoute(path: string, method: string): boolean {
   return !path.includes('/stations/') && path.length < 400 && sellerRoutes.some(([pattern, methods]) => pattern.test(path) && methods.includes(method));
 }
 export function validSellerQuery(path: string, method: string, query: URLSearchParams): boolean {
+  if (isPhotoPath(path)) return validPhotoQuery(path, query);
   if (path.includes('/reservations')) return [...query].every(([key,value]) => path.endsWith('/reservations') && ['page','page_size'].includes(key) && query.getAll(key).length===1 && /^[1-9]\d{0,3}$/.test(value) && (key!=='page_size'||Number(value)<=50));
   if (isDailyPath(path)) return validDailyQuery(path,method,query);
   if (isServicePath(path)) return validServiceQuery(path,method,query);
@@ -91,6 +94,7 @@ export function validSellerQuery(path: string, method: string, query: URLSearchP
 }
 function object(value: unknown): value is Record<string, unknown> { return !!value && typeof value === "object" && !Array.isArray(value); }
 export function validSellerBody(path: string, method: string, value: unknown): boolean {
+  if (isPhotoPath(path)) return method === "POST" && path.endsWith("/attach") && validPhotoAttachment(value);
   if (path.includes('/reservations')) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
     const row=value as Record<string,unknown>, keys=Object.keys(row).sort().join(',');
@@ -141,3 +145,5 @@ for (const code of ['restaurant_feed_refresh_required','restaurant_quote_changed
 for (const code of ["restaurant_window_past", "restaurant_window_bounds", "restaurant_window_hours", "restaurant_window_closure", "restaurant_time_invalid", "restaurant_time_ambiguous", "restaurant_timezone_unavailable", "restaurant_time_overlap", "restaurant_stale", "restaurant_intake_closed"]) sellerErrorCodes.add(code);
 for (const code of ["review_stale", "review_invalid_text", "review_invalid_reason", "review_unavailable"]) sellerErrorCodes.add(code);
 for (const code of ['restaurant_financial_conflict','restaurant_time_zone_required','restaurant_time_zone_conflict','restaurant_day_not_open','restaurant_day_not_ended','restaurant_day_incomplete','restaurant_day_acknowledgement_required','restaurant_day_closed']) sellerErrorCodes.add(code);
+
+for (const code of ["restaurant_photo_too_large", "restaurant_idempotency_conflict", "restaurant_invalid_input"]) sellerErrorCodes.add(code);

@@ -12,3 +12,13 @@
 @media (max-width: 480px) { .rst-guest { padding: .8rem; } .rst-guest .rst-checkout-items { grid-template-columns: minmax(0, 1fr); } }
 .rst-guest-payment{border:1px solid #a4b9ad;border-radius:12px;padding:1rem;margin:1rem 0;background:#f7faf7;overflow-wrap:anywhere}
 .rst-guest-payment div{display:inline-block;min-width:min(100%,12rem);margin:.4rem 1rem .4rem 0}
+.restaurant-detail .rst-guest{background:#f7f4ed;border-color:#ded5c6;color:#082d25;border-radius:12px;padding:24px;min-width:0}
+.restaurant-detail .rst-guest>h2{font-weight:400;font-size:1.8rem}
+.restaurant-detail .rst-guest .rst-checkout-items{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.restaurant-detail .rst-guest .rst-checkout-items>article{min-width:0;border:1px solid #ded5c6;border-radius:10px;background:#fffdf9;padding:18px}
+.restaurant-detail .rst-guest :is(button,input,select){min-height:48px;max-width:100%;font-size:1rem}
+@media(min-width:768px){.restaurant-detail .rst-guest .rst-checkout-items{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:430px){.restaurant-detail .rst-guest{padding:16px}.restaurant-detail .rst-guest .rst-checkout-items>article{padding:14px}}
+
+.rst-choice-photo{position:relative;aspect-ratio:1.9;border-radius:8px;overflow:hidden;margin-bottom:16px;background:#f5efe3}
+.rst-choice-photo img{object-fit:cover}.rst-choice-photo:empty{display:none}

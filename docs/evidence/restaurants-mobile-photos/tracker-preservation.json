@@ -1,0 +1,22 @@
+{
+  "source": "C:\\NIHILOBA\\Backend\\docs\\evidence\\restaurants_whatsapp_2026_10_12\\release_validation_tracker.xlsx",
+  "source_sha256": "25f59e6bc8184d985e4edca5183425128040f97d69f90380d54f8d6369c1e494",
+  "output_sha256": "d01ec63ee0d92a4f1669043cf535cbb27df15c8015c6a78442d944ffb0577f65",
+  "cells": {
+    "Automated checks": {
+      "E34": "Backend photo checks and Personal web upload/recovery confirmed locally in FR/EN/LN/SW. Real-phone and Meta acceptance pending.",
+      "J34": "Backend restaurants_photo_contract.md; Website docs/restaurants-mobile-photos.md. Native language and live provider acceptance still required."
+    },
+    "Issues decisions": {
+      "E9": "Personal web photos and responsive pages verified locally. Verify real-phone camera, provider storage, sign-in and native wording. Organization editor and establishment-photo removal remain follow-ups.",
+      "H9": "Backend restaurants_photo_contract.md; Website docs/restaurants-mobile-photos.md. No live provider, device or human-language sign-off."
+    },
+    "Sources and runs": {
+      "D38": "Personal photo editor and responsive customer pages implemented locally. Website docs/restaurants-mobile-photos.md records checks and screenshots.",
+      "E38": "Organization photo editor follow-up pending at business.nihiloba.com.",
+      "H38": "Backend/docs/restaurants_photo_contract.md; restaurants_photo_implementation.md; Website/docs/restaurants-mobile-photos.md and evidence/restaurants-mobile-photos/validation.json."
+    }
+  },
+  "unchanged_native_parts": true,
+  "unchanged_formulas_styles_and_other_cells": true
+}

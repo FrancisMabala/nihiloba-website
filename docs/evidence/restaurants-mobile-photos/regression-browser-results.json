@@ -1,0 +1,1521 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\NIHILOBA\\nihiloba-website\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      "playwright.restaurant.config.ts",
+      "tests/browser/restaurant-seller.browser.ts",
+      "tests/browser/restaurant-discovery.browser.ts",
+      "tests/browser/restaurant-detail-design.browser.ts",
+      "tests/browser/restaurant-checkout.browser.ts",
+      "--reporter=line,json"
+    ],
+    "configFile": "C:\\NIHILOBA\\nihiloba-website\\playwright.restaurant.config.ts",
+    "rootDir": "C:/NIHILOBA/nihiloba-website/tests/browser",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/NIHILOBA/nihiloba-website/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/NIHILOBA/nihiloba-website/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.browser.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "restaurant-checkout.browser.ts",
+      "file": "restaurant-checkout.browser.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "phone checkout composes a plate, signs in, quotes, and recovers a committed order",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4281,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:40:55.701Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "30b86d1dc94b3bfd935f-6eae5411ba37a5ba40d9",
+          "file": "restaurant-checkout.browser.ts",
+          "line": 3,
+          "column": 58
+        },
+        {
+          "title": "phone checkout composes a plate, signs in, quotes, and recovers an unreceived submission",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3940,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:00.855Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "30b86d1dc94b3bfd935f-efc35ecdaacc552feb1e",
+          "file": "restaurant-checkout.browser.ts",
+          "line": 3,
+          "column": 58
+        }
+      ]
+    },
+    {
+      "title": "restaurant-detail-design.browser.ts",
+      "file": "restaurant-detail-design.browser.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "shared detail artwork and states 390",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2117,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\"width\":390,\"state\":\"populated\",\"art\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/restaurant-table-header-480.webp\",\"bytes\":[{\"transfer\":23586,\"encoded\":23286}]}}\n"
+                    },
+                    {
+                      "text": "{\"width\":390,\"state\":\"empty\",\"art\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/restaurant-table-header-480.webp\",\"bytes\":[{\"transfer\":23586,\"encoded\":23286}]}}\n"
+                    },
+                    {
+                      "text": "{\"width\":390,\"state\":\"information\",\"art\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/restaurant-table-header-480.webp\",\"bytes\":[{\"transfer\":23586,\"encoded\":23286}]}}\n"
+                    }
+                  ],
+                  "stderr": [
+                    {
+                      "text": "(node:34368) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:04.817Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6ea30dbc13929fe598e0-212722ff4efbb290a9ef",
+          "file": "restaurant-detail-design.browser.ts",
+          "line": 5,
+          "column": 43
+        },
+        {
+          "title": "shared detail artwork and states 768",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2205,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\"width\":768,\"state\":\"populated\",\"art\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/restaurant-table-header-480.webp\",\"bytes\":[{\"transfer\":23586,\"encoded\":23286}]}}\n"
+                    },
+                    {
+                      "text": "{\"width\":768,\"state\":\"empty\",\"art\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/restaurant-table-header-480.webp\",\"bytes\":[{\"transfer\":23586,\"encoded\":23286}]}}\n"
+                    },
+                    {
+                      "text": "{\"width\":768,\"state\":\"information\",\"art\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/restaurant-table-header-480.webp\",\"bytes\":[{\"transfer\":23586,\"encoded\":23286}]}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:06.943Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6ea30dbc13929fe598e0-274db7469014f218f223",
+          "file": "restaurant-detail-design.browser.ts",
+          "line": 5,
+          "column": 43
+        },
+        {
+          "title": "shared detail artwork and states 1440",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2334,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\"width\":1440,\"state\":\"populated\",\"art\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/restaurant-table-header-480.webp\",\"bytes\":[{\"transfer\":23586,\"encoded\":23286}]}}\n"
+                    },
+                    {
+                      "text": "{\"width\":1440,\"state\":\"empty\",\"art\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/restaurant-table-header-480.webp\",\"bytes\":[{\"transfer\":23586,\"encoded\":23286}]}}\n"
+                    },
+                    {
+                      "text": "{\"width\":1440,\"state\":\"information\",\"art\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/restaurant-table-header-480.webp\",\"bytes\":[{\"transfer\":23586,\"encoded\":23286}]}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:09.157Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6ea30dbc13929fe598e0-c88236b29890e0633775",
+          "file": "restaurant-detail-design.browser.ts",
+          "line": 5,
+          "column": 43
+        },
+        {
+          "title": "tabs, language, pagination, errors and eligible continuations preserve targets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5808,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:11.503Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6ea30dbc13929fe598e0-7ccd456d6c0d9dea4828",
+          "file": "restaurant-detail-design.browser.ts",
+          "line": 45,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "restaurant-discovery.browser.ts",
+      "file": "restaurant-discovery.browser.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "editorial discovery at 390px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1114,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\"width\":390,\"banner\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/terrasse-quartier-480.webp\",\"transfer\":[{\"transfer\":27560,\"body\":27260}]},\"searchY\":456.015625,\"firstResultY\":841.4375}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:17.328Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-1a5799c759ef2c2c1fd6",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 5,
+          "column": 43
+        },
+        {
+          "title": "editorial discovery at 768px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1077,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\"width\":768,\"banner\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/terrasse-quartier-720.webp\",\"transfer\":[{\"transfer\":55388,\"body\":55088}]},\"searchY\":502.171875,\"firstResultY\":816.53125}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:18.454Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-ad91224ba536112d3f90",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 5,
+          "column": 43
+        },
+        {
+          "title": "editorial discovery at 1440px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1078,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\"width\":1440,\"banner\":{\"src\":\"http://127.0.0.1:3013/images/restaurants/terrasse-quartier-720.webp\",\"transfer\":[{\"transfer\":55388,\"body\":55088}]},\"searchY\":519.453125,\"firstResultY\":787.015625}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:19.542Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-60f82de2bc1245278397",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 5,
+          "column": 43
+        },
+        {
+          "title": "explicit search, hidden values, native keyboard filters and type chips",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 990,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:20.631Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-4ac346f391a0eb9974db",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 25,
+          "column": 5
+        },
+        {
+          "title": "menu, details and back retain result context; language selector retains query",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3045,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:21.631Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-b407fdd45dac30ee766b",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 35,
+          "column": 5
+        },
+        {
+          "title": "multiple, empty and error states; exact retry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2186,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:24.684Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-6c9a6e85bf299e3a127f",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 42,
+          "column": 5
+        },
+        {
+          "title": "pagination preserves filters and unavailable direct targets do not expose fixtures",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1844,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:26.878Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-898a99a1fe8794680fa7",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 49,
+          "column": 5
+        },
+        {
+          "title": "discovery language en",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 798,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:28.733Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-2c49df32ed82e7be5437",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 56,
+          "column": 52
+        },
+        {
+          "title": "discovery language fr",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 650,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:29.542Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-ca52725fb59f32da4872",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 56,
+          "column": 52
+        },
+        {
+          "title": "discovery language ln",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 614,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:30.202Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-5a8a963b25dbe4d96089",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 56,
+          "column": 52
+        },
+        {
+          "title": "discovery language sw",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 607,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:30.827Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-81c8d454cb87960516e0",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 56,
+          "column": 52
+        },
+        {
+          "title": "bounded responsive banner requests without the master PNG",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2107,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\"kind\":\"cold\",\"bytes\":1046461,\"requests\":28,\"duration_ms\":1026,\"images\":[\"/_next/image/\",\"/images/restaurants/terrasse-quartier-480.webp\",\"/images/restaurants/restaurant-table-header-480.webp\"]}\n"
+                    },
+                    {
+                      "text": "{\"kind\":\"warm\",\"bytes\":1046460,\"requests\":28,\"duration_ms\":920,\"images\":[\"/_next/image/\",\"/images/restaurants/terrasse-quartier-480.webp\",\"/images/restaurants/restaurant-table-header-480.webp\"]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:31.447Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62884bc1c82ef26e25c3-ef2c69de8df0d38bf571",
+          "file": "restaurant-discovery.browser.ts",
+          "line": 63,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "restaurant-seller.browser.ts",
+      "file": "restaurant-seller.browser.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "failed logout still clears this tab and focus cannot restore private content",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1018,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:33.598Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-4d73257050f24d97d0f7",
+          "file": "restaurant-seller.browser.ts",
+          "line": 49,
+          "column": 5
+        },
+        {
+          "title": "transient session failure preserves input, deduplicates checks and confirmed expiry clears it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1596,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:34.626Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-023ac38e0febffb1726a",
+          "file": "restaurant-seller.browser.ts",
+          "line": 61,
+          "column": 5
+        },
+        {
+          "title": "selection, pagination, private draft and changed-field profile edit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2707,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:36.232Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-2f0bacf682a9028ebb49",
+          "file": "restaurant-seller.browser.ts",
+          "line": 73,
+          "column": 5
+        },
+        {
+          "title": "uncertain retry is identical and stale edit requires reconciliation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4113,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:38.949Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-9213527e966140596d17",
+          "file": "restaurant-seller.browser.ts",
+          "line": 82,
+          "column": 5
+        },
+        {
+          "title": "unit, configured amount and unknown pricing retain exact values",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3708,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:43.075Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-4f1f07792428c0a20164",
+          "file": "restaurant-seller.browser.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "hours unknown versus closed, publication and exact QR destination",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3571,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:46.795Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-4e2910a860812be30e79",
+          "file": "restaurant-seller.browser.ts",
+          "line": 99,
+          "column": 5
+        },
+        {
+          "title": "expired offering copy stays unconfirmed until a separate confirmation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1595,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:50.376Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-5f08a730bb5e81adf002",
+          "file": "restaurant-seller.browser.ts",
+          "line": 112,
+          "column": 5
+        },
+        {
+          "title": "isolated WhatsApp challenge sign-in, shared session and logout",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2347,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:51.982Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-59c3b504edf53bc69174",
+          "file": "restaurant-seller.browser.ts",
+          "line": 120,
+          "column": 5
+        },
+        {
+          "title": "lost access and account switching clear editor values",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1804,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:54.337Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-d36f9786a6decd293210",
+          "file": "restaurant-seller.browser.ts",
+          "line": 124,
+          "column": 5
+        },
+        {
+          "title": "phone and desktop layout / en",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1012,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:56.150Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-568b46d64eeaedf960fd",
+          "file": "restaurant-seller.browser.ts",
+          "line": 129,
+          "column": 52
+        },
+        {
+          "title": "phone and desktop layout / fr",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1161,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:57.172Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-1c9e85d943d468d618e4",
+          "file": "restaurant-seller.browser.ts",
+          "line": 129,
+          "column": 52
+        },
+        {
+          "title": "phone and desktop layout / ln",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 886,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:58.344Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-ab9cfdc03b5e157c4c8e",
+          "file": "restaurant-seller.browser.ts",
+          "line": 129,
+          "column": 52
+        },
+        {
+          "title": "phone and desktop layout / sw",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1048,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:41:59.240Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-e1e5d105f91f939a6a3b",
+          "file": "restaurant-seller.browser.ts",
+          "line": 129,
+          "column": 52
+        },
+        {
+          "title": "phone editor, long labels, focus and screenshot",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1804,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:42:00.304Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-f156b9a63322f6b0187e",
+          "file": "restaurant-seller.browser.ts",
+          "line": 136,
+          "column": 5
+        },
+        {
+          "title": "v2 sign-in artwork and action / 390",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1067,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "seller-v2-network {\"width\":390,\"requests\":32,\"encodedBytes\":1112998,\"durationMs\":874,\"illustrationRequests\":0,\"mode\":\"cold isolated fixture; routing disables cache\"}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:42:02.119Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "network",
+                      "contentType": "application/json",
+                      "body": "eyJ3aWR0aCI6MzkwLCJyZXF1ZXN0cyI6MzIsImVuY29kZWRCeXRlcyI6MTExMjk5OCwiZHVyYXRpb25NcyI6ODc0LCJpbGx1c3RyYXRpb25SZXF1ZXN0cyI6MCwibW9kZSI6ImNvbGQgaXNvbGF0ZWQgZml4dHVyZTsgcm91dGluZyBkaXNhYmxlcyBjYWNoZSJ9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-1b8d09ffa2742f76fa5f",
+          "file": "restaurant-seller.browser.ts",
+          "line": 148,
+          "column": 6
+        },
+        {
+          "title": "v2 menu-first selection and focused portion editor / 390",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1343,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:42:03.195Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-5cef381315bc988dbd83",
+          "file": "restaurant-seller.browser.ts",
+          "line": 167,
+          "column": 6
+        },
+        {
+          "title": "v2 sign-in artwork and action / 768",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1131,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "seller-v2-network {\"width\":768,\"requests\":32,\"encodedBytes\":1112998,\"durationMs\":921,\"illustrationRequests\":0,\"mode\":\"cold isolated fixture; routing disables cache\"}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:42:04.551Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "network",
+                      "contentType": "application/json",
+                      "body": "eyJ3aWR0aCI6NzY4LCJyZXF1ZXN0cyI6MzIsImVuY29kZWRCeXRlcyI6MTExMjk5OCwiZHVyYXRpb25NcyI6OTIxLCJpbGx1c3RyYXRpb25SZXF1ZXN0cyI6MCwibW9kZSI6ImNvbGQgaXNvbGF0ZWQgZml4dHVyZTsgcm91dGluZyBkaXNhYmxlcyBjYWNoZSJ9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-95da4ee092b31d6f3fd7",
+          "file": "restaurant-seller.browser.ts",
+          "line": 148,
+          "column": 6
+        },
+        {
+          "title": "v2 menu-first selection and focused portion editor / 768",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1571,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:42:05.691Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-c595703062bedd057f1f",
+          "file": "restaurant-seller.browser.ts",
+          "line": 167,
+          "column": 6
+        },
+        {
+          "title": "v2 sign-in artwork and action / 1440",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1242,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "seller-v2-network {\"width\":1440,\"requests\":32,\"encodedBytes\":1224636,\"durationMs\":1051,\"illustrationRequests\":1,\"mode\":\"cold isolated fixture; routing disables cache\"}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:42:07.269Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "network",
+                      "contentType": "application/json",
+                      "body": "eyJ3aWR0aCI6MTQ0MCwicmVxdWVzdHMiOjMyLCJlbmNvZGVkQnl0ZXMiOjEyMjQ2MzYsImR1cmF0aW9uTXMiOjEwNTEsImlsbHVzdHJhdGlvblJlcXVlc3RzIjoxLCJtb2RlIjoiY29sZCBpc29sYXRlZCBmaXh0dXJlOyByb3V0aW5nIGRpc2FibGVzIGNhY2hlIn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-3a9e63a2729cbdf854d0",
+          "file": "restaurant-seller.browser.ts",
+          "line": 148,
+          "column": 6
+        },
+        {
+          "title": "v2 menu-first selection and focused portion editor / 1440",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2385,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:42:08.519Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-857584acc53f2aac7b96",
+          "file": "restaurant-seller.browser.ts",
+          "line": 167,
+          "column": 6
+        },
+        {
+          "title": "menu pagination uses the server page and locale links remain reachable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1629,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T20:42:10.912Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4df62f750b9252b1d559-537ad73dc70f25982cdf",
+          "file": "restaurant-seller.browser.ts",
+          "line": 192,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-12T20:40:54.912Z",
+    "duration": 77949.79800000001,
+    "expected": 39,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

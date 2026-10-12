@@ -3,7 +3,7 @@ import { discoveryCopy } from "../../lib/restaurant-discovery-copy";
 import { restaurantReviewCopy } from "../../lib/restaurant-review-copy";
 import { getRestaurants, restaurantQuery, type RestaurantLocale, type RestaurantSearch } from "../../services/shida/restaurants-client";
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
-import { MarketplaceImage } from "./marketplace-image";
+import { RestaurantPhoto } from "./restaurant-photo";
 import { RestaurantRevalidation } from "./restaurant-revalidation";
 import { RestaurantRetry } from "./restaurant-retry";
 import { DiscoveryLanguage } from "./restaurant-discovery-controls";
@@ -22,7 +22,7 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
  </div>
  <picture className="rd-painted-band">
   {/* Complete approved scene, proportionally resized through the local WebP pipeline. */}
-  <img src="/images/restaurants/terrasse-quartier-720.webp" srcSet="/images/restaurants/terrasse-quartier-480.webp 480w, /images/restaurants/terrasse-quartier-720.webp 720w, /images/restaurants/terrasse-quartier-1080.webp 1080w, /images/restaurants/terrasse-quartier-1440.webp 1440w" sizes="(max-width: 720px) 100vw, 720px" width={2171} height={724} alt="" decoding="async"/>
+  <img src="/images/restaurants/terrasse-quartier-720.webp" srcSet="/images/restaurants/terrasse-quartier-480.webp 480w, /images/restaurants/terrasse-quartier-720.webp 720w, /images/restaurants/terrasse-quartier-1080.webp 1080w, /images/restaurants/terrasse-quartier-1440.webp 1440w" sizes="(max-width: 600px) 100vw, 600px" width={2171} height={724} alt="" decoding="async"/>
  </picture>
  <div className="container">
   <form action={path} method="get" className="rd-search">
@@ -39,7 +39,7 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
     const summary = item.menu_summary;
     const message = summary ? summary.available > 0 ? null : summary.sold_out + summary.temporarily_unavailable > 0 ? d.unavailableMenu : d.emptyMenu : null;
     return <article className="rd-card" id={`restaurant-${item.public_ref}`} key={item.public_ref}>
-     <a className="rd-photo" href={`${href}?${back}`} aria-label={`${t.details}: ${item.name || t.title}`}><MarketplaceImage src={item.images[0]?.url ?? item.logo?.url ?? null} alt={item.images[0]?.alt || item.name || t.title} fallback={d.photo} sizes="(max-width: 600px) 104px, (max-width: 1050px) 45vw, 380px"/></a>
+     <a className="rd-photo" href={`${href}?${back}`} aria-label={`${t.details}: ${item.name || t.title}`}><RestaurantPhoto src={item.establishment_photo?.url ?? item.images[0]?.url ?? null} alt={item.establishment_photo?.alt || item.images[0]?.alt || item.name || t.title} establishment/></a>
      <div className="rd-card-body"><h3><a href={`${href}?${back}`}>{item.name || t.title}</a></h3><p>{[item.type_label, item.location].filter(Boolean).join(" · ")}</p>{item.review_summary&&<p>{item.review_summary.count?`${item.review_summary.average} ★ · ${item.review_summary.count} ${restaurantReviewCopy[locale].reviews}`:restaurantReviewCopy[locale].noReviews}</p>}<p className={`rd-status rd-status-${item.hours.status}`}><span aria-hidden="true"/>{item.hours.status === "unknown" ? d.unknown : t[item.hours.status]}</p>{message && <p className="rd-menu-note">{message}</p>}<a className="rd-menu" href={`${href}/menu?${back}`}>{d.menu}<span aria-hidden="true"> →</span></a></div>
     </article>;
    })}</div>

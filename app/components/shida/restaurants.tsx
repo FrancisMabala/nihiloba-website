@@ -1,4 +1,3 @@
-import { basicText } from "../../lib/restaurant-basic-copy";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ShidaApiError } from "../../services/shida/public-client";
@@ -10,7 +9,9 @@ import { RestaurantGuest } from "./restaurant-guest";
 import { guestText } from "../../lib/restaurant-guest-copy";
 import { businessPath, restaurantCopy, restaurantLocales, restaurantPath, restaurantReturn } from "../../lib/restaurant-i18n";
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
-import { MarketplaceImage } from "./marketplace-image";
+import { RestaurantPhoto } from "./restaurant-photo";
+import { RestaurantPrice } from "./restaurant-menu-price";
+export { RestaurantPrice } from "./restaurant-menu-price";
 import { RestaurantRevalidation } from "./restaurant-revalidation";
 import { RestaurantRetry } from "./restaurant-retry";
 import { restaurantDetailCopy, restaurantLanguageNames } from "../../lib/restaurant-detail-copy";
@@ -64,21 +65,14 @@ function DateValue({ value, timezone, locale }: { value: string; timezone: strin
   try { display = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: timezone ?? "UTC" }).format(new Date(value)); } catch { /* Preserve the supplied timestamp; do not infer status. */ }
   return <time dateTime={value}>{display}</time>;
 }
-export function RestaurantPrice({ item, locale }: { item: RestaurantMenuItem; locale: RestaurantLocale }) {
-  const t = restaurantCopy[locale];
-  if (item.pricing_model === "UNIT_PRICED" && item.unit_price !== null && item.currency) return <p><strong>{t.unit}: {item.unit_price} {item.currency}</strong>{item.sale_unit_label && <> / {item.sale_unit_label}</>}</p>;
-  if (item.pricing_model === "AMOUNT_PRICED" && item.amount_mode === "flexible" && item.minimum_amount !== null && item.currency) return <div><p>{basicText(locale,"flexibleFrom")}: {item.minimum_amount} {item.currency}</p>{item.amount_step && <p>{basicText(locale,"amount_step")}: {item.amount_step} {item.currency}</p>}</div>;
-  if (item.pricing_model === "AMOUNT_PRICED" && item.currency && (item.allowed_amounts.length || item.minimum_amount !== null)) return <div><p><strong>{t.amounts}</strong>{item.sale_unit_label && <> · {item.sale_unit_label}</>}</p>{item.allowed_amounts.length > 0 && <p>{item.allowed_amounts.map((amount) => `${amount} ${item.currency}`).join(" · ")}</p>}{item.minimum_amount !== null && <p>{t.minimum}: {item.minimum_amount} {item.currency}</p>}</div>;
-  return <p>{t.unknownPrice}</p>;
-}
 export function RestaurantMenu({ items, locale }: { items: RestaurantMenuItem[]; locale: RestaurantLocale }) {
   const t = restaurantCopy[locale];
   if (!items.length) return <p role="status">{t.noMenu}</p>;
   const categories = new Map<string, { name: string | null; items: RestaurantMenuItem[] }>();
   for (const item of items) { const category = categories.get(item.category.public_ref) ?? { name: item.category.name, items: [] }; category.items.push(item); categories.set(item.category.public_ref, category); }
   return <div className="restaurant-menu-sections"><nav className="restaurant-categories" aria-label={restaurantDetailCopy[locale].categories}>{[...categories].map(([ref, category]) => <a key={ref} href={`#category-${ref}`}>{category.name || t.menu}</a>)}</nav>{[...categories].map(([ref, category]) => <section key={ref} id={`category-${ref}`}><h2>{category.name || t.menu}</h2><div className="restaurant-grid">{category.items.map((item) => <article key={item.public_ref} id={`item-${item.public_ref}`} className="marketplace-card restaurant-menu-item">
-    {item.image_url && <div className="restaurant-photo"><MarketplaceImage src={item.image_url} alt={item.name || t.menu} fallback={t.photo}/></div>}
-    <div className="marketplace-card-body"><div className="restaurant-item-description"><p className="eyebrow">{item.presentation === "component" ? t.component : t.fixed}</p><h3>{item.name || t.menu}</h3>{item.description && <p>{item.description}</p>}</div><div className="restaurant-item-price"><RestaurantPrice item={item} locale={locale}/><span className={`marketplace-status availability-${item.availability}`}>{t[item.availability]}</span></div>
+    {item.image_url && <div className="restaurant-photo"><RestaurantPhoto src={item.image_url} alt={item.name || t.menu}/></div>}
+    <div className="marketplace-card-body"><div className="restaurant-item-description"><h3>{item.name || t.menu}</h3>{item.description && <p>{item.description}</p>}</div><div className="restaurant-item-price"><RestaurantPrice item={item} locale={locale}/>{item.availability !== "available" && <span className={`marketplace-status availability-${item.availability}`}>{t[item.availability]}</span>}</div>
       {item.dated_offering && <p>{t.dated}: <DateValue value={item.dated_offering.starts_at} timezone={item.dated_offering.timezone_name} locale={locale}/> {t.until} <DateValue value={item.dated_offering.ends_at} timezone={item.dated_offering.timezone_name} locale={locale}/> ({item.dated_offering.timezone_name})</p>}
     </div></article>)}</div></section>)}</div>;
 }
@@ -87,9 +81,7 @@ function RestaurantHeader({ locale, establishment, hours }: { locale: Restaurant
   const t = restaurantCopy[locale];
   return <header className="restaurant-detail-header">
     <div><h1>{establishment.name || t.title}</h1><p>{[establishment.type_label, establishment.location].filter(Boolean).join(" · ")}</p><span className={`restaurant-current-status status-${hours.status}`}>{t[hours.status]}</span>{establishment.review_summary&&<p>{establishment.review_summary.count ? `${establishment.review_summary.average} ★ · ${establishment.review_summary.count} ${restaurantReviewCopy[locale].reviews}` : restaurantReviewCopy[locale].noReviews}</p>}</div>
-    <picture className="restaurant-header-art">
-      <img src="/images/restaurants/restaurant-table-header-480.webp" srcSet="/images/restaurants/restaurant-table-header-240.webp 240w, /images/restaurants/restaurant-table-header-480.webp 480w, /images/restaurants/restaurant-table-header-960.webp 960w" sizes="(max-width: 600px) 200px, (max-width: 900px) 280px, 420px" width={1983} height={793} alt="" decoding="async"/>
-    </picture>
+    <div className="restaurant-header-art restaurant-establishment-photo"><RestaurantPhoto src={establishment.establishment_photo?.url ?? establishment.images[0]?.url} alt={establishment.establishment_photo?.alt || establishment.images[0]?.alt || establishment.name || t.title} establishment/></div>
   </header>;
 }
 export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly = false }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch; menuOnly?: boolean }) {
@@ -118,7 +110,7 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
     <nav className="restaurant-detail-tabs" aria-label={t.title}><a href={`${detailPath}/menu?${routeContext}`} aria-current={menuOnly ? "page" : undefined}>{t.menu}</a><a href={`${detailPath}?${routeContext}`} aria-current={!menuOnly ? "page" : undefined}>{copy.establishment}</a></nav>
     <div className="restaurant-detail-columns"><div className="restaurant-detail-content">
     {!menuOnly ? <section className="restaurant-establishment"><h2>{copy.establishment}</h2>
-      {establishment.images[0] && <div className="restaurant-photo restaurant-hero-photo"><MarketplaceImage src={establishment.images[0].url} alt={establishment.images[0].alt || establishment.name || t.title} fallback={t.photo}/></div>}
+
       {establishment.description && <p>{establishment.description}</p>}
       {establishment.service_modes.length > 0 && <p>{t.mode}: {establishment.service_modes.join(" · ")}</p>}
       {establishment.opening_information && <p>{establishment.opening_information}</p>}
