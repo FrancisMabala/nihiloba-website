@@ -55,6 +55,14 @@ Automated tests verify that backend action URLs are preserved exactly, unsafe sc
 
 ## Services marketplace presentation status
 
+IMP-02: the Services category filter now lists only the seven publishable pilot
+groups. Independent tutoring is labelled separately from the Education
+institution marketplace. Restaurant and accommodation guidance links to the
+existing dedicated marketplaces. Cards, provider pages and package prices continue to
+consume the backend's public projection; empty search results use the existing
+localized state. The backend applies eligibility and filters before counting
+and pagination. Browser/device and populated staging acceptance remain open.
+
 Status: implemented for the focused public Services polish batch. Jobs, Apartments, Hotels and Wenze were not visually redesigned. The SHIDA landing-page marketplace links now share one neutral cream, dark-green-border treatment; the former Jobs briefcase emoji and permanently selected-looking Jobs/Apartments states were removed.
 
 Service results use a compact two-column desktop grid and a thumbnail-left mobile list. The card hierarchy is category, title, provider identity, broad public location, starting price, duration, rating and a compact localized detail action. Descriptions are limited to one line on wider screens and omitted from phone cards so several results remain scannable. Cards never render phone numbers or unknown API fields.

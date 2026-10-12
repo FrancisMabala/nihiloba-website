@@ -45,6 +45,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 from fastapi import HTTPException
 
+settings.dashboard_allowed_origins = "https://localhost:3014"
 settings.public_base_url = "https://api.nihiloba.com"
 settings.shida_whatsapp_number = "243000000000"  # Never send or follow externally.
 
@@ -59,6 +60,8 @@ for label, phone in (("personal", "243000000001"), ("other", "243000000002")):
         if not account:
             account = UserAccountDB(phone_number=phone)
             db.add(account); db.commit()
+        account.is_registered = True
+        db.commit()
         actors[label] = dict(actor_account_id=account.id, actor_account_ref=account.public_ref, active_business_id=None)
 
 @app.post("/__s3a/session/{label}")

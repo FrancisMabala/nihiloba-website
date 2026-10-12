@@ -26,9 +26,9 @@ test('actual Backend: order handling, counter handoff, protected receipts, gate 
  expect((await page.request.get(previewUrl+'?page_size=6',{headers:{'x-shida-session':binding}})).status()).toBe(422);
  await page.getByRole('button',{name:'Public preview',exact:true}).first().click();
  await expect(page.getByRole('heading',{name:'Private menu preview',exact:true})).toBeVisible();
- await expect(page.locator('.rst-menu-preview').getByText(/Fufu/).first()).toBeVisible();
+ await expect(page.locator('.rst-menu-preview').locator('p').filter({hasText:/Fufu|Rice|Pondu|Thomson|Beans|Plantain/})).toHaveCount(5);const firstMenuPage=await page.locator('.rst-menu-preview').innerText();
  await page.locator('.rst-menu-preview').getByRole('button',{name:'Next',exact:true}).click();
- await expect(page.locator('.rst-menu-preview').getByRole('button',{name:'Next',exact:true})).toBeDisabled();
+ await expect(page.locator('.rst-menu-preview').locator('p').filter({hasText:/Fufu|Rice|Pondu|Thomson|Beans|Plantain/})).toHaveCount(1);await expect(page.locator('.rst-menu-preview').getByRole('button',{name:'Next',exact:true})).toBeDisabled();const allMenuPages=firstMenuPage+await page.locator('.rst-menu-preview').innerText();for(const food of ['Fufu','Rice','Pondu','Thomson','Beans','Plantain'])expect(allMenuPages).toContain(food);
  await page.setViewportSize({width:390,height:844});await expect(page.locator('.rst-menu-preview').getByRole('button',{name:'Previous',exact:true})).toBeEnabled();await page.evaluate(()=>{(document.activeElement as HTMLElement)?.blur();window.scrollTo({top:0,behavior:'instant'});});await page.waitForTimeout(500);await page.screenshot({path:info.outputPath('menu-preview-phone.png'),fullPage:true});
  await page.getByRole('button',{name:'Orders',exact:true}).click();
  await expect(page.locator('.rst-food-summary').getByText(/Fufu/).first()).toBeVisible();
@@ -40,10 +40,17 @@ test('actual Backend: order handling, counter handoff, protected receipts, gate 
  await page.getByRole('button',{name:'Review',exact:true}).click();
  await expect(page.getByText(/Fufu · 2/).last()).toBeVisible();
  await expect(page.getByText(/Respond before/).last()).toBeVisible();
- for(const action of ['Accept order','Start preparation','Food is ready','Confirm food handoff']){
-  await page.getByRole('button',{name:action,exact:true}).click();await page.getByRole('button',{name:'Confirm',exact:true}).click();
-  await expect(page.getByRole('button',{name:'Confirm',exact:true})).toHaveCount(0);
- }
+ // Current preparation resolves each station directly; handoff needs customer proof.
+ await page.getByRole('button',{name:'Accept order',exact:true}).click();await page.getByRole('button',{name:'Confirm',exact:true}).click();
+
+ const station=page.locator('section.rst-preparation').last();
+ await station.getByRole('button',{name:'Start preparation',exact:true}).click();
+ await station.getByRole('button',{name:'Mark ready',exact:true}).click();
+ await expect(station.locator('.rst-station-detail')).toContainText('Whole order: Ready');
+ const proof=await api.post(`/__c1e/pickup-code/${data.ref}/${data.order.order_ref}`);expect(proof.ok()).toBeTruthy();
+ await page.getByRole('button',{name:'Verify pickup code',exact:true}).click();
+ await page.locator('input[type="password"]').fill((await proof.json()).pickup_code);
+ await page.getByRole('button',{name:'Confirm',exact:true}).click();
  await expect(page.getByText('Current state: Handed over · Pickup')).toBeVisible();
  await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:info.outputPath('orders-desktop.png'),fullPage:true});
  const reconciled=page.waitForResponse(r=>r.url().includes('/orders/'+data.order.order_ref+'/') && r.request().method()==='GET');await page.getByRole('button',{name:'Refresh',exact:true}).click();await reconciled;await page.waitForTimeout(500);await page.screenshot({path:info.outputPath('orders-desktop.png'),fullPage:true});const start=Date.now();await page.waitForTimeout(31000);const idle=measurements.filter(m=>m.at>=start);console.log('C1E idle',JSON.stringify(idle));expect(idle.filter(m=>m.path.includes('order-feed')).length).toBe(2);expect(idle.some(m=>/\/orders\//.test(m.path))).toBe(false);
@@ -64,7 +71,7 @@ test('actual Backend: order handling, counter handoff, protected receipts, gate 
  await page.getByRole('button',{name:'Review',exact:true}).click();await page.getByRole('button',{name:'Confirm',exact:true}).click();await expect(page.getByText('Saved',{exact:true})).toBeVisible();
  await page.goto(receipt!);await expect(page.getByText('Payment not verified. This receipt is not proof of payment.')).toBeVisible();await page.getByRole('button',{name:'Show receipt QR',exact:true}).click();await expect(page.getByRole('img',{name:'Show receipt QR'})).toBeVisible();
  // Same owner has no customer receipt right. Forwarded counter receipt denied.
- await page.goto(`/shida/restaurant-orders/${data.order.order_ref}/receipt`);await expect(page.getByText('Unavailable. Try refreshing.')).toBeVisible();
+ expect((await page.request.get(`/api/shida/personal/restaurant-orders/${data.order.order_ref}/receipt`,{headers:{'x-shida-session':binding}})).status()).toBe(404);await page.goto(`/shida/restaurant-orders/${data.order.order_ref}/receipt`);await expect(page.getByRole('status')).toHaveText('Unable to load current order details.');await expect(page.locator('.rst-receipt')).toHaveCount(0);
  await session(context,'other');const otherBinding=(await (await page.request.get('/api/shida/employment/session')).json()).binding;expect((await page.request.get(previewUrl,{headers:{'x-shida-session':otherBinding}})).status()).toBe(404);await page.reload();await expect(page.getByText('Payment not verified. This receipt is not proof of payment.')).toBeVisible();
  await page.goto(receipt!);await expect(page.getByText('Unavailable. Try refreshing.')).toBeVisible();
  await context.clearCookies();await page.reload();await expect(page.getByRole('button',{name:'Continue with WhatsApp',exact:true})).toBeVisible();

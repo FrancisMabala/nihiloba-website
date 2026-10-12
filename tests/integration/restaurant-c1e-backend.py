@@ -38,7 +38,7 @@ def seed():
         fields=dict(description='Synthetic local meals',city='Kinshasa',commune='Gombe',quartier='Centre',
             public_address='Synthetic collection point',address_visibility='public',confirm_location=True,
             timezone_name='Africa/Kinshasa',status='active'))
-    ref=row['public_ref']; args={**owner,'establishment_ref':ref}
+    ref=row['public_ref']; settings.restaurant_order_intake_allowlist=ref; args={**owner,'establishment_ref':ref}
     def write(kind, fields):
         return menu.command(**args,kind=kind,fields=fields,operation_key=uuid4().hex,
             expected_updated_at=menu.managed_menu(**args)['revision'])['result']['public_ref']
@@ -62,6 +62,11 @@ def seed():
 def close():
     settings.restaurant_order_intake_enabled=False
     return {'intake_released':False}
+
+@app.post('/__c1e/pickup-code/{ref}/{order_ref}')
+def pickup_code(ref: str, order_ref: str):
+    # Synthetic exact customer only; this helper is never imported in production.
+    return orders.read_pickup_code(who=actors['other'], establishment_ref=ref, order_ref=order_ref)
 
 if __name__ == '__main__':
     import uvicorn

@@ -10,7 +10,13 @@ for (const width of [390, 768, 1440]) test(`shared detail artwork and states ${w
   const art = page.locator(".restaurant-header-art img");
   await expect(art).toHaveCount(1); await expect(art).toHaveAttribute("alt", "");
   await expect.poll(() => art.evaluate((e: HTMLImageElement) => e.complete && e.naturalWidth > 0)).toBe(true);
-  const box = (await art.boundingBox())!;
+  // Layout position belongs to the document. Keyboard focus/scroll anchoring
+  // may move the viewport by a few pixels without moving the artwork.
+  const documentBox = () => art.evaluate(element => {
+   const box = element.getBoundingClientRect();
+   return { width: box.width, height: box.height, x: box.x + window.scrollX, y: box.y + window.scrollY };
+  });
+  const box = await documentBox();
   if (baseline) expect(box).toEqual(baseline); else baseline = box;
   expect(box.width / box.height).toBeCloseTo(1983 / 793, 1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -30,7 +36,7 @@ for (const width of [390, 768, 1440]) test(`shared detail artwork and states ${w
    // Global smooth scrolling otherwise makes the immediate geometry assertion
    // race the return to the top, especially on a longer guest-enabled page.
    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
-   await expect.poll(() => art.boundingBox()).toEqual(baseline);
+   await expect.poll(documentBox).toEqual(baseline);
    await expect(page.getByText("Entreprise propriétaire", { exact: true })).toHaveCount(0);
   }
   await page.screenshot({ path: `.s3a-local/detail-${state}-${width}.png`, fullPage: true });

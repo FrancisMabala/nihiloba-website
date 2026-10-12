@@ -4,9 +4,8 @@ export type PublicCollection<T> = {
 };
 
 export const serviceCategories = [
-  "beauty_wellness", "health", "home_housing", "repair_maintenance", "transport",
-  "education_training", "photo_video", "food_catering", "restaurant",
-  "professional_services", "public_services", "church_pastoral", "cleaning", "other",
+  "beauty_wellness", "home_housing", "repair_maintenance", "education_training",
+  "photo_video", "professional_services", "cleaning",
 ] as const;
 
 export type ServiceCategory = (typeof serviceCategories)[number];

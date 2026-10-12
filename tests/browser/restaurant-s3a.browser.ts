@@ -23,37 +23,40 @@ test("actual Backend: Personal lifecycle, exact menu, stale reconciliation, shar
  expect((await context.cookies()).some(c => c.name === "nihiloba_personal_session")).toBeTruthy();
  expect((await context.cookies()).some(c => c.name === "shida_dashboard_session")).toBeFalsy();
  await page.getByRole("button", { name: "Add another", exact: true }).click();
- const name = "S3A synthetic kitchen";
+ const name = `S3A synthetic kitchen ${crypto.randomUUID().replace(/[0-9-]/g, "").slice(0, 8)}`;
  await page.getByLabel("Name", { exact: true }).fill(name);
  await page.getByRole("button", { name: "Create private draft", exact: true }).click();
- await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
+ await expect(page.getByRole("heading", { name, exact: true, level: 1 })).toBeVisible();
+ await page.getByRole("button", { name: "My profile", exact: true }).click();
  await edit(page);
- for (const [label, value] of [["Description", "Isolated synthetic meals"], ["City", "Kinshasa"], ["Commune", "Gombe"], ["District", "Centre"], ["Timezone", "Africa/Kinshasa"]]) await page.getByLabel(label, { exact: true }).fill(value);
+ for (const [label, value] of [["Description", "Isolated synthetic meals"], ["City", "Kinshasa"], ["Commune", "Gombe"], ["District", "Centre"]]) await page.getByLabel(label, { exact: true }).fill(value);
+ await page.getByRole("combobox", { name: "Timezone", exact: true }).selectOption("Africa/Kinshasa");
  await page.getByRole("checkbox", { name: /confirm.*location/i }).check();
  await page.getByRole("button", { name: "Save changes", exact: true }).click();
  await page.getByRole("button", { name: "Publish", exact: true }).click(); await page.getByLabel("I confirm these changes", { exact: true }).check();
  const published = page.waitForResponse(r => r.url().includes("/lifecycle/publish") && r.request().method() === "POST");
  await page.getByRole("button", { name: "Save changes", exact: true }).click(); const dto = await (await published).json(); const ref = dto.public_ref; expect(ref).toMatch(/^RST_/);
  expect((await api.get(`/api/public/shida/restaurants/${ref}`)).status()).toBe(200);
+ await page.getByRole("button", { name: "QR & sharing", exact: true }).click();
  await page.getByRole("button", { name: "Prepare menu link & QR", exact: true }).click(); await expect(page.getByRole("img", { name: "Menu QR code" })).toBeVisible();
  const link = page.getByRole("region", { name: "Restaurants & Malewa" }).getByRole("link", { name: "Open on WhatsApp" });
  const href = await link.getAttribute("href"); expect(href).toMatch(/^https:\/\/api.nihiloba.com\/go\//);
- const redirect = await api.get(new URL(href!).pathname, { maxRedirects: 0 }); expect(redirect.status()).toBe(302); expect(redirect.headers().location).toContain("https://wa.me/243000000000");
- await page.getByRole("button", { name: "Categories", exact: true }).click(); await page.getByRole("button", { name: "Add another", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Synthetic dishes"); await page.getByRole("button", { name: "Save changes", exact: true }).click();
- await page.getByRole("button", { name: "Dishes & components", exact: true }).click();
+ const redirect = await api.get(new URL(href!).pathname, { maxRedirects: 0 }); expect(redirect.status()).toBe(302); expect(redirect.headers().location).toBe(`https://nihiloba.com/shida/restaurants/${ref}`);
+ await page.getByRole("button", { name: "My menu", exact: true }).click(); await page.getByRole("button", { name: "Categories", exact: true }).click(); await page.getByRole("button", { name: "+ Add", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Synthetic dishes"); await page.getByRole("button", { name: "Save changes", exact: true }).click();
+ await page.getByRole("button", { name: "My menu", exact: true }).click();
  for (const model of ["UNIT_PRICED", "AMOUNT_PRICED", "UNKNOWN"]) {
-  await page.getByRole("button", { name: "Add another", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill(`Synthetic ${model}`);
-  await page.getByRole("combobox", { name: "Category", exact: true }).selectOption({ label: "Synthetic dishes" }); await page.getByRole("combobox", { name: "Pricing", exact: true }).selectOption(model);
+  await page.getByRole("button", { name: "+ Add", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill(`Synthetic ${model}`);
+  await page.getByRole("combobox", { name: "Category", exact: true }).selectOption({ label: "Synthetic dishes" }); await page.getByRole("radio", { name: model === "UNIT_PRICED" ? "Per unit" : model === "AMOUNT_PRICED" ? "By amount" : "Price not set", exact: true }).check();
   if (model === "UNIT_PRICED") { await page.getByLabel("Local sale-unit label", { exact: true }).fill("plate"); await page.getByLabel("Price per unit", { exact: true }).fill("1250.50"); }
-  if (model === "AMOUNT_PRICED") await page.getByLabel("Allowed amounts", { exact: true }).fill("1000;2500.50");
+  if (model === "AMOUNT_PRICED") { await page.getByLabel("Allowed amounts 1", { exact: true }).fill("1000"); await page.getByRole("button", { name: "+ Add an amount", exact: true }).click(); await page.getByLabel("Allowed amounts 2", { exact: true }).fill("2500.50"); }
   const saved = page.waitForResponse(r => r.url().includes("/menu/items") && r.request().method() === "POST"); await page.getByRole("button", { name: "Save changes", exact: true }).click(); expect((await saved).status()).toBe(200);
  }
- await page.getByRole("button", { name: "Dated offerings", exact: true }).click(); await page.getByRole("button", { name: "Add another", exact: true }).click();
- await page.getByRole("combobox", { name: "Dish or component", exact: true }).selectOption({ label: "Synthetic UNIT_PRICED" }); await page.getByLabel("Starts at", { exact: true }).fill("2027-01-04 10:00"); await page.getByLabel("Ends at", { exact: true }).fill("2027-01-04 15:00"); await page.getByLabel("I confirm these changes", { exact: true }).check();
+ await page.getByRole("button", { name: "Dated offerings", exact: true }).click(); await page.getByRole("button", { name: "+ Add", exact: true }).click();
+ await page.getByRole("combobox", { name: "Dish or component", exact: true }).selectOption({ label: "Synthetic UNIT_PRICED" }); await page.getByLabel("Starts at", { exact: true }).fill("2027-01-04T10:00"); await page.getByLabel("Ends at", { exact: true }).fill("2027-01-04T15:00"); await page.getByLabel("I confirm these changes", { exact: true }).check();
  const offering = page.waitForResponse(r => r.url().includes("/menu/offerings") && r.request().method() === "POST"); await page.getByRole("button", { name: "Save changes", exact: true }).click(); expect((await offering).status()).toBe(200);
- await page.getByRole("button", { name: "Hours & closures", exact: true }).click(); await expect(page.getByText("Unknown · Africa/Kinshasa", { exact: true })).toBeVisible();
+ await page.getByRole("button", { name: "Hours", exact: true }).click(); await expect(page.getByText("Unknown · Africa/Kinshasa", { exact: true })).toBeVisible();
  await edit(page); await page.getByLabel("Known schedule", { exact: true }).check(); await page.getByLabel("I confirm these changes", { exact: true }).check(); await page.getByRole("button", { name: "Save changes", exact: true }).click();
- await page.getByRole("button", { name: "Profile", exact: true }).click();
+ await page.getByRole("button", { name: "My profile", exact: true }).click();
  await edit(page); await page.getByLabel("Name", { exact: true }).fill(`${name} reconciled`);
  expect((await api.post(`/__s3a/cross-channel/${ref}`)).ok()).toBeTruthy();
  await page.getByRole("button", { name: "Save changes", exact: true }).click(); await expect(page.getByLabel("Name", { exact: true })).toBeDisabled();
@@ -63,7 +66,7 @@ test("actual Backend: Personal lifecycle, exact menu, stale reconciliation, shar
  const applications = page.waitForResponse(r => r.url().includes("/api/shida/employment/applications") && r.status() === 200);
  await page.goto("/shida/my-applications/"); await applications;
  await page.goto("/shida/seller/restaurants/"); await expect(page.getByRole("button", { name: "Add another", exact: true })).toBeVisible();
- await page.getByRole("button", { name: "Sign out / change account", exact: true }).click(); await expect(page.getByRole("heading", { name: "Sign in to SHIDA", exact: true })).toBeVisible();
+ await page.getByRole("button", { name: "Sign out / change account", exact: true }).click(); await expect(page.getByRole("heading", { name: "Sign in with SHIDA", exact: true })).toBeVisible();
  await expect.poll(async () => (await context.cookies()).some(c => ["nihiloba_personal_session", "shida_dashboard_session"].includes(c.name))).toBeFalsy();
  await page.reload();
  await session(context, "other"); await page.evaluate(() => window.dispatchEvent(new Event("shida-personal-session-changed")));
@@ -71,7 +74,7 @@ test("actual Backend: Personal lifecycle, exact menu, stale reconciliation, shar
  const binding = await (await context.request.get("/api/shida/employment/session")).json();
  expect((await context.request.get(`/api/shida/personal/restaurants/${ref}`, { headers: { "X-Shida-Session": binding.binding } })).status()).toBe(404);
  await api.post("/__s3a/expire"); await page.evaluate(() => window.dispatchEvent(new Event("focus")));
- await expect(page.getByRole("heading", { name: "Sign in to SHIDA", exact: true })).toBeVisible();
+ await expect(page.getByRole("heading", { name: "Sign in with SHIDA", exact: true })).toBeVisible();
  await api.dispose();
 });
 

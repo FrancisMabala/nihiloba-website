@@ -4,7 +4,7 @@ for(const committedBeforeDisconnect of [true,false]) test(`phone checkout compos
  await page.setViewportSize({width:390,height:844});
  await page.addInitScript(()=>{window.open=()=>null;});
  let signedIn=false,revision=1,submitAttempts=0,created=false;
- let selections:{standalone:unknown[];plates:{key:string;components:unknown[]}[]}={standalone:[],plates:[]};
+ let selections:{standalone:Record<string,unknown>[];plates:{key:string;components:Record<string,unknown>[]}[]}={standalone:[],plates:[]};
  let quote:Record<string,unknown>|null=null,orderRef:string|null=null;
  const basket=()=>({basket_ref:"RBA-CHECKOUT",establishment_ref:"RST-CHECKOUT",entry_source:"customer",channel:"web",revision,selections,quote,quote_ref:quote?"RQU-CHECKOUT":null,order_ref:orderRef,food_preference:null,fulfillment_method:"pickup",window_ref:"RWI-CHECKOUT"});
  await page.route("**/api/shida/employment/session/**",route=>route.fulfill({status:signedIn?200:401,json:signedIn?{user:{display_name:"Fixture customer"},binding:"a".repeat(64)}:{}}));
@@ -14,16 +14,21 @@ for(const committedBeforeDisconnect of [true,false]) test(`phone checkout compos
   if(method==="POST"&&path.endsWith("/baskets")){created=true;return respond(basket());}
   if(method==="GET"&&path.endsWith("/RBA-CHECKOUT"))return respond(basket());
   if(method==="PATCH"){revision++;selections=body.selections;quote=null;return respond({basket:basket(),operation_outcome:{revision}});}
-  if(method==="POST"&&path.endsWith("/quote")){revision++;const standalone=selections.standalone.map((line:any)=>({...line,name:"Fufu",pricing_model:"UNIT_PRICED",currency:"CDF",sale_unit_label:"boule",unit_price:"1000.00",subtotal:"1000.00"}));const plates=selections.plates.map((plate:any)=>({key:plate.key,subtotal:"1000.00",components:plate.components.map((line:any)=>({...line,name:"Pondu",pricing_model:"AMOUNT_PRICED",currency:"CDF",subtotal:"1000.00"}))}));quote={standalone,plates,food_subtotal:"2000.00",delivery_fee:null,order_total:"2000.00",currency:"CDF",fulfillment_method:"pickup",pickup_window:{starts_at:"2027-01-01T10:00:00Z",ends_at:"2027-01-01T12:00:00Z"},pickup_location:"Public pickup point",establishment_name:"Checkout Malewa"};return respond({basket:basket(),operation_outcome:{quote_ref:"RQU-CHECKOUT",revision}});}
+  if(method==="POST"&&path.endsWith("/quote")){revision++;const standalone=selections.standalone.map(line=>({...line,name:"Fufu",pricing_model:"UNIT_PRICED",currency:"CDF",sale_unit_label:"boule",unit_price:"1000.00",subtotal:"1000.00"}));const plates=selections.plates.map(plate=>({key:plate.key,subtotal:"1000.00",components:plate.components.map(line=>({...line,name:"Pondu",pricing_model:"AMOUNT_PRICED",currency:"CDF",subtotal:"1000.00"}))}));quote={standalone,plates,food_subtotal:"2000.00",delivery_fee:null,order_total:"2000.00",currency:"CDF",fulfillment_method:"pickup",pickup_window:{starts_at:"2027-01-01T10:00:00Z",ends_at:"2027-01-01T12:00:00Z"},pickup_location:"Public pickup point",establishment_name:"Checkout Malewa"};return respond({basket:basket(),operation_outcome:{quote_ref:"RQU-CHECKOUT",revision}});}
   if(method==="POST"&&path.endsWith("/submit/pickup")){submitAttempts++;if(submitAttempts===1){if(committedBeforeDisconnect)orderRef="ROD-CHECKOUT";return route.abort();}orderRef="ROD-CHECKOUT";return respond({current_order:{order_ref:orderRef,state:"pending"}});}
   if(method==="POST"&&path.endsWith("/operations/recover"))return orderRef?respond({operation_outcome:{order_ref:orderRef},current:basket()}):respond({detail:"restaurant_operation_expired"},409);
   if(method==="GET"&&path.endsWith("/ROD-CHECKOUT"))return respond({order_ref:orderRef,state:"pending",revision:1,entry_source:"customer",channel:"web",fulfillment_method:"pickup",submitted_at:"2026-10-08T10:00:00Z",cancellation_pending:false,payment_verified:false,receipt_terms:quote});
   return respond({detail:"restaurant_unavailable"},404);
  });
  await page.goto("/shida/restaurants/RST-CHECKOUT/menu");
+ // Wait for the checkout's client session check, so SSR-visible Add buttons
+ // are hydrated before interacting. No sleep or retry of the order operation.
+ const sessionChecked=page.waitForResponse(response=>new URL(response.url()).pathname.replace(/\/$/,"").endsWith("/employment/session")&&response.status()===401);
  await page.getByRole("link",{name:"Order food"}).click();
+ await sessionChecked;
  await expect(page.getByRole("heading",{name:"Checkout Malewa · Order food"})).toBeVisible();
  await page.getByRole("article").filter({hasText:"Fufu"}).getByRole("button",{name:"Add"}).click();
+ await expect(page.getByRole("button",{name:"Basket"})).toBeEnabled();
  await page.getByRole("article").filter({hasText:"Pondu"}).getByRole("button",{name:"Add"}).click();
  await page.getByRole("button",{name:"Basket"}).click();
  await expect(page.getByRole("heading",{name:"Plate 1"})).toBeVisible();
