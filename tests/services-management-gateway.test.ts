@@ -70,3 +70,14 @@ it('routes only Personal Finance entries and requires a replay key',async()=>{
  expect((await GET(request('transactions/finance/entries/FEN_one'),context('transactions/finance/entries/FEN_one'))).status).toBe(404);
  expect(fetcher).not.toHaveBeenCalled();
 });
+
+it('routes private Personal totals with only exact date filters',async()=>{
+ const period='transactions/finance/totals';
+ const query='?start_date=2026-10-01&end_date=2026-11-01&as_of=2026-10-20T12%3A00%3A00.000Z';
+ expect((await GET(request(period+query),context(period))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toContain('/api/dashboard/services/finance/totals?start_date=2026-10-01');
+ expect((await GET(request(period+query+'&organization_ref=BUS_other'),context(period))).status).toBe(404);
+ const job='transactions/finance/reservations/RSV_one/totals';
+ expect((await GET(request(job+'?as_of=2026-10-20T12%3A00%3A00Z'),context(job))).status).toBe(200);
+ expect(String(fetcher.mock.calls[1][0])).toContain('/api/dashboard/services/finance/reservations/RSV_one/totals?');
+});

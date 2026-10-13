@@ -2,6 +2,8 @@
 export function transactionPath(parts: string[], method: string): string | null {
   if (parts[0] !== 'transactions') return null;
   if (parts[1] === 'finance') {
+    if (parts.length === 3 && parts[2] === 'totals' && method === 'GET') return 'services/finance/totals';
+    if (parts.length === 5 && parts[2] === 'reservations' && /^RSV_[A-Za-z0-9_-]+$/.test(parts[3]) && parts[4] === 'totals' && method === 'GET') return `services/finance/reservations/${parts[3]}/totals`;
     if (parts.length === 3 && parts[2] === 'entries' && ['GET','POST'].includes(method)) return 'services/finance/entries';
     if (parts.length === 5 && parts[2] === 'entries' && /^(FEN|PSE)_[A-Za-z0-9_-]+$/.test(parts[3]) && parts[4] === 'corrections' && method === 'POST') return `services/finance/entries/${parts[3]}/corrections`;
     return null;
@@ -46,6 +48,11 @@ export function transactionPath(parts: string[], method: string): string | null 
 }
 export function transactionQuery(parts:string[], query:URLSearchParams, method:string): boolean {
   // Organization/provider scope cannot be injected through query parameters.
+  if(parts[1]==='finance'&&method==='GET'&&(parts[2]==='totals'||parts[2]==='reservations'&&parts[4]==='totals')){
+    const period=parts[2]==='totals', keys=period?['start_date','end_date','as_of']:['as_of'];
+    return [...query].length===keys.length&&keys.every(key=>query.getAll(key).length===1&&(
+      key==='as_of'?/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(query.get(key)??''):/^\d{4}-\d{2}-\d{2}$/.test(query.get(key)??'')));
+  }
   return [...query].every(([key,value]) => method === 'GET' && key === 'offset' && query.getAll(key).length === 1
     && /^\d{1,6}$/.test(value) && (parts.length === 2 && ['requests','reservations'].includes(parts[1]) || parts[1] === 'requests' && parts[3] === 'quotes' || parts[1] === 'messages' && parts.length === 3 || parts[1] === 'finance' && parts.length === 3 && parts[2] === 'entries'));
 }

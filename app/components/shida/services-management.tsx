@@ -1,6 +1,7 @@
 "use client";
 import {ServicesTransactions} from "./services-transactions";
 import {ServicesFinancePanel} from "./services-finance-panel";
+import {ServicesTotalsPanel} from "./services-totals-panel";
 import {useEffect, useState} from "react";
 
 type Locale = "fr" | "en" | "ln" | "sw";
@@ -47,6 +48,7 @@ export function ServicesManagement({binding,locale,offeringRef=null}:{binding:st
   <header><h1>{t.title}</h1><div role="group" aria-label={t.title} style={{display:"flex",gap:8,flexWrap:"wrap",margin:"1rem 0"}}><button type="button" aria-pressed={view==="free"} onClick={()=>setView("free")}>{t.free}</button><button type="button" aria-pressed={view==="pro"} onClick={()=>setView("pro")}>{t.pro}</button></div>{view==="pro"&&<p>{t.plan}</p>}</header>
   {message&&<p role="status">{message}</p>}<button type="button" onClick={()=>void refresh()}>{t.reload}</button>
   <ServicesFinancePanel key={base+binding+"finance"} base={base} binding={binding} locale={lang}/>
+  <ServicesTotalsPanel key={base+binding+"totals"} base={base} binding={binding} locale={lang}/>
   <ServicesTransactions key={base+binding} base={base} binding={binding} locale={lang} offeringRef={offeringRef} onDenied={()=>{setRows([]);setSelected(null);setReviews([]);setBlocked(true);}}/>
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,280px),1fr))",gap:"1rem",marginTop:"1rem"}}>
    <div><h2>{t.service}</h2>{rows.length===0&&<p>{t.empty}</p>}{rows.map(row=><button type="button" key={row.public_ref} onClick={()=>setSelected(row.public_ref)} aria-pressed={row.public_ref===selected} style={{display:"block",width:"100%",textAlign:"left",padding:12,marginBottom:6}}>{row.service_name}<small style={{display:"block"}}>{row.publication_origin==="pilot"?t.published:t.private}</small></button>)}
