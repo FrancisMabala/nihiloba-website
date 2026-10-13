@@ -1,6 +1,11 @@
 // Channel routing only. Authorization and transitions stay in the Services backend.
 export function transactionPath(parts: string[], method: string): string | null {
   if (parts[0] !== 'transactions') return null;
+  if (parts[1] === 'finance') {
+    if (parts.length === 3 && parts[2] === 'entries' && ['GET','POST'].includes(method)) return 'services/finance/entries';
+    if (parts.length === 5 && parts[2] === 'entries' && /^(FEN|PSE)_[A-Za-z0-9_-]+$/.test(parts[3]) && parts[4] === 'corrections' && method === 'POST') return `services/finance/entries/${parts[3]}/corrections`;
+    return null;
+  }
   const reservation = /^RSV_[A-Za-z0-9_-]+$/;
   const bill = /^SBF_[A-Za-z0-9_-]+$/;
   if (parts[1] === 'customer' && parts[2] === 'reservations' && reservation.test(parts[3] ?? '')
@@ -42,7 +47,7 @@ export function transactionPath(parts: string[], method: string): string | null 
 export function transactionQuery(parts:string[], query:URLSearchParams, method:string): boolean {
   // Organization/provider scope cannot be injected through query parameters.
   return [...query].every(([key,value]) => method === 'GET' && key === 'offset' && query.getAll(key).length === 1
-    && /^\d{1,6}$/.test(value) && (parts.length === 2 && ['requests','reservations'].includes(parts[1]) || parts[1] === 'requests' && parts[3] === 'quotes' || parts[1] === 'messages' && parts.length === 3));
+    && /^\d{1,6}$/.test(value) && (parts.length === 2 && ['requests','reservations'].includes(parts[1]) || parts[1] === 'requests' && parts[3] === 'quotes' || parts[1] === 'messages' && parts.length === 3 || parts[1] === 'finance' && parts.length === 3 && parts[2] === 'entries'));
 }
 export function transactionSearch(parts:string[], query:URLSearchParams): URLSearchParams {
   const result = new URLSearchParams(query);

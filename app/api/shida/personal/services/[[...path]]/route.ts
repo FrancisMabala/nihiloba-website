@@ -51,6 +51,6 @@ async function handle(request:Request,context:Context){
   return Response.json(value,{headers:PRIVATE_HEADERS});
  }catch{return fail(503);}
 }
-const methodNeedsKey=(parts:string[],method:string)=>parts.length===0&&method==="POST";
+const methodNeedsKey=(parts:string[],method:string)=>method==="POST"&&(parts.length===0||parts[0]==="transactions"&&parts[1]==="finance");
 export const GET=handle;export const POST=handle;export const PATCH=handle;
 export const PUT=()=>fail(405);export const DELETE=PUT;export const HEAD=PUT;export const OPTIONS=PUT;

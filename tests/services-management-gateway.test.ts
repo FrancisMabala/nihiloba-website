@@ -56,3 +56,17 @@ it('keeps provider bill writes and exact-customer reads on private authenticated
  expect((await GET(request(customer+'?organization_ref=BUS_other'),context(customer))).status).toBe(404);
  expect(fetcher).not.toHaveBeenCalled();
 });
+
+it('routes only Personal Finance entries and requires a replay key',async()=>{
+ const path='transactions/finance/entries';
+ const payload={measure:'recorded_income',association_kind:'job',reservation_ref:'RSV_one',amount:'1.25',currency:'USD',effective_date:'2026-10-13',category:'service_income'};
+ expect((await POST(request(path,'POST',payload),context(path))).status).toBe(422);
+ expect((await POST(request(path,'POST',payload,{'Idempotency-Key':'receipt-one'}),context(path))).status).toBe(200);
+ const [target,init]=fetcher.mock.calls[0];
+ expect(String(target)).toBe('https://backend.test/api/dashboard/services/finance/entries');
+ expect((init?.headers as Record<string,string>)['Idempotency-Key']).toBe('receipt-one');
+ fetcher.mockClear();
+ expect((await GET(request(path+'?organization_ref=BUS_other'),context(path))).status).toBe(404);
+ expect((await GET(request('transactions/finance/entries/FEN_one'),context('transactions/finance/entries/FEN_one'))).status).toBe(404);
+ expect(fetcher).not.toHaveBeenCalled();
+});
