@@ -1,0 +1,4 @@
+warning: in the working copy of 'app/components/shida/restaurant-daily.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/components/shida/restaurant-reservation-seller.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/components/shida/restaurant-service.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/lib/restaurant-daily-copy.ts', LF will be replaced by CRLF the next time Git touches it

@@ -1,0 +1,18 @@
+from pathlib import Path
+
+p=Path('docs/restaurants-management-2026-10-13.md')
+s=p.read_text(encoding='utf-8')
+s=s.replace('Status: **Partial, local Website and Business work only; no deployment, commit, push or intake change.**', 'Status: **Partial, local Website, Backend and Business work only; no deployment, commit, push or intake change.**', 1)
+start=s.index('| Counter |',s.index('## Seller workflow correction follow-up'))
+end=s.index('\n| Reservations |',start)
+rows=[
+    '| Counter | Menu appears before basket creation; first item creates a canonical basket. Selected lines, separate CDF/USD running estimates, exact quote and handover remain distinct. After handover the seller sees the existing canonical bill, selects a configured payment method and currency, records the actual amount through the existing money endpoint, and can reopen the bill from recent POS receipts. | Backend counter finalize now creates one closed service bill link in the same stock/order transaction, returns `bill_group_ref` on handover and replay, and reuses existing bill/payment/receipt/refund and idempotent recovery rules. Old counter receipts have no fabricated historical bill. External payments remain `payment_verified: false`. Deploy Backend before either frontend. |',
+    '| Finances | Owner navigation exposes daily operations, declared expenses, cash counts, reports and exact bill recovery. The daily overview now separates linked order value, recorded net collections, outstanding balance, expenses and cash variance for CDF and USD. | Backend daily projection now supplies read-only `bill_summary` totals from canonical linked orders and allocated money. Older report payloads without this field remain readable. Existing historical counter sales without a linked bill are excluded; neither external payment verification nor profit is inferred. |',
+]
+s=s[:start]+'\n'.join(rows)+s[end:]
+start=s.index('The canonical workbook ',s.index('## Seller workflow correction follow-up'))
+end=s.index('\nNew Website phone/tablet/desktop captures',start)
+paragraph='The canonical workbook `Backend/docs/evidence/restaurants_whatsapp_2026_10_12/release_validation_tracker.xlsx` has updated P07, P08 and MGT01 evidence and remains **Partial**, preserving six sheets and twelve formulas. Website and Business production builds/typechecks pass. Website focused units passed 138; Business focused units passed 40. The authoritative frontend gate passed Website units/build/typecheck/lint and Business build/typecheck; a Business access-test timeout in that concurrent run passed all ten cases when rerun alone. Business responsive browser checks passed 3/3. The new Website workflow browser suite passed 12/12 against a production preview, including the canonical counter bill and a recorded payment at 360/820/1440. The earlier 36 management/seller browser checks passed. The static Backend gate passed. A disposable PostgreSQL pilot gate passed 466 tests with four documented skips and zero unexpected skips before the final counter/daily contract additions. Focused post-change SQLite money, Service, daily and POS regressions passed 113/113; the new counter bill and pre-subscription finance cases passed 2/2 each. A targeted post-change PostgreSQL run and the broad SQLite gate are still running. These are synthetic and local checks, not staging or deployment acceptance.\n'
+s=s[:start]+paragraph+s[end:]
+s=s.replace('`workflow-orders`, `workflow-counter`, `workflow-reservations`', '`workflow-orders`, `workflow-counter`, `workflow-counter-bill`, `workflow-counter-paid`, `workflow-reservations`',1)
+p.write_text(s,encoding='utf-8')

@@ -1,0 +1,71 @@
+[
+  {
+    "name": "python",
+    "command": [
+      "C:\\NIHILOBA\\Backend\\venv\\Scripts\\python.exe",
+      "-m",
+      "compileall",
+      "-q",
+      "app",
+      "tests",
+      "scripts",
+      "migrations"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "translations",
+    "command": [
+      "C:\\NIHILOBA\\Backend\\venv\\Scripts\\python.exe",
+      "scripts/check_duplicate_text_keys.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "heads",
+    "command": [
+      "C:\\NIHILOBA\\Backend\\venv\\Scripts\\python.exe",
+      "-m",
+      "alembic",
+      "heads"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "Backend_diff",
+    "command": [
+      "git",
+      "-c",
+      "safe.directory=C:/NIHILOBA/Backend",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "nihiloba-website_diff",
+    "command": [
+      "git",
+      "-c",
+      "safe.directory=C:/NIHILOBA/nihiloba-website",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "shida-business_diff",
+    "command": [
+      "git",
+      "-c",
+      "safe.directory=C:/NIHILOBA/shida-business",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "browser_python_fixtures",
+    "exit_code": 0
+  }
+]

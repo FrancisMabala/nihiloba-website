@@ -5,6 +5,7 @@ import {request,DashboardApiError} from '../../lib/restaurant-seller-browser';
 import {useWorkDraft,dateText,type Order,type Terms} from '../../lib/restaurant-work';
 import {workText} from '../../lib/restaurant-work-copy';
 import {serviceText} from '../../lib/restaurant-service-copy';
+import {workflowText} from '../../lib/restaurant-workflow-copy';
 import {serviceEnvelope,servicePath,serviceSelections,type ServiceAssignment,type ServiceEnvelope,type ServiceGroup} from '../../lib/restaurant-service-contract';
 import {FoodTerms,ReceiptCard} from './restaurant-receipt';
 import {RestaurantMoney} from './restaurant-money';
@@ -122,9 +123,9 @@ export function RestaurantService({path,binding,locale,assignment}:{path:string;
  {message&&<p role="alert">{message}</p>}{!fresh&&!lost&&<p role="status">{s('stale')}</p>}
  <button disabled={busy} onClick={async()=>{if(lock.current)return;lock.current=true;setBusy(true);try{await read();}finally{lock.current=false;setBusy(false);}}}>{t('refresh')}</button>
  {pending&&<><p>{s('uncertain')}</p><button disabled={busy||!fresh||lost} onClick={()=>void mutate(pending,true)}>{s('retry')}</button></>}
- {!lost&&<><h3>{s('groups')}</h3><div className="rst-actions">{groups.map(g=><button disabled={locked||!!basket} key={g.group_ref} onClick={()=>void open(g)}>{g.group_ref} · {g.guest_confirmed?s('confirmed'):s('staffOnly')} · {g.state==='closed'?s('closed'):t('active')}</button>)}</div>
+ {!lost&&<><h3>{s('groups')}</h3>{!groups.length&&<p>{workflowText(locale,'noVisits')}</p>}<div className="rst-actions">{groups.map(g=><button disabled={locked||!!basket} key={g.group_ref} onClick={()=>void open(g)}>{g.group_ref} · {g.guest_confirmed?s('confirmed'):s('staffOnly')} · {g.state==='closed'?s('closed'):t('active')}</button>)}</div>
  <button disabled={locked||!!basket} onClick={()=>void action('/groups',{operation_key:crypto.randomUUID()})}>{s('newGroup')}</button>
- <div className="rst-actions"><button disabled={locked||!!basket||page<=1} onClick={()=>{setFresh(false);setPage(p=>p-1);}}>{t('previous')}</button><button disabled={locked||!!basket||!more} onClick={()=>{setFresh(false);setPage(p=>p+1);}}>{t('next')}</button></div>
+ {(page>1||more)&&<div className="rst-actions"><button disabled={locked||!!basket||page<=1} onClick={()=>{setFresh(false);setPage(p=>p-1);}}>{t('previous')}</button><button disabled={locked||!!basket||!more} onClick={()=>{setFresh(false);setPage(p=>p+1);}}>{t('next')}</button></div>}
  {group&&<section><h3>{group.group_ref}</h3><p>{group.guest_confirmed?s('confirmed'):s('staffOnly')}</p><p>{s('rounds')}</p>
  {!group.can_add_round&&<p>{s('closed')}</p>}<p>{dateText(group.order_until,locale)}</p>
  {group.rounds.map(r=><section className="rst-service-round" key={r.order_ref}><p>{r.order_ref} · {r.entry_source==='assisted'?s('staffRound'):s('guestRound')}</p><p>{t(r.state)} · {r.amount} {r.currency}</p>{r.preparation&&<StationStates preparation={r.preparation} state={r.state} locale={locale}/>} {r.cancellation_pending&&<p>{t('cancellation')}</p>}{r.entry_source==='assisted'&&<><button disabled={locked} onClick={()=>void detail(r.order_ref)}>{t('receipt')}</button>{r.state==='ready'&&<button disabled={locked} onClick={()=>{if(window.confirm(s('handoverConfirm')))void action('/orders/'+r.order_ref+'/actions/assisted_handover',{operation_key:crypto.randomUUID(),expected_revision:r.revision,confirm:true});}}>{s('handover')}</button>}</>}</section>)}

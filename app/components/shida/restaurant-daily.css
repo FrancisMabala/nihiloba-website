@@ -11,3 +11,8 @@
 .rst-daily dd{margin:0;font-weight:700}
 .rst-daily-missing{color:#8e4e00;font-style:italic}
 .rst-daily aside{border:2px solid #a45b00;padding:.6rem;background:#fff7e8}
+.rst-daily-summary{margin:1rem 0;padding:1rem;border:1px solid #aec6b7;border-radius:10px;background:#fff}
+.rst-daily-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1rem}
+.rst-daily-summary dl{display:block;padding:0}
+.rst-daily-summary dl div{display:flex;justify-content:space-between;gap:1rem;padding:.25rem 0;border-bottom:1px solid #e5ede7}
+.rst-daily-summary p{font-size:.9rem}

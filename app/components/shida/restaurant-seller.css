@@ -127,6 +127,9 @@
 .rst-work fieldset { border: 0; min-width: 0; padding: 0; }
 .rst-work input, .rst-work select { max-width: 100%; }
 .rst-work button { min-height: 44px; padding: .55rem .9rem; }
+.rst .rst-counter-menu .rst-menu-row { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1.4fr) auto; gap:12px; align-items:center; }
+.rst .rst-counter-menu button { min-width:88px; min-height:48px; }
+@media(max-width:600px){.rst .rst-counter-menu .rst-menu-row{grid-template-columns:minmax(0,1fr) auto}.rst .rst-counter-menu .rst-menu-row>span{grid-column:1}.rst .rst-counter-menu .rst-menu-row>button{grid-column:2;grid-row:1/3}}
 .rst-work label { display: flex; flex-direction: column; gap: .4rem; margin: .5rem 0; }
 .rst-order-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.3fr); gap: 1rem; align-items: start; }
 .rst-order-layout .rst-card { margin-bottom: 1rem; overflow-wrap: anywhere; }
