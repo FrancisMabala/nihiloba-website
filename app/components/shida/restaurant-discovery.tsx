@@ -18,7 +18,7 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
  return <section className="restaurant-public restaurant-discovery" lang={locale}><div className="container">
   <RestaurantRevalidation/>
   <div className="rd-top"><MarketplaceBreadcrumb label={t.breadcrumb} items={[{ label: "SHIDA", href: locale === "en" ? "/shida" : "/fr/shida" }, { label: t.title }]}/><div className="rd-tools"><a href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{d.seller}</a><DiscoveryLanguage locale={locale} search={params.toString()}/></div></div>
-  <header className="rd-intro"><h1>{d.headline}</h1><p>{d.hint}</p></header>
+  <header className="rd-intro"><h1>{t.title}</h1></header>
  </div>
  <div className="container">
   <form action={path} method="get" className="rd-search">

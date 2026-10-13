@@ -95,3 +95,26 @@
  .restaurant-detail-header p{font-size:.9rem}
  .restaurant-detail-tabs{gap:4px}
 }
+
+/* Keep the restaurant identity, hours, and primary actions together. */
+.restaurant-detail-header:not(.has-photo){display:block}
+.restaurant-detail-header .restaurant-hours{margin:12px 0 0;padding:12px 0 0;border-top:1px solid #e1d9c9;background:transparent;font-size:.9rem}
+.restaurant-detail-header .restaurant-hours h2{display:inline;font-size:.98rem;font-weight:700;line-height:1.4;font-family:inherit;margin:0 10px 0 0}
+.restaurant-detail-header .restaurant-hours>.restaurant-hours-status{display:none}
+.restaurant-detail-header .restaurant-hours>p{display:none}
+.restaurant-detail-header .restaurant-hours ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:4px 16px;list-style:none;padding:0;margin:7px 0 0}
+.restaurant-detail-header .restaurant-hours li{line-height:1.45}
+.restaurant-detail-header .restaurant-hours h3{font-size:.9rem;margin:10px 0 0}
+.restaurant-detail-header .restaurant-hours h3+ul{display:block}
+.restaurant-top-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}
+.restaurant-top-actions a{display:inline-flex;align-items:center;min-height:44px;padding:9px 14px;border-radius:24px;text-decoration:none;font-size:.9rem}
+.restaurant-top-actions .restaurant-whatsapp{background:#083d32;color:#fff}
+@media(max-width:767px){
+ .restaurant-detail-header.has-photo{grid-template-columns:minmax(0,1fr)}
+ .restaurant-detail-header.has-photo>div:first-child{grid-row:2}
+ .restaurant-detail .restaurant-establishment-photo{width:100%;max-width:none;height:auto;max-height:170px;aspect-ratio:2;justify-self:auto;grid-row:1}
+ .restaurant-detail-header .restaurant-hours ul{grid-template-columns:minmax(0,1fr)}
+ .restaurant-top-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .restaurant-top-actions a{justify-content:center;text-align:center}
+ .restaurant-top-actions .restaurant-whatsapp{grid-column:1/-1}
+}

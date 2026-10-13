@@ -5,7 +5,7 @@ test.beforeEach(async ({ page }) => {
 for (const width of [390, 768, 1440]) test(`customer discovery at ${width}px`, async ({ page }) => {
  await page.setViewportSize({ width, height: 900 }); await page.goto("/fr/shida/restaurants/?city=Kinshasa");
  await expect(page.locator(".rd-card")).toHaveCount(1);
- await expect(page.getByRole("heading", { level: 1 })).toHaveText("Trouvez votre prochaine bonne adresse.");
+ await expect(page.getByRole("heading", { level: 1 })).toHaveText("Restaurants & Malewa");
  await expect(page.locator(".rd-painted-band")).toHaveCount(0);
  const intro = (await page.locator(".rd-intro").boundingBox())!, search = (await page.locator(".rd-search").boundingBox())!;
  expect(search.y).toBeGreaterThanOrEqual(intro.y + intro.height);

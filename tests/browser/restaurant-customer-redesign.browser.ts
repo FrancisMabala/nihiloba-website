@@ -19,24 +19,26 @@ test("search, menu, basket and quote across customer widths", async ({ page, req
     await page.goto(`/shida/restaurants/?name=${encodeURIComponent(name)}`);
     await expect(page.locator(".rd-card")).toHaveCount(1);
     await expect(page.locator(".rd-painted-band")).toHaveCount(0);
-    await expect(page.locator(".rd-card .restaurant-photo-illustration")).toBeVisible();
+    await expect(page.locator(".rd-card .rd-photo")).toBeHidden();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `${evidence}/marketplace-${label}.png`, fullPage: true });
 
     await page.locator(".rd-menu").click();
     await expect(page.locator(".rst-menu-card")).toHaveCount(2);
     await expect(page.locator(".restaurant-categories a")).toHaveCount(1);
-    await expect(page.locator(".rst-choice-fallback")).toHaveCount(2);
+    await expect(page.locator(".rst-choice-photo")).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `${evidence}/menu-${label}.png`, fullPage: true });
   }
 
   await page.setViewportSize({ width: 390, height: 900 });
-  await page.getByRole("button", { name: "Start a private visit" }).click();
-  await expect(page.getByRole("heading", { name: "Basket", exact: true })).toBeVisible();
   await page.locator(".rst-menu-card").filter({ has: page.getByRole("heading", { name: "Fufu" }) }).getByRole("button", { name: "Add" }).click();
   await page.locator(".rst-menu-card").filter({ has: page.getByRole("heading", { name: "Pondu" }) }).getByRole("button", { name: "Add" }).click();
   await expect(page.locator(".rst-sticky-basket")).toContainText("2");
+  await page.getByRole("button", { name: "Continue to order" }).first().click();
+  await expect(page.getByRole("heading", { name: "Basket", exact: true })).toBeVisible();
+  await expect(page.locator(".rst-basket-review")).toContainText("Fufu");
+  await expect(page.locator(".rst-basket-review")).toContainText("Pondu");
   await page.getByRole("combobox", { name: checkoutCopy.en.window }).selectOption({ index: 1 });
   await page.getByRole("button", { name: checkoutCopy.en.quote }).click();
   await expect(page.locator(".rst-sticky-basket")).toContainText("CDF");

@@ -113,3 +113,6 @@ body:has(.restaurant-discovery) .site-header .language-switcher { display:none; 
  .rd-card p{font-size:.82rem}
  .rd-menu{padding:8px 10px;font-size:.86rem}
 }
+.rd-photo .restaurant-photo-illustration{background:linear-gradient(135deg,#f3f0e9,#e8e4da)}
+.rd-card:has(.restaurant-photo-illustration) .rd-photo{display:none}
+@media(max-width:767px){.rd-card:has(.restaurant-photo-illustration){display:block}}

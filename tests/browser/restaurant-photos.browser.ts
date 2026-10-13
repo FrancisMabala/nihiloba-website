@@ -24,7 +24,7 @@ for(const locale of ['en','fr','ln','sw'] as const) for(const width of [360,390,
  await expect(page.locator('.restaurant-menu-item .eyebrow')).toHaveCount(0);await expect(page.locator('#guest-order').getByRole('button',{name:guestText(locale,'start'),exact:true})).toHaveCount(0);
  const cards=page.locator('.restaurant-grid:visible').first().locator('article');await expect(cards.nth(0)).toBeVisible();await expect(cards.nth(1)).toBeVisible();const a=await cards.nth(0).boundingBox(),b=await cards.nth(1).boundingBox();expect(a&&b).toBeTruthy();expect(Math.abs(a!.y-b!.y)<2).toBe(width>=768);
  await noOverflow(page);await page.screenshot({path:`.s3a-local/photos/menu-${locale}-${width}.png`,fullPage:true});
- await page.goto(`${prefix}/shida/restaurants/RST_NOPHOTO/`);await expect(page.locator('.restaurant-header-art:visible .restaurant-photo-illustration')).toBeVisible();await noOverflow(page);
+ await page.goto(`${prefix}/shida/restaurants/RST_NOPHOTO/`);await expect(page.locator('.restaurant-header-art')).toHaveCount(0);await noOverflow(page);
  if(locale==='fr'){await page.screenshot({path:`.s3a-local/photos/profile-no-photo-${width}.png`,fullPage:true});await page.goto(`${prefix}/shida/restaurants/?query=photos`);await expect(page.locator('.rd-card')).toHaveCount(3);await noOverflow(page);await page.screenshot({path:`.s3a-local/photos/listing-${width}.png`,fullPage:true});}
 });
 test('one photo, broken images and slow responses preserve readable content',async({page})=>{

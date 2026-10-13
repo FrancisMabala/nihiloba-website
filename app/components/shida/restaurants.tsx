@@ -6,7 +6,6 @@ import { checkoutCopy } from "../../lib/restaurant-checkout-copy";
 import { reservationCopy } from "../../lib/restaurant-reservation-copy";
 import { reservationAvailability } from "../../services/shida/restaurant-reservations";
 import { RestaurantGuest } from "./restaurant-guest";
-import { guestText } from "../../lib/restaurant-guest-copy";
 import { businessPath, restaurantCopy, restaurantLocales, restaurantPath, restaurantReturn } from "../../lib/restaurant-i18n";
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import { RestaurantPhoto } from "./restaurant-photo";
@@ -50,12 +49,22 @@ function Pagination({ locale, page, page_size, total, href }: { locale: Restaura
   const t = restaurantCopy[locale];
   return <nav className="restaurant-pagination" aria-label={t.page}>{page > 1 && <Internal href={href(page - 1)}>{t.previous}</Internal>}<span aria-current="page">{t.page} {page} / {Math.max(1, Math.ceil(total / page_size))}</span>{page * page_size < total && <Internal href={href(page + 1)}>{t.next}</Internal>}</nav>;
 }
+function groupedHours(hours: Restaurant["hours"]) {
+  const groups: { first: number; last: number; windows: { start: string; end: string }[] }[] = [];
+  for (let day = 0; day < 7; day++) {
+    const windows = hours.windows.filter(window => window.weekday === day).map(({ start, end }) => ({ start, end })).sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end));
+    const previous = groups.at(-1);
+    if (previous && JSON.stringify(previous.windows) === JSON.stringify(windows)) previous.last = day;
+    else groups.push({ first: day, last: day, windows });
+  }
+  return groups;
+}
 function Status({ locale, hours }: { locale: RestaurantLocale; hours: Restaurant["hours"] }) { return <span className={`marketplace-status restaurant-hours-status status-${hours.status}`}>{restaurantCopy[locale][hours.status]}</span>; }
 export function RestaurantHours({ locale, hours }: { locale: RestaurantLocale; hours: Restaurant["hours"] }) {
   const t = restaurantCopy[locale];
   return <section className="restaurant-hours"><h2>{t.hours}</h2><Status locale={locale} hours={hours}/><p>{t.information}</p>
     {hours.timezone_name && <p>{t.timezone}: {hours.timezone_name}</p>}
-    {hours.windows.length > 0 && <ul>{hours.windows.map((window, index) => <li key={index}>{t.days[window.weekday]}: {window.start} – {window.end}{window.end < window.start && <> ({restaurantDetailCopy[locale].nextDay})</>}</li>)}</ul>}
+    {hours.windows.length > 0 && <ul>{groupedHours(hours).map(({ first, last, windows }) => <li key={first}>{t.days[first]}{last > first ? ` – ${t.days[last]}` : ""}: {windows.length ? windows.map(({ start, end }) => `${start} – ${end}${end < start ? ` (${restaurantDetailCopy[locale].nextDay})` : ""}`).join(", ") : t.closed}</li>)}</ul>}
     {!!hours.closures.length && <><h3>{t.closures}</h3><ul>{hours.closures.map((closure, index) => <li key={index}><DateValue value={closure.starts_at} timezone={hours.timezone_name} locale={locale}/> – <DateValue value={closure.ends_at} timezone={hours.timezone_name} locale={locale}/></li>)}</ul></>}
     {hours.evaluated_at && <p className="restaurant-note">{restaurantDetailCopy[locale].evaluated}: <DateValue value={hours.evaluated_at} timezone={hours.timezone_name} locale={locale}/></p>}
   </section>;
@@ -79,9 +88,10 @@ export function RestaurantMenu({ items, locale }: { items: RestaurantMenuItem[];
 export { RestaurantDiscovery as RestaurantListPage } from "./restaurant-discovery";
 function RestaurantHeader({ locale, establishment, hours }: { locale: RestaurantLocale; establishment: Restaurant; hours: Restaurant["hours"] }) {
   const t = restaurantCopy[locale];
-  return <header className="restaurant-detail-header">
-    <div><h1>{establishment.name || t.title}</h1><p>{[establishment.type_label, establishment.location].filter(Boolean).join(" · ")}</p><span className={`restaurant-current-status status-${hours.status}`}>{t[hours.status]}</span>{establishment.review_summary&&<p>{establishment.review_summary.count ? `${establishment.review_summary.average} ★ · ${establishment.review_summary.count} ${restaurantReviewCopy[locale].reviews}` : restaurantReviewCopy[locale].noReviews}</p>}</div>
-    <div className="restaurant-header-art restaurant-establishment-photo"><RestaurantPhoto src={establishment.establishment_photo?.url ?? establishment.images[0]?.url} alt={establishment.establishment_photo?.alt || establishment.images[0]?.alt || establishment.name || t.title} establishment/></div>
+  const photo = establishment.establishment_photo?.url ?? establishment.images[0]?.url;
+  return <header className={`restaurant-detail-header${photo ? " has-photo" : ""}`}>
+    <div><h1>{establishment.name || t.title}</h1><p>{[establishment.type_label, establishment.location].filter(Boolean).join(" · ")}</p><span className={`restaurant-current-status status-${hours.status}`}>{t[hours.status]}</span>{establishment.review_summary&&<p>{establishment.review_summary.count ? `${establishment.review_summary.average} ★ · ${establishment.review_summary.count} ${restaurantReviewCopy[locale].reviews}` : restaurantReviewCopy[locale].noReviews}</p>}<RestaurantHours locale={locale} hours={hours}/></div>
+    {photo && <div className="restaurant-header-art restaurant-establishment-photo"><RestaurantPhoto src={photo} alt={establishment.establishment_photo?.alt || establishment.images[0]?.alt || establishment.name || t.title} establishment/></div>}
   </header>;
 }
 export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly = false }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch; menuOnly?: boolean }) {
@@ -107,6 +117,7 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
     <RestaurantRevalidation/>
     <div className="restaurant-detail-top"><Internal href={`${restaurantPath(locale)}${back ? `?${back}` : ""}#restaurant-${establishment.public_ref}`}>← {t.back}</Internal><Languages locale={locale} suffix={suffix} search={routeContext}/></div>
     <RestaurantHeader locale={locale} establishment={establishment} hours={currentHours}/>
+    {(actions?.share || actions?.save || actions?.follow) && <nav className="restaurant-top-actions" aria-label={t.services}>{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}</nav>}
     <nav className="restaurant-detail-tabs" aria-label={t.title}><a href={`${detailPath}/menu?${routeContext}`} aria-current={menuOnly ? "page" : undefined}>{t.menu}</a><a href={`${detailPath}?${routeContext}#restaurant-info`} aria-current={!menuOnly ? "page" : undefined}>{copy.establishment}</a></nav>
     <div className="restaurant-detail-columns"><div className="restaurant-detail-content">
     <RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} tableLocator={tableLocator} menu={menuResult.status === "fulfilled" ? menuResult.value : null}/>
@@ -125,9 +136,8 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
        <RestaurantReviewForm locale={locale} establishmentRef={establishment.public_ref} establishmentName={establishment.name||t.title}/>
       </section>
     </section>}
-    </div><aside className="restaurant-practical"><h2>{copy.practical}</h2>{establishment.location && <p>{establishment.location}</p>}
-    <details className="restaurant-hours-disclosure"><summary>{t.hours}</summary><RestaurantHours locale={locale} hours={currentHours}/></details>
-    <div className="restaurant-actions"><a className="restaurant-link" href="#guest-order">{guestText(locale,"title")}</a>{establishment.ordering_available && <a className="restaurant-link" href={`${detailPath}/order`}>{checkoutCopy[locale].order}</a>}{reservationResult.status==='fulfilled'&&reservationResult.value.available&&<a className="restaurant-link" href={`${locale==='en'?'':`/${locale}`}/shida/restaurant-reservations?establishment=${encodeURIComponent(establishment.public_ref)}`}>{reservationCopy[locale].reserve}</a>}<a className="restaurant-link" href={`${locale==='en'?'':`/${locale}`}/shida/restaurant-reservations`}>{reservationCopy[locale].mine}</a>{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menu}</a>}</div>
+    </div><aside className="restaurant-practical"><h2>{copy.practical}</h2>
+    <div className="restaurant-actions"><a className="restaurant-link" href="#guest-order">{t.menu}</a>{establishment.ordering_available && <a className="restaurant-link" href={`${detailPath}/order`}>{checkoutCopy[locale].order}</a>}{reservationResult.status==='fulfilled'&&reservationResult.value.available&&<a className="restaurant-link" href={`${locale==='en'?'':`/${locale}`}/shida/restaurant-reservations?establishment=${encodeURIComponent(establishment.public_ref)}`}>{reservationCopy[locale].reserve}</a>}<a className="restaurant-link" href={`${locale==='en'?'':`/${locale}`}/shida/restaurant-reservations`}>{reservationCopy[locale].mine}</a>{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menuWhatsapp}</a>}</div>
     <p className="restaurant-note">{actions?.share ? t.report : t.actionsUnavailable}</p>
     </aside></div>
   </div></section>;

@@ -1,5 +1,11 @@
 import type { RestaurantLocale } from "../services/shida/restaurants-client";
 const copy = {
+  chooseFirst:["Add food to your basket, then continue to order.","Ajoutez des plats au panier, puis continuez la commande.","Bakisa bilei na kitunga, na nsima koba na commande.","Ongeza chakula kwenye kikapu, kisha endelea kuagiza."],
+  browseClosed:["Ordering is closed. You can explore the menu and make a basket on this page, but cannot place it now.","Les commandes sont fermées. Vous pouvez explorer le menu et préparer un panier ici, mais pas le valider maintenant.","Commande ekangami. Okoki kotala menu mpe kosala kitunga awa, kasi okoki kotinda yango sikoyo te.","Kuagiza kumefungwa. Unaweza kuona menyu na kuandaa kikapu hapa, lakini huwezi kuwasilisha sasa."],
+  continueOrder:["Continue to order","Continuer la commande","Koba na commande","Endelea kuagiza"],
+  newPlate:["New plate","Nouvelle assiette","Sani ya sika","Sahani mpya"],
+  combineWith:["Combine with","Associer à","Sangisa na","Unganisha na"],
+  plateHelp:["Choose an existing plate to combine these items, or make a new one.","Choisissez une assiette existante pour associer ces articles, ou créez-en une nouvelle.","Pona sani oyo ezali mpo na kosangisa bilei, to sala ya sika.","Chagua sahani iliyopo ili kuunganisha vyakula, au tengeneza mpya."],
   title:["Visit without an account","Visite sans compte","Visite kozanga compte","Ziara bila akaunti"],
   table:["Delivery to table","Service à table","Komema na mesa","Kuhudumiwa mezani"],
   tableProof:["Staff confirms physical delivery to your table. This does not verify payment.","Le personnel confirme la remise à votre table. Cela ne vérifie pas le paiement.","Mosali akondima bopesi na mesa na yo. Yango elakisi te ete ofuti.","Mhudumu anathibitisha kukabidhi mezani. Hii haithibitishi malipo."],

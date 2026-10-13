@@ -45,4 +45,7 @@
 .restaurant-detail .rst-sticky-basket strong{font-variant-numeric:tabular-nums}
 .restaurant-detail .rst-sticky-basket:focus-visible{outline:3px solid #b58a38;outline-offset:-5px}
 @media(min-width:768px){.restaurant-detail .rst-sticky-basket{left:auto;right:20px;bottom:20px;min-width:230px;border-radius:14px;padding:14px 18px}}
-@media(max-width:767px){.restaurant-detail .rst-guest .rst-checkout-items{grid-template-columns:minmax(0,1fr)}.restaurant-detail .rst-guest .rst-checkout-items>article{display:grid;grid-template-columns:112px minmax(0,1fr)}.restaurant-detail .rst-choice-photo{height:100%;aspect-ratio:auto}.restaurant-detail .rst-choice-body{padding:12px}.restaurant-detail .rst-choice-body button{min-height:44px}.restaurant-detail .rst-guest{padding:0}}
+@media(max-width:767px){.restaurant-detail .rst-guest .rst-checkout-items{grid-template-columns:minmax(0,1fr)}.restaurant-detail .rst-guest .rst-checkout-items>article:has(.rst-choice-photo){display:grid;grid-template-columns:112px minmax(0,1fr)}.restaurant-detail .rst-choice-photo{height:100%;aspect-ratio:auto}.restaurant-detail .rst-choice-body{padding:12px}.restaurant-detail .rst-choice-body button{min-height:44px}.restaurant-detail .rst-guest{padding:0}}
+.restaurant-detail .rst-choice-body small{display:block;color:#59645b;font-weight:400;line-height:1.4;margin:5px 0 0}
+.restaurant-detail .rst-guest .restaurant-categories{position:sticky;top:0;z-index:12;background:#fffcf7;padding:8px 0 12px}
+.restaurant-detail .rst-guest .rst-menu-category{scroll-margin-top:72px}

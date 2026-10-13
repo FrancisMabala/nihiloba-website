@@ -50,7 +50,7 @@ describe("Restaurant released public contract", () => {
   it.each(restaurantLocales)("keeps the shared header and truthful unpublished menu in %s", async locale => {
     mockApi({ "/api/public/shida/restaurants/RST-TEST1/menu": { ...menu, ...collection([]) }, "/api/public/shida/restaurants/RST-TEST1": { ...restaurant, owning_business: null } });
     const html = renderToStaticMarkup(await RestaurantDetailPage({ locale, id: "RST-TEST1", menuOnly: true }));
-    expect(html).toContain("restaurant-table-header-240.webp"); expect(html).toContain('alt=""');
+    expect(html).not.toContain("restaurant-header-art"); expect(html).toContain("restaurant-hours");
     expect(html).toContain("restaurant-menu-empty"); expect(html).not.toContain("restaurant-pagination");
     expect(html).not.toContain(restaurantCopy[locale].noBusiness); expect(html).not.toContain("Lingála"); expect(html).toContain("Lingala");
   });
@@ -129,6 +129,12 @@ describe("Restaurant released public contract", () => {
     const data = parseRestaurant({ ...restaurant, hours: { ...hours, status: "closed", basis: "exceptional_closure", schedule: { windows: [{ weekday: 0, start: "08:00", end: "22:00" }] }, exceptional_closures: [{ starts_at: "2026-09-09T00:00:00Z", ends_at: "2026-09-10T00:00:00Z" }] } });
     const html = renderToStaticMarkup(<RestaurantHours locale="en" hours={data.hours}/>);
     expect(html).toContain("Closed"); expect(html).toContain("Monday"); expect(html).toContain("Exceptional closures");
+  });
+  it("groups consecutive days that share the same opening windows", () => {
+    const data = parseRestaurant({ ...restaurant, hours: { ...hours, schedule: { windows: [0, 1, 2, 3, 4].map(weekday => ({ weekday, start: "09:00", end: "18:00" })) }, exceptional_closures: [] } });
+    const html = renderToStaticMarkup(<RestaurantHours locale="en" hours={data.hours}/>);
+    expect(html).toContain("Monday – Friday: 09:00 – 18:00");
+    expect(html).toContain("Saturday – Sunday: Closed");
   });
   it("preserves filtered result position and renders only supported actions", async () => {
     mockApi(); const html = renderToStaticMarkup(await RestaurantDetailPage({ locale: "en", id: "RST-TEST1", search: { back: "city=Kinshasa&page=2" } }));
