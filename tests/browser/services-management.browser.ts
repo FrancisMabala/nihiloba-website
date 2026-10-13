@@ -12,6 +12,7 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
    if(request.method()==='GET')return route.fulfill({json:{profiles:[row]}});
    return route.fulfill({status:403,json:{detail:'service_profile_access_denied'}});
   }
+  if(path.includes('/transactions/'))return route.fulfill({json:{requests:[],reservations:[],threads:[],has_more:false}});
   if(path.endsWith('/reviews'))return route.fulfill({json:{reviews:[]}});
   if(path.endsWith('/pilot-review')&&request.method()==='PATCH'){
    const body=request.postDataJSON() as Record<string,unknown>;writes.push({path,body});

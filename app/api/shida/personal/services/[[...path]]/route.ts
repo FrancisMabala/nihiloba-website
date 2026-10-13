@@ -1,3 +1,4 @@
+import {transactionPath,transactionQuery,transactionSearch} from "../../../../../lib/services-transaction-contract";
 import {cookies} from "next/headers";
 import {personalRequestOrigin} from "../../../../../lib/personal-request-origin";
 import {PERSONAL_SESSION_COOKIE,PRIVATE_HEADERS,personalSessionBinding,clearEmploymentToken} from "../../../employment/route-utils";
@@ -17,7 +18,8 @@ function allowed(parts:string[],method:string){
 async function handle(request:Request,context:Context){
  const parts=(await context.params).path??[];
  const query=new URL(request.url).searchParams;
- if(!allowed(parts,request.method)||([...query].length>0&&!(parts.length===2&&parts[1]==="reviews"&&[...query].length===1&&["fr","en","ln","sw"].includes(query.get("language")??""))))return fail(404);
+ const transaction=transactionPath(parts,request.method);
+ if(transaction?!transactionQuery(parts,query,request.method):(!allowed(parts,request.method)||([...query].length>0&&!(parts.length===2&&parts[1]==="reviews"&&[...query].length===1&&["fr","en","ln","sw"].includes(query.get("language")??"")))))return fail(404);
  if(request.headers.get("sec-fetch-site")==="cross-site")return fail(403);
  const origin=personalRequestOrigin(request);
  if(request.method!=="GET"&&!origin)return fail(403);
@@ -38,7 +40,8 @@ async function handle(request:Request,context:Context){
  try{
   const base=new URL(process.env.SHIDA_API_BASE_URL??"https://api.nihiloba.com");
   if(base.protocol!=="https:"||base.username||base.password)return fail(503);
-  const target=new URL(`/api/dashboard/service-profiles${parts.length?`/${parts.join("/")}`:""}`,base.origin);
+  const target=new URL(transaction?`/api/dashboard/${transaction}`:`/api/dashboard/service-profiles${parts.length?`/${parts.join("/")}`:""}`,base.origin);
+  if(transaction)target.search=transactionSearch(parts,query).toString();
   if(parts[1]==="reviews")target.search=new URLSearchParams({language:query.get("language")??"fr"}).toString();
   const response=await fetch(target,{method:request.method,cache:"no-store",redirect:"manual",signal:AbortSignal.timeout(12000),headers:{Accept:"application/json",Cookie:`shida_dashboard_session=${token}`,...(origin?{Origin:origin}:{}),...(body?{"Content-Type":"application/json"}:{}),...(key&&methodNeedsKey(parts,request.method)?{"Idempotency-Key":key}:{})},body});
   if(response.status===401)await clearEmploymentToken();

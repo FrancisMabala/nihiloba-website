@@ -7,7 +7,7 @@ import {PERSONAL_SESSION_COOKIE,personalSessionBinding} from '../app/api/shida/e
 const fetcher=vi.fn<typeof fetch>();
 const context=(path='')=>({params:Promise.resolve({path:path?path.split('/'):[]})});
 const request=(path='',method='GET',body?:object,extra:Record<string,string>={})=>new Request(`https://nihiloba.com/api/shida/personal/services${path?`/${path}`:''}`,{method,headers:{Origin:'https://nihiloba.com','X-Shida-Session':personalSessionBinding(token),'Content-Type':'application/json',...extra},body:body?JSON.stringify(body):undefined});
-beforeEach(()=>{jar.clear();jar.set(PERSONAL_SESSION_COOKIE,token);vi.stubEnv('SHIDA_API_BASE_URL','https://backend.test');vi.stubGlobal('fetch',fetcher);fetcher.mockReset();fetcher.mockResolvedValue(Response.json({profiles:[]}));});
+beforeEach(()=>{jar.clear();jar.set(PERSONAL_SESSION_COOKIE,token);vi.stubEnv('SHIDA_API_BASE_URL','https://backend.test');vi.stubGlobal('fetch',fetcher);fetcher.mockReset();fetcher.mockImplementation(async()=>Response.json({profiles:[]}));});
 afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();});
 
 describe('Personal Services gateway',()=>{
@@ -29,4 +29,16 @@ describe('Personal Services gateway',()=>{
   expect((await PATCH(request('SVC_one/details','PATCH',{description:'x'.repeat(11000)}),context('SVC_one/details'))).status).toBe(413);
   expect(fetcher).toHaveBeenCalledTimes(1);
  });
+});
+
+it('routes provider transactions without accepting Organization or requester selectors',async()=>{
+ const path='transactions/requests';
+ expect((await GET(request(path+'?offset=20'),context(path))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/service-requests?offset=20&provider=true');
+ fetcher.mockClear();
+ expect((await GET(request(path+'?provider=false'),context(path))).status).toBe(404);
+ expect((await POST(request('transactions/quotes/SQT_one/accept','POST',{}),context('transactions/quotes/SQT_one/accept'))).status).toBe(404);
+ expect(fetcher).not.toHaveBeenCalled();
+ expect((await POST(request('transactions/reservations/RSV_one/decision','POST',{revision:2,decision:'accept',idempotency_key:'one'}),context('transactions/reservations/RSV_one/decision'))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/service-reservations/RSV_one/decision');
 });

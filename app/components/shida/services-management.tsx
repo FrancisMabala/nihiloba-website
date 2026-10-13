@@ -1,4 +1,5 @@
 "use client";
+import {ServicesTransactions} from "./services-transactions";
 import {useEffect, useState} from "react";
 
 type Locale = "fr" | "en" | "ln" | "sw";
@@ -44,6 +45,7 @@ export function ServicesManagement({binding,locale,offeringRef=null}:{binding:st
  return <section aria-label={t.title} style={{maxWidth:980,margin:"auto",padding:"1rem"}} lang={lang}>
   <header><h1>{t.title}</h1><div role="group" aria-label={t.title} style={{display:"flex",gap:8,flexWrap:"wrap",margin:"1rem 0"}}><button type="button" aria-pressed={view==="free"} onClick={()=>setView("free")}>{t.free}</button><button type="button" aria-pressed={view==="pro"} onClick={()=>setView("pro")}>{t.pro}</button></div>{view==="pro"&&<p>{t.plan}</p>}</header>
   {message&&<p role="status">{message}</p>}<button type="button" onClick={()=>void refresh()}>{t.reload}</button>
+  <ServicesTransactions key={base+binding} base={base} binding={binding} locale={lang} offeringRef={offeringRef} onDenied={()=>{setRows([]);setSelected(null);setReviews([]);setBlocked(true);}}/>
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,280px),1fr))",gap:"1rem",marginTop:"1rem"}}>
    <div><h2>{t.service}</h2>{rows.length===0&&<p>{t.empty}</p>}{rows.map(row=><button type="button" key={row.public_ref} onClick={()=>setSelected(row.public_ref)} aria-pressed={row.public_ref===selected} style={{display:"block",width:"100%",textAlign:"left",padding:12,marginBottom:6}}>{row.service_name}<small style={{display:"block"}}>{row.publication_origin==="pilot"?t.published:t.private}</small></button>)}
     <form onSubmit={create}><h3>{t.create}</h3><label>{t.name}<input required value={newDraft.name??""} onChange={event=>setNewDraft(old=>({...old,name:event.target.value}))}/></label><label>{t.service}<input required value={newDraft.service_name??""} onChange={event=>setNewDraft(old=>({...old,service_name:event.target.value}))}/></label><label>{t.category}<select required value={newDraft.category??""} onChange={event=>setNewDraft(old=>({...old,category:event.target.value}))}><option value=""></option>{categories.map(value=><option value={value} key={value}>{categoryLabels[lang][value]}</option>)}</select></label><button disabled={busy}>{t.create}</button></form>

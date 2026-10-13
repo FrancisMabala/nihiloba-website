@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:'services-*.browser.ts',workers:1,timeout:60000,use:{baseURL:'http://localhost:3024',channel:'chrome',headless:true,screenshot:'only-on-failure'},webServer:{command:'npx next dev -p 3024',url:'http://localhost:3024',reuseExistingServer:true,timeout:120000},outputDir:'test-results/services'});
