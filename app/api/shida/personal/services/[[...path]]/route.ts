@@ -1,0 +1,53 @@
+import {cookies} from "next/headers";
+import {personalRequestOrigin} from "../../../../../lib/personal-request-origin";
+import {PERSONAL_SESSION_COOKIE,PRIVATE_HEADERS,personalSessionBinding,clearEmploymentToken} from "../../../employment/route-utils";
+
+export const dynamic="force-dynamic";
+type Context={params:Promise<{path?:string[]}>};
+const fail=(status:number,detail="service_unavailable")=>Response.json({detail},{status,headers:PRIVATE_HEADERS});
+function allowed(parts:string[],method:string){
+ if(parts.length===0)return method==="GET"||method==="POST";
+ if(!/^SVC_[A-Za-z0-9_-]+$/.test(parts[0]))return false;
+ if(parts.length===1)return method==="GET";
+ if(parts.length===2)return parts[1]==="details"&&method==="PATCH"||parts[1]==="pilot-review"&&["GET","PATCH"].includes(method)||parts[1]==="reviews"&&method==="GET"||parts[1]==="request-capability"&&method==="PATCH"||parts[1]==="packages"&&method==="POST";
+ if(parts[1]!=="packages"||!/^SPK_[A-Za-z0-9_-]+$/.test(parts[2]))return false;
+ if(parts.length===3)return method==="PATCH";
+ return parts.length===4&&parts[3]==="archive"&&method==="POST";
+}
+async function handle(request:Request,context:Context){
+ const parts=(await context.params).path??[];
+ const query=new URL(request.url).searchParams;
+ if(!allowed(parts,request.method)||([...query].length>0&&!(parts.length===2&&parts[1]==="reviews"&&[...query].length===1&&["fr","en","ln","sw"].includes(query.get("language")??""))))return fail(404);
+ if(request.headers.get("sec-fetch-site")==="cross-site")return fail(403);
+ const origin=personalRequestOrigin(request);
+ if(request.method!=="GET"&&!origin)return fail(403);
+ const token=(await cookies()).get(PERSONAL_SESSION_COOKIE)?.value;
+ if(!token||!/^[A-Za-z0-9_-]{20,256}$/.test(token)||request.headers.get("X-Shida-Session")!==personalSessionBinding(token))return fail(401);
+ let body:string|undefined;
+ if(request.method!=="GET"){
+  if(!request.headers.get("content-type")?.startsWith("application/json"))return fail(415);
+  if(Number(request.headers.get("content-length"))>10000)return fail(413);
+  const reader=request.body?.getReader(),chunks:Uint8Array[]=[];let size=0;
+  if(reader)for(;;){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>10000){await reader.cancel();return fail(413);}chunks.push(part.value);}
+  const raw=Buffer.concat(chunks).toString("utf8");
+  try{const value:unknown=JSON.parse(raw);if(!value||typeof value!=="object"||Array.isArray(value))return fail(422);}catch{return fail(422);}
+  body=raw;
+ }
+ const key=request.headers.get("Idempotency-Key");
+ if(methodNeedsKey(parts,request.method)&&(!key||!/^[A-Za-z0-9_-]{1,200}$/.test(key)))return fail(422);
+ try{
+  const base=new URL(process.env.SHIDA_API_BASE_URL??"https://api.nihiloba.com");
+  if(base.protocol!=="https:"||base.username||base.password)return fail(503);
+  const target=new URL(`/api/dashboard/service-profiles${parts.length?`/${parts.join("/")}`:""}`,base.origin);
+  if(parts[1]==="reviews")target.search=new URLSearchParams({language:query.get("language")??"fr"}).toString();
+  const response=await fetch(target,{method:request.method,cache:"no-store",redirect:"manual",signal:AbortSignal.timeout(12000),headers:{Accept:"application/json",Cookie:`shida_dashboard_session=${token}`,...(origin?{Origin:origin}:{}),...(body?{"Content-Type":"application/json"}:{}),...(key&&methodNeedsKey(parts,request.method)?{"Idempotency-Key":key}:{})},body});
+  if(response.status===401)await clearEmploymentToken();
+  const value=await response.json().catch(()=>null);
+  if(!response.ok)return fail(response.status>=400&&response.status<600?response.status:502);
+  if(!value||typeof value!=="object"||Array.isArray(value))return fail(502);
+  return Response.json(value,{headers:PRIVATE_HEADERS});
+ }catch{return fail(503);}
+}
+const methodNeedsKey=(parts:string[],method:string)=>parts.length===0&&method==="POST";
+export const GET=handle;export const POST=handle;export const PATCH=handle;
+export const PUT=()=>fail(405);export const DELETE=PUT;export const HEAD=PUT;export const OPTIONS=PUT;
