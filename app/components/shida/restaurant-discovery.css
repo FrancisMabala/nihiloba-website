@@ -79,3 +79,37 @@ body:has(.restaurant-discovery) .site-header .language-switcher { display:none; 
 .rd-menu{font-size:1rem;padding:12px 16px}
 .rd-painted-band{max-width:600px}
 @media(max-width:767px){.rd-grid{grid-template-columns:minmax(0,1fr)}.rd-photo{max-height:200px}.rd-photo:has(.restaurant-photo-illustration){aspect-ratio:3}.rd-results-heading{flex-wrap:wrap;gap:4px}.rd-results-heading p{margin:0 0 16px}.rd-primary{grid-template-columns:minmax(0,1fr)}.rd-card h3{font-size:1.45rem}.rd-painted-band{max-width:430px}}
+
+/* Customer search starts directly below the compact heading. */
+.restaurant-discovery .rd-intro h1{margin:12px 0 4px;font-size:clamp(1.75rem,3vw,2.35rem);font-weight:700}
+.restaurant-discovery .rd-intro p{margin-bottom:14px;font-size:1rem;color:#5b645c}
+.rd-search{background:#fff;border-radius:18px;padding:16px}
+.rd-primary{grid-template-columns:minmax(0,2fr) minmax(180px,1fr) auto;gap:10px}
+.rd-primary label:first-child input{background:#fffdf9}
+.rd-card-modes{font-weight:600;color:#285749}
+.rd-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+.rd-card{box-shadow:0 6px 24px rgba(8,45,37,.055)}
+.rd-photo{aspect-ratio:1.7}
+.rd-photo .restaurant-photo-illustration{justify-content:center}
+.rd-photo .restaurant-photo-illustration img{width:160%;max-width:none;flex:0 0 160%}
+@media(max-width:767px){
+ .restaurant-discovery{padding-top:8px}
+ .rd-top{align-items:center}
+ .rd-tools{width:auto;margin-left:auto;gap:8px}
+ .rd-tools>a{font-size:.82rem}
+ .restaurant-discovery .rd-intro h1{margin-top:8px}
+ .rd-search{padding:0;border:0;background:transparent}
+ .rd-primary{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+ .rd-primary label:first-child{grid-column:1/-1}
+ .rd-primary-label{position:static;width:auto;height:auto;overflow:visible;clip:auto;font-size:.85rem;font-weight:650}
+ .rd-primary label:nth-child(2){min-width:0}
+ .rd-submit{align-self:end}
+ .rd-grid{grid-template-columns:minmax(0,1fr)}
+ .rd-card{display:grid;grid-template-columns:minmax(112px,36%) minmax(0,1fr)}
+ .rd-photo,.rd-photo:has(.restaurant-photo-illustration){height:100%;max-height:none;aspect-ratio:auto}
+ .rd-card-body{padding:12px;gap:5px}
+ .rd-card h3{font-size:1.18rem}
+ .rd-card h3 a{min-height:0}
+ .rd-card p{font-size:.82rem}
+ .rd-menu{padding:8px 10px;font-size:.86rem}
+}

@@ -7,6 +7,7 @@ const copy = {
   accepted:["Restaurant accepted this order.","Le restaurant a accepté cette commande.","Restaurant endimi commande oyo.","Mgahawa umekubali agizo hili."],
   awaiting:["Awaiting restaurant confirmation.","En attente de confirmation du restaurant.","Ezali kozela restaurant endima.","Linasubiri uthibitisho wa mgahawa."],
   start:["Start a private visit","Commencer une visite privée","Bandela visite ya sekele","Anza ziara ya faragha"],
+  startHint:["Start a private visit to add dishes.","Commencez une visite privée pour ajouter des plats.","Bandela visite ya sekele mpo na kobakisa bilei.","Anza ziara ya faragha ili kuongeza chakula."],
   more:["Order more","Commander encore","Somba lisusu","Agiza tena"],
   summary:["Your visit · every round","Votre visite · toutes les commandes","Visite na yo · bacommande nyonso","Ziara yako · kila agizo"],
   completed:["Completed order amounts","Montants des commandes terminées","Ntalo ya bacommande esili","Kiasi cha maagizo yaliyokamilika"],

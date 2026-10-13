@@ -107,15 +107,15 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
     <RestaurantRevalidation/>
     <div className="restaurant-detail-top"><Internal href={`${restaurantPath(locale)}${back ? `?${back}` : ""}#restaurant-${establishment.public_ref}`}>← {t.back}</Internal><Languages locale={locale} suffix={suffix} search={routeContext}/></div>
     <RestaurantHeader locale={locale} establishment={establishment} hours={currentHours}/>
-    <nav className="restaurant-detail-tabs" aria-label={t.title}><a href={`${detailPath}/menu?${routeContext}`} aria-current={menuOnly ? "page" : undefined}>{t.menu}</a><a href={`${detailPath}?${routeContext}`} aria-current={!menuOnly ? "page" : undefined}>{copy.establishment}</a></nav>
+    <nav className="restaurant-detail-tabs" aria-label={t.title}><a href={`${detailPath}/menu?${routeContext}`} aria-current={menuOnly ? "page" : undefined}>{t.menu}</a><a href={`${detailPath}?${routeContext}#restaurant-info`} aria-current={!menuOnly ? "page" : undefined}>{copy.establishment}</a></nav>
     <div className="restaurant-detail-columns"><div className="restaurant-detail-content">
-    {!menuOnly ? <section className="restaurant-establishment"><h2>{copy.establishment}</h2>
+    <RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} tableLocator={tableLocator} menu={menuResult.status === "fulfilled" ? menuResult.value : null}/>
+    {!menuOnly && <section id="restaurant-info" className="restaurant-establishment"><h2>{copy.establishment}</h2>
 
       {establishment.description && <p>{establishment.description}</p>}
       {establishment.service_modes.length > 0 && <p>{t.mode}: {establishment.service_modes.join(" · ")}</p>}
       {establishment.opening_information && <p>{establishment.opening_information}</p>}
       {establishment.owning_business && <section><h2>{t.owner}</h2><Internal href={`${businessPath(locale, establishment.owning_business.public_ref)}?${new URLSearchParams({ establishment: establishment.public_ref, back })}`}>{establishment.owning_business.name || t.business}</Internal></section>}
-      <Internal href={`${detailPath}/menu?${routeContext}`}>{t.menu}</Internal>
       <section id="reviews" className="restaurant-public-reviews"><h2>{restaurantReviewCopy[locale].reviews}</h2>
        {reviewsResult.status === "fulfilled" && reviewsResult.value ? <>
         {!reviewsResult.value.total&&<p>{restaurantReviewCopy[locale].noReviews}</p>}
@@ -124,18 +124,12 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
        </>:<p role="status">{restaurantReviewCopy[locale].failed}</p>}
        <RestaurantReviewForm locale={locale} establishmentRef={establishment.public_ref} establishmentName={establishment.name||t.title}/>
       </section>
-    </section> : <section className="restaurant-menu-panel"><h2>{t.menu}</h2>
-      {menuResult.status === "fulfilled" ? <>
-        {menuResult.value.items.length ? <RestaurantMenu locale={locale} items={menuResult.value.items}/> : <div className="restaurant-menu-empty" role="status"><h3>{menuResult.value.total === 0 ? copy.emptyTitle : copy.pageEmpty}</h3>{menuResult.value.total === 0 && <p>{copy.empty}</p>}<Internal href={`${detailPath}?${routeContext}`}>{t.details}</Internal></div>}
-        {menuResult.value.total > 0 && <Pagination locale={locale} {...menuResult.value} href={(page) => `${detailPath}/menu?${context}&page=${page}`}/>}
-      </> : <div className="restaurant-menu-empty" role="status"><p>{copy.menuError}</p><RestaurantRetry label={t.retry}/></div>}
     </section>}
     </div><aside className="restaurant-practical"><h2>{copy.practical}</h2>{establishment.location && <p>{establishment.location}</p>}
     <details className="restaurant-hours-disclosure"><summary>{t.hours}</summary><RestaurantHours locale={locale} hours={currentHours}/></details>
     <div className="restaurant-actions"><a className="restaurant-link" href="#guest-order">{guestText(locale,"title")}</a>{establishment.ordering_available && <a className="restaurant-link" href={`${detailPath}/order`}>{checkoutCopy[locale].order}</a>}{reservationResult.status==='fulfilled'&&reservationResult.value.available&&<a className="restaurant-link" href={`${locale==='en'?'':`/${locale}`}/shida/restaurant-reservations?establishment=${encodeURIComponent(establishment.public_ref)}`}>{reservationCopy[locale].reserve}</a>}<a className="restaurant-link" href={`${locale==='en'?'':`/${locale}`}/shida/restaurant-reservations`}>{reservationCopy[locale].mine}</a>{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}{actions?.menu && <a className="restaurant-link" href={actions.menu} target="_blank" rel="noopener noreferrer">{t.menu}</a>}</div>
     <p className="restaurant-note">{actions?.share ? t.report : t.actionsUnavailable}</p>
     </aside></div>
-    <RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} tableLocator={tableLocator} menu={menuResult.status === "fulfilled" ? menuResult.value : null}/>
   </div></section>;
 }
 export async function RestaurantBusinessPage({ locale, id, search = {} }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch }) {

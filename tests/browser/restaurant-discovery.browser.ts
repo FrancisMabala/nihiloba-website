@@ -2,24 +2,18 @@ import { test, expect } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
  await page.route("**/*", route => new URL(route.request().url()).origin === "http://127.0.0.1:3013" ? route.continue() : route.abort());
 });
-for (const width of [390, 768, 1440]) test(`editorial discovery at ${width}px`, async ({ page }) => {
+for (const width of [390, 768, 1440]) test(`customer discovery at ${width}px`, async ({ page }) => {
  await page.setViewportSize({ width, height: 900 }); await page.goto("/fr/shida/restaurants/?city=Kinshasa");
  await expect(page.locator(".rd-card")).toHaveCount(1);
  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Trouvez votre prochaine bonne adresse.");
- const banner = page.locator(".rd-painted-band"), art = banner.locator("img");
- await expect(art).toHaveAttribute("alt", "");
- await expect.poll(() => art.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
- const band = (await banner.boundingBox())!, intro = (await page.locator(".rd-intro").boundingBox())!, search = (await page.locator(".rd-search").boundingBox())!;
- await expect(banner).toHaveCount(1);
- expect(band.width).toBe(Math.min(width, 600)); expect(band.height).toBeCloseTo(band.width * 724 / 2171, 1);
- expect(await art.evaluate(img => getComputedStyle(img).objectFit)).toBe("contain");
- expect(band.y).toBeGreaterThanOrEqual(intro.y + intro.height); expect(search.y).toBeGreaterThan(band.y + band.height);
- const resource = await art.evaluate((img: HTMLImageElement) => ({ src: img.currentSrc, transfer: performance.getEntriesByName(img.currentSrc).map(e => ({ transfer: (e as PerformanceResourceTiming).transferSize, body: (e as PerformanceResourceTiming).encodedBodySize })) }));
+ await expect(page.locator(".rd-painted-band")).toHaveCount(0);
+ const intro = (await page.locator(".rd-intro").boundingBox())!, search = (await page.locator(".rd-search").boundingBox())!;
+ expect(search.y).toBeGreaterThanOrEqual(intro.y + intro.height);
  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
  const card = await page.locator(".rd-card").boundingBox(); expect(card!.y).toBeLessThan(900); if (width === 1440) expect(card!.width).toBeLessThan(450);
- console.log(JSON.stringify({ width, banner: resource, searchY: search.y, firstResultY: card!.y }));
+ console.log(JSON.stringify({ width, searchY: search.y, firstResultY: card!.y }));
  await expect(page.getByText("Horaires à confirmer", { exact: true })).toBeVisible();
- for (const selector of [".rd-submit", ".rd-menu", ".rd-chip span", ".rd-language select", ".rd-advanced summary", ".rd-card h3 a", ".rd-top a"]) for (const control of await page.locator(selector).all()) if (await control.isVisible()) expect((await control.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+ for (const selector of [".rd-submit", ".rd-menu", ".rd-chip span", ".rd-language select", ".rd-advanced summary", ".rd-top a"]) for (const control of await page.locator(selector).all()) if (await control.isVisible()) expect((await control.boundingBox())!.height).toBeGreaterThanOrEqual(44);
  await page.screenshot({ path: `.s3a-local/terrasse-quartier-${width}.png`, fullPage: true });
 });
 test("explicit search, hidden values, native keyboard filters and type chips", async ({ page }) => {
@@ -60,7 +54,7 @@ for (const locale of ["en", "fr", "ln", "sw"]) test(`discovery language ${locale
  await expect(page.locator(".rd-card")).toHaveCount(1);
  await expect(page.locator(".site-header .language-switcher")).toBeHidden();
 });
-test("bounded responsive banner requests without the master PNG", async ({ page }) => {
+test("discovery does not request a decorative hero", async ({ page }) => {
  await page.setViewportSize({ width: 390, height: 900 });
  const cdp = await page.context().newCDPSession(page); await cdp.send("Network.enable"); await cdp.send("Network.clearBrowserCache");
  for (const kind of ["cold", "warm"]) {
@@ -71,7 +65,7 @@ test("bounded responsive banner requests without the master PNG", async ({ page 
   const started = Date.now(); await page.goto("/fr/shida/restaurants/?city=Kinshasa"); await page.waitForLoadState("networkidle"); await expect(page.locator(".rd-card:visible")).toBeVisible();
   console.log(JSON.stringify({ kind, bytes, requests, duration_ms: Date.now() - started, images }));
   expect(images.some(path => /editorial|hero|food/i.test(path))).toBe(false);
-  expect(images.filter(path => path.includes("terrasse-quartier"))).toEqual(["/images/restaurants/terrasse-quartier-480.webp"]);
+  expect(images.some(path => path.includes("terrasse-quartier"))).toBe(false);
   expect(images.some(path => path.includes("table-partagee"))).toBe(false);
   expect(images.some(path => path.includes("liboko-"))).toBe(false);
   cdp.off("Network.loadingFinished", done); cdp.off("Network.requestWillBeSent", sent);

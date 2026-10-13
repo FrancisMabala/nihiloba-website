@@ -2,6 +2,7 @@ import { test, expect, type Page, type APIRequestContext } from "@playwright/tes
 import { checkoutCopy } from "../../app/lib/restaurant-checkout-copy";
 import { guestText } from "../../app/lib/restaurant-guest-copy";
 import type { RestaurantLocale } from "../../app/services/shida/restaurants-client";
+import { managementNavigation } from "./restaurant-management-navigation";
 
 test.skip(process.env.RESTAURANT_GUEST_BACKEND !== "1","Requires the isolated 09B1 real Backend TLS fixture");
 const backend="https://localhost:3443";
@@ -183,8 +184,7 @@ test('Personal owner controls guest QR acceptance in the Restaurant workspace',a
   const {token}=await control(request,`${s.ref}/owner-session`);
   await context.addCookies([{name:'nihiloba_personal_session',value:token,domain:'localhost',path:'/api/shida',httpOnly:true,sameSite:'Lax',secure:true}]);
   await page.goto('/shida/seller/restaurants');
-  await page.getByRole('button',{name:'Edit',exact:true}).click();
-  await page.getByRole('button',{name:'Order intake',exact:true}).click();
+  await managementNavigation(page,'Order intake');
   const controlCard=page.locator('.rst-card').filter({has:page.getByRole('heading',{name:'Guest QR auto acceptance'})});
   await expect(controlCard.getByText('Off: new guest orders wait for your confirmation.')).toBeVisible();
   await controlCard.getByRole('button',{name:'Turn on'}).click();
