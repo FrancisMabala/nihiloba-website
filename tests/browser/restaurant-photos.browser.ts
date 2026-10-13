@@ -1,3 +1,6 @@
+import { managementNavigation } from './restaurant-management-navigation';
+import { managementCopy } from '../../app/lib/restaurant-management-copy';
+import { sellerDesignCopy } from '../../app/lib/restaurant-seller-design-copy';
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import { photoText } from '../../app/lib/restaurant-photo-copy';
@@ -41,6 +44,9 @@ async function sellerFixture(page:Page){
   if(!p.includes('/personal/restaurants'))return reply({},404);
   if(state.deny)return reply({},401);
   if(p.endsWith('/capabilities'))return reply({capabilities:[]});
+  if(p.endsWith('/order-feed'))return reply({changed:[],removed:[],cursor:'fixture',as_of:revision});
+  if(p.endsWith('/orders'))return reply({items:[],total:0,as_of:revision});
+  if(p.endsWith('/order-configuration'))return reply({intake_released:true});
   if(p.endsWith('/photo-uploads')){
    state.writes.push({url:r.url(),body:r.postDataBuffer()});state.target=u.searchParams.get('target')!;state.item_ref=u.searchParams.get('item_ref');
    if(state.failUpload){state.failUpload=false;return route.abort();}if(state.stale){state.stale=false;return reply({detail:'restaurant_stale'},409);}
@@ -60,42 +66,42 @@ async function sellerFixture(page:Page){
  });return state;
 }
 async function openSeller(page:Page,locale:'en'|'fr'|'ln'|'sw'='en'){
- await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants/`);await page.locator('.rst-grid article button').first().click();
+ await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants/`);await managementNavigation(page,sellerDesignCopy[locale].menu);
 }
 test('explicit target, raw-byte retry, protected preview, uncertain attachment recovery and item removal',async({page})=>{
  const s=await sellerFixture(page);await page.setViewportSize({width:390,height:844});await openSeller(page);
- await page.locator('.rst-photo-shortcuts').getByRole('button',{name:photoText('en','item'),exact:true}).click();
+ await page.locator('.rst-menu-row').first().getByRole('button',{name:managementCopy.en.photo,exact:true}).click();
  await page.getByLabel(photoText('en','chooseItem')).selectOption('RMI_24');
  await expect(page.getByLabel(photoText('en','choose'),{exact:true})).toBeEnabled();await page.getByLabel(photoText('en','choose'),{exact:true}).setInputFiles({name:'food.webp',mimeType:'image/webp',buffer:bytes});s.failUpload=true;
  await page.getByRole('button',{name:photoText('en','upload'),exact:true}).click();await expect(page.getByRole('button',{name:photoText('en','retry'),exact:true})).toBeEnabled();expect(s.attached).toBe(0);
  await page.getByRole('button',{name:photoText('en','retry'),exact:true}).click();await expect(page.getByRole('img',{name:photoText('en','processed'),exact:true})).toBeVisible();expect(s.writes[0]).toEqual(s.writes[1]);expect(s.writes[0].body).toEqual(bytes);expect(s.writes[0].url).toContain('item_ref=RMI_24');
  const confirm=page.getByRole('button',{name:photoText('en','confirm'),exact:true});await expect(confirm).toBeDisabled();await page.getByLabel(photoText('en','consent')).check();await noOverflow(page);await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:'.s3a-local/photos/seller-confirm-390.png',fullPage:true});
  s.uncertainAttach=true;await confirm.click();await expect(page.getByText(photoText('en','uncertain'),{exact:true})).toBeVisible();await page.getByRole('button',{name:photoText('en','recover'),exact:true}).click();await expect(page.getByText(photoText('en','saved'),{exact:true})).toBeVisible();expect(s.attached).toBe(1);
- await page.getByRole('button',{name:photoText('en','back'),exact:false}).click();await page.locator('.rst-menu-row').first().getByRole('button',{name:photoText('en','item'),exact:true}).click();await page.getByLabel(photoText('en','removeConfirm')).check();await page.getByRole('button',{name:photoText('en','remove'),exact:true}).click();await expect(page.getByText(photoText('en','removed'),{exact:true})).toBeVisible();expect(JSON.parse(s.writes.at(-1)!.body!.toString()).fields).toEqual({image_url:null});
+ await page.getByRole('button',{name:photoText('en','back'),exact:false}).click();await page.locator('.rst-menu-row').first().getByRole('button',{name:managementCopy.en.photo,exact:true}).click();await page.getByLabel(photoText('en','removeConfirm')).check();await page.getByRole('button',{name:photoText('en','remove'),exact:true}).click();await expect(page.getByText(photoText('en','removed'),{exact:true})).toBeVisible();expect(JSON.parse(s.writes.at(-1)!.body!.toString()).fields).toEqual({image_url:null});
 });
 test('stale upload, invalid input, discard and session loss',async({page})=>{
- const s=await sellerFixture(page);await openSeller(page);await page.getByRole('button',{name:photoText('en','restaurant'),exact:true}).click();
+ const s=await sellerFixture(page);await openSeller(page);await managementNavigation(page,sellerDesignCopy.en.profile);await page.locator('.rst-profile-photo button').click();
  await expect(page.getByLabel(photoText('en','choose'),{exact:true})).toBeEnabled();await page.getByLabel(photoText('en','choose'),{exact:true}).setInputFiles({name:'bad.txt',mimeType:'text/plain',buffer:Buffer.from('bad')});await expect(page.getByText(photoText('en','invalid'),{exact:true})).toBeVisible();expect(s.writes).toHaveLength(0);
  await page.getByLabel(photoText('en','camera'),{exact:true}).setInputFiles({name:'camera.webp',mimeType:'image/webp',buffer:bytes});s.stale=true;await page.getByRole('button',{name:photoText('en','upload'),exact:true}).click();await expect(page.getByText(photoText('en','stale'),{exact:true})).toBeVisible();await page.getByRole('button',{name:photoText('en','restart'),exact:true}).click();
  await expect(page.getByLabel(photoText('en','choose'),{exact:true})).toBeEnabled();await page.getByLabel(photoText('en','choose'),{exact:true}).setInputFiles({name:'photo.webp',mimeType:'image/webp',buffer:bytes});await page.getByRole('button',{name:photoText('en','discard'),exact:true}).click();await expect(page.getByText(photoText('en','discarded'),{exact:true})).toBeVisible();expect(s.attached).toBe(0);
  await expect(page.getByLabel(photoText('en','choose'),{exact:true})).toBeEnabled();await page.getByLabel(photoText('en','choose'),{exact:true}).setInputFiles({name:'photo.webp',mimeType:'image/webp',buffer:bytes});s.deny=true;await page.getByRole('button',{name:photoText('en','upload'),exact:true}).click();await expect(page.locator('.rst-photo-editor')).toHaveCount(0);
 });
 test('removal retry keeps its exact revision and operation key',async({page})=>{
- const s=await sellerFixture(page);await openSeller(page);await page.locator('.rst-menu-row').first().getByRole('button',{name:photoText('en','item'),exact:true}).click();
+ const s=await sellerFixture(page);await openSeller(page);await page.locator('.rst-menu-row').first().getByRole('button',{name:managementCopy.en.photo,exact:true}).click();
  await expect(page.getByLabel(photoText('en','removeConfirm'))).toBeEnabled();await page.getByLabel(photoText('en','removeConfirm')).check();s.failRemoval=true;
  await page.getByRole('button',{name:photoText('en','remove'),exact:true}).click();await expect(page.getByText(photoText('en','uncertain'),{exact:true})).toBeVisible();
  await page.getByRole('button',{name:photoText('en','retryRemoval'),exact:true}).click();await expect(page.getByText(photoText('en','removed'),{exact:true})).toBeVisible();expect(s.writes[0]).toEqual(s.writes[1]);
 });
 test('slow upload keeps target locked and shows progress without attaching',async({page})=>{
- const s=await sellerFixture(page);await openSeller(page);await page.locator('.rst-photo-shortcuts').getByRole('button',{name:photoText('en','restaurant'),exact:true}).click();
+ const s=await sellerFixture(page);await openSeller(page);await managementNavigation(page,sellerDesignCopy.en.profile);await page.locator('.rst-profile-photo button').click();
  await expect(page.getByLabel(photoText('en','choose'),{exact:true})).toBeEnabled();await page.getByLabel(photoText('en','choose'),{exact:true}).setInputFiles({name:'photo.webp',mimeType:'image/webp',buffer:bytes});
  await page.route('**/photo-uploads/?*',async route=>{await new Promise(resolve=>setTimeout(resolve,1200));await route.fallback();});
  await page.getByRole('button',{name:photoText('en','upload'),exact:true}).click();await expect(page.getByRole('progressbar')).toBeVisible();await expect(page.getByLabel(photoText('en','choose'),{exact:true})).toBeDisabled();expect(s.attached).toBe(0);
  await expect(page.getByRole('img',{name:photoText('en','processed'),exact:true})).toBeVisible();expect(s.attached).toBe(0);
 });
 for(const [locale,width] of [['en',360],['fr',430],['ln',768],['sw',1024]] as const)test(`seller photo and existing batch layout ${locale} ${width}`,async({page})=>{
- await sellerFixture(page);await page.setViewportSize({width,height:width===1024?768:1024});await openSeller(page,locale);await page.locator('.rst-photo-shortcuts').getByRole('button',{name:photoText(locale,'restaurant'),exact:true}).click();await expect(page.locator('.rst-photo-pickers')).toBeVisible();await noOverflow(page);await page.screenshot({path:`.s3a-local/photos/seller-photo-${locale}-${width}.png`,fullPage:true});
- await page.locator('.rst-photo-shortcuts').getByRole('button',{name:photoText(locale,'batch'),exact:true}).click();await expect(page.locator('.rst-batch-row')).toHaveCount(2);await noOverflow(page);await page.screenshot({path:`.s3a-local/photos/batch-${locale}-${width}.png`,fullPage:true});
+ await sellerFixture(page);await page.setViewportSize({width,height:width===1024?768:1024});await openSeller(page,locale);await managementNavigation(page,sellerDesignCopy[locale].profile);await page.locator('.rst-profile-photo button').click();await expect(page.locator('.rst-photo-pickers')).toBeVisible();await noOverflow(page);await page.screenshot({path:`.s3a-local/photos/seller-photo-${locale}-${width}.png`,fullPage:true});
+ await managementNavigation(page,sellerDesignCopy[locale].menu);await page.locator('.rst-menu-heading').getByRole('button',{name:photoText(locale,'batch'),exact:true}).click();await expect(page.locator('.rst-batch-row')).toHaveCount(2);await noOverflow(page);await page.screenshot({path:`.s3a-local/photos/batch-${locale}-${width}.png`,fullPage:true});
 });
 
 for(const [locale,width] of [['en',360],['fr',430],['ln',768],['sw',1024]] as const)test(`private guest menu and authority loss ${locale} ${width}`,async({page})=>{

@@ -1,3 +1,4 @@
+import { managementNavigation } from './restaurant-management-navigation';
 import { test, expect, type Page } from "@playwright/test";
 import QRCode from "qrcode";
 const revision = "2026-09-10T10:00:00.123456+00:00";
@@ -8,7 +9,7 @@ async function fixture(page: Page) {
  await page.route("**/*", async route => {
   const req = route.request(), url = new URL(req.url());
   url.pathname = url.pathname.replace(/\/$/, "");
-  if (url.origin !== "http://127.0.0.1:3013") return route.abort();
+  if (url.origin !== new URL(process.env.RESTAURANT_TEST_BASE_URL ?? "http://127.0.0.1:3013").origin) return route.abort();
   if (!url.pathname.startsWith("/api/")) return route.continue();
   const reply = (json: unknown, status = 200) => route.fulfill({ status, json });
   if (url.pathname.endsWith("/employment/session")) return state.session ? reply({ user: { display_name: "Synthetic seller" }, binding: state.binding }) : reply({}, 401);
@@ -22,6 +23,9 @@ async function fixture(page: Page) {
   if (!url.pathname.startsWith("/api/shida/personal/restaurants")) return reply({}, 404);
   if (state.denied) return reply({ detail: "restaurant_unavailable" }, 404);
   if (path.endsWith('/capabilities')) return reply({ capabilities: [] });
+  if(path.endsWith('/order-feed'))return reply({changed:[],removed:[],cursor:'fixture',as_of:revision});
+  if(path.endsWith('/orders'))return reply({items:[],total:0,as_of:revision});
+  if(path.endsWith('/order-configuration'))return reply({intake_released:false});
   const method = req.method(); const data = req.postData() ? req.postDataJSON() : null;
   if (method !== "GET") {
    state.writes.push({ path, method, body: data });
@@ -45,11 +49,11 @@ async function fixture(page: Page) {
  });
  return state;
 }
-async function open(page: Page) { await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByRole("button", { name: "My profile", exact: true }).click(); }
+async function open(page: Page) { await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Edit", exact: true }).click(); await managementNavigation(page,'My profile'); }
 test("failed logout still clears this tab and focus cannot restore private content", async ({ page }) => {
  await fixture(page); await open(page);
  await page.route("**/api/shida/employment/logout/", route => route.abort());
- await page.getByRole("button", { name: "Sign out / change account", exact: true }).click();
+ await page.locator(".rst-account summary").click();await page.getByRole("button", { name: "Change account", exact: true }).click();
  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
  await expect(page.getByRole("heading", { name: "Sign in with SHIDA", exact: true })).toBeVisible();
  await expect(page.getByRole("heading", { name: "Isolated Malewa", exact: true })).toHaveCount(0);
@@ -74,7 +78,7 @@ test("selection, pagination, private draft and changed-field profile edit", asyn
  const s = await fixture(page); await page.goto("/shida/seller/restaurants");
  await page.getByRole("button", { name: "Next page", exact: true }).click(); await page.getByRole("button", { name: "Previous page", exact: true }).click();
  await page.getByRole("button", { name: "Add another", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("New private fixture"); await page.getByRole("button", { name: "Create private draft", exact: true }).click();
- expect(s.writes[0].body?.operation_key).toBeTruthy(); await page.getByRole("button", { name: "My profile", exact: true }).click();
+ expect(s.writes[0].body?.operation_key).toBeTruthy(); await managementNavigation(page,'My profile');
  await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Changed name"); await page.getByRole("button", { name: "Save changes", exact: true }).click();
  await expect(page.getByRole("heading", { name: "Changed name", exact: true })).toBeVisible();
  expect(s.writes.at(-1)?.body).toEqual({ expected_updated_at: revision, fields: { name: "Changed name" } });
@@ -87,7 +91,7 @@ test("uncertain retry is identical and stale edit requires reconciliation", asyn
  expect(s.writes.at(-1)?.body?.expected_updated_at).toBe("2026-09-10T10:01:00.999999+00:00");
 });
 test("unit, configured amount and unknown pricing retain exact values", async ({ page }) => {
- const s = await fixture(page); await open(page); await page.getByRole("button", { name: "My menu", exact: true }).click();
+ const s = await fixture(page); await open(page); await managementNavigation(page,'My menu');
  for (const model of ["UNIT_PRICED", "AMOUNT_PRICED", "UNKNOWN"]) {
   await page.getByRole("button", { name: "+ Add", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Fixture dish"); await page.getByRole("combobox", { name: "Category", exact: true }).selectOption("RMC_fixture"); await page.getByRole("radio", { name: model === "UNIT_PRICED" ? "Per unit" : model === "AMOUNT_PRICED" ? "By amount" : "Price not set", exact: true }).check();
   if (model === "UNIT_PRICED") { await page.getByLabel("Local sale-unit label", { exact: true }).fill("plate"); await page.getByLabel("Price per unit", { exact: true }).fill("9007199254740991.25"); }
@@ -97,10 +101,10 @@ test("unit, configured amount and unknown pricing retain exact values", async ({
  expect((s.writes[0].body?.fields as Record<string, unknown>).unit_price).toBe("9007199254740991.25"); expect((s.writes[1].body?.fields as Record<string, unknown>).allowed_amounts).toEqual(["1000", "2500.50"]); expect((s.writes[2].body?.fields as Record<string, unknown>).unit_price).toBeNull();
 });
 test("hours unknown versus closed, publication and exact QR destination", async ({ page }) => {
- const s = await fixture(page); await open(page); await page.getByRole("button", { name: "Hours", exact: true }).click(); await expect(page.getByText("Unknown · Africa/Kinshasa", { exact: true })).toBeVisible();
+ const s = await fixture(page); await open(page); await managementNavigation(page,'Hours'); await expect(page.getByText("Unknown · Africa/Kinshasa", { exact: true })).toBeVisible();
  await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("Known schedule", { exact: true }).check(); await page.getByLabel("I confirm these changes", { exact: true }).check(); await page.getByRole("button", { name: "Save changes", exact: true }).click(); expect(s.writes[0].body?.fields).toEqual({ confirm: true, windows: [] });
- await page.getByRole("button", { name: "My profile", exact: true }).click(); await page.getByRole("button", { name: "Publish", exact: true }).click(); await page.getByLabel("I confirm these changes", { exact: true }).check(); await page.getByRole("button", { name: "Save changes", exact: true }).click();
-  await page.getByRole("button", { name: "QR & sharing", exact: true }).click(); await page.getByRole("button", { name: "Prepare menu link & QR", exact: true }).click(); await expect(page.getByRole("region", { name: "Restaurants & Malewa" }).getByRole("link", { name: "Open on WhatsApp" })).toHaveAttribute("href", "https://api.nihiloba.com/go/fixture_only"); await expect(page.getByRole("img", { name: "Menu QR code" })).toBeVisible();
+ await managementNavigation(page,'My profile'); await page.getByRole("button", { name: "Publish", exact: true }).click(); await page.getByLabel("I confirm these changes", { exact: true }).check(); await page.getByRole("button", { name: "Save changes", exact: true }).click();
+  await managementNavigation(page,'QR & sharing'); await page.getByRole("button", { name: "Prepare menu link & QR", exact: true }).click(); await expect(page.getByRole("region", { name: "Restaurants & Malewa" }).getByRole("link", { name: "Open on WhatsApp" })).toHaveAttribute("href", "https://api.nihiloba.com/go/fixture_only"); await expect(page.getByRole("img", { name: "Menu QR code" })).toBeVisible();
   await expect(page.locator("canvas.rst-qr")).toHaveAttribute("width", "256");
   const symbol = QRCode.create("https://api.nihiloba.com/go/menu_qr_fixture", { errorCorrectionLevel: "M" });
   const pixels = await page.locator("canvas.rst-qr").evaluate((element, size) => {
@@ -112,18 +116,18 @@ test("hours unknown versus closed, publication and exact QR destination", async 
 test("expired offering copy stays unconfirmed until a separate confirmation", async ({ page }) => {
  const s = await fixture(page); s.items = [{ public_ref: "RMI_fixture", name: "Fixture dish", pricing_model: "UNKNOWN", presentation: "fixed_dish" }];
  s.offerings = [{ public_ref: "RDO_fixture", item: s.items[0], starts_at: "2025-01-01T10:00:00+00:00", ends_at: "2025-01-01T12:00:00+00:00", timezone_name: "Africa/Kinshasa", state: "expired", visible: true, availability: "sold_out" }];
- await open(page); await page.getByRole("button", { name: "Dated offerings", exact: true }).click(); await expect(page.getByText("Expired", { exact: true })).toBeVisible(); await expect(page.getByText("Sold out", { exact: true })).toBeVisible();
+ await open(page); await managementNavigation(page,'Dated offerings'); await expect(page.getByText("Expired", { exact: true })).toBeVisible(); await expect(page.getByText("Sold out", { exact: true })).toBeVisible();
  await page.getByRole("button", { name: "Copy to new dates", exact: true }).click(); await page.getByLabel("Starts at", { exact: true }).fill("2027-01-01T10:00"); await page.getByLabel("Ends at", { exact: true }).fill("2027-01-01T12:00"); await page.getByRole("button", { name: "Save changes", exact: true }).click(); await expect(page.getByText("Awaiting confirmation", { exact: true })).toBeVisible();
  expect(s.writes[0].body?.fields).toEqual({ copy_from: "RDO_fixture", starts_at: "2027-01-01T10:00:00+01:00", ends_at: "2027-01-01T12:00:00+01:00" });
  await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("I confirm these changes", { exact: true }).check(); await page.getByRole("button", { name: "Save changes", exact: true }).click(); expect(s.writes[1].body?.fields).toEqual({ confirm: true });
 });
 test("isolated WhatsApp challenge sign-in, shared session and logout", async ({ page }) => {
  const s = await fixture(page); s.session = false; await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Continue with WhatsApp", exact: true }).click(); await expect(page.getByText("Isolated Malewa", { exact: true })).toBeVisible();
- await page.getByRole("button", { name: "Sign out / change account", exact: true }).click(); await expect(page.getByRole("button", { name: "Continue with WhatsApp", exact: true })).toBeVisible(); await expect(page.getByText("Isolated Malewa", { exact: true })).toHaveCount(0);
+ await page.locator(".rst-account summary").click();await page.getByRole("button", { name: "Change account", exact: true }).click(); await expect(page.getByRole("button", { name: "Continue with WhatsApp", exact: true })).toBeVisible(); await expect(page.getByText("Isolated Malewa", { exact: true })).toHaveCount(0);
 });
 test("lost access and account switching clear editor values", async ({ page }) => {
  const s = await fixture(page); await open(page); s.denied = true; await page.getByRole("button", { name: "Edit", exact: true }).click(); await expect(page.getByText("Synthetic fixture only", { exact: true })).toHaveCount(0);
- s.denied = false; await page.reload(); await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByRole("button", { name: "My profile", exact: true }).click(); await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Private unsaved name");
+ s.denied = false; await page.reload(); await page.getByRole("button", { name: "Edit", exact: true }).click(); await managementNavigation(page,'My profile'); await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Private unsaved name");
  s.session = false; await page.evaluate(() => window.dispatchEvent(new Event("shida-personal-session-changed"))); await expect(page.getByRole("button", { name: "Continue with WhatsApp", exact: true })).toBeVisible(); await expect(page.locator('input[value="Private unsaved name"]')).toHaveCount(0);
 });
 for (const locale of ["en", "fr", "ln", "sw"]) test(`phone and desktop layout / ${locale}`, async ({ page }) => {
@@ -138,7 +142,7 @@ test("phone editor, long labels, focus and screenshot", async ({ page }) => {
  await page.setViewportSize({ width: 390, height: 844 }); await open(page); await page.getByRole("button", { name: "Edit", exact: true }).click();
  await expect(page.getByRole("textbox", { name: "Name", exact: true })).toBeVisible(); await page.getByRole("textbox", { name: "Name", exact: true }).focus(); await page.keyboard.press("Tab"); await expect(page.getByRole("textbox", { name: "Description", exact: true })).toBeFocused();
  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
- const editorBox = await page.getByRole("region", { name: "Restaurants & Malewa" }).boundingBox(); expect(editorBox!.x).toBeGreaterThan(0);
+ const editorBox = await page.locator(".rst-editor").boundingBox(); expect(editorBox!.x).toBeGreaterThan(0);
  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
  await page.screenshot({ path: "test-results/restaurant-seller-phone.png", fullPage: true });
  await page.setViewportSize({ width: 1440, height: 1000 }); await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" })); await page.screenshot({ path: "test-results/restaurant-seller-desktop.png", fullPage: true });
@@ -164,7 +168,7 @@ for (const width of [390, 768, 1440]) {
   console.log("seller-v2-network", JSON.stringify(measurement));
   await testInfo.attach("network", { body: JSON.stringify(measurement), contentType: "application/json" });
  });
- test(`v2 menu-first selection and focused portion editor / ${width}`, async ({ page }) => {
+ test(`management Orders entry and focused portion editor / ${width}`, async ({ page }) => {
   const s = await fixture(page);
   s.establishment.profile.name = "Chez Ya Mado · isolated fixture";
   s.items = [
@@ -174,7 +178,9 @@ for (const width of [390, 768, 1440]) {
   ];
   await page.setViewportSize({ width, height: 1000 }); await page.goto("/fr/shida/seller/restaurants/");
   await page.getByRole("button", { name: "Modifier", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Mon menu", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".rst-order-layout")).toBeVisible();
+  await managementNavigation(page,"Mon menu");
+  await expect(page.getByRole("button", { name: "Mon menu", exact: true, includeHidden:true })).toHaveAttribute("aria-current", "page");
   await expect(page.getByText("500; 1000 CDF", { exact: true })).toBeVisible();
   expect(s.writes).toHaveLength(0);
   await page.screenshot({ path: `test-results/seller-v2-menu-${width}.png`, fullPage: true });
@@ -197,9 +203,9 @@ test("menu pagination uses the server page and locale links remain reachable", a
   return route.fulfill({ json: { revision, currency: "CDF", result: { items: [], total: 21, page: Number(url.searchParams.get("page")), page_size: 20 } } });
  });
  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Edit", exact: true }).click();
- await page.getByRole("button", { name: "Next page", exact: true }).click();
+ await managementNavigation(page,"My menu");await page.getByRole("button", { name: "Next page", exact: true }).click();
  await expect(page.getByText("Page 2", { exact: true })).toBeVisible(); expect(pages).toEqual(["1", "2"]);
- await page.getByRole("navigation", { name: "Seller language" }).getByRole("link", { name: "SW", exact: true }).click();
+ await page.locator(".rst-dropdown").first().locator("summary").click();await page.getByRole("navigation", { name: "Seller language" }).getByRole("link", { name: "Swahili", exact: true }).click();
  await expect(page).toHaveURL(/\/sw\/shida\/seller\/restaurants\//);
- await expect(page.getByRole("heading", { name: "Sehemu zako", exact: true })).toBeVisible();
+ await expect(page.getByRole("heading", { name: "Chagua mgahawa", exact: true })).toBeVisible();
 });

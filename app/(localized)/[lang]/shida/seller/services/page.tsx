@@ -2,7 +2,8 @@ import {PersonalServicesManager} from "@/app/components/shida/personal-services-
 import {notFound} from "next/navigation";
 export const dynamic="force-dynamic";
 type Locale="fr"|"en"|"ln"|"sw";
-export default async function Page({params}:{params:Promise<{lang:string}>}){
+export default async function Page({params,searchParams}:{params:Promise<{lang:string}>;searchParams:Promise<{offering?:string|string[]}>}){
  const {lang}=await params;if(!["fr","en","ln","sw"].includes(lang))notFound();
- return <PersonalServicesManager locale={lang as Locale}/>;
+ const {offering}=await searchParams;
+ return <PersonalServicesManager locale={lang as Locale} offeringRef={typeof offering==="string"?offering:null}/>;
 }

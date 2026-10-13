@@ -20,7 +20,7 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
   }
   return route.fulfill({status:404,json:{detail:'unavailable'}});
  });
- await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services`);
+ await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?offering=SVC_personal`);
  await expect(page.getByRole('heading',{name:labels[locale].title})).toBeVisible();
  await expect(page.getByText('Home repair').first()).toBeVisible();
  await page.getByRole('button',{name:labels[locale].pro}).click();
@@ -29,4 +29,7 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  await expect.poll(()=>writes.length).toBe(1);
  expect(writes[0].body).toEqual({expected_revision:1});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?offering=SVC_missing`);
+ await expect(page.getByRole('status').first()).toBeVisible();
+ await expect(page.getByRole('button',{name:/Home repair/})).toHaveAttribute('aria-pressed','false');
 });

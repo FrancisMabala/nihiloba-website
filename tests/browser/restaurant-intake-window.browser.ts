@@ -1,3 +1,4 @@
+import { managementNavigation } from './restaurant-management-navigation';
 import {test,expect} from '@playwright/test';
 import {fixture} from './restaurant-c1e-fixture';
 import {workText,intakeErrorCodes} from '../../app/lib/restaurant-work-copy';
@@ -5,7 +6,7 @@ for(const locale of ['en','fr','ln','sw'] as const) test(`Personal intake errors
  await fixture(page);await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants`);await page.locator('.rst-grid .rst-card button').first().click();
  const t=(k:string)=>workText(locale,k);
  await page.route('**/RST_fixture/order-configuration/',r=>r.fulfill({json:{revision:'2026-09-10T06:30:00Z',intake_released:true,pickup:{enabled:true,windows:[{starts_at:'2026-09-10T08:30:00Z',ends_at:'2026-09-10T15:00:00Z'}]},delivery:null}}));
- await page.getByRole('button',{name:t('intake'),exact:true}).click();
+ await managementNavigation(page,t('intake'));
  const inputs=page.locator('input[type=datetime-local]');await expect(inputs).toHaveCount(2);
  await inputs.first().fill('2026-09-10T08:30');
  const values=await inputs.evaluateAll(nodes=>nodes.map(n=>(n as HTMLInputElement).value));

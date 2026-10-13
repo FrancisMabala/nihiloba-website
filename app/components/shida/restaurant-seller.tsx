@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { managementCopy } from "../../lib/restaurant-management-copy";
+import { leaveWork } from "../../lib/restaurant-work";
 import { sellerDesignCopy } from "../../lib/restaurant-seller-design-copy";
 import { PersonalWhatsAppLogin } from "./personal-whatsapp-login";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -17,6 +19,8 @@ import "./restaurant-seller.css";
 export const sellerPath = (locale: RestaurantLocale) => `${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`;
 export function RestaurantSeller({ locale, receipt }: { locale: RestaurantLocale; receipt?: {orderRef:string;establishment?:string} }) {
  const t = sellerChrome[locale];
+ const management = managementCopy[locale];
+ const [signedOutView, setSignedOutView] = useState(false);
  const design = sellerDesignCopy[locale];
  const [session, setSession] = useState<PersonalSession | null>(null);
  const [connectionLost, setConnectionLost] = useState(false);
@@ -53,11 +57,22 @@ export function RestaurantSeller({ locale, receipt }: { locale: RestaurantLocale
   window.addEventListener(PERSONAL_SESSION_EVENT, changed); window.addEventListener("storage", storage); window.addEventListener("focus", focus); window.addEventListener("online", focus); window.addEventListener("offline", offline); document.addEventListener("visibilitychange", visible);
   return () => { alive.current = false; invalidate(); inFlight?.abort(); clearInterval(timer); window.removeEventListener(PERSONAL_SESSION_EVENT, changed); window.removeEventListener("storage", storage); window.removeEventListener("focus", focus); window.removeEventListener("online", focus); window.removeEventListener("offline", offline); document.removeEventListener("visibilitychange", visible); };
  }, []);
- async function logout() { signedOut.current = true; setSession(null); ++generation.current; setPending(true); try { await endEmploymentSession(); } catch { setMessage(t.unavailable); } finally { if (alive.current) setPending(false); } }
+ async function logout(changeAccount = false) {
+  if (!leaveWork()) return;
+  signedOut.current = true; ++generation.current; setSession(null); setPending(true); setMessage("");
+  try { await endEmploymentSession(); setSession(null); setSignedOutView(!changeAccount); }
+  catch { setMessage(t.unavailable); }
+  finally { if (alive.current) setPending(false); }
+ }
  return <div lang={locale} className="rst-seller">
-<section className="rst container rst-shell"><div className="rst-topline"><nav aria-label={design.area}><Link prefetch={false} href={`${locale === "en" ? "" : `/${locale}`}/shida`}>SHIDA</Link><span aria-hidden="true">/</span><Link prefetch={false} href={restaurantPath(locale)}>{restaurantText(locale, "restaurants")}</Link></nav><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)} hrefLang={lang} aria-current={locale === lang ? "page" : undefined}>{lang === "ln" ? "Lingala" : lang.toUpperCase()}</Link>)}</nav>{session && <span className="rst-session-name">{session.user.display_name} <button className="rst-text-button" disabled={pending} onClick={logout}>{t.logout}</button></span>}</div>
-   {loading ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && <div className="rst-signin"><picture className="rst-signin-art"><source media="(min-width: 900px)" srcSet="/images/restaurants/malewa-comptoir-480.webp 480w, /images/restaurants/malewa-comptoir-800.webp 800w" sizes="(min-width: 1300px) 580px, 45vw"/>{/* Mobile deliberately receives only an inline pixel, not a hidden large download. */}
-    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" width="1122" height="1402" decoding="async"/></picture><div className="rst-signin-content"><p className="eyebrow">SHIDA / {design.area}</p><h1>{design.title}</h1><p className="rst-signin-intro">{design.intro}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={() => { signedOut.current = false; }}/><p className="rst-personal-note">{design.personal}</p><Link className="rst-browse-link" prefetch={false} href={restaurantPath(locale)}>{t.browse} <span aria-hidden="true">→</span></Link></div></div>}
+<section className="rst container rst-shell"><div className="rst-topline">
+ <Link className="rst-brand" prefetch={false} href={restaurantPath(locale)} aria-label={`SHIDA · ${management.marketplace}`}>SHIDA<span>{management.marketplace} ↗</span></Link>
+ <span className="rst-workspace-label">{management.workspace}</span>
+ <details className="rst-dropdown"><summary aria-label={t.languages}>{locale.toUpperCase()}</summary><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)} hrefLang={lang} onClick={event=>{if(!leaveWork())event.preventDefault();}} aria-current={locale === lang ? "page" : undefined}>{({fr:'FR',en:'EN',ln:'Lingala',sw:'Swahili'})[lang]}</Link>)}</nav></details>
+ {session && <details className="rst-dropdown rst-account"><summary aria-label={management.account}>{session.user.display_name}</summary><div><button disabled={pending} onClick={()=>void logout(true)}>{management.changeAccount}</button><button disabled={pending} onClick={()=>void logout()}>{management.signOut}</button></div></details>}
+ </div>
+   {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <div className="rst-signin"><picture className="rst-signin-art"><source media="(min-width: 900px)" srcSet="/images/restaurants/malewa-comptoir-480.webp 480w, /images/restaurants/malewa-comptoir-800.webp 800w" sizes="(min-width: 1300px) 580px, 45vw"/>{/* Mobile deliberately receives only an inline pixel, not a hidden large download. */}
+    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" width="1122" height="1402" decoding="async"/></picture><div className="rst-signin-content"><p className="eyebrow">SHIDA / {design.area}</p><h1>{design.title}</h1><p className="rst-signin-intro">{design.intro}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={() => { signedOut.current = false; }}/><p className="rst-personal-note">{design.personal}</p><Link className="rst-browse-link" prefetch={false} href={restaurantPath(locale)}>{t.browse} <span aria-hidden="true">→</span></Link></div></div>)}
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
   </section>

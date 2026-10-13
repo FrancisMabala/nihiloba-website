@@ -1,5 +1,6 @@
+import { guestSetCookie } from "../app/lib/restaurant-guest-cookie";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { GET, POST, PATCH, DELETE, PUT, HEAD, OPTIONS, guestSetCookie } from "../app/api/shida/restaurant-guests/[...path]/route";
+import { GET, POST, PATCH, DELETE, PUT, HEAD, OPTIONS } from "../app/api/shida/restaurant-guests/[...path]/route";
 import { GUEST_COOKIE, guestRoute, guestBody } from "../app/lib/restaurant-guest-contract";
 import { guestAction, replayGuestAction } from "../app/lib/restaurant-guest-browser";
 import { GUEST_BROWSER_COOKIE, GUEST_PROXY_HEADER, guestProxyIdentity } from "../app/lib/restaurant-guest-proxy-identity";

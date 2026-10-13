@@ -1,3 +1,4 @@
+import { managementNavigation } from './restaurant-management-navigation';
 import { type Page } from "@playwright/test";
 const revision = "2026-09-10T10:00:00.123456+00:00";
 const establishment = { public_ref: "RST_fixture", revision, status: "draft", profile: { name: "Isolated Malewa", description: "Synthetic fixture only", city: "Test city", commune: "Test commune", quartier: "Test district", food_business_type: "malewa", address_visibility: "broad", timezone_name: "Africa/Kinshasa" }, menu_currency: "CDF", location_confirmed: true, missing_publication_fields: [], actions: ["read", "edit", "preview", "menu", "hours", "publish", "links"], preview: { name: "Isolated Malewa", description: "Synthetic fixture only" } };
@@ -21,6 +22,9 @@ export async function fixture(page: Page) {
   if (!url.pathname.startsWith("/api/shida/personal/restaurants")) return reply({}, 404);
   if (state.denied) return reply({ detail: "restaurant_unavailable" }, 404);
   if (path.endsWith('/capabilities')) return reply({ capabilities: [] });
+  if(path.endsWith('/order-feed'))return reply({changed:[],removed:[],cursor:'fixture',as_of:revision});
+  if(path.endsWith('/orders'))return reply({items:[],total:0,as_of:revision});
+  if(path.endsWith('/order-configuration'))return reply({intake_released:false});
   const method = req.method(); const data = req.postData() ? req.postDataJSON() : null;
   if (method !== "GET") {
    state.writes.push({ path, method, body: data });
@@ -44,4 +48,4 @@ export async function fixture(page: Page) {
  });
  return state;
 }
-export async function open(page: Page) { await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByRole("button", { name: "My profile", exact: true }).click(); }
+export async function open(page: Page) { await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Edit", exact: true }).click(); await managementNavigation(page,'My profile'); }
