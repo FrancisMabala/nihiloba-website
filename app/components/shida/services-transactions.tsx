@@ -1,6 +1,7 @@
 "use client";
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {servicesText,type ServicesLocale} from './services-transaction-copy';
+import {ServicesBillPanel} from './services-bill-panel';
 
 type Row=Record<string,unknown>;
 type Kind='requests'|'reservations'|'messages';
@@ -89,6 +90,9 @@ export function ServicesTransactions({base,binding,locale,offeringRef,onDenied}:
     {kind==='reservations'&&<><p>{str(detail,'requested_datetime')} · {str(detail,'selected_offering_name')}</p>{detail.status==='pending'&&<p>{t('pending_note')}</p>}<div className="transaction-actions">{!!detail.can_respond&&<><button onClick={()=>begin('accept')}>{t('accept')}</button><button onClick={()=>begin('decline')}>{t('decline')}</button></>}{lifecycle&&actions(lifecycle).map(a=><button key={a} onClick={()=>begin(a)}>{t(a)}</button>)}{actions(scheduling).includes('propose')&&<button onClick={()=>begin('propose')}>{t('propose')}</button>}</div>
      <h4>{t('history')}</h4>{['confirmed_at','started_at','completed_at','cancelled_at','no_show_at'].filter(key=>lifecycle?.[key]).map(key=><p key={key}>{t(({confirmed_at:'confirmed',started_at:'in_progress',completed_at:'completed',cancelled_at:'cancelled',no_show_at:'no_show_reported'} as Record<string,string>)[key])} · {stamp(lifecycle![key])}</p>)}
      {!!lifecycle?.accepted_quote&&<p>{t('quote')} · {str(lifecycle.accepted_quote as Row,'amount')} {str(lifecycle.accepted_quote as Row,'currency')} · {str(lifecycle.accepted_quote as Row,'terms')}</p>}
+     <ServicesBillPanel key={transactionRef(detail)} base={base} binding={binding} locale={locale}
+      reservationRef={transactionRef(detail)} reservationRevision={Number(lifecycle?.revision??detail.revision)}
+      status={str(lifecycle??detail,'status')} blocked={!!lifecycle?.no_show_at||['OPEN','UNDER_REVIEW'].includes(str((lifecycle?.dispute??{}) as Row,'status'))}/>
      {proposal&&<article><p>{t('propose')} · {t(str(proposal,'status'))}</p><p>{stamp(proposal.proposed_start)} {stamp(proposal.proposed_start_at)} — {stamp(proposal.proposed_end)} {stamp(proposal.proposed_end_at)}</p><p>{str(proposal,'description')}</p>{!!proposal.actionable&&actions(proposal).map(a=><button key={a} onClick={()=>begin(`reschedule_${a}`)}>{t(a==='accept'?'confirm':'reject')}</button>)}</article>}
     </>}
     {kind==='messages'&&<><h4>{t('history')}</h4>{list(detail,'messages').map((row,index)=><p key={index}><strong>{str(row,'sender_name')||t(str(row,'sender'))}</strong> · {stamp(row.created_at)}<br/><span>{str(row,'body')}</span></p>)}<div className="transaction-actions">{messageOffset>0&&<button onClick={()=>void messagePage(Math.max(0,messageOffset-20))}>{t('previous')}</button>}{!!detail.has_more&&<button onClick={()=>void messagePage(messageOffset+20)}>{t('more')}</button>}{actions(detail).filter(a=>a!=='read').map(a=><button key={a} onClick={()=>begin(a==='send'?'reply':a)}>{t(a==='send'?'reply':a)}</button>)}</div></>}

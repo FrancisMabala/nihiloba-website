@@ -42,3 +42,17 @@ it('routes provider transactions without accepting Organization or requester sel
  expect((await POST(request('transactions/reservations/RSV_one/decision','POST',{revision:2,decision:'accept',idempotency_key:'one'}),context('transactions/reservations/RSV_one/decision'))).status).toBe(200);
  expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/service-reservations/RSV_one/decision');
 });
+
+it('keeps provider bill writes and exact-customer reads on private authenticated routes',async()=>{
+ const issue='transactions/reservations/RSV_one/bills/SBF_one/issue';
+ expect((await POST(request(issue,'POST',{revision:2,reservation_revision:1,idempotency_key:'issue-key',due_date:'2030-01-20'}),context(issue))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/services/reservations/RSV_one/bills/SBF_one/issue');
+ fetcher.mockClear();
+ const customer='transactions/customer/reservations/RSV_one/bills';
+ const response=await GET(request(customer),context(customer));
+ expect(response.headers.get('Cache-Control')).toContain('private, no-store');
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/services/customer/reservations/RSV_one/bills');
+ fetcher.mockClear();
+ expect((await GET(request(customer+'?organization_ref=BUS_other'),context(customer))).status).toBe(404);
+ expect(fetcher).not.toHaveBeenCalled();
+});

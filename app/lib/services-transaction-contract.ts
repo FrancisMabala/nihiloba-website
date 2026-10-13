@@ -1,6 +1,23 @@
 // Channel routing only. Authorization and transitions stay in the Services backend.
 export function transactionPath(parts: string[], method: string): string | null {
   if (parts[0] !== 'transactions') return null;
+  const reservation = /^RSV_[A-Za-z0-9_-]+$/;
+  const bill = /^SBF_[A-Za-z0-9_-]+$/;
+  if (parts[1] === 'customer' && parts[2] === 'reservations' && reservation.test(parts[3] ?? '')
+      && parts[4] === 'bills' && parts.length === 5 && method === 'GET')
+    return `services/customer/reservations/${parts[3]}/bills`;
+  if (parts[1] === 'bills' && bill.test(parts[2] ?? '') && parts[3] === 'history'
+      && parts.length === 4 && method === 'GET') return `services/bills/${parts[2]}/history`;
+  if (parts[1] === 'reservations' && reservation.test(parts[2] ?? '') && parts[3] === 'bills') {
+    if (parts.length === 4 && ['GET','POST'].includes(method))
+      return `services/reservations/${parts[2]}/bills`;
+    if (bill.test(parts[4] ?? '')) {
+      if (parts.length === 5 && method === 'PATCH')
+        return `services/reservations/${parts[2]}/bills/${parts[4]}`;
+      if (parts.length === 6 && ['issue','replace','void'].includes(parts[5]) && method === 'POST')
+        return `services/reservations/${parts[2]}/bills/${parts[4]}/${parts[5]}`;
+    }
+  }
   const [kind, ref, action, proposal, decision] = parts.slice(1);
   const roots: Record<string, string> = {requests:'service-requests', quotes:'service-quotes', reservations:'service-reservations', messages:'service-messages'};
   const root = roots[kind];
