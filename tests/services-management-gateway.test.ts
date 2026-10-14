@@ -63,6 +63,20 @@ it('keeps provider bill writes and exact-customer reads on private authenticated
  expect(fetcher).not.toHaveBeenCalled();
 });
 
+it('routes only Personal template management and draft application',async()=>{
+ const list='transactions/templates';
+ expect((await GET(request(list+'?kind=quote'),context(list))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/services/templates?kind=quote');
+ fetcher.mockClear();
+ const apply='transactions/templates/SDT_one/apply';
+ expect((await POST(request(apply,'POST',{template_revision:1,target_ref:'SWR_one',target_revision:1,idempotency_key:'apply-one'}),context(apply))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/services/templates/SDT_one/apply');
+ fetcher.mockClear();
+ expect((await GET(request(list+'?organization_ref=BUS_other'),context(list))).status).toBe(404);
+ expect((await POST(request('transactions/templates/SDT_one/issue','POST',{}),context('transactions/templates/SDT_one/issue'))).status).toBe(404);
+ expect(fetcher).not.toHaveBeenCalled();
+});
+
 it('routes only Personal Finance entries and requires a replay key',async()=>{
  const path='transactions/finance/entries';
  const payload={measure:'recorded_income',association_kind:'job',reservation_ref:'RSV_one',amount:'1.25',currency:'USD',effective_date:'2026-10-13',category:'service_income'};

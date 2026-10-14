@@ -1,5 +1,6 @@
 "use client";
 import {useCallback,useEffect,useRef,useState} from "react";
+import {ServicesTemplatePicker} from "./services-template-library";
 
 type Locale="fr"|"en"|"ln"|"sw";
 type Line={label:string;amount:string;private_detail?:string};
@@ -54,6 +55,7 @@ export function ServicesBillPanel({base,binding,locale,reservationRef,reservatio
     {["replace","void"].includes(form)&&<label>{t.reason}<textarea required maxLength={500} value={reason} onChange={event=>setReason(event.target.value)}/></label>}
     <div><button disabled={busy} type="submit">{form==="create"||form==="edit"?t.save:form==="issue"?t.issue:form==="replace"?t.replace:t.cancel}</button>{" "}<button type="button" onClick={()=>setForm(null)}>{back[locale]}</button></div>
    </form>}
+  {workable&&(!current||current.status==="private_draft")&&<ServicesTemplatePicker base={base} binding={binding} locale={locale} kind="bill" targetRef={reservationRef} targetRevision={current?.revision??reservationRevision} draftRef={current?.status==="private_draft"?current.bill_ref:undefined} onApplied={()=>{setForm(null);void reload();}}/>}
   {history.length>0&&<><h5>{t.history}</h5><ol>{history.map(version=><li key={version.version_ref}>{t.revision} {version.revision} · {version.status==="draft"?t.draft:version.status==="void"?t.void:t.issued} · {version.total??"—"} {version.currency??""}{version.due_date?` · ${t.due}: ${version.due_date}`:""}{version.reason?` · ${t.reason}: ${version.reason}`:""}</li>)}</ol></>}
  </section>;
 }

@@ -1,6 +1,15 @@
 // Channel routing only. Authorization and transitions stay in the Services backend.
 export function transactionPath(parts: string[], method: string): string | null {
   if (parts[0] !== 'transactions') return null;
+  if (parts[1] === 'templates') {
+    const reference = parts[2];
+    if (parts.length === 2 && ['GET', 'POST'].includes(method)) return 'services/templates';
+    if (!/^SDT_[A-Za-z0-9_-]+$/.test(reference ?? '')) return null;
+    if (parts.length === 3 && ['GET', 'PATCH'].includes(method)) return `services/templates/${reference}`;
+    if (parts.length === 4 && method === 'POST' && ['archive', 'apply'].includes(parts[3]))
+      return `services/templates/${reference}/${parts[3]}`;
+    return null;
+  }
   if (parts[1] === 'finance') {
     if (parts.length === 3 && parts[2] === 'totals' && method === 'GET') return 'services/finance/totals';
     if (parts.length === 5 && parts[2] === 'reservations' && /^RSV_[A-Za-z0-9_-]+$/.test(parts[3]) && parts[4] === 'totals' && method === 'GET') return `services/finance/reservations/${parts[3]}/totals`;
@@ -47,6 +56,8 @@ export function transactionPath(parts: string[], method: string): string | null 
   return null;
 }
 export function transactionQuery(parts:string[], query:URLSearchParams, method:string): boolean {
+  if(parts[1]==='templates'&&parts.length===2&&method==='GET')
+    return [...query].every(([key,value])=>key==='kind'&&['quote','bill'].includes(value)&&query.getAll(key).length===1);
   // Organization/provider scope cannot be injected through query parameters.
   if(parts[1]==='finance'&&method==='GET'&&(parts[2]==='totals'||parts[2]==='reservations'&&parts[4]==='totals')){
     const period=parts[2]==='totals', keys=period?['start_date','end_date','as_of']:['as_of'];
