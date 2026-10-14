@@ -1,6 +1,7 @@
 import {test,expect,type Page,type BrowserContext,type APIRequestContext} from '@playwright/test';
 import {guestText} from '../../app/lib/restaurant-guest-copy';
 import {checkoutCopy} from '../../app/lib/restaurant-checkout-copy';
+import {managementNavigation} from './restaurant-management-navigation';
 test.skip(process.env.RESTAURANT_SERVICE_BACKEND!=='1','Requires isolated real Backend');
 const backend='https://localhost:3443';
 async function control(api:APIRequestContext,path:string){const r=await api.post(backend+'/__service/'+path);expect(r.ok(),await r.text()).toBe(true);return r.json();}
@@ -8,8 +9,8 @@ async function login(context:BrowserContext,api:APIRequestContext){
  const {token}=await control(api,'session/personal');await context.addCookies([{name:'nihiloba_personal_session',value:token,domain:'localhost',path:'/api/shida',secure:true,httpOnly:true,sameSite:'Lax'}]);
 }
 const service=(page:Page)=>page.locator('.rst-service'),guest=(page:Page)=>page.locator('#guest-order');
-async function owner(page:Page,data:{name:string;ref:string}){
- await page.goto('/shida/seller/restaurants');await page.locator('.rst-grid .rst-card').filter({hasText:data.name}).first().getByRole('button',{name:'Edit',exact:true}).click();await page.getByRole('button',{name:'Service',exact:true}).click();
+async function owner(page:Page){
+ await page.goto('/shida/seller/restaurants');await expect(page.locator('.rst-today')).toBeVisible();await managementNavigation(page,'Table service');
  await service(page).getByRole('button',{name:'Open staff-only group'}).click();
 }
 async function compose(page:Page){
@@ -25,8 +26,8 @@ async function guestRound(page:Page){
  await g.getByRole('combobox',{name:t.window}).selectOption({index:1});await g.getByRole('button',{name:t.quote,exact:true}).click();await g.getByRole('button',{name:t.confirm,exact:true}).click();
  const r=g.locator('.rst-guest-round[aria-label]');await expect(r).toHaveCount(1);return (await r.first().getAttribute('aria-label'))!.replace(t.orderRef+' ','');
 }
-test('real Personal Pro Service: stale quote, grouped repeat rounds, handover and Free recovery',async({page,context,request})=>{
- test.setTimeout(120000);page.setDefaultTimeout(15000);page.on('dialog',d=>d.accept());const data=await control(request,'seed/personal');await login(context,request);await owner(page,data);await compose(page);
+test('real Personal Service: stale quote, grouped rounds, handover and Backend temporary access',async({page,context,request})=>{
+ test.setTimeout(120000);page.setDefaultTimeout(15000);page.on('dialog',d=>d.accept());const data=await control(request,'seed/personal');await login(context,request);await owner(page);await compose(page);
  await request.post(backend+'/__guest/'+data.ref+'/price/'+data.food);
  await service(page).getByRole('button',{name:'Send for preparation'}).click();await expect(service(page).getByText(/This action conflicted/)).toBeVisible();
  await expect(service(page).getByRole('button',{name:'Send for preparation'})).toHaveCount(0);
@@ -37,11 +38,11 @@ test('real Personal Pro Service: stale quote, grouped repeat rounds, handover an
  await control(request,'personal/prepare/'+ref);await service(page).getByRole('button',{name:'Refresh',exact:true}).click();await service(page).getByRole('button',{name:'Attest physical handover'}).click();
  await expect(service(page).locator('.rst-service-round').filter({hasText:ref})).toContainText('Handed over');
  const refs=await service(page).locator('.rst-service-round p:first-child').allTextContents();const second=refs.map(value=>value.split(' · ')[0]).find(value=>value!==ref)!;await control(request,'personal/prepare/'+second);
- await control(request,'personal/paid/off');await service(page).getByRole('button',{name:'Refresh',exact:true}).click();await expect(service(page).getByText(/Service access ended/)).toBeVisible();
- await page.getByRole('button',{name:'Orders',exact:true}).click();await page.getByRole('combobox',{name:'Orders',exact:true}).selectOption('active');await page.getByRole('button',{name:'Review',exact:true}).first().click();await expect(page.getByText(second,{exact:true}).first()).toBeVisible();await page.getByRole('button',{name:'Attest physical handover',exact:true}).click();await page.getByRole('button',{name:'Confirm',exact:true}).click();await expect(page.getByText(/Current state: Handed over/)).toBeVisible();
+ await control(request,'personal/paid/off');await service(page).getByRole('button',{name:'Refresh',exact:true}).click();await expect(service(page).locator('.rst-service-round').filter({hasText:second})).toContainText('Ready');
+ await service(page).locator('.rst-service-round').filter({hasText:second}).getByRole('button',{name:'Attest physical handover'}).click();await expect(service(page).locator('.rst-service-round').filter({hasText:second})).toContainText('Handed over');
 });
 test('real guest consent: two same-QR visits, explicit decline/approval, cookie isolation and assisted read-only rounds',async({page,context,browser,request})=>{
- test.setTimeout(180000);page.setDefaultTimeout(15000);page.on('dialog',d=>d.accept());const data=await control(request,'seed/personal');await login(context,request);await owner(page,data);await compose(page);await service(page).getByRole('button',{name:'Send for preparation'}).click();
+ test.setTimeout(180000);page.setDefaultTimeout(15000);page.on('dialog',d=>d.accept());const data=await control(request,'seed/personal');await login(context,request);await owner(page);await compose(page);await service(page).getByRole('button',{name:'Send for preparation'}).click();
  await expect(service(page).locator('.rst-service-round')).toHaveCount(1);
  const guestContext=await browser.newContext({baseURL:'https://localhost:3014',ignoreHTTPSErrors:true,viewport:{width:390,height:844}});
  const gp=await guestContext.newPage();gp.setDefaultTimeout(15000);await enter(gp,data);const anchor=await guestRound(gp);
@@ -73,6 +74,6 @@ test('real guest consent: two same-QR visits, explicit decline/approval, cookie 
 });
 
 test('real original counter POS remains an immediately handed-over sale',async({page,context,request})=>{
- test.setTimeout(60000);page.setDefaultTimeout(15000);const data=await control(request,'seed/personal');await login(context,request);await page.goto('/shida/seller/restaurants');await page.locator('.rst-grid .rst-card').filter({hasText:data.name}).first().getByRole('button',{name:'Edit',exact:true}).click();await page.getByRole('button',{name:'Point of sale',exact:true}).click();
+ test.setTimeout(60000);page.setDefaultTimeout(15000);await control(request,'seed/personal');await login(context,request);await page.goto('/shida/seller/restaurants');await expect(page.locator('.rst-today')).toBeVisible();await managementNavigation(page,'Counter sale');
  const pos=page.locator('.rst-work').filter({has:page.getByRole('heading',{name:'Point of sale',exact:true})});await pos.getByRole('button',{name:'New counter sale'}).click();await pos.locator('.rst-menu-row').filter({hasText:'Fufu'}).getByRole('button',{name:'Add',exact:true}).click();await pos.getByRole('button',{name:'Calculate exact total'}).click();expect(await pos.getByRole('button',{name:'Send for preparation'}).count()).toBe(0);await pos.getByRole('button',{name:'Confirm food handoff'}).click();await expect(pos.getByText(/Current state: Handed over/).first()).toBeVisible();expect(await pos.getByRole('button',{name:'Attest physical handover'}).count()).toBe(0);
 });

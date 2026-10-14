@@ -2,7 +2,7 @@ import {test,expect,type Page} from '@playwright/test';
 import {managementNavigation} from './restaurant-management-navigation';
 
 const stamp='2026-10-13T08:00:00+00:00';
-const reservation={reservation_ref:'RRS_1',establishment_ref:'RST_WORKFLOW',establishment_name:'Malewa du Marché',state:'pending',revision:1,starts_at:'2030-10-14T18:00:00+01:00',timezone_name:'Africa/Kinshasa',party_size:3,response_deadline:'2030-10-14T12:00:00+01:00',overlapping_requests:0};
+const reservation={reservation_ref:'RRS_1',establishment_ref:'RST_WORKFLOW',establishment_name:'Malewa du Marché',state:'pending',revision:1,starts_at:'2026-10-15T18:00:00+01:00',timezone_name:'Africa/Kinshasa',party_size:3,response_deadline:'2026-10-15T12:00:00+01:00',overlapping_requests:0};
 const establishment={public_ref:'RST_WORKFLOW',revision:stamp,status:'active',menu_currency:'CDF',location_confirmed:true,missing_publication_fields:[],actions:['read','edit','menu','hours','preview','links'],profile:{name:'Malewa du Marché',food_business_type:'malewa',city:'Kinshasa',commune:'Limete',timezone_name:'Africa/Kinshasa'}};
 const food=[{public_ref:'FOOD_1',name:'Fufu et pondu',presentation:'fixed_dish',pricing_model:'UNIT_PRICED',currency:'CDF',unit_price:'3000',sale_unit_label:'assiette',availability:'available',visible:true},{public_ref:'DRINK_1',name:'Jus de mangue sans alcool',presentation:'fixed_dish',pricing_model:'UNIT_PRICED',currency:'USD',unit_price:'2.50',sale_unit_label:'verre',availability:'available',visible:true}];
 const order=(ref:string,state:string)=>({order_ref:ref,revision:1,state,entry_source:'customer',fulfillment_method:'pickup',submitted_at:stamp,cancellation_pending:false,order_total:'3000',currency:'CDF',food_preview:{},receipt_terms:null});
@@ -35,12 +35,15 @@ async function seed(page:Page,intake:boolean,empty=false,rich=false){
   if(rich&&p.endsWith('/service/groups/RSG_VISIT/bill'))return json(bill);
   if(rich&&p.endsWith('/service/groups/RSG_VISIT'))return json({group_ref:'RSG_VISIT',revision:3,state:'checkout',guest_confirmed:false,can_add_round:false,order_until:'2026-10-14T08:00:00Z',rounds:[{order_ref:'ORD_ROUND_1',entry_source:'assisted',state:'completed',currency:'CDF',amount:'3000.00',revision:2,submitted_at:stamp,fulfillment_method:'assisted',cancellation_pending:false},{order_ref:'ORD_ROUND_2',entry_source:'assisted',state:'completed',currency:'USD',amount:'2.50',revision:2,submitted_at:stamp,fulfillment_method:'assisted',cancellation_pending:false}],payment_verified:false});
   if(rich&&p.endsWith('/service/groups'))return json({items:[{group_ref:'RSG_VISIT',revision:3,state:'checkout',guest_confirmed:false}],has_more:false});
+  if(p.endsWith('/inventory'))return json({items:rich?[{item_ref:'STOCK_PONDU',name:'Feuilles de pondu',low_stock:true,on_hand:'2',low_stock_threshold:'5'}]:[],total:rich?1:0,tracking_active:true});
   if(rich&&p.endsWith('/service'))return json({items:food,intake_released:true});
+  if(p.endsWith('/pos'))return json({items:empty?[]:food,recent:[],intake_released:intake});
   if(p.endsWith('/order-configuration'))return json({intake_released:intake});
   if(p.endsWith('/orders')){const states=url.searchParams.getAll('states');const items=empty?[]:states.includes('pending')?[order('ORD_PENDING','pending')]:states.includes('accepted')?[order('ORD_ACCEPTED','accepted')]:[];return json({items,total:items.length,as_of:stamp});}
   if(p.endsWith('/menu/items'))return json({revision:stamp,currency:'CDF',result:{items:empty?[]:food,total:empty?0:food.length,page:1,page_size:20}});
+  if(p.endsWith('/preparation-routing'))return json({items:empty?[]:food.map(item=>({item_ref:item.public_ref,name:item.name,station:item.public_ref==='DRINK_1'?'bar':'kitchen'})),has_more:false,revision:stamp});
   if(p.endsWith('/reservations/setting'))return json({enabled:intake,revision:1,available:true});
-  if(p.endsWith('/reservations/calendar'))return json({items:[],has_more:false,timezone_name:'Africa/Kinshasa'});
+  if(p.endsWith('/reservations/calendar'))return json({items:rich?[{reservation_ref:'RRS_UPCOMING',state:'accepted',starts_at:'2026-10-16T18:00:00+01:00',party_size:4}]:[],has_more:false,timezone_name:'Africa/Kinshasa'});
   if(p.endsWith('/reservations/pending'))return json({items:empty?[]:[reservation],has_more:false,timezone_name:'Africa/Kinshasa'});
   if(p.endsWith('/reservations/RRS_1'))return json(reservation);
   if(p.endsWith('/reservations'))return json({items:empty?[]:[{reservation_ref:'RSV_1',establishment_ref:establishment.public_ref,establishment_name:establishment.profile.name,state:'pending',revision:1,starts_at:'2026-10-14T18:00:00+01:00',timezone_name:'Africa/Kinshasa',party_size:3,response_deadline:'2026-10-14T12:00:00+01:00',overlapping_requests:0}]});
@@ -55,8 +58,10 @@ async function seed(page:Page,intake:boolean,empty=false,rich=false){
 }
 for(const width of [360,820,1440])test(`seller workflow FR ${width}`,async({page})=>{
  page.on('dialog',dialog=>dialog.accept());
- await page.setViewportSize({width,height:900});await seed(page,true);await page.goto('/fr/shida/seller/restaurants/');
- await expect(page.getByText('ORD_ACCEPTED')).toBeVisible();
+ await page.setViewportSize({width,height:900});await seed(page,true,false,true);await page.goto('/fr/shida/seller/restaurants/');
+ await expect(page.locator('.rst-today')).toBeVisible();
+ await page.screenshot({path:`docs/evidence/workflow-today-${width}.png`,fullPage:true});
+ await managementNavigation(page,'Commandes');await expect(page.getByText('ORD_ACCEPTED')).toBeVisible();
  await page.screenshot({path:`docs/evidence/workflow-orders-${width}.png`,fullPage:true});
  await page.getByRole('combobox',{name:'Commandes'}).selectOption('pending');await expect(page.getByText('ORD_PENDING')).toBeVisible();
  await managementNavigation(page,'Vente au comptoir');await expect(page.getByText('Fufu et pondu')).toBeVisible();
@@ -71,7 +76,7 @@ for(const width of [360,820,1440])test(`seller work and finances FR ${width}`,as
  await page.setViewportSize({width,height:900});await seed(page,true,false,true);await page.goto('/fr/shida/seller/restaurants/');
  await managementNavigation(page,'Préparation');await expect(page.getByText('ORD_KITCHEN_WAIT')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-preparation-kitchen-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:/Bar/}).first().click();await expect(page.getByText('ORD_BAR_READY')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-preparation-bar-${width}.png`,fullPage:true});
- await managementNavigation(page,'Service');await page.getByRole('button',{name:/RSG_VISIT/}).click();await expect(page.locator('.rst-service-round').filter({hasText:'ORD_ROUND_2'})).toBeVisible();await expect(page.locator('.rst-money-totals')).toContainText('USD');await expect(page.getByText('PAY_USD')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-service-${width}.png`,fullPage:true});
+ await managementNavigation(page,'Service en salle');await page.getByRole('button',{name:/RSG_VISIT/}).click();await expect(page.locator('.rst-service-round').filter({hasText:'ORD_ROUND_2'})).toBeVisible();await expect(page.locator('.rst-money-totals')).toContainText('USD');await expect(page.getByText('PAY_USD')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-service-${width}.png`,fullPage:true});
  await managementNavigation(page,'Finances');await expect(page.getByText('EXP_CDF')).toBeVisible();await expect(page.locator('.rst-daily-summary')).toContainText('-300.00');await expect(page.locator('.rst-daily-summary')).toContainText('Valeur des commandes liées');await expect(page.locator('.rst-daily-summary')).toContainText('Encaissements nets enregistrés');await page.screenshot({path:`docs/evidence/workflow-finances-${width}.png`,fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

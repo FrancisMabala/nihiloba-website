@@ -6,7 +6,7 @@ import { workText } from '../../app/lib/restaurant-work-copy';
 import { photoText } from '../../app/lib/restaurant-photo-copy';
 const revision='2026-10-13T08:00:00+00:00';
 async function fixture(page:Page,count=1,advanced=true) {
- const state={logout:false};
+ const state={logout:false,station:'kitchen',routingWrites:0};
  const establishments=Array.from({length:count},(_,i)=>({public_ref:`RST_${i}`,revision,status:'active',menu_currency:'CDF',location_confirmed:true,missing_publication_fields:[],actions:['read','edit','menu','hours','preview','links','unpublish'],profile:{name:i===0?'Chez maman — Restaurant & Malewa de la commune de Limete':`Restaurant ${i+1}`,food_business_type:'malewa',city:'Kinshasa',commune:'Limete',timezone_name:'Africa/Kinshasa',establishment_photo_url:null}}));
  await page.route('**/api/**',route=>{
   const p=new URL(route.request().url()).pathname.replace(/\/$/,'');
@@ -17,6 +17,8 @@ async function fixture(page:Page,count=1,advanced=true) {
   if(p.endsWith('/order-configuration'))return route.fulfill({json:{intake_released:true}});
   if(p.endsWith('/orders'))return route.fulfill({json:{items:[],total:0,as_of:revision}});
   if(p.endsWith('/menu/items'))return route.fulfill({json:{revision,currency:'CDF',result:{items:[{public_ref:'RMI_1',name:'Pondu, poisson et accompagnement au choix',image_url:null,pricing_model:'UNIT_PRICED',currency:'CDF',unit_price:'3000',sale_unit_label:'assiette',availability:'available'}],total:1,page:1,page_size:20}}});
+  if(p.endsWith('/preparation-routing/RMI_1')&&route.request().method()==='PUT'){state.station=String(route.request().postDataJSON().station);state.routingWrites++;return route.fulfill({json:{station:state.station,revision}});}
+  if(p.endsWith('/preparation-routing'))return route.fulfill({json:{items:[{item_ref:'RMI_1',name:'Pondu, poisson et accompagnement au choix',station:state.station}],has_more:false,revision}});
   if(p.endsWith('/menu/items/RMI_1'))return route.fulfill({json:{revision,currency:'CDF',result:{public_ref:'RMI_1',name:'Pondu',image_url:null}}});
   if(p.endsWith('/restaurants'))return route.fulfill({json:{items:establishments,total:count,page:1,page_size:20,actions:['create']}});
   const selected=establishments.find(row=>p.endsWith('/'+row.public_ref));
@@ -27,7 +29,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await fixture(page);await page.setViewportSize({width,height:width===360?800:900});
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants/`);
  await expect(page.getByRole('heading',{name:/Chez maman/})).toBeVisible();
- await expect(page.locator('.rst-order-layout')).toBeVisible();
+ await expect(page.locator('.rst-today')).toBeVisible();
  await expect(page.locator('.site-header,footer,.rst-photo-shortcuts,.rst-tabs')).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`docs/evidence/management-${locale}-${width}.png`,fullPage:true});
@@ -42,6 +44,8 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await page.locator('.rst-account summary').click();
  await navigate(page,sellerDesignCopy[locale].menu);
  await expect(page.locator('.rst-menu-row .rst-photo-thumb')).toHaveCount(1);
+ await expect(page.locator('.rst-item-routing')).toHaveCount(1);
+ await page.screenshot({path:`docs/evidence/management-menu-${locale}-${width}.png`,fullPage:true});
  await expect(page.locator('.rst-menu-heading').getByRole('button',{name:photoText(locale,'batch')})).toBeVisible();
  await expect(page.locator('.rst-menu-row').getByRole('button',{name:copy.photo,exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -56,7 +60,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
 test('zero starts setup; multiple establishments require an explicit selection',async({page})=>{
  await fixture(page,0);await page.goto('/fr/shida/seller/restaurants/');await expect(page.locator('.rst-editor')).toBeVisible();
  await page.unroute('**/api/**');await fixture(page,3);await page.reload();await expect(page.locator('.rst-grid article')).toHaveCount(3);
- await page.locator('.rst-grid article').nth(1).getByRole('button').click();await expect(page.locator('.rst-order-layout')).toBeVisible();await expect(page.getByRole('heading',{name:'Restaurant 2',exact:true})).toBeVisible();
+ await page.locator('.rst-grid article').nth(1).getByRole('button').click();await expect(page.locator('.rst-today')).toBeVisible();await expect(page.getByRole('heading',{name:'Restaurant 2',exact:true})).toBeVisible();
  await page.getByRole('button',{name:sellerDesignCopy.fr.change,exact:true}).click();await expect(page.locator('.rst-grid article')).toHaveCount(3);
 });
 test('account actions execute logout; sign out stays distinct from change account',async({page})=>{
@@ -65,7 +69,18 @@ test('account actions execute logout; sign out stays distinct from change accoun
  state.logout=false;await page.reload();await page.locator('.rst-account summary').click();await page.getByRole('button',{name:managementCopy.fr.changeAccount,exact:true}).click();await expect(page.locator('.rst-signin')).toBeVisible();await expect.poll(()=>state.logout).toBe(true);
 });
 test('unavailable advanced destinations are absent while orders remain resolvable',async({page})=>{
- await fixture(page,1,false);await page.goto('/fr/shida/seller/restaurants/');await expect(page.locator('.rst-order-layout')).toBeVisible();
+ await fixture(page,1,false);await page.goto('/fr/shida/seller/restaurants/');await expect(page.locator('.rst-today')).toBeVisible();
  await expect(page.locator('#restaurant-navigation').getByRole('button',{name:managementCopy.fr.stock,exact:true})).toHaveCount(0);
  await expect(page.locator('#restaurant-navigation').getByRole('button',{name:workText('fr','pos'),exact:true})).toHaveCount(0);
+});
+test('mobile workspace navigation works from the keyboard',async({page})=>{
+ await page.setViewportSize({width:360,height:780});await fixture(page);await page.goto('/en/shida/seller/restaurants/');
+ const toggle=page.locator('.rst-navigation-toggle');await toggle.focus();await page.keyboard.press('Enter');await expect(toggle).toHaveAttribute('aria-expanded','true');
+ const selling=page.locator('.rst-nav-group').filter({hasText:'Selling'});await selling.locator('summary').focus();await page.keyboard.press('Enter');
+ const counter=selling.getByRole('button',{name:'Counter sale'});await counter.focus();await page.keyboard.press('Enter');await expect(page.locator('.rst-work')).toBeVisible();
+});
+test('menu item saves preparation station beside the item',async({page})=>{
+ const state=await fixture(page);await page.goto('/en/shida/seller/restaurants/');await navigate(page,sellerDesignCopy.en.menu);
+ const routing=page.locator('.rst-item-routing');await routing.getByRole('button',{name:'Bar'}).click();await routing.getByRole('checkbox').check();await routing.getByRole('button',{name:/Save/}).click();
+ await expect(page.locator('.rst-item-routing').getByRole('button',{name:'Bar'})).toHaveAttribute('aria-pressed','true');expect(state.routingWrites).toBe(1);
 });

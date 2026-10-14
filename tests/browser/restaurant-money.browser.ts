@@ -1,4 +1,5 @@
 import {test,expect,type APIRequestContext,type BrowserContext} from '@playwright/test';
+import {managementNavigation} from './restaurant-management-navigation';
 
 test.skip(process.env.RESTAURANT_SERVICE_BACKEND!=='1','Requires the isolated real Backend fixture');
 const backend='https://localhost:3443';
@@ -7,14 +8,14 @@ async function login(context:BrowserContext,api:APIRequestContext){const {token}
 
 test('real Personal checkout freezes rounds, resolves exact absent write and records mixed CDF money',async({page,context,request})=>{
  test.setTimeout(180000);page.setDefaultTimeout(15000);await page.setViewportSize({width:390,height:844});page.on('dialog',dialog=>dialog.accept());
- const data=await control(request,'seed/personal');await login(context,request);
- await page.goto('/shida/seller/restaurants');await page.locator('.rst-grid .rst-card').filter({hasText:data.name}).first().getByRole('button',{name:'Edit',exact:true}).click();
- await page.getByRole('button',{name:'Configure payment methods'}).click();const config=page.locator('.rst-money');
+ await control(request,'seed/personal');await login(context,request);
+ await page.goto('/shida/seller/restaurants');await expect(page.locator('.rst-today')).toBeVisible();
+ await managementNavigation(page,'Configure payment methods');const config=page.locator('.rst-money');
  await config.getByRole('textbox',{name:'Label'}).fill('Cash desk');await config.getByRole('checkbox',{name:'CDF'}).check();await config.getByRole('button',{name:'Save method'}).click();await expect(config.getByRole('option',{name:'Cash desk'})).toHaveCount(1);
  await config.getByRole('textbox',{name:'Label'}).fill('Mobile declared');await config.getByRole('combobox',{name:'Method'}).last().selectOption('external_mobile_money');await config.getByRole('checkbox',{name:'CDF'}).check();await config.getByRole('button',{name:'Save method'}).click();
- await page.getByRole('button',{name:'Service',exact:true}).click();const service=page.locator('.rst-service');await service.getByRole('button',{name:'Open staff-only group'}).click();
+ await managementNavigation(page,'Table service');const service=page.locator('.rst-service');await service.getByRole('button',{name:'Open staff-only group'}).click();
  await service.getByRole('button',{name:'Add another round'}).click();await service.locator('.rst-menu-row').filter({hasText:'Fufu'}).getByRole('button',{name:'Add',exact:true}).click();await service.getByRole('button',{name:'Calculate exact total'}).click();await service.getByRole('button',{name:'Send for preparation'}).click();
- const groupRef=(await service.locator('section > h3').filter({hasText:/RSG_/}).first().textContent())!.trim();const money=service.locator('.rst-money');await expect(money.getByText(/1000\.25/).first()).toBeVisible();await expect(money.getByRole('combobox',{name:'Method'}).first()).toHaveCount(0);
+ const money=service.locator('.rst-money');await expect(money.getByText(/1000\.25/).first()).toBeVisible();await expect(money.getByRole('combobox',{name:'Method'}).first()).toHaveCount(0);
  await money.getByRole('button',{name:'Open checkout and freeze new rounds'}).click();await expect(money.getByText('Checkout open: new rounds are frozen')).toBeVisible();await expect(service.getByRole('button',{name:'Add another round'})).toBeDisabled();
  await money.getByRole('button',{name:'Reopen unpaid checkout'}).click();await expect(service.getByRole('button',{name:'Add another round'})).toBeEnabled();await money.getByRole('button',{name:'Open checkout and freeze new rounds'}).click();
  await money.getByRole('combobox',{name:'Method'}).first().selectOption({label:'Cash desk · Cash'});await money.getByRole('combobox',{name:'Currency'}).selectOption('CDF');await money.getByRole('textbox',{name:'Actual amount'}).fill('500.25');await money.getByRole('textbox',{name:'Actual cash change returned'}).fill('100');
@@ -27,6 +28,7 @@ test('real Personal checkout freezes rounds, resolves exact absent write and rec
  await page.route('**/money/reversals/**',async route=>{await route.fetch();await route.abort();});await money.getByRole('button',{name:'Reverse mistaken entry (no money returned)'}).click();await expect(money.getByRole('button',{name:'Recover exact entry (read only)'})).toBeVisible();await money.getByRole('button',{name:'Recover exact entry (read only)'}).click();await expect(money.getByText('Original entry found. No second payment created.')).toBeVisible();await page.unroute('**/money/reversals/**');
  await money.getByRole('combobox',{name:'Method'}).last().selectOption('reconciliation');await money.getByRole('combobox',{name:'Method'}).first().selectOption({label:'Cash desk · Cash'});await money.getByRole('combobox',{name:'Currency'}).selectOption('CDF');await money.getByRole('combobox',{name:'Original order'}).selectOption({index:1});await money.getByRole('textbox',{name:'Actual amount'}).fill('200');await money.getByRole('button',{name:'Reconcile actual excess received'}).click();await expect(money.getByText('100.00',{exact:true}).first()).toBeVisible();
  await money.getByRole('combobox',{name:'Method'}).last().selectOption('refund');await money.getByRole('combobox',{name:'Original entry'}).selectOption({index:3});await money.getByRole('combobox',{name:'Method'}).first().selectOption({label:'Cash desk · Cash'});await money.getByRole('combobox',{name:'Currency'}).selectOption('CDF');await money.getByRole('textbox',{name:'Actual amount'}).fill('100');await money.getByRole('textbox',{name:'Reason'}).fill('Cash actually returned');await money.getByRole('button',{name:'Record actual outgoing refund'}).click();await expect(money.getByText(/Refund owed/).first()).toBeVisible();
- await control(request,'personal/paid/off');await page.getByRole('button',{name:'Service',exact:true}).click();await expect(page.getByRole('heading',{name:'Resolve an already-open checkout'})).toBeVisible();await page.getByRole('textbox',{name:'Group reference'}).fill(groupRef);await page.getByRole('button',{name:'Refresh bill'}).first().click();await expect(page.locator('.rst-money-totals').getByText('CDF')).toBeVisible();await expect(page.getByRole('button',{name:'Reconcile actual excess received'})).toHaveCount(0);
+ await control(request,'personal/paid/off');await service.getByRole('button',{name:'Refresh',exact:true}).click();await expect(service.locator('.rst-money-totals').getByText('CDF')).toBeVisible();
+ await managementNavigation(page,'Finances');await expect(page.locator('.rst-daily')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
