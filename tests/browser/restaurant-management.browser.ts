@@ -77,7 +77,7 @@ test('mobile workspace navigation works from the keyboard',async({page})=>{
  await page.setViewportSize({width:360,height:780});await fixture(page);await page.goto('/en/shida/seller/restaurants/');
  const toggle=page.locator('.rst-navigation-toggle');await toggle.focus();await page.keyboard.press('Enter');await expect(toggle).toHaveAttribute('aria-expanded','true');
  const selling=page.locator('.rst-nav-group').filter({hasText:'Selling'});await selling.locator('summary').focus();await page.keyboard.press('Enter');
- const counter=selling.getByRole('button',{name:'Counter sale'});await counter.focus();await page.keyboard.press('Enter');await expect(page.locator('.rst-work')).toBeVisible();
+ const counter=selling.getByRole('button',{name:'Selling'});await counter.focus();await page.keyboard.press('Enter');await expect(page.locator('.rst-selling-menu')).toBeVisible();
 });
 test('menu item saves preparation station beside the item',async({page})=>{
  const state=await fixture(page);await page.goto('/en/shida/seller/restaurants/');await navigate(page,sellerDesignCopy.en.menu);

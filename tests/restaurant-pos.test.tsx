@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { RestaurantCounter } from '../app/components/shida/restaurant-counter';
 import { orderRoutes, validOrderBody, validOrderQuery } from '../app/lib/restaurant-orders-contract';
 import { workText } from '../app/lib/restaurant-work-copy';
+import { sellingCopy } from '../app/lib/restaurant-selling-copy';
 
 describe('POS and Free counter contract',()=>{
  it('allows only exact counter operations and minimum read query',()=>{
@@ -21,10 +22,10 @@ describe('POS and Free counter contract',()=>{
   expect(validOrderBody(path,{...body,food_preference:'x'.repeat(401)})).toBe(false);
   expect(validOrderBody(path,{...body,delivery_instruction:'private'})).toBe(false);
  });
- it.each(['fr','en','ln','sw'] as const)('renders paid and Free headings in %s',locale=>{
+ it.each(['fr','en','ln','sw'] as const)('renders the selling heading in %s',locale=>{
   const props={path:'personal/restaurants/RST_one',binding:'bound',locale,onFailure:()=>{}};
-  expect(renderToStaticMarkup(<RestaurantCounter {...props} pos/>)).toContain(workText(locale,'pos'));
-  expect(renderToStaticMarkup(<RestaurantCounter {...props}/>)).toContain(workText(locale,'counter'));
+  expect(renderToStaticMarkup(<RestaurantCounter {...props} pos/>)).toContain(sellingCopy(locale).counter);
+  expect(renderToStaticMarkup(<RestaurantCounter {...props}/>)).toContain(sellingCopy(locale).counter);
   expect(workText(locale,'preferenceHelp')).not.toBe('preferenceHelp');
  });
 });

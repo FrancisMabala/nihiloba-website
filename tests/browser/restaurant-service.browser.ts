@@ -10,11 +10,11 @@ async function login(context:BrowserContext,api:APIRequestContext){
 }
 const service=(page:Page)=>page.locator('.rst-service'),guest=(page:Page)=>page.locator('#guest-order');
 async function owner(page:Page){
- await page.goto('/shida/seller/restaurants');await expect(page.locator('.rst-today')).toBeVisible();await managementNavigation(page,'Table service');
+ await page.goto('/shida/seller/restaurants');await expect(page.locator('.rst-today')).toBeVisible();await managementNavigation(page,'Selling');await page.locator('.rst-selling-modes').getByRole('button',{name:'Table service'}).click();
  await service(page).getByRole('button',{name:'Open staff-only group'}).click();
 }
 async function compose(page:Page){
- const s=service(page);await s.getByRole('button',{name:'Add another round'}).click();await s.locator('.rst-menu-row').filter({hasText:'Fufu'}).getByRole('button',{name:'Add',exact:true}).click();
+ const s=service(page);await s.getByRole('button',{name:'Add another round'}).click();await s.locator('.rst-selling-item').filter({hasText:'Fufu'}).getByRole('button',{name:'Add',exact:true}).click();
  await s.getByRole('textbox',{name:'Food preference'}).fill('No salt');await s.getByRole('button',{name:'Calculate exact total'}).click();await expect(s.getByRole('button',{name:'Send for preparation'})).toBeEnabled();
 }
 async function enter(page:Page,data:{qr:string}){
@@ -74,6 +74,6 @@ test('real guest consent: two same-QR visits, explicit decline/approval, cookie 
 });
 
 test('real original counter POS remains an immediately handed-over sale',async({page,context,request})=>{
- test.setTimeout(60000);page.setDefaultTimeout(15000);await control(request,'seed/personal');await login(context,request);await page.goto('/shida/seller/restaurants');await expect(page.locator('.rst-today')).toBeVisible();await managementNavigation(page,'Counter sale');
- const pos=page.locator('.rst-work').filter({has:page.getByRole('heading',{name:'Point of sale',exact:true})});await pos.getByRole('button',{name:'New counter sale'}).click();await pos.locator('.rst-menu-row').filter({hasText:'Fufu'}).getByRole('button',{name:'Add',exact:true}).click();await pos.getByRole('button',{name:'Calculate exact total'}).click();expect(await pos.getByRole('button',{name:'Send for preparation'}).count()).toBe(0);await pos.getByRole('button',{name:'Confirm food handoff'}).click();await expect(pos.getByText(/Current state: Handed over/).first()).toBeVisible();expect(await pos.getByRole('button',{name:'Attest physical handover'}).count()).toBe(0);
+ test.setTimeout(60000);page.setDefaultTimeout(15000);await control(request,'seed/personal');await login(context,request);await page.goto('/shida/seller/restaurants');await expect(page.locator('.rst-today')).toBeVisible();await managementNavigation(page,'Selling');
+ const pos=page.locator('.rst-selling').filter({has:page.getByRole('heading',{name:'Counter / takeaway',exact:true})});await pos.getByRole('button',{name:'New counter sale'}).click();await pos.locator('.rst-selling-item').filter({hasText:'Fufu'}).getByRole('button',{name:'Add',exact:true}).click();await pos.getByRole('button',{name:'Calculate exact total'}).click();expect(await pos.getByRole('button',{name:'Send for preparation'}).count()).toBe(0);await pos.getByRole('button',{name:'Confirm food handoff'}).click();await expect(pos.getByText(/Current state: Handed over/).first()).toBeVisible();expect(await pos.getByRole('button',{name:'Attest physical handover'}).count()).toBe(0);
 });

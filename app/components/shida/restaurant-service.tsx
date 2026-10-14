@@ -9,9 +9,13 @@ import {workflowText} from '../../lib/restaurant-workflow-copy';
 import {serviceEnvelope,servicePath,serviceSelections,type ServiceAssignment,type ServiceEnvelope,type ServiceGroup} from '../../lib/restaurant-service-contract';
 import {FoodTerms,ReceiptCard} from './restaurant-receipt';
 import {RestaurantMoney} from './restaurant-money';
+import {sellingCopy} from '../../lib/restaurant-selling-copy';
+import {basicText} from '../../lib/restaurant-basic-copy';
+import {RestaurantPhoto} from './restaurant-photo';
+import './restaurant-selling.css';
 import './restaurant-service.css';
 
-type Item={public_ref:string;name:string;presentation:string;pricing_model:string;currency:string;unit_price?:string;minimum_amount?:string;allowed_amounts?:string[];amount_mode?:string;amount_step?:string;sale_unit_label?:string;availability:string;category?:{public_ref:string;name:string}};
+type Item={public_ref:string;name:string;presentation:string;pricing_model:string;currency:string;unit_price?:string;minimum_amount?:string;allowed_amounts?:string[];amount_mode?:string;amount_step?:string;sale_unit_label?:string;availability:string;image_url?:string;category?:{public_ref:string;name:string}};
 type Selection={key:string;item_ref:string;quantity?:number;selected_amount?:string};
 type Selections={standalone:Selection[];plates:{key:string;components:Selection[]}[]};
 type Basket={basket_ref:string;revision:number;selections:Selections;quote:Terms|null;quote_ref:string|null;order_ref:string|null;food_preference:string|null};
@@ -25,7 +29,7 @@ export function RestaurantService({path,binding,locale,assignment}:{path:string;
  const url=useCallback((suffix='',query:Record<string,string>={})=>servicePath(path,suffix,assignmentRef&&assignmentRevision?{assignment_ref:assignmentRef,assignment_revision:assignmentRevision}:undefined,query),[path,assignmentRef,assignmentRevision]);
  const [workspace,setWorkspace]=useState<Workspace|null>(null),[groups,setGroups]=useState<GroupSummary[]>([]),[group,setGroup]=useState<ServiceGroup|null>(null);
  const [page,setPage]=useState(1),[more,setMore]=useState(false),[basket,setBasket]=useState<Basket|null>(null),[selections,setSelections]=useState<Selections>(empty),[preference,setPreference]=useState('');
- const [order,setOrder]=useState<Order|null>(null),[proposal,setProposal]=useState<Proposal|null>(null),[anchor,setAnchor]=useState(''),[plate,setPlate]=useState(''),[search,setSearch]=useState('');
+ const [order,setOrder]=useState<Order|null>(null),[proposal,setProposal]=useState<Proposal|null>(null),[anchor,setAnchor]=useState(''),[plate,setPlate]=useState(''),[search,setSearch]=useState(''),[category,setCategory]=useState(''),[basketOpen,setBasketOpen]=useState(false);
  const [pending,setPending]=useState<ServiceEnvelope|null>(null),[busy,setBusy]=useState(false),[fresh,setFresh]=useState(false),[message,setMessage]=useState(''),[lost,setLost]=useState(false),[dirty,setDirty]=useState(true);
  const [now,setNow]=useState(()=>Date.now());
  const alive=useRef(false),epoch=useRef(0),lock=useRef(false),current=useRef({group,basket,order});
@@ -117,8 +121,15 @@ export function RestaurantService({path,binding,locale,assignment}:{path:string;
  }
  const names=new Map(workspace?.items.map(i=>[i.public_ref,i.name]));
  const lineRows=(lines:Selection[])=>lines.map(l=><div className="rst-row" key={l.key}><span>{names.get(l.item_ref)??t('food')}</span><label>{t(l.quantity!==undefined?'quantity':'amount')}<input inputMode={l.quantity!==undefined?'numeric':'decimal'} type={l.quantity!==undefined?'number':'text'} min={1} step={1} value={l.quantity??l.selected_amount??''} onChange={e=>change(l.key,l.quantity!==undefined?{quantity:Number(e.target.value)}:{selected_amount:e.target.value.replace(',','.')})}/></label><button onClick={()=>change(l.key,null)}>{t('remove')}</button></div>);
+ const c=sellingCopy(locale);
+ const categories=Array.from(new Map((workspace?.items??[]).filter(i=>i.category).map(i=>[i.category!.public_ref,i.category!])).values());
+ const filtered=(workspace?.items??[]).filter(i=>(!category||i.category?.public_ref===category)&&i.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()));
+ const selected=[...selections.standalone,...selections.plates.flatMap(p=>p.components)];
+ const estimate=selected.reduce((totals,line)=>{const item=workspace?.items.find(i=>i.public_ref===line.item_ref);if(!item||!['CDF','USD'].includes(item.currency))return totals;const amount=line.quantity!=null?Number(item.unit_price)*line.quantity:Number(line.selected_amount);if(Number.isFinite(amount)&&amount>=0)totals[item.currency as 'CDF'|'USD']+=amount;return totals;},{CDF:0,USD:0});
+ const mixed=new Set(selected.map(line=>workspace?.items.find(i=>i.public_ref===line.item_ref)?.currency).filter(Boolean)).size>1;
+ async function selectFromMenu(item:Item){if(!canAdd||locked)return;if(!current.current.basket){await mutate(serviceEnvelope(url('/baskets'),'POST',{operation_key:crypto.randomUUID()}));if(!current.current.basket)return;}add(item);}
  const proposalStale=proposal&&(!group||proposal.group_ref!==group.group_ref||proposal.group_revision!==group.revision||Date.parse(proposal.expires_at)<=now);
- return <article className="rst-card rst-work rst-service" lang={locale}><h2>{s('title')}</h2><p>{s('scope')}</p><p>{s('preparation')}</p>
+ return <article className="rst-work rst-service rst-selling" lang={locale}><h2>{c.title} · {c.table}</h2>
  {workspace&&!workspace.intake_released&&<p role="status">{t('closed')}</p>}
  {message&&<p role="alert">{message}</p>}{!fresh&&!lost&&<p role="status">{s('stale')}</p>}
  <button disabled={busy} onClick={async()=>{if(lock.current)return;lock.current=true;setBusy(true);try{await read();}finally{lock.current=false;setBusy(false);}}}>{t('refresh')}</button>
@@ -136,12 +147,23 @@ export function RestaurantService({path,binding,locale,assignment}:{path:string;
  {proposal&&!group.guest_confirmed&&<p role="status">{proposalStale?s('expired'):s('pending')+' '+dateText(proposal.expires_at,locale)}</p>}
  {group.can_add_round&&<button disabled={locked||!!basket} onClick={()=>{if(window.confirm(s('closeConfirm')))void action('/groups/'+group.group_ref+'/close',{operation_key:crypto.randomUUID(),expected_revision:group.revision});}}>{s('close')}</button>}
  </section>}
- {basket&&!basket.order_ref&&<section><fieldset disabled={locked||!canAdd}><label>{t('posSearch')}<input type="search" value={search} onChange={e=>setSearch(e.target.value)}/></label><label>{t('plate')}<select value={plate} onChange={e=>setPlate(e.target.value)}><option value="">{t('standalone')}</option><option value="-1">{t('add')} · {t('plate')}</option>{selections.plates.map((p,i)=><option key={p.key} value={String(i)}>{t('plate')} {i+1}</option>)}</select></label>
- <div className="rst-menu-rows">{workspace?.items.filter(i=>i.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())).map(i=><div className="rst-menu-row" key={i.public_ref}><span>{i.name} · {i.pricing_model==='UNIT_PRICED'?i.unit_price:i.amount_mode==='flexible'?i.minimum_amount:i.allowed_amounts?.join(' / ')} {i.currency}</span><button disabled={i.availability!=='available'||i.pricing_model==='UNKNOWN'||plate!==''&&i.presentation!=='component'} onClick={()=>add(i)}>{t('add')}</button></div>)}</div>
- <h3>{t('standalone')}</h3>{lineRows(selections.standalone)}{selections.plates.map((p,i)=><section key={p.key}><h3>{t('plate')} {i+1}</h3>{lineRows(p.components)}</section>)}
- <label>{t('foodPreference')}<textarea maxLength={400} value={preference} onChange={e=>{setPreference(e.target.value);setDirty(true);}}/></label><p>{t('preferenceHelp')}</p>
- <button disabled={!serviceSelections(selections)||!selections.standalone.length&&!selections.plates.length} onClick={()=>void action('/baskets/'+basket.basket_ref+'/quote',{operation_key:crypto.randomUUID(),expected_revision:basket.revision,selections,food_preference:preference||null})}>{t('quote')}</button></fieldset>
- {basket.quote&&!dirty&&<><FoodTerms terms={basket.quote} locale={locale}/><p>{s('rounds')}</p><button className="rst-service-send" disabled={locked||!canAdd} onClick={()=>void action('/baskets/'+basket.basket_ref+'/submit',{operation_key:crypto.randomUUID(),expected_revision:basket.revision,quote_ref:basket.quote_ref,confirm:true,group_ref:group!.group_ref,expected_group_revision:group!.revision})}>{s('send')}</button></>}
- </section>}</>}
+ <div className="rst-selling-layout">
+  <section className="rst-selling-menu" aria-label={c.menu}><div className="rst-selling-menu-head"><div><h3>{c.menu}</h3><p>{c.select}</p></div><span>{filtered.length} {c.items}</span></div>
+   <div className="rst-selling-filters"><label>{t('posSearch')}<input type="search" value={search} onChange={e=>setSearch(e.target.value)}/></label><label>{t('posCategory')}<select value={category} onChange={e=>setCategory(e.target.value)}><option value="">{c.all}</option>{categories.map(value=><option key={value.public_ref} value={value.public_ref}>{value.name}</option>)}</select></label></div>
+   <div className="rst-selling-items">{filtered.map(item=><article className="rst-selling-item" key={item.public_ref}><div className="rst-selling-photo"><span aria-hidden="true">◌</span>{item.image_url&&<RestaurantPhoto src={item.image_url} alt={item.name} sizes="(max-width: 600px) 84px, 150px"/>}</div><div className="rst-selling-item-body"><strong>{item.name}</strong><small>{item.category?.name??''}</small><b>{item.pricing_model==='UNIT_PRICED'?item.unit_price+' '+item.currency:item.pricing_model==='AMOUNT_PRICED'?item.amount_mode==='flexible'?basicText(locale,'flexibleFrom')+' '+item.minimum_amount+' '+item.currency:item.allowed_amounts?.join(' / ')+' '+item.currency:t('unknown')}</b>{item.availability!=='available'&&<span className="rst-selling-unavailable">{c.unavailable}</span>}</div><button type="button" disabled={locked||!canAdd||item.availability!=='available'||item.pricing_model==='UNKNOWN'||plate!==''&&item.presentation!=='component'} onClick={()=>void selectFromMenu(item)}>{t('add')}</button></article>)}</div>
+  </section>
+  <aside className={'rst-selling-basket'+(basketOpen?' is-open':'')} aria-label={c.basket}><div className="rst-selling-basket-head"><div><small>{basket?.quote&&!dirty?c.quoted:c.draft}</small><h3>{c.basket}</h3></div><button type="button" className="rst-selling-close" onClick={()=>setBasketOpen(false)}>{c.closeBasket}</button></div>
+   {!group&&<p>{s('groups')}</p>}{group&&!basket&&<p>{c.empty}</p>}
+   {basket&&!basket.order_ref&&<><fieldset disabled={locked||!canAdd} className="rst-selling-basket-fields"><label>{t('plate')}<select value={plate} onChange={e=>setPlate(e.target.value)}><option value="">{t('standalone')}</option><option value="-1">{t('add')} · {t('plate')}</option>{selections.plates.map((p,i)=><option key={p.key} value={String(i)}>{t('plate')} {i+1}</option>)}</select></label>
+    <h4>{t('standalone')}</h4>{lineRows(selections.standalone)}{selections.plates.map((p,i)=><section key={p.key}><h4>{t('plate')} {i+1}</h4>{lineRows(p.components)}</section>)}
+    <label>{t('foodPreference')}<textarea maxLength={400} value={preference} onChange={e=>{setPreference(e.target.value);setDirty(true);}}/></label><p>{t('preferenceHelp')}</p>
+   </fieldset><div className="rst-selling-totals"><small>{c.estimate}</small><p><span>CDF</span><strong>{estimate.CDF.toFixed(2)}</strong></p><p><span>USD</span><strong>{estimate.USD.toFixed(2)}</strong></p></div>
+   {mixed&&<p role="status" className="rst-selling-closed">{c.mixed}</p>}
+   <button type="button" disabled={mixed||locked||!canAdd||!serviceSelections(selections)||!selected.length} onClick={()=>void action('/baskets/'+basket.basket_ref+'/quote',{operation_key:crypto.randomUUID(),expected_revision:basket.revision,selections,food_preference:preference||null})}>{t('quote')}</button>
+   {basket.quote&&!dirty&&<div className="rst-selling-quote"><h4>{c.quoted}</h4><FoodTerms terms={basket.quote} locale={locale}/><p>{c.quoteNote}</p><button className="rst-service-send" disabled={locked||!canAdd} onClick={()=>void action('/baskets/'+basket.basket_ref+'/submit',{operation_key:crypto.randomUUID(),expected_revision:basket.revision,quote_ref:basket.quote_ref,confirm:true,group_ref:group!.group_ref,expected_group_revision:group!.revision})}>{s('send')}</button></div>}</>}
+  </aside>
+ </div>
+ <button type="button" className="rst-selling-mobile-summary" onClick={()=>setBasketOpen(true)} aria-expanded={basketOpen}><span>{c.openBasket} · {selected.length} {c.items}</span><span>CDF {estimate.CDF.toFixed(2)} · USD {estimate.USD.toFixed(2)}</span></button>
+ </>}
  </article>;
 }

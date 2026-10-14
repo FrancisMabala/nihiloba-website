@@ -64,9 +64,9 @@ for(const width of [360,820,1440])test(`seller workflow FR ${width}`,async({page
  await managementNavigation(page,'Commandes');await expect(page.getByText('ORD_ACCEPTED')).toBeVisible();
  await page.screenshot({path:`docs/evidence/workflow-orders-${width}.png`,fullPage:true});
  await page.getByRole('combobox',{name:'Commandes'}).selectOption('pending');await expect(page.getByText('ORD_PENDING')).toBeVisible();
- await managementNavigation(page,'Vente au comptoir');await expect(page.getByText('Fufu et pondu')).toBeVisible();
- await page.getByRole('button',{name:'Ajouter',exact:true}).first().click();await expect(page.getByText('CDF: 3000.00')).toBeVisible();
- await expect(page.locator('.rst-work').getByRole('button',{name:'Suivant'})).toHaveCount(0);
+ await managementNavigation(page,'Vendre');await expect(page.getByText('Fufu et pondu')).toBeVisible();
+ await page.getByRole('button',{name:/Ajouter Fufu/}).first().click();await expect(width===360?page.locator('.rst-selling-mobile-summary'):page.locator('.rst-selling-totals')).toContainText('3000.00');
+ await expect(page.locator('.rst-selling').getByRole('button',{name:'Suivant'})).toHaveCount(0);
  await page.screenshot({path:`docs/evidence/workflow-counter-${width}.png`,fullPage:true});
  await managementNavigation(page,'Réservations');await page.getByRole('region',{name:'En attente du vendeur'}).getByRole('button').first().click();await expect(page.getByRole('button',{name:'Accepter cette demande'})).toBeVisible();
  await page.screenshot({path:`docs/evidence/workflow-reservations-${width}.png`,fullPage:true});
@@ -76,7 +76,7 @@ for(const width of [360,820,1440])test(`seller work and finances FR ${width}`,as
  await page.setViewportSize({width,height:900});await seed(page,true,false,true);await page.goto('/fr/shida/seller/restaurants/');
  await managementNavigation(page,'Préparation');await expect(page.getByText('ORD_KITCHEN_WAIT')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-preparation-kitchen-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:/Bar/}).first().click();await expect(page.getByText('ORD_BAR_READY')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-preparation-bar-${width}.png`,fullPage:true});
- await managementNavigation(page,'Service en salle');await page.getByRole('button',{name:/RSG_VISIT/}).click();await expect(page.locator('.rst-service-round').filter({hasText:'ORD_ROUND_2'})).toBeVisible();await expect(page.locator('.rst-money-totals')).toContainText('USD');await expect(page.getByText('PAY_USD')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-service-${width}.png`,fullPage:true});
+ await managementNavigation(page,'Vendre');await page.locator('.rst-selling-modes').getByRole('button',{name:'Service en salle'}).click();await page.getByRole('button',{name:/RSG_VISIT/}).click();await expect(page.locator('.rst-service-round').filter({hasText:'ORD_ROUND_2'})).toBeVisible();await expect(page.locator('.rst-money-totals')).toContainText('USD');await expect(page.getByText('PAY_USD')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-service-${width}.png`,fullPage:true});
  await managementNavigation(page,'Finances');await expect(page.getByText('EXP_CDF')).toBeVisible();await expect(page.locator('.rst-daily-summary')).toContainText('-300.00');await expect(page.locator('.rst-daily-summary')).toContainText('Valeur des commandes liées');await expect(page.locator('.rst-daily-summary')).toContainText('Encaissements nets enregistrés');await page.screenshot({path:`docs/evidence/workflow-finances-${width}.png`,fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
@@ -97,9 +97,10 @@ for(const width of [360,820,1440])test(`closed intake and empty states ${width}`
 for(const width of [360,820,1440])test(`counter handover and canonical bill ${width}`,async({page})=>{
  page.on('dialog',dialog=>dialog.accept());
  await page.setViewportSize({width,height:900});await seed(page,true,false,true);await page.goto('/fr/shida/seller/restaurants/');
- await managementNavigation(page,'Vente au comptoir');
- await page.getByRole('button',{name:'Ajouter',exact:true}).first().click();
- await expect(page.getByText('CDF: 3000.00')).toBeVisible();
+ await managementNavigation(page,'Vendre');
+ await page.getByRole('button',{name:/Ajouter Fufu/}).first().click();
+ await expect(width===360?page.locator('.rst-selling-mobile-summary'):page.locator('.rst-selling-totals')).toContainText('3000.00');
+ if(width===360)await page.locator('.rst-selling-mobile-summary').click();
  await page.getByRole('button',{name:'Calculer le total exact'}).click();
  await expect(page.locator('.rst-details').getByText('3000.00 CDF').first()).toBeVisible();
  await page.getByRole('button',{name:'Confirmer la remise des aliments'}).click();
@@ -112,5 +113,29 @@ for(const width of [360,820,1440])test(`counter handover and canonical bill ${wi
  await page.getByRole('button',{name:'Confirmer l’argent effectivement reçu'}).click();
  await expect(page.getByText('PAY_COUNTER')).toBeVisible();
  await page.screenshot({path:`docs/evidence/workflow-counter-paid-${width}.png`,fullPage:true});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+const sellingLabels={fr:'Vendre',en:'Selling',ln:'Koteka',sw:'Kuuza'} as const;
+for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1440])test(`selling menu and mixed basket ${locale} ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:900});
+ await seed(page,true,false,true);
+ await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/');
+ await managementNavigation(page,sellingLabels[locale]);
+ await expect(page.locator('.rst-selling-menu')).toContainText('Fufu et pondu');
+ await page.getByRole('button',{name:/Fufu et pondu/}).click();
+ await page.getByRole('button',{name:/Jus de mangue sans alcool/}).click();
+ await expect(page.locator('.rst-selling-mobile-summary')).toContainText('CDF 3000.00 · USD 2.50');
+ await page.evaluate(()=>{(document.activeElement as HTMLElement|null)?.blur();window.scrollTo(0,0);});
+ await page.addStyleTag({content:'nextjs-portal{display:none!important}.skip-link{transform:translateY(-150%)!important}'});
+ if(width===360)await page.locator('.rst-selling-menu').evaluate(el=>el.scrollIntoView({block:'start'}));
+ await page.screenshot({path:`docs/evidence/restaurant-selling-2026-10-14/menu-${locale}-${width}.png`,fullPage:width!==360});
+ if(width===360)await page.locator('.rst-selling-mobile-summary').click();
+ await expect(page.locator('.rst-selling-basket')).toBeVisible();
+ await expect(page.locator('.rst-selling-basket')).toContainText('CDF');
+ await expect(page.locator('.rst-selling-basket')).toContainText('USD');
+ await expect(page.locator('.rst-selling-actions .button-primary')).toBeDisabled();
+ await page.evaluate(()=>{(document.activeElement as HTMLElement|null)?.blur();window.scrollTo(0,0);});
+ await page.screenshot({path:`docs/evidence/restaurant-selling-2026-10-14/basket-${locale}-${width}.png`,fullPage:width!==360});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
