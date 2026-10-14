@@ -8,6 +8,7 @@ type Context={params:Promise<{path?:string[]}>};
 const fail=(status:number,detail="service_unavailable")=>Response.json({detail},{status,headers:PRIVATE_HEADERS});
 function allowed(parts:string[],method:string){
  if(parts.length===0)return method==="GET"||method==="POST";
+ if(parts.length===1&&parts[0]==="capabilities")return method==="GET";
  if(!/^SVC_[A-Za-z0-9_-]+$/.test(parts[0]))return false;
  if(parts.length===1)return method==="GET";
  if(parts.length===2)return parts[1]==="details"&&method==="PATCH"||parts[1]==="pilot-review"&&["GET","PATCH"].includes(method)||parts[1]==="reviews"&&method==="GET"||parts[1]==="request-capability"&&method==="PATCH"||parts[1]==="packages"&&method==="POST";

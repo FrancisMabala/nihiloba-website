@@ -16,6 +16,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`provider transaction jo
  await page.route('**/api/shida/**',async route=>{
   const request=route.request(),url=new URL(request.url()),path=url.pathname;
   if(path.endsWith('/employment/session/'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Provider'}}});
+  if(path.endsWith('/services/capabilities'))return route.fulfill({json:{bundle:'personal_pro',access_policy:'pilot',purchase_required:false,capabilities:['profile','packages','reservations','messages']}});
   if(path.includes('/services')){
    if(denied)return route.fulfill({status:403,json:{detail:'unavailable'}});
    const tx=path.split('/transactions/')[1];

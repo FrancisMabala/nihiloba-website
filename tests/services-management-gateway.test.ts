@@ -11,6 +11,12 @@ beforeEach(()=>{jar.clear();jar.set(PERSONAL_SESSION_COOKIE,token);vi.stubEnv('S
 afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();});
 
 describe('Personal Services gateway',()=>{
+ it('reads the private effective Services pilot capabilities',async()=>{
+  const result=await GET(request('capabilities'),context('capabilities'));
+  expect(result.status).toBe(200);
+  expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/service-profiles/capabilities');
+  expect(result.headers.get('Cache-Control')).toContain('private, no-store');
+ });
  it('forwards only the Personal session without Organization selection',async()=>{
   const result=await GET(request(),context());expect(result.status).toBe(200);
   const [target,init]=fetcher.mock.calls[0];expect(String(target)).toBe('https://backend.test/api/dashboard/service-profiles');
