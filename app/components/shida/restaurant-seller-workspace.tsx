@@ -16,7 +16,7 @@ import { basicText } from "@/app/lib/restaurant-basic-copy";
 import { localInstant, performRestaurant as perform, pricing, readRestaurant as read, rootPath, type Closure, type Envelope, type Establishment, type Fields, type Hours, type Kind, type Operation, type Page, type Row, type Window } from "@/app/lib/restaurant-seller";
 import "./restaurant-seller.css";
 import { RestaurantOrderScreen } from './restaurant-order-screen';
-import { RestaurantReservationSeller } from './restaurant-reservation-seller';
+import { RestaurantReservationCalendarSeller } from './restaurant-reservation-calendar-seller';
 import {PreparationRouting} from './restaurant-preparation-routing';
 import { RestaurantKitchen } from './restaurant-kitchen';
 import { RestaurantSellerReviews } from './restaurant-seller-reviews';
@@ -300,7 +300,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
         {["items", "categories"].includes(tab) && <div className="rst-menu-heading"><h2>{design.menuTitle}</h2><div className="rst-actions"><button type="button" className="rst-text-button" disabled={busy} onClick={() => void run(() => open(tab as Kind))}>+ {design.add}</button>{button("categories", () => void run(() => loadTab(tab === "categories" ? "items" : "categories")))}<button type="button" disabled={busy} onClick={()=>void run(()=>loadTab("batch"))}>{photoText(locale,"batch")}</button></div></div>}
         {tab === 'photos' && <RestaurantPhotoEditor key={`${path}:${photoTarget.target}:${photoTarget.itemRef ?? ''}`} path={path} binding={binding} locale={locale} establishmentName={selected.profile.name || t('restaurants')} {...photoTarget} onFailure={workFailure} onBack={() => void run(() => loadTab(photoTarget.target === 'establishment' ? 'profile' : 'items'))}/>}
         {tab === 'orders'  && <RestaurantOrderScreen key={path} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onFailure={workFailure} onIntake={selected.actions.includes('edit')?()=>setTab('intake'):undefined}/>}
-        {tab === 'reservations' && <RestaurantReservationSeller path={path} binding={binding} locale={locale}/>}
+        {tab === 'reservations' && <RestaurantReservationCalendarSeller key={`${path}:${binding}`} path={path} binding={binding} locale={locale}/>}
         {tab === 'routing' && <PreparationRouting path={path} binding={binding} locale={locale}/>}
         {tab === 'kitchen' && <RestaurantKitchen key={path} path={path} binding={binding} locale={locale} onFreeOrders={()=>setTab('orders')}/>}
         {tab === 'reviews' && <RestaurantSellerReviews key={path} path={path} binding={binding} locale={locale}/>}

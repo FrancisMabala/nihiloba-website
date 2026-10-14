@@ -1,0 +1,5 @@
+@media (max-width:600px){
+  .shida-cal-day{font-size:.85rem;overflow:hidden;word-break:normal;overflow-wrap:normal}
+  .shida-cal-day > span{white-space:nowrap;word-break:normal;overflow-wrap:normal}
+  .shida-cal-day small{white-space:nowrap}
+}

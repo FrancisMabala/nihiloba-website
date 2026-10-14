@@ -2,6 +2,7 @@ import {test,expect,type Page} from '@playwright/test';
 import {managementNavigation} from './restaurant-management-navigation';
 
 const stamp='2026-10-13T08:00:00+00:00';
+const reservation={reservation_ref:'RRS_1',establishment_ref:'RST_WORKFLOW',establishment_name:'Malewa du Marché',state:'pending',revision:1,starts_at:'2030-10-14T18:00:00+01:00',timezone_name:'Africa/Kinshasa',party_size:3,response_deadline:'2030-10-14T12:00:00+01:00',overlapping_requests:0};
 const establishment={public_ref:'RST_WORKFLOW',revision:stamp,status:'active',menu_currency:'CDF',location_confirmed:true,missing_publication_fields:[],actions:['read','edit','menu','hours','preview','links'],profile:{name:'Malewa du Marché',food_business_type:'malewa',city:'Kinshasa',commune:'Limete',timezone_name:'Africa/Kinshasa'}};
 const food=[{public_ref:'FOOD_1',name:'Fufu et pondu',presentation:'fixed_dish',pricing_model:'UNIT_PRICED',currency:'CDF',unit_price:'3000',sale_unit_label:'assiette',availability:'available',visible:true},{public_ref:'DRINK_1',name:'Jus de mangue sans alcool',presentation:'fixed_dish',pricing_model:'UNIT_PRICED',currency:'USD',unit_price:'2.50',sale_unit_label:'verre',availability:'available',visible:true}];
 const order=(ref:string,state:string)=>({order_ref:ref,revision:1,state,entry_source:'customer',fulfillment_method:'pickup',submitted_at:stamp,cancellation_pending:false,order_total:'3000',currency:'CDF',food_preview:{},receipt_terms:null});
@@ -39,6 +40,9 @@ async function seed(page:Page,intake:boolean,empty=false,rich=false){
   if(p.endsWith('/orders')){const states=url.searchParams.getAll('states');const items=empty?[]:states.includes('pending')?[order('ORD_PENDING','pending')]:states.includes('accepted')?[order('ORD_ACCEPTED','accepted')]:[];return json({items,total:items.length,as_of:stamp});}
   if(p.endsWith('/menu/items'))return json({revision:stamp,currency:'CDF',result:{items:empty?[]:food,total:empty?0:food.length,page:1,page_size:20}});
   if(p.endsWith('/reservations/setting'))return json({enabled:intake,revision:1,available:true});
+  if(p.endsWith('/reservations/calendar'))return json({items:[],has_more:false,timezone_name:'Africa/Kinshasa'});
+  if(p.endsWith('/reservations/pending'))return json({items:empty?[]:[reservation],has_more:false,timezone_name:'Africa/Kinshasa'});
+  if(p.endsWith('/reservations/RRS_1'))return json(reservation);
   if(p.endsWith('/reservations'))return json({items:empty?[]:[{reservation_ref:'RSV_1',establishment_ref:establishment.public_ref,establishment_name:establishment.profile.name,state:'pending',revision:1,starts_at:'2026-10-14T18:00:00+01:00',timezone_name:'Africa/Kinshasa',party_size:3,response_deadline:'2026-10-14T12:00:00+01:00',overlapping_requests:0}]});
   if(p.endsWith('/order-summary'))return json({as_of:stamp,coverage_from:null,coverage_to:null,measurement_status:'unavailable',metrics:null});
   if(rich&&p.endsWith('/counter-baskets/BSK_1/quote'))return json({basket:{basket_ref:'BSK_1',revision:2,quote:counterTerms,quote_ref:'RQU_1',order_ref:null}});
@@ -59,7 +63,7 @@ for(const width of [360,820,1440])test(`seller workflow FR ${width}`,async({page
  await page.getByRole('button',{name:'Ajouter',exact:true}).first().click();await expect(page.getByText('CDF: 3000.00')).toBeVisible();
  await expect(page.locator('.rst-work').getByRole('button',{name:'Suivant'})).toHaveCount(0);
  await page.screenshot({path:`docs/evidence/workflow-counter-${width}.png`,fullPage:true});
- await managementNavigation(page,'Réservations');await expect(page.getByRole('button',{name:'Accepter cette demande'})).toBeVisible();
+ await managementNavigation(page,'Réservations');await page.getByRole('region',{name:'En attente du vendeur'}).getByRole('button').first().click();await expect(page.getByRole('button',{name:'Accepter cette demande'})).toBeVisible();
  await page.screenshot({path:`docs/evidence/workflow-reservations-${width}.png`,fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
@@ -81,7 +85,7 @@ for(const width of [360,820,1440])test(`closed intake and empty states ${width}`
  await expect(page.getByRole('textbox',{name:'Du'})).toHaveCount(0);
  await page.screenshot({path:`docs/evidence/workflow-empty-statistics-${width}.png`,fullPage:true});
  await managementNavigation(page,'Réservations');await expect(page.getByText('Les nouvelles demandes sont fermées.')).toBeVisible();
- await expect(page.getByRole('button',{name:'Suivant'})).toHaveCount(0);
+ await expect(page.getByRole('region',{name:'En attente du vendeur'}).getByRole('button',{name:'Suivant'})).toHaveCount(0);
  await page.screenshot({path:`docs/evidence/workflow-empty-reservations-${width}.png`,fullPage:true});
 });
 

@@ -5,6 +5,7 @@ import {dailyRoutes,isDailyPath,validDailyBody,validDailyQuery} from './restaura
 // Exact Personal seller surface, not a general Dashboard proxy.
 export const sellerRoutes: [RegExp, readonly string[]][] = [
   [/^RST_[A-Za-z0-9_-]+\/reservations$/, ["GET"]],
+  [/^RST_[A-Za-z0-9_-]+\/reservations\/(calendar|pending)$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/setting$/, ["GET", "PUT"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/RRS_[A-Za-z0-9_-]+$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/RRS_[A-Za-z0-9_-]+\/(accept|reject|cancel|arrive|complete)$/, ["POST"]],
@@ -76,7 +77,11 @@ export function allowedSellerRoute(path: string, method: string): boolean {
 }
 export function validSellerQuery(path: string, method: string, query: URLSearchParams): boolean {
   if (isPhotoPath(path)) return validPhotoQuery(path, query);
-  if (path.includes('/reservations')) return [...query].every(([key,value]) => path.endsWith('/reservations') && ['page','page_size'].includes(key) && query.getAll(key).length===1 && /^[1-9]\d{0,3}$/.test(value) && (key!=='page_size'||Number(value)<=50));
+  if (path.includes('/reservations')) {
+    const calendar=path.endsWith('/reservations/calendar'),pending=path.endsWith('/reservations/pending');
+    if(calendar && (!/^\d{4}-\d{2}-\d{2}$/.test(query.get('date_from')||'')||!/^\d{4}-\d{2}-\d{2}$/.test(query.get('date_to')||'')))return false;
+    return [...query].every(([key,value]) => (path.endsWith('/reservations')||calendar||pending) && (calendar?['date_from','date_to','page','page_size']:['page','page_size']).includes(key) && query.getAll(key).length===1 && (key==='date_from'||key==='date_to'?/^\d{4}-\d{2}-\d{2}$/.test(value):/^[1-9]\d{0,3}$/.test(value) && (key!=='page_size'||Number(value)<=(calendar?100:pending?100:50))));
+  }
   if (isDailyPath(path)) return validDailyQuery(path,method,query);
   if (isServicePath(path)) return validServiceQuery(path,method,query);
   if (isOrderPath(path)) return validOrderQuery(path, method, query);
