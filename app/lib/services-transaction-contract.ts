@@ -1,6 +1,7 @@
 // Channel routing only. Authorization and transitions stay in the Services backend.
 export function transactionPath(parts: string[], method: string): string | null {
   if (parts[0] !== 'transactions') return null;
+  if (parts[1] === 'bill-presentation' && parts.length === 2 && ['GET', 'PATCH'].includes(method)) return 'services/bill-presentation';
   if (parts[1] === 'templates') {
     const reference = parts[2];
     if (parts.length === 2 && ['GET', 'POST'].includes(method)) return 'services/templates';

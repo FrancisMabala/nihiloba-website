@@ -1,10 +1,11 @@
 "use client";
 import {useCallback,useEffect,useRef,useState} from "react";
 import {ServicesTemplatePicker} from "./services-template-library";
+import {ServiceBillStatement} from "./service-bill-statement";
 
 type Locale="fr"|"en"|"ln"|"sw";
 type Line={label:string;amount:string;private_detail?:string};
-type Version={bill_ref:string;version_ref:string;revision:number;status:string;source_kind:string;currency:string|null;total:string|null;due_date:string|null;reason:string|null;lines:Line[]};
+type Version={bill_ref:string;version_ref:string;revision:number;status:string;source_kind:string;currency:string|null;total:string|null;issue_date:string|null;due_date:string|null;reason:string|null;presentation?:{display_name:string;accent:string};lines:(Line&{ordinal:number})[]};
 const agreed={en:"Agreed service",fr:"Service convenu",ln:"Mosala oyo bondimaki",sw:"Huduma iliyokubaliwa"} as const;
 const back={en:"Back",fr:"Retour",ln:"Zonga",sw:"Rudi"} as const;
 const words={
@@ -15,7 +16,7 @@ const words={
 } as const;
 
 export function ServicesBillPanel({base,binding,locale,reservationRef,reservationRevision,status,blocked=false}:{base:string;binding:string;locale:Locale;reservationRef:string;reservationRevision:number;status:string;blocked?:boolean}){
- const t=words[locale], [current,setCurrent]=useState<Version|null>(null),[history,setHistory]=useState<Version[]>([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState(""),[allowed,setAllowed]=useState(false);
+ const t=words[locale], [current,setCurrent]=useState<Version|null>(null),[history,setHistory]=useState<Version[]>([]),[selectedVersion,setSelectedVersion]=useState(""),[busy,setBusy]=useState(false),[notice,setNotice]=useState(""),[allowed,setAllowed]=useState(false);
  const [form,setForm]=useState<"create"|"edit"|"issue"|"replace"|"void"|null>(null),[currency,setCurrency]=useState("CDF"),[lines,setLines]=useState<Line[]>([{label:"",amount:""}]),[dueDate,setDueDate]=useState(""),[reason,setReason]=useState("");
  const replay=useRef<{fingerprint:string;key:string}|null>(null);
  const call=useCallback(async(path:string,method="GET",body?:object)=>{
@@ -25,7 +26,7 @@ export function ServicesBillPanel({base,binding,locale,reservationRef,reservatio
  },[base,binding]);
  const reload=useCallback(async()=>{
   const value=await call(`reservations/${reservationRef}/bills`);
-  const bill=value.current as Version|null;setAllowed(true);setCurrent(bill);
+  const bill=value.current as Version|null;setAllowed(true);setCurrent(bill);setSelectedVersion(bill?.version_ref??"");
   if(value.bill_ref){const versions=await call(`bills/${value.bill_ref}/history`);setHistory(versions.versions as Version[]);}else setHistory([]);
  },[call,reservationRef]);
  useEffect(()=>{let active=true;queueMicrotask(()=>void reload().catch(()=>{if(active){setAllowed(false);setCurrent(null);setHistory([]);}}));return()=>{active=false;setCurrent(null);setHistory([]);};},[reload]);
@@ -56,6 +57,6 @@ export function ServicesBillPanel({base,binding,locale,reservationRef,reservatio
     <div><button disabled={busy} type="submit">{form==="create"||form==="edit"?t.save:form==="issue"?t.issue:form==="replace"?t.replace:t.cancel}</button>{" "}<button type="button" onClick={()=>setForm(null)}>{back[locale]}</button></div>
    </form>}
   {workable&&(!current||current.status==="private_draft")&&<ServicesTemplatePicker base={base} binding={binding} locale={locale} kind="bill" targetRef={reservationRef} targetRevision={current?.revision??reservationRevision} draftRef={current?.status==="private_draft"?current.bill_ref:undefined} onApplied={()=>{setForm(null);void reload();}}/>}
-  {history.length>0&&<><h5>{t.history}</h5><ol>{history.map(version=><li key={version.version_ref}>{t.revision} {version.revision} · {version.status==="draft"?t.draft:version.status==="void"?t.void:t.issued} · {version.total??"—"} {version.currency??""}{version.due_date?` · ${t.due}: ${version.due_date}`:""}{version.reason?` · ${t.reason}: ${version.reason}`:""}</li>)}</ol></>}
+  {history.length>0&&<><h5>{t.history}</h5><div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>{history.map(version=><button type="button" key={version.version_ref} aria-pressed={selectedVersion===version.version_ref} onClick={()=>setSelectedVersion(version.version_ref)}>{t.revision} {version.revision} · {version.status==="private_draft"?t.draft:version.status==="void"?t.void:t.issued}</button>)}</div>{history.filter(version=>version.version_ref===selectedVersion).map(version=><div key={version.version_ref}><ServiceBillStatement version={version} locale={locale} draft={version.status==="private_draft"} current={version.version_ref===current?.version_ref}/>{version.reason&&<p>{t.reason}: {version.reason}</p>}</div>)}</>}
  </section>;
 }

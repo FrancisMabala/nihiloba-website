@@ -101,3 +101,16 @@ it('routes private Personal totals with only exact date filters',async()=>{
  expect((await GET(request(job+'?as_of=2026-10-20T12%3A00%3A00Z'),context(job))).status).toBe(200);
  expect(String(fetcher.mock.calls[1][0])).toContain('/api/dashboard/services/finance/reservations/RSV_one/totals?');
 });
+
+it('routes bill presentation only in the bound Personal context',async()=>{
+ const path='transactions/bill-presentation';
+ expect((await GET(request(path),context(path))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/services/bill-presentation');
+ fetcher.mockClear();
+ const body={revision:1,idempotency_key:'branding-one',display_name:'Studio Kivu',accent:'blue'};
+ expect((await PATCH(request(path,'PATCH',body),context(path))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/services/bill-presentation');
+ fetcher.mockClear();
+ expect((await GET(request(path+'?organization_ref=BUS_other'),context(path))).status).toBe(404);
+ expect(fetcher).not.toHaveBeenCalled();
+});
