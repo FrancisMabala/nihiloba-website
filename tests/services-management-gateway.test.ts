@@ -114,3 +114,18 @@ it('routes bill presentation only in the bound Personal context',async()=>{
  expect((await GET(request(path+'?organization_ref=BUS_other'),context(path))).status).toBe(404);
  expect(fetcher).not.toHaveBeenCalled();
 });
+
+it('allows only exact Personal job declarations and paged customer history reads',async()=>{
+ const entries='transactions/finance/entries';
+ expect((await GET(request(entries+'?reservation_ref=RSV_one&offset=20'),context(entries))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toContain('/services/finance/entries?reservation_ref=RSV_one&offset=20');
+ fetcher.mockClear();
+ const history='transactions/reservations/RSV_one/customer-history';
+ expect((await GET(request(history+'?offset=20'),context(history))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toContain('/service-reservations/RSV_one/customer-history?offset=20');
+ fetcher.mockClear();
+ expect((await GET(request(entries+'?reservation_ref=RSV_bad%2Fpath'),context(entries))).status).toBe(404);
+ expect((await GET(request(history+'?organization_ref=BUS_other'),context(history))).status).toBe(404);
+ expect((await GET(request('transactions/reservations/RSV_one/customer-history/entries'),context('transactions/reservations/RSV_one/customer-history/entries'))).status).toBe(404);
+ expect(fetcher).not.toHaveBeenCalled();
+});

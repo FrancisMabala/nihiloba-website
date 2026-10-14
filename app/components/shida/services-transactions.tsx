@@ -3,6 +3,7 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {servicesText,type ServicesLocale} from './services-transaction-copy';
 import {ServicesBillPanel} from './services-bill-panel';
 import {ServicesTemplatePicker} from './services-template-library';
+import {ServicesCustomerHistory} from './services-customer-history';
 
 type Row=Record<string,unknown>;
 type Kind='requests'|'reservations'|'messages';
@@ -12,7 +13,7 @@ const actions=(row:Row)=>Array.isArray(row.actions)?row.actions as string[]:[];
 const transactionRef=(row:Row)=>str(row,'thread_ref')||str(row,'request_ref')||str(row,'reservation_ref');
 const inputDate=(value:string)=>value?value.replace(/Z$/,'').slice(0,16):'';
 
-export function ServicesTransactions({base,binding,locale,offeringRef,billAvailable,onDenied}:{base:string;binding:string;locale:ServicesLocale;offeringRef?:string|null;billAvailable:boolean;onDenied:()=>void}) {
+export function ServicesTransactions({base,binding,locale,offeringRef,billAvailable,financeAvailable,onDenied}:{base:string;binding:string;locale:ServicesLocale;offeringRef?:string|null;billAvailable:boolean;financeAvailable:boolean;onDenied:()=>void}) {
  const t=useCallback((key:string)=>servicesText(locale,key),[locale]);
  const [kind,setKind]=useState<Kind>('requests'),[rows,setRows]=useState<Row[]>([]),[offset,setOffset]=useState(0),[more,setMore]=useState(false);
  const [detail,setDetail]=useState<Row|null>(null),[lifecycle,setLifecycle]=useState<Row|null>(null),[quotes,setQuotes]=useState<Row[]>([]),[quote,setQuote]=useState<Row|null>(null),[quoteOffset,setQuoteOffset]=useState(0),[quoteMore,setQuoteMore]=useState(false);
@@ -20,6 +21,7 @@ export function ServicesTransactions({base,binding,locale,offeringRef,billAvaila
  const replay=useRef<{fingerprint:string;key:string}|null>(null);
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[form,setForm]=useState<string|null>(null),[fields,setFields]=useState<Record<string,string>>({});
  const pendingBooking=useRef<string|null>(null);
+ const pendingLink=useRef<{kind:Kind;ref:string;quoteRef?:string}|null>(null);
  const generation=useRef(0),alive=useRef(false),denied=useRef(onDenied);
  useEffect(()=>{denied.current=onDenied;},[onDenied]);
  const controller=useRef<AbortController|null>(null);
@@ -38,7 +40,12 @@ export function ServicesTransactions({base,binding,locale,offeringRef,billAvaila
  const load=useCallback(async()=>{
   const ticket=++generation.current;clear();setBusy(true);
   try{const value=await call(`${kind}${kind==='messages'?'':`?offset=${offset}`}`);if(alive.current&&ticket===generation.current){setRows(list(value,kind==='messages'?'threads':kind));setMore(kind==='reservations'?list(value,kind).length===100:!!value.has_more);}
-   if(kind==='reservations'&&pendingBooking.current){const target=pendingBooking.current;pendingBooking.current=null;const booking=await call(`reservations/${target}`);const life=await call(`reservations/${target}/lifecycle`);if(alive.current&&ticket===generation.current){setDetail(booking);setLifecycle(life);}}}
+   if(kind==='reservations'&&pendingBooking.current){const target=pendingBooking.current;pendingBooking.current=null;const booking=await call(`reservations/${target}`);const life=await call(`reservations/${target}/lifecycle`);if(alive.current&&ticket===generation.current){setDetail(booking);setLifecycle(life);}}
+   if(pendingLink.current?.kind===kind&&alive.current){const target=pendingLink.current;pendingLink.current=null;
+    const detail=await call(`${kind}/${target.ref}`);const lifecycle=kind==='reservations'?await call(`reservations/${target.ref}/lifecycle`):null;
+    const history=kind==='requests'?await call(`requests/${target.ref}/quotes`):null;
+    const selectedQuote=target.quoteRef?await call(`quotes/${target.quoteRef}`):null;
+    if(alive.current&&ticket===generation.current){setDetail(detail);setLifecycle(lifecycle);setQuotes(history?list(history,'quotes'):[]);setQuoteOffset(0);setQuoteMore(!!history?.has_more);setQuote(selectedQuote);setMessageOffset(0);}}}
   catch(e){if(alive.current&&ticket===generation.current)error(e);}finally{if(alive.current&&ticket===generation.current)setBusy(false);}
  },[call,clear,error,kind,offset]);
  useEffect(()=>{let mounted=true;alive.current=true;const abort=new AbortController();controller.current=abort;queueMicrotask(()=>{if(mounted)void load();});const focus=()=>void load();window.addEventListener('focus',focus);return()=>{mounted=false;alive.current=false;abort.abort();window.removeEventListener('focus',focus);};},[load]);
@@ -80,6 +87,7 @@ export function ServicesTransactions({base,binding,locale,offeringRef,billAvaila
  const quoteForm=form==='edit'||form==='create_quote';
  const reasonChoices=form==='decline'?kind==='requests'?['NOT_AVAILABLE','OUTSIDE_SCOPE','CANNOT_SERVE_LOCATION','INSUFFICIENT_INFORMATION','OTHER']:['provider_unavailable','slot_unavailable','request_mismatch','area_too_far','insufficient_information','other']:form==='cancel'?['UNAVAILABLE','EMERGENCY','SCHEDULING_ISSUE','CANNOT_PERFORM_SERVICE','OTHER']:form==='dispute'?(lifecycle?.dispute_reasons as string[]??[]):[];
  return <section className="services-transactions" aria-label={t('workspace')}>
+  <ServicesCustomerHistory base={base} binding={binding} locale={locale} financeAvailable={financeAvailable} onOpen={(target,ref,quoteRef)=>{pendingLink.current={kind:target,ref,quoteRef};if(kind===target&&offset===0)void load();else{setKind(target);setOffset(0);}}}/>
   <h2>{t('workspace')}</h2><fieldset disabled={busy}><div className="transaction-actions">{(['requests','reservations','messages'] as Kind[]).map(value=><button type="button" key={value} aria-pressed={kind===value} onClick={()=>{clear();setOffset(0);setKind(value);setNotice('');}}>{t(value)}</button>)}<button type="button" onClick={()=>void load()}>{t('refresh')}</button></div></fieldset>
   {busy&&<p role="status" aria-live="polite">…</p>}{notice&&<p role="status">{notice}</p>}
   {!detail?<fieldset disabled={busy}>{visibleRows.length===0&&!busy&&<p>{t('empty')}</p>}{visibleRows.map(row=><button className="transaction-row" type="button" key={transactionRef(row)} onClick={()=>void open(row)}><strong>{title(row)}</strong><span>{t(str(row,'status'))} · {str(row,'requester')||str(row,'requester_name')||str(row,'preview')}</span><span>{str(row,'requested_datetime')||stamp(row.created_at||row.last_message_at)}</span></button>)}<div className="transaction-actions">{offset>0&&<button onClick={()=>setOffset(Math.max(0,offset-pageSize))}>{t('previous')}</button>}{more&&<button onClick={()=>setOffset(offset+pageSize)}>{t('more')}</button>}</div></fieldset>:

@@ -30,7 +30,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`provider transaction jo
     if(tx==='messages/MSG_one/actions'){expect(body.revision).toBe(thread.revision);thread={...thread,revision:'b'.repeat(64),messages:[...thread.messages,{sender:'you',body:body.body,created_at:'2026-10-13T11:00:00Z'}]};}
     return route.fulfill({json:{stored:true}});
    }
-   const responses:Record<string,unknown>={requests:{requests:empty?[]:[parent],has_more:false},'requests/SWR_one':parent,'requests/SWR_one/quotes':{quotes:[quote],has_more:false},'quotes/SQT_private':quote,reservations:{reservations:empty?[]:[booking]},'reservations/RSV_one':booking,'reservations/RSV_one/lifecycle':{...booking,actions:booking.status==='confirmed'?['start','complete','cancel']:[],rescheduling:{actions:[],proposal:null}},messages:{threads:empty?[]:[thread]},'messages/MSG_one':thread};
+   const responses:Record<string,unknown>={templates:{templates:[]},requests:{requests:empty?[]:[parent],has_more:false},'requests/SWR_one':parent,'requests/SWR_one/quotes':{quotes:[quote],has_more:false},'quotes/SQT_private':quote,reservations:{reservations:empty?[]:[booking]},'reservations/RSV_one':booking,'reservations/RSV_one/lifecycle':{...booking,actions:booking.status==='confirmed'?['start','complete','cancel']:[],rescheduling:{actions:[],proposal:null}},messages:{threads:empty?[]:[thread]},'messages/MSG_one':thread};
    return route.fulfill({json:responses[tx]??{}});
   }
   return route.fulfill({status:404,json:{detail:'unavailable'}});

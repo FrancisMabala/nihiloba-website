@@ -7,6 +7,7 @@ test('Personal provider records and corrects a partial receipt after offering wi
  await page.route('**/api/shida/**',async route=>{
   const request=route.request(),path=new URL(request.url()).pathname;
   if(path.endsWith('/employment/session/'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Solo'}}});
+  if(path.endsWith('/services/capabilities'))return route.fulfill({json:{bundle:'personal_pro',access_policy:'pilot',purchase_required:false,capabilities:['profile','reservations','messages','manual_journal','basic_totals']}});
   if(path==='/api/shida/personal/services')return route.fulfill({json:{profiles:[offering]}});
   if(path.endsWith('/reviews'))return route.fulfill({json:{reviews:[]}});
   if(path.endsWith('/transactions/finance/entries')){

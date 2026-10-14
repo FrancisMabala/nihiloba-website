@@ -19,6 +19,8 @@ export function transactionPath(parts: string[], method: string): string | null 
     return null;
   }
   const reservation = /^RSV_[A-Za-z0-9_-]+$/;
+  if (parts[1] === 'reservations' && reservation.test(parts[2] ?? '') && parts[3] === 'customer-history' && parts.length === 4 && method === 'GET')
+    return `service-reservations/${parts[2]}/customer-history`;
   const bill = /^SBF_[A-Za-z0-9_-]+$/;
   if (parts[1] === 'customer' && parts[2] === 'reservations' && reservation.test(parts[3] ?? '')
       && parts[4] === 'bills' && parts.length === 5 && method === 'GET')
@@ -65,8 +67,10 @@ export function transactionQuery(parts:string[], query:URLSearchParams, method:s
     return [...query].length===keys.length&&keys.every(key=>query.getAll(key).length===1&&(
       key==='as_of'?/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(query.get(key)??''):/^\d{4}-\d{2}-\d{2}$/.test(query.get(key)??'')));
   }
+  if(parts[1]==='finance'&&parts[2]==='entries'&&parts.length===3&&method==='GET')
+    return [...query].every(([key,value])=>query.getAll(key).length===1&&(key==='offset'?/^\d{1,6}$/.test(value):key==='reservation_ref'&&/^RSV_[A-Za-z0-9_-]+$/.test(value)));
   return [...query].every(([key,value]) => method === 'GET' && key === 'offset' && query.getAll(key).length === 1
-    && /^\d{1,6}$/.test(value) && (parts.length === 2 && ['requests','reservations'].includes(parts[1]) || parts[1] === 'requests' && parts[3] === 'quotes' || parts[1] === 'messages' && parts.length === 3 || parts[1] === 'finance' && parts.length === 3 && parts[2] === 'entries'));
+    && /^\d{1,6}$/.test(value) && (parts.length === 2 && ['requests','reservations'].includes(parts[1]) || parts[1] === 'requests' && parts[3] === 'quotes' || parts[1] === 'messages' && parts.length === 3 || parts[1] === 'reservations' && parts[3] === 'customer-history' && parts.length === 4));
 }
 export function transactionSearch(parts:string[], query:URLSearchParams): URLSearchParams {
   const result = new URLSearchParams(query);
