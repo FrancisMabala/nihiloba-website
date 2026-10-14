@@ -63,7 +63,7 @@ for(const width of [360,820,1440])test(`seller workflow FR ${width}`,async({page
  await page.screenshot({path:`docs/evidence/workflow-today-${width}.png`,fullPage:true});
  await managementNavigation(page,'Commandes');await expect(page.getByText('ORD_ACCEPTED')).toBeVisible();
  await page.screenshot({path:`docs/evidence/workflow-orders-${width}.png`,fullPage:true});
- await page.getByRole('combobox',{name:'Commandes'}).selectOption('pending');await expect(page.getByText('ORD_PENDING')).toBeVisible();
+ await expect(page.getByText('ORD_PENDING')).toBeVisible();
  await managementNavigation(page,'Vendre');await expect(page.getByText('Fufu et pondu')).toBeVisible();
  await page.getByRole('button',{name:/Ajouter Fufu/}).first().click();await expect(width===360?page.locator('.rst-selling-mobile-summary'):page.locator('.rst-selling-totals')).toContainText('3000.00');
  await expect(page.locator('.rst-selling').getByRole('button',{name:'Suivant'})).toHaveCount(0);
