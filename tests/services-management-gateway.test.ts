@@ -11,6 +11,20 @@ beforeEach(()=>{jar.clear();jar.set(PERSONAL_SESSION_COOKIE,token);vi.stubEnv('S
 afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();});
 
 describe('Personal Services gateway',()=>{
+ it('routes bounded aggregate reports and private CSV without Organization selectors',async()=>{
+  const path='transactions/reports/operational.csv';
+  const query='?start_date=2026-10-01&end_date=2026-10-15';
+  fetcher.mockImplementationOnce(async()=>new Response('start_date,offering\n2026-10-01,safe\n',{headers:{'Content-Type':'text/csv','Content-Disposition':'attachment; filename="services-operational-report.csv"'}}));
+  const result=await GET(request(path+query),context(path));
+  expect(result.status).toBe(200);
+  expect(result.headers.get('Cache-Control')).toContain('private, no-store');
+  expect(result.headers.get('content-disposition')).toContain('attachment');
+  expect(await result.text()).toContain('safe');
+  expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/services/reports/operational.csv'+query);
+  fetcher.mockClear();
+  expect((await GET(request(path+query+'&organization_ref=BUS_other'),context(path))).status).toBe(404);
+  expect(fetcher).not.toHaveBeenCalled();
+ });
  it('reads the private effective Services pilot capabilities',async()=>{
   const result=await GET(request('capabilities'),context('capabilities'));
   expect(result.status).toBe(200);

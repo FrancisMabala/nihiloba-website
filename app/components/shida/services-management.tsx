@@ -2,6 +2,7 @@
 import {ServicesTransactions} from "./services-transactions";
 import {ServicesFinancePanel} from "./services-finance-panel";
 import {ServicesTotalsPanel} from "./services-totals-panel";
+import {ServicesReportsPanel} from "./services-reports-panel";
 import {ServicesTemplateLibrary} from "./services-template-library";
 import {ServicesBillBranding} from "./services-bill-branding";
 import {useEffect, useState} from "react";
@@ -58,6 +59,7 @@ export function ServicesManagement({binding,locale,offeringRef=null}:{binding:st
   {message&&<p role="status">{message}</p>}<button type="button" onClick={()=>void refresh()}>{t.reload}</button>
   {can("manual_journal")&&<ServicesFinancePanel key={base+binding+"finance"} base={base} binding={binding} locale={lang}/>}
   {can("basic_totals")&&<ServicesTotalsPanel key={base+binding+"totals"} base={base} binding={binding} locale={lang}/>}
+  {can("operational_reports")&&<ServicesReportsPanel key={base+binding+"reports"+can("financial_reports")} base={base} binding={binding} locale={lang} financialAllowed={can("financial_reports")}/>}
   {can("quote_templates")&&<ServicesTemplateLibrary key={base+binding+"quote-templates"} base={base} binding={binding} locale={lang} kind="quote"/>}
   {can("bill_templates")&&<ServicesTemplateLibrary key={base+binding+"bill-templates"} base={base} binding={binding} locale={lang} kind="bill"/>}
   {can("bills")&&<ServicesBillBranding key={base+binding+"bill-branding"} base={base} binding={binding} locale={lang}/>}

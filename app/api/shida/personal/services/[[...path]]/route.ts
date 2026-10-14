@@ -46,6 +46,7 @@ async function handle(request:Request,context:Context){
   if(parts[1]==="reviews")target.search=new URLSearchParams({language:query.get("language")??"fr"}).toString();
   const response=await fetch(target,{method:request.method,cache:"no-store",redirect:"manual",signal:AbortSignal.timeout(12000),headers:{Accept:"application/json",Cookie:`shida_dashboard_session=${token}`,...(origin?{Origin:origin}:{}),...(body?{"Content-Type":"application/json"}:{}),...(key&&methodNeedsKey(parts,request.method)?{"Idempotency-Key":key}:{})},body});
   if(response.status===401)await clearEmploymentToken();
+  if(transaction?.endsWith('.csv'))return new Response(await response.arrayBuffer(),{status:response.status,headers:{...PRIVATE_HEADERS,"Content-Type":response.ok?"text/csv; charset=utf-8":"application/json",...(response.ok?{"Content-Disposition":response.headers.get("content-disposition")??"attachment; filename=services-report.csv"}:{})}});
   const value=await response.json().catch(()=>null);
   if(!response.ok)return fail(response.status>=400&&response.status<600?response.status:502);
   if(!value||typeof value!=="object"||Array.isArray(value))return fail(502);
