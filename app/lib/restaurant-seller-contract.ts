@@ -19,6 +19,7 @@ export const sellerRoutes: [RegExp, readonly string[]][] = [
   [/^RST_[A-Za-z0-9_-]+\/inventory\/items$/, ["POST"]],
   [/^RST_[A-Za-z0-9_-]+\/inventory\/items\/RII_[A-Za-z0-9_-]+$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/inventory\/items\/RII_[A-Za-z0-9_-]+\/(movements|archive)$/, ["POST"]],
+  [/^RST_[A-Za-z0-9_-]+\/inventory\/items\/RII_[A-Za-z0-9_-]+\/kind$/, ["POST"]],
   [/^RST_[A-Za-z0-9_-]+\/inventory\/items\/RII_[A-Za-z0-9_-]+\/history$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/inventory\/menu\/RMI_[A-Za-z0-9_-]+\/binding$/, ["POST"]],
   [/^RST_[A-Za-z0-9_-]+\/menu-preview$/, ["GET"]],
@@ -55,14 +56,16 @@ function validInventoryBody(path: string, value: unknown): boolean {
   const operation = typeof value.operation_key === "string" && value.operation_key.length >= 1 && value.operation_key.length <= 200;
   const revision = Number.isSafeInteger(value.expected_revision) && Number(value.expected_revision) >= 1;
   const amount = (v: unknown) => typeof v === "string" && /^\d{1,15}(?:\.\d{1,3})?$/.test(v);
-  if (/\/inventory\/items$/.test(path)) return operation && keys.every(k => ["operation_key", "name", "purpose", "unit", "opening_quantity", "display_label", "low_stock_threshold"].includes(k)) &&
+  if (/\/inventory\/items$/.test(path)) return operation && keys.every(k => ["operation_key", "name", "purpose", "stock_kind", "unit", "opening_quantity", "display_label", "low_stock_threshold"].includes(k)) &&
     typeof value.name === "string" && !!value.name.trim() && value.name.length <= 160 && ["sellable", "ingredient"].includes(String(value.purpose)) &&
+    (value.stock_kind == null || value.stock_kind === "ingredient" && value.purpose === "ingredient" || ["prepared", "packaged"].includes(String(value.stock_kind)) && value.purpose === "sellable" && ["piece", "portion", "boule", "bottle", "can", "tray"].includes(String(value.unit))) &&
     ["piece", "portion", "boule", "bottle", "can", "tray", "g", "kg", "ml", "l"].includes(String(value.unit)) && amount(value.opening_quantity) &&
     (value.low_stock_threshold == null || amount(value.low_stock_threshold)) && (value.display_label == null || typeof value.display_label === "string" && value.display_label.length <= 80);
   if (/\/movements$/.test(path)) return operation && revision && keys.every(k => ["operation_key", "action", "amount", "expected_revision", "linked_movement_ref", "private_note"].includes(k)) &&
     ["stock_received", "preparation_produced", "manual_increase", "return_to_stock", "manual_issue", "waste", "spoilage", "damaged", "internal_use", "count"].includes(String(value.action)) && amount(value.amount) &&
     (value.linked_movement_ref == null || typeof value.linked_movement_ref === "string" && /^RIM_[A-Za-z0-9_-]+$/.test(value.linked_movement_ref)) &&
     (value.private_note == null || typeof value.private_note === "string" && value.private_note.length <= 500);
+  if (/\/kind$/.test(path)) return operation && revision && keys.every(k => ["operation_key", "stock_kind", "expected_revision"].includes(k)) && ["prepared", "packaged", "ingredient"].includes(String(value.stock_kind));
   if (/\/archive$/.test(path)) return operation && revision && keys.every(k => ["operation_key", "expected_revision"].includes(k));
   if (/\/binding$/.test(path)) return operation && keys.every(k => ["operation_key", "item_ref", "factor", "expected_revision", "active"].includes(k)) &&
     typeof value.item_ref === "string" && /^RII_[A-Za-z0-9_-]+$/.test(value.item_ref) && Number.isSafeInteger(value.factor) && Number(value.factor) > 0 &&

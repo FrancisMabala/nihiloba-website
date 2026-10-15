@@ -51,6 +51,17 @@ describe("Personal Restaurant restricted gateway", () => {
   expect(validSellerBody("RST_a/menu/items/RMI_a", "PATCH", { ...body, actor_phone: "private" })).toBe(false);
   expect(validSellerBody("RST_a", "PATCH", { ...body })).toBe(false);
  });
+ it("accepts only a seller-declared stock kind consistent with its purpose and unit", () => {
+  const path = "RST_a/inventory/items";
+  const item = { operation_key: "stock-create", name: "Fufu", purpose: "sellable", stock_kind: "prepared", unit: "portion", opening_quantity: "4", low_stock_threshold: "1" };
+  expect(validSellerBody(path, "POST", item)).toBe(true);
+  expect(validSellerBody(path, "POST", { ...item, stock_kind: "packaged", unit: "bottle" })).toBe(true);
+  expect(validSellerBody(path, "POST", { ...item, purpose: "ingredient", stock_kind: "ingredient", unit: "kg" })).toBe(true);
+  expect(validSellerBody(path, "POST", { ...item, purpose: "ingredient" })).toBe(false);
+  expect(validSellerBody(path, "POST", { ...item, unit: "kg" })).toBe(false);
+  expect(validSellerBody("RST_a/inventory/items/RII_a/kind", "POST", { operation_key: "classify", stock_kind: "prepared", expected_revision: 1 })).toBe(true);
+  expect(validSellerBody("RST_a/inventory/items/RII_a/kind", "POST", { operation_key: "classify", stock_kind: "other", expected_revision: 1 })).toBe(false);
+ });
  it("preserves original exact money, revision, operation key and upstream method", async () => {
   const fetcher = vi.fn(async () => Response.json({ revision, result: { public_ref: "RMI_a", unit_price: body.fields.unit_price } })); vi.stubGlobal("fetch", fetcher);
   const path = "RST_a/menu/items/RMI_a";
