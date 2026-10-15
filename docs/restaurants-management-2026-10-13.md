@@ -12,7 +12,7 @@ Restaurant photos sit beside identity in Settings. Menu items have a thumbnail/e
 
 ## Backend policy and preservation
 
-During the explicitly requested pre-purchase period, the Backend Restaurant bundle resolver allocates implemented Personal Pro to eligible Personal owners and implemented Restaurant Business to eligible Organization owners/admins. Commercial subscription resolution remains separate. No synthetic subscription, member grant, payment, order or stock transaction is created to grant access. Organization-only tables/team boundaries, exact ownership, current membership/role, activation, staff grants/assignments, revisions and intake allowlists remain enforced at the existing service/API boundaries.
+During the explicitly requested pre-purchase period, the Backend Restaurant bundle resolver allocates implemented Personal Pro to eligible Personal owners and implemented Restaurant Business to eligible Organization owners/admins. Commercial subscription resolution remains separate. No synthetic subscription, member grant, payment, order or stock transaction is created to grant access. Organization-only tables/team boundaries, exact ownership, current membership/role, activation, staff grants/assignments, revisions and environment-wide intake switches remain enforced at the existing service/API boundaries.
 
 The stock policy gives owners without a subscription a fixed pre-purchase generation boundary (13 October 2026 UTC), requiring a fresh count/binding and exact staff assignment where applicable. Existing holds are retained. The patch does not claim SHIDA payment verification or modify transaction attribution/idempotency.
 
@@ -37,7 +37,7 @@ Give operators clear notice of the transition, supported purchase/recovery route
 ## Rollout order and remaining acceptance
 
 1. Review Backend authorization and transition diff; close the consolidated final-tree Restaurant pilot gate. Apply no new migration from this batch; the repository already contains head 0152.
-2. Deploy Backend policy first in staging, preserving all existing Restaurant intake/allowlist settings. Confirm eligible unsubscribed Personal and Organization access and denial for wrong owners, inactive Organizations and ungranted staff.
+2. Deploy Backend policy first in staging, preserving all existing Restaurant intake and separate website checkout settings. Confirm eligible unsubscribed Personal and Organization access and denial for wrong owners, inactive Organizations and ungranted staff.
 3. Roll out the Personal Website and scoped Business Restaurant changes after Backend compatibility checks. Verify shared login, logout, switching, menu/QR and uncertain-write recovery with controlled test accounts.
 4. Obtain physical phone/tablet and Lingala/Swahili copy acceptance; then authorize the staged pilot separately. This work does not authorize deployment or widen intake.
 
@@ -92,3 +92,5 @@ The canonical workbook `Backend/docs/evidence/restaurants_whatsapp_2026_10_12/re
 New Website phone/tablet/desktop captures at widths 360/820/1440 cover `workflow-orders`, `workflow-counter`, `workflow-counter-bill`, `workflow-counter-paid`, `workflow-reservations`, `workflow-preparation-kitchen`, `workflow-preparation-bar`, `workflow-service`, `workflow-finances`, `workflow-empty-closed`, `workflow-empty-statistics` and `workflow-empty-reservations` under `docs/evidence/`. They use synthetic seeded responses: open and closed intake; pending and accepted orders; waiting/active/ready station work; food and a supported non-alcoholic drink; a selected basket; two assisted rounds; separate CDF/USD recorded payments; a CDF expense and cash variance; a pending reservation; and empty states. Business management captures remain at `management-business-fr-{360,820,1440}.png`. The Finance day preview now leads its entry form with CDF/USD cash receipts, declared expenses, balance and variance, plus recorded method totals. The Kitchen/Bar queue names start/ready actions and hides empty pagination. Counter menu pagination appears only when needed, and sold-out items stay unavailable after basket creation. These are local fixture checks, not a deployed Backend or physical-device acceptance. Human French wording review, Lingala/Swahili review, actual phone/tablet acceptance and staging smoke remain open.
 
 The next Personal Finances batch and its revised source-coverage labels, daily task layout, tests and remaining gates are documented in [the 15 October handoff](restaurants-finances-2026-10-15.md). Release status remains **Partial**.
+
+Current rollout semantics supersede per-establishment admission: see [15 October rollout](restaurants-intake-rollout-2026-10-15.md). Historical test counts describe their original runs.

@@ -20,10 +20,10 @@ Decline dismisses that proposal in memory on the current device. 10B2 has no dec
 
 ## Deployment order
 
-1. Keep existing intake gates and allowlist controlled. Apply Backend migration 0140; alembic heads was verified to return only 0140 (head).
+1. Keep existing environment-wide intake and website checkout gates controlled. Apply Backend migration 0140; alembic heads was verified to return only 0140 (head).
 2. Upgrade every Backend API and maintenance instance to completed 10B1/10B2 before creating Service grants, assignments or associations. Mixed Backend versions must not serve this traffic.
 3. Release both frontend consumers together with the exact NIHILOBA guest proxy. Preserve production HTTPS, allowed origins, session binding and cookie paths. No new runtime dependency, environment setting, cron job or worker is introduced.
-4. Run deployment preflight and device/language acceptance, then restore only approved intake settings and allowlist. Once evidence exists, close new intake and forward-fix rather than deleting evidence or forcing a downgrade.
+4. Run deployment preflight and device/language acceptance, then restore only approved intake and website checkout settings. Once evidence exists, close new intake and forward-fix rather than deleting evidence or forcing a downgrade.
 
 No deployment, commit or push was performed. Backend source and production data were not changed.
 
@@ -48,7 +48,7 @@ Browser acceptance uses real Backend routes/services over loopback HTTPS, a fres
 | Real Backend original counter POS browser | Passed; immediately handed-over sale, no Send for preparation or assisted handover action |
 | Real Backend original guest pickup browser | Passed; independent same-QR visits, repeat rounds, ready-only private pickup code, handover and separate CDF/USD amounts on phone |
 
-Website browser commands use RESTAURANT_ACTUAL_BACKEND=1, RESTAURANT_TEST_EXTERNAL_SERVER=1 and RESTAURANT_TEST_BASE_URL=https://localhost:3014. Run the new restaurant-service.browser.ts with RESTAURANT_SERVICE_BACKEND=1; run the existing restaurant-guest.browser.ts general QR case with RESTAURANT_GUEST_BACKEND=1. Seeded browser suites must run serially against this fixture because they share its test clock and intake allowlist.
+Website browser commands use RESTAURANT_ACTUAL_BACKEND=1, RESTAURANT_TEST_EXTERNAL_SERVER=1 and RESTAURANT_TEST_BASE_URL=https://localhost:3014. Run the new restaurant-service.browser.ts with RESTAURANT_SERVICE_BACKEND=1; run the existing restaurant-guest.browser.ts general QR case with RESTAURANT_GUEST_BACKEND=1. Seeded browser suites must run serially against this fixture because they share its test clock and environment-wide intake switch.
 
 The test-only Backend harness is NIHILOBA tests/integration/restaurant-service-backend.py, extending the existing private guest fixture. It disables dotenv, outbound transport and non-loopback connections and writes only disposable website-owned databases. Synthetic session/control routes are fixture-only; never import or serve this harness in production. Use the existing ephemeral TLS certificates and NODE_EXTRA_CA_CERTS for local production Next servers; do not disable production CSP or cookie security.
 
@@ -76,3 +76,5 @@ Local diagnostic logs and synthetic phone previews are retained under .s3a-local
 - tests/integration/restaurant-service-backend.py
 - tests/restaurant-service-contract.test.ts
 - tests/restaurant-service-guest.test.ts
+
+Current rollout semantics supersede per-establishment admission: see [15 October rollout](restaurants-intake-rollout-2026-10-15.md). Historical test counts describe their original runs.

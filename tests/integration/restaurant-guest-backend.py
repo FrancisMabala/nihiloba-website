@@ -52,7 +52,7 @@ settings.public_base_url = 'https://localhost:3443'
 settings.shida_whatsapp_number = ''
 settings.restaurant_order_intake_enabled = True
 settings.restaurant_web_checkout_enabled = True
-settings.restaurant_order_intake_allowlist = ''
+
 clock = [datetime.now(timezone.utc).replace(microsecond=0)]
 orders.now = lambda db: clock[0]
 orders.timing.now = lambda: clock[0]
@@ -99,7 +99,7 @@ def seed_table():
             quartier='Centre', public_address='Test counter', address_visibility='public',
             confirm_location=True, timezone_name='Africa/Kinshasa', status='active'))
     ref = row['public_ref']; owners[ref] = owner
-    settings.restaurant_order_intake_allowlist = ref
+
     args = {**manager, 'establishment_ref':ref}
     def write(kind, fields):
         return menu.command(**args, kind=kind, fields=fields, operation_key=uuid4().hex,
@@ -145,7 +145,7 @@ def seed():
         public_address='Test collection counter',address_visibility='public',confirm_location=True,
         timezone_name='Africa/Kinshasa',status='active'))
     ref = row['public_ref']; args = {**owner,'establishment_ref':ref}; owners[ref] = owner
-    settings.restaurant_order_intake_allowlist = ref
+
     def write(kind, fields, target=None):
         return menu.command(**args,kind=kind,fields=fields,target_ref=target,operation_key=uuid4().hex,
             expected_updated_at=menu.managed_menu(**args)['revision'])['result']['public_ref']

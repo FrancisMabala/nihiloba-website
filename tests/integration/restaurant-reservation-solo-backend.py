@@ -120,7 +120,7 @@ def seed():
     # Give the HTTPS guest-ingress probe one exact synthetic pickup venue.
     settings.restaurant_order_intake_enabled = True
     settings.restaurant_web_checkout_enabled = True
-    settings.restaurant_order_intake_allowlist = personal['public_ref']
+
     menu_args = {**owner, 'establishment_ref':personal['public_ref']}
     category = menus.command(**menu_args, kind='category', fields={'name':'Synthetic food'},
         operation_key=uuid4().hex,

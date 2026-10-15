@@ -45,7 +45,7 @@ Browser coverage includes Malewa/fast-food/café layouts, restaurant settings, s
 Backend command (from `C:/NIHILOBA/Backend`, with `DATABASE_URL` set to a disposable file under the Website `tmp/` directory and `PYTHONDONTWRITEBYTECODE=1`):
 
 ```text
-venv/Scripts/python.exe -m pytest -q -p no:cacheprovider tests/test_restaurant_intake_windows.py tests/test_restaurant_intake_allowlist.py tests/test_restaurant_reservations.py tests/test_restaurant_whatsapp_journey.py
+venv/Scripts/python.exe -m pytest -q -p no:cacheprovider tests/test_restaurant_intake_windows.py tests/test_restaurant_intake_rollout.py tests/test_restaurant_reservations.py tests/test_restaurant_whatsapp_journey.py
 ```
 
 The two skips are existing Personal parametrizations of Organization-only role-boundary and operational-policy cases in `test_restaurant_reservations.py`. The focus covers current public intake, revocation before commit, committed replay/history/receipt preservation, WhatsApp next-action revocation, four-language input preservation, reservation setting changes invalidating offered confirmation, notices and ownership boundaries.
@@ -79,3 +79,5 @@ feat(restaurants): add solo seller Settings with safe intake controls
 ## Receiving orders follow-up — 15 October 2026
 
 The focused intake redesign supersedes this report’s old intake presentation. See [Receiving orders handoff](restaurants-receiving-2026-10-15.md): Backend advisory status, full-scope rollout wording, separate pickup/delivery editors and retained WhatsApp drafts. Final focused validation: 52 production-browser cases, 116 Website unit executions and 253 Backend executions pass; build/typecheck/changed-file lint pass. Release remains Partial; daily-window renewal and live acceptance remain open. No deployment or production switch change.
+
+Current rollout semantics supersede per-establishment admission: see [15 October rollout](restaurants-intake-rollout-2026-10-15.md). Historical test counts describe their original runs.

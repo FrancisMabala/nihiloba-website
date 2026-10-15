@@ -19,7 +19,6 @@ from app.services.marketplace_access_service import replace_business_marketplace
 from tests.test_vertical_marketplaces import _organization
 from fastapi import HTTPException
 states={}
-allowed_refs=set()
 @app.post('/__service/day/clock')
 def day_clock():
  return {'now':h['clock'][0].isoformat()}
@@ -73,7 +72,7 @@ def seed(mode:str):
   state['grant']=grant
   state['assignment']=assignments.set_assignment(who=who,establishment_ref=data['ref'],member_ref=state['member'],active=True,expected_revision=0,expected_grant_revision=grant['revision'],function='service')
   data.update(member=state['member'],assignment=state['assignment'])
- states[mode]=state;allowed_refs.add(data['ref']);settings.restaurant_order_intake_allowlist=','.join(sorted(allowed_refs))
+ states[mode]=state
  data['name']=row['name'] if mode=='organization' else 'Guest Test Malewa'
  return data
 @app.post('/__service/session/{label}')
