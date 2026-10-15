@@ -9,7 +9,7 @@ type Context = { params: Promise<{ path?: string[] }> };
 const ref = "[A-Za-z0-9_-]{1,64}";
 function allowed(path: string, method: string) {
   if (method === "GET") return path === "" || new RegExp(`^(?:establishments/${ref}/(?:options|review-eligibility)|baskets/${ref}(?:/destination)?|${ref}(?:/(?:receipt|destination|pickup-code|delivery-code))?)$`).test(path);
-  if (method === "POST") return path === "baskets" || new RegExp(`^(?:baskets/${ref}/(?:quote|submit/(?:pickup|delivery))|establishments/${ref}/(?:operations/recover|review/withdraw|reviews/${ref}/report)|${ref}/actions/(?:cancel|request_cancellation))$`).test(path);
+  if (method === "POST") return path === "baskets" || new RegExp(`^(?:baskets/${ref}/(?:quote|submit/(?:pickup|delivery))|establishments/${ref}/(?:interest|operations/recover|review/withdraw|reviews/${ref}/report)|${ref}/actions/(?:cancel|request_cancellation))$`).test(path);
   if (method === "PATCH") return new RegExp(`^baskets/${ref}$`).test(path);
   if (method === "PUT") return new RegExp(`^(?:baskets/${ref}/destination|establishments/${ref}/review)$`).test(path);
   return false;
@@ -42,7 +42,7 @@ async function handle(request: Request, context: Context) {
     if (base.protocol !== "https:" || base.username || base.password) return fail(503);
     const target = new URL(`/api/dashboard/personal/restaurant-orders${path ? `/${path}` : ""}`, base.origin);
     target.search = query.toString();
-    const response = await fetch(target, { method: request.method, body, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(12000), headers: { Accept: "application/json", ...(body ? { "Content-Type": "application/json" } : {}), Cookie: `shida_dashboard_session=${token}`, ...(publicOrigin ? { Origin: publicOrigin } : {}),  } });
+    const response = await fetch(target, { method: request.method, body, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(12000), headers: { Accept: "application/json", ...(body ? { "Content-Type": "application/json" } : {}), Cookie: `shida_dashboard_session=${token}`, ...(publicOrigin ? { Origin: publicOrigin } : {}), ...(path.endsWith("/interest") ? { "DNT":request.headers.get("dnt")??"", "X-Shida-Test-Traffic":request.headers.get("x-shida-test-traffic")??"", "User-Agent": request.headers.get("user-agent") ?? "", "Sec-Fetch-Mode": request.headers.get("sec-fetch-mode") ?? "", "Sec-Fetch-Dest": request.headers.get("sec-fetch-dest") ?? "", ...(request.headers.get("purpose") ? { Purpose: request.headers.get("purpose")! } : {}), ...(request.headers.get("sec-purpose") ? { "Sec-Purpose": request.headers.get("sec-purpose")! } : {}) } : {}),  } });
     if (response.status === 401) await clearEmploymentToken();
     const value = await response.json().catch(() => null);
     if (!response.ok) {

@@ -8,6 +8,7 @@ import { reservationAvailability } from "../../services/shida/restaurant-reserva
 import { RestaurantGuest } from "./restaurant-guest";
 import { businessPath, restaurantCopy, restaurantLocales, restaurantPath, restaurantReturn } from "../../lib/restaurant-i18n";
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
+import { RestaurantInterest } from './restaurant-interest';
 import { RestaurantPhoto } from "./restaurant-photo";
 import { RestaurantPrice } from "./restaurant-menu-price";
 export { RestaurantPrice } from "./restaurant-menu-price";
@@ -117,6 +118,7 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
     <RestaurantRevalidation/>
     <div className="restaurant-detail-top"><Internal href={`${restaurantPath(locale)}${back ? `?${back}` : ""}#restaurant-${establishment.public_ref}`}>← {t.back}</Internal><Languages locale={locale} suffix={suffix} search={routeContext}/></div>
     <RestaurantHeader locale={locale} establishment={establishment} hours={currentHours}/>
+    <RestaurantInterest establishmentRef={establishment.public_ref} locale={locale} menuOnly={menuOnly} menuAvailable={menuResult.status === "fulfilled"}/>
     {(actions?.share || actions?.save || actions?.follow) && <nav className="restaurant-top-actions" aria-label={t.services}>{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}</nav>}
     <nav className="restaurant-detail-tabs" aria-label={t.title}><a href={`${detailPath}/menu?${routeContext}`} aria-current={menuOnly ? "page" : undefined}>{t.menu}</a><a href={`${detailPath}?${routeContext}#restaurant-info`} aria-current={!menuOnly ? "page" : undefined}>{copy.establishment}</a></nav>
     <div className="restaurant-detail-columns"><div className="restaurant-detail-content">

@@ -4,6 +4,7 @@ import {serviceRoutes,isServicePath,validServiceBody,validServiceQuery} from './
 import {dailyRoutes,isDailyPath,validDailyBody,validDailyQuery} from './restaurant-daily-contract';
 // Exact Personal seller surface, not a general Dashboard proxy.
 export const sellerRoutes: [RegExp, readonly string[]][] = [
+  [/^RST_[A-Za-z0-9_-]+\/insights$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/(calendar|pending)$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/setting$/, ["GET", "PUT"]],

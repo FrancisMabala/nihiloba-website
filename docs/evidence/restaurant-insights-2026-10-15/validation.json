@@ -1,0 +1,116 @@
+{
+  "status": "Partial",
+  "date": "2026-10-15",
+  "migration": null,
+  "alembic_head": "0166",
+  "tests": {
+    "backend_restaurant": {
+      "passed": 200,
+      "seconds": 528.71
+    },
+    "backend_shared": {
+      "passed": 156,
+      "seconds": 199.83
+    },
+    "backend_final_rerun": {
+      "passed": 37,
+      "seconds": 99.46
+    },
+    "website_units": {
+      "passed": 127,
+      "project_file_executions": 9
+    },
+    "browser_before": {
+      "passed": 12
+    },
+    "browser_final": {
+      "passed": 17,
+      "seconds": 28.9
+    }
+  },
+  "not_additive": true,
+  "full_suite": "Attempted and interrupted; no completed result",
+  "build": "Passed next build --webpack in isolated source-identical copy; direct dev/Turbopack blocked by existing temporary-directory ACL",
+  "typecheck": "passed",
+  "changed_file_lint": "passed",
+  "duplicate_translation_keys": "passed",
+  "python_compile": 10,
+  "website_build_source_parity": true,
+  "backend_sources": {
+    "app/models/platform_events.py": "a77c00e0657ab0dabc359ef708da7c481c2671abbbc0b988f11c5b4a7484ffa5",
+    "app/routes/restaurant_orders.py": "f76920618789a79837c468a68b19f368df6a8f3bc21862a5c0c911b65adbda7e",
+    "app/routes/restaurant_personal.py": "6fcd914c51b80e8c05dafa5f0c919223f64bd19b53c8bdaccea75c5b7eb34025",
+    "app/services/conversation/public_business_conversation.py": "9ec3fdb99e4f2db9df0b0da3b8500f0a11d71e77ad26db08ef29af31ae4e2e20",
+    "app/services/platform_event_service.py": "dcc8a834a43acf68878bb9196bcdb1b48250b754881de7291c081a4a5bab82d1",
+    "app/services/restaurant_order_service.py": "13ed3f53640ef6b1e6cc05240826e6b4ade988fdd11ce6774c222dd801424ffb",
+    "app/services/restaurant_statistics_queries.py": "7c0854e38856c4de98ffeebb137c76ec2786ba2ff16354f029baf7116527e4b9",
+    "app/services/restaurant_insights_service.py": "9abcafa41eae9b391ed2a7e95145f4e57b141d6c9e36cb6133734acc2b9dd50e",
+    "tests/test_restaurant_insights.py": "fa1dfa8ab0c0ecd75cc79db3c6bb97d8ea8989cbfba7ddedf769b369d904a8d7",
+    "tests/test_restaurant_statistics.py": "bd5403cd8f5600783ddaaa571d1a6ed92e841412a9fd2834df044433f37daee6"
+  },
+  "website_sources": {
+    "app/api/shida/personal/restaurant-orders/[[...path]]/route.ts": "30aab3f8da1b7b5ad432c2f5338894cf00aa68a8847b9b0b7c6ff0497373c5c9",
+    "app/components/shida/restaurant-activity.tsx": "aa1ca710de043b77b819a4622043b1820bb774a48d2e486a6f75d6226af42902",
+    "app/components/shida/restaurant-menu-choice.tsx": "786cd5b886776221cd52ae2ed8b3932ef4c64e65df531c378a27ca2e89de5838",
+    "app/components/shida/restaurant-seller-workspace.tsx": "63cd2429d5aa1cf058ad0cc338cb446ddc1ba15fa1e2fcbea3c9c3b02794b093",
+    "app/components/shida/restaurants.tsx": "b654e9e2c94378bb17154814baa52aff0bdd91532c86aff7634da0b12c525b8f",
+    "app/lib/restaurant-seller-contract.ts": "579639af30a528c0c84449d893f7649c4d46e6309ce9a17a3907d17f79f523f9",
+    "app/lib/restaurant-insights-copy.ts": "4a7e72ac771c51c9a870cd8597aa9fc4d230d9eaa3d1b92eaa7de9aeab0bb092",
+    "app/lib/restaurant-interest.ts": "65d3f42d5587c7f5a45e234a89102a24727df05dd70c268c5bce2bb256000c62",
+    "app/components/shida/restaurant-insights.tsx": "2c80755bf1ac7e0f44d6de632b4c466cb1804fc676637e8b5a8b738fda578550",
+    "app/components/shida/restaurant-insights.css": "2dfe26c4e8d355d614cbc98e98e407b376c92da47d0cda3deed2cf1b352e0c2c",
+    "app/components/shida/restaurant-interest.tsx": "8f1910687184a540658147d894fb54bbf62e25b1912a63f4325b17e7cb8b0df6"
+  },
+  "captures": [
+    "after-en-1440.png",
+    "after-en-360.png",
+    "after-en-820.png",
+    "after-fr-1440.png",
+    "after-fr-360.png",
+    "after-fr-820.png",
+    "after-ln-1440.png",
+    "after-ln-360.png",
+    "after-ln-820.png",
+    "after-sw-1440.png",
+    "after-sw-360.png",
+    "after-sw-820.png",
+    "before-en-1440.png",
+    "before-en-360.png",
+    "before-en-820.png",
+    "before-fr-1440.png",
+    "before-fr-360.png",
+    "before-fr-820.png",
+    "before-ln-1440.png",
+    "before-ln-360.png",
+    "before-ln-820.png",
+    "before-sw-1440.png",
+    "before-sw-360.png",
+    "before-sw-820.png",
+    "sources-en-1440.png",
+    "sources-en-360.png",
+    "sources-en-820.png",
+    "sources-fr-1440.png",
+    "sources-fr-360.png",
+    "sources-fr-820.png",
+    "sources-ln-1440.png",
+    "sources-ln-360.png",
+    "sources-ln-820.png",
+    "sources-sw-1440.png",
+    "sources-sw-360.png",
+    "sources-sw-820.png"
+  ],
+  "release_gates": [
+    "staging and PostgreSQL concurrency/cleanup",
+    "real WhatsApp phone",
+    "physical devices",
+    "human FR/EN/LN/SW review",
+    "complete fresh Backend suite and broader regressions",
+    "hostile-bot and unmarked manual-test classification"
+  ],
+  "no_deploy_commit_push_or_rollout_changes": true,
+  "diff_checks": {
+    "backend_changed_files": "passed",
+    "backend_repository": "blocked by pre-existing inaccessible tracked pytest temporary paths",
+    "website_repository": "passed"
+  }
+}

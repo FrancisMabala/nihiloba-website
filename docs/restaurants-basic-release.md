@@ -1,5 +1,10 @@
 # Restaurant basic release adoption
 
+**2026-10-15 INS01 update — Partial:** Personal Insights now sits outside Settings
+and separates current followers, disclosure-controlled authenticated interest and
+existing retained-order statistics. Free access and the no-backfill activation
+remain. See [current handoff and release gates](restaurants-insights-2026-10-15.md).
+
 The existing public and Personal Restaurant surfaces now adopt C1-G flexible monetary
 portions and C1-I basic statistics. See the [shared Backend closure report](../../Backend/docs/restaurants_basic_release_closure.md)
 and [verification manifest](../../Backend/docs/evidence/restaurants_basic_release.json)

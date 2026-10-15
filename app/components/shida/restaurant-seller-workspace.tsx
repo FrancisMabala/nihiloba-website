@@ -1,4 +1,7 @@
 "use client";
+import { RestaurantInsights } from './restaurant-insights';
+import { insightsCopy } from '../../lib/restaurant-insights-copy';
+import './restaurant-insights.css';
 import { RestaurantSettings } from './restaurant-settings';
 import { settingsCopy } from '../../lib/restaurant-settings-copy';
 import { managementCopy } from "../../lib/restaurant-management-copy";
@@ -30,7 +33,7 @@ import { sellingCopy } from '../../lib/restaurant-selling-copy';
 import { RestaurantInventory } from './restaurant-inventory';
 import { RestaurantIntake } from './restaurant-intake';
 import { RestaurantGuestAutoAccept } from './restaurant-guest-auto-accept';
-import { RestaurantActivity } from './restaurant-activity';
+
 import { RestaurantMenuBatch } from './restaurant-menu-batch';
 import { leaveWork, useWorkDraft } from '@/app/lib/restaurant-work';
 import { LocalTime } from './restaurant-local-time';
@@ -324,9 +327,10 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     {label:management.selling,entries:[[posAvailable ? "pos" : "counter",management.selling]]},
     {label:management.stock,entries:capabilities.includes('restaurant.inventory') ? [["inventory",management.stock]] : []},
     {label:workflowText(locale,'finances'),entries:[...(posAvailable ? [["daily",workflowText(locale,'finances')] as [string,string]] : []),["recovery",workflowText(locale,'recovery')]]},
+    {label:insightsCopy[locale].title,entries:[["activity",insightsCopy[locale].title]]},
     {label:management.reservations,entries:[["reservations",management.reservations]]},
     {label:management.menu,entries:selected?.actions.includes('menu') ? [["items",design.menu],["offerings",design.daily]] : []},
-    {label:management.settings,entries:[["settings",management.settings],["profile",design.profile],...(selected?.actions.includes('hours') ? [["hours",design.hours] as [string,string]] : []),["intake",wt("intake")],["reviews",restaurantReviewCopy[locale].reviews],["activity",workflowText(locale,'statistics')],...(selected?.actions.includes('links') ? [["sharing",design.sharing] as [string,string]] : [])]},
+    {label:management.settings,entries:[["settings",management.settings],["profile",design.profile],...(selected?.actions.includes('hours') ? [["hours",design.hours] as [string,string]] : []),["intake",wt("intake")],["reviews",restaurantReviewCopy[locale].reviews],...(selected?.actions.includes('links') ? [["sharing",design.sharing] as [string,string]] : [])]},
   ];
   return <section className="rst container rst-management" aria-label={t("restaurants")}>
     <header className="rst-management-identity"><div><span className="rst-overline">{management.establishment}</span><h1>{selected?.profile.name ?? management.choose}</h1></div>{selected && <><span className={`rst-publication rst-state-${selected.status}`}>{selected.status === "active" ? design.published : t(selected.status)}</span>{!editor && <div className="rst-identity-tools">{selected.actions.includes('preview') && button("preview", () => void run(() => loadTab("preview")))}{list && list.total > 1 && <button className="rst-text-button" disabled={busy} onClick={()=>{if(!leaveWork())return;setSelected(null);setPreview(null);void run(()=>loadList(1,""));}}>{design.change}</button>}</div>}</>}</header>
@@ -380,7 +384,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
         {tab === 'counter' && <RestaurantCounter key={path} path={path} binding={binding} locale={locale} onFailure={workFailure}/>}
         {tab === 'inventory' && <RestaurantInventory key={path} path={path} locale={locale} read={readRestaurant} perform={performRestaurant}/>}
         {tab === 'intake' && <><RestaurantIntake key={path} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onOpen={next=>void run(()=>loadTab(next))} onFailure={workFailure}/><RestaurantGuestAutoAccept path={path} binding={binding} locale={locale} onFailure={workFailure}/></>}
-        {tab === 'activity' && <RestaurantActivity key={path} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onFailure={workFailure}/>}
+        {tab === 'activity' && <RestaurantInsights key={`${path}:${binding}`} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onFailure={workFailure}/>}
         {tab === 'batch' && <RestaurantMenuBatch key={path} path={path} binding={binding} locale={locale} onFailure={workFailure}/>}
         {tab === "profile" && <article className="rst-card">{list?.actions?.includes("create") && <div className="rst-actions"><button type="button" disabled={busy} onClick={()=>void run(()=>open("create"))}>{t("add")}: {management.establishment}</button></div>}<div className="rst-profile-photo"><div className="rst-photo-thumb"><span>{management.noPhoto}</span><RestaurantPhoto src={selected.profile.establishment_photo_url} alt={selected.profile.name || ''} sizes="80px"/></div><div><h2>{design.profile}</h2>{selected.actions.includes('edit') && <button type="button" disabled={busy} onClick={()=>{if(!leaveWork())return;setPhotoTarget({target:'establishment'});setTab('photos');}}>{management.photo}</button>}</div></div><p>{t(selected.status)}</p>{details(selected.profile, profileKeys)}<p>{t("location_confirmed")}: {t(selected.location_confirmed ? "yes" : "no")}</p>{selected.missing_publication_fields.length > 0 && <p>{t("missing")}: {selected.missing_publication_fields.map(t).join(", ")}</p>}<div className="rst-actions">{selected.actions.includes("edit") && button("edit", () => void run(() => open("profile")))}{(["publish", "unpublish"] as const).filter(action => selected.actions.includes(action)).map(action => <span key={action}>{button(action, () => void run(() => open(action)))}</span>)}</div></article>}
         {tab === "sharing" && (selected.actions.includes("links") ? <RestaurantSharing key={selected.public_ref} establishment={selected.public_ref} binding={binding} locale={locale} onFailure={error}/> : <p>{t("missing")}: {selected.missing_publication_fields.map(t).join(", ") || t(selected.status)}</p>)}
