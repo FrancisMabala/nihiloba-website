@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-for(const committedBeforeDisconnect of [true,false]) test(`phone checkout composes a plate, signs in, quotes, and recovers ${committedBeforeDisconnect?"a committed order":"an unreceived submission"}`,async({page})=>{
+for(const scenario of ["committed","unreceived","unavailable"] as const) test(`phone checkout preserves a plate and recovers ${scenario}`,async({page})=>{
+ const committedBeforeDisconnect=scenario==="committed";
  await page.setViewportSize({width:390,height:844});
  await page.addInitScript(()=>{window.open=()=>null;});
  let signedIn=false,revision=1,submitAttempts=0,created=false;
@@ -15,7 +16,8 @@ for(const committedBeforeDisconnect of [true,false]) test(`phone checkout compos
   if(method==="GET"&&path.endsWith("/RBA-CHECKOUT"))return respond(basket());
   if(method==="PATCH"){revision++;selections=body.selections;quote=null;return respond({basket:basket(),operation_outcome:{revision}});}
   if(method==="POST"&&path.endsWith("/quote")){revision++;const standalone=selections.standalone.map(line=>({...line,name:"Fufu",pricing_model:"UNIT_PRICED",currency:"CDF",sale_unit_label:"boule",unit_price:"1000.00",subtotal:"1000.00"}));const plates=selections.plates.map(plate=>({key:plate.key,subtotal:"1000.00",components:plate.components.map(line=>({...line,name:"Pondu",pricing_model:"AMOUNT_PRICED",currency:"CDF",subtotal:"1000.00"}))}));quote={standalone,plates,food_subtotal:"2000.00",delivery_fee:null,order_total:"2000.00",currency:"CDF",fulfillment_method:"pickup",pickup_window:{starts_at:"2027-01-01T10:00:00Z",ends_at:"2027-01-01T12:00:00Z"},pickup_location:"Public pickup point",establishment_name:"Checkout Malewa"};return respond({basket:basket(),operation_outcome:{quote_ref:"RQU-CHECKOUT",revision}});}
-  if(method==="POST"&&path.endsWith("/submit/pickup")){submitAttempts++;if(submitAttempts===1){if(committedBeforeDisconnect)orderRef="ROD-CHECKOUT";return route.abort();}orderRef="ROD-CHECKOUT";return respond({current_order:{order_ref:orderRef,state:"pending"}});}
+  if(method==="POST"&&path.endsWith("/submit/pickup")){submitAttempts++;if(submitAttempts===1){if(scenario==="unavailable")return respond({detail:"restaurant_pickup_unavailable"},422);if(committedBeforeDisconnect)orderRef="ROD-CHECKOUT";return route.abort();}orderRef="ROD-CHECKOUT";return respond({current_order:{order_ref:orderRef,state:"pending"}});}
+  if(method==="GET"&&path.endsWith("/options"))return respond({available:true,methods:{pickup:{windows:[{public_ref:"RWI-FRESH",starts_at:"2027-01-01T13:00:00Z",ends_at:"2027-01-01T13:15:00Z",timezone_name:"Africa/Kinshasa"}]}}});
   if(method==="POST"&&path.endsWith("/operations/recover"))return orderRef?respond({operation_outcome:{order_ref:orderRef},current:basket()}):respond({detail:"restaurant_operation_expired"},409);
   if(method==="GET"&&path.endsWith("/ROD-CHECKOUT"))return respond({order_ref:orderRef,state:"pending",revision:1,entry_source:"customer",channel:"web",fulfillment_method:"pickup",submitted_at:"2026-10-08T10:00:00Z",cancellation_pending:false,payment_verified:false,receipt_terms:quote});
   return respond({detail:"restaurant_unavailable"},404);
@@ -40,6 +42,13 @@ for(const committedBeforeDisconnect of [true,false]) test(`phone checkout compos
  await page.getByRole("button",{name:"Get current quote"}).click();
  await expect(page.getByText("2000.00 CDF").first()).toBeVisible();
  await page.getByRole("button",{name:"Confirm order"}).click();
+ if(scenario==="unavailable"){
+  await expect(page.getByRole("combobox",{name:"Choose a window"})).toHaveValue("");
+  expect(selections.plates.length).toBe(1);expect(selections.standalone.length).toBe(1);
+  await page.getByRole("combobox",{name:"Choose a window"}).selectOption("RWI-FRESH");
+  await page.getByRole("button",{name:"Get current quote"}).click();
+  await page.getByRole("button",{name:"Confirm order"}).click();
+ }
  await expect(page.getByRole("heading",{name:"Order sent to the restaurant. It is pending acceptance."})).toBeVisible();
  expect(created).toBe(true);expect(submitAttempts).toBe(committedBeforeDisconnect?1:2);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

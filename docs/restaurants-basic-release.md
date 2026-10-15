@@ -35,3 +35,6 @@ payment integration, C2, M1 or M2 is introduced. No Git commit was created.
 ## Receiving orders follow-up — 15 October 2026
 
 The focused intake redesign supersedes this report’s old intake presentation. See [Receiving orders handoff](restaurants-receiving-2026-10-15.md): Backend advisory status, full-scope rollout wording, separate pickup/delivery editors and retained WhatsApp drafts. Final focused validation: 52 production-browser cases, 116 Website unit executions and 253 Backend executions pass; build/typecheck/changed-file lint pass. Release remains Partial; daily-window renewal and live acceptance remain open. No deployment or production switch change.
+# Reusable schedule follow-up — 15 October 2026
+
+Weekly pickup/delivery schedules are locally implemented. Release stays **Partial**. See [schedule handoff](restaurants-schedules-2026-10-15.md) for contracts, exact checks, migration 0165 ordering, preserved commitments and pending live acceptance. Trackers SCH01/S34 retain the broader unresolved gates. No deployment, production switch change, commit or push.

@@ -1,0 +1,59 @@
+{
+  "main": {
+    "source": "C:\\Users\\mabal\\OneDrive\\NIHILOBA\\SHIDA\\Development\\SHIDA_Restaurant_Malewa_Release_Validation_Tracker.xlsx",
+    "source_sha256": "fce1ad3d44437c1d9651187ad9790582d22b8673637393750de0ecdbbf49dea9",
+    "output": "C:\\NIHILOBA\\nihiloba-website\\docs\\evidence\\restaurant-schedules-2026-10-15\\tracker-main-schedules.xlsx",
+    "output_sha256": "c1202fca68480296dd468227d9ea32fdba7e2f7a5da3735b0036a828437e862e",
+    "appended_rows": [
+      [
+        "Automated checks",
+        59
+      ],
+      [
+        "Sources and runs",
+        51
+      ]
+    ],
+    "all_original_rows_preserved": true,
+    "other_package_parts_byte_identical": true,
+    "applied_to_source_and_verified": true
+  },
+  "pilot": {
+    "source": "C:\\Users\\mabal\\OneDrive\\NIHILOBA\\SHIDA\\Development\\shida_restaurants_pilot_tracker_2026-10-10.xlsx",
+    "source_sha256": "728316ea192e70a8a0cd9e5df98c24886b22a4f0c62bd2131d5aac991b888cd0",
+    "output": "C:\\NIHILOBA\\nihiloba-website\\docs\\evidence\\restaurant-schedules-2026-10-15\\tracker-pilot-schedules.xlsx",
+    "output_sha256": "c6f114731a6c6d4d67d7da318b731a2c1ee2561718a52488b3e56b08746594c9",
+    "appended_rows": [
+      [
+        "Batch log",
+        29
+      ],
+      [
+        "Evidence",
+        39
+      ]
+    ],
+    "all_original_rows_preserved": true,
+    "other_package_parts_byte_identical": true,
+    "applied_to_source_and_verified": true
+  },
+  "whatsapp": {
+    "source": "C:\\NIHILOBA\\Backend\\docs\\evidence\\restaurants_whatsapp_2026_10_12\\release_validation_tracker.xlsx",
+    "source_sha256": "fce1ad3d44437c1d9651187ad9790582d22b8673637393750de0ecdbbf49dea9",
+    "output": "C:\\NIHILOBA\\nihiloba-website\\docs\\evidence\\restaurant-schedules-2026-10-15\\tracker-whatsapp-schedules.xlsx",
+    "output_sha256": "c1202fca68480296dd468227d9ea32fdba7e2f7a5da3735b0036a828437e862e",
+    "appended_rows": [
+      [
+        "Automated checks",
+        59
+      ],
+      [
+        "Sources and runs",
+        51
+      ]
+    ],
+    "all_original_rows_preserved": true,
+    "other_package_parts_byte_identical": true,
+    "applied_to_source_and_verified": true
+  }
+}

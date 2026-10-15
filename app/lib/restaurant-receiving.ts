@@ -1,7 +1,7 @@
 import type { RestaurantLocale } from '../services/shida/restaurants-client';
 export type ReceivingReason = 'release'|'web_release'|'profile'|'timezone'|'address'|'paused'|'closure'|'hours'|'windows'|'expired'|'menu';
 export type ReceivingState = {available:boolean;reasons:ReceivingReason[]};
-export type Receiving = {evaluated_at:string;timezone:string|null;hours:string;in_person:ReceivingState;pickup:{web:ReceivingState;whatsapp:ReceivingState;activation_blockers:ReceivingReason[]};delivery:{web:ReceivingState;whatsapp:ReceivingState;activation_blockers:ReceivingReason[]}};
+export type Receiving = {evaluated_at:string;timezone:string|null;hours:string;in_person:ReceivingState;pickup:{web:ReceivingState;whatsapp:ReceivingState;customer_windows?:import('./restaurant-work').ServiceWindow[];activation_blockers:ReceivingReason[]};delivery:{web:ReceivingState;whatsapp:ReceivingState;customer_windows?:import('./restaurant-work').ServiceWindow[];activation_blockers:ReceivingReason[]}};
 const en = {
  keepPeriods:'The saved pickup periods will be kept.',website:'Website',title:'Receiving orders',available:'New orders available',unavailable:'New orders unavailable',paused:'New orders paused',unknown:'Check current availability',
  inPerson:'In-person selling',pickup:'Pickup orders',delivery:'Delivery orders',inPersonHelp:'Counter sales and supported assisted/table orders. Each order still checks the selected food and your access.',

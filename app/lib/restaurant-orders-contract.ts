@@ -1,3 +1,4 @@
+import { validSchedule } from './restaurant-schedule';
 import { preparationRoutes, isPreparationPath, validPreparationBody, validPreparationQuery } from './restaurant-preparation-contract';
 // C1-C/C1-E Personal-only, bounded DTOs. Domain eligibility remains authoritative.
 export const orderStates = ['pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'completed', 'rejected', 'cancelled', 'expired', 'uncollected', 'delivery_failed'];
@@ -80,7 +81,7 @@ export function validOrderBody(path: string, value: unknown): boolean {
   if (/\/order-operations\/recover$/.test(path)) return exact(v,['operation_key','kind','target_ref']) && str(v.target_ref,64) && enumOf(v.kind,['basket','intake','delivery_config','edit','quote','submit','destination','delivery_quote','delivery_submit','counter_handoff','action']);
   if (/\/(pickup|delivery)-intake$/.test(path)) {
     const delivery = path.endsWith('/delivery-intake');
-    return exact(v,['operation_key','expected_updated_at','enabled','windows',...(delivery ? ['fee','areas'] : [])]) && str(v.expected_updated_at,64) && typeof v.enabled === 'boolean' && list(v.windows,20,w=>obj(w) && exact(w,['starts_at','ends_at']) && str(w.starts_at,100) && str(w.ends_at,100)) && (!delivery || obj(v.fee) && exact(v.fee,['amount','currency']) && decimal(v.fee.amount) && enumOf(v.fee.currency,['CDF','USD']) && list(v.areas,100,a=>obj(a) && exact(a,['country','city','commune','quartier','scope']) && ['country','city','commune'].every(k=>str(a[k])) && (a.quartier == null || str(a.quartier)) && enumOf(a.scope,['whole_commune','quartier']),1));
+    return exact(v,['operation_key','expected_updated_at','enabled','windows','schedule',...(delivery ? ['fee','areas'] : [])]) && (v.schedule === undefined || validSchedule(v.schedule) && Array.isArray(v.windows) && v.windows.length===0) && str(v.expected_updated_at,64) && typeof v.enabled === 'boolean' && list(v.windows,20,w=>obj(w) && exact(w,['starts_at','ends_at']) && str(w.starts_at,100) && str(w.ends_at,100)) && (!delivery || obj(v.fee) && exact(v.fee,['amount','currency']) && decimal(v.fee.amount) && enumOf(v.fee.currency,['CDF','USD']) && list(v.areas,100,a=>obj(a) && exact(a,['country','city','commune','quartier','scope']) && ['country','city','commune'].every(k=>str(a[k])) && (a.quartier == null || str(a.quartier)) && enumOf(a.scope,['whole_commune','quartier']),1));
   }
   if (!Number.isSafeInteger(v.expected_revision) || Number(v.expected_revision)<1) return false;
   if(path.endsWith('/actions/assisted_handover'))return exact(v,['operation_key','expected_revision','confirm'])&&v.confirm===true;
