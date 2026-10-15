@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import { request, DashboardApiError } from '../../lib/restaurant-seller-browser';
-import { preparationCopy, type PreparationLocale } from '../../lib/restaurant-preparation-copy';
-import { preparationEnvelope, type Station } from '../../lib/restaurant-preparation-contract';
+import { preparationCopy, soloPreparationCopy, type PreparationLocale } from '../../lib/restaurant-preparation-copy';
+import { preparationEnvelope, type ItemRoute } from '../../lib/restaurant-preparation-contract';
 
-export type RoutingPage = { items: { item_ref: string; station: Station | null }[]; has_more: boolean; revision: string };
+export type RoutingPage = { items: { item_ref: string; station: ItemRoute | null }[]; has_more: boolean; revision: string };
 
-export function RestaurantItemRouting({ path, binding, locale, itemRef, page, route, revision, onSaved }: { path: string; binding: string; locale: PreparationLocale; itemRef: string; page: number; route: Station | null | undefined; revision: string | null; onSaved: () => Promise<void> }) {
+export function RestaurantItemRouting({ path, binding, locale, itemRef, page, route, revision, onSaved }: { path: string; binding: string; locale: PreparationLocale; itemRef: string; page: number; route: ItemRoute | null | undefined; revision: string | null; onSaved: () => Promise<void> }) {
   const t = preparationCopy[locale];
-  const [choice, setChoice] = useState<Station | null>(null);
+  const [choice, setChoice] = useState<ItemRoute | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [pending, setPending] = useState<ReturnType<typeof preparationEnvelope> | null>(null);
   const [busy, setBusy] = useState(false);
@@ -35,10 +35,11 @@ export function RestaurantItemRouting({ path, binding, locale, itemRef, page, ro
   return <div className="rst-item-routing" aria-label={t.routing}>
     <span>{t.routing}</span>
     <div role="group" aria-label={t.routing}>
-      {(['kitchen', 'bar'] as const).map(station => <button type="button" key={station} aria-pressed={selected === station} disabled={busy || !!pending || !revision || route === undefined} onClick={() => { setChoice(station); setConfirmed(false); setMessage(''); }}>{t[station]}</button>)}
+      {(['serve', 'kitchen', 'bar'] as const).map(station => <button type="button" key={station} aria-pressed={selected === station} disabled={busy || !!pending || !revision || route === undefined} onClick={() => { setChoice(station); setConfirmed(false); setMessage(''); }}>{station === 'serve' ? soloPreparationCopy[locale].serve : t[station]}</button>)}
     </div>
     {selected === 'bar' && choice === 'bar' && !pending && <label><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)}/>{t.declaration}</label>}
     {route === null && <small>{t.unconfigured}</small>}
+    <small>{soloPreparationCopy[locale].help}</small>
     {choice !== null && choice !== route && <button type="button" className="rst-route-save" disabled={busy || selected === 'bar' && !confirmed} onClick={() => void save()}>{t.save}</button>}
     {pending && <button type="button" disabled={busy} onClick={() => void save()}>{t.retry}</button>}
     {message && <small role="status">{message}</small>}

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { preparationRoutes, validPreparationQuery, validPreparationBody, preparationPath, preparationEnvelope, validStationOrder, validPreparationResponse } from '../app/lib/restaurant-preparation-contract';
 import { allowedSellerRoute, validSellerQuery, validSellerBody } from '../app/lib/restaurant-seller-contract';
-import { preparationCopy } from '../app/lib/restaurant-preparation-copy';
+import { preparationCopy, soloPreparationCopy } from '../app/lib/restaurant-preparation-copy';
 import { actionsFor } from '../app/lib/restaurant-work';
 const root = 'RST_one', worker = root+'/stations/preparation/bar', owner = root+'/preparation/bar';
 const line = {key:'drink',name:'Original drink',pricing_model:'UNIT_PRICED',currency:'CDF',quantity:1,sale_unit_label:'bottle'};
@@ -38,7 +38,7 @@ describe('10B3 preparation contract', () => {
  it('requires affirmative non-alcoholic declaration for each Bar route and rejects heuristics', () => {
   const path=root+'/preparation-routing/RMI_one',body={operation_key:'route',expected_updated_at:'2026-10-10T12:00:00Z',station:'bar'};
   expect(validPreparationBody(path,body)).toBe(false);expect(validPreparationBody(path,{...body,supported_non_alcoholic_drink:false})).toBe(false);expect(validPreparationBody(path,{...body,supported_non_alcoholic_drink:true})).toBe(true);
-  expect(validPreparationBody(path,{...body,station:'kitchen'})).toBe(true);expect(validPreparationBody(path,{...body,category:'drinks',supported_non_alcoholic_drink:true})).toBe(false);
+  expect(validPreparationBody(path,{...body,station:'kitchen'})).toBe(true);expect(validPreparationBody(path,{...body,station:'serve'})).toBe(true);expect(validPreparationBody(path,{...body,station:'serve',category:'drinks'})).toBe(false);
  });
  it('requires explicit confirmation and bounded reason for one owner station recovery', () => {
   const path=root+'/orders/ROD_one/preparation/bar/recover',body={operation_key:'recover',expected_revision:3,confirm:true,reason:'cannot_fulfill'};
@@ -66,5 +66,7 @@ describe('10B3 preparation contract', () => {
   expect(Object.keys(preparationCopy[locale]).sort()).toEqual(Object.keys(preparationCopy.en).sort());
   for(const value of Object.values(preparationCopy[locale]))expect(value.trim().length).toBeGreaterThan(0);
   expect(preparationCopy[locale].bar).not.toBe('bar');expect(preparationCopy[locale].confirm).not.toBe(preparationCopy[locale].declaration);
+  expect(Object.keys(soloPreparationCopy[locale]).sort()).toEqual(Object.keys(soloPreparationCopy.en).sort());
+  expect(soloPreparationCopy[locale].serve.length).toBeGreaterThan(3);
  });
 });

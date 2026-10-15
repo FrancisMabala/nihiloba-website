@@ -5,6 +5,7 @@ import type { Order, Configuration } from '@/app/lib/restaurant-work';
 import { actionsFor, dateText } from '@/app/lib/restaurant-work';
 import { workText } from '@/app/lib/restaurant-work-copy';
 import { ordersCopy } from '@/app/lib/restaurant-orders-copy';
+import { soloPreparationCopy } from '@/app/lib/restaurant-preparation-copy';
 import { FoodSummary } from './restaurant-projection';
 
 export type QueueSection='decision'|'preparation'|'handover'|'history';
@@ -12,14 +13,14 @@ export type QueueList={items:Order[];total:number;as_of:string};
 const keys:QueueSection[]=['decision','preparation','handover','history'];
 const pageSize=20;
 
-function nextStep(order:Order,locale:RestaurantLocale){
+export function nextStep(order:Order,locale:RestaurantLocale){
  const c=ordersCopy(locale), t=(key:string)=>workText(locale,key);
  if(order.cancellation_pending)return c.reviewCancellation;
  if(order.state==='pending')return t('accept')+' / '+t('reject');
  if(['accepted','preparing'].includes(order.state)){
   if(order.preparation && Object.keys(order.preparation).length){
    const station=(['kitchen','bar'] as const).find(key=>order.preparation?.[key] && order.preparation[key]!=='ready');
-   if(station)return (station==='bar'?c.bar:c.kitchen)+' · '+(order.preparation[station]==='preparing'?c.markReady:c.start);
+   if(station)return (station==='bar'?soloPreparationCopy[locale].drinks:soloPreparationCopy[locale].food)+' · '+(order.preparation[station]==='preparing'?c.markReady:c.start);
    return c.waiting;
   }
   return order.state==='accepted'?c.start:c.markReady;
@@ -27,7 +28,8 @@ function nextStep(order:Order,locale:RestaurantLocale){
  if(order.state==='ready' || order.state==='out_for_delivery'){
   const actions=actionsFor(order);
   const next=['assisted_handover','table_handover','dispatch','verify_pickup','verify_delivery','pickup_exception','delivery_exception'].find(a=>actions.includes(a));
-  return next==='table_handover'?c.handoverAction:next?t(next):c.waiting;
+  const step=next==='table_handover'?c.handoverAction:next?t(next):c.waiting;
+  return order.state==='ready' && order.preparation && Object.keys(order.preparation).length===0 ? soloPreparationCopy[locale].serve+' · '+step : step;
  }
  return c.receipt;
 }

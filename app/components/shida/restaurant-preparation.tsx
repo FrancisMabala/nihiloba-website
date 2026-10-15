@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { request, DashboardApiError } from '../../lib/restaurant-seller-browser';
-import { preparationCopy, type PreparationLocale } from '../../lib/restaurant-preparation-copy';
+import { preparationCopy, soloPreparationCopy, type PreparationLocale } from '../../lib/restaurant-preparation-copy';
 import { workText } from '../../lib/restaurant-work-copy';
 import { ordersCopy } from '../../lib/restaurant-orders-copy';
 import { preparationEnvelope, preparationPath, type Preparation, type PreparationAssignment, type Station, type StationFeed, type StationLine, type StationList, type StationOrder, type StationResult } from '../../lib/restaurant-preparation-contract';
@@ -20,7 +20,8 @@ export function RestaurantPreparationOwner({ preparation, onFreeOrders, ...props
   const [locked, setLocked] = useState(false);
   useEffect(() => { const dirty = (event: Event) => setLocked((event as CustomEvent<boolean>).detail); window.addEventListener('rst-work-dirty', dirty); return () => window.removeEventListener('rst-work-dirty', dirty); }, []);
   const t = preparationCopy[props.locale];
-  return <section className="rst-preparation-owner"><h2>{t.title}</h2><div className="rst-actions">{(['kitchen', 'bar'] as const).filter(s => !props.orderRef || (preparation ? !!preparation[s] : s === 'kitchen')).map(s => <button type="button" key={s} disabled={locked} aria-pressed={station === s} onClick={() => { if (window.dispatchEvent(new Event('rst-work-leave', { cancelable: true }))) setStation(s); }}>{t[s]}</button>)}{onFreeOrders && <button type="button" disabled={locked} onClick={() => { if (window.dispatchEvent(new Event('rst-work-leave', { cancelable: true }))) onFreeOrders(); }}>{t.orders}</button>}</div><RestaurantPreparation {...props} station={station}/></section>;
+  const solo = props.orderRef ? soloPreparationCopy[props.locale] : null;
+  return <section className="rst-preparation-owner"><h2>{solo?.title ?? t.title}</h2><div className="rst-actions">{(['kitchen', 'bar'] as const).filter(s => !props.orderRef || (preparation ? !!preparation[s] : s === 'kitchen')).map(s => <button type="button" key={s} disabled={locked} aria-pressed={station === s} onClick={() => { if (window.dispatchEvent(new Event('rst-work-leave', { cancelable: true }))) setStation(s); }}>{solo ? s === 'kitchen' ? solo.food : solo.drinks : t[s]}</button>)}{onFreeOrders && <button type="button" disabled={locked} onClick={() => { if (window.dispatchEvent(new Event('rst-work-leave', { cancelable: true }))) onFreeOrders(); }}>{t.orders}</button>}</div><RestaurantPreparation {...props} station={station}/></section>;
 }
 export function RestaurantPreparation(props: Props) {
   const scope = `${props.path}:${props.binding}:${props.station}:${props.orderRef ?? ''}:${props.assignment?.assignment_ref ?? ''}:${props.assignment?.assignment_revision ?? ''}`;

@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { managementNavigation } from './restaurant-management-navigation';
 import { workText } from '../../app/lib/restaurant-work-copy';
+import { soloPreparationCopy } from '../../app/lib/restaurant-preparation-copy';
 
 const stamp='2026-10-14T09:18:00+00:00';
 const preview=(name:string)=>({available:true,groups:[{kind:'standalone',plate_number:null,lines:[{name,currency:'CDF',quantity:2,sale_unit_label:'portions'}],remaining_lines:0}],total_groups:1,total_lines:1,remaining_groups:0,remaining_lines:0,truncated:false});
@@ -16,7 +17,7 @@ const orders=[
 ];
 const establishment={public_ref:'RST_ORDERS',revision:stamp,status:'active',menu_currency:'CDF',location_confirmed:true,missing_publication_fields:[],actions:['read','edit','menu','hours','preview','links'],profile:{name:'Malewa ya Marché',food_business_type:'malewa',city:'Kinshasa',commune:'Limete',timezone_name:'Africa/Kinshasa'}};
 const labels={fr:'Commandes',en:'Orders',ln:'Bakomande',sw:'Maagizo'} as const;
-async function seed(page:Page,option:{closed?:boolean;empty?:boolean;historyOnly?:boolean;stale?:boolean}={}){
+async function seed(page:Page,option:{closed?:boolean;empty?:boolean;historyOnly?:boolean;stale?:boolean;readyServe?:boolean}={}){
  await page.route('**/api/**',route=>{
   const url=new URL(route.request().url()),p=url.pathname.replace(/\/$/,'');
   const json=(value:unknown)=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(value)});
@@ -27,12 +28,13 @@ async function seed(page:Page,option:{closed?:boolean;empty?:boolean;historyOnly
   if(p.endsWith('/pos'))return json({items:[],recent:[],intake_released:!option.closed});
   if(p.endsWith('/orders')){
    const states=url.searchParams.getAll('states');
-   const items=option.empty?[]:orders.filter(o=>(!option.historyOnly||['completed','cancelled'].includes(o.state))&&states.includes(o.state));
+   const pool=option.readyServe?[...orders,{...base('ORD_SERVE_MALEWA_6P8Q','ready'),preparation:{}}]:orders;
+   const items=option.empty?[]:pool.filter(o=>(!option.historyOnly||['completed','cancelled'].includes(o.state))&&states.includes(o.state));
    return json({items,total:items.length,page:1,page_size:20,as_of:stamp});
   }
   if(p.includes('/orders/')){
    if(option.stale && p.endsWith('/actions/accept'))return route.fulfill({status:409,json:{detail:'restaurant_stale'}});
-   const ref=p.split('/orders/')[1].split('/')[0],order=orders.find(o=>o.order_ref===ref);
+   const ref=p.split('/orders/')[1].split('/')[0],order=[...orders,{...base('ORD_SERVE_MALEWA_6P8Q','ready'),preparation:{}}].find(o=>o.order_ref===ref);
    if(order)return json({...order,receipt_terms:{currency:'CDF',food_subtotal:'6000.00',delivery_fee:null,order_total:'6000.00',standalone:[{key:'fufu',item_ref:'FOOD_1',name:'Fufu et pondu',quantity:2,sale_unit_label:'portions',subtotal:'6000.00'}],plates:[]}});
   }
   if(p.endsWith('/restaurants'))return json({items:[establishment],total:1,page:1,page_size:20,actions:['create']});
@@ -41,6 +43,20 @@ async function seed(page:Page,option:{closed?:boolean;empty?:boolean;historyOnly
   return json({items:[],total:0,as_of:stamp});
  });
 }
+for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1440])test(`solo ready to serve order ${locale} ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:900});await seed(page,{readyServe:true});
+ await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/');
+ await managementNavigation(page,labels[locale]);
+ await expect(page.locator('.rst-quick-nav')).not.toContainText('Kitchen');
+ const row=page.locator('.rst-order-row').filter({hasText:'ORD_SERVE_MALEWA_6P8Q'});
+ await expect(row).toContainText('ORD_SERVE_MALEWA_6P8Q');
+ await row.getByRole('button').last().click();
+ await expect(page.locator('.rst-order-next-detail')).toContainText(soloPreparationCopy[locale].serve);
+ await expect(page.locator('.rst-preparation-owner')).toHaveCount(0);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.addStyleTag({content:'nextjs-portal{display:none!important}.skip-link{transform:translateY(-150%)!important}'});
+ await page.screenshot({path:`docs/evidence/restaurant-orders-2026-10-14/after-ready-serve-${locale}-${width}.png`,fullPage:true});
+});
 for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1440])test(`owner Orders queue ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900});await seed(page);
  await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/');

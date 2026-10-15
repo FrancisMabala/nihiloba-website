@@ -1,6 +1,7 @@
 import { validFoodPreview } from './restaurant-projections';
 // RM-V11-10B3: preparation only. Assignment generations belong in every query.
 export type Station = 'kitchen' | 'bar';
+export type ItemRoute = Station | 'serve';
 export type Progress = 'waiting' | 'preparing' | 'ready' | 'cancelled';
 export type Preparation = { kitchen?: Progress; bar?: Progress };
 export type PreparationAssignment = { assignment_ref: string; assignment_revision: number; bootstrap_page?: number };
@@ -46,7 +47,7 @@ export function validPreparationBody(path: string, value: unknown) {
   const routing = path.includes('/preparation-routing/'), recovery = path.endsWith('/recover');
   const keys = routing ? ['operation_key', 'expected_updated_at', 'station', 'supported_non_alcoholic_drink'] : ['operation_key', 'expected_revision', ...(recovery ? ['confirm', 'reason'] : [])];
   if (Object.keys(v).some(k => !keys.includes(k))) return false;
-  if (routing) return typeof v.expected_updated_at === 'string' && !!v.expected_updated_at && v.expected_updated_at.length <= 64 && ['kitchen', 'bar'].includes(String(v.station)) && (v.supported_non_alcoholic_drink === undefined || typeof v.supported_non_alcoholic_drink === 'boolean') && (v.station !== 'bar' || v.supported_non_alcoholic_drink === true);
+  if (routing) return typeof v.expected_updated_at === 'string' && !!v.expected_updated_at && v.expected_updated_at.length <= 64 && ['kitchen', 'bar', 'serve'].includes(String(v.station)) && (v.supported_non_alcoholic_drink === undefined || typeof v.supported_non_alcoholic_drink === 'boolean') && (v.station !== 'bar' || v.supported_non_alcoholic_drink === true);
   return Number.isSafeInteger(v.expected_revision) && Number(v.expected_revision) >= 1 && (!recovery || v.confirm === true && ['cannot_fulfill', 'other'].includes(String(v.reason)));
 }
 export function preparationPath(path: string, suffix: string, assignment?: PreparationAssignment) {

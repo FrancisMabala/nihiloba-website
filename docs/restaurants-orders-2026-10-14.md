@@ -2,6 +2,8 @@
 
 Status: **Local implementation, release Partial.** No deployment, production intake change, commit or push.
 
+The follow-on solo seller batch adds explicit ready-to-serve item routing, mixed-order truth, and the matching WhatsApp owner path. See the [solo Orders and WhatsApp handoff](restaurants-solo-orders-2026-10-14.md). The report below records the earlier Orders queue baseline.
+
 ## Scope and Backend contract
 
 The Personal owner follows customer QR/web and WhatsApp orders, assisted orders, and completed counter sales in Orders. New counter and table orders remain in Selling. Today and Selling screens, Stock and Finances were not redesigned.

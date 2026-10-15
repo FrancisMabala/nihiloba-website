@@ -43,6 +43,9 @@
 .rst-order-tools input { width:18px; height:18px; }
 .rst-order-checked { margin:8px 0; color:#617367; font-size:12px!important; }
 .rst-orders-screen .rst-order-layout { display:block; }
+.rst-order-next-detail { max-width:920px; padding:12px 16px; border-radius:8px; background:#edf4ee; }
+.rst-order-next-detail p { margin:0 0 8px; }
+.rst-order-next-detail button { overflow-wrap:anywhere; text-align:left; }
 .rst-orders-screen .rst-order-layout .rst-order-detail { max-width:920px; margin:20px 0; }
 .rst-order-detail-heading { display:flex; justify-content:space-between; align-items:start; gap:10px; }
 .rst-order-detail-heading h2 { overflow-wrap:anywhere; user-select:all; }
