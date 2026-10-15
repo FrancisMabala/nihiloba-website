@@ -17,9 +17,13 @@ async function fixture(page:Page,count=1,advanced=true) {
   if(p.endsWith('/order-configuration'))return route.fulfill({json:{intake_released:true}});
   if(p.endsWith('/orders'))return route.fulfill({json:{items:[],total:0,as_of:revision}});
   if(p.endsWith('/menu/items'))return route.fulfill({json:{revision,currency:'CDF',result:{items:[{public_ref:'RMI_1',name:'Pondu, poisson et accompagnement au choix',image_url:null,pricing_model:'UNIT_PRICED',currency:'CDF',unit_price:'3000',sale_unit_label:'assiette',availability:'available'}],total:1,page:1,page_size:20}}});
+  if(p.endsWith('/menu/categories'))return route.fulfill({json:{revision,currency:'CDF',result:{items:[{public_ref:'RMC_1',name:'Plats',visible:true}],total:1,page:1,page_size:50}}});
+  if(p.endsWith('/menu/offerings'))return route.fulfill({json:{revision,currency:'CDF',result:{items:[],total:0,page:1,page_size:50}}});
+  if(p.endsWith('/inventory/bindings'))return route.fulfill({json:{bindings:[]}});
+  if(p.endsWith('/restaurant-menus/RST_0'))return route.fulfill({json:{items:[{public_ref:'RMI_1',availability:'available'}],total:1,page:1,page_size:20}});
   if(p.endsWith('/preparation-routing/RMI_1')&&route.request().method()==='PUT'){state.station=String(route.request().postDataJSON().station);state.routingWrites++;return route.fulfill({json:{station:state.station,revision}});}
   if(p.endsWith('/preparation-routing'))return route.fulfill({json:{items:[{item_ref:'RMI_1',name:'Pondu, poisson et accompagnement au choix',station:state.station}],has_more:false,revision}});
-  if(p.endsWith('/menu/items/RMI_1'))return route.fulfill({json:{revision,currency:'CDF',result:{public_ref:'RMI_1',name:'Pondu',image_url:null}}});
+  if(p.endsWith('/menu/items/RMI_1'))return route.fulfill({json:{revision,currency:'CDF',result:{public_ref:'RMI_1',name:'Pondu',image_url:null,category:{public_ref:'RMC_1',name:'Plats',visible:true},pricing_model:'UNIT_PRICED',currency:'CDF',unit_price:'3000',sale_unit_label:'assiette',availability:'available',presentation:'fixed_dish'}}});
   if(p.endsWith('/restaurants'))return route.fulfill({json:{items:establishments,total:count,page:1,page_size:20,actions:['create']}});
   const selected=establishments.find(row=>p.endsWith('/'+row.public_ref));
   return route.fulfill({status:selected?200:404,json:selected??{}});
@@ -44,7 +48,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await page.locator('.rst-account summary').click();
  await navigate(page,sellerDesignCopy[locale].menu);
  await expect(page.locator('.rst-menu-row .rst-photo-thumb')).toHaveCount(1);
- await expect(page.locator('.rst-item-routing')).toHaveCount(1);
+ await expect(page.locator('.rst-menu-status')).toHaveCount(1);
  await page.screenshot({path:`docs/evidence/management-menu-${locale}-${width}.png`,fullPage:true});
  await expect(page.locator('.rst-menu-heading').getByRole('button',{name:photoText(locale,'batch')})).toBeVisible();
  await expect(page.locator('.rst-menu-row').getByRole('button',{name:copy.photo,exact:true})).toBeVisible();
@@ -81,6 +85,7 @@ test('mobile workspace navigation works from the keyboard',async({page})=>{
 });
 test('menu item saves preparation station beside the item',async({page})=>{
  const state=await fixture(page);await page.goto('/en/shida/seller/restaurants/');await navigate(page,sellerDesignCopy.en.menu);
+ await page.locator('.rst-menu-row').getByRole('button',{name:'Edit'}).click();
  const routing=page.locator('.rst-item-routing');await routing.getByRole('button',{name:'Bar'}).click();await routing.getByRole('checkbox').check();await routing.getByRole('button',{name:/Save/}).click();
  await expect(page.locator('.rst-item-routing').getByRole('button',{name:'Bar'})).toHaveAttribute('aria-pressed','true');expect(state.routingWrites).toBe(1);
 });

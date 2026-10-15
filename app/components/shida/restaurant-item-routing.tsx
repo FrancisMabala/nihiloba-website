@@ -14,9 +14,9 @@ export function RestaurantItemRouting({ path, binding, locale, itemRef, page, ro
   const [pending, setPending] = useState<ReturnType<typeof preparationEnvelope> | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
-  const selected = choice ?? route ?? 'kitchen';
+  const selected = choice ?? route;
   async function save() {
-    if (busy || !revision || route === undefined || selected === 'bar' && !confirmed && !pending || !navigator.onLine) return;
+    if (busy || !revision || route === undefined || !selected || selected === 'bar' && !confirmed && !pending || !navigator.onLine) return;
     const operation = pending ?? preparationEnvelope(`${path}/preparation-routing/${itemRef}`, 'PUT', { operation_key: crypto.randomUUID(), expected_updated_at: revision, station: selected, ...(selected === 'bar' ? { supported_non_alcoholic_drink: true } : {}) }, binding, `${path}/preparation-routing?page=${page}`);
     setPending(operation); setBusy(true); setMessage('');
     try {
