@@ -12,8 +12,9 @@ const bill={group_ref:'RSG_VISIT',group_revision:3,payment_revision:2,bill_revis
 const counterTerms={currency:'CDF',standalone:[{key:'food-1',name:'Fufu et pondu',quantity:1,sale_unit_label:'assiette',subtotal:'3000.00'}],plates:[],food_subtotal:'3000.00',delivery_fee:null,order_total:'3000.00',food_preference:null};
 const counterBill={group_ref:'RSG_COUNTER',group_revision:4,payment_revision:0,bill_revision:'c'.repeat(64),state:'closed',chargeable_rounds:[{order_ref:'ORD_COUNTER',revision:1,state:'completed',currency:'CDF',amount:'3000.00'}],pending_rounds:[],excluded_rounds:[],currencies:{CDF:moneyTotals('3000.00','0.00','3000.00'),USD:moneyTotals('0.00','0.00','0.00')},entries:[]};
 const day={local_date:'2026-10-13',time_zone:'Africa/Kinshasa',start_utc:'2026-10-12T23:00:00Z',end_utc:'2026-10-13T23:00:00Z',revision:2,closed:false,preview_revision:'b'.repeat(64),closed_at:null,currencies:{CDF:{opening:'10000.00',counted:'12500.00'},USD:{opening:'10.00',counted:'10.00'}},cash:{CDF:{opening:'10000.00',cash_receipts_net:'3000.00',actual_cash_refunds:'0.00',cash_expense_effect:'-200.00',cash_movements:'0.00',expected:'12800.00',counted:'12500.00',discrepancy:'-300.00'},USD:{opening:'10.00',cash_receipts_net:'0.00',actual_cash_refunds:'0.00',cash_expense_effect:'0.00',cash_movements:'0.00',expected:'10.00',counted:'10.00',discrepancy:'0.00'}},expenses:{CDF:'200.00',USD:'0.00'},outstanding:{CDF:{balance_due:'0.00',refund_owed:'0.00'},USD:{balance_due:'0.00',refund_owed:'0.00'}},bill_summary:{CDF:{order_value:'3000.00',recorded_collections:'3000.00'},USD:{order_value:'2.50',recorded_collections:'2.50'}},open_orders:{count:0,refs:[]},stock_exceptions:{count:0,refs:[]},methods:[{method_ref:'CASH',label:'Espèces',kind:'cash',currency:'CDF',recorded_net:'3000.00',actual_refunds:'0.00',corrections:'0.00',paid_expenses:'200.00',actual_expense_recoveries:'0.00',provider_verified:false},{method_ref:'MOBILE',label:'Mobile déclaré',kind:'external_mobile_money',currency:'USD',recorded_net:'2.50',actual_refunds:'0.00',corrections:'0.00',paid_expenses:'0.00',actual_expense_recoveries:'0.00',provider_verified:false}],supplemental_adjustments:[],supplemental_adjustment_count:0,next_adjustment_after:null};
-async function seed(page:Page,intake:boolean,empty=false,rich=false){
+async function seed(page:Page,intake:boolean,empty=false,rich=false,dayOverride:Record<string,unknown>={},profileOverride:Record<string,string>={}){
  let counterPaid=false;
+ const shop={...establishment,profile:{...establishment.profile,...profileOverride}};
  await page.route('**/api/**',route=>{
   const url=new URL(route.request().url()),p=url.pathname.replace(/\/$/,''),m=route.request().method();
   const json=(value:unknown)=>route.fulfill({json:value});
@@ -28,7 +29,7 @@ async function seed(page:Page,intake:boolean,empty=false,rich=false){
   if(rich&&p.endsWith('/service/financial/entries'))return json({financial_revision:1,entries:[{entry_ref:'EXP_CDF',revision:1,kind:'expense',target_ref:null,currency:'CDF',amount:'200.00',category:'Fournitures',description:'Charbon',reason:null,method:{method_ref:'CASH',label:'Espèces',kind:'cash',provider_verified:false},recorded_at:stamp,cash_effect:'-200.00',expense_effect:'200.00',recovered_effect:'0.00'}],next_after_revision:null});
   if(rich&&p.endsWith('/service/daily/time-zone'))return json({time_zone:'Africa/Kinshasa',time_zone_revision:1,confirmed_at:stamp});
   if(rich&&p.endsWith('/service/daily/reports'))return json({reports:[],next_before:null});
-  if(rich&&p.includes('/service/daily/days/')&&p.endsWith('/preview'))return json(day);
+  if(rich&&p.includes('/service/daily/days/')&&p.endsWith('/preview'))return json({...day,...dayOverride});
   if(rich&&p.endsWith('/payment-methods'))return json({items:[{method_ref:'CASH',label:'Espèces',kind:'cash',currencies:['CDF'],enabled:true,revision:1},{method_ref:'MOBILE',label:'Mobile déclaré',kind:'external_mobile_money',currencies:['USD'],enabled:true,revision:1}]});
   if(rich&&p.endsWith('/service/groups/RSG_COUNTER/money/receipts')&&m==='POST'){counterPaid=true;return json({operation_outcome:{entry_ref:'PAY_COUNTER'},bill:{...counterBill,payment_revision:1,entries:[{entry_ref:'PAY_COUNTER',kind:'receipt',method:{method_ref:'CASH',label:'Espèces',kind:'cash',provider_verified:false},currency:'CDF',amount:'3000.00',change_returned:'0.00',net_amount:'3000.00',allocations:[{order_ref:'ORD_COUNTER',amount:'3000.00'}]}],currencies:{...counterBill.currencies,CDF:moneyTotals('3000.00','3000.00','0.00')}}});}
   if(rich&&p.endsWith('/service/groups/RSG_COUNTER/bill'))return json(counterPaid?{...counterBill,payment_revision:1,bill_revision:'d'.repeat(64),entries:[{entry_ref:'PAY_COUNTER',kind:'receipt',target_ref:null,method:{method_ref:'CASH',label:'Espèces',kind:'cash',provider_verified:false},currency:'CDF',amount:'3000.00',change_returned:'0.00',net_amount:'3000.00',allocations:[{order_ref:'ORD_COUNTER',amount:'3000.00'}]}],currencies:{...counterBill.currencies,CDF:moneyTotals('3000.00','3000.00','0.00')}}:counterBill);
@@ -51,8 +52,8 @@ async function seed(page:Page,intake:boolean,empty=false,rich=false){
   if(rich&&p.endsWith('/counter-baskets/BSK_1/quote'))return json({basket:{basket_ref:'BSK_1',revision:2,quote:counterTerms,quote_ref:'RQU_1',order_ref:null}});
   if(rich&&p.endsWith('/counter-baskets/BSK_1/finalize'))return json({operation_outcome:{order_ref:'ORD_COUNTER',bill_group_ref:'RSG_COUNTER'},bill_group_ref:'RSG_COUNTER',current_order:{order_ref:'ORD_COUNTER',revision:1,state:'completed',entry_source:'counter',fulfillment_method:'on_premise',submitted_at:stamp,receipt_terms:counterTerms}});
   if(p.endsWith('/counter-baskets')&&m==='POST')return json({basket_ref:'BSK_1',revision:1,quote:null,quote_ref:null,order_ref:null});
-  if(p.endsWith('/restaurants'))return json({items:[establishment],total:1,page:1,page_size:20,actions:['create']});
-  if(p.endsWith('/'+establishment.public_ref))return json(establishment);
+  if(p.endsWith('/restaurants'))return json({items:[shop],total:1,page:1,page_size:20,actions:['create']});
+  if(p.endsWith('/'+establishment.public_ref))return json(shop);
   return route.fulfill({status:404,json:{detail:'unseeded'}});
  });
 }
@@ -77,7 +78,8 @@ for(const width of [360,820,1440])test(`seller work and finances FR ${width}`,as
  await managementNavigation(page,'Préparation');await expect(page.getByText('ORD_KITCHEN_WAIT')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-preparation-kitchen-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:/Bar/}).first().click();await expect(page.getByText('ORD_BAR_READY')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-preparation-bar-${width}.png`,fullPage:true});
  await managementNavigation(page,'Vendre');await page.locator('.rst-selling-modes').getByRole('button',{name:'Service en salle'}).click();await page.getByRole('button',{name:/RSG_VISIT/}).click();await expect(page.locator('.rst-service-round').filter({hasText:'ORD_ROUND_2'})).toBeVisible();await expect(page.locator('.rst-money-totals')).toContainText('USD');await expect(page.getByText('PAY_USD')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-service-${width}.png`,fullPage:true});
- await managementNavigation(page,'Finances');await expect(page.getByText('EXP_CDF')).toBeVisible();await expect(page.locator('.rst-daily-summary')).toContainText('-300.00');await expect(page.locator('.rst-daily-summary')).toContainText('Valeur des commandes liées');await expect(page.locator('.rst-daily-summary')).toContainText('Encaissements nets enregistrés');await page.screenshot({path:`docs/evidence/workflow-finances-${width}.png`,fullPage:true});
+ await managementNavigation(page,'Finances');await expect(page.locator('.rst-daily-summary')).toContainText('-300.00');await expect(page.locator('.rst-daily-summary')).toContainText('Mobile externe déclaré reçu');await expect(page.locator('.rst-daily-summary')).toContainText('2.50 USD');await page.screenshot({path:`docs/evidence/restaurant-finances-2026-10-15/after-fr-${width}.png`,fullPage:true});
+ await page.getByRole('button',{name:'Voir les écritures'}).click();await expect(page.getByText('EXP_CDF')).toBeVisible();await page.getByText('Factures liées : tous les jours').click();await expect(page.locator('.rst-daily-bills')).toContainText('Valeur des commandes liées');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 for(const width of [360,820,1440])test(`closed intake and empty states ${width}`,async({page})=>{
@@ -114,6 +116,89 @@ for(const width of [360,820,1440])test(`counter handover and canonical bill ${wi
  await expect(page.getByText('PAY_COUNTER')).toBeVisible();
  await page.screenshot({path:`docs/evidence/workflow-counter-paid-${width}.png`,fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+const financeLabels={fr:'Finances',en:'Finances',ln:'Mbongo',sw:'Fedha'} as const;
+for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1440])test(`finance daily workspace ${locale} ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:900});await seed(page,true,false,true);
+ await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/');
+ await managementNavigation(page,financeLabels[locale]);
+ const workspace=page.locator('.rst-daily');await expect(workspace.locator('.rst-daily-summary')).toBeVisible();
+ await workspace.locator('.rst-daily-date input').fill('2026-10-13');await workspace.locator('.rst-daily-date button').click();
+ await expect(workspace.locator('.rst-daily-currency')).toHaveCount(2);
+ await expect(workspace.locator('.rst-daily-currency').first()).toContainText('3000.00 CDF');
+ await expect(workspace.locator('.rst-daily-currency').last()).toContainText('2.50 USD');
+ await expect(workspace.locator('.rst-daily-actions button')).toHaveCount(5);
+ await page.screenshot({path:`docs/evidence/restaurant-finances-2026-10-15/after-${locale}-${width}.png`,fullPage:true});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+test('missing opening stays incomplete after local midnight',async({page})=>{
+ const missing={...day,currencies:{...day.currencies,CDF:{opening:null,counted:'12500.00'}},cash:{...day.cash,CDF:{...day.cash.CDF,opening:null,expected:null,discrepancy:null}}};
+ await page.setViewportSize({width:360,height:900});await seed(page,true,false,true,missing);await page.goto('/fr/shida/seller/restaurants/');
+ await managementNavigation(page,'Finances');const workspace=page.locator('.rst-daily');
+ await expect(workspace.locator('.rst-daily-summary')).toContainText('Jour incomplet');
+ await expect(workspace.locator('.rst-daily-summary').getByText('Non attesté').first()).toBeVisible();
+ await workspace.getByRole('button',{name:'Voir ou clôturer un jour'}).click();
+ await expect(workspace.getByRole('button',{name:'Clôturer le jour'})).toBeDisabled();
+ await expect(workspace.getByRole('button',{name:'Enregistrer'}).first()).toBeDisabled();
+ await page.screenshot({path:'docs/evidence/restaurant-finances-2026-10-15/missing-opening-fr-360.png',fullPage:true});
+});
+test('partial collection and refund obligations stay separate from daily receipts',async({page})=>{
+ const partial={...day,cash:{...day.cash,CDF:{...day.cash.CDF,cash_receipts_net:'1500.00',expected:'11300.00',discrepancy:'1200.00'}},outstanding:{CDF:{balance_due:'1500.00',refund_owed:'0.00'},USD:{balance_due:'0.00',refund_owed:'0.50'}}};
+ await page.setViewportSize({width:820,height:900});await seed(page,true,false,true,partial);await page.goto('/en/shida/seller/restaurants/');
+ await managementNavigation(page,'Finances');const summary=page.locator('.rst-daily-summary');
+ await expect(summary).toContainText('1500.00 CDF');await expect(summary).toContainText('0.50 USD');
+ await expect(summary).toContainText('2.50 USD');await expect(summary).toContainText('Linked bills: all dates');
+ await page.locator('.rst-daily').getByRole('button',{name:'Find a bill by exact reference'}).click();
+ await expect(page.locator('.rst-money')).toBeVisible();
+});
+test('stale daily close rereads preview and uncertain retry keeps its operation key',async({page})=>{
+ page.on('dialog',dialog=>dialog.accept());await page.setViewportSize({width:820,height:900});await seed(page,true,false,true);
+ let current={...day};const writes:string[]=[];
+ await page.route(/\/service\/daily\/days\/[^/]+\/preview(?:\/|\?|$)/,route=>route.fulfill({json:current}));
+ await page.route(/\/service\/daily\/days\/[^/]+\/close(?:\/|\?|$)/,route=>{
+  writes.push(route.request().postData()??'');
+  if(writes.length===1){current={...day,revision:3,preview_revision:'c'.repeat(64)};return route.fulfill({status:409,json:{detail:'restaurant_stale'}});}
+  if(writes.length===2)return route.abort();
+  return route.fulfill({json:{...current,closed:true,closed_at:stamp}});
+ });
+ await page.goto('/en/shida/seller/restaurants/');await managementNavigation(page,'Finances');
+ const workspace=page.locator('.rst-daily');await workspace.getByRole('button',{name:'Review or close a day'}).click();
+ const acknowledge=async()=>{await workspace.locator('.rst-daily-task').getByRole('checkbox').first().check();await workspace.locator('.rst-daily-task').getByRole('textbox',{name:'Reason'}).fill('Count difference reviewed');};
+ await acknowledge();await workspace.getByRole('button',{name:'Close day'}).click();
+ await expect(workspace).toContainText('Data changed. Refresh and review the action.');
+ await expect(workspace.locator('.rst-daily-task').getByRole('checkbox').first()).not.toBeChecked();
+ await acknowledge();await workspace.getByRole('button',{name:'Close day'}).click();
+ await expect(workspace.getByRole('button',{name:'Check entry'})).toBeVisible();
+ await workspace.getByRole('button',{name:'Check entry'}).click();await expect(workspace.getByRole('button',{name:'Retry identical request'})).toBeVisible();
+ await workspace.getByRole('button',{name:'Retry identical request'}).click();
+ expect(writes).toHaveLength(3);expect(writes[2]).toBe(writes[1]);
+ expect(JSON.parse(writes[1]).preview_revision).toBe('c'.repeat(64));
+});
+test('finance permission and loading failures do not show private totals',async({page})=>{
+ await page.setViewportSize({width:360,height:900});await seed(page,true,false,false);await page.goto('/en/shida/seller/restaurants/');
+ await managementNavigation(page,'Finances');await expect(page.locator('.rst-daily')).toContainText('Finance access unavailable');
+ await expect(page.locator('.rst-daily-summary')).toHaveCount(0);
+ await page.screenshot({path:'docs/evidence/restaurant-finances-2026-10-15/permission-en-360.png',fullPage:true});
+});
+test('finance loading error and empty entries are explicit',async({page})=>{
+ await page.setViewportSize({width:820,height:900});await seed(page,true,false,true);
+ const entryPattern='**/financial/entries**';
+ await page.route(entryPattern,route=>route.abort());
+ await page.goto('/en/shida/seller/restaurants/');await managementNavigation(page,'Finances');
+ await expect(page.locator('.rst-daily')).toContainText('Could not load finances. Retry.');
+ await page.screenshot({path:'docs/evidence/restaurant-finances-2026-10-15/error-en-820.png',fullPage:true});
+ await page.unroute(entryPattern);
+ await page.route(entryPattern,route=>route.fulfill({json:{financial_revision:0,entries:[],next_after_revision:null}}));
+ await page.locator('.rst-daily').getByRole('button',{name:'Refresh'}).click();
+ await expect(page.locator('.rst-daily-summary')).toBeVisible();
+ await page.locator('.rst-daily').getByRole('button',{name:'Review entries'}).click();
+ await expect(page.locator('.rst-daily')).toContainText('No entries recorded.');
+});
+for(const [name,food_business_type] of [['Restaurant du Port','restaurant'],['Snack Express','fast_food'],['Café Quartier','cafe']] as const)test(`finance workspace ${food_business_type}`,async({page})=>{
+ await page.setViewportSize({width:820,height:900});await seed(page,true,false,true,{}, {name,food_business_type});await page.goto('/en/shida/seller/restaurants/');
+ await managementNavigation(page,'Finances');await expect(page.getByRole('heading',{name})).toBeVisible();
+ await expect(page.locator('.rst-daily-currency')).toHaveCount(2);
 });
 
 const sellingLabels={fr:'Vendre',en:'Selling',ln:'Koteka',sw:'Kuuza'} as const;

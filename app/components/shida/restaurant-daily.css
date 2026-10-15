@@ -16,3 +16,26 @@
 .rst-daily-summary dl{display:block;padding:0}
 .rst-daily-summary dl div{display:flex;justify-content:space-between;gap:1rem;padding:.25rem 0;border-bottom:1px solid #e5ede7}
 .rst-daily-summary p{font-size:.9rem}
+.rst-daily-head{display:flex;align-items:start;justify-content:space-between;gap:1rem}
+.rst-daily-head h2{margin:.1rem 0 .3rem}
+.rst-daily-head p{margin:0;color:#42594d}
+.rst-daily-date{display:flex;flex-wrap:wrap;align-items:end;gap:.6rem;padding:.85rem 0;border-bottom:1px solid #cfdfd3}
+.rst-daily-date label{margin:0}
+.rst-daily-date span{font-size:.88rem;color:#42594d}
+.rst-daily-currency{padding:.85rem;border:1px solid #cfdfd3;background:#fff}
+.rst-daily-currency h4{font-size:1.2rem;margin:.1rem 0 .6rem}
+.rst-daily-currency h5{font-size:.92rem;margin:.9rem 0 .1rem}
+.rst-daily-currency dl{margin:0}
+.rst-daily-currency dt{min-width:0}
+.rst-daily-currency dd{text-align:right;font-variant-numeric:tabular-nums}
+.rst-daily-incomplete{border-left:3px solid #a45b00;padding:.5rem;background:#fff7e8}
+.rst-daily-bills{border-top:1px solid #cfdfd3;padding-top:.65rem}
+.rst-daily-bills summary,.rst-daily-settings summary{cursor:pointer;font-weight:650;min-height:44px;display:flex;align-items:center}
+.rst-daily-actions{display:flex;flex-wrap:wrap;gap:.3rem;padding:1rem 0;border-block:1px solid #cfdfd3}
+.rst-daily-actions h3{width:100%;margin:0 0 .3rem}
+.rst-daily-actions button{background:#fff;border:1px solid #779a83;border-radius:6px}
+.rst-daily-actions button[aria-pressed=true]{background:#173629;color:#fff}
+.rst-daily-task{margin-top:1rem;padding:1rem;border:1px solid #cfdfd3;background:#fff}
+.rst-daily-task fieldset{border:0;padding:0;margin:0}
+.rst-daily-settings{margin-top:1rem;border-top:1px solid #cfdfd3}
+@media(max-width:600px){.rst-daily{padding:.75rem}.rst-daily-head{display:block}.rst-daily-actions button{width:100%;text-align:left}.rst-daily-summary{padding:.65rem}.rst-daily-currency{padding:.65rem}.rst-daily-currency dl div{display:grid;grid-template-columns:minmax(0,1fr) auto}}

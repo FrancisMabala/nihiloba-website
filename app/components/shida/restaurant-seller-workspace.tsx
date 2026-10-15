@@ -23,7 +23,6 @@ import { restaurantReviewCopy } from '@/app/lib/restaurant-review-copy';
 import {RestaurantService} from './restaurant-service';
 import {RestaurantMoneyRecovery,RestaurantPaymentMethods} from './restaurant-money';
 import {RestaurantDaily} from './restaurant-daily';
-import {moneyText} from '../../lib/restaurant-money-copy';
 import { RestaurantCounter } from './restaurant-counter';
 import { sellingCopy } from '../../lib/restaurant-selling-copy';
 import { RestaurantInventory } from './restaurant-inventory';
@@ -261,7 +260,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     {label:management.work,entries:[["today",management.work],["orders",wt("orders")]]},
     {label:management.selling,entries:[[posAvailable ? "pos" : "counter",management.selling]]},
     {label:management.stock,entries:capabilities.includes('restaurant.inventory') ? [["inventory",management.stock]] : []},
-    {label:workflowText(locale,'finances'),entries:[...(posAvailable ? [["daily",workflowText(locale,'finances')] as [string,string],["paymentMethods",moneyText(locale,'configure')] as [string,string]] : []),["recovery",workflowText(locale,'recovery')]]},
+    {label:workflowText(locale,'finances'),entries:[...(posAvailable ? [["daily",workflowText(locale,'finances')] as [string,string]] : []),["recovery",workflowText(locale,'recovery')]]},
     {label:management.reservations,entries:[["reservations",management.reservations]]},
     {label:management.menu,entries:selected?.actions.includes('menu') ? [["items",design.menu],["offerings",design.daily]] : []},
     {label:management.settings,entries:[["profile",design.profile],...(selected?.actions.includes('hours') ? [["hours",design.hours] as [string,string]] : []),["intake",wt("intake")],["reviews",restaurantReviewCopy[locale].reviews],["activity",workflowText(locale,'statistics')],...(selected?.actions.includes('links') ? [["sharing",design.sharing] as [string,string]] : [])]},
@@ -312,7 +311,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
         {tab === 'service' && posAvailable && <RestaurantService key={path+binding} path={path} binding={binding} locale={locale}/>}
         {tab === 'recovery' && <RestaurantMoneyRecovery key={path+binding} path={path} binding={binding} locale={locale}/>}
         {tab === 'paymentMethods' && <RestaurantPaymentMethods key={path+binding} path={path} binding={binding} locale={locale}/>}
-        {tab === 'daily' && posAvailable && <><p className="rst-notice">{workflowText(locale,'financeHelp')}</p><RestaurantDaily key={path+binding} path={path} binding={binding} locale={locale} profileZone={selected.profile.timezone_name}/></>}
+        {tab === 'daily' && posAvailable && <RestaurantDaily key={path+binding} path={path} binding={binding} locale={locale} profileZone={selected.profile.timezone_name} onOpenBill={()=>void run(()=>loadTab('recovery'))} onOpenMethods={()=>void run(()=>loadTab('paymentMethods'))}/>}
         {tab === 'pos' && <RestaurantCounter key={`${path}/pos`} path={path} binding={binding} locale={locale} onFailure={workFailure} pos onFreeCounter={()=>{setPosAvailable(false);setTab('counter');}}/>}
         {tab === 'counter' && <RestaurantCounter key={path} path={path} binding={binding} locale={locale} onFailure={workFailure}/>}
         {tab === 'inventory' && <RestaurantInventory key={path} path={path} locale={locale} read={readRestaurant} perform={performRestaurant}/>}
