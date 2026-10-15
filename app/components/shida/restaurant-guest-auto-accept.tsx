@@ -1,4 +1,5 @@
 'use client';
+import {receivingCopy} from '@/app/lib/restaurant-receiving';
 import { useEffect, useState } from 'react';
 import { settingsCopy } from '../../lib/restaurant-settings-copy';
 import { useWorkRequest } from '@/app/lib/restaurant-work';
@@ -7,7 +8,7 @@ import { guestAutoCopy, type GuestAutoAccept as Setting } from '@/app/lib/restau
 import type { RestaurantLocale } from '@/app/services/shida/restaurants-client';
 
 export function RestaurantGuestAutoAccept({path,binding,locale,onFailure}:{path:string;binding:string;locale:RestaurantLocale;onFailure:(error:unknown)=>void}) {
-  const api=useWorkRequest(binding,onFailure), copy=guestAutoCopy[locale];
+  const api=useWorkRequest(binding,onFailure), copy={...guestAutoCopy[locale],description:`${guestAutoCopy[locale].description} ${receivingCopy[locale].qrLimit}`};
   const [setting,setSetting]=useState<Setting|null>(null),[fresh,setFresh]=useState(false),[desired,setDesired]=useState<boolean|null>(null);
   useEffect(()=>{let active=true;request(`${path}/guest-auto-accept`,{},binding).then(value=>{if(active){setSetting(value as Setting);setFresh(true);}}).catch(error=>{if(active)onFailure(error);});const stale=()=>setFresh(false);window.addEventListener('focus',stale);window.addEventListener('offline',stale);return()=>{active=false;window.removeEventListener('focus',stale);window.removeEventListener('offline',stale);};},[path,binding]); // eslint-disable-line react-hooks/exhaustive-deps
   async function refresh(){const value=await api.run<Setting>(`${path}/guest-auto-accept`);if(value){setSetting(value);setFresh(true);if(api.conflict){api.reset();setDesired(null);}}}

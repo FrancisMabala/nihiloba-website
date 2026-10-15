@@ -1,0 +1,21 @@
+.rst-intake { max-width: 1040px; margin-inline: auto; }
+.rst-intake header { display: grid; gap: .8rem; }
+.rst-intake header > button { justify-self: start; }
+.rst-intake-status { padding: 1.1rem; border: 1px solid #c7d1d7; border-left: 5px solid #8e6333; border-radius: 12px; background: #faf7f0; }
+.rst-intake-status[data-state=available] { border-left-color: #266f52; background: #f0f8f3; }
+.rst-intake-status h3 { margin: 0; font-size: 1.25rem; }
+.rst-intake-status p:last-child { margin-bottom: 0; }
+.rst-intake-preserved { color: #46535b; font-size: .9rem; }
+.rst-intake-channels { display: grid; gap: 1rem; margin-block: 1rem; }
+.rst-intake-channels > section { border: 1px solid #d5dfe1; border-radius: 12px; padding: 1rem; min-width: 0; }
+.rst-intake-channels h3 { margin-top: 0; }
+.rst-intake dl > div { display: flex; justify-content: space-between; gap: .75rem; }
+.rst-intake dd { margin: 0; font-weight: 600; }
+.rst-intake li { margin-block: .5rem; overflow-wrap: anywhere; }
+.rst-intake li button { display: block; margin-top: .35rem; }
+.rst-intake-periods { padding-left: 1.2rem; font-size: .9rem; }
+.rst-intake-periods small, .rst-intake-periods strong { display: block; }
+.rst-intake-editor { border-top: 2px solid #c7d1d7; padding-top: 1rem; }
+.rst-intake-confirm { padding: 1rem; background: #f0f5f8; border-radius: 12px; margin-block: 1rem; }
+.rst-intake button { min-height: 44px; white-space: normal; }
+@media(min-width: 800px) { .rst-intake-channels { grid-template-columns: repeat(3,minmax(0,1fr)); } }

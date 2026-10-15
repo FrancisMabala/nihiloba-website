@@ -74,3 +74,8 @@ Keep the release trackers Partial. Tracker changes and preservation verification
 ```text
 feat(restaurants): add solo seller Settings with safe intake controls
 ```
+
+
+## Receiving orders follow-up — 15 October 2026
+
+The focused intake redesign supersedes this report’s old intake presentation. See [Receiving orders handoff](restaurants-receiving-2026-10-15.md): Backend advisory status, full-scope rollout wording, separate pickup/delivery editors and retained WhatsApp drafts. Final focused validation: 52 production-browser cases, 116 Website unit executions and 253 Backend executions pass; build/typecheck/changed-file lint pass. Release remains Partial; daily-window renewal and live acceptance remain open. No deployment or production switch change.

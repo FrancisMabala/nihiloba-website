@@ -2,22 +2,81 @@
 import { useEffect, useState } from 'react';
 import { request } from '@/app/lib/restaurant-seller-browser';
 import { localInstant } from '@/app/lib/restaurant-seller';
-import { useWorkRequest, useWorkDraft, type Configuration, type ServiceWindow, type Area } from '@/app/lib/restaurant-work';
+import { dateText, useWorkRequest, useWorkDraft, type Configuration, type ServiceWindow, type Area } from '@/app/lib/restaurant-work';
 import { workText } from '@/app/lib/restaurant-work-copy';
+import { receivingCopy, receivingHeadline, type ReceivingReason } from '@/app/lib/restaurant-receiving';
 import type { RestaurantLocale } from '@/app/services/shida/restaurants-client';
-import { settingsCopy } from '../../lib/restaurant-settings-copy';
 import { LocalTime } from './restaurant-local-time';
-export function RestaurantIntake({path,binding,locale,timezone,onFailure}:{path:string;binding:string;locale:RestaurantLocale;timezone:string|null;onFailure:(e:unknown)=>void}) {
- const c=settingsCopy[locale];
- const t=(k:string)=>workText(locale,k),api=useWorkRequest(binding,onFailure);
- const [config,setConfig]=useState<Configuration|null>(null),[kind,setKind]=useState<'pickup'|'delivery'>('pickup'),[enabled,setEnabled]=useState(false),[windows,setWindows]=useState<ServiceWindow[]>([]),[areas,setAreas]=useState<Area[]>([]),[fee,setFee]=useState({amount:'',currency:'CDF'}),[review,setReview]=useState(false),[fresh,setFresh]=useState(false),[dirty,setDirty]=useState(false);
+import './restaurant-intake.css';
+
+type Kind='pickup'|'delivery';
+export function RestaurantIntake({path,binding,locale,timezone,onFailure,onOpen}:{path:string;binding:string;locale:RestaurantLocale;timezone:string|null;onFailure:(e:unknown)=>void;onOpen?:(tab:string)=>void}) {
+ const r=receivingCopy[locale],t=(k:string)=>workText(locale,k),api=useWorkRequest(binding,onFailure);
+ const [now,setNow]=useState(0);
+ const [config,setConfig]=useState<Configuration|null>(null),[kind,setKind]=useState<Kind>('pickup'),[editing,setEditing]=useState(false),[enabled,setEnabled]=useState(false),[windows,setWindows]=useState<ServiceWindow[]>([]),[areas,setAreas]=useState<Area[]>([]),[fee,setFee]=useState({amount:'',currency:'CDF'}),[review,setReview]=useState(false),[fresh,setFresh]=useState(false),[dirty,setDirty]=useState(false);
  useWorkDraft(dirty || review || !!api.pending,t('discard'));
- function fill(c:Configuration,k:typeof kind){setKind(k);setConfig(c);setEnabled(c[k]?.enabled ?? false);setWindows((c[k]?.windows ?? []).map(w=>({starts_at:localInstant(w.starts_at,timezone),ends_at:localInstant(w.ends_at,timezone)})));setAreas(c.delivery?.areas ?? []);setFee(c.delivery?.fee ?? {amount:'',currency:'CDF'});setFresh(true);setReview(false);setDirty(false);}
- useEffect(()=>{let alive=true;request(`${path}/order-configuration`,{},binding).then(v=>{if(alive)fill(v as Configuration,'pickup');}).catch(e=>{if(alive)onFailure(e);});const stale=()=>setFresh(false);window.addEventListener('offline',stale);document.addEventListener('visibilitychange',stale);return()=>{alive=false;window.removeEventListener('offline',stale);document.removeEventListener('visibilitychange',stale);};},[path,binding]); // eslint-disable-line react-hooks/exhaustive-deps
- async function save(){if(!config)return;const result=await api.run(`${path}/${kind}-intake`,'PUT',{operation_key:crypto.randomUUID(),expected_updated_at:config.revision,enabled,windows,...(kind==='delivery'?{fee,areas}:{})});if(result){setFresh(false);const c=await api.run<Configuration>(`${path}/order-configuration`);if(c)fill(c,kind);}}
- return <form className="rst-card rst-work" onSubmit={e=>{e.preventDefault();if(review)void save();else setReview(true);}}><h2>{t('intake')}</h2><p>{c.intakeHelp}</p><p>{c.saved}: {t(kind)} · {config?(config[kind]?.enabled?c.on:c.off):c.unknown}</p><p>{c.gate}: {config?(config.intake_released?c.on:c.off):c.unknown}</p>{config&&<p>{t(kind==='pickup'?'delivery':'pickup')}: {config[kind==='pickup'?'delivery':'pickup']?.enabled?c.on:c.off} ({c.saved})</p>}<p>{c.draft}</p>{(!timezone||!windows.length||kind==='delivery'&&(!areas.length||!fee.amount))&&<p>{c.setup}: {[!timezone?t('timezone'):null,!windows.length?t('windows'):null,kind==='delivery'&&!areas.length?t('areas'):null,kind==='delivery'&&!fee.amount?t('fee'):null].filter(Boolean).join(', ')}</p>}<p>{t('timezone')}: {timezone}</p><p>{t('timeHelp')}</p>{config && !config.intake_released && <p>{t('closed')}</p>}<p role="status">{api.message && t(api.message)}</p>{!fresh && <p>{t('stale')}</p>}
- {(api.conflict || !fresh) && <button type="button" disabled={api.busy || !api.online} onClick={async()=>{const c=await api.run<Configuration>(`${path}/order-configuration`);if(c){setConfig(c);setFresh(true);if(api.conflict){setReview(false);api.reset();}}}}>{t('refresh')}</button>}
- <fieldset disabled={api.busy || !!api.pending || api.conflict || !fresh || !api.online}><div className="rst-actions">{(['pickup','delivery'] as const).map(k=><button type="button" key={k} aria-pressed={kind===k} onClick={()=>{if(config&&(!dirty||window.confirm(t('discard'))))fill(config,k);}}>{t(k)}</button>)}</div><label><input type="checkbox" checked={enabled} disabled={!config?.intake_released && !enabled} onChange={e=>{setEnabled(e.target.checked);setReview(false);setDirty(true);}}/>{t('enabled')}</label><h3>{t('windows')}</h3>{windows.map((w,i)=><div className="rst-row" key={i}>{(['starts_at','ends_at'] as const).map((k,j)=><label key={k}>{t(j?'to':'from')}<LocalTime value={w[k]} timezone={timezone} locale={locale} onChange={v=>{setWindows(old=>old.map((x,n)=>n===i?{...x,[k]:v}:x));setReview(false);setDirty(true);}}/></label>)}<button type="button" onClick={()=>{setWindows(old=>old.filter((_,n)=>n!==i));setReview(false);setDirty(true);}}>{t('remove')}</button></div>)}<button type="button" disabled={windows.length>=20} onClick={()=>{setWindows(old=>[...old,{starts_at:'',ends_at:''}]);setReview(false);setDirty(true);}}>{t('add')}</button>
- {kind==='delivery' && <><h3>{t('fee')}</h3><label>{t('amount')}<input required inputMode="decimal" pattern="[0-9]{1,16}(\.[0-9]{1,2})?" value={fee.amount} onChange={e=>{setFee({...fee,amount:e.target.value});setReview(false);setDirty(true);}}/></label><label>{t('currency')}<select value={fee.currency} onChange={e=>{setFee({...fee,currency:e.target.value});setReview(false);setDirty(true);}}><option>CDF</option><option>USD</option></select></label><h3>{t('areas')}</h3>{areas.map((a,i)=><div className="rst-fields" key={i}>{(['country','city','commune','quartier'] as const).map(k=><label key={k}>{t(k)}<input required={k!=='quartier' || a.scope==='quartier'} maxLength={200} value={a[k] ?? ''} onChange={e=>{setAreas(old=>old.map((x,n)=>n===i?{...x,[k]:e.target.value}:x));setReview(false);setDirty(true);}}/></label>)}<label>{t('scope')}<select value={a.scope} onChange={e=>{setAreas(old=>old.map((x,n)=>n===i?{...x,scope:e.target.value,quartier:e.target.value==='whole_commune'?null:x.quartier}:x));setReview(false);setDirty(true);}}><option value="whole_commune">{t('whole_commune')}</option><option value="quartier">{t('quartier')}</option></select></label><button type="button" onClick={()=>{setAreas(old=>old.filter((_,n)=>n!==i));setReview(false);setDirty(true);}}>{t('remove')}</button></div>)}<button type="button" disabled={areas.length>=100} onClick={()=>{setAreas(old=>[...old,{country:'',city:'',commune:'',quartier:null,scope:'whole_commune'}]);setReview(false);setDirty(true);}}>{t('add')}</button></>}
- </fieldset>{review && <p>{c.effect}: {enabled?c.enableEffect:c.disableEffect} {t(kind)} · {windows.length} {t('windows')} · {t('enabled')}: {enabled?c.on:c.off} {kind==='delivery' && `${fee.amount} ${fee.currency} · ${areas.length} ${t('areas')}`}</p>}<button className="button button-primary" disabled={!fresh || !api.online || api.busy || api.conflict || !config || enabled && !config.intake_released && !api.pending}>{t(api.pending?'retry':review?'confirm':'review')}</button></form>;
+ function fill(value:Configuration,k:Kind){setNow(Date.now());setKind(k);setConfig(value);setEnabled(value[k]?.enabled ?? false);setWindows((value[k]?.windows ?? []).map(w=>({starts_at:localInstant(w.starts_at,timezone),ends_at:localInstant(w.ends_at,timezone)})));setAreas(value.delivery?.areas ?? []);setFee(value.delivery?.fee ?? {amount:'',currency:'CDF'});setFresh(true);setReview(false);setDirty(false);}
+ useEffect(()=>{
+  let alive=true;
+  request(`${path}/order-configuration`,{},binding).then(value=>{if(alive)fill(value as Configuration,'pickup');}).catch(e=>{if(alive)onFailure(e);});
+  const stale=()=>{setNow(Date.now());setFresh(false);};
+  window.addEventListener('offline',stale);document.addEventListener('visibilitychange',stale);
+  // A snapshot cannot remain green indefinitely when a window or closure changes.
+  const timer=window.setInterval(stale,60000);
+  return()=>{alive=false;clearInterval(timer);window.removeEventListener('offline',stale);document.removeEventListener('visibilitychange',stale);};
+ },[path,binding]); // eslint-disable-line react-hooks/exhaustive-deps
+ async function refresh(){
+  const value=await api.run<Configuration>(`${path}/order-configuration`);
+  if(value){
+   if(!dirty && !api.pending)fill(value,kind);else {setNow(Date.now());setConfig(value);setFresh(true);setReview(false);}
+   if(api.conflict){api.reset();setReview(false);}
+  }
+ }
+ async function save(){
+  if(!config)return;
+  // Empty pickup windows invoke the Backend's existing pause-with-preservation path.
+  const result=await api.run(`${path}/${kind}-intake`,'PUT',{operation_key:crypto.randomUUID(),expected_updated_at:config.revision,enabled,windows:keepPickupPeriods?[]:windows,...(kind==='delivery'?{fee,areas}:{})});
+  if(result){setFresh(false);setDirty(false);setReview(false);const value=await api.run<Configuration>(`${path}/order-configuration`);if(value){fill(value,kind);setEditing(false);}}
+ }
+ const status=config?.receiving,verified=fresh&&api.online&&!api.conflict;
+ const headline=receivingHeadline(config?.intake_released,status,verified);
+ const reasons=(values:ReceivingReason[])=>values.filter((v,i)=>values.indexOf(v)===i).map(v=><li key={v}><span>{v==='paused'?r.pausedReason:r[v]}</span>{onOpen&&['profile','address','timezone','menu','hours','closure'].includes(v)&&<button type="button" onClick={()=>onOpen(v==='menu'?'items':['hours','closure'].includes(v)?'hours':'profile')}>{v==='menu'?r.goMenu:['hours','closure'].includes(v)?r.goHours:r.goProfile}</button>}</li>);
+ const blocked=status?.[kind].activation_blockers??(!config?.intake_released?['release'] as ReceivingReason[]:[]);
+ const nowLocal=localInstant(new Date(now).toISOString(),timezone);
+ const tomorrow=new Date(`${nowLocal.slice(0,10)||'1970-01-01'}T12:00:00Z`);tomorrow.setUTCDate(tomorrow.getUTCDate()+1);
+ const invalidWindows=!nowLocal||!windows.length||windows.some(w=>!w.starts_at||!w.ends_at||Date.parse(w.starts_at)<=now||w.starts_at.slice(0,10)!==nowLocal.slice(0,10)||Date.parse(w.ends_at)<=Date.parse(w.starts_at)||w.ends_at.slice(0,10)>tomorrow.toISOString().slice(0,10));
+ const invalidDelivery=kind==='delivery'&&(!areas.length||!fee.amount||!windows.length||areas.some(a=>!a.country.trim()||!a.city.trim()||!a.commune.trim()||a.scope==='quartier'&&!a.quartier?.trim()));
+ const pickupWindowEdits=kind==='pickup'&&JSON.stringify(windows)!==JSON.stringify((config?.pickup?.windows??[]).map(w=>({starts_at:localInstant(w.starts_at,timezone),ends_at:localInstant(w.ends_at,timezone)})));
+ const keepPickupPeriods=kind==='pickup'&&!enabled&&(!pickupWindowEdits||!windows.length);
+ const invalid=invalidDelivery||enabled&&(blocked.length>0||!timezone||invalidWindows)||kind==='pickup'&&!keepPickupPeriods&&invalidWindows;
+ const availability=(value?:boolean)=>!verified?r.unknown:config&&!config.intake_released?r.blocked:value===undefined?r.unknown:value?r.ready:r.blocked;
+ function edit(k:Kind){if(config&&(!dirty||window.confirm(t('discard')))){fill(config,k);setEditing(true);}}
+ function periods(values:ServiceWindow[]){return values.length?<ul className="rst-intake-periods">{values.map((w,i)=>{
+  const start=localInstant(w.starts_at,timezone),end=localInstant(w.ends_at,timezone);
+  return <li key={i}><time>{dateText(w.starts_at,locale,timezone)}</time> → <time>{dateText(w.ends_at,locale,timezone)}</time>{start.slice(0,10)!==end.slice(0,10)&&<small>{r.overnight}</small>}{Date.parse(w.ends_at)<=now?<strong>{r.expiredLabel}</strong>:Date.parse(w.starts_at)<=now?<small>{r.started}</small>:null}</li>;
+ })}</ul>:<p>{r.noPeriods}</p>;}
+ return <section className="rst-card rst-work rst-intake" lang={locale}>
+  <header><h2>{r.title}</h2><div className="rst-intake-status" data-state={headline} role="status"><h3>{r[headline]}</h3><p>{!config?.intake_released&&config?r.release:headline==='available'?r.availableHelp:headline==='unknown'?r.noStatus:r.menu}</p>{config&&!config.intake_released&&<p>{r.nextRelease}</p>}</div><button type="button" disabled={api.busy||!api.online} onClick={()=>void refresh()}>{r.refresh}</button>{status&&<small>{r.checked} {dateText(status.evaluated_at,locale,timezone)} · {timezone}</small>}</header>
+  {!api.online?<p role="alert">{r.offline}</p>:!fresh&&<p>{r.stale}</p>}
+  <p className="rst-intake-preserved">{r.existing}</p>
+  <div className="rst-intake-channels">
+   <section><h3>{r.inPerson}</h3><strong>{availability(status?.in_person.available)}</strong><p>{r.inPersonHelp}</p>{status&&<ul>{reasons(status.in_person.reasons.filter(v=>v!=='release'))}</ul>}</section>
+   {(['pickup','delivery'] as const).map(k=><section key={k} data-service={k}><h3>{r[k]}</h3><dl><div><dt>{r.website}</dt><dd>{availability(status?.[k].web.available)}</dd></div><div><dt>WhatsApp</dt><dd>{availability(status?.[k].whatsapp.available)}</dd></div></dl><p>{config?(config[k]?.enabled?r.savedOn:r.savedOff):r.noStatus}</p>{status&&<ul>{reasons([...status[k].web.reasons,...status[k].whatsapp.reasons].filter(v=>v!=='release'))}</ul>}{config&&periods(config[k]?.windows??[])}<button type="button" disabled={!fresh||!api.online||api.busy||!!api.pending||api.conflict} onClick={()=>edit(k)}>{k==='pickup'?r.editPickup:r.editDelivery}</button></section>)}
+  </div>
+  {onOpen&&<button type="button" onClick={()=>onOpen('hours')}>{r.goHours}</button>}
+  {api.message&&<p role="status">{t(api.message)}</p>}
+  {editing&&<form className="rst-intake-editor" onSubmit={e=>{e.preventDefault();if(api.pending||review)void save();else setReview(true);}}>
+   <h3>{kind==='pickup'?r.editPickup:r.editDelivery}</h3><p>{dirty?r.editing:r.unchanged}</p>
+   <fieldset disabled={api.busy||!!api.pending||api.conflict||!fresh||!api.online}>
+    {blocked.length>0&&<aside><h4>{r.setup}</h4><ul>{reasons(blocked)}</ul></aside>}
+    <label><input type="checkbox" checked={enabled} disabled={blocked.length>0&&!enabled} onChange={e=>{setEnabled(e.target.checked);setReview(false);setDirty(true);}}/>{r.enable}</label>
+<h3>{r.periods}</h3><p>{r.periodHelp}</p>{nowLocal&&<p>{nowLocal.slice(0,10)} → {tomorrow.toISOString().slice(0,10)}</p>}<p>{t('timezone')}: {timezone ?? r.timezone}</p>{windows.map((w,i)=><div className="rst-row" key={i}>{(['starts_at','ends_at'] as const).map((k,j)=><label key={k}>{t(j?'to':'from')}<LocalTime value={w[k]} timezone={timezone} locale={locale} onChange={v=>{setWindows(old=>old.map((x,n)=>n===i?{...x,[k]:v}:x));setReview(false);setDirty(true);}}/></label>)}<button type="button" onClick={()=>{setWindows(old=>old.filter((_,n)=>n!==i));setReview(false);setDirty(true);}}>{t('remove')}</button></div>)}<button type="button" disabled={windows.length>=20} onClick={()=>{setWindows(old=>[...old,{starts_at:'',ends_at:''}]);setReview(false);setDirty(true);}}>{t('add')}</button>
+ {kind==='delivery' && <><h3>{t('fee')}</h3><label>{t('amount')}<input required={enabled} inputMode="decimal" pattern="[0-9]{1,16}(\.[0-9]{1,2})?" value={fee.amount} onChange={e=>{setFee({...fee,amount:e.target.value});setReview(false);setDirty(true);}}/></label><label>{t('currency')}<select value={fee.currency} onChange={e=>{setFee({...fee,currency:e.target.value});setReview(false);setDirty(true);}}><option>CDF</option><option>USD</option></select></label><h3>{t('areas')}</h3>{areas.map((a,i)=><div className="rst-fields" key={i}>{(['country','city','commune','quartier'] as const).map(k=><label key={k}>{t(k)}<input required={enabled && (k!=='quartier' || a.scope==='quartier')} maxLength={200} value={a[k] ?? ''} onChange={e=>{setAreas(old=>old.map((x,n)=>n===i?{...x,[k]:e.target.value}:x));setReview(false);setDirty(true);}}/></label>)}<label>{t('scope')}<select value={a.scope} onChange={e=>{setAreas(old=>old.map((x,n)=>n===i?{...x,scope:e.target.value,quartier:e.target.value==='whole_commune'?null:x.quartier}:x));setReview(false);setDirty(true);}}><option value="whole_commune">{t('whole_commune')}</option><option value="quartier">{t('quartier')}</option></select></label><button type="button" onClick={()=>{setAreas(old=>old.filter((_,n)=>n!==i));setReview(false);setDirty(true);}}>{t('remove')}</button></div>)}<button type="button" disabled={areas.length>=100} onClick={()=>{setAreas(old=>[...old,{country:'',city:'',commune:'',quartier:null,scope:'whole_commune'}]);setReview(false);setDirty(true);}}>{t('add')}</button></>}
+   </fieldset>
+   {invalidDelivery&&<p>{r.setup}: {t('areas')}, {t('fee')}, {r.periods}</p>}
+   {(enabled||pickupWindowEdits&&!keepPickupPeriods)&&invalidWindows&&<p role="status">{r.windows}</p>}
+   {review&&<aside className="rst-intake-confirm"><h4>{kind==='pickup'?r.reviewPickup:r.reviewDelivery}</h4><p>{enabled?r.enableEffect:r.pauseEffect}</p><p>{r[kind]} · {enabled?t('enabled'):r.paused}</p>{keepPickupPeriods?<p>{r.keepPeriods}</p>:<ul>{windows.map((w,i)=><li key={i}>{w.starts_at.replace('T',' ')} → {w.ends_at.replace('T',' ')} · {timezone}</li>)}</ul>}{kind==='delivery'&&<p>{fee.amount} {fee.currency} · {areas.length} {t('areas')}</p>}</aside>}
+   <div className="rst-actions"><button type="button" disabled={api.busy||!!api.pending} onClick={()=>{if(config)fill(config,kind);setEditing(false);}}>{r.cancel}</button><button className="button button-primary" disabled={!fresh||!api.online||api.busy||api.conflict||!config||(!api.pending&&(invalid||!dirty))}>{api.pending?t('retry'):review?r.confirm:kind==='pickup'?r.reviewPickup:r.reviewDelivery}</button></div>
+  </form>}
+ </section>;
 }

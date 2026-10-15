@@ -21,7 +21,9 @@ export type ServiceLocation = {
 export type ServiceRating = { average_rating: number | null; rating_count: number };
 export type ServiceProviderSummary = { public_ref: string; slug: string; name: string; profile_image: PublicImage | null };
 export type ServiceOffering = { public_ref: string; name: string; duration_minutes: number | null; price: string | null; currency: string | null; description: string | null; booking_url: string | null };
+export type CustomerBranch = {branch_ref:string;name:string;broad_area:string;booking_url:string|null};
 export type PublicServiceSummary = {
+  customer_branches?:CustomerBranch[]; branch_coverage_specified?:boolean;
   public_ref: string; slug: string; provider: ServiceProviderSummary; service_name: string;
   category: string; short_description: string | null; duration_minutes: number | null;
   starting_price: ServiceOffering | null; location: ServiceLocation; location_type: string | null;

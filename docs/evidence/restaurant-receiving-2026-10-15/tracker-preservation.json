@@ -1,0 +1,71 @@
+{
+  "main": {
+    "source": "C:\\Users\\mabal\\OneDrive\\NIHILOBA\\SHIDA\\Development\\SHIDA_Restaurant_Malewa_Release_Validation_Tracker.xlsx",
+    "source_sha256": "a6b40d755b068b607b6f64869599dedc2beddb0c7e85114e8a8cfce641d648c4",
+    "output": "C:\\NIHILOBA\\nihiloba-website\\docs\\evidence\\restaurant-receiving-2026-10-15\\tracker-main-receiving.xlsx",
+    "output_sha256": "fce1ad3d44437c1d9651187ad9790582d22b8673637393750de0ecdbbf49dea9",
+    "added_rows": [
+      [
+        "Automated checks",
+        "A58:J58"
+      ],
+      [
+        "Sources and runs",
+        "A50:H50"
+      ]
+    ],
+    "all_original_cells_formulas_styles_preserved": true,
+    "unchanged_zip_parts": 21,
+    "changed_parts": [
+      "xl/worksheets/sheet3.xml",
+      "xl/worksheets/sheet6.xml"
+    ],
+    "applied_to_source_and_sha256_verified": true
+  },
+  "pilot": {
+    "source": "C:\\Users\\mabal\\OneDrive\\NIHILOBA\\SHIDA\\Development\\shida_restaurants_pilot_tracker_2026-10-10.xlsx",
+    "source_sha256": "fb6c72cc230bfa92e3783aa223b7fbb0a4fe10af058654e06208ca3a7d25757b",
+    "output": "C:\\NIHILOBA\\nihiloba-website\\docs\\evidence\\restaurant-receiving-2026-10-15\\tracker-pilot-receiving.xlsx",
+    "output_sha256": "728316ea192e70a8a0cd9e5df98c24886b22a4f0c62bd2131d5aac991b888cd0",
+    "added_rows": [
+      [
+        "Batch log",
+        "A28:F28"
+      ],
+      [
+        "Evidence",
+        "A38:C38"
+      ]
+    ],
+    "all_original_cells_formulas_styles_preserved": true,
+    "unchanged_zip_parts": 11,
+    "changed_parts": [
+      "xl/worksheets/sheet3.xml",
+      "xl/worksheets/sheet4.xml"
+    ],
+    "applied_to_source_and_sha256_verified": true
+  },
+  "whatsapp": {
+    "source": "C:\\NIHILOBA\\Backend\\docs\\evidence\\restaurants_whatsapp_2026_10_12\\release_validation_tracker.xlsx",
+    "source_sha256": "a6b40d755b068b607b6f64869599dedc2beddb0c7e85114e8a8cfce641d648c4",
+    "output": "C:\\NIHILOBA\\nihiloba-website\\docs\\evidence\\restaurant-receiving-2026-10-15\\tracker-whatsapp-receiving.xlsx",
+    "output_sha256": "fce1ad3d44437c1d9651187ad9790582d22b8673637393750de0ecdbbf49dea9",
+    "added_rows": [
+      [
+        "Automated checks",
+        "A58:J58"
+      ],
+      [
+        "Sources and runs",
+        "A50:H50"
+      ]
+    ],
+    "all_original_cells_formulas_styles_preserved": true,
+    "unchanged_zip_parts": 21,
+    "changed_parts": [
+      "xl/worksheets/sheet3.xml",
+      "xl/worksheets/sheet6.xml"
+    ],
+    "applied_to_source_and_sha256_verified": true
+  }
+}

@@ -184,7 +184,7 @@ test('Personal owner controls guest QR acceptance in the Restaurant workspace',a
   const {token}=await control(request,`${s.ref}/owner-session`);
   await context.addCookies([{name:'nihiloba_personal_session',value:token,domain:'localhost',path:'/api/shida',httpOnly:true,sameSite:'Lax',secure:true}]);
   await page.goto('/shida/seller/restaurants');
-  await managementNavigation(page,'Order intake');
+  await managementNavigation(page,'Receiving orders');
   const controlCard=page.locator('.rst-card').filter({has:page.getByRole('heading',{name:'Guest QR auto acceptance'})});
   await expect(controlCard.getByText('Off: new guest orders wait for your confirmation.')).toBeVisible();
   await controlCard.getByRole('button',{name:'Turn on'}).click();

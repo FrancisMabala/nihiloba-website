@@ -1,3 +1,4 @@
+import {receivingCopy} from '../../app/lib/restaurant-receiving';
 import { managementNavigation } from './restaurant-management-navigation';
 import {test,expect} from '@playwright/test';
 import {fixture,open} from './restaurant-c1e-fixture';
@@ -14,13 +15,13 @@ test('atomic batch: frozen retry and explicit collision review; local intake tim
  await expect(page.getByText('Confirmation is missing. Retry the same request to recover its outcome.')).toBeVisible();await expect(rows.first().getByLabel('Food name',{exact:true})).toBeDisabled();
  await page.getByRole('button',{name:'Retry the original request',exact:true}).click();expect(bodies).toHaveLength(2);expect(bodies[0]).toBe(bodies[1]);expect(JSON.parse(bodies[0]).expected_updated_at).toBe(state.establishment.revision);
  await page.route('**/RST_fixture/order-configuration/',route=>route.fulfill({json:{revision:state.establishment.revision,intake_released:false,pickup:{enabled:false,windows:[{starts_at:'2027-01-01T10:00:00Z',ends_at:'2027-01-01T12:00:00Z'},{starts_at:'2027-01-02T10:00:00Z',ends_at:'2027-01-02T12:00:00Z'}]},delivery:null}}));
- await managementNavigation(page,'Order intake');await expect(page.getByLabel('Accept new orders',{exact:true})).toBeDisabled();await expect(page.locator('input[type=datetime-local]')).toHaveCount(4);
+ await managementNavigation(page,'Receiving orders');await page.getByRole('button',{name:'Edit pickup',exact:true}).click();await expect(page.getByLabel(receivingCopy.en.enable,{exact:true})).toBeDisabled();await expect(page.locator('input[type=datetime-local]')).toHaveCount(4);
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:info.outputPath('intake-phone.png'),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 for(const locale of ['en','fr','ln','sw'] as const)test(`C1-E localized work navigation / ${locale}`,async({page},info)=>{
  await fixture(page);await page.route('**/RST_fixture/order-configuration/',r=>r.fulfill({json:{revision:'r',intake_released:false,pickup:null,delivery:null}}));
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants`);await page.locator('.rst-grid .rst-card button').first().click();
- await managementNavigation(page,workText(locale,'intake'));await expect(page.getByLabel(workText(locale,'enabled'),{exact:true})).toBeDisabled();
+ await managementNavigation(page,workText(locale,'intake'));await page.getByRole('button',{name:receivingCopy[locale].editPickup,exact:true}).click();await expect(page.getByLabel(receivingCopy[locale].enable,{exact:true})).toBeDisabled();
  await managementNavigation(page,workText(locale,'activity'));await expect(page.getByText(workText(locale,'measurementHelp'))).toBeVisible();
  await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:info.outputPath(`activity-${locale}.png`),fullPage:true});
 });
@@ -42,7 +43,7 @@ test('delivery save preserves every area/window; D6 partial is not zero and curr
  const windows=[{starts_at:'2027-01-01T10:00:00Z',ends_at:'2027-01-01T11:00:00Z'},{starts_at:'2027-01-02T10:00:00Z',ends_at:'2027-01-02T11:00:00Z'}];
  await page.route('**/RST_fixture/order-configuration/',r=>r.fulfill({json:{revision:'2026-09-11T10:00:00.123456+00:00',intake_released:false,pickup:null,delivery:{enabled:false,fee:{amount:'1000.50',currency:'CDF'},windows,areas}}}));
  await page.route('**/RST_fixture/delivery-intake/',r=>{writes.push(r.request().postDataJSON());return r.fulfill({json:{revision:'saved'}});});
- await open(page);await managementNavigation(page,'Order intake');await page.getByRole('button',{name:'Delivery',exact:true}).click();await page.getByLabel('Amount portion',{exact:true}).fill('2000.25');await page.getByRole('button',{name:'Review',exact:true}).click();await page.getByRole('button',{name:'Confirm',exact:true}).click();
+ await open(page);await managementNavigation(page,'Receiving orders');await page.getByRole('button',{name:'Edit delivery',exact:true}).click();await page.getByLabel('Amount portion',{exact:true}).fill('2000.25');await page.getByRole('button',{name:receivingCopy.en.reviewDelivery,exact:true}).click();await page.getByRole('button',{name:receivingCopy.en.confirm,exact:true}).click();
  await expect.poll(()=>writes.length).toBe(1);expect(writes[0].areas).toEqual(areas);expect(writes[0].windows).toHaveLength(2);expect(writes[0].expected_updated_at).toBe('2026-09-11T10:00:00.123456+00:00');expect(writes[0].fee).toEqual({amount:'2000.25',currency:'CDF'});
  let available=false;
  await page.route('**/RST_fixture/order-summary/**',r=>r.fulfill({json:{measurement_status:available?'available':'partial',coverage_from:'2026-09-11T10:00:00Z',coverage_to:'2026-09-11T12:00:00Z',as_of:'2026-09-11T12:00:00Z',metrics:available?{submitted_orders:2,completed_in_period:2,completed_food_value:{CDF:'2000.50',USD:'10.25'},completed_delivery_fees:{CDF:'100.25'},status_breakdown:{completed:2},item_summary:{items:[],total:0}}:null}}));

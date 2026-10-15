@@ -1,0 +1,95 @@
+{
+  "main": [
+    {
+      "sheet": "Automated checks",
+      "range": "A58:J58",
+      "previous": "A57:J57",
+      "values": [
+        "INT01",
+        "Website + Backend + WhatsApp",
+        "Personal Receiving orders",
+        "Current channel status, reasons, dated periods and confirmed editing; preserve existing commitments.",
+        "Advisory exact-establishment status; canonical gates and submissions unchanged.",
+        "Must",
+        "Partial",
+        "Restaurant engineering",
+        "2026-10-15",
+        "Build/typecheck/changed-file lint pass. Website: 116 unit executions, 52 production-browser cases across FR/EN/LN/SW at 360/820/1440. Backend: 246 + 7 pass, fresh SQLite; head 0163, no migration. Six older combined C1-E cases fail on obsolete activity/amount expectations; full-suite red gates not rerun. Staging, real WhatsApp phone, physical devices, human language and reusable-schedule acceptance remain open. No deploy or production change."
+      ]
+    },
+    {
+      "sheet": "Sources and runs",
+      "range": "A50:H50",
+      "previous": "A49:H49",
+      "values": [
+        "2026-10-15",
+        "Receiving orders; local production browser + disposable SQLite",
+        "253 focused Backend passes; head 0163; no migration",
+        "52 browser cases and 116 Website unit executions; build/typecheck/lint pass",
+        "Business unchanged; WhatsApp draft/recheck retained",
+        "INT01 Partial",
+        "Live/staging/device/human languages and reusable schedule remain open; older broad red gates unchanged.",
+        "C:/NIHILOBA/nihiloba-website/docs/restaurants-receiving-2026-10-15.md"
+      ]
+    }
+  ],
+  "whatsapp": [
+    {
+      "sheet": "Automated checks",
+      "range": "A58:J58",
+      "previous": "A57:J57",
+      "values": [
+        "INT01",
+        "Website + Backend + WhatsApp",
+        "Personal Receiving orders",
+        "Current channel status, reasons, dated periods and confirmed editing; preserve existing commitments.",
+        "Advisory exact-establishment status; canonical gates and submissions unchanged.",
+        "Must",
+        "Partial",
+        "Restaurant engineering",
+        "2026-10-15",
+        "Build/typecheck/changed-file lint pass. Website: 116 unit executions, 52 production-browser cases across FR/EN/LN/SW at 360/820/1440. Backend: 246 + 7 pass, fresh SQLite; head 0163, no migration. Six older combined C1-E cases fail on obsolete activity/amount expectations; full-suite red gates not rerun. Staging, real WhatsApp phone, physical devices, human language and reusable-schedule acceptance remain open. No deploy or production change."
+      ]
+    },
+    {
+      "sheet": "Sources and runs",
+      "range": "A50:H50",
+      "previous": "A49:H49",
+      "values": [
+        "2026-10-15",
+        "Receiving orders; local production browser + disposable SQLite",
+        "253 focused Backend passes; head 0163; no migration",
+        "52 browser cases and 116 Website unit executions; build/typecheck/lint pass",
+        "Business unchanged; WhatsApp draft/recheck retained",
+        "INT01 Partial",
+        "Live/staging/device/human languages and reusable schedule remain open; older broad red gates unchanged.",
+        "C:/NIHILOBA/nihiloba-website/docs/restaurants-receiving-2026-10-15.md"
+      ]
+    }
+  ],
+  "pilot": [
+    {
+      "sheet": "Batch log",
+      "range": "A28:F28",
+      "previous": "A27:F27",
+      "values": [
+        "Receiving orders",
+        "Status, setup reasons, dated pickup/delivery and safe review",
+        "Website + minimal Backend/WhatsApp",
+        "Build/typecheck/changed-file lint pass. Website: 116 unit executions, 52 production-browser cases across FR/EN/LN/SW at 360/820/1440. Backend: 246 + 7 pass, fresh SQLite; head 0163, no migration. Six older combined C1-E cases fail on obsolete activity/amount expectations; full-suite red gates not rerun. Staging, real WhatsApp phone, physical devices, human language and reusable-schedule acceptance remain open. No deploy or production change.",
+        "S33",
+        "2026-10-15"
+      ]
+    },
+    {
+      "sheet": "Evidence",
+      "range": "A38:C38",
+      "previous": "A37:C37",
+      "values": [
+        "S33",
+        "C:/NIHILOBA/nihiloba-website/docs/restaurants-receiving-2026-10-15.md",
+        "52 production-browser cases; 116 Website unit and 253 Backend executions pass. Release Partial; live acceptance and reusable schedules open."
+      ]
+    }
+  ]
+}

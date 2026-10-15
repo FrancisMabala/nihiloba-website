@@ -1,3 +1,4 @@
+import {receivingCopy} from '../../app/lib/restaurant-receiving';
 import {test,expect,type Page} from '@playwright/test';
 import {fixture} from './restaurant-c1e-fixture';
 import {managementNavigation} from './restaurant-management-navigation';
@@ -7,7 +8,7 @@ import {workText} from '../../app/lib/restaurant-work-copy';
 import {reservationCopy} from '../../app/lib/restaurant-reservation-copy';
 
 async function seed(page:Page,kind='malewa',paid=true) {
- const base=await fixture(page);
+ await page.clock.setFixedTime(new Date('2026-10-16T08:00:00Z')); const base=await fixture(page);
  Object.assign(base.establishment,{status:'active'});Object.assign(base.establishment.profile,{service_modes:kind==='malewa'?'':'eat_there',food_business_type:kind});
  const state={enabled:false,revision:1,stale:false,uncertain:false,failRead:false,reservation:false,resRevision:0,resStale:false,resUncertain:false,writes:[] as string[]};
  const committed=new Map<string,string>();
@@ -50,25 +51,25 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,820,1
  await expect(root.getByRole('heading',{name:c.reservations,exact:true})).toBeVisible();await expect(root.getByText(c.preserved,{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await expect(root.locator('.rst-settings-reservation').getByText(''+c.saved+': '+c.off,{exact:true})).toBeVisible();
- if(locale==='en')await root.locator('#settings-intake').screenshot({path:`docs/evidence/restaurant-settings-2026-10-15/intake-${width}.png`});
- await page.screenshot({path:`docs/evidence/restaurant-settings-2026-10-15/after-${locale}-${width}.png`,fullPage:true});
+ if(locale==='en')await root.locator('#settings-intake').screenshot({path:`docs/evidence/restaurant-receiving-2026-10-15/settings-intake-${width}.png`});
+ await page.screenshot({path:`docs/evidence/restaurant-receiving-2026-10-15/settings-after-${locale}-${width}.png`,fullPage:true});
 });
 for(const width of [360,820,1440])test(`intake confirmation, save/reload, stale recovery, exact uncertain retry and offline ${width}`,async({page,context})=>{
  await page.setViewportSize({width,height:1000});
  const state=await seed(page,'restaurant');page.on('dialog',d=>d.accept());await open(page);
- const form=page.locator('#settings-intake form'),toggle=form.getByRole('checkbox',{name:workText('en','enabled'),exact:true});
- const saved=()=>form.getByText(`Saved: ${workText('en','pickup')} · ${state.enabled?'Enabled':'Disabled'}`,{exact:true});
- await expect(saved()).toBeVisible();await toggle.check();expect(state.writes).toHaveLength(0);await expect(form.getByText(/Saved: .*Disabled/)).toBeVisible();
- await form.getByRole('button',{name:workText('en','review'),exact:true}).click();expect(state.writes).toHaveLength(0);
- await form.getByRole('button',{name:workText('en','confirm'),exact:true}).click();await expect(saved()).toBeVisible();expect(state.enabled).toBe(true);
- await open(page);await expect(form.getByText(/Saved: .*Enabled/)).toBeVisible();
- state.stale=true;await toggle.uncheck();await form.getByRole('button',{name:workText('en','review'),exact:true}).click();await form.getByRole('button',{name:workText('en','confirm'),exact:true}).click();
- await expect(form.getByRole('button',{name:workText('en','retry'),exact:true})).toBeDisabled();await form.getByRole('button',{name:workText('en','refresh'),exact:true}).click();await expect(toggle).not.toBeChecked();
- await form.getByRole('button',{name:workText('en','review'),exact:true}).click();await form.getByRole('button',{name:workText('en','confirm'),exact:true}).click();await expect(form.getByText(/Saved: .*Disabled/)).toBeVisible();
- state.uncertain=true;await toggle.check();await form.getByRole('button',{name:workText('en','review'),exact:true}).click();await form.getByRole('button',{name:workText('en','confirm'),exact:true}).click();await expect(form.getByText(/Saved: .*Disabled/)).toBeVisible();
- const original=state.writes.at(-1);await form.getByRole('button',{name:workText('en','retry'),exact:true}).click();await expect(form.getByText(/Saved: .*Enabled/)).toBeVisible();expect(state.writes.at(-1)).toBe(original);
- await context.setOffline(true);await expect(toggle).toBeDisabled();await context.setOffline(false);await form.getByRole('button',{name:workText('en','refresh'),exact:true}).click();await expect(toggle).toBeEnabled();
- await open(page);await expect(form.getByText(/Saved: .*Enabled/)).toBeVisible();
+ const form=page.locator('#settings-intake .rst-intake'),toggle=form.getByRole('checkbox',{name:receivingCopy.en.enable,exact:true});
+ const saved=()=>form.locator('[data-service=pickup]').getByText(state.enabled?receivingCopy.en.savedOn:receivingCopy.en.savedOff,{exact:true});
+ await expect(saved()).toBeVisible();await form.getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await toggle.check();expect(state.writes).toHaveLength(0);await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOff,{exact:true})).toBeVisible();
+ await form.getByRole('button',{name:receivingCopy.en.reviewPickup,exact:true}).click();expect(state.writes).toHaveLength(0);
+ await form.getByRole('button',{name:receivingCopy.en.confirm,exact:true}).click();await expect(saved()).toBeVisible();expect(state.enabled).toBe(true);
+ await open(page);await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOn,{exact:true})).toBeVisible();
+ state.stale=true;await form.getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await toggle.uncheck();await form.getByRole('button',{name:receivingCopy.en.reviewPickup,exact:true}).click();await form.getByRole('button',{name:receivingCopy.en.confirm,exact:true}).click();
+ await expect(form.getByRole('button',{name:workText('en','retry'),exact:true})).toBeDisabled();await form.getByRole('button',{name:receivingCopy.en.refresh,exact:true}).click();await expect(toggle).not.toBeChecked();
+ await form.getByRole('button',{name:receivingCopy.en.reviewPickup,exact:true}).click();await form.getByRole('button',{name:receivingCopy.en.confirm,exact:true}).click();await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOff,{exact:true})).toBeVisible();
+ state.uncertain=true;await form.getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await toggle.check();await form.getByRole('button',{name:receivingCopy.en.reviewPickup,exact:true}).click();await form.getByRole('button',{name:receivingCopy.en.confirm,exact:true}).click();await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOff,{exact:true})).toBeVisible();
+ const original=state.writes.at(-1);await form.getByRole('button',{name:workText('en','retry'),exact:true}).click();await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOn,{exact:true})).toBeVisible();expect(state.writes.at(-1)).toBe(original);
+ await form.getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await context.setOffline(true);await expect(toggle).toBeDisabled();await context.setOffline(false);await form.getByRole('button',{name:receivingCopy.en.refresh,exact:true}).click();await expect(toggle).toBeEnabled();
+ await open(page);await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOn,{exact:true})).toBeVisible();
 });
 test('reservation requests require confirmation and show saved authority after reload',async({page})=>{
  const state=await seed(page,'restaurant');await open(page);const scope=page.locator('.rst-settings-reservation'),c=settingsCopy.en;
@@ -91,9 +92,9 @@ test('reservation stale recovery, uncertain replay and Settings refresh preserve
  await expect(scope.getByRole('button',{name:workText('en','retry'),exact:true})).toBeEnabled();await scope.getByRole('button',{name:workText('en','retry'),exact:true}).click();await expect(scope.getByText('Saved: Enabled',{exact:true})).toBeVisible();expect(state.writes.at(-1)).toBe(original);
 });
 test('failed reread leaves saved state unconfirmed until refresh',async({page})=>{
- const state=await seed(page);await open(page);const form=page.locator('#settings-intake form');
- await form.getByRole('checkbox',{name:workText('en','enabled'),exact:true}).check();await form.getByRole('button',{name:workText('en','review'),exact:true}).click();state.failRead=true;await form.getByRole('button',{name:workText('en','confirm'),exact:true}).click();
- await expect(form.getByText(workText('en','stale'),{exact:true})).toBeVisible();await expect(form.getByRole('checkbox')).toBeDisabled();state.failRead=false;await form.getByRole('button',{name:workText('en','refresh'),exact:true}).click();await expect(form.getByText(/Saved: .*Enabled/)).toBeVisible();
+ const state=await seed(page);await open(page);const form=page.locator('#settings-intake .rst-intake');
+ await form.getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await form.getByRole('checkbox',{name:receivingCopy.en.enable,exact:true}).check();await form.getByRole('button',{name:receivingCopy.en.reviewPickup,exact:true}).click();state.failRead=true;await form.getByRole('button',{name:receivingCopy.en.confirm,exact:true}).click();
+ await expect(form.getByText(receivingCopy.en.stale,{exact:true})).toBeVisible();await expect(form.getByRole('checkbox')).toBeDisabled();state.failRead=false;await form.getByRole('button',{name:receivingCopy.en.refresh,exact:true}).click();await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOn,{exact:true})).toBeVisible();
 });
 test('lost exact-establishment access removes Settings',async({page})=>{
  await seed(page);await page.route('**/RST_fixture/hours**',route=>route.fulfill({status:403,json:{detail:'restaurant_unavailable'}}));
@@ -103,5 +104,5 @@ test('lost exact-establishment access removes Settings',async({page})=>{
 test('unconfirmed hours and closed rollout gate cannot be opened by business label',async({page})=>{
  await seed(page,'restaurant');await page.route('**/RST_fixture/hours**',route=>route.fulfill({json:{revision:'hours',result:{schedule:{windows:[]},confirmed_at:null,exceptional_closures:[],status:'closed',timezone_name:'Africa/Kinshasa'}}}));
  await page.route('**/RST_fixture/order-configuration/**',route=>route.fulfill({json:{revision:'1',intake_released:false,pickup:null,delivery:null}}));
- await open(page);await expect(page.locator('.rst-settings-reservation').getByRole('button',{name:reservationCopy.en.enable,exact:true})).toBeDisabled();await expect(page.locator('#settings-intake form').getByRole('checkbox')).toBeDisabled();await expect(page.locator('#settings-reservations .rst-details')).toContainText(settingsCopy.en.setup);
+ await open(page);await expect(page.locator('.rst-settings-reservation').getByRole('button',{name:reservationCopy.en.enable,exact:true})).toBeDisabled();await page.locator('#settings-intake .rst-intake').getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await expect(page.locator('#settings-intake .rst-intake').getByRole('checkbox')).toBeDisabled();await expect(page.locator('#settings-reservations .rst-details')).toContainText(settingsCopy.en.setup);
 });
