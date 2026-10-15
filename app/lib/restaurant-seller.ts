@@ -7,7 +7,7 @@ export type Row = Fields & { public_ref: string; name?: string; item?: Row; cate
 export type Envelope<T> = { revision: string; result: T; currency: string | null };
 export type Window = { weekday: number; start: string; end: string };
 export type Closure = { starts_at: string; ends_at: string; timezone_name?: string; confirmed_at?: string };
-export type Hours = { schedule: { windows: Window[] } | null; exceptional_closures: Closure[]; status: string; timezone_name: string | null };
+export type Hours = { schedule: { windows: Window[] } | null; exceptional_closures: Closure[]; status: string; timezone_name: string | null; confirmed_at?: string | null };
 export type Kind = "create" | "profile" | "categories" | "items" | "offerings" | "copy" | "hours" | "publish" | "unpublish";
 export type Operation = Readonly<{ path: string; method: string; body: string }>;
 export const rootPath = () => "personal/restaurants";

@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-15",
+  "release_status": "Partial",
+  "website_starting_commit": "ac571249387110eb20e331ff57859b1e7c1a09d5",
+  "backend_commit": "218dfcd53547fb24a692a14191782e47530c9909",
+  "build": "pass",
+  "typecheck": "pass",
+  "changed_file_lint": "pass",
+  "diff_check": "pass",
+  "website_focused_executions": {
+    "passed": 132,
+    "files": 10,
+    "includes_existing_source_copy_duplicates": true
+  },
+  "production_browser": {
+    "passed": 25,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 48.8,
+    "widths": [
+      360,
+      820,
+      1440
+    ],
+    "languages": [
+      "fr",
+      "en",
+      "ln",
+      "sw"
+    ]
+  },
+  "backend_focus": {
+    "passed": 525,
+    "failed": 0,
+    "skipped": 2,
+    "seconds": 1088.19,
+    "skip_reasons": [
+      "Organization role boundary on Personal parametrization",
+      "Organization operational policy on Personal parametrization"
+    ],
+    "database": "disposable local SQLite; removed after tests"
+  },
+  "full_suites": "Not rerun; inherited failures remain open",
+  "deployment": false,
+  "production_intake_changed": false,
+  "committed": false,
+  "pushed": false,
+  "trackers_updated": [
+    "main",
+    "pilot",
+    "whatsapp"
+  ],
+  "remaining_acceptance": [
+    "authenticated staging",
+    "real WhatsApp phone and provider",
+    "physical devices and assistive technology",
+    "human FR/EN/LN/SW",
+    "frozen release-tree gates"
+  ],
+  "source_sha256": {
+    "app/components/shida/restaurant-settings.tsx": "d572c60d4cb87d77f81562a6b228186e7102aafd8062962978ba7f9946257113",
+    "app/components/shida/restaurant-settings.css": "4787273b9e22ca8574bf847fd8712a1f7aa2cb761150a97b1280c8a929cda268",
+    "app/components/shida/restaurant-intake.tsx": "3d4dcd765968b3bc251eff3d49df52e6dafebabaf40a2d23575b5deb74f04139",
+    "app/components/shida/restaurant-guest-auto-accept.tsx": "e070a9d68ba34fe0f4dbd6a7718cbd0d574d397ad54b3abd13a0769b57b811ee",
+    "app/components/shida/restaurant-seller-workspace.tsx": "f13785abec4ffb6d4e61dcd38cf78ec7bb7c579c1e24f34ed1964a8c8552ade7",
+    "app/components/shida/restaurant-reservation-calendar-seller.tsx": "f31bd3bb9b2547f7b6eb1b5ac27e8a5149c8a93605a6631ea34ad5b38b9fb8d9",
+    "app/lib/restaurant-settings-copy.ts": "72fd017675d55f6a6d59a6841bcdabc1d3340086919f08a62c88cbdd76e9abab",
+    "app/lib/restaurant-seller.ts": "3728fdc0fad29a3a594733405072058b53705b9789ca5db8524b0b6ced2870ee",
+    "tests/browser/restaurant-settings.browser.ts": "a5a59ffba0e10b03190aa3d05e6d0eab2ca6e98cd93c678f94be420c3194c106"
+  }
+}

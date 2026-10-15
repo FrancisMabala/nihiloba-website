@@ -1,0 +1,101 @@
+{
+  "main": [
+    {
+      "sheet": "Automated checks",
+      "range": "A57:J57",
+      "template": "A56:J56",
+      "height": 210,
+      "values": [
+        "SET01",
+        "Website + Backend + WhatsApp",
+        "Personal solo Settings",
+        "Saved state, unmet requirements, effects and confirmed intake changes; revision-safe recovery; exact owner access",
+        "Existing canonical profile, hours, intake, reservation and payment authorities retained",
+        "Must",
+        "Partial",
+        "Restaurant engineering",
+        "2026-10-15",
+        "Website build, typecheck and changed-file lint pass; 132 focused unit executions pass (includes existing .s3a-local duplicates); 25 production-preview browser checks pass at 360/820/1440 px in FR/EN/LN/SW. Backend intake/reservations/WhatsApp focus: 525 passed, 2 expected Organization-only skips in 1088.19s. No Backend or WhatsApp source change. Prior full-suite failures remain separate; no full-suite rerun. Staging, real WhatsApp phone/provider, physical devices and human language acceptance remain open. Website docs/restaurants-settings-2026-10-15.md and docs/evidence/restaurant-settings-2026-10-15/. No deploy, production intake, commit or push."
+      ]
+    },
+    {
+      "sheet": "Sources and runs",
+      "range": "A49:H49",
+      "template": "A48:H48",
+      "height": 175,
+      "values": [
+        "2026-10-15",
+        "Personal Restaurant and Malewa Settings; synthetic production-preview browsers and disposable Backend SQLite",
+        "Backend source unchanged; 525 passed / 2 expected skips",
+        "Website local uncommitted Settings; 132 unit executions and 25 browser cases pass",
+        "Business and WhatsApp source unchanged",
+        "SET01 Partial",
+        "Staging, real WhatsApp phone/provider, physical devices and human FR/EN/LN/SW acceptance remain open. Prior full-suite failures not rerun.",
+        "Website docs/restaurants-settings-2026-10-15.md and docs/evidence/restaurant-settings-2026-10-15/. No deploy, production intake, commit or push."
+      ]
+    }
+  ],
+  "whatsapp": [
+    {
+      "sheet": "Automated checks",
+      "range": "A57:J57",
+      "template": "A56:J56",
+      "height": 210,
+      "values": [
+        "SET01",
+        "Website + Backend + WhatsApp",
+        "Personal solo Settings",
+        "Saved state, unmet requirements, effects and confirmed intake changes; revision-safe recovery; exact owner access",
+        "Existing canonical profile, hours, intake, reservation and payment authorities retained",
+        "Must",
+        "Partial",
+        "Restaurant engineering",
+        "2026-10-15",
+        "Website build, typecheck and changed-file lint pass; 132 focused unit executions pass (includes existing .s3a-local duplicates); 25 production-preview browser checks pass at 360/820/1440 px in FR/EN/LN/SW. Backend intake/reservations/WhatsApp focus: 525 passed, 2 expected Organization-only skips in 1088.19s. No Backend or WhatsApp source change. Prior full-suite failures remain separate; no full-suite rerun. Staging, real WhatsApp phone/provider, physical devices and human language acceptance remain open. Website docs/restaurants-settings-2026-10-15.md and docs/evidence/restaurant-settings-2026-10-15/. No deploy, production intake, commit or push."
+      ]
+    },
+    {
+      "sheet": "Sources and runs",
+      "range": "A49:H49",
+      "template": "A48:H48",
+      "height": 175,
+      "values": [
+        "2026-10-15",
+        "Personal Restaurant and Malewa Settings; synthetic production-preview browsers and disposable Backend SQLite",
+        "Backend source unchanged; 525 passed / 2 expected skips",
+        "Website local uncommitted Settings; 132 unit executions and 25 browser cases pass",
+        "Business and WhatsApp source unchanged",
+        "SET01 Partial",
+        "Staging, real WhatsApp phone/provider, physical devices and human FR/EN/LN/SW acceptance remain open. Prior full-suite failures not rerun.",
+        "Website docs/restaurants-settings-2026-10-15.md and docs/evidence/restaurant-settings-2026-10-15/. No deploy, production intake, commit or push."
+      ]
+    }
+  ],
+  "pilot": [
+    {
+      "sheet": "Batch log",
+      "range": "A27:F27",
+      "template": "A26:F26",
+      "height": 150,
+      "values": [
+        "Personal solo Settings",
+        "Saved capabilities, setup requirements, intake confirmation and recovery",
+        "Website; Backend and WhatsApp contracts unchanged",
+        "Partial: Website build, typecheck and changed-file lint pass; 132 focused unit executions pass (includes existing .s3a-local duplicates); 25 production-preview browser checks pass at 360/820/1440 px in FR/EN/LN/SW. Backend intake/reservations/WhatsApp focus: 525 passed, 2 expected Organization-only skips in 1088.19s. No Backend or WhatsApp source change. Prior full-suite failures remain separate; no full-suite rerun. Staging, real WhatsApp phone/provider, physical devices and human language acceptance remain open.",
+        "S32",
+        "2026-10-15"
+      ]
+    },
+    {
+      "sheet": "Evidence",
+      "range": "A37:C37",
+      "template": "A36:C36",
+      "height": 100,
+      "values": [
+        "S32",
+        "C:/NIHILOBA/nihiloba-website/docs/restaurants-settings-2026-10-15.md",
+        "Local Settings: 25 browser checks, 132 unit executions, 525 Backend passes / 2 expected skips. Live acceptance open."
+      ]
+    }
+  ]
+}

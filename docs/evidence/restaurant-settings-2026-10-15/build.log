@@ -1,0 +1,171 @@
+﻿
+> nihiloba-website@0.1.0 build
+> next build
+
+▲ Next.js 16.3.4 (Turbopack)
+✓ Running next.config.ts took 45ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 6.9s
+  Running TypeScript ...
+  Finished TypeScript in 9.3s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/86) ...
+  Generating static pages using 9 workers (21/86) 
+  Generating static pages using 9 workers (42/86) 
+  Generating static pages using 9 workers (64/86) 
+✓ Generating static pages using 9 workers (86/86) in 1623ms
+  Finalizing page optimization ...
+
+Route (app)                                                               Revalidate  Expire
+┌ ○ /
+├ ○ /_not-found
+├   /[lang]
+│ ├ ● /en
+│ └ ● /fr
+├   /[lang]/[trust]
+│ ├ ● /en/data-protection
+│ ├ ● /en/security
+│ ├ ● /en/terms
+│ └ ● [+9 more paths]
+├   /[lang]/about
+│ ├ ● /en/about
+│ └ ● /fr/about
+├   /[lang]/contact
+│ ├ ● /en/contact
+│ └ ● /fr/contact
+├   /[lang]/education
+│ ├ ● /en/education
+│ └ ● /fr/education
+├   /[lang]/privacy
+│ ├ ● /en/privacy
+│ └ ● /fr/privacy
+├   /[lang]/products
+│ ├ ● /en/products
+│ └ ● /fr/products
+├   /[lang]/shida
+│ ├ ● /en/shida
+│ └ ● /fr/shida
+├ ƒ /[lang]/shida/appartements
+├ ƒ /[lang]/shida/appartements/[listing]
+├ ƒ /[lang]/shida/appartements/proprietaires/[owner]
+├   /[lang]/shida/business/conditions
+│ ├ ● /en/shida/business/conditions
+│ └ ● /fr/shida/business/conditions
+├   /[lang]/shida/business/conditions/[version]
+│ ├ ● /en/shida/business/conditions/1.0
+│ └ ● /fr/shida/business/conditions/1.0
+├ ƒ /[lang]/shida/businesses/[business]
+├   /[lang]/shida/conditions
+│ ├ ● /en/shida/conditions
+│ └ ● /fr/shida/conditions
+├   /[lang]/shida/conditions/[version]
+│ ├ ● /en/shida/conditions/1.0
+│ └ ● /fr/shida/conditions/1.0
+├   /[lang]/shida/confidentialite
+│ ├ ● /en/shida/confidentialite
+│ └ ● /fr/shida/confidentialite
+├   /[lang]/shida/confidentialite/[version]
+│ ├ ● /en/shida/confidentialite/1.0
+│ └ ● /fr/shida/confidentialite/1.0
+├ ƒ /[lang]/shida/emplois
+├ ƒ /[lang]/shida/emplois/[job]
+├ ƒ /[lang]/shida/emplois/employeurs/[employer]
+├   /[lang]/shida/hotels
+│ ├ ● /en/shida/hotels                                                            1m      1y
+│ └ ● /fr/shida/hotels                                                            1m      1y
+├ ƒ /[lang]/shida/hotels/[hotel]
+├ ƒ /[lang]/shida/mes-candidatures
+├ ƒ /[lang]/shida/mes-candidatures/[application]
+├ ƒ /[lang]/shida/my-applications
+├ ƒ /[lang]/shida/my-applications/[application]
+├ ƒ /[lang]/shida/restaurant-orders
+├ ƒ /[lang]/shida/restaurant-orders/[orderRef]
+├ ƒ /[lang]/shida/restaurant-orders/[orderRef]/receipt
+├ ƒ /[lang]/shida/restaurant-reservations
+├ ƒ /[lang]/shida/restaurants
+├ ƒ /[lang]/shida/restaurants/[restaurant]
+├ ƒ /[lang]/shida/restaurants/[restaurant]/menu
+├ ƒ /[lang]/shida/restaurants/[restaurant]/order
+├ ƒ /[lang]/shida/seller/restaurants
+├ ƒ /[lang]/shida/seller/restaurants/[establishment]/receipts/[orderRef]
+├ ƒ /[lang]/shida/seller/services
+├ ƒ /[lang]/shida/service-bills/[reservation]
+├ ƒ /[lang]/shida/services
+├ ƒ /[lang]/shida/services/[service]
+├ ƒ /[lang]/shida/services/providers/[provider]
+├ ƒ /[lang]/shida/wenze
+├ ƒ /[lang]/shida/wenze/[store]
+├ ƒ /[lang]/shida/wenze/panier
+├ ƒ /[lang]/shida/wenze/products/[product]
+├ ƒ /[lang]/shida/wenze/produits/[product]
+├ ƒ /api/shida/cart
+├ ƒ /api/shida/cart/accept-price-changes
+├ ƒ /api/shida/cart/handoff
+├ ƒ /api/shida/cart/items
+├ ƒ /api/shida/cart/items/[item]
+├ ƒ /api/shida/cart/validate
+├ ƒ /api/shida/employment/applications
+├ ƒ /api/shida/employment/applications/[application]
+├ ƒ /api/shida/employment/auth/request-code
+├ ƒ /api/shida/employment/auth/verify-code
+├ ƒ /api/shida/employment/logout
+├ ƒ /api/shida/employment/session
+├ ƒ /api/shida/personal/auth/whatsapp/[[...path]]
+├ ƒ /api/shida/personal/restaurant-orders/[[...path]]
+├ ƒ /api/shida/personal/restaurant-reservations/[[...path]]
+├ ƒ /api/shida/personal/restaurants/[[...path]]
+├ ƒ /api/shida/personal/services/[[...path]]
+├ ƒ /api/shida/public-jobs/[job]/[event]
+├ ƒ /api/shida/public-jobs/[job]/external-action
+├ ƒ /api/shida/restaurant-guests/[...path]
+├ ƒ /api/shida/restaurant-menus/[establishment]
+├ ○ /robots.txt
+├ ○ /shida
+├ ƒ /shida/appartements
+├ ƒ /shida/appartements/[listing]
+├ ƒ /shida/appartements/proprietaires/[owner]
+├ ○ /shida/business/terms
+├   /shida/business/terms/[version]
+│ └ ● /shida/business/terms/1.0
+├ ƒ /shida/businesses/[business]
+├ ƒ /shida/emplois
+├ ƒ /shida/emplois/[job]
+├ ƒ /shida/emplois/employeurs/[employer]
+├ ○ /shida/hotels                                                                 1m      1y
+├ ƒ /shida/hotels/[hotel]
+├ ƒ /shida/my-applications
+├ ƒ /shida/my-applications/[application]
+├ ○ /shida/privacy
+├   /shida/privacy/[version]
+│ └ ● /shida/privacy/1.0
+├ ƒ /shida/restaurant-orders
+├ ƒ /shida/restaurant-orders/[orderRef]
+├ ƒ /shida/restaurant-orders/[orderRef]/receipt
+├ ƒ /shida/restaurant-reservations
+├ ƒ /shida/restaurants
+├ ƒ /shida/restaurants/[restaurant]
+├ ƒ /shida/restaurants/[restaurant]/menu
+├ ƒ /shida/restaurants/[restaurant]/order
+├ ƒ /shida/seller/restaurants
+├ ƒ /shida/seller/restaurants/[establishment]/receipts/[orderRef]
+├ ƒ /shida/seller/services
+├ ƒ /shida/service-bills/[reservation]
+├ ƒ /shida/services
+├ ƒ /shida/services/[service]
+├ ƒ /shida/services/providers/[provider]
+├ ○ /shida/terms
+├   /shida/terms/[version]
+│ └ ● /shida/terms/1.0
+├ ƒ /shida/wenze
+├ ƒ /shida/wenze/[store]
+├ ƒ /shida/wenze/cart
+├ ƒ /shida/wenze/products/[product]
+└ ○ /sitemap.xml                                                                  1m      1y
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+

@@ -1,0 +1,15 @@
+.rst-settings {display:grid;gap:1.25rem;max-width:64rem;min-width:0}
+.rst-settings h2 {font-size:1.75rem;margin:0 0 .5rem}
+.rst-settings h3 {font-size:1.2rem;margin:0 0 .75rem}
+.rst-settings p {line-height:1.6;max-width:72ch;overflow-wrap:anywhere}
+.rst-settings .rst-card {margin:0;padding:1.5rem;min-width:0}
+.rst-settings .rst-card .rst-card {margin-top:1.25rem;background:#fafbf9;box-shadow:none}
+.rst-settings-notice,.rst-settings-review {border-left:3px solid #41634b;background:#f0f5ee;padding:1rem;line-height:1.6}
+.rst-settings button {min-height:44px;white-space:normal;text-align:start;overflow-wrap:anywhere}
+.rst-settings-method {display:flex;gap:1rem;justify-content:space-between;flex-wrap:wrap;padding:.75rem 0;border-bottom:1px solid #e2e7df}
+.rst-settings .rst-details dd {overflow-wrap:anywhere}
+.rst-settings .rst-actions {flex-wrap:wrap}
+.rst-settings-jump {display:flex;flex-wrap:wrap;gap:.5rem 1rem}
+.rst-settings-jump a {display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-underline-offset:4px}
+.rst-settings section[id] {scroll-margin-top:6rem}
+@media(max-width:600px){.rst-settings .rst-card{padding:1rem}.rst-settings .rst-card .rst-card{padding:.75rem}.rst-settings .rst-row{flex-wrap:wrap}.rst-settings fieldset{min-width:0}.rst-settings .rst-row label{min-width:0;width:100%}.rst-settings input,.rst-settings select{max-width:100%}}

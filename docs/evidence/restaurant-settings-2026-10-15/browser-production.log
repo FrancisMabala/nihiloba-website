@@ -1,0 +1,31 @@
+﻿
+Running 25 tests using 1 worker
+
+  ok  1 tests\browser\restaurant-intake-window.browser.ts:5:57 › Personal intake errors and retained values: en (4.1s)
+  ok  2 tests\browser\restaurant-intake-window.browser.ts:5:57 › Personal intake errors and retained values: fr (6.1s)
+  ok  3 tests\browser\restaurant-intake-window.browser.ts:5:57 › Personal intake errors and retained values: ln (6.4s)
+  ok  4 tests\browser\restaurant-intake-window.browser.ts:5:57 › Personal intake errors and retained values: sw (2.3s)
+  ok  5 tests\browser\restaurant-settings.browser.ts:47:90 › Settings en 360 (1.2s)
+  ok  6 tests\browser\restaurant-settings.browser.ts:47:90 › Settings en 820 (1.0s)
+  ok  7 tests\browser\restaurant-settings.browser.ts:47:90 › Settings en 1440 (1.0s)
+  ok  8 tests\browser\restaurant-settings.browser.ts:47:90 › Settings fr 360 (938ms)
+  ok  9 tests\browser\restaurant-settings.browser.ts:47:90 › Settings fr 820 (987ms)
+  ok 10 tests\browser\restaurant-settings.browser.ts:47:90 › Settings fr 1440 (939ms)
+  ok 11 tests\browser\restaurant-settings.browser.ts:47:90 › Settings ln 360 (897ms)
+  ok 12 tests\browser\restaurant-settings.browser.ts:47:90 › Settings ln 820 (910ms)
+  ok 13 tests\browser\restaurant-settings.browser.ts:47:90 › Settings ln 1440 (1.2s)
+  ok 14 tests\browser\restaurant-settings.browser.ts:47:90 › Settings sw 360 (917ms)
+  ok 15 tests\browser\restaurant-settings.browser.ts:47:90 › Settings sw 820 (975ms)
+  ok 16 tests\browser\restaurant-settings.browser.ts:47:90 › Settings sw 1440 (884ms)
+  ok 17 tests\browser\restaurant-settings.browser.ts:56:39 › intake confirmation, save/reload, stale recovery, exact uncertain retry and offline 360 (2.6s)
+  ok 18 tests\browser\restaurant-settings.browser.ts:56:39 › intake confirmation, save/reload, stale recovery, exact uncertain retry and offline 820 (4.5s)
+  ok 19 tests\browser\restaurant-settings.browser.ts:56:39 › intake confirmation, save/reload, stale recovery, exact uncertain retry and offline 1440 (3.4s)
+  ok 20 tests\browser\restaurant-settings.browser.ts:73:5 › reservation requests require confirmation and show saved authority after reload (1.4s)
+  ok 21 tests\browser\restaurant-settings.browser.ts:79:5 › free Malewa retains explicit service and payment requirements (665ms)
+  ok 22 tests\browser\restaurant-settings.browser.ts:82:5 › reservation stale recovery, uncertain replay and Settings refresh preserve pending work (1.1s)
+  ok 23 tests\browser\restaurant-settings.browser.ts:93:5 › failed reread leaves saved state unconfirmed until refresh (953ms)
+  ok 24 tests\browser\restaurant-settings.browser.ts:98:5 › lost exact-establishment access removes Settings (666ms)
+  ok 25 tests\browser\restaurant-settings.browser.ts:103:5 › unconfirmed hours and closed rollout gate cannot be opened by business label (704ms)
+
+  25 passed (48.8s)
+

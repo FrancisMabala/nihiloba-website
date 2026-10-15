@@ -1,4 +1,6 @@
 "use client";
+import { RestaurantSettings } from './restaurant-settings';
+import { settingsCopy } from '../../lib/restaurant-settings-copy';
 import { managementCopy } from "../../lib/restaurant-management-copy";
 import { RestaurantPhoto } from "./restaurant-photo";
 import { RestaurantPhotoEditor } from "./restaurant-photo-editor";
@@ -52,6 +54,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const design = sellerDesignCopy[locale];
   const management = managementCopy[locale];
   const menuCopy = personalMenuCopy[locale];
+  const [settingsGeneration, setSettingsGeneration] = useState(0);
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [capabilities, setCapabilities] = useState<string[]>([]);
   const wt = (key:string) => workText(locale,key);
@@ -111,9 +114,10 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     if (alive.current) { setSelected(value); setCapabilities(availability?.capabilities.filter(entry=>entry.available).map(entry=>entry.capability) ?? []); setKitchenAvailable(kitchen);setPosAvailable(availability?.capabilities.some(entry=>entry.capability==='restaurant.pos'&&entry.available)??false); setTab(initialTab); setRows(menu?.result.items ?? []); setRoutingPage(routes); setRowPage(1); setRowTotal(menu?.result.total ?? 0); setHours(null); setPreview(null); }
   }
   async function loadTab(next: string, nextPage = 1, leavingEditor = false) {
-    if(next!==tab && !leavingEditor && !leaveWork())return;
+    if((next!==tab || next==='settings') && !leavingEditor && !leaveWork())return;
     setNavigationOpen(false);
     if(next==='pos'||next==='service'||next==='paymentMethods'||next==='daily'){const value=await readRestaurant<{capabilities:{capability:string;available:boolean}[]}>(`${path}/capabilities`,locale);const allowed=value.capabilities.some(entry=>entry.capability==='restaurant.pos'&&entry.available);setPosAvailable(allowed);setTab(next==='service'?next:allowed?next:'counter');return;}
+    if (next === "settings") { await select(selected!.public_ref, "settings"); setSettingsGeneration(value=>value+1); return; }
     if (next === "profile") { await select(selected!.public_ref, "profile"); return; }
     if (["today","orders","reservations","routing","counter","inventory","intake","activity","batch","reviews","photos","recovery"].includes(next)) { setTab(next); return; }
     if (next === "kitchen") {const value=await readRestaurant<{capabilities:{capability:string;available:boolean}[]}>(`${path}/capabilities`,locale);const allowed=value.capabilities.some(entry=>entry.capability==='restaurant.kitchen'&&entry.available);setKitchenAvailable(allowed);setTab(allowed?next:'orders');return;}
@@ -229,6 +233,11 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   }
   async function submit(event: FormEvent) {
     event.preventDefault(); if (gate.current || !editor || editor.blocked) return;
+    if (!navigator.onLine) { setMessage("unavailable"); return; }
+    if (!editor.operation && (['hours','publish','unpublish'].includes(editor.kind) || editor.kind==='profile' && editor.changed.some(key=>['service_modes','timezone_name'].includes(key)))) {
+      const c=settingsCopy[locale];
+      if (!window.confirm(`${c.confirm}\n${c.hoursHelp}\n${c.reservationHelp}\n${c.preserved}`)) return;
+    }
     const original = editor;
     let operation = editor.operation;
     if (!operation) {
@@ -301,6 +310,10 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   function input(key: string, required = false) {
     if (!editor) return null;
     const value = editor.fields[key] ?? "";
+    if (key === 'service_modes') {
+      const modes=value.split(',').map(mode=>mode.trim()).filter(Boolean);
+      return <fieldset key={key}><legend>{t(key)}</legend><p>{settingsCopy[locale].profileHelp}</p><label><input type="checkbox" checked={modes.some(mode=>mode.toLowerCase()==='eat_there')} onChange={event=>change(key,[...modes.filter(mode=>mode.toLowerCase()!=='eat_there'),...(event.target.checked?['eat_there']:[])].join(','))}/>{settingsCopy[locale].seated}</label><p>{settingsCopy[locale].intakeHelp}</p></fieldset>;
+    }
     const choicesForKey = key === "category_ref" || key === "item_ref" ? choices : undefined;
     return <label key={key}>{(key === "minimum_amount" && editor.fields.amount_mode === "flexible" ? basicText(locale,"minimumRequired") : ["amount_mode","amount_step"].includes(key)?basicText(locale,key):t(key))}{boolKeys.includes(key) ? <input type="checkbox" checked={value === "true"} required={required} onChange={event => change(key, String(event.target.checked))} /> : choicesForKey ? <select required={required} value={value} onChange={event => change(key, event.target.value)}><option value="">—</option>{choicesForKey.map(row => <option key={row.public_ref} value={row.public_ref}>{row.name}</option>)}</select> : key === 'timezone_name' ? <select required={required} value={value} onChange={event=>change(key,event.target.value)}><option value="">&mdash;</option>{[...new Set([value,...Intl.supportedValuesOf('timeZone')])].filter(Boolean).map(zone=><option key={zone} value={zone}>{zone.split('/').slice(1).join(' / ').replaceAll('_',' ')} ({zone.split('/')[0]})</option>)}</select> : options[key] ? <select required={required} value={value} onChange={event => change(key, event.target.value)}><option value="">—</option>{options[key].map(option => <option key={option} value={option}>{(["configured","flexible"].includes(option)?basicText(locale,option):t(option))}</option>)}</select> : ["description", "opening_information", "service_modes"].includes(key) ? <textarea required={required} maxLength={4000} value={value} onChange={event => change(key, event.target.value)} /> : ["starts_at", "ends_at"].includes(key) ? <LocalTime value={value} timezone={selected?.profile.timezone_name ?? null} locale={locale} required={required} onChange={v=>change(key,v)}/> : <input required={required} name={key} type={key.includes("url") ? "url" : "text"} inputMode={["unit_price", "minimum_amount"].includes(key) ? "decimal" : "text"} maxLength={key === "name" ? 200 : 2000} value={value} onChange={event => change(key, event.target.value)} />}</label>;
   }
@@ -313,7 +326,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     {label:workflowText(locale,'finances'),entries:[...(posAvailable ? [["daily",workflowText(locale,'finances')] as [string,string]] : []),["recovery",workflowText(locale,'recovery')]]},
     {label:management.reservations,entries:[["reservations",management.reservations]]},
     {label:management.menu,entries:selected?.actions.includes('menu') ? [["items",design.menu],["offerings",design.daily]] : []},
-    {label:management.settings,entries:[["profile",design.profile],...(selected?.actions.includes('hours') ? [["hours",design.hours] as [string,string]] : []),["intake",wt("intake")],["reviews",restaurantReviewCopy[locale].reviews],["activity",workflowText(locale,'statistics')],...(selected?.actions.includes('links') ? [["sharing",design.sharing] as [string,string]] : [])]},
+    {label:management.settings,entries:[["settings",management.settings],["profile",design.profile],...(selected?.actions.includes('hours') ? [["hours",design.hours] as [string,string]] : []),["intake",wt("intake")],["reviews",restaurantReviewCopy[locale].reviews],["activity",workflowText(locale,'statistics')],...(selected?.actions.includes('links') ? [["sharing",design.sharing] as [string,string]] : [])]},
   ];
   return <section className="rst container rst-management" aria-label={t("restaurants")}>
     <header className="rst-management-identity"><div><span className="rst-overline">{management.establishment}</span><h1>{selected?.profile.name ?? management.choose}</h1></div>{selected && <><span className={`rst-publication rst-state-${selected.status}`}>{selected.status === "active" ? design.published : t(selected.status)}</span>{!editor && <div className="rst-identity-tools">{selected.actions.includes('preview') && button("preview", () => void run(() => loadTab("preview")))}{list && list.total > 1 && <button className="rst-text-button" disabled={busy} onClick={()=>{if(!leaveWork())return;setSelected(null);setPreview(null);void run(()=>loadList(1,""));}}>{design.change}</button>}</div>}</>}</header>
@@ -352,9 +365,10 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
 
         {tab === "categories" && <div className="rst-menu-heading"><h2>{design.menuTitle}</h2><div className="rst-actions"><button type="button" className="rst-text-button" disabled={busy} onClick={() => void run(() => open(tab as Kind))}>+ {design.add}</button>{button("categories", () => void run(() => loadTab(tab === "categories" ? "items" : "categories")))}<button type="button" disabled={busy} onClick={()=>void run(()=>loadTab("batch"))}>{photoText(locale,"batch")}</button></div></div>}
         {tab === 'photos' && <RestaurantPhotoEditor key={`${path}:${photoTarget.target}:${photoTarget.itemRef ?? ''}`} path={path} binding={binding} locale={locale} establishmentName={selected.profile.name || t('restaurants')} {...photoTarget} onFailure={workFailure} onBack={() => void run(() => loadTab(photoTarget.target === 'establishment' ? 'profile' : 'items'))}/>}
+        {tab === 'settings' && <RestaurantSettings key={`${path}:${binding}:${settingsGeneration}`} path={path} binding={binding} locale={locale} establishment={selected} capabilities={capabilities} onOpen={next=>void run(()=>loadTab(next))} onFailure={workFailure}/>}
         {tab === 'today' && <RestaurantToday path={path} binding={binding} locale={locale} zone={selected.profile.timezone_name} canPrepare={kitchenAvailable} canSell={posAvailable} canStock={capabilities.includes('restaurant.inventory')} canEditIntake={selected.actions.includes('edit')} onOpen={next=>void run(()=>loadTab(next==='kitchen'?'orders':next))}/>}
         {tab === 'orders'  && <RestaurantOrderScreen key={path} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onFailure={workFailure} onIntake={selected.actions.includes('edit')?()=>void run(()=>loadTab('intake')):undefined} onSelling={()=>void run(()=>loadTab(posAvailable?'pos':'counter'))}/>}
-        {tab === 'reservations' && <RestaurantReservationCalendarSeller key={`${path}:${binding}`} path={path} binding={binding} locale={locale} seated={selected.profile.service_modes?.split(',').some(mode=>mode.trim().toLowerCase()==='eat_there')??false} capable={capabilities.includes('restaurant.reservations')} onSettings={()=>void run(()=>loadTab('profile'))} onHours={()=>void run(()=>loadTab('hours'))}/>}
+        {tab === 'reservations' && <RestaurantReservationCalendarSeller key={`${path}:${binding}`} path={path} binding={binding} locale={locale} seated={selected.profile.service_modes?.split(',').some(mode=>mode.trim().toLowerCase()==='eat_there')??false} capable={capabilities.includes('restaurant.reservations')} onSettings={()=>void run(()=>loadTab('settings'))} onHours={()=>void run(()=>loadTab('hours'))}/>}
         {tab === 'routing' && <PreparationRouting path={path} binding={binding} locale={locale}/>}
         {tab === 'reviews' && <RestaurantSellerReviews key={path} path={path} binding={binding} locale={locale}/>}
         {['pos','counter','service'].includes(tab) && <div className="rst-selling-modes" aria-label={management.selling}><button type="button" aria-pressed={tab==='pos'||tab==='counter'} onClick={()=>{if(leaveWork())void run(()=>loadTab(posAvailable?'pos':'counter'));}}>{sellingCopy(locale).counter}</button>{posAvailable&&<button type="button" aria-pressed={tab==='service'} onClick={()=>{if(leaveWork())void run(()=>loadTab('service'));}}>{sellingCopy(locale).table}</button>}</div>}

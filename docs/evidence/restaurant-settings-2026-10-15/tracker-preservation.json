@@ -1,0 +1,71 @@
+{
+  "main": {
+    "source": "C:\\Users\\mabal\\OneDrive\\NIHILOBA\\SHIDA\\Development\\SHIDA_Restaurant_Malewa_Release_Validation_Tracker.xlsx",
+    "source_sha256": "dc1eda9f0f361fd5216683e86bf8557204904f7c95525d3ce4e6df0e48e3a595",
+    "output": "C:\\NIHILOBA\\nihiloba-website\\docs\\evidence\\restaurant-settings-2026-10-15\\tracker-main-settings.xlsx",
+    "output_sha256": "a6b40d755b068b607b6f64869599dedc2beddb0c7e85114e8a8cfce641d648c4",
+    "added_rows": [
+      [
+        "Automated checks",
+        "A57:J57"
+      ],
+      [
+        "Sources and runs",
+        "A49:H49"
+      ]
+    ],
+    "all_original_cells_formulas_styles_preserved": true,
+    "unchanged_zip_parts": 21,
+    "changed_parts": [
+      "xl/worksheets/sheet3.xml",
+      "xl/worksheets/sheet6.xml"
+    ],
+    "applied_to_source_and_sha256_verified": true
+  },
+  "pilot": {
+    "source": "C:\\Users\\mabal\\OneDrive\\NIHILOBA\\SHIDA\\Development\\shida_restaurants_pilot_tracker_2026-10-10.xlsx",
+    "source_sha256": "6c3583081dda78c038bc170866371c076257bcbf4fb93ef9a4c761ef43b34714",
+    "output": "C:\\NIHILOBA\\nihiloba-website\\docs\\evidence\\restaurant-settings-2026-10-15\\tracker-pilot-settings.xlsx",
+    "output_sha256": "fb6c72cc230bfa92e3783aa223b7fbb0a4fe10af058654e06208ca3a7d25757b",
+    "added_rows": [
+      [
+        "Batch log",
+        "A27:F27"
+      ],
+      [
+        "Evidence",
+        "A37:C37"
+      ]
+    ],
+    "all_original_cells_formulas_styles_preserved": true,
+    "unchanged_zip_parts": 11,
+    "changed_parts": [
+      "xl/worksheets/sheet3.xml",
+      "xl/worksheets/sheet4.xml"
+    ],
+    "applied_to_source_and_sha256_verified": true
+  },
+  "whatsapp": {
+    "source": "C:\\NIHILOBA\\Backend\\docs\\evidence\\restaurants_whatsapp_2026_10_12\\release_validation_tracker.xlsx",
+    "source_sha256": "dc1eda9f0f361fd5216683e86bf8557204904f7c95525d3ce4e6df0e48e3a595",
+    "output": "C:\\NIHILOBA\\nihiloba-website\\docs\\evidence\\restaurant-settings-2026-10-15\\tracker-whatsapp-settings.xlsx",
+    "output_sha256": "a6b40d755b068b607b6f64869599dedc2beddb0c7e85114e8a8cfce641d648c4",
+    "added_rows": [
+      [
+        "Automated checks",
+        "A57:J57"
+      ],
+      [
+        "Sources and runs",
+        "A49:H49"
+      ]
+    ],
+    "all_original_cells_formulas_styles_preserved": true,
+    "unchanged_zip_parts": 21,
+    "changed_parts": [
+      "xl/worksheets/sheet3.xml",
+      "xl/worksheets/sheet6.xml"
+    ],
+    "applied_to_source_and_sha256_verified": true
+  }
+}
