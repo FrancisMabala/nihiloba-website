@@ -62,3 +62,8 @@ Changed Website areas: receiving editor and localization/validation, protected i
 Release trackers retain **Partial**, under `SCH01` and pilot evidence `S34`. Required open gates: matched authenticated staging, production-like PostgreSQL migration/concurrency, a real WhatsApp phone and Meta delivery behavior, physical phones/tablets, keyboard/assistive-technology acceptance, human FR/EN/LN/SW review, a human full-day solo-seller journey and a frozen-tree broader regression pass.
 
 Suggested commit message (not executed): `feat(restaurants): add reusable pickup and delivery schedules`
+
+
+## 16 October setup and foreground recovery update
+
+Optional advance-order setup and automatic draft-preserving foreground reads now supersede the stale-only lifecycle described above. Exact behavior and current verification: [return lifecycle handoff](restaurants-return-2026-10-16.md). Historical counts remain evidence of their original runs.

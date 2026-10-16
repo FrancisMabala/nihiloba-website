@@ -70,3 +70,8 @@ Changed Website files: `restaurant-intake.tsx` and its new CSS; `restaurant-rece
 Suggested commit message, not executed: `feat(restaurants): clarify receiving orders and effective intake status`.
 
 Current rollout semantics supersede per-establishment admission: see [15 October rollout](restaurants-intake-rollout-2026-10-15.md). Historical test counts describe their original runs.
+
+
+## 16 October setup and foreground recovery update
+
+Optional advance-order setup and automatic draft-preserving foreground reads now supersede the stale-only lifecycle described above. Exact behavior and current verification: [return lifecycle handoff](restaurants-return-2026-10-16.md). Historical counts remain evidence of their original runs.

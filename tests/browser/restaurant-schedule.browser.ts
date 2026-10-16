@@ -17,12 +17,12 @@ async function open(page:Page,locale:keyof typeof r){await page.goto(`${locale==
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,820,1440])test(`weekly schedule ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000});const state=await seed(page);await open(page,locale);const root=page.locator('.rst-intake');
  await expect(root.getByRole('heading',{name:r[locale].unavailable,exact:true})).toBeVisible();await expect(root.getByText(c[locale].saved,{exact:true})).toBeVisible();
- await page.screenshot({path:`docs/evidence/restaurant-schedules-2026-10-15/saved-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/restaurant-return-2026-10-16/regression-schedules/saved-${locale}-${width}.png`,fullPage:true});
  await root.getByRole('button',{name:r[locale].editPickup,exact:true}).click();await root.locator('.rst-intake-advanced summary').click();await root.getByLabel(c[locale].lead,{exact:true}).fill('25');await root.getByLabel(c[locale].tomorrow,{exact:true}).check();
  await expect(root.getByText(r[locale].editing,{exact:true})).toBeVisible();expect(state.writes).toHaveLength(0);
  await root.getByRole('button',{name:r[locale].reviewPickup,exact:true}).click();await expect(root.locator('.rst-intake-confirm')).toContainText('25');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/restaurant-schedules-2026-10-15/review-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/restaurant-return-2026-10-16/regression-schedules/review-${locale}-${width}.png`,fullPage:true});
  await root.getByRole('button',{name:r[locale].confirm,exact:true}).click();await expect.poll(()=>state.writes.length).toBe(1);await expect(root.locator('form')).toHaveCount(0);
  expect(JSON.parse(state.writes[0]).schedule.minimum_lead_minutes).toBe(25);await expect(root.getByRole('heading',{name:r[locale].unavailable,exact:true})).toBeVisible();
 });

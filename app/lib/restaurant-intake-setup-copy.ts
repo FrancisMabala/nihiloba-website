@@ -1,5 +1,9 @@
 import type { RestaurantLocale } from '../services/shida/restaurants-client';
 const en = {
+ "feeAmount": "Delivery fee amount",
+ "day": "Day",
+ "start": "From",
+ "end": "Until",
  "pickup": "Optional: customers order ahead and collect their food later. For food handed over immediately, use takeaway in Selling.",
  "delivery": "Optional: customers order ahead for delivery by your establishment. Choose where you deliver and the fee customers pay.",
  "optional": "Keep this service paused if you do not need advance orders. Editing a schedule or copying opening hours does not enable it.",
@@ -21,6 +25,10 @@ const en = {
 };
 export const intakeSetupCopy:Record<RestaurantLocale,typeof en> = {en,
 fr:{
+ "feeAmount": "Montant de la livraison",
+ "day": "Jour",
+ "start": "À partir de",
+ "end": "Jusqu’à",
  "pickup": "Facultatif : les clients commandent à l’avance et retirent leur repas plus tard. Pour un repas remis immédiatement, choisissez À emporter dans Vendre.",
  "delivery": "Facultatif : les clients commandent à l’avance pour une livraison par votre établissement. Indiquez les zones desservies et les frais payés par le client.",
  "optional": "Laissez ce service en pause si vous ne prenez pas de commandes à l’avance. Modifier un programme ou copier les horaires d’ouverture ne l’active pas.",
@@ -41,6 +49,10 @@ fr:{
  "deliveryIncomplete": "Pour enregistrer la livraison, complétez la zone et les frais. Ajoutez un programme hebdomadaire avant d’activer les commandes à l’avance."
 },
 ln:{
+ "feeAmount": "Ntalo ya komemela",
+ "day": "Mokolo",
+ "start": "Ebandeli",
+ "end": "Suka",
  "pickup": "Ya kopona : bakiliya bakomandaka liboso mpe bayaka kozwa bilei na nsima. Mpo na bilei oyo opesi mbala moko, pona Komema na Koteka.",
  "delivery": "Ya kopona : bakiliya bakomandaka liboso mpo ete etablissement na yo ememela bango bilei. Pona bisika oyo okomemela mpe mbongo oyo bakofuta.",
  "optional": "Tika service etelemi soki ozali na mposa ya bakomande ya liboso te. Kobongola ngonga to kokopa ngonga ya kofungola efungolaka yango te.",
@@ -61,6 +73,10 @@ ln:{
  "deliveryIncomplete": "Mpo na kobomba komemela, tondisa esika mpe ntalo. Bakisa ngonga ya pɔsɔ liboso ya kofungola bakomande ya liboso."
 },
 sw:{
+ "feeAmount": "Kiasi cha ada ya kupeleka",
+ "day": "Siku",
+ "start": "Kuanzia",
+ "end": "Hadi",
  "pickup": "Hiari: wateja huagiza mapema na kuchukua chakula baadaye. Kwa chakula kinachokabidhiwa mara moja, chagua Kubeba katika Kuuza.",
  "delivery": "Hiari: wateja huagiza mapema ili biashara yako iwapelekee chakula. Chagua maeneo unayopelekea na ada anayolipa mteja.",
  "optional": "Acha huduma imesitishwa ikiwa huhitaji maagizo ya mapema. Kubadilisha ratiba au kunakili saa za kufungua hakuiwashi.",

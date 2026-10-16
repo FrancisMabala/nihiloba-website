@@ -2,6 +2,7 @@ import {test,expect,type Page} from '@playwright/test';
 import {fixture} from './restaurant-c1e-fixture';
 import {managementNavigation} from './restaurant-management-navigation';
 import {receivingCopy as copy,type Receiving} from '../../app/lib/restaurant-receiving';
+import {intakeSetupCopy} from '../../app/lib/restaurant-intake-setup-copy';
 import {workText} from '../../app/lib/restaurant-work-copy';
 
 async function seed(page:Page) {
@@ -28,7 +29,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,820,1
  const r=copy[locale],root=page.locator('.rst-intake');await expect(root.getByRole('heading',{name:r.available,exact:true})).toBeVisible();
  await expect(root.locator('[data-service=pickup]').getByText(r.overnight,{exact:true})).toBeVisible();await expect(root.locator('input')).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/restaurant-receiving-2026-10-15/ready-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/restaurant-return-2026-10-16/regression-receiving/ready-${locale}-${width}.png`,fullPage:true});
 });
 test('release restriction, missing setup, expired periods and exceptional closure',async({page})=>{
  const s=await seed(page);s.released=false;s.status.in_person={available:false,reasons:['release']};s.status.pickup.activation_blockers=['release'];await open(page);
@@ -52,7 +53,7 @@ test('delivery review preserves its fee, areas and overnight periods',async({pag
  await seed(page);const writes:Record<string,unknown>[]=[];
  await page.route('**/RST_fixture/delivery-intake/**',route=>{writes.push(route.request().postDataJSON());return route.fulfill({json:{revision:2}});});
  await open(page);const root=page.locator('.rst-intake'),r=copy.en;
- await root.getByRole('button',{name:r.editDelivery,exact:true}).click();await root.getByLabel(workText('en','amount'),{exact:true}).fill('1500.25');
+ await root.getByRole('button',{name:r.editDelivery,exact:true}).click();await root.getByLabel(intakeSetupCopy.en.feeAmount,{exact:true}).fill('1500.25');
  await root.getByRole('button',{name:r.reviewDelivery,exact:true}).click();expect(writes).toHaveLength(0);await root.getByRole('button',{name:r.confirm,exact:true}).click();await expect.poll(()=>writes.length).toBe(1);
  expect(writes[0].fee).toEqual({amount:'1500.25',currency:'CDF'});expect(writes[0].areas).toEqual([{country:'CD',city:'Kinshasa',commune:'Gombe',quartier:null,scope:'whole_commune'}]);expect(writes[0].windows).toEqual([{starts_at:'2026-10-15T21:00:00+01:00',ends_at:'2026-10-16T02:00:00+01:00'}]);
 });
