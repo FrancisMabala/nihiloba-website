@@ -3,7 +3,7 @@ import Link from "next/link";
 import { managementCopy } from "../../lib/restaurant-management-copy";
 import { leaveWork } from "../../lib/restaurant-work";
 import { sellerDesignCopy } from "../../lib/restaurant-seller-design-copy";
-import { PersonalWhatsAppLogin } from "./personal-whatsapp-login";
+import { SellerLanding } from "./seller-landing";
 import { useEffect, useState, useRef } from "react";
 
 
@@ -73,7 +73,7 @@ export function WenzeSeller({ locale }: { locale: RestaurantLocale }) {
  <details className="rst-dropdown"><summary aria-label={t.languages}>{locale.toUpperCase()}</summary><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)} hrefLang={lang} onClick={event=>{if(!leaveWork())event.preventDefault();}} aria-current={locale === lang ? "page" : undefined}>{({fr:'FR',en:'EN',ln:'Lingala',sw:'Swahili'})[lang]}</Link>)}</nav></details>
  {session && <details className="rst-dropdown rst-account"><summary aria-label={management.account}>{session.user.display_name}</summary><div><button disabled={pending} onClick={()=>void logout(true)}>{management.changeAccount}</button><button disabled={pending} onClick={()=>void logout()}>{management.signOut}</button></div></details>}
  </div>
-   {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <div className="rst-signin"><div className="wz-signin-art" aria-hidden="true"><span>W</span><p>WENZE</p></div><div className="rst-signin-content"><p className="eyebrow">SHIDA / {design.area}</p><h1>{design.title}</h1><p className="rst-signin-intro">{design.intro}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={() => { signedOut.current = false; }}/><p className="rst-personal-note">{design.personal}</p><Link className="rst-browse-link" prefetch={false} href={`${locale === "en" ? "" : "/fr"}/shida/wenze`}>{t.browse} <span aria-hidden="true">→</span></Link></div></div>)}
+   {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <SellerLanding marketplace="wenze" locale={locale} design={design} browseHref={`${locale === "en" ? "" : "/fr"}/shida/wenze`} onAuthenticated={() => { signedOut.current = false; }}/>)}
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
   </section>

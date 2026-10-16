@@ -8,7 +8,7 @@ import { CartProvider } from "./shida/cart-provider";
 
 export function SiteChrome({ children, locale }: { children: ReactNode; locale: Locale }) {
   const pathname = usePathname();
-  const management = /^\/(?:fr\/|en\/|ln\/|sw\/)?shida\/seller\/(?:restaurants|wenze)(?:\/|$)/.test(pathname);
+  const management = /^\/(?:fr\/|en\/|ln\/|sw\/)?shida\/seller\/(?:restaurants|wenze|services)(?:\/|$)/.test(pathname);
   if (management) return <main id="main-content">{children}</main>;
   return <><CartProvider><Header locale={locale}/><main id="main-content">{children}</main></CartProvider><Footer locale={locale}/></>;
 }
