@@ -143,3 +143,18 @@ it('allows only exact Personal job declarations and paged customer history reads
  expect((await GET(request('transactions/reservations/RSV_one/customer-history/entries'),context('transactions/reservations/RSV_one/customer-history/entries'))).status).toBe(404);
  expect(fetcher).not.toHaveBeenCalled();
 });
+
+it('routes version-bound bill delivery and rejects injected scope',async()=>{
+ const path='transactions/reservations/RSV_one/bills/SBF_one/send';
+ const payload={version_ref:'SBV_one',revision:2,reservation_revision:1,idempotency_key:'bill-send-key'};
+ const response=await POST(request(path,'POST',payload),context(path));
+ expect(response.status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toContain('/api/dashboard/services/reservations/RSV_one/bills/SBF_one/send');
+ expect(response.headers.get('Cache-Control')).toContain('no-store');
+ expect(fetcher.mock.calls[0][1]?.body).toBe(JSON.stringify(payload));
+ fetcher.mockClear();
+ expect((await POST(request(path+'?organization_ref=BUS_wrong','POST',payload),context(path))).status).toBeGreaterThanOrEqual(400);
+ expect(fetcher).not.toHaveBeenCalled();
+ const history='transactions/bills/SBF_one/deliveries';
+ expect((await GET(request(history),context(history))).status).toBe(200);
+});

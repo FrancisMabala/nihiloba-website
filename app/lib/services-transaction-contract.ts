@@ -19,6 +19,7 @@ export function transactionPath(parts: string[], method: string): string | null 
     if (parts.length === 5 && parts[2] === 'entries' && /^(FEN|PSE)_[A-Za-z0-9_-]+$/.test(parts[3]) && parts[4] === 'corrections' && method === 'POST') return `services/finance/entries/${parts[3]}/corrections`;
     return null;
   }
+  if(parts[1]==='customer'&&parts[2]==='bill-notices'&&parts.length===3&&method==='GET')return 'services/customer/bill-notices';
   const reservation = /^RSV_[A-Za-z0-9_-]+$/;
   if (parts[1] === 'reservations' && reservation.test(parts[2] ?? '') && parts[3] === 'customer-history' && parts.length === 4 && method === 'GET')
     return `service-reservations/${parts[2]}/customer-history`;
@@ -26,15 +27,15 @@ export function transactionPath(parts: string[], method: string): string | null 
   if (parts[1] === 'customer' && parts[2] === 'reservations' && reservation.test(parts[3] ?? '')
       && parts[4] === 'bills' && parts.length === 5 && method === 'GET')
     return `services/customer/reservations/${parts[3]}/bills`;
-  if (parts[1] === 'bills' && bill.test(parts[2] ?? '') && parts[3] === 'history'
-      && parts.length === 4 && method === 'GET') return `services/bills/${parts[2]}/history`;
+  if (parts[1] === 'bills' && bill.test(parts[2] ?? '') && ['history','deliveries'].includes(parts[3])
+      && parts.length === 4 && method === 'GET') return `services/bills/${parts[2]}/${parts[3]}`;
   if (parts[1] === 'reservations' && reservation.test(parts[2] ?? '') && parts[3] === 'bills') {
     if (parts.length === 4 && ['GET','POST'].includes(method))
       return `services/reservations/${parts[2]}/bills`;
     if (bill.test(parts[4] ?? '')) {
       if (parts.length === 5 && method === 'PATCH')
         return `services/reservations/${parts[2]}/bills/${parts[4]}`;
-      if (parts.length === 6 && ['issue','replace','void'].includes(parts[5]) && method === 'POST')
+      if (parts.length === 6 && ['issue','replace','void','send','retry'].includes(parts[5]) && method === 'POST')
         return `services/reservations/${parts[2]}/bills/${parts[4]}/${parts[5]}`;
     }
   }
@@ -60,6 +61,7 @@ export function transactionPath(parts: string[], method: string): string | null 
   return null;
 }
 export function transactionQuery(parts:string[], query:URLSearchParams, method:string): boolean {
+  if(parts[1]==='customer'&&parts[2]==='bill-notices'&&parts.length===3&&method==='GET')return [...query].every(([key,value])=>key==='offset'&&query.getAll(key).length===1&&/^\d{1,6}$/.test(value));
   if(parts[1]==='reports'&&parts.length===3&&method==='GET')return [...query].length===2&&['start_date','end_date'].every(key=>query.getAll(key).length===1&&/^\d{4}-\d{2}-\d{2}$/.test(query.get(key)??''));
   if(parts[1]==='templates'&&parts.length===2&&method==='GET')
     return [...query].every(([key,value])=>key==='kind'&&['quote','bill'].includes(value)&&query.getAll(key).length===1);

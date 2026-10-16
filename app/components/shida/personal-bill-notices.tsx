@@ -1,0 +1,19 @@
+"use client";
+import Link from "next/link";
+import {useEffect,useState} from "react";
+import {restorePersonalSession,PERSONAL_SESSION_EVENT,type PersonalSession} from "@/app/lib/personal-session-browser";
+import {PersonalWhatsAppLogin} from "./personal-whatsapp-login";
+type Locale="fr"|"en"|"ln"|"sw";
+const copy={en:{title:"My Service bill notices",login:"Sign in to view your private bill notices.",issued:"Service bill available",void:"Service bill voided",open:"Open current statement",empty:"No bill notices.",failed:"Notices could not be loaded. Try again.",next:"Next",back:"Back",old:"Earlier version"},fr:{title:"Mes avis de factures de service",login:"Connectez-vous pour voir vos avis privés.",issued:"Relevé de frais disponible",void:"Relevé de frais annulé",open:"Ouvrir le relevé actuel",empty:"Aucun avis de facture.",failed:"Chargement impossible. Réessayez.",next:"Suivant",back:"Retour",old:"Ancienne version"},ln:{title:"Mayebisi ya facture ya mosala na ngai",login:"Kota mpo na kotala mayebisi na yo ya sekele.",issued:"Mokanda ya mbongo ezali",void:"Mokanda ya mbongo elongolami",open:"Fungola mokanda ya sikawa",empty:"Liyebisi ya facture ezali te.",failed:"Kofungola elongi te. Meka lisusu.",next:"Ya sima",back:"Zonga",old:"Version ya kala"},sw:{title:"Taarifa zangu za bili za huduma",login:"Ingia kuona taarifa zako za faragha.",issued:"Bili ya huduma inapatikana",void:"Bili ya huduma imebatilishwa",open:"Fungua taarifa ya sasa",empty:"Hakuna taarifa za bili.",failed:"Taarifa hazikupakiwa. Jaribu tena.",next:"Inayofuata",back:"Rudi",old:"Toleo la awali"}} as const;
+type Notice={version_ref:string;kind:string;current:boolean;statement_path:string};
+export function PersonalBillNotices({locale}:{locale:Locale}){
+ const [session,setSession]=useState<PersonalSession|null>(null),[ready,setReady]=useState(false);
+ useEffect(()=>{let active=true;const check=()=>void restorePersonalSession().then(value=>{if(active)setSession(value);}).catch(()=>{if(active)setSession(null);}).finally(()=>{if(active)setReady(true);});check();window.addEventListener(PERSONAL_SESSION_EVENT,check);return()=>{active=false;window.removeEventListener(PERSONAL_SESSION_EVENT,check);};},[]);
+ const t=copy[locale];return <main lang={locale} style={{maxWidth:900,margin:"auto",padding:"1rem"}}><h1>{t.title}</h1>{!ready?<p>…</p>:session?<NoticeList key={session.binding+locale} binding={session.binding} locale={locale}/>:<><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>void restorePersonalSession().then(setSession)}/></>}</main>;
+}
+function NoticeList({binding,locale}:{binding:string;locale:Locale}){
+ const [rows,setRows]=useState<Notice[]>([]),[offset,setOffset]=useState(0),[more,setMore]=useState(false),[failed,setFailed]=useState(false);
+ useEffect(()=>{let active=true;const controller=new AbortController();void fetch(`/api/shida/personal/services/transactions/customer/bill-notices?offset=${offset}`,{credentials:"include",cache:"no-store",signal:controller.signal,headers:{"X-Shida-Session":binding}}).then(response=>{if(!response.ok)throw new Error();return response.json();}).then(value=>{if(active){setRows(value.notices);setMore(value.has_more);setFailed(false);}}).catch(()=>{if(active)setFailed(true);});return()=>{active=false;controller.abort();};},[binding,offset]);
+ const t=copy[locale],prefix=locale==="en"?"":`/${locale}`;
+ return <section>{failed?<p role="alert">{t.failed}</p>:rows.length===0?<p>{t.empty}</p>:<ul>{rows.map(row=><li key={row.version_ref}>{row.kind==="void"?t.void:t.issued}{!row.current&&` · ${t.old}`} · <Link href={prefix+row.statement_path}>{t.open}</Link></li>)}</ul>}<button disabled={offset===0} onClick={()=>setOffset(value=>Math.max(0,value-20))}>{t.back}</button><button disabled={!more} onClick={()=>setOffset(value=>value+20)}>{t.next}</button></section>;
+}
