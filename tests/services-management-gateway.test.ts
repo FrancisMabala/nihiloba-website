@@ -2,7 +2,7 @@ import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 const token='isolated_test_session_not_real_123456';
 const jar=new Map<string,string>();
 vi.mock('next/headers',()=>({cookies:async()=>({get:(key:string)=>jar.has(key)?{value:jar.get(key)}:undefined,set:(key:string,value:string)=>{if(value)jar.set(key,value);else jar.delete(key);}})}));
-import {GET,POST,PATCH} from '../app/api/shida/personal/services/[[...path]]/route';
+import {GET,POST,PATCH,DELETE} from '../app/api/shida/personal/services/[[...path]]/route';
 import {PERSONAL_SESSION_COOKIE,personalSessionBinding} from '../app/api/shida/employment/route-utils';
 const fetcher=vi.fn<typeof fetch>();
 const context=(path='')=>({params:Promise.resolve({path:path?path.split('/'):[]})});
@@ -157,4 +157,25 @@ it('routes version-bound bill delivery and rejects injected scope',async()=>{
  expect(fetcher).not.toHaveBeenCalled();
  const history='transactions/bills/SBF_one/deliveries';
  expect((await GET(request(history),context(history))).status).toBe(200);
+});
+
+it('archives and restores only an exact Personal service with a bounded revision',async()=>{
+ expect((await DELETE(request('SVC_one?expected_revision=3','DELETE',{}),context('SVC_one'))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/service-profiles/SVC_one?expected_revision=3');
+ expect(fetcher.mock.calls[0][1]?.method).toBe('DELETE');
+ expect((await POST(request('SVC_one/reactivate?expected_revision=4','POST',{}),context('SVC_one/reactivate'))).status).toBe(200);
+ expect(String(fetcher.mock.calls[1][0])).toBe('https://backend.test/api/dashboard/service-profiles/SVC_one/reactivate?expected_revision=4');
+ fetcher.mockClear();
+ for(const query of ['', '?expected_revision=-1', '?expected_revision=0', '?expected_revision=1&expected_revision=2','?expected_revision=3&organization_ref=BUS_other']){
+  expect((await DELETE(request('SVC_one'+query,'DELETE',{}),context('SVC_one'))).status).toBe(404);
+  expect((await POST(request('SVC_one/reactivate'+query,'POST',{}),context('SVC_one/reactivate'))).status).toBe(404);
+ }
+ expect((await DELETE(request('SVC_one?expected_revision=3','DELETE',{}, {Origin:'https://other.invalid'}),context('SVC_one'))).status).toBe(403);
+ expect((await DELETE(request('SVC_one?expected_revision=3','DELETE',{}, {'X-Shida-Session':'stale'}),context('SVC_one'))).status).toBe(401);
+ expect(fetcher).not.toHaveBeenCalled();
+});
+it('edits a Personal social link without accepting context selectors',async()=>{
+ expect((await PATCH(request('SVC_one','PATCH',{expected_revision:3,field:'social_link',value:'https://example.com'}),context('SVC_one'))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/service-profiles/SVC_one');
+ expect((await PATCH(request('SVC_one?organization_ref=BUS_other','PATCH',{}),context('SVC_one'))).status).toBe(404);
 });

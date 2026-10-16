@@ -25,6 +25,7 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?offering=SVC_personal`);
  await expect(page.getByRole('heading',{name:labels[locale].title})).toBeVisible();
  await expect(page.getByText('Home repair').first()).toBeVisible();
+ await page.locator('.svc-pilot summary').click();
  await expect(page.getByText(new RegExp(labels[locale].pilot))).toBeVisible();
  await expect(page.getByRole('button',{name:'Personal Pro'})).toHaveCount(0);
  await page.getByRole('button',{name:labels[locale].publish}).click();

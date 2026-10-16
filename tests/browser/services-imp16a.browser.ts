@@ -1,3 +1,4 @@
+import {providerCopy} from "../../app/lib/services-provider-copy";
 import {test,expect} from '@playwright/test';
 
 const labels={
@@ -35,7 +36,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`IMP-16A Personal mobile
   if(path.endsWith('/transactions/messages'))return route.fulfill({json:{threads:[]}});
   return route.fulfill({json:{}});
  });
- await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services`);
+ await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=work`);
  const history=page.getByRole('region',{name:labels[locale].history});
  await history.getByRole('combobox').selectOption('RSV_one');
  await expect(history.getByRole('article')).toHaveCount(2);
@@ -44,6 +45,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`IMP-16A Personal mobile
  await expect(totals.getByRole('heading',{name:labels[locale].category})).toBeVisible();
  await expect(totals.getByRole('heading',{name:labels[locale].trail})).toBeVisible();
  await expect(totals.getByText('9.00 USD').first()).toBeVisible();
+ await page.getByRole("navigation",{name:providerCopy[locale].navigation}).getByRole("button",{name:providerCopy[locale].work,exact:true}).click();
  await history.locator('article').first().getByRole('button').first().click();
  await expect(page.locator('.services-transactions fieldset h3').filter({hasText:'Repair'})).toBeVisible();
  await expect(page.locator('body')).not.toContainText('Private address');

@@ -1,19 +1,82 @@
 "use client";
 import Link from "next/link";
-import {useEffect,useState} from "react";
-import {PersonalWhatsAppLogin} from "./personal-whatsapp-login";
-import {ServicesManagement} from "./services-management";
-import {restorePersonalSession,PERSONAL_SESSION_EVENT,type PersonalSession} from "@/app/lib/personal-session-browser";
+import { managementCopy } from "../../lib/restaurant-management-copy";
+import { leaveWork } from "../../lib/restaurant-work";
+import { PersonalWhatsAppLogin } from "./personal-whatsapp-login";
+import { useEffect, useState, useRef } from "react";
 
-type Locale="fr"|"en"|"ln"|"sw";
-const names={fr:"Mes services",en:"My Services",ln:"Misala na ngai",sw:"Huduma zangu"};
-const signIn={fr:"Connectez-vous avec votre compte personnel pour gérer vos services.",en:"Sign in with your Personal account to manage your services.",ln:"Kota na compte na yo mpo na kotambwisa misala na yo.",sw:"Ingia kwa akaunti yako binafsi ili kusimamia huduma zako."};
-export function PersonalServicesManager({locale,offeringRef=null}:{locale:Locale;offeringRef?:string|null}){
- const [session,setSession]=useState<PersonalSession|null>(null),[loading,setLoading]=useState(true);
- useEffect(()=>{let active=true;const check=async()=>{try{const value=await restorePersonalSession();if(active)setSession(value);}catch{if(active)setSession(null);}finally{if(active)setLoading(false);}};
-  void check();const focus=()=>void check();window.addEventListener(PERSONAL_SESSION_EVENT,focus);window.addEventListener("focus",focus);return()=>{active=false;window.removeEventListener(PERSONAL_SESSION_EVENT,focus);window.removeEventListener("focus",focus);};},[]);
- const path=(lang:Locale)=>`${lang==="en"?"":`/${lang}`}/shida/seller/services`;
- return <main lang={locale} style={{maxWidth:1100,margin:"auto",padding:"1rem"}}><nav aria-label="Services"><Link href={`${locale==="en"?"":`/${locale}`}/shida/services`}>Services</Link> · {(["fr","en","ln","sw"] as Locale[]).map(lang=><span key={lang}> <Link href={path(lang)} hrefLang={lang} aria-current={lang===locale?"page":undefined}>{lang.toUpperCase()}</Link> </span>)}</nav>
-  <h1>{names[locale]}</h1>{loading?<p role="status">…</p>:session?<ServicesManagement key={session.binding+locale} binding={session.binding} locale={locale} offeringRef={offeringRef}/>:<section><p>{signIn[locale]}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>void restorePersonalSession().then(setSession).catch(()=>setSession(null))}/></section>}
- </main>;
+
+import { endEmploymentSession } from "../../services/shida/employment-browser-client";
+import { restorePersonalSession, PersonalSessionError, PERSONAL_SESSION_EVENT, type PersonalSession } from "../../lib/personal-session-browser";
+import { sellerConnectionText } from "../../lib/restaurant-seller-copy";
+import { restaurantText, sellerChrome } from "../../lib/restaurant-seller-copy";
+import { restaurantLocales } from "../../lib/restaurant-i18n";
+import type { RestaurantLocale } from "../../services/shida/restaurants-client";
+import { ServicesManagement } from "./services-management";
+
+import { providerCopy } from "@/app/lib/services-provider-copy";
+import "./services-provider.css";
+import "./restaurant-seller.css";
+
+export const sellerPath = (locale: RestaurantLocale) => `${locale === "en" ? "" : `/${locale}`}/shida/seller/services`;
+export function PersonalServicesManager({ locale, offeringRef = null }: { locale: RestaurantLocale; offeringRef?: string | null }) {
+ const t = sellerChrome[locale];
+ const copy = providerCopy[locale];
+ const management = managementCopy[locale];
+ const [signedOutView, setSignedOutView] = useState(false);
+ const design = {area:copy.area,title:copy.title,intro:copy.intro,personal:copy.personal};
+ const [session, setSession] = useState<PersonalSession | null>(null);
+ const [connectionLost, setConnectionLost] = useState(false);
+ const [loading, setLoading] = useState(true), [pending, setPending] = useState(false), [message, setMessage] = useState("");
+ const generation = useRef(0), alive = useRef(false), signedOut = useRef(false);
+ useEffect(() => {
+  alive.current = true;
+  let inFlight: AbortController | null = null;
+  let authenticated = false;
+  const invalidate = () => { ++generation.current; };
+  async function check(clear = false) {
+   if (signedOut.current) return;
+   if (clear) { inFlight?.abort(); inFlight = null; authenticated = false; }
+   else if (inFlight) return;
+   const current = ++generation.current;
+   if (clear) { setSession(null); }
+   if (!navigator.onLine) { setConnectionLost(true); setLoading(false); return; }
+   const controller = new AbortController(); inFlight = controller;
+   const timeout = setTimeout(() => controller.abort(), 15000);
+   try { const value = await restorePersonalSession(controller.signal); if (alive.current && current === generation.current) { authenticated = true; setSession(value); setConnectionLost(false); } }
+   catch (error) { if (alive.current && current === generation.current) {
+    if (error instanceof PersonalSessionError && [401, 403].includes(error.status)) { authenticated = false; setSession(null); setConnectionLost(false); }
+    else setConnectionLost(true);
+   } }
+   finally { clearTimeout(timeout); if (inFlight === controller) inFlight = null; if (alive.current && current === generation.current) setLoading(false); }
+  }
+  const changed = () => { void check(true); };
+  const storage = (event: StorageEvent) => { if (event.key === PERSONAL_SESSION_EVENT) changed(); };
+  const focus = () => { void check(); };
+  const offline = () => { ++generation.current; inFlight?.abort(); inFlight = null; setConnectionLost(true); setLoading(false); };
+  const visible = () => { if (document.visibilityState === "visible") focus(); };
+  void check(); const timer = setInterval(() => { if (authenticated && navigator.onLine && document.visibilityState === "visible") focus(); }, 60000);
+  window.addEventListener(PERSONAL_SESSION_EVENT, changed); window.addEventListener("storage", storage); window.addEventListener("focus", focus); window.addEventListener("online", focus); window.addEventListener("offline", offline); document.addEventListener("visibilitychange", visible);
+  return () => { alive.current = false; invalidate(); inFlight?.abort(); clearInterval(timer); window.removeEventListener(PERSONAL_SESSION_EVENT, changed); window.removeEventListener("storage", storage); window.removeEventListener("focus", focus); window.removeEventListener("online", focus); window.removeEventListener("offline", offline); document.removeEventListener("visibilitychange", visible); };
+ }, []);
+ async function logout(changeAccount = false) {
+  if (!leaveWork()) return;
+  signedOut.current = true; ++generation.current; setSession(null); setPending(true); setMessage("");
+  try { await endEmploymentSession(); setSession(null); setSignedOutView(!changeAccount); }
+  catch { setMessage(t.unavailable); }
+  finally { if (alive.current) setPending(false); }
+ }
+ return <div lang={locale} className="rst-seller svc-provider">
+<section className="rst container rst-shell"><div className="rst-topline">
+ <Link className="rst-brand" prefetch={false} href={`${locale === "en" ? "" : "/fr"}/shida/services`} aria-label={`SHIDA · ${management.marketplace}`}>SHIDA<span>{management.marketplace} ↗</span></Link>
+ <span className="rst-workspace-label">{copy.title}</span>
+ <details className="rst-dropdown"><summary aria-label={t.languages}>{locale.toUpperCase()}</summary><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)+(offeringRef?`?offering=${encodeURIComponent(offeringRef)}`:"")} hrefLang={lang} onClick={event=>{if(!leaveWork())event.preventDefault();}} aria-current={locale === lang ? "page" : undefined}>{({fr:'FR',en:'EN',ln:'Lingala',sw:'Swahili'})[lang]}</Link>)}</nav></details>
+ {session && <details className="rst-dropdown rst-account"><summary aria-label={management.account}>{session.user.display_name}</summary><div><button disabled={pending} onClick={()=>void logout(true)}>{management.changeAccount}</button><button disabled={pending} onClick={()=>void logout()}>{management.signOut}</button></div></details>}
+ </div>
+   {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <div className="rst-signin"><div className="svc-signin-art" aria-hidden="true"><span>S</span><p>SHIDA SERVICES</p><div>✦</div></div><div className="rst-signin-content"><p className="eyebrow">SHIDA / {design.area}</p><h1>{design.title}</h1><p className="rst-signin-intro">{design.intro}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={() => { signedOut.current = false; }}/><p className="rst-personal-note">{design.personal}</p><Link className="rst-browse-link" prefetch={false} href={`${locale === "en" ? "" : "/fr"}/shida/services`}>{t.browse} <span aria-hidden="true">→</span></Link></div></div>)}
+   {message && <p role="status">{message}</p>}
+   {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
+  </section>
+  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><ServicesManagement key={`${session.binding}:${locale}`} binding={session.binding} locale={locale} offeringRef={offeringRef} onUnauthorized={()=>setSession(null)}/></fieldset>}
+ </div>;
 }

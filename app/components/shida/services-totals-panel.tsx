@@ -28,10 +28,10 @@ const today=()=>new Date().toISOString().slice(0,10);
 const first=()=>today().slice(0,7)+"-01";
 const next=()=>{const [year,month]=today().split("-").map(Number);return new Date(Date.UTC(year,month,1)).toISOString().slice(0,10);};
 
-export function ServicesTotalsPanel({base,binding,locale}:{base:string;binding:string;locale:Locale}){
+export function ServicesTotalsPanel({base,binding,locale,initialReservationRef=null}:{base:string;binding:string;locale:Locale;initialReservationRef?:string|null}){
  const t=copy[locale]??copy.en;
  const d=detailCopy[locale]??detailCopy.en;
- const [start,setStart]=useState(first),[end,setEnd]=useState(next),[jobs,setJobs]=useState<Reservation[]>([]),[selected,setSelected]=useState("");
+ const [start,setStart]=useState(first),[end,setEnd]=useState(next),[jobs,setJobs]=useState<Reservation[]>([]),[selected,setSelected]=useState(initialReservationRef??"");
  const [period,setPeriod]=useState<Totals|null>(null),[job,setJob]=useState<Totals|null>(null),[asOf,setAsOf]=useState(""),[error,setError]=useState(false),[busy,setBusy]=useState(false);
  const [entries,setEntries]=useState<Entry[]>([]),[nextEntry,setNextEntry]=useState<number|null>(null);
  const requestId=useRef(0);

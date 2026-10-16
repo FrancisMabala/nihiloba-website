@@ -16,7 +16,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`IMP-16B Personal mobile
   if(path.endsWith('/transactions/reports/operational.csv'))return route.fulfill({body:'offering,bookings_created\nRepair,1\n',contentType:'text/csv',headers:{'Content-Disposition':'attachment; filename="services-operational-report.csv"'}});
   return route.fulfill({json:{}});
  });
- await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services`);
+ await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=reports`);
  const report=page.getByRole('region',{name:titles[locale]});
  await report.getByRole('button',{name:/report|rapport|lapolo|ripoti/i}).first().click();
  await expect(report.getByText('Repair')).toBeVisible();

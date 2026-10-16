@@ -26,7 +26,7 @@ test('Personal provider records and corrects a partial receipt after offering wi
   if(path.includes('/transactions/'))return route.fulfill({json:{requests:[],reservations:[],threads:[],has_more:false}});
   return route.fulfill({status:404,json:{detail:'unavailable'}});
  });
- await page.goto('/shida/seller/services');
+ await page.goto('/shida/seller/services?view=finance');
  const journal=page.getByRole('region',{name:'Services journal'});
  await expect(journal.getByText(/does not verify payment/)).toBeVisible();
  await journal.getByLabel('Select or enter an authorized reservation').fill('RSV_one');

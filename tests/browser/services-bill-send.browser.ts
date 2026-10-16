@@ -13,7 +13,7 @@ for(const [locale,sendLabel,retryLabel,accepted] of [['en','Send bill','Retry Wh
   const responses:Record<string,unknown>={requests:{requests:[]},reservations:{reservations:[booking]},'reservations/RSV_one':booking,'reservations/RSV_one/lifecycle':{...booking,actions:[],rescheduling:{actions:[],proposal:null}},'reservations/RSV_one/bills':{bill_ref:'SBF_one',current:bill},'bills/SBF_one/history':{versions:[bill]},'bills/SBF_one/deliveries':{deliveries}};
   return route.fulfill({json:responses[tx]??{profiles:[]}});
  });
- await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services`);
+ await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=work`);
  const workspace=page.getByRole('region',{name:t('workspace')});
  await workspace.getByRole('button',{name:t('reservations'),exact:true}).click();
  await workspace.getByRole('button',{name:/Repairs/}).click();

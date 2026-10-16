@@ -1,4 +1,6 @@
 # Services IMP-13C provider workspace
+Current provider navigation and public design are documented in [Personal Services provider area](services-provider-area-2026-10-16.md). That update exposes the existing Free/Pro pilot functions through focused sections and retains these transaction contracts.
+
 
 The existing private Services area at `/[fr|ln|sw]/shida/seller/services` (English has no prefix) now includes requests and scheduled
 quotes, flexible bookings, and transaction messages. Account-completion links

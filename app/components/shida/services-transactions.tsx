@@ -1,4 +1,6 @@
 "use client";
+import {useWorkDraft,leaveWork} from "@/app/lib/restaurant-work";
+import {providerCopy} from "@/app/lib/services-provider-copy";
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {servicesText,type ServicesLocale} from './services-transaction-copy';
 import {ServicesBillPanel} from './services-bill-panel';
@@ -14,13 +16,14 @@ const branchLabel=(row:Row)=>{const branch=row.selected_branch as Row|undefined;
 const transactionRef=(row:Row)=>str(row,'thread_ref')||str(row,'request_ref')||str(row,'reservation_ref');
 const inputDate=(value:string)=>value?value.replace(/Z$/,'').slice(0,16):'';
 
-export function ServicesTransactions({base,binding,locale,offeringRef,billAvailable,financeAvailable,onDenied}:{base:string;binding:string;locale:ServicesLocale;offeringRef?:string|null;billAvailable:boolean;financeAvailable:boolean;onDenied:()=>void}) {
+export function ServicesTransactions({base,binding,locale,initialKind='requests',offeringRef,billAvailable,financeAvailable,onDenied}:{base:string;binding:string;locale:ServicesLocale;initialKind?:Kind;offeringRef?:string|null;billAvailable:boolean;financeAvailable:boolean;onDenied:()=>void}) {
  const t=useCallback((key:string)=>servicesText(locale,key),[locale]);
- const [kind,setKind]=useState<Kind>('requests'),[rows,setRows]=useState<Row[]>([]),[offset,setOffset]=useState(0),[more,setMore]=useState(false);
+ const [kind,setKind]=useState<Kind>(initialKind),[rows,setRows]=useState<Row[]>([]),[offset,setOffset]=useState(0),[more,setMore]=useState(false);
  const [detail,setDetail]=useState<Row|null>(null),[lifecycle,setLifecycle]=useState<Row|null>(null),[quotes,setQuotes]=useState<Row[]>([]),[quote,setQuote]=useState<Row|null>(null),[quoteOffset,setQuoteOffset]=useState(0),[quoteMore,setQuoteMore]=useState(false);
  const [messageOffset,setMessageOffset]=useState(0);
  const replay=useRef<{fingerprint:string;key:string}|null>(null);
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[form,setForm]=useState<string|null>(null),[fields,setFields]=useState<Record<string,string>>({});
+ useWorkDraft(form!==null,providerCopy[locale].leave);
  const pendingBooking=useRef<string|null>(null);
  const pendingLink=useRef<{kind:Kind;ref:string;quoteRef?:string}|null>(null);
  const generation=useRef(0),alive=useRef(false),denied=useRef(onDenied);
@@ -89,7 +92,7 @@ export function ServicesTransactions({base,binding,locale,offeringRef,billAvaila
  const reasonChoices=form==='decline'?kind==='requests'?['NOT_AVAILABLE','OUTSIDE_SCOPE','CANNOT_SERVE_LOCATION','INSUFFICIENT_INFORMATION','OTHER']:['provider_unavailable','slot_unavailable','request_mismatch','area_too_far','insufficient_information','other']:form==='cancel'?['UNAVAILABLE','EMERGENCY','SCHEDULING_ISSUE','CANNOT_PERFORM_SERVICE','OTHER']:form==='dispute'?(lifecycle?.dispute_reasons as string[]??[]):[];
  return <section className="services-transactions" aria-label={t('workspace')}>
   <ServicesCustomerHistory base={base} binding={binding} locale={locale} financeAvailable={financeAvailable} onOpen={(target,ref,quoteRef)=>{pendingLink.current={kind:target,ref,quoteRef};if(kind===target&&offset===0)void load();else{setKind(target);setOffset(0);}}}/>
-  <h2>{t('workspace')}</h2><fieldset disabled={busy}><div className="transaction-actions">{(['requests','reservations','messages'] as Kind[]).map(value=><button type="button" key={value} aria-pressed={kind===value} onClick={()=>{clear();setOffset(0);setKind(value);setNotice('');}}>{t(value)}</button>)}<button type="button" onClick={()=>void load()}>{t('refresh')}</button></div></fieldset>
+  <h2>{t('workspace')}</h2><fieldset disabled={busy}><div className="transaction-actions">{(['requests','reservations','messages'] as Kind[]).map(value=><button type="button" key={value} aria-pressed={kind===value} onClick={()=>{if(!leaveWork())return;clear();setOffset(0);setKind(value);setNotice('');}}>{t(value)}</button>)}<button type="button" onClick={()=>void load()}>{t('refresh')}</button></div></fieldset>
   {busy&&<p role="status" aria-live="polite">…</p>}{notice&&<p role="status">{notice}</p>}
   {!detail?<fieldset disabled={busy}>{visibleRows.length===0&&!busy&&<p>{t('empty')}</p>}{visibleRows.map(row=><button className="transaction-row" type="button" key={transactionRef(row)} onClick={()=>void open(row)}><strong>{title(row)}</strong><span>{t(str(row,'status'))} · {str(row,'requester')||str(row,'requester_name')||str(row,'preview')}</span><span>{str(row,'requested_datetime')||stamp(row.created_at||row.last_message_at)}</span></button>)}<div className="transaction-actions">{offset>0&&<button onClick={()=>setOffset(Math.max(0,offset-pageSize))}>{t('previous')}</button>}{more&&<button onClick={()=>setOffset(offset+pageSize)}>{t('more')}</button>}</div></fieldset>:
    <fieldset disabled={busy}><button type="button" onClick={()=>void load()}>{t('back')}</button><h3>{title(detail)}</h3><p>{t(str(detail,'status'))}</p><p>{str(detail,'description')}</p>{branchLabel(detail)&&<p>📍 {branchLabel(detail)}</p>}

@@ -36,10 +36,10 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`provider transaction jo
   return route.fulfill({status:404,json:{detail:'unavailable'}});
  });
  const destination=()=>`${locale==='en'?'':`/${locale}`}/shida/seller/services`;
- await page.goto(destination());
+ await page.goto(destination()+"?view=work");
  const workspace=page.getByRole('region',{name:t('workspace')});
  await expect(workspace.getByText(t('empty'))).toBeVisible();
- empty=false;await page.goto(destination()+'?offering=SVC_saved');
+ empty=false;await page.goto(destination()+'?offering=SVC_saved&view=work');
  await workspace.getByRole('button',{name:/Repairs A/}).click();
  await workspace.getByRole('button',{name:t('review'),exact:true}).click();
  await workspace.getByRole('button',{name:t('confirm'),exact:true}).click();
