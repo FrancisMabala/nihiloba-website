@@ -1,5 +1,12 @@
 # Personal Services provider area and public marketplace
 
+Booking/save correction (17 October 2026): unset home-service values now remain
+visibly unset instead of sending the invalid database default, and provider
+approval has an accessible selector independent of fixed-slot scheduling. No
+additional environment variable is required. See the
+[diagnosis, focused validation and release notes](services-booking-fix-2026-10-17.md),
+including four existing WhatsApp regression failures outside this website fix.
+
 Setup design follow-up: the first-service invitation and form now use a compact SHIDA card, clearer localized labels and a prominent create action. The marketplace access checks and existing creation/retry semantics are preserved. See [setup design and focused validation](services-provider-setup-2026-10-16.md).
 
 Implemented locally on 16 October 2026. Entry: `/shida/seller/services`, with `/fr`, `/ln`, `/sw` and `/en` equivalents. The public collection remains English/French at `/shida/services` and `/fr/shida/services`.

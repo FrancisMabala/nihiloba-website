@@ -138,6 +138,7 @@
 .svc-provider .svc-setup-form :is(input,select){box-sizing:border-box;width:100%;min-width:0;min-height:48px;border:1px solid #cbd2c4;border-radius:8px;padding:11px 13px;background:#fffefa;color:#263d33;font:inherit;font-size:1rem;font-weight:400;line-height:1.5}
 .svc-setup-form input::placeholder{color:#7a8177;opacity:1}
 .svc-provider .svc-setup-form .svc-field-hint{margin:0;font-size:.78rem;line-height:1.5;font-weight:400;color:var(--svc-muted)}
+.svc-details-form .svc-form-grid{align-items:start}
 .svc-setup-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:4px}
 .svc-provider .svc-setup-actions button,.svc-provider .svc-setup-start,.svc-provider .svc-setup-retry{min-height:48px;font-size:.9rem;font-weight:600;padding:12px 20px}
 .svc-setup-actions .svc-primary span,.svc-setup-start span{margin-left:14px}
