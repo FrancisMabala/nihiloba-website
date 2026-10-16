@@ -7,3 +7,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Standing implementation and release instructions
+
+Complete agreed implementations, update documentation, run relevant checks, and commit locally without asking again. Make routine implementation decisions independently. Commit only changes belonging to the task.
+
+Do not push unless I explicitly authorize it, because pushing may trigger deployment. Before release, report what changed, validation results, and any migration or deployment requirements.
+
+These standing instructions constitute explicit authorization for task-scoped local commits and supersede any earlier requirement to ask separately before committing. All other existing instructions remain in force.
