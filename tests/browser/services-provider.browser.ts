@@ -1,5 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {providerCopy} from '../../app/lib/services-provider-copy';
+import {marketplaceEntryCopy} from '../../app/lib/marketplace-entry-copy';
 
 const capabilities=['profile','offerings','packages','pilot_publication','reviews_read','requests_quotes','reservations','messages','bills','bill_reminders','manual_journal','basic_totals','operational_reports','financial_reports','quote_templates','bill_templates'];
 async function fixture(page:Page,{empty=false,bundle='personal_free'}={}){
@@ -64,7 +65,7 @@ for(const [locale,width] of [['en',360],['fr',1440],['ln',820],['sw',390]] as co
 test('empty setup retries exactly once with the same creation key, then archives and restores',async({page})=>{
  const state=await fixture(page,{empty:true});state.failCreate=true;
  await page.goto('/shida/seller/services');await expect(page.locator('.svc-sidebar')).toHaveCount(0);await page.getByRole('button',{name:'Create my provider profile'}).click();
- const form=page.locator('.svc-new-service');await form.getByLabel('Provider name').fill('Atelier Kin');await form.getByLabel('Service',{exact:true}).fill('Home repair');await form.getByLabel('Category').selectOption('repair_maintenance');await form.getByRole('button',{name:'Add service'}).click();
+ const form=page.locator('.svc-new-service');await form.getByLabel('Public provider name',{exact:true}).fill('Atelier Kin');await form.getByLabel('Service name',{exact:true}).fill('Home repair');await form.getByLabel('Category').selectOption('repair_maintenance');await form.getByRole('button',{name:'Create my service',exact:true}).click();
  await expect(page.getByText(/save could not be confirmed/)).toBeVisible();await expect(form.getByRole('textbox').first()).toBeDisabled();
  await page.getByRole('button',{name:'Try again',exact:true}).click();await expect(page.locator('.svc-service-editor h2')).toHaveText('Home repair');
  expect(state.writes).toHaveLength(2);expect(state.writes[0]).toEqual(state.writes[1]);
@@ -76,5 +77,41 @@ test('session replacement clears private drafts and expired sessions return to W
  const editor=page.locator('.svc-service-editor');await editor.getByRole('textbox').first().fill('Private draft');
  state.binding='b'.repeat(64);state.rows=[];await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));
  await expect(editor).toHaveCount(0);await expect(page.locator('input[value="Private draft"]')).toHaveCount(0);
- state.signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.locator('.svc-workspace')).toHaveCount(0);await expect(page.locator('.rst-signin')).toBeVisible();
+ state.signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.locator('.svc-workspace')).toHaveCount(0);await expect(page.getByRole('button',{name:'Continue with WhatsApp',exact:true})).toBeVisible();
+});
+
+for(const [locale,width] of [['en',1440],['en',320],['fr',390],['ln',820],['sw',360]] as const)test(`Services setup form ${locale} ${width}`,async({page})=>{
+ const t=marketplaceEntryCopy[locale],setup=t.services;
+ const service={en:'Home cleaning',fr:'Nettoyage à domicile',ln:'Kopetola ndako',sw:'Usafi wa nyumbani'}[locale];
+ await page.setViewportSize({width,height:1000});
+ const state=await fixture(page,{empty:true});
+ await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=finance`);
+ await expect(page.getByRole('heading',{level:1,name:setup.title,exact:true})).toBeVisible();
+ await expect(page.locator('.svc-sidebar, .services-finance, .svc-new-service')).toHaveCount(0);
+ await expect(page.getByText(t.separate,{exact:true})).toHaveCount(0);
+ expect(state.writes).toEqual([]);
+ if(locale==='en'&&width===1440)await page.screenshot({path:'docs/evidence/services-setup/invitation-en-1440.png',fullPage:true});
+ await page.getByRole('button',{name:setup.create,exact:true}).click();
+ const form=page.getByRole('form',{name:setup.formTitle,exact:true}),provider=form.getByLabel(setup.providerName,{exact:true});
+ await expect(provider).toBeFocused();
+ await expect(page.getByRole('link',{name:t.browse,exact:true})).toHaveCount(0);
+ await form.getByRole('button',{name:setup.submit,exact:true}).click();
+ expect(await provider.evaluate((input:HTMLInputElement)=>input.validity.valid)).toBe(false);
+ expect(state.writes).toEqual([]);
+ await provider.fill('Atelier Kin');
+ if(locale==='en'&&width===320){
+  page.once('dialog',dialog=>dialog.dismiss());await form.getByRole('button',{name:t.cancel,exact:true}).click();await expect(provider).toHaveValue('Atelier Kin');
+  page.once('dialog',dialog=>dialog.accept());await form.getByRole('button',{name:t.cancel,exact:true}).click();
+  await expect(page.getByRole('button',{name:setup.create,exact:true})).toBeFocused();expect(state.writes).toEqual([]);
+  await page.getByRole('button',{name:setup.create,exact:true}).click();await expect(provider).toHaveValue('');await provider.fill('Atelier Kin');
+ }
+ await form.getByLabel(setup.serviceName,{exact:true}).fill(service);await form.getByRole('combobox').selectOption('cleaning');
+ await expect(page.getByText(setup.privateNote,{exact:true})).toBeVisible();
+ expect((await page.locator('.svc-setup-card').boundingBox())!.width).toBeLessThanOrEqual(720);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`docs/evidence/services-setup/form-${locale}-${width}.png`,fullPage:true});
+ await form.getByRole('button',{name:setup.submit,exact:true}).click();
+ await expect(page.locator('.svc-service-editor h2')).toHaveText(service);
+ expect(state.writes).toHaveLength(1);expect(state.writes[0].body).toEqual({name:'Atelier Kin',service_name:service,category:'cleaning',description:''});
+ expect(state.rows[0].publication_origin).toBe('unclassified');
 });

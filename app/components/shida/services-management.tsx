@@ -50,6 +50,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
  const [initialKind,setInitialKind]=useState<"requests"|"reservations"|"messages">("requests");
  const [loading,setLoading]=useState(true),[loadFailed,setLoadFailed]=useState(false);
  const createForm=useRef<HTMLFormElement>(null);
+ const setupTrigger=useRef<HTMLButtonElement>(null);
  const [settingUp,setSettingUp]=useState(false);
  const entry=marketplaceEntryCopy[lang],setup=entry.services;
  useEffect(()=>{const value=new URLSearchParams(window.location.search).get("view");if(value&&["overview","services","work","finance","reports","templates","settings"].includes(value)){setView(value as ProviderView);setVisited(new Set([value as ProviderView]));}},[]);
@@ -106,12 +107,23 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
  if(blocked)return <p role="alert">{t.denied}</p>;
  if(loading)return <section className="svc-loading" role="status">{ui.loading}</section>;
  if(loadFailed)return <section className="svc-loading"><p role="alert">{ui.loadFailed}</p><button onClick={()=>void refresh()}>{ui.retry}</button></section>;
- const newServiceForm=<form ref={createForm} onSubmit={create} className="svc-new-service"><h3>{t.create}</h3><label>{t.name}<input required value={newDraft.name??""} onChange={event=>setNewDraft(old=>({...old,name:event.target.value}))}/></label><label>{t.service}<input required value={newDraft.service_name??""} onChange={event=>setNewDraft(old=>({...old,service_name:event.target.value}))}/></label><label>{t.category}<select required value={newDraft.category??""} onChange={event=>setNewDraft(old=>({...old,category:event.target.value}))}><option value=""></option>{categories.map(value=><option value={value} key={value}>{categoryLabels[lang][value]}</option>)}</select></label><button disabled={busy}>{t.create}</button></form>;
- if(!rows.length)return <section className="rst container section svc-provider-setup" lang={lang}>
-  <h1>{setup.title}</h1><p>{setup.note}</p><p>{entry.separate}</p>
-  {message&&<p role="status">{message}</p>}
-  {settingUp&&can("profile")?<><fieldset disabled={busy||pending!==null}>{newServiceForm}</fieldset>{pending&&!busy&&<button type="button" onClick={()=>void runOperation(pending)}>{ui.retry}</button>}<button type="button" disabled={busy||pending!==null} onClick={()=>{if(leaveWork()){setSettingUp(false);setNewDraft({});}}}>{entry.cancel}</button></>:can("profile")?<button type="button" className="button button-primary" onClick={()=>setSettingUp(true)}>{setup.create}</button>:<p role="alert">{t.denied}</p>}
-  <p><Link href={`${lang==="en"?"":"/fr"}/shida/services`} onClick={event=>{if(!leaveWork())event.preventDefault();}}>{entry.browse}</Link></p>
+ const isSetup=rows.length===0;
+ const newServiceForm=<form ref={createForm} onSubmit={create} className={`svc-new-service${isSetup?" svc-setup-form":""}`} aria-labelledby={isSetup?"svc-setup-card-title":undefined} aria-busy={busy}>
+  {!isSetup&&<h3>{t.create}</h3>}
+  <div className="svc-create-field"><label htmlFor="svc-new-provider">{isSetup?setup.providerName:t.name}</label><input id="svc-new-provider" required autoComplete="name" aria-describedby={isSetup?"svc-provider-hint":undefined} value={newDraft.name??""} onChange={event=>setNewDraft(old=>({...old,name:event.target.value}))}/>{isSetup&&<p id="svc-provider-hint" className="svc-field-hint">{setup.providerHint}</p>}</div>
+  <div className="svc-create-field"><label htmlFor="svc-new-name">{isSetup?setup.serviceName:t.service}</label><input id="svc-new-name" required placeholder={isSetup?setup.servicePlaceholder:undefined} value={newDraft.service_name??""} onChange={event=>setNewDraft(old=>({...old,service_name:event.target.value}))}/></div>
+  <div className="svc-create-field"><label htmlFor="svc-new-category">{t.category}</label><select id="svc-new-category" required value={newDraft.category??""} onChange={event=>setNewDraft(old=>({...old,category:event.target.value}))}><option value="">{isSetup?setup.categoryPlaceholder:""}</option>{categories.map(value=><option value={value} key={value}>{categoryLabels[lang][value]}</option>)}</select></div>
+  {isSetup?<div className="svc-setup-actions"><button type="submit" className="svc-primary" disabled={busy}>{busy?setup.saving:setup.submit}<span aria-hidden="true"> →</span></button><button type="button" className="svc-setup-cancel" onClick={()=>{if(leaveWork()){setSettingUp(false);setNewDraft({});setMessage("");requestAnimationFrame(()=>setupTrigger.current?.focus());}}}>{entry.cancel}</button></div>:<button disabled={busy}>{t.create}</button>}
+ </form>;
+ if(isSetup)return <section className="rst container svc-provider-setup" lang={lang} aria-labelledby="svc-setup-title">
+  <header className="svc-setup-heading"><p className="svc-setup-eyebrow">SHIDA / {ui.area}</p><h1 id="svc-setup-title">{setup.title}</h1><p>{setup.note}</p></header>
+  <div className="svc-setup-card">
+   <header><h2 id="svc-setup-card-title">{setup.formTitle}</h2><p>{setup.formNote}</p></header>
+   {message&&<p className="svc-notice" role="status">{message}</p>}
+   {settingUp&&can("profile")?<><fieldset className="svc-setup-fields" disabled={busy||pending!==null}>{newServiceForm}</fieldset>{pending&&!busy&&<button type="button" className="svc-primary svc-setup-retry" onClick={()=>void runOperation(pending)}>{ui.retry}</button>}</>:can("profile")?<button ref={setupTrigger} type="button" className="svc-primary svc-setup-start" onClick={()=>{setSettingUp(true);requestAnimationFrame(()=>createForm.current?.querySelector("input")?.focus());}}>{setup.create}<span aria-hidden="true"> →</span></button>:<p role="alert">{t.denied}</p>}
+   <p className="svc-setup-privacy"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3"/></svg>{setup.privateNote}</p>
+  </div>
+  {!settingUp&&<p className="svc-setup-back"><Link href={`${lang==="en"?"":"/fr"}/shida/services`} onClick={event=>{if(!leaveWork())event.preventDefault();}}><span aria-hidden="true">← </span>{entry.browse}</Link></p>}
  </section>;
  const navigation:ProviderView[]=["overview",...(can("profile")?["services" as const]:[]),...(can("reservations")&&can("messages")?["work" as const]:[]),...(can("manual_journal")||can("basic_totals")?["finance" as const]:[]),...(can("operational_reports")?["reports" as const]:[]),...(can("quote_templates")||can("bill_templates")?["templates" as const]:[]),...(can("bills")?["settings" as const]:[])];
  const selectedView=navigation.includes(view)?view:"overview";

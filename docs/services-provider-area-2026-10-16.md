@@ -1,5 +1,7 @@
 # Personal Services provider area and public marketplace
 
+Setup design follow-up: the first-service invitation and form now use a compact SHIDA card, clearer localized labels and a prominent create action. The marketplace access checks and existing creation/retry semantics are preserved. See [setup design and focused validation](services-provider-setup-2026-10-16.md).
+
 Implemented locally on 16 October 2026. Entry: `/shida/seller/services`, with `/fr`, `/ln`, `/sw` and `/en` equivalents. The public collection remains English/French at `/shida/services` and `/fr/shida/services`.
 
 ## Existing behaviour and change

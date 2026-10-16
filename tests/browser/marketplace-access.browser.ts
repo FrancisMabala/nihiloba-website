@@ -60,7 +60,7 @@ for(const owned of [null,...markets])test(`management is isolated for ${owned??'
 for(const market of markets){
  test(`${market}: signed-out visitors must authenticate before profile discovery`,async({page})=>{
   const state=await fixture(page);state.session=false;
-  await page.goto(`/shida/seller/${market}`);await expect(page.locator('.rst-signin')).toBeVisible();
+  await page.goto(`/shida/seller/${market}`);if(market==='services')await expect(page.getByRole('button',{name:'Continue with WhatsApp',exact:true})).toBeVisible();else await expect(page.locator('.rst-signin')).toBeVisible();
   await expect(page.locator(nav[market])).toHaveCount(0);expect(state.calls.some(path=>path.includes('/personal/'))).toBe(false);
  });
  for(const failure of [403,503,'malformed'] as const)test(`${market}: ${failure} discovery stays closed`,async({page})=>{
@@ -83,8 +83,8 @@ for(const market of ['services','restaurants'] as const)test(`${market}: explici
  await page.getByRole('button',{name:market==='services'?'Create my provider profile':'Create my restaurant or malewa',exact:true}).click();
  await expect(page.locator(nav[market])).toHaveCount(0);
  if(market==='services'){
-  await page.getByLabel('Provider name',{exact:true}).fill('My provider profile');await page.getByLabel('Service',{exact:true}).fill('My service');await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('repair_maintenance');
-  await page.getByRole('button',{name:'Add service',exact:true}).click();
+  await page.getByLabel('Public provider name',{exact:true}).fill('My provider profile');await page.getByLabel('Service name',{exact:true}).fill('My service');await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('repair_maintenance');
+  await page.getByRole('button',{name:'Create my service',exact:true}).click();
  }else{
   await page.getByLabel('Name',{exact:true}).fill('My restaurant');await page.getByRole('button',{name:'Create private draft',exact:true}).click();
  }

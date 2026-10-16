@@ -1,5 +1,7 @@
 # Marketplace management access — 2026-10-16
 
+Services presentation follow-up: the setup invitation and form have been redesigned without changing this access contract. The Services screen now uses task-focused copy instead of displaying the internal permission explanation. See [Services setup design](services-provider-setup-2026-10-16.md) for changes and focused validation; Restaurant entry remains unchanged.
+
 ## Approved behavior
 
 One human keeps one Personal SHIDA account. A valid sign-in is reused, as explicitly chosen by the user; entering management does not require another WhatsApp verification. Authentication alone never grants marketplace management rights.
