@@ -1,9 +1,10 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
+import { useRestaurantReturn } from '../../lib/use-restaurant-return';
 import type { RestaurantLocale } from '../../services/shida/restaurants-client';
 import type { Envelope, Page, Row } from '../../lib/restaurant-seller';
-import { request, DashboardApiError } from '../../lib/restaurant-seller-browser';
+import { DashboardApiError } from '../../lib/restaurant-seller-browser';
 import { useWorkRequest, useWorkDraft, dateText, type Order, type Terms, type Configuration } from '../../lib/restaurant-work';
 import { basicText } from '../../lib/restaurant-basic-copy';
 import { workText } from '../../lib/restaurant-work-copy';
@@ -24,13 +25,34 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
  const t=(k:string)=>workText(locale,k),api=useWorkRequest(binding,failure);
  const [config,setConfig]=useState<Configuration|null>(null),[items,setItems]=useState<Row[]>([]),[menuPage,setMenuPage]=useState(1),[menuTotal,setMenuTotal]=useState(0),[basket,setBasket]=useState<Basket|null>(null),[lines,setLines]=useState<Line[]>([]),[method,setMethod]=useState('on_premise'),[order,setOrder]=useState<CounterOrder|null>(null),[moneyGroupRef,setMoneyGroupRef]=useState<string|null>(null),[plate,setPlate]=useState(''),[dirty,setDirty]=useState(true),[fresh,setFresh]=useState(false);
  useWorkDraft(!!basket || !!api.pending,t('discard'));
- useEffect(()=>{let alive=true;const controller=new AbortController();
- const load=async()=>{if(pos){const data=await request(`${salesPath}?language=${locale}`,{signal:controller.signal},binding) as {intake_released:boolean;items:Row[];recent:CounterOrder[]};if(!alive)return;setConfig({intake_released:data.intake_released} as Configuration);setItems(data.items);setRecent(data.recent);setMenuTotal(data.items.length);}
- else {const [c,m]=await Promise.all([request(`${path}/order-configuration`,{signal:controller.signal},binding),request(`${path}/menu/items?page=${menuPage}&page_size=20`,{signal:controller.signal},binding)]);if(!alive)return;setConfig(c as Configuration);const menu=m as Envelope<Page<Row>>;setItems(menu.result.items);setMenuTotal(menu.result.total);}setFresh(true);};
- void load().catch(e=>{if(alive)failure(e);});return()=>{alive=false;controller.abort();};},[path,salesPath,pos,locale,binding,menuPage,failure]);
- useEffect(()=>{const stale=()=>setFresh(false);window.addEventListener('offline',stale);document.addEventListener('visibilitychange',stale);return()=>{window.removeEventListener('offline',stale);document.removeEventListener('visibilitychange',stale);};},[]);
- const locked=api.busy || !!api.pending || api.conflict || !api.online || !fresh;
- async function validate(){if(pos){const data=await api.run<{intake_released:boolean;items:Row[];recent:CounterOrder[]}>(`${salesPath}?language=${locale}`);if(!data)return false;setConfig({intake_released:data.intake_released} as Configuration);setItems(data.items);setRecent(data.recent);}else{const c=await api.run<Configuration>(`${path}/order-configuration`);if(!c)return false;setConfig(c);}if(basket){const b=await api.run<Basket>(`${salesPath}/counter-baskets/${basket.basket_ref}`);if(!b)return false;setBasket(b);if(!api.pending)setDirty(true);}setFresh(true);return true;}
+ const [basketChanged,setBasketChanged]=useState(false);
+ useRestaurantReturn(`${binding}:${salesPath}:${locale}:${menuPage}`,api.busy,()=>validate(),()=>setFresh(false));
+ const locked=api.busy || !!api.pending || api.conflict || basketChanged || !api.online || !fresh;
+ async function validate(acceptRevision=false){
+  setFresh(false);
+  let current:Configuration,menu:Row[],total:number,recentOrders:CounterOrder[]|undefined;
+  if(pos){
+   const data=await api.run<{intake_released:boolean;items:Row[];recent:CounterOrder[]}>(`${salesPath}?language=${locale}`);
+   if(!data)return false;
+   current={intake_released:data.intake_released} as Configuration;menu=data.items;total=menu.length;recentOrders=data.recent;
+  }else{
+   const data=await api.run<Configuration>(`${path}/order-configuration`);if(!data)return false;
+   const result=await api.run<Envelope<Page<Row>>>(`${path}/menu/items?page=${menuPage}&page_size=20`);if(!result)return false;
+   current=data;menu=result.result.items;total=result.result.total;
+  }
+  if(basket){
+   const b=await api.run<Basket>(`${salesPath}/counter-baskets/${basket.basket_ref}`);if(!b)return false;
+   // Retain the reviewed quote and original revision for uncertain exact retries.
+   // Changed remote baskets need explicit conflict review before adopting a revision.
+   if(!api.pending || api.conflict&&acceptRevision){
+    const changed=b.revision!==basket.revision||b.quote_ref!==basket.quote_ref||b.order_ref!==basket.order_ref;
+    setBasketChanged(!!b.order_ref||changed&&!acceptRevision);
+    if(!changed||acceptRevision){setBasket(b);if(changed)setDirty(true);}
+   }
+  }
+  setConfig(current);setItems(menu);setMenuTotal(total);if(recentOrders)setRecent(recentOrders);
+  setFresh(true);return true;
+ }
 
  function selections(){const line=(l:Line)=>({key:l.key,item_ref:l.item_ref,...(l.quantity!=null?{quantity:l.quantity}:{selected_amount:l.selected_amount})});return {standalone:lines.filter(l=>!l.plate).map(line),plates:[...new Set(lines.map(l=>l.plate).filter(Boolean))].map(key=>({key,components:lines.filter(l=>l.plate===key).map(line)}))};}
  async function create(){const b=await api.run<Basket>(`${salesPath}/counter-baskets`,'POST',{operation_key:crypto.randomUUID()});if(b){setBasket(b);setOrder(null);setMoneyGroupRef(null);setDirty(true);}}
@@ -46,7 +68,7 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
  const filtered=items.filter(i=>(!category||i.category?.public_ref===category)&&(i.name??'').toLocaleLowerCase().includes(search.toLocaleLowerCase()));
  const count=lines.reduce((sum,line)=>sum+(line.quantity??1),0);
  const mixed=new Set(lines.map(line=>line.currency)).size>1;
- const canWrite=!!config?.intake_released&&fresh&&api.online&&!api.busy&&!api.conflict&&!api.pending;
+ const canWrite=!!config?.intake_released&&fresh&&api.online&&!api.busy&&!api.conflict&&!basketChanged&&!api.pending;
  const menu=<section className="rst-selling-menu" aria-label={c.menu}>
   <div className="rst-selling-menu-head"><div><h3>{c.menu}</h3><p>{c.select}</p></div><span>{filtered.length} {c.items}</span></div>
   <div className="rst-selling-filters"><label>{t('posSearch')}<input type="search" value={search} onChange={e=>setSearch(e.target.value)}/></label><label>{t('posCategory')}<select value={category} onChange={e=>setCategory(e.target.value)}><option value="">{c.all}</option>{categories.map(value=><option key={value.public_ref} value={value.public_ref}>{value.name}</option>)}</select></label></div>
@@ -64,7 +86,7 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
   {!fresh&&<p role="status">{t('stale')} <button type="button" disabled={api.busy||!api.online} onClick={()=>void validate()}>{t('refresh')}</button></p>}
   {config&&!config.intake_released&&<p role="status" className="rst-selling-closed">{c.closed}</p>}
   {api.message&&<p role="status">{t(api.message)}</p>}
-  {api.conflict&&<button type="button" disabled={api.busy||!api.online} onClick={async()=>{if(await validate()){setDirty(true);api.reset();}}}>{t('review')}</button>}
+  {(api.conflict||basketChanged)&&<><p role="status">{t('conflict')}</p><button type="button" disabled={api.busy||!api.online} onClick={async()=>{if(await validate(true)){setDirty(true);api.reset();}}}>{t('review')}</button></>}
   {order&&<section className="rst-selling-result"><p>{c.confirmed}</p><h3>{c.reference}</h3><div className="rst-selling-reference"><strong>{order.order_ref}</strong><button type="button" onClick={()=>void navigator.clipboard?.writeText(order.order_ref)}>{c.copy}</button></div><p>{t(order.state)}</p><ReceiptCard order={order} locale={locale}/><Link prefetch={false} href={(locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/'+path.split('/').at(-1)+'/receipts/'+order.order_ref}>{t('receipt')}</Link></section>}
   {moneyGroupRef&&<section className="rst-selling-money"><RestaurantMoney key={path+':'+moneyGroupRef} path={path} groupRef={moneyGroupRef} binding={binding} locale={locale}/></section>}
   <div className="rst-selling-layout">
@@ -72,7 +94,7 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
    <aside className={'rst-selling-basket'+(basketOpen?' is-open':'')} aria-label={c.basket}>
     <div className="rst-selling-basket-head"><div><small>{basket?.quote&&!dirty?c.quoted:c.draft}</small><h3>{c.basket}</h3></div><button type="button" className="rst-selling-close" onClick={()=>setBasketOpen(false)}>{c.closeBasket}</button></div>
     {!basket&&<p>{c.empty}</p>}
-    {!basket&&<button type="button" className="rst-selling-new" disabled={!canWrite} onClick={()=>void create()}>{t(api.pending?'retry':'newSale')}</button>}
+    {!basket&&<button type="button" className="rst-selling-new" disabled={api.pending?.path===`${salesPath}/counter-baskets`?api.busy||!fresh||!api.online||api.conflict:!canWrite} onClick={()=>void create()}>{t(api.pending?'retry':'newSale')}</button>}
     {basket&&<><fieldset disabled={locked} className="rst-selling-basket-fields">
      <label>{t('counter')}<select value={method} onChange={e=>{setMethod(e.target.value);setDirty(true);}}><option value="on_premise">{t('on_premise')}</option><option value="takeaway">{t('takeaway')}</option></select></label>
      <label>{t('plate')}<input maxLength={64} value={plate} placeholder={t('standalone')} onChange={e=>setPlate(e.target.value)}/></label>
@@ -81,8 +103,8 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
     </fieldset>
     <div className="rst-selling-totals"><small>{c.estimate}</small><p><span>CDF</span><strong>{estimate.CDF.toFixed(2)}</strong></p><p><span>USD</span><strong>{estimate.USD.toFixed(2)}</strong></p></div>
     {mixed&&<p role="status" className="rst-selling-closed">{c.mixed}</p>}
-    <div className="rst-selling-actions"><button type="button" disabled={api.busy||api.conflict||!fresh||!api.online||!!api.pending&&api.pending.method!=='PATCH'} onClick={()=>void edit(false)}>{t(api.pending?.method==='PATCH'?'retry':'save')}</button><button type="button" className="button button-primary" disabled={mixed||api.busy||api.conflict||!fresh||!api.online||!lines.length||!!api.pending&&!api.pending.path.endsWith('/quote')} onClick={()=>void edit(true)}>{t(api.pending?.path.endsWith('/quote')?'retry':'quote')}</button></div>
-    {basket.quote&&!dirty&&<div className="rst-selling-quote"><h4>{c.quoted}</h4><FoodTerms terms={basket.quote} locale={locale}/><p>{c.quoteNote}</p><p>{c.handover}</p><button type="button" className="button button-primary" disabled={!config?.intake_released&&!api.pending||api.busy||api.conflict||!fresh||!api.online||!!api.pending&&!api.pending.path.endsWith('/finalize')} onClick={()=>void finalize()}>{t(api.pending?.path.endsWith('/finalize')?'retry':'complete')}</button></div>}
+    <div className="rst-selling-actions"><button type="button" disabled={api.busy||api.conflict||basketChanged||!fresh||!api.online||!!api.pending&&api.pending.method!=='PATCH'} onClick={()=>void edit(false)}>{t(api.pending?.method==='PATCH'?'retry':'save')}</button><button type="button" className="button button-primary" disabled={mixed||api.busy||api.conflict||basketChanged||!fresh||!api.online||!lines.length||!!api.pending&&!api.pending.path.endsWith('/quote')} onClick={()=>void edit(true)}>{t(api.pending?.path.endsWith('/quote')?'retry':'quote')}</button></div>
+    {basket.quote&&!dirty&&<div className="rst-selling-quote"><h4>{c.quoted}</h4><FoodTerms terms={basket.quote} locale={locale}/><p>{c.quoteNote}</p><p>{c.handover}</p><button type="button" className="button button-primary" disabled={!config?.intake_released&&!api.pending||api.busy||api.conflict||basketChanged||!fresh||!api.online||!!api.pending&&!api.pending.path.endsWith('/finalize')} onClick={()=>void finalize()}>{t(api.pending?.path.endsWith('/finalize')?'retry':'complete')}</button></div>}
     </>}
    </aside>
   </div>
