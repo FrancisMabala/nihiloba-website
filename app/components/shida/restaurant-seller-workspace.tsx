@@ -11,6 +11,8 @@ import { photoText } from "../../lib/restaurant-photo-copy";
 import { PrivateMenuPreview } from './restaurant-projection';
 
 import Link from "next/link";
+import {marketplaceEntryCopy} from "@/app/lib/marketplace-entry-copy";
+import {restaurantPath} from "@/app/lib/restaurant-i18n";
 import { useEffect, useRef, useState, useCallback, type FormEvent } from "react";
 import { DashboardApiError } from "@/app/lib/restaurant-seller-browser";
 import type { RestaurantLocale } from "@/app/services/shida/restaurants-client";
@@ -56,6 +58,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const t = (key: string) => ["amount_mode","amount_step","configured","flexible"].includes(key) ? basicText(locale,key) : restaurantText(locale, key);
   const design = sellerDesignCopy[locale];
   const management = managementCopy[locale];
+  const entry = marketplaceEntryCopy[locale], setup = entry.restaurants;
   const menuCopy = personalMenuCopy[locale];
   const [settingsGeneration, setSettingsGeneration] = useState(0);
   const [navigationOpen, setNavigationOpen] = useState(false);
@@ -103,9 +106,9 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   }
   async function loadList(nextPage = page, status = filter, enter = false) {
     const value = await readRestaurant<Page<Establishment>>(`${root}?page=${nextPage}&page_size=20${status ? `&status=${status}` : ""}`, locale);
+    if (!Array.isArray(value.items) || !Number.isSafeInteger(value.total) || value.total < value.items.length || !Array.isArray(value.actions)) throw new Error("Invalid restaurant access");
     if (alive.current) { setList(value); setPage(nextPage); setFilter(status); }
     if (enter && value.total === 1 && value.items.length === 1) await select(value.items[0].public_ref);
-    else if (enter && value.total === 0 && value.actions?.includes("create")) await open("create");
   }
   useEffect(() => { void run(() => loadList(1, "", true)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   async function select(ref: string, initialTab = "today") {
@@ -322,6 +325,18 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   }
   const button = (label: string, action: () => void, disabled = false) => <button type="button" className="button button-secondary" disabled={busy || disabled} onClick={action}>{t(label)}</button>;
   if (denied) return <section className="rst container section"><p role="alert">{t(message)}</p><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{t("review")}</Link></section>;
+  if (!list && !selected) return <section className="rst container section"><p role={message ? "alert" : "status"}>{t(message || "loading")}</p>{message && <button disabled={busy} onClick={()=>void run(()=>loadList(1,"",true))}>{t("reload")}</button>}</section>;
+  if (list?.total === 0 && !filter && !selected) return <section className="rst container section rst-seller-setup">
+    <h1>{setup.title}</h1><p>{setup.note}</p><p>{entry.separate}</p>
+    {(busy || message) && <p role={message && message !== "saved" ? "alert" : "status"}>{t(busy ? "loading" : message)}</p>}
+    {editor?.kind === "create" ? <form onSubmit={submit} className="rst-card rst-editor" aria-label={t("create")}>
+      <fieldset disabled={busy || Boolean(editor.operation) || editor.blocked} className="rst-fields">{input("name",true)}{input("food_business_type",true)}{["city","commune","quartier"].map(key=>input(key))}</fieldset>
+      <div className="rst-editor-actions"><button className="button button-primary" disabled={busy || editor.blocked}>{t(editor.operation ? "retry" : "create")}</button>
+      {(editor.operation || editor.blocked) && button("reload",()=>void run(reloadCurrent))}
+      {button(editor.operation || editor.blocked ? "discard" : "cancel",()=>{setEditor(null);setMessage("");})}</div>
+    </form> : list.actions?.includes("create") ? <button className="button button-primary" disabled={busy} onClick={()=>void open("create")}>{setup.create}</button> : <p role="alert">{t("denied")}</p>}
+    <p><Link href={restaurantPath(locale)} onClick={event=>{if(!leaveWork())event.preventDefault();}}>{entry.browse}</Link></p>
+  </section>;
   const groups: {label:string; entries:[string,string][]}[] = [
     {label:management.work,entries:[["today",management.work],["orders",wt("orders")]]},
     {label:management.selling,entries:[[posAvailable ? "pos" : "counter",management.selling]]},

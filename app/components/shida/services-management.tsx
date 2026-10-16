@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {marketplaceEntryCopy} from "@/app/lib/marketplace-entry-copy";
 import {ServicesTransactions} from "./services-transactions";
 import {ServicesFinancePanel} from "./services-finance-panel";
 import {ServicesTotalsPanel} from "./services-totals-panel";
@@ -49,6 +50,8 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
  const [initialKind,setInitialKind]=useState<"requests"|"reservations"|"messages">("requests");
  const [loading,setLoading]=useState(true),[loadFailed,setLoadFailed]=useState(false);
  const createForm=useRef<HTMLFormElement>(null);
+ const [settingUp,setSettingUp]=useState(false);
+ const entry=marketplaceEntryCopy[lang],setup=entry.services;
  useEffect(()=>{const value=new URLSearchParams(window.location.search).get("view");if(value&&["overview","services","work","finance","reports","templates","settings"].includes(value)){setView(value as ProviderView);setVisited(new Set([value as ProviderView]));}},[]);
  function navigate(next:ProviderView,kind?:"requests"|"reservations"|"messages"){
   if(kind&&!leaveWork())return;
@@ -73,8 +76,8 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
   if(!response.ok){if(response.status===401)onUnauthorized?.();if([401,403,404].includes(response.status))setBlocked(true);throw new Error(String(response.status));}
   return await response.json() as Record<string,unknown>;
  }
- async function refresh(){setLoadFailed(false);try{const [result,policy]=await Promise.all([call(""),call("/capabilities")]);const next=Array.isArray(result.profiles)?(result.profiles as Offering[]):[];setCapabilities(Array.isArray(policy.capabilities)?policy.capabilities as string[]:[]);setPilot(policy.access_policy==="pilot");setRows(next);setSelected(old=>old&&next.some(row=>row.public_ref===old)?old:next[0]?.public_ref??null);}catch{setCapabilities([]);setPilot(false);setLoadFailed(true);setMessage(t.failed);}finally{setLoading(false);}}
- useEffect(()=>{let active=true;setRows([]);setSelected(null);setCapabilities([]);setPilot(false);setBlocked(false);Promise.all([call(""),call("/capabilities")]).then(([result,policy])=>{if(active){const next=Array.isArray(result.profiles)?(result.profiles as Offering[]):[];setCapabilities(Array.isArray(policy.capabilities)?policy.capabilities as string[]:[]);setPilot(policy.access_policy==="pilot");setRows(next);const target=offeringRef?next.find(row=>row.public_ref===offeringRef):next[0];setSelected(target?.public_ref??null);if(target)setShowArchived(target.is_active!=="yes");if(offeringRef&&!target)setMessage(unavailable[lang]);}}).catch(()=>{if(active){setCapabilities([]);setPilot(false);setLoadFailed(true);setMessage(t.denied);}}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[binding,offeringRef]); // eslint-disable-line react-hooks/exhaustive-deps
+ async function refresh(){setLoadFailed(false);try{const [result,policy]=await Promise.all([call(""),call("/capabilities")]);if(!Array.isArray(result.profiles)||!Array.isArray(policy.capabilities))throw new Error("Invalid provider access");const next=result.profiles as Offering[];setCapabilities(Array.isArray(policy.capabilities)?policy.capabilities as string[]:[]);setPilot(policy.access_policy==="pilot");setRows(next);setSelected(old=>old&&next.some(row=>row.public_ref===old)?old:next[0]?.public_ref??null);}catch{setCapabilities([]);setPilot(false);setLoadFailed(true);setMessage(t.failed);}finally{setLoading(false);}}
+ useEffect(()=>{let active=true;setRows([]);setSelected(null);setCapabilities([]);setPilot(false);setBlocked(false);Promise.all([call(""),call("/capabilities")]).then(([result,policy])=>{if(active){if(!Array.isArray(result.profiles)||!Array.isArray(policy.capabilities))throw new Error("Invalid provider access");const next=result.profiles as Offering[];setCapabilities(Array.isArray(policy.capabilities)?policy.capabilities as string[]:[]);setPilot(policy.access_policy==="pilot");setRows(next);const target=offeringRef?next.find(row=>row.public_ref===offeringRef):next[0];setSelected(target?.public_ref??null);if(target)setShowArchived(target.is_active!=="yes");if(offeringRef&&!target)setMessage(unavailable[lang]);}}).catch(()=>{if(active){setCapabilities([]);setPilot(false);setLoadFailed(true);setMessage(t.denied);}}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[binding,offeringRef]); // eslint-disable-line react-hooks/exhaustive-deps
  const can=(capability:string)=>capabilities.includes(capability);
  const visibleRows=rows.filter(row=>showArchived?row.is_active!=="yes":row.is_active==="yes");
  const current=rows.find(row=>row.public_ref===selected);
@@ -88,7 +91,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
    if(!updated.public_ref)throw new Error("502");
    setRows(old=>old.some(row=>row.public_ref===updated.public_ref)?old.map(row=>row.public_ref===updated.public_ref?updated:row):[...old,updated]);
    setSelected(updated.public_ref);setShowArchived(updated.is_active!=="yes");setPending(null);setMessage(ui.saved);
-   if(!operation.path)setNewDraft({});
+   if(!operation.path){setNewDraft({});setSettingUp(false);navigate("services");}
    if(operation.path.includes("/packages")){setPackageRef(null);setPackageDraft({});}
   }catch(error){const status=error instanceof Error?Number(error.message):0;
    if(status===409){setPending(null);await refresh();setMessage(t.stale);}
@@ -103,6 +106,13 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
  if(blocked)return <p role="alert">{t.denied}</p>;
  if(loading)return <section className="svc-loading" role="status">{ui.loading}</section>;
  if(loadFailed)return <section className="svc-loading"><p role="alert">{ui.loadFailed}</p><button onClick={()=>void refresh()}>{ui.retry}</button></section>;
+ const newServiceForm=<form ref={createForm} onSubmit={create} className="svc-new-service"><h3>{t.create}</h3><label>{t.name}<input required value={newDraft.name??""} onChange={event=>setNewDraft(old=>({...old,name:event.target.value}))}/></label><label>{t.service}<input required value={newDraft.service_name??""} onChange={event=>setNewDraft(old=>({...old,service_name:event.target.value}))}/></label><label>{t.category}<select required value={newDraft.category??""} onChange={event=>setNewDraft(old=>({...old,category:event.target.value}))}><option value=""></option>{categories.map(value=><option value={value} key={value}>{categoryLabels[lang][value]}</option>)}</select></label><button disabled={busy}>{t.create}</button></form>;
+ if(!rows.length)return <section className="rst container section svc-provider-setup" lang={lang}>
+  <h1>{setup.title}</h1><p>{setup.note}</p><p>{entry.separate}</p>
+  {message&&<p role="status">{message}</p>}
+  {settingUp&&can("profile")?<><fieldset disabled={busy||pending!==null}>{newServiceForm}</fieldset>{pending&&!busy&&<button type="button" onClick={()=>void runOperation(pending)}>{ui.retry}</button>}<button type="button" disabled={busy||pending!==null} onClick={()=>{if(leaveWork()){setSettingUp(false);setNewDraft({});}}}>{entry.cancel}</button></>:can("profile")?<button type="button" className="button button-primary" onClick={()=>setSettingUp(true)}>{setup.create}</button>:<p role="alert">{t.denied}</p>}
+  <p><Link href={`${lang==="en"?"":"/fr"}/shida/services`} onClick={event=>{if(!leaveWork())event.preventDefault();}}>{entry.browse}</Link></p>
+ </section>;
  const navigation:ProviderView[]=["overview",...(can("profile")?["services" as const]:[]),...(can("reservations")&&can("messages")?["work" as const]:[]),...(can("manual_journal")||can("basic_totals")?["finance" as const]:[]),...(can("operational_reports")?["reports" as const]:[]),...(can("quote_templates")||can("bill_templates")?["templates" as const]:[]),...(can("bills")?["settings" as const]:[])];
  const selectedView=navigation.includes(view)?view:"overview";
  const icons:Record<ProviderView,string>={overview:"◈",services:"◇",work:"▤",finance:"↗",reports:"▥",templates:"▧",settings:"⚙"};
@@ -130,7 +140,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
    <div hidden={selectedView!=="services"}>
   {can("profile")&&<fieldset disabled={busy||pending!==null} className="svc-catalog">
    <div className="svc-service-list"><h2>{ui.allServices}</h2><label>{ui.services}<select value={showArchived?"archived":"active"} onChange={event=>{if(!leaveWork())return;const archived=event.target.value==="archived";setShowArchived(archived);setSelected(rows.find(row=>archived?row.is_active!=="yes":row.is_active==="yes")?.public_ref??null);}}><option value="active">{lc.active}</option><option value="archived">{lc.archivedServices}</option></select></label>{visibleRows.length===0&&<p>{t.empty}</p>}{visibleRows.map(row=><button type="button" key={row.public_ref} onClick={()=>{if(leaveWork())setSelected(row.public_ref);}} aria-pressed={row.public_ref===selected} style={{display:"block",width:"100%",textAlign:"left",padding:12,marginBottom:6}}>{row.service_name}<small style={{display:"block"}}>{row.is_active!=="yes"?lc.archived:row.publication_origin==="pilot"?t.published:row.publication_origin==="historical"?ui.history:t.private}</small></button>)}
-    <form ref={createForm} onSubmit={create} className="svc-new-service"><h3>{t.create}</h3><label>{t.name}<input required value={newDraft.name??""} onChange={event=>setNewDraft(old=>({...old,name:event.target.value}))}/></label><label>{t.service}<input required value={newDraft.service_name??""} onChange={event=>setNewDraft(old=>({...old,service_name:event.target.value}))}/></label><label>{t.category}<select required value={newDraft.category??""} onChange={event=>setNewDraft(old=>({...old,category:event.target.value}))}><option value=""></option>{categories.map(value=><option value={value} key={value}>{categoryLabels[lang][value]}</option>)}</select></label><button disabled={busy}>{t.create}</button></form>
+    {newServiceForm}
    </div>
    {current&&<div className="svc-service-editor" key={current.public_ref}><h2>{current.service_name}</h2><p>{current.is_active!=="yes"?lc.archived:current.publication_origin==="pilot"?t.published:current.publication_origin==="historical"?ui.history:t.private} · {current.rating.count} {t.count}{current.rating.average!==null?` · ${current.rating.average}/5`:""}</p>
     {current.is_active==="yes"&&current.publication_origin==="pilot"&&<p><Link prefetch={false} href={`${lang==="en"?"":"/fr"}/shida/services/${encodeURIComponent(current.public_ref)}`} onClick={event=>{if(!leaveWork())event.preventDefault();}}>{ui.preview} ↗</Link></p>}

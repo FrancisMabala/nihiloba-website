@@ -63,7 +63,7 @@ for(const [locale,width] of [['en',360],['fr',1440],['ln',820],['sw',390]] as co
 });
 test('empty setup retries exactly once with the same creation key, then archives and restores',async({page})=>{
  const state=await fixture(page,{empty:true});state.failCreate=true;
- await page.goto('/shida/seller/services');await page.getByRole('button',{name:'Add your first service'}).click();
+ await page.goto('/shida/seller/services');await expect(page.locator('.svc-sidebar')).toHaveCount(0);await page.getByRole('button',{name:'Create my provider profile'}).click();
  const form=page.locator('.svc-new-service');await form.getByLabel('Provider name').fill('Atelier Kin');await form.getByLabel('Service',{exact:true}).fill('Home repair');await form.getByLabel('Category').selectOption('repair_maintenance');await form.getByRole('button',{name:'Add service'}).click();
  await expect(page.getByText(/save could not be confirmed/)).toBeVisible();await expect(form.getByRole('textbox').first()).toBeDisabled();
  await page.getByRole('button',{name:'Try again',exact:true}).click();await expect(page.locator('.svc-service-editor h2')).toHaveText('Home repair');
