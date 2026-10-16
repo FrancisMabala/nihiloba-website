@@ -35,7 +35,7 @@ export function transactionPath(parts: string[], method: string): string | null 
     if (bill.test(parts[4] ?? '')) {
       if (parts.length === 5 && method === 'PATCH')
         return `services/reservations/${parts[2]}/bills/${parts[4]}`;
-      if (parts.length === 6 && ['issue','replace','void','send','retry'].includes(parts[5]) && method === 'POST')
+      if (parts.length === 6 && ['issue','replace','void','send','retry','reminder'].includes(parts[5]) && method === 'POST')
         return `services/reservations/${parts[2]}/bills/${parts[4]}/${parts[5]}`;
     }
   }
