@@ -1,3 +1,4 @@
+import {servicesProviderOffering} from "./fixtures/services-provider";
 import {test,expect} from '@playwright/test';
 
 const titles={en:'Services reports',fr:'Rapports Services',ln:'Balapolo ya Services',sw:'Ripoti za Huduma'} as const;
@@ -10,7 +11,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`IMP-16B Personal mobile
   const path=new URL(route.request().url()).pathname;
   if(path.endsWith('/employment/session/'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Provider'}}});
   if(path.endsWith('/services/capabilities'))return route.fulfill({json:{bundle:'personal_pro',access_policy:'pilot',purchase_required:false,capabilities:['operational_reports','financial_reports']}});
-  if(path.endsWith('/services'))return route.fulfill({json:{profiles:[]}});
+  if(path.endsWith('/services'))return route.fulfill({json:{profiles:[servicesProviderOffering]}});
   if(path.endsWith('/transactions/reports/operational'))return route.fulfill({json:{start_date:'2026-10-01',end_date:'2026-10-15',as_of:'2026-10-14T12:00:00+00:00',published_offerings:1,requests_created:2,bookings_created:1,booking_statuses:{completed:1},unavailable:['quote_conversion'],offerings:[{offering_ref:'SVC_one',offering:'Repair',published_now:true,requests_created:2,bookings_created:1,booking_statuses:{completed:1}}]}});
   if(path.endsWith('/transactions/reports/financial'))return route.fulfill({json:{as_of:'2026-10-14T12:00:00+00:00',currencies:{CDF:zeros,USD:{...zeros,declared_received:'30.00',recorded_expenses:'9.00',declared_surplus:'21.00'}},expense_categories:{CDF:{},USD:{transport:'9.00'}}}});
   if(path.endsWith('/transactions/reports/operational.csv'))return route.fulfill({body:'offering,bookings_created\nRepair,1\n',contentType:'text/csv',headers:{'Content-Disposition':'attachment; filename="services-operational-report.csv"'}});

@@ -39,7 +39,7 @@ async function fixture(page:Page,{empty=false,bundle='personal_free'}={}){
  });
  return state;
 }
-for(const [locale,width] of [['en',360],['fr',1440],['ln',820],['sw',390]] as const)test(`Personal workspace navigation ${locale} ${width}`,async({page})=>{
+for(const [locale,width] of [['en',1440],['en',360],['fr',1440],['ln',820],['sw',390]] as const)test(`Personal workspace navigation ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:950});
  await page.addInitScript(lang=>localStorage.setItem('shida-language',lang),locale);
  await fixture(page,{bundle:locale==='en'?'personal_free':'personal_pro'});
@@ -48,19 +48,20 @@ for(const [locale,width] of [['en',360],['fr',1440],['ln',820],['sw',390]] as co
  await expect(page.getByRole('heading',{name:t.overview,exact:true})).toBeVisible();
  await expect(nav.getByRole('button')).toHaveCount(7);
  await expect(page.getByText(t.pilot).last()).toBeVisible();
- await page.screenshot({path:`docs/evidence/services-provider/overview-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/services-workspace/overview-${locale}-${width}.png`,fullPage:true});
  for(const section of ['services','work','finance','reports','templates','settings'] as const){
   await nav.getByRole('button',{name:t[section],exact:true}).click();
   await expect(nav.getByRole('button',{name:t[section],exact:true})).toHaveAttribute('aria-current','page');
   await expect(page.locator('#services-view-title')).toHaveText(t[section]);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  if(locale==='en'&&width===1440&&['work','finance','reports','templates'].includes(section))await page.screenshot({path:`docs/evidence/services-workspace/${section}-en-1440.png`,fullPage:true});
  }
  await nav.getByRole('button',{name:t.services,exact:true}).click();
  const editor=page.locator('.svc-service-editor');await editor.getByRole('textbox').first().fill('Draft provider name');
  await nav.getByRole('button',{name:t.overview,exact:true}).click();
  await nav.getByRole('button',{name:t.services,exact:true}).click();
  await expect(editor.getByRole('textbox').first()).toHaveValue('Draft provider name');
- await page.screenshot({path:`docs/evidence/services-provider/services-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/services-workspace/services-${locale}-${width}.png`,fullPage:true});
 });
 test('empty setup retries exactly once with the same creation key, then archives and restores',async({page})=>{
  const state=await fixture(page,{empty:true});state.failCreate=true;
@@ -90,7 +91,7 @@ for(const [locale,width] of [['en',1440],['en',320],['fr',390],['ln',820],['sw',
  await expect(page.locator('.svc-sidebar, .services-finance, .svc-new-service')).toHaveCount(0);
  await expect(page.getByText(t.separate,{exact:true})).toHaveCount(0);
  expect(state.writes).toEqual([]);
- if(locale==='en'&&width===1440)await page.screenshot({path:'docs/evidence/services-setup/invitation-en-1440.png',fullPage:true});
+ if(locale==='en'&&width===1440)await page.screenshot({path:'test-results/services-setup/invitation-en-1440.png',fullPage:true});
  await page.getByRole('button',{name:setup.create,exact:true}).click();
  const form=page.getByRole('form',{name:setup.formTitle,exact:true}),provider=form.getByLabel(setup.providerName,{exact:true});
  await expect(provider).toBeFocused();
@@ -109,7 +110,7 @@ for(const [locale,width] of [['en',1440],['en',320],['fr',390],['ln',820],['sw',
  await expect(page.getByText(setup.privateNote,{exact:true})).toBeVisible();
  expect((await page.locator('.svc-setup-card').boundingBox())!.width).toBeLessThanOrEqual(720);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/services-setup/form-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`test-results/services-setup/form-${locale}-${width}.png`,fullPage:true});
  await form.getByRole('button',{name:setup.submit,exact:true}).click();
  await expect(page.locator('.svc-service-editor h2')).toHaveText(service);
  expect(state.writes).toHaveLength(1);expect(state.writes[0].body).toEqual({name:'Atelier Kin',service_name:service,category:'cleaning',description:''});

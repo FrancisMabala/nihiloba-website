@@ -43,10 +43,10 @@ export function ServicesFinancePanel({base,binding,locale}:{base:string;binding:
   const payload=JSON.stringify([path,body]);if(replay.current?.payload!==payload)replay.current={payload,key:crypto.randomUUID()};
   setBusy(true);setNotice("");try{await call(path,"POST",body,replay.current.key);replay.current=null;setCorrecting(null);setDraft(initial());await load();setNotice(t.saved);}catch(error){if(error instanceof Error&&["401","403"].includes(error.message)){setDenied(true);setRows([]);}else{setNotice(t.failed);if(error instanceof Error&&error.message==="409")await load();}}finally{setBusy(false);}
  }
- if(denied)return <section aria-label={t.title}><h2>{t.title}</h2><p>{t.denied}</p></section>;
+ if(denied)return <section className="services-finance" aria-label={t.title}><h2>{t.title}</h2><p>{t.denied}</p></section>;
  return <section aria-label={t.title} style={{margin:"1.5rem 0",padding:"1rem",border:"1px solid #cbd5e1",borderRadius:12}}>
   <h2>{t.title}</h2><p>{t.intro}</p>{notice&&<p role="status">{notice}</p>}
-  <form onSubmit={submit} style={{display:"grid",gap:10,maxWidth:550}}>
+  <form onSubmit={submit} className="svc-journal-form">
    {!correcting&&<label>{t.effect}<select value={draft.measure} onChange={e=>setDraft(old=>({...old,measure:e.target.value,category:e.target.value==="recorded_income"?"service_income":"general",association_kind:"job"}))}><option value="recorded_income">{t.income}</option><option value="recorded_expense">{t.expense}</option></select></label>}
    <label>{t.job}<select value={draft.association_kind} onChange={e=>set("association_kind",e.target.value)}><option value="job">{t.job}</option>{draft.measure==="recorded_expense"&&<option value="overhead">{t.overhead}</option>}</select></label>
    {draft.association_kind==="job"&&<><label>{t.selectJob}<input required list="services-finance-reservations" value={draft.reservation_ref} onChange={e=>set("reservation_ref",e.target.value)}/></label><datalist id="services-finance-reservations">{reservations.map(row=>row.reservation_ref&&<option key={row.reservation_ref} value={row.reservation_ref}>{row.offering||row.service_name||row.reservation_ref}</option>)}</datalist></>}

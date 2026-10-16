@@ -1,3 +1,4 @@
+import {servicesProviderOffering} from "./fixtures/services-provider";
 import {test,expect} from '@playwright/test';
 import {servicesText} from '../../app/components/shida/services-transaction-copy';
 for(const [locale,sendLabel,retryLabel,accepted] of [['en','Send bill','Retry WhatsApp notice','Accepted by Meta'],['fr','Envoyer la facture','Réessayer la notification WhatsApp','Accepté par Meta'],['ln','Tinda facture','Meka lisusu koyebisa na WhatsApp','Meta endimi'],['sw','Tuma bili','Jaribu tena taarifa ya WhatsApp','Imekubaliwa na Meta']] as const)test(`Personal provider send and retry ${locale}`,async({page})=>{
@@ -11,7 +12,7 @@ for(const [locale,sendLabel,retryLabel,accepted] of [['en','Send bill','Retry Wh
   if(path.endsWith('/services/capabilities'))return route.fulfill({json:{bundle:'personal_free',access_policy:'pilot',purchase_required:false,capabilities:['reservations','messages','bills']}});
   if(tx?.endsWith('/send')||tx?.endsWith('/retry')){writes++;deliveries=[{version_ref:'SBV_one',revision:2,status:tx.endsWith('/send')?'retryable_failure':'sent',attempts:writes,created_at:'2026-10-16T12:00:00Z',can_retry:tx.endsWith('/send')}];return route.fulfill({json:{deliveries}});}
   const responses:Record<string,unknown>={requests:{requests:[]},reservations:{reservations:[booking]},'reservations/RSV_one':booking,'reservations/RSV_one/lifecycle':{...booking,actions:[],rescheduling:{actions:[],proposal:null}},'reservations/RSV_one/bills':{bill_ref:'SBF_one',current:bill},'bills/SBF_one/history':{versions:[bill]},'bills/SBF_one/deliveries':{deliveries}};
-  return route.fulfill({json:responses[tx]??{profiles:[]}});
+  return route.fulfill({json:responses[tx]??{profiles:[servicesProviderOffering]}});
  });
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=work`);
  const workspace=page.getByRole('region',{name:t('workspace')});

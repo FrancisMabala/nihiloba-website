@@ -1,3 +1,4 @@
+import {marketplaceEntryCopy} from "../../app/lib/marketplace-entry-copy";
 import {test,expect} from '@playwright/test';
 import {servicesText} from '../../app/components/shida/services-transaction-copy';
 
@@ -38,7 +39,8 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`provider transaction jo
  const destination=()=>`${locale==='en'?'':`/${locale}`}/shida/seller/services`;
  await page.goto(destination()+"?view=work");
  const workspace=page.getByRole('region',{name:t('workspace')});
- await expect(workspace.getByText(t('empty'))).toBeVisible();
+ await expect(page.getByRole('heading',{level:1,name:marketplaceEntryCopy[locale].services.title,exact:true})).toBeVisible();
+ await expect(workspace).toHaveCount(0);
  empty=false;await page.goto(destination()+'?offering=SVC_saved&view=work');
  await workspace.getByRole('button',{name:/Repairs A/}).click();
  await workspace.getByRole('button',{name:t('review'),exact:true}).click();
