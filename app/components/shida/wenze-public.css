@@ -1,0 +1,46 @@
+/* Public Wenze only: shared Nihiloba tokens, compact marketplace layout. */
+.wenze-public { padding-block: 1.6rem 4.5rem; }
+.wzp-topline { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.7rem; margin-bottom:1.5rem; font-size:.85rem; }
+.wzp-topline .marketplace-breadcrumb { margin:0; }
+.wzp-topline>a { text-decoration:underline; text-underline-offset:4px; text-decoration-color:var(--gold); }
+.wzp-heading h1,.wzp-store-heading h1 { margin:0; color:var(--forest); font:600 clamp(2rem,4vw,2.7rem)/1.15 Georgia,serif; overflow-wrap:anywhere; }
+.wzp-heading p { margin:.6rem 0 1.4rem; color:var(--muted); }
+.wenze-public .wzp-filters { padding:1rem; border:1px solid var(--line); border-radius:16px; margin:0; background:#fff; }
+.wzp-search { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto; align-items:end; gap:.75rem; }
+.wzp-search label { display:grid; gap:.4rem; font-size:.85rem; }
+.wenze-public input,.wenze-public select { min-width:0; width:100%; border:1px solid var(--line); border-radius:6px; min-height:46px; padding:.65rem .8rem; background:var(--paper,#fffdf9); }
+.wzp-filter-bottom { display:flex; align-items:baseline; gap:1rem; margin-top:.8rem; font-size:.85rem; }
+.wzp-filter-bottom details { flex:1; }.wzp-filter-bottom summary { cursor:pointer; padding:.3rem 0; }.wzp-filter-bottom .marketplace-filter-grid { padding-top:.7rem; }
+.wzp-categories { display:flex; flex-wrap:wrap; gap:.5rem; padding:1rem 0 1.8rem; }
+.wzp-categories a { border:1px solid var(--line); border-radius:24px; padding:.55rem .9rem; font-size:.82rem; background:var(--cream,#f6f3ec); }
+.wzp-categories a[aria-current=page] { color:#fff; background:var(--forest); border-color:var(--forest); }
+.wzp-section-title { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+.wzp-section-title h2 { margin:0; font:600 clamp(1.5rem,3vw,1.9rem)/1.25 Georgia,serif; color:var(--forest); }
+.wzp-section-title h2:before { content:""; display:block; width:32px; height:3px; background:var(--gold); margin-bottom:.7rem; }
+.wzp-section-title>span { color:var(--muted); font-size:.8rem; }
+.wenze-public .wenze-store-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.3rem; }
+.wenze-public .marketplace-card { border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 5px 20px #08312706; background:#fff; }
+.wzp-shop-mark { display:flex; min-height:160px; align-items:center; justify-content:center; gap:1rem; padding:1.4rem; background:#e8eee6; color:var(--forest); }
+.wzp-shop-mark>span:first-child { display:grid; place-items:center; width:72px; height:72px; flex-shrink:0; border:1px solid #abbcad; border-radius:50%; font:2.6rem Georgia,serif; }
+.wzp-shop-category { max-width:140px; font:1.2rem/1.4 Georgia,serif; }
+.wenze-public .marketplace-card-body { padding:1.15rem; gap:.7rem; }
+.wenze-public .marketplace-card-body h2 { font:600 1.25rem/1.3 Georgia,serif; margin:0; overflow-wrap:anywhere; }
+.wenze-public .marketplace-description { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.6; }
+.wenze-public .button { border-radius:6px; min-height:44px; }
+.wenze-public .wenze-store-card .button { margin-top:auto; width:100%; }
+.wenze-public .wenze-store-type,.wenze-public .wenze-price-badge { border-radius:5px; }
+.wzp-store-heading { display:grid; grid-template-columns:86px minmax(0,1fr); gap:1.4rem; padding:.5rem 0 1.8rem; border-bottom:1px solid var(--line); }
+.wzp-store-heading h1 { margin:.5rem 0 .7rem; }.wzp-store-monogram { display:grid; place-items:center; height:86px; border:1px solid #c6d1c3; border-radius:14px; background:#e8eee6; color:var(--forest); font:2.7rem Georgia,serif; }
+.wzp-store-layout { display:grid; grid-template-columns:minmax(0,1fr) 270px; align-items:start; gap:2rem; padding-top:1.8rem; }
+.wenze-public .wenze-product-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+.wenze-public .wenze-product-card { max-width:none; }.wenze-public .wenze-card-price { font-size:1.1rem; }
+.wenze-public .wenze-product-card .marketplace-card-image img { object-fit:contain; }.wenze-public .marketplace-card-image { background:#f6f4ef; }
+.wzp-shop-info { padding:1.2rem; border:1px solid var(--line); border-radius:12px; background:var(--cream,#f6f3ec); }
+.wzp-shop-info h2 { font:1.3rem Georgia,serif; margin:0 0 1rem; }.wzp-shop-info .wenze-fulfillment { padding:0; border:0; background:transparent; }.wzp-shop-info .button { width:100%; margin:1rem 0; }
+.wzp-shop-info .marketplace-property-details { display:block; }.wzp-shop-info .marketplace-property-details>div { margin-bottom:.7rem; }
+.wenze-public a:focus-visible,.wenze-public summary:focus-visible { outline:2px solid var(--forest); outline-offset:4px; }
+@media(max-width:1100px){.wenze-public .wenze-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:760px){.wzp-store-layout{grid-template-columns:1fr;}.wenze-public .wenze-store-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.wzp-search{grid-template-columns:1fr auto;}.wzp-search label:first-child{grid-column:1/-1;}.wzp-store-heading{grid-template-columns:58px minmax(0,1fr);gap:.8rem;}.wzp-store-monogram{height:58px;font-size:2rem;}.wzp-shop-mark{min-height:130px;flex-direction:column;gap:.5rem;text-align:center;}}
+@media(max-width:480px){.wenze-public .wenze-store-grid{grid-template-columns:1fr;}.wzp-shop-mark{flex-direction:row;min-height:140px;gap:1rem;text-align:left;}.wenze-public .wenze-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;}.wenze-public .wenze-product-card .marketplace-card-body{padding:.7rem;}.wenze-public .wenze-product-card h2{font-size:1rem;}.wenze-public .wenze-card-price{font-size:.95rem;}.wzp-filter-bottom{align-items:start;}.wzp-store-heading{grid-template-columns:1fr;}.wzp-store-monogram{display:none;}}
+
+@media(max-width:480px){.wenze-public .wenze-product-grid:has(>.wenze-product-card:only-child){grid-template-columns:minmax(0,1fr);max-width:380px;}}

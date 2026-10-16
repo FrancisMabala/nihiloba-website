@@ -50,3 +50,16 @@ test('Today is the default with current work and unlocked pilot statistics',asyn
 test('Free fallback shows operational work without pretending financial data is zero',async({page})=>{await fixture(page,'free');await page.goto('/shida/seller/wenze');await expect(page.getByRole('button',{name:/Needs your attention/})).toContainText('3');await expect(page.getByText(/Financial statistics require Pro/)).toBeVisible();await expect(page.getByText('150000',{exact:true})).toHaveCount(0);});
 test('Today handles a partial failure without hiding the other summaries',async({page})=>{await fixture(page);await page.route('**/inventory/summary/',route=>route.fulfill({status:503,json:{}}));await page.goto('/shida/seller/wenze');await expect(page.getByText('Some information could not be loaded. Refresh to try again.',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:/Low-stock items/})).toContainText('—');await expect(page.getByText('150000',{exact:true})).toBeVisible();});
 test('an explicit product link opens the catalog instead of Today',async({page})=>{await fixture(page);await page.goto('/shida/seller/wenze?store=WNS_fixture&product=WNP_fixture');await expect(page.getByRole('heading',{name:'Sac en raphia',exact:true})).toBeVisible();});
+
+
+test('shared Personal login without a Wenze shop opens setup, not seller tools',async({page})=>{
+ await fixture(page);let created=false;
+ await page.route('**/api/shida/personal/wenze/stores**',async route=>{const url=new URL(route.request().url());if(!/\/stores\/?$/.test(url.pathname))return route.fallback();if(route.request().method()==='POST'){created=true;expect(route.request().postDataJSON()).toMatchObject({name:'My Wenze shop',city:'Kinshasa'});return route.fulfill({json:store});}return route.fulfill({json:{stores:created?[store]:[],categories:[{code:'other',labels:{en:'Other',fr:'Autre',ln:'Mosusu',sw:'Nyingine'}}]}});});
+ await page.goto('/shida/seller/wenze?view=reports');await expect(page.getByRole('heading',{name:'Start selling on Wenze'})).toBeVisible();await expect(page.locator('.rst-management-nav')).toHaveCount(0);await expect(page.getByText(/Your Restaurant or Services profile/)).toBeVisible();
+ await page.getByRole('button',{name:'Create',exact:true}).click();await page.getByLabel('Name',{exact:true}).fill('My Wenze shop');await page.getByLabel('City',{exact:true}).fill('Kinshasa');await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('.rst-management-nav')).toBeVisible();
+});
+
+test('failed Wenze ownership discovery does not open setup or management',async({page})=>{
+ await fixture(page);await page.route('**/api/shida/personal/wenze/stores**',route=>route.fulfill({status:503,json:{}}));await page.goto('/shida/seller/wenze');await expect(page.locator('.wz-seller-setup').getByRole('alert')).toContainText('could not verify');await expect(page.locator('.rst-management-nav')).toHaveCount(0);await expect(page.getByRole('heading',{name:'Start selling on Wenze'})).toHaveCount(0);
+ await page.unroute('**/api/shida/personal/wenze/stores**');await page.getByRole('button',{name:'Refresh',exact:true}).click();await expect(page.getByRole('heading',{name:'Today',exact:true})).toBeVisible();
+});

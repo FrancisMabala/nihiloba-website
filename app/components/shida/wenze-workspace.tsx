@@ -25,6 +25,7 @@ const enc = encodeURIComponent;
 
 export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
   const {request} = useWenzeApi();
+  const [checkingSeller,setCheckingSeller]=useState(true),[sellerCheckFailed,setSellerCheckFailed]=useState(false),[checkAttempt,setCheckAttempt]=useState(0);
   const [view,setView]=useState("today"),[navigationOpen,setNavigationOpen]=useState(false);
   const st=(key:string)=>sellerText(locale,key);
   const t = (key: string) => wenzeCopy[locale][key as WenzeKey] ?? "—";
@@ -42,6 +43,7 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
   useEffect(() => {
     if (!context) return;
     const ticket = ++generation.current;
+    setCheckingSeller(true); setSellerCheckFailed(false);
     setStore(null); setProduct(null); setProducts([]); setEditor(null); setPreview(null); setPlan(null); setError(""); setStores([]);
     request(`${root}?archived=${archived}`).then(async value => {
       if (ticket !== generation.current) return;
@@ -53,8 +55,8 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
         const [selected, selectedProduct] = await Promise.all([request(`${root}/${enc(storeRef)}`), productRef ? request(`${root}/${enc(storeRef)}/products/${enc(productRef)}`) : Promise.resolve(null)]) as Item[];
         if (ticket === generation.current) { setStore(selected); setProduct(selectedProduct); if(productRef)setView("catalog"); await loadProducts(selected,0); const destination=params.get("view");if(destination&&["today","catalog","orders","imports","inventory","sales","costs","expenses","reports","schedules"].includes(destination))setView(destination); }
       }
-    }).catch(() => { if (ticket === generation.current) setError("unavailable"); });
-  }, [context, archived]); // eslint-disable-line react-hooks/exhaustive-deps
+    }).catch(() => { if (ticket === generation.current) {setError("unavailable");setSellerCheckFailed(true);} }).finally(()=>{if(ticket===generation.current)setCheckingSeller(false);});
+  }, [context, archived, checkAttempt]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function run(work: () => Promise<void>) {
     setBusy(true); setError(""); const ticket = generation.current;
@@ -158,6 +160,8 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
   }
   function variantAction(action: string, variant?: Option, label?: string) { return run(async () => { setProduct(await send(`${productPath}/variants`, "POST", { expected_revision: product?.revision, action, variant_ref: variant?.public_ref, label, available_quantity: null }) as Item); }); }
   const button = (label: string, action: () => void) => <button type="button" disabled={busy} onClick={action}>{t(label)}</button>;
+  if(checkingSeller||sellerCheckFailed)return <main className="rst container wz-seller-setup"><p role={sellerCheckFailed?"alert":"status"}>{sellerCheckFailed?st("sellerCheckFailed"):st("checkingSeller")}</p>{sellerCheckFailed&&<button onClick={()=>setCheckAttempt(value=>value+1)}>{st("refresh")}</button>}</main>;
+  if(!stores.length&&!store)return <main className="rst container wz-seller-setup"><p className="eyebrow">SHIDA / WENZE</p><h1>{st("setupTitle")}</h1><p>{st("setupNote")}</p>{error&&<p role="alert">{t(error)}</p>}{editor?.kind==="createStore"?<form onSubmit={save}><h2>{t("create")}</h2><div className="wz-fields">{[input("name",undefined,true),input("category"),input("city",undefined,true),input("description")]}</div><button className="button button-primary" disabled={busy}>{t("save")}</button><button disabled={busy} onClick={()=>setEditor(null)} type="button">{t("cancel")}</button></form>:<button className="button button-primary" onClick={()=>void openEditor("createStore")}>{t("create")}</button>}<label className="wz-archived-choice"><input type="checkbox" checked={archived} onChange={event=>setArchived(event.target.checked)}/>{t("archived")}</label></main>;
   return <main className="rst container rst-management wz-personal"><header className="rst-management-identity"><div><p className="eyebrow">WENZE / {t("personal")}</p><h1>{store?.name ?? t("shops")}</h1><p>{st("intro")}</p></div>{store&&<button className="wz-change-shop" onClick={()=>{if(leaveWork()){setStore(null);setProduct(null);setView("today");}}}>{t("shops")}</button>}</header><div className="rst-management-layout"><aside className="rst-management-sidebar"><button className="wz-navigation-toggle" type="button" aria-expanded={navigationOpen} onClick={()=>setNavigationOpen(!navigationOpen)}>{st("navigation")} ▾</button><nav className={`rst-management-nav ${navigationOpen?"is-open":""}`} aria-label={st("navigation")}>{["today","catalog","orders","imports","inventory","sales","costs","expenses","reports","schedules"].map(tab=><button key={tab} aria-current={view===tab?"page":undefined} onClick={()=>{if(leaveWork()){setEditor(null);setView(tab);if(tab==="catalog"&&store)void run(()=>loadProducts(store,0));setNavigationOpen(false);const url=new URL(window.location.href);url.searchParams.set("view",tab);if(store)url.searchParams.set("store",store.public_ref);window.history.replaceState(null,"",url);}}}>{st(tab)}</button>)}</nav></aside><div className="rst-management-content wz">
     {view==="today"?<WenzeToday key={store?.public_ref??"none"} store={store} stores={stores} locale={locale} onChoose={row=>{setStore(row as Item);setProduct(null);}} onNavigate={tab=>{setView(tab);if(tab==="catalog"&&store)void run(()=>loadProducts(store,0));}}/>:view==="orders"||view==="imports"?<WenzeR6Workspace key={view} context={context} locale={locale} initialView={view} initialStore={store?.public_ref}/>:view!=="catalog"?<WenzeOperations key={`${store?.public_ref}:${view}`} store={store} locale={locale} view={view} onChoose={()=>setView("catalog")}/>:<>
     {error && <p role="alert">{t(error)}</p>}{busy && <p role="status">{t("loading")}</p>}
