@@ -45,7 +45,9 @@ The Backend module contract and Services/Restaurant implementation-status notes 
 - New marketplace access browser suite: 27 passed. Covers regular users, each single-marketplace owner, no session, 403/503/malformed discovery, direct URLs, account replacement, delayed discovery, explicit creation, and mobile FR/LN/SW.
 - Existing Wenze browser suite under its own port/configuration: 16 passed.
 - Existing Services management/provider browser suites in the production-build run: 10 passed, including uncertain creation retry, archive/restore, account replacement and four locales.
-- Existing Restaurant seller browser suite in the production-build run: 15 passed and 6 failed. Failures concern menu add/pricing, an hours confirmation assertion, three old portion-editor/Orders assertions and menu pagination. These flows were not changed by this work. The broader suite is not claimed as green; no baseline rerun or unrelated fixes were made.
+- Restaurant seller browser suite: **21 passed**, including all six previously failing cases. A rerun reproduced the original failures before correcting the stale fixtures and UI expectations. No test was skipped and no production behavior was changed to satisfy these regressions.
+- Dedicated Restaurant personal-menu browser suite: **16 passed**, including four locales at three widths, preparation setup, availability and failed-read recovery.
+- Final combined production-build browser invocation: **58 passed** (21 Restaurant seller, 27 marketplace access, 10 Services management/provider). The focused 97-test Vitest run also passed again.
 - Backend: 91 passed on a fresh isolated SQLite database with outbound network blocked: `test_restaurant_personal_api.py`, `test_service_profile_ownership.py`, `test_wenze_management_authorization.py`, `test_wenze_store_authorization.py`, `test_security_employment_durable_pair_authorization.py`. An initial sandbox run was interrupted without results; the permitted isolated rerun completed in 110.34 seconds.
 - Mobile screenshots visually inspected; no horizontal overflow in the new setup screens.
 - Current Alembic head: `0168`; no migration or schema change.
@@ -53,8 +55,22 @@ The Backend module contract and Services/Restaurant implementation-status notes 
 
 The initial mixed browser invocation incorrectly used Wenze's port-specific fixtures on the Restaurant port, and the new fixture initially treated anonymous cart requests as authenticated calls. Those harness errors were corrected and the access/Wenze suites rerun successfully. No production authorization was weakened to satisfy a test.
 
-## Release and remaining work
+## Restaurant test reconciliation
 
-Deploy the website build to release the changed entry screens. No new environment variable, dependency, worker, cron, WhatsApp template, backend deployment or migration is required. This work adds no paid restriction and does not change pilot allocation. Live acceptance remains a release check; the older Restaurant menu tests should be reconciled separately.
+The seller tests now follow the current Today entry screen, explicit Orders navigation, Add item action, saved-item preparation editor and slash-separated amount display. Their fixture retains created items and saved hours, resolves individual item references, returns preparation routes, and honors server pagination.
 
-Suggested commit: `fix: require marketplace profiles before opening management`
+Pricing checks still preserve the large decimal unit price and configured amount strings, and now check the saved editor and menu display as well as outgoing payloads. New items must remain unavailable until configured. Hours and publication tests explicitly dismiss and then accept the confirmation dialog, verify dismissal sends no write, and retain the exact QR-pixel assertion. Responsive portion editors still verify that cancelling leaves amounts unchanged and sends no write. The paginated-menu test uses 51 items, requires requests for pages 1 and 2, and searches successfully for the item on page 2 before switching language.
+
+Reproduce against a production server on port 3013 with `RESTAURANT_TEST_EXTERNAL_SERVER=1`:
+
+```powershell
+node node_modules/@playwright/test/cli.js test --config playwright.restaurant.config.ts tests/browser/restaurant-seller.browser.ts tests/browser/marketplace-access.browser.ts tests/browser/services-provider.browser.ts tests/browser/services-management.browser.ts --output test-results/restaurant-access-regression
+```
+
+The dedicated menu suite uses the same configuration with `tests/browser/restaurant-personal-menu.browser.ts`. Test-generated changes to historical screenshots were preserved outside the repository and restored to their committed versions.
+
+## Release
+
+Deploy the website build to release the changed entry screens. No new environment variable, dependency, worker, cron, WhatsApp template, backend deployment or migration is required. This work adds no paid restriction and does not change pilot allocation. Live WhatsApp and production acceptance remain deployment checks; the six Restaurant UI regressions are resolved.
+
+Access implementation: website commit `1ca1a21` and Backend documentation commit `c779ccab`. The Restaurant test follow-up changes only its fixture/assertions and this validation report.
