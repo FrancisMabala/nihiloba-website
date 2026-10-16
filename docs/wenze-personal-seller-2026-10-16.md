@@ -1,5 +1,7 @@
 # Personal Wenze seller area
 
+**Today / pilot update:** Today is now the default selected-shop overview. Current order/stock work is shown separately from today’s UTC financial figures. During the pre-subscription Personal pilot, the backend grants implemented Pro access without subscription or persisted grants (`WENZE_PERSONAL_PILOT_ENABLED=true`, default). Deploy Backend and website together. Organizations are unchanged.
+
 Implemented in nihiloba-website. Entry: `/shida/seller/wenze`; localized entries `/fr/shida/seller/wenze`, `/ln/shida/seller/wenze`, `/sw/shida/seller/wenze` (and `/en/...`). Public Wenze collection links to the seller area. A `store` and optional `product` query can open a specific owned catalog item.
 
 The workspace uses Restaurant’s Personal WhatsApp sign-in, session boundary, account controls, private-page headers and visual shell. It has its own Wenze navigation. It does not require an Organization. No backend schema or entitlement changes are needed.

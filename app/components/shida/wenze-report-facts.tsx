@@ -7,5 +7,5 @@ export function WenzeReportFacts({value,locale}:{value:unknown;locale:WenzeLocal
  if(Array.isArray(value))return <div className="wz-grid">{value.map((row,i)=><WenzeReportFacts key={i} value={row} locale={locale}/>)}</div>;
  if(!value||typeof value!=='object')return null;
  const entries=Object.entries(value),metrics=entries.filter(([key,v])=>fields.has(key)&&(v===null||typeof v!=='object'));
- return <div className="wz-report-facts">{metrics.length>0&&<dl>{metrics.map(([key,v])=><div key={key}><dt>{t(key)}</dt><dd>{v===null?'—':typeof v==='boolean'?t(v?'yes':'no'):String(v)}</dd></div>)}</dl>}{entries.filter(([key,v])=>groups.has(key)&&v!==null&&typeof v==='object').map(([key,v])=><section key={key}><h4>{t(key)}</h4><WenzeReportFacts value={v} locale={locale}/></section>)}</div>;
+ return <div className="wz-report-facts">{metrics.length>0&&<dl>{metrics.map(([key,v])=><div key={key}><dt>{t(key)}</dt><dd>{v==null?'—':typeof v==='boolean'?t(v?'yes':'no'):String(v)}</dd></div>)}</dl>}{entries.filter(([key,v])=>groups.has(key)&&v!==null&&typeof v==='object').map(([key,v])=><section key={key}><h4>{t(key)}</h4><WenzeReportFacts value={v} locale={locale}/></section>)}</div>;
 }
