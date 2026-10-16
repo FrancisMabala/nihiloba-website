@@ -45,15 +45,24 @@ export function CartProvider({ children, initialCart = null, restoreOnMount = tr
     return () => { active = false; };
   }, [replace, restoreOnMount]);
 
+  async function mutate<T>(operation: () => Promise<T>): Promise<T> {
+    try { return await operation(); }
+    catch (caught) {
+      // Refresh stale revisions without replaying a possibly committed add.
+      if (caught instanceof CartClientError && (caught.code === "stale_cart_version" || caught.conflicts?.some(c => c.code === "stale_cart_version"))) await refresh();
+      throw caught;
+    }
+  }
+
   const value: CartContextValue = {
     cart, loading, error, replace, refresh,
     add(productReference, variantReference) {
       const key = `${productReference}:${variantReference ?? ""}`;
-      return mutations.current.run(key, async () => { const next = await addCartItem(productReference, variantReference, cartRef.current?.version); replace(next); return next; });
+      return mutations.current.run(key, async () => { const next = await mutate(() => addCartItem(productReference, variantReference, cartRef.current?.version)); replace(next); return next; });
     },
-    update(itemReference, quantity) { return mutations.current.run(null, async () => { const next = await setCartItemQuantity(itemReference, quantity, cartRef.current?.version); replace(next); return next; }); },
-    remove(itemReference) { return mutations.current.run(null, async () => { const next = await deleteCartItem(itemReference, cartRef.current?.version); replace(next); return next; }); },
-    clear() { return mutations.current.run(null, async () => { const next = await deleteAllCartItems(cartRef.current?.version); replace(next); return next; }); },
+    update(itemReference, quantity) { return mutations.current.run(null, async () => { const next = await mutate(() => setCartItemQuantity(itemReference, quantity, cartRef.current?.version)); replace(next); return next; }); },
+    remove(itemReference) { return mutations.current.run(null, async () => { const next = await mutate(() => deleteCartItem(itemReference, cartRef.current?.version)); replace(next); return next; }); },
+    clear() { return mutations.current.run(null, async () => { const next = await mutate(() => deleteAllCartItems(cartRef.current?.version)); replace(next); return next; }); },
   };
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

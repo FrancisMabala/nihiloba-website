@@ -37,7 +37,7 @@ export function WenzeCartActions({ locale, productReference, variantReference = 
       await cart.add(productReference, variantReference);
       if (mode === "buy") window.location.assign(cartPath);
       else setAdded(true);
-    } catch (caught) { setError(commerceErrorMessage(locale, caught instanceof CartClientError ? caught.code : "api_unavailable")); }
+    } catch (caught) { setError(commerceErrorMessage(locale, caught instanceof CartClientError ? (caught.code === "cart_conflict" ? caught.conflicts?.[0]?.code ?? caught.code : caught.code) : "api_unavailable")); }
     finally { setPending(null); }
   }
 

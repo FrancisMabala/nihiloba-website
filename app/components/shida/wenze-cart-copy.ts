@@ -19,6 +19,10 @@ export function wenzeCartPath(locale: Locale): string {
 
 export function commerceErrorMessage(locale: Locale, code: string): string {
   const t = wenzeCartCopy[locale];
+  if (code === "store_not_order_ready") return locale === "fr" ? "Cette boutique n’a pas encore configuré la livraison ou le retrait. Réessayez plus tard." : "This shop has not configured delivery or pickup yet. Please try later.";
+  if (code === "stock_confirmation_required") return locale === "fr" ? "La boutique doit confirmer le stock de cet article avant l’achat." : "The shop needs to confirm this item’s stock before purchase.";
+  if (code === "forbidden") return locale === "fr" ? "Cet article ne peut pas être ajouté avec ce compte." : "This item cannot be added with this account.";
+  if (code === "cart_conflict") return t.conflicts;
   if (code === "cart_not_found") return t.invalidCart;
   if (code === "insufficient_stock") return t.insufficientStock;
   if (code === "mixed_currency" || code === "unsupported_currency") return t.mixedCurrency;

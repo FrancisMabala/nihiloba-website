@@ -44,3 +44,20 @@
 @media(max-width:480px){.wenze-public .wenze-store-grid{grid-template-columns:1fr;}.wzp-shop-mark{flex-direction:row;min-height:140px;gap:1rem;text-align:left;}.wenze-public .wenze-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;}.wenze-public .wenze-product-card .marketplace-card-body{padding:.7rem;}.wenze-public .wenze-product-card h2{font-size:1rem;}.wenze-public .wenze-card-price{font-size:.95rem;}.wzp-filter-bottom{align-items:start;}.wzp-store-heading{grid-template-columns:1fr;}.wzp-store-monogram{display:none;}}
 
 @media(max-width:480px){.wenze-public .wenze-product-grid:has(>.wenze-product-card:only-child){grid-template-columns:minmax(0,1fr);max-width:380px;}}
+
+/* Account actions share the marketplace's cream, green and gold palette. */
+.wzp-buyer-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin:0 0 1.75rem}
+.wzp-relation button,.wzp-favourites>button,.wzp-reviews button,.wzp-close{border:1px solid #cfc7b8;border-radius:999px;background:#fffdf8;color:#0b3d32;padding:.55rem .9rem;cursor:pointer;font:inherit}
+.wzp-relation button[aria-pressed=true]{background:#e7eee8;border-color:#0b3d32}
+.wzp-relation{margin:.25rem 0 .75rem}.wzp-buyer-actions .wzp-relation{margin:0}
+.wzp-relation small{display:block;max-width:24rem}.wzp-reviews button:disabled,.wzp-relation button:disabled{opacity:.6;cursor:wait}
+.wzp-favourites{position:relative}.wzp-favourites>section{margin:1rem 0;padding:1.2rem;border:1px solid #ded6c8;border-radius:12px;background:#fffdf8}
+.wzp-favourites ul{list-style:none;padding:0}.wzp-favourites li{padding:.6rem 0;border-bottom:1px solid #ded6c8}
+.wzp-buyer-login{margin:1rem auto;padding:1.25rem;border:1px solid #b38b3e;border-radius:12px;background:#f6f2e9}
+.wzp-close{float:right}.wzp-reviews{margin-top:2.5rem;padding-top:1.5rem;border-top:2px solid #b38b3e;max-width:760px}
+.wzp-reviews h2{font-size:1.7rem}.wzp-reviews article{border-bottom:1px solid #ded6c8;padding:1rem 0}.wzp-reviews article p{white-space:pre-wrap;overflow-wrap:anywhere}
+.wzp-reviews form{display:grid;gap:.85rem;margin:1.25rem 0;padding:1.25rem;border:1px solid #ded6c8;border-radius:12px;background:#f6f2e9}
+.wzp-reviews label{display:grid;gap:.4rem}.wzp-reviews textarea,.wzp-reviews select{width:100%;padding:.65rem;border:1px solid #cfc7b8;border-radius:6px;background:#fffdf8;color:inherit;font:inherit}.wzp-reviews textarea{min-height:110px}
+.wzp-reviews nav{display:flex;gap:1rem;align-items:center;margin:1rem 0}
+
+.wzp-buyer-actions .wzp-favourites:has(>section){flex-basis:100%}.wzp-favourites>section{width:min(100%,32rem);min-width:min(75vw,20rem)}
