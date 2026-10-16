@@ -113,3 +113,20 @@
  .wzp-about{grid-template-columns:1fr;gap:1.4rem;margin-top:2rem;padding-top:1.5rem}.wzp-about .wzp-shop-info{padding:1.1rem}.wzp-about h2{font-size:1.4rem}
 }
 @media(prefers-reduced-motion:reduce){.wenze-public .wenze-product-card .marketplace-card-image img{transition:none}}
+
+/* Main marketplace introduction, aligned with Services. */
+.wzp-landing-hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:3rem;align-items:center;margin-bottom:2rem}
+.wzp-landing-eyebrow{font-size:.7rem;color:#896b37;letter-spacing:.14em;margin:0 0 1.1rem;line-height:1.6}
+.wzp-landing-hero h1{font:500 clamp(2.2rem,4vw,3.7rem)/1.08 Georgia,serif;letter-spacing:-.035em;color:var(--forest);margin:0 0 1.3rem;max-width:650px}
+.wzp-landing-intro{color:var(--muted);font-size:1rem;line-height:1.8;max-width:530px}
+.wzp-discover-link{display:inline-flex;gap:1.5rem;align-items:center;border-bottom:1px solid var(--gold);padding:.5rem 0;font-weight:600;font-size:.88rem;margin-top:.5rem}
+.wzp-landing-art{height:300px;position:relative;border-radius:70px 12px 12px 12px;overflow:hidden;background:#e8eee6}
+.wzp-landing-art img{object-fit:cover;object-position:center 40%}
+.wzp-landing-art>span{position:absolute;bottom:1rem;right:1rem;font-size:.68rem;letter-spacing:.15em;background:#fff8e8ed;border:1px solid #eddfc4;padding:.55rem .8rem;border-radius:4px;color:#244332}
+.wzp-landing #wenze-shops{scroll-margin-top:120px}.wzp-landing-favourites{margin:-.5rem 0 1.5rem}
+.wzp-landing-how{margin-top:3rem;border-top:1px solid var(--line);padding-top:2rem}
+.wzp-landing-how h2,.wzp-seller-invitation h2{font:500 clamp(1.4rem,2.5vw,1.8rem)/1.3 Georgia,serif;margin:0 0 .7rem;color:var(--forest)}
+.wzp-landing-how p,.wzp-seller-invitation div>p:last-child{font-size:.9rem;line-height:1.8;color:var(--muted);max-width:780px;margin:0}
+.wzp-seller-invitation{display:flex;justify-content:space-between;align-items:center;gap:2rem;background:#e9eddf;border:1px solid #dce2cf;border-radius:12px;padding:2rem;margin-top:2rem}
+.wzp-seller-invitation .wzp-landing-eyebrow{margin-bottom:.6rem}.wzp-seller-invitation .button{flex-shrink:0;gap:1.5rem}
+@media(max-width:700px){.wzp-landing-hero{grid-template-columns:minmax(0,1fr);gap:1.1rem;margin-bottom:1.3rem}.wzp-landing-hero h1{font-size:2.15rem;max-width:22ch;margin-bottom:.7rem}.wzp-landing-eyebrow{font-size:.63rem;margin-bottom:.65rem}.wzp-landing-intro{font-size:.9rem;line-height:1.65;margin:.5rem 0}.wzp-landing-art{height:180px;border-top-left-radius:44px}.wzp-discover-link{margin-top:0}.wzp-seller-invitation{align-items:start;flex-direction:column;padding:1.3rem;gap:1.2rem}.wzp-seller-invitation .button{width:100%}}
