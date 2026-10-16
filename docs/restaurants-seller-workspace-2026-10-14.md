@@ -47,3 +47,13 @@ The existing Excel tracker was updated with a new 14 October run and the red gat
 No new Backend endpoint was required. Today uses existing exact-establishment order, reservation, service group, inventory, order configuration, and daily preview reads. Service groups, reservations, and inventory expose paginated pages rather than exact cross-page actionable counts; Today displays a lower bound with `+` when needed. The daily preview's `bill_summary` is linked-bill coverage, so it is not presented as all sales or verified provider payment.
 
 Before any rollout: (1) triage and rerun the red scoped Backend gate on a frozen combined tree; (2) run the full Website and Business Restaurant browser inventories against staging with shared sign-in; (3) have native speakers review FR/LN/SW wording and complete physical phone/tablet workday acceptance for owner and assigned staff; (4) release the apps with Backend capabilities and intake policy unchanged, then make any pilot intake decision separately. The release tracker is `Backend/docs/evidence/restaurants_whatsapp_2026_10_12/release_validation_tracker.xlsx`.
+
+
+## Shared management presentation — 17 October 2026
+
+Wenze, Restaurants and Services now share the Services-style authenticated
+workspace navigation, identity, colors and responsive controls. See the
+[shared workspace implementation and focused validation](shared-seller-workspace-2026-10-17.md).
+This presentation update preserves module ownership, capabilities and workflows;
+public pages and the separate Business Dashboard are unchanged. Earlier visual
+evidence and validation above describe their original batches.

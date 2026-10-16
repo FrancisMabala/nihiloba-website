@@ -61,12 +61,12 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await expect(page.locator('.rst-menu-status')).toContainText(soloPreparationCopy[locale].serve);
  await expect(page.locator('.rst-menu-filters')).toContainText(personalMenuCopy[locale].setup);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/restaurant-personal-menu-2026-10-15/after-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/seller-workspace/restaurant-personal-menu-after-${locale}-${width}.png`,fullPage:true});
  await page.locator('.rst-personal-menu .rst-menu-row').getByRole('button',{name:restaurantText(locale,'edit'),exact:true}).click();
  await expect(page.locator('.rst-editor .rst-item-routing')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.locator('.skip-link').evaluate(element=>{(element as HTMLElement).style.visibility='hidden';});
- await page.screenshot({path:`docs/evidence/restaurant-personal-menu-2026-10-15/edit-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/seller-workspace/restaurant-personal-menu-edit-${locale}-${width}.png`,fullPage:true});
 });
 
 test('create unavailable, configure preparation, then change availability',async({page})=>{

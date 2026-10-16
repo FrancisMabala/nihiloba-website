@@ -35,7 +35,7 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
   await page.setViewportSize({width,height:1000});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=services`);
   const panel=page.getByRole('region',{name:t.publication}),button=panel.getByRole('button',{name:publish[locale]});
   await expect(panel).toBeVisible();await expect(button).toBeDisabled();await expect(panel.locator('li')).toHaveCount(4);
-  await page.screenshot({path:`docs/evidence/services-workspace/publication-${locale}-${width}.png`,fullPage:true});
+  await page.screenshot({path:`docs/evidence/seller-workspace/services-publication-${locale}-${width}.png`,fullPage:true});
   await panel.locator('li button').first().click();await expect(page.locator('#svc-field-description')).toBeFocused();
   await page.locator('#svc-field-description').fill('Repairs and maintenance with a careful finish.');
   await page.locator('#svc-field-service_duration_minutes').fill('60');await page.locator('#svc-field-commune').fill('Gombe');await page.locator('#svc-field-availability').fill('Monday to Friday, 09:00–17:00');
@@ -56,7 +56,7 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
   if(locale==='en'){await form.getByRole('radio').last().press('ArrowLeft');await expect(form.getByRole('radio').nth(2)).toBeChecked();await form.getByRole('radio').nth(2).press('ArrowRight');}
   await expect(sheet.getByText('Studio Kivu',{exact:true})).toBeVisible();await expect(sheet).toHaveCSS('--bill-accent','#7e22ce');
   await expect(sheet).toContainText('50.00');expect(state.writes).toHaveLength(0);
-  await page.screenshot({path:`docs/evidence/services-workspace/bill-settings-${locale}-${width}.png`,fullPage:true});
+  await page.screenshot({path:`docs/evidence/seller-workspace/services-bill-settings-${locale}-${width}.png`,fullPage:true});
   await form.locator('button[type="submit"], button.svc-primary').click();await expect(form.locator('.svc-primary')).toBeDisabled();
   expect(state.writes).toHaveLength(1);expect(state.writes[0].body).toMatchObject({revision:1,display_name:'Studio Kivu',accent:'plum'});expect(Object.keys(state.writes[0].body).sort()).toEqual(['accent','display_name','idempotency_key','revision']);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

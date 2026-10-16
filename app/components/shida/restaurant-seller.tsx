@@ -64,7 +64,7 @@ export function RestaurantSeller({ locale, receipt }: { locale: RestaurantLocale
   catch { setMessage(t.unavailable); }
   finally { if (alive.current) setPending(false); }
  }
- return <div lang={locale} className="rst-seller">
+ return <div lang={locale} className="rst-seller seller-design">
 <section className="rst container rst-shell"><div className="rst-topline">
  <Link className="rst-brand" prefetch={false} href={restaurantPath(locale)} aria-label={`SHIDA · ${management.marketplace}`}>SHIDA<span>{management.marketplace} ↗</span></Link>
  <span className="rst-workspace-label">{management.workspace}</span>

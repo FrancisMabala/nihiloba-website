@@ -116,3 +116,13 @@ prepared under repository instructions; pushing/deployment requires separate
 authorization. Suggested website commit: `feat(services): clarify publishing and
 refine provider workspace`. Backend documentation commit: `docs(services): record
 workspace and bill presentation improvements`.
+
+
+## Shared management presentation — 17 October 2026
+
+Wenze, Restaurants and Services now share the Services-style authenticated
+workspace navigation, identity, colors and responsive controls. See the
+[shared workspace implementation and focused validation](shared-seller-workspace-2026-10-17.md).
+This presentation update preserves module ownership, capabilities and workflows;
+public pages and the separate Business Dashboard are unchanged. Earlier visual
+evidence and validation above describe their original batches.

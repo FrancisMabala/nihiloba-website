@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { managementNavigation } from './restaurant-management-navigation';
+import {receivingCopy} from '../../app/lib/restaurant-receiving';
 import { workText } from '../../app/lib/restaurant-work-copy';
 import { soloPreparationCopy } from '../../app/lib/restaurant-preparation-copy';
 
@@ -47,7 +48,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await page.setViewportSize({width,height:900});await seed(page,{readyServe:true});
  await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/');
  await managementNavigation(page,labels[locale]);
- await expect(page.locator('.rst-quick-nav')).not.toContainText('Kitchen');
+ await expect(page.locator('#restaurant-navigation')).not.toContainText('Kitchen');
  const row=page.locator('.rst-order-row').filter({hasText:'ORD_SERVE_MALEWA_6P8Q'});
  await expect(row).toContainText('ORD_SERVE_MALEWA_6P8Q');
  await row.getByRole('button').last().click();
@@ -55,7 +56,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await expect(page.locator('.rst-preparation-owner')).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.addStyleTag({content:'nextjs-portal{display:none!important}.skip-link{transform:translateY(-150%)!important}'});
- await page.screenshot({path:`docs/evidence/restaurant-orders-2026-10-14/after-ready-serve-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/seller-workspace/restaurant-orders-after-ready-serve-${locale}-${width}.png`,fullPage:true});
 });
 for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1440])test(`owner Orders queue ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900});await seed(page);
@@ -68,7 +69,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await expect(page.locator('.rst-order-row').filter({hasText:'ORD_COUNTER_5J7S'})).toContainText('Fufu et pondu');
  await expect(page.locator('.rst-order-row').filter({hasText:'ORD_PICKUP_2N6R'})).not.toContainText(labels[locale]==='Orders'?'Handed over':'Remise effectuée');
  await page.addStyleTag({content:'nextjs-portal{display:none!important}.skip-link{transform:translateY(-150%)!important}'});
- await page.screenshot({path:`docs/evidence/restaurant-orders-2026-10-14/after-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/seller-workspace/restaurant-orders-after-${locale}-${width}.png`,fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1440])test(`closed intake and no orders ${locale} ${width}`,async({page})=>{
@@ -80,12 +81,12 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  if(locale==='fr'&&width===360){
   await page.addStyleTag({content:'nextjs-portal{display:none!important}.skip-link{transform:translateY(-150%)!important}'});
-  await page.screenshot({path:'docs/evidence/restaurant-orders-2026-10-14/after-empty-closed-360.png',fullPage:true});
+  await page.screenshot({path:'docs/evidence/seller-workspace/restaurant-orders-after-empty-closed-360.png',fullPage:true});
   await page.locator('.rst-order-empty').getByRole('button').click();
   await expect(page.locator('.rst-selling')).toBeVisible();
   await managementNavigation(page,'Commandes');
-  await page.locator('.rst-order-notice').getByRole('button',{name:'Réception des commandes'}).click();
-  await expect(page.locator('form.rst-work h2')).toHaveText('Réception des commandes');
+  await page.locator('.rst-order-notice').getByRole('button',{name:workText('fr','intake'),exact:true}).click();
+  await expect(page.locator('.rst-intake').getByRole('heading',{name:receivingCopy.fr.title,exact:true})).toBeVisible();
  }
 });
 test('history only says nothing needs action',async({page})=>{
@@ -110,6 +111,6 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  if(locale==='en'&&width===1440){
   await page.evaluate(()=>{(document.activeElement as HTMLElement|null)?.blur();window.scrollTo(0,0);});
   await page.addStyleTag({content:'nextjs-portal{display:none!important}.skip-link{transform:translateY(-150%)!important}'});
-  await page.screenshot({path:'docs/evidence/restaurant-orders-2026-10-14/after-stale-en-1440.png',fullPage:true});
+  await page.screenshot({path:'docs/evidence/seller-workspace/restaurant-orders-after-stale-en-1440.png',fullPage:true});
  }
 });

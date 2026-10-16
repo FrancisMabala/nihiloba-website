@@ -34,8 +34,8 @@ test('real Backend: customer, Personal seller and Organization seller reservatio
   await personal.addCookies([{name:'nihiloba_personal_session',value:await session('owner'),domain:'localhost',path:'/api/shida',httpOnly:true,sameSite:'Lax',secure:true}]);
   const owner=await personal.newPage();
   await owner.goto('/shida/seller/restaurants');
-  await expect(owner.locator('.rst-management-identity').getByRole('heading',{name:data.personal_name})).toBeVisible();
-  await owner.locator('.rst-nav-group').filter({hasText:'Reservations'}).locator('summary').click();
+  await expect(owner.locator('.seller-heading').getByRole('heading',{name:data.personal_name})).toBeVisible();
+  // Shared navigation exposes Reservations directly.
   await owner.getByRole('button',{name:'Reservations',exact:true}).click();
   await owner.getByRole('region',{name:'Awaiting seller response'}).getByRole('button').first().click();
   await expect(owner.getByRole('button',{name:'Accept this request'})).toBeVisible();
@@ -61,7 +61,7 @@ test('real Backend: customer, Personal seller and Organization seller reservatio
   const manager=await business.newPage();
   await manager.goto(`/businesses/${data.business}/restaurants`);
   await expect(manager.getByRole('heading',{name:data.organization_name})).toBeVisible();
-  await manager.locator('.rst-nav-group').filter({hasText:'Reservations'}).locator('summary').click();
+  // Shared navigation exposes Reservations directly.
   await manager.getByRole('button',{name:'Reservations',exact:true}).click();
   await manager.getByRole('region',{name:'Awaiting seller response'}).getByRole('button').first().click();
   await expect(manager.getByRole('button',{name:'Accept this request'})).toBeVisible();

@@ -1,4 +1,5 @@
 "use client";
+import {SellerWorkspaceIdentity, SellerWorkspaceNavigation, SellerWorkspaceHeading, type SellerNavigationItem} from "./seller-workspace";
 import { RestaurantInsights } from './restaurant-insights';
 import { insightsCopy } from '../../lib/restaurant-insights-copy';
 import './restaurant-insights.css';
@@ -61,7 +62,6 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const entry = marketplaceEntryCopy[locale], setup = entry.restaurants;
   const menuCopy = personalMenuCopy[locale];
   const [settingsGeneration, setSettingsGeneration] = useState(0);
-  const [navigationOpen, setNavigationOpen] = useState(false);
   const [capabilities, setCapabilities] = useState<string[]>([]);
   const wt = (key:string) => workText(locale,key);
   const readRestaurant = <T,>(path: string, language: string) => read<T>(path, language, binding);
@@ -121,7 +121,6 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   }
   async function loadTab(next: string, nextPage = 1, leavingEditor = false) {
     if((next!==tab || next==='settings') && !leavingEditor && !leaveWork())return;
-    setNavigationOpen(false);
     if(next==='pos'||next==='service'||next==='paymentMethods'||next==='daily'){const value=await readRestaurant<{capabilities:{capability:string;available:boolean}[]}>(`${path}/capabilities`,locale);const allowed=value.capabilities.some(entry=>entry.capability==='restaurant.pos'&&entry.available);setPosAvailable(allowed);setTab(next==='service'?next:allowed?next:'counter');return;}
     if (next === "settings") { await select(selected!.public_ref, "settings"); setSettingsGeneration(value=>value+1); return; }
     if (next === "profile") { await select(selected!.public_ref, "profile"); return; }
@@ -326,7 +325,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const button = (label: string, action: () => void, disabled = false) => <button type="button" className="button button-secondary" disabled={busy || disabled} onClick={action}>{t(label)}</button>;
   if (denied) return <section className="rst container section"><p role="alert">{t(message)}</p><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{t("review")}</Link></section>;
   if (!list && !selected) return <section className="rst container section"><p role={message ? "alert" : "status"}>{t(message || "loading")}</p>{message && <button disabled={busy} onClick={()=>void run(()=>loadList(1,"",true))}>{t("reload")}</button>}</section>;
-  if (list?.total === 0 && !filter && !selected) return <section className="rst container section rst-seller-setup">
+  if (list?.total === 0 && !filter && !selected) return <section className="rst container section rst-seller-setup seller-setup">
     <h1>{setup.title}</h1><p>{setup.note}</p><p>{entry.separate}</p>
     {(busy || message) && <p role={message && message !== "saved" ? "alert" : "status"}>{t(busy ? "loading" : message)}</p>}
     {editor?.kind === "create" ? <form onSubmit={submit} className="rst-card rst-editor" aria-label={t("create")}>
@@ -347,11 +346,13 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     {label:management.menu,entries:selected?.actions.includes('menu') ? [["items",design.menu],["offerings",design.daily]] : []},
     {label:management.settings,entries:[["settings",management.settings],["profile",design.profile],...(selected?.actions.includes('hours') ? [["hours",design.hours] as [string,string]] : []),["intake",wt("intake")],["reviews",restaurantReviewCopy[locale].reviews],...(selected?.actions.includes('links') ? [["sharing",design.sharing] as [string,string]] : [])]},
   ];
-  return <section className="rst container rst-management" aria-label={t("restaurants")}>
-    <header className="rst-management-identity"><div><span className="rst-overline">{management.establishment}</span><h1>{selected?.profile.name ?? management.choose}</h1></div>{selected && <><span className={`rst-publication rst-state-${selected.status}`}>{selected.status === "active" ? design.published : t(selected.status)}</span>{!editor && <div className="rst-identity-tools">{selected.actions.includes('preview') && button("preview", () => void run(() => loadTab("preview")))}{list && list.total > 1 && <button className="rst-text-button" disabled={busy} onClick={()=>{if(!leaveWork())return;setSelected(null);setPreview(null);void run(()=>loadList(1,""));}}>{design.change}</button>}</div>}</>}</header>
-    <div className={selected ? 'rst-management-layout' : ''}>
-    {selected && <aside className="rst-management-sidebar"><div className="rst-quick-nav" aria-label={management.work}>{([['today',management.work],['orders',wt('orders')],[posAvailable?'pos':'counter',management.selling]] as [string,string][]).map(([key,label])=><button type="button" key={key} aria-current={tab===key?'page':undefined} disabled={busy||Boolean(editor)} onClick={()=>void run(()=>loadTab(key))}>{label}</button>)}</div><button type="button" className="rst-navigation-toggle" aria-expanded={navigationOpen} aria-controls="restaurant-navigation" onClick={()=>setNavigationOpen(!navigationOpen)}>{navigationOpen ? management.close : `☰ ${management.navigation}`}</button><nav id="restaurant-navigation" className={`rst-management-nav${navigationOpen ? ' is-open' : ''}`} aria-label={management.navigation}>{groups.filter(group=>group.entries.length).map(group=><details className="rst-nav-group" key={group.label} open={group.entries.some(([key])=>tab===key || key==='items' && ['categories','batch'].includes(tab))}><summary>{group.label}</summary>{group.entries.map(([key,label])=><button key={key} type="button" disabled={busy || Boolean(editor)} aria-current={tab===key || key==='items' && ['categories','batch'].includes(tab) ? 'page' : undefined} onClick={()=>void run(()=>loadTab(key))}>{label}</button>)}</details>)}</nav></aside>}
-    <div className="rst-management-content">
+  const icons:Record<string,SellerNavigationItem["icon"]>={today:"overview",orders:"work",pos:"finance",counter:"finance",inventory:"stock",daily:"finance",recovery:"finance",activity:"reports",reservations:"calendar",items:"catalog",offerings:"calendar",settings:"settings",profile:"profile",hours:"calendar",intake:"settings",reviews:"work",sharing:"document"};
+  const navigation=groups.flatMap(group=>group.entries.map(([key,label])=>({key,label,icon:icons[key],active:key==="items"&&["categories","batch"].includes(tab)||key===(posAvailable?"pos":"counter")&&tab==="service"})));
+  return <section className="rst container rst-management seller-workspace" aria-label={t("restaurants")}>
+    <div className={selected ? 'rst-management-layout seller-layout' : ''}>
+    {selected && <aside className="rst-management-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="R" title={t("restaurants")} subtitle={management.workspace}/><SellerWorkspaceNavigation id="restaurant-navigation" className="rst-management-nav" label={management.navigation} items={navigation} current={tab} disabled={busy||Boolean(editor)} onNavigate={key=>void run(()=>loadTab(key))}/></aside>}
+    <div className="rst-management-content seller-content">
+    <SellerWorkspaceHeading eyebrow={management.workspace} title={selected?.profile.name ?? management.choose} actions={selected&&<><span className={`rst-publication rst-state-${selected.status}`}>{selected.status === "active" ? design.published : t(selected.status)}</span>{!editor&&<>{selected.actions.includes('preview')&&button("preview",()=>void run(()=>loadTab("preview")))}{list&&list.total>1&&<button className="rst-text-button" disabled={busy} onClick={()=>{if(!leaveWork())return;setSelected(null);setPreview(null);void run(()=>loadList(1,""));}}>{design.change}</button>}</>}</>}/>
     <p role={message && message !== "saved" && message !== "unsaved" ? "alert" : "status"} aria-live="polite">{busy ? t(editor?.operation ? "saving" : "loading") : message ? t(message) === "—" ? t("validation") : t(message) : editor ? t("unsaved") : ""}</p>
     {editor ? <form onSubmit={submit} className={`rst-card rst-editor${editor.kind === "items" ? " rst-portion-editor" : ""}`} aria-label={t(editor.kind)}>
       <div className="rst-editor-main"><h2>{editor.kind === "items" ? editor.fields.name || t(editor.kind) : t(editor.kind)}</h2>

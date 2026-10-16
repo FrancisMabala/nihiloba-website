@@ -13,3 +13,13 @@ The previous seller-community illustration is retained as an unused asset; selle
 Validation: production build/TypeScript, focused lint, existing seller/session unit checks, and Chrome checks for all three marketplaces in all four locales. Browser checks exercise absence of landing imagery, active marketplace link, mobile overflow and sign-in visibility, mocked WhatsApp challenge creation and cancellation. No real WhatsApp message or account mutation is performed. Previews are in `docs/evidence/seller-landing/`.
 
 Release: website-only deployment. No migrations, environment variables or backend changes. Local commit only until push is explicitly authorized.
+
+
+## Shared management presentation — 17 October 2026
+
+Wenze, Restaurants and Services now share the Services-style authenticated
+workspace navigation, identity, colors and responsive controls. See the
+[shared workspace implementation and focused validation](shared-seller-workspace-2026-10-17.md).
+This presentation update preserves module ownership, capabilities and workflows;
+public pages and the separate Business Dashboard are unchanged. Earlier visual
+evidence and validation above describe their original batches.

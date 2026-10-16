@@ -66,7 +66,7 @@ export function PersonalServicesManager({ locale, offeringRef = null }: { locale
   catch { setMessage(t.unavailable); }
   finally { if (alive.current) setPending(false); }
  }
- return <div lang={locale} className="rst-seller svc-provider">
+ return <div lang={locale} className="rst-seller svc-provider seller-design">
 <section className="rst container rst-shell"><div className="rst-topline">
  <Link className="rst-brand" prefetch={false} href={`${locale === "en" ? "" : "/fr"}/shida/services`} aria-label={`SHIDA · ${management.marketplace}`}>SHIDA<span>{management.marketplace} ↗</span></Link>
  <span className="rst-workspace-label">{copy.title}</span>

@@ -48,20 +48,20 @@ for(const [locale,width] of [['en',1440],['en',360],['fr',1440],['ln',820],['sw'
  await expect(page.getByRole('heading',{name:t.overview,exact:true})).toBeVisible();
  await expect(nav.getByRole('button')).toHaveCount(7);
  await expect(page.getByText(t.pilot).last()).toBeVisible();
- await page.screenshot({path:`docs/evidence/services-workspace/overview-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/seller-workspace/services-overview-${locale}-${width}.png`,fullPage:true});
  for(const section of ['services','work','finance','reports','templates','settings'] as const){
   await nav.getByRole('button',{name:t[section],exact:true}).click();
   await expect(nav.getByRole('button',{name:t[section],exact:true})).toHaveAttribute('aria-current','page');
   await expect(page.locator('#services-view-title')).toHaveText(t[section]);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  if(locale==='en'&&width===1440&&['work','finance','reports','templates'].includes(section))await page.screenshot({path:`docs/evidence/services-workspace/${section}-en-1440.png`,fullPage:true});
+  if(locale==='en'&&width===1440&&['work','finance','reports','templates'].includes(section))await page.screenshot({path:`docs/evidence/seller-workspace/services-${section}-en-1440.png`,fullPage:true});
  }
  await nav.getByRole('button',{name:t.services,exact:true}).click();
  const editor=page.locator('.svc-service-editor');await editor.getByRole('textbox').first().fill('Draft provider name');
  await nav.getByRole('button',{name:t.overview,exact:true}).click();
  await nav.getByRole('button',{name:t.services,exact:true}).click();
  await expect(editor.getByRole('textbox').first()).toHaveValue('Draft provider name');
- await page.screenshot({path:`docs/evidence/services-workspace/services-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/seller-workspace/services-services-${locale}-${width}.png`,fullPage:true});
 });
 test('empty setup retries exactly once with the same creation key, then archives and restores',async({page})=>{
  const state=await fixture(page,{empty:true});state.failCreate=true;

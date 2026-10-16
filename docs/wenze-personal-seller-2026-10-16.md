@@ -38,3 +38,13 @@ Production build and TypeScript checked locally. Gateway tests cover Personal ac
 These are repository and synthetic local checks, not live deployment acceptance. No production data, real orders, paid services or real WhatsApp messages were used. End-to-end live authentication, actual media hosting, import parsing and report artifact generation still depend on the existing backend deployment and need staging acceptance. Wenze features absent from the backend (such as a formal receipt/accounting system) are not invented here. Broader WhatsApp restructuring and removal of the older Business Dashboard Personal entry are separate work.
 
 The local Turbopack dev scan encountered pre-existing inaccessible `tmp/pytest-stock*` directories; production validation used `node node_modules/next/dist/bin/next build --webpack`. The browser config starts that production build so the real CSP remains enabled.
+
+
+## Shared management presentation — 17 October 2026
+
+Wenze, Restaurants and Services now share the Services-style authenticated
+workspace navigation, identity, colors and responsive controls. See the
+[shared workspace implementation and focused validation](shared-seller-workspace-2026-10-17.md).
+This presentation update preserves module ownership, capabilities and workflows;
+public pages and the separate Business Dashboard are unchanged. Earlier visual
+evidence and validation above describe their original batches.

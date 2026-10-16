@@ -10,7 +10,8 @@ import {ServicesBillBranding} from "./services-bill-branding";
 import {useEffect, useRef, useState} from "react";
 import {leaveWork, useWorkDraft} from "@/app/lib/restaurant-work";
 import {providerCopy, type ProviderView} from "@/app/lib/services-provider-copy";
-import {ServicesIcon, ServicesPublication, workspaceCopy} from "./services-workspace-ui";
+import {SellerWorkspaceIdentity, SellerWorkspaceNavigation} from "./seller-workspace";
+import {ServicesPublication, workspaceCopy} from "./services-workspace-ui";
 import {ServicesProviderOverview} from "./services-provider-overview";
 
 type Locale = "fr" | "en" | "ln" | "sw";
@@ -129,9 +130,9 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
  const navigation:ProviderView[]=["overview",...(can("profile")?["services" as const]:[]),...(can("reservations")&&can("messages")?["work" as const]:[]),...(can("manual_journal")||can("basic_totals")?["finance" as const]:[]),...(can("operational_reports")?["reports" as const]:[]),...(can("quote_templates")||can("bill_templates")?["templates" as const]:[]),...(can("bills")?["settings" as const]:[])];
  const selectedView=navigation.includes(view)?view:"overview";
  const fieldLabels:Record<string,string>={name:t.name,service_name:t.service,category:t.category,description:t.description,service_duration_minutes:t.duration,commune:t.area,service_location_type:t.location,home_service_available:t.home,booking_mode:t.booking,availability:t.availability};
- return <section aria-label={t.title} className="svc-workspace container" lang={lang}>
-  <aside className="svc-sidebar"><div className="svc-identity"><span aria-hidden="true">S</span><div><strong>{ui.title}</strong><small>{ui.personal}</small></div></div>
-   <nav aria-label={ui.navigation}>{navigation.map(item=><button key={item} type="button" aria-current={selectedView===item?"page":undefined} onClick={()=>navigate(item)}><ServicesIcon name={item}/>{ui[item]}</button>)}</nav>
+ return <section aria-label={t.title} className="svc-workspace container seller-layout" lang={lang}>
+  <aside className="svc-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="S" title={ui.title} subtitle={ui.personal}/>
+   <SellerWorkspaceNavigation label={ui.navigation} items={navigation.map(key=>({key,label:ui[key],icon:key==="services"?"catalog":key==="templates"?"document":key}))} current={selectedView} onNavigate={key=>navigate(key as ProviderView)}/>
    <p className="svc-sidebar-note">{pilot?ui.pilot:ui.included}</p>
   </aside>
   <div className="svc-content">

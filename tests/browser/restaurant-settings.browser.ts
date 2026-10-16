@@ -51,8 +51,9 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,820,1
  await expect(root.getByRole('heading',{name:c.reservations,exact:true})).toBeVisible();await expect(root.getByText(c.preserved,{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await expect(root.locator('.rst-settings-reservation').getByText(''+c.saved+': '+c.off,{exact:true})).toBeVisible();
- if(locale==='en')await root.locator('#settings-intake').screenshot({path:`docs/evidence/restaurant-receiving-2026-10-15/settings-intake-${width}.png`});
- await page.screenshot({path:`docs/evidence/restaurant-receiving-2026-10-15/settings-after-${locale}-${width}.png`,fullPage:true});
+ if(locale==='en')await root.locator('#settings-intake').screenshot({path:`docs/evidence/seller-workspace/restaurant-settings-intake-${width}.png`});
+ await page.evaluate(()=>{window.scrollTo({top:0,behavior:'instant'});(document.activeElement as HTMLElement)?.blur();});
+ await page.screenshot({path:`docs/evidence/seller-workspace/restaurant-settings-after-${locale}-${width}.png`,fullPage:true});
 });
 for(const width of [360,820,1440])test(`intake confirmation, save/reload, stale recovery, exact uncertain retry and offline ${width}`,async({page,context})=>{
  await page.setViewportSize({width,height:1000});
