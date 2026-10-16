@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import "./jobs-public.css";
 import type { Locale } from "../../lib/i18n";
 import { safePublicActionUrl, safePublicExternalUrl, safePublicImageUrl } from "../../lib/safe-public-url";
 import { getJob, getJobEmployer, getJobs, getPublicEntityActions, jobSearchQuery, ShidaApiError } from "../../services/shida/public-client";
@@ -13,6 +15,29 @@ import { marketplacePath, MarketplaceState, publicLocation } from "./marketplace
 const copy = {
   en: { jobs:"Jobs",title:"Find work with SHIDA",intro:"Explore professional opportunities and trusted local work, then apply securely through SHIDA.",professional:"Company & organisation offers",individual:"Individual offers",professionalShort:"Professional",individualShort:"Individual",search:"Search jobs",placeholder:"Job title, organisation or keyword",city:"City",area:"Area",commune:"Commune",filters:"Search filters",applyFilters:"Show jobs",clear:"Clear all",result:"open offer",results:"open offers",empty:"No open offers match these filters.",emptyProfessional:"There are no company or organisation vacancies available right now. Please check back later or explore another SHIDA marketplace.",emptyIndividual:"There are no individual vacancies available right now. Please check back later or explore another SHIDA marketplace.",exploreMarketplaces:"Explore other SHIDA marketplaces",unavailable:"Jobs are temporarily unavailable.",retry:"Try again",details:"View offer",employer:"Organisation",location:"Location",compensation:"Compensation",published:"Published",deadline:"Apply by",closed:"Applications closed",description:"About this role",requirements:"Requirements document",requirementsDocument:"A supporting PDF is available securely during the SHIDA application journey.",apply:"Apply with SHIDA",finalApply:"Ready to apply?",actionUnavailable:"Applications are not available for this offer.",employerProfile:"View organisation offers",openJobs:"Open offers",noEmployerJobs:"This employer has no open offers right now.",employerUnavailable:"This employer profile is unavailable.",jobUnavailable:"This offer is no longer available.",back:"Back to jobs",previous:"Previous",next:"Next",page:"Page",of:"of",image:"Organisation logo unavailable",external:"Public organisation profile",contract:"Contract",experience:"Experience",schedule:"Schedule",mode:"Work mode",vacancies:"Vacancies",start:"Expected start",benefits:"Benefits",salary:"Salary",personalEmployer:"Personal employer"},
   fr: { jobs:"Emplois",title:"Trouvez un emploi avec SHIDA",intro:"Découvrez des opportunités professionnelles et des travaux locaux, puis postulez en toute sécurité via SHIDA.",professional:"Offres d’entreprises et d’organisations",individual:"Offres de particuliers",professionalShort:"Professionnel",individualShort:"Particulier",search:"Rechercher",placeholder:"Poste, organisation ou mot-clé",city:"Ville",area:"Zone",commune:"Commune",filters:"Filtres de recherche",applyFilters:"Afficher les offres",clear:"Tout effacer",result:"offre ouverte",results:"offres ouvertes",empty:"Aucune offre ouverte ne correspond à ces filtres.",emptyProfessional:"Aucune offre d’entreprise ou d’organisation n’est disponible actuellement. Revenez plus tard ou explorez un autre marché SHIDA.",emptyIndividual:"Aucune offre de particulier n’est disponible actuellement. Revenez plus tard ou explorez un autre marché SHIDA.",exploreMarketplaces:"Explorer les autres marchés SHIDA",unavailable:"Les offres sont temporairement indisponibles.",retry:"Réessayer",details:"Voir l’offre",employer:"Organisation",location:"Lieu",compensation:"Rémunération",published:"Publiée le",deadline:"Date limite",closed:"Candidatures clôturées",description:"À propos du poste",requirements:"Document des exigences",requirementsDocument:"Un PDF complémentaire est disponible de manière sécurisée pendant la candidature SHIDA.",apply:"Postuler avec SHIDA",finalApply:"Prêt à postuler ?",actionUnavailable:"Les candidatures ne sont pas disponibles pour cette offre.",employerProfile:"Voir les offres de l’organisation",openJobs:"Offres ouvertes",noEmployerJobs:"Cet employeur n’a aucune offre ouverte actuellement.",employerUnavailable:"Ce profil employeur est indisponible.",jobUnavailable:"Cette offre n’est plus disponible.",back:"Retour aux offres",previous:"Précédent",next:"Suivant",page:"Page",of:"sur",image:"Logo de l’organisation indisponible",external:"Profil public de l’organisation",contract:"Contrat",experience:"Expérience",schedule:"Horaire",mode:"Mode de travail",vacancies:"Postes",start:"Début prévu",benefits:"Avantages",salary:"Salaire",personalEmployer:"Employeur particulier"},
+} as const;
+
+const discoveryCopy = {
+  en: {
+    eyebrow: "LOCAL TALENT. NEW OPPORTUNITIES.",
+    browse: "Explore job offers", all: "All offers", opportunities: "Find your next opportunity",
+    image: "Illustration of a professional working on a laptop overlooking the city",
+    applications: "My applications", how: "From finding an offer to taking the next step.",
+    howIntro: "Explore company vacancies and work offered by individuals. Open an offer to read the role, location and application details, then follow the application option provided.",
+    candidateTitle: "Keep your applications in one place.",
+    candidateIntro: "Return to your SHIDA candidate space to follow your applications and read your private recruitment updates.",
+    candidateAction: "Open my candidate space", candidateEyebrow: "YOUR SHIDA CANDIDATE SPACE",
+  },
+  fr: {
+    eyebrow: "TALENTS LOCAUX. NOUVELLES OPPORTUNITÉS.",
+    browse: "Explorer les offres", all: "Toutes les offres", opportunities: "Trouvez votre prochaine opportunité",
+    image: "Illustration d’un professionnel travaillant sur un ordinateur avec une vue sur la ville",
+    applications: "Mes candidatures", how: "De la recherche d’une offre à la prochaine étape.",
+    howIntro: "Découvrez les offres d’entreprises et les emplois proposés par des particuliers. Consultez le poste, le lieu et les modalités de candidature, puis suivez l’option proposée dans l’offre.",
+    candidateTitle: "Retrouvez toutes vos candidatures au même endroit.",
+    candidateIntro: "Revenez dans votre espace candidat SHIDA pour suivre vos candidatures et consulter vos nouvelles de recrutement privées.",
+    candidateAction: "Ouvrir mon espace candidat", candidateEyebrow: "VOTRE ESPACE CANDIDAT SHIDA",
+  },
 } as const;
 
 const detailCopy = {
@@ -50,12 +75,33 @@ function JobFacts({item,locale}:{item:PublicJobSummary;locale:Locale}){const t=c
 
 export function JobCard({item,locale}:{item:PublicJobSummary;locale:Locale}){const t=copy[locale],href=jobPath(locale,item),location=jobLocation(item),published=displayDate(item.published_at,locale),salary=cardCompensation(item,locale),summary=item.summary_preview||item.description_preview,category=item.professional_category||item.category,organization=organizationLabel(item,locale),identity=<><span className={item.origin==="external"?"job-origin-label job-origin-external":"job-origin-label"}>{originLabel(item,locale)}</span>{organization&&<span className="job-origin-label">{organization}</span>}</>;if(item.offer_type==="individual")return <article className="job-result job-result-individual"><div className="job-result-heading"><span className="job-type-label">{t.individualShort}</span>{identity}</div><h3><Link href={href}>{item.title}</Link></h3>{location&&<p className="job-result-location">{location}</p>}<JobFacts item={item} locale={locale}/>{summary&&<p className="job-result-summary">{summary}</p>}{salary&&<p className="job-result-salary">{salary}</p>}<div className="job-result-actions"><ButtonLink href={href} variant="text">{t.details}</ButtonLink></div></article>;return <article className="job-result job-result-professional"><div className="job-result-heading"><EmployerIdentity employer={item.employer} locale={locale}/>{identity}</div><h3><Link href={href}>{item.title}</Link></h3><p className="job-organisation">{item.employer.name}</p>{location&&<p className="job-result-location">{location}</p>}{category&&<p className="job-result-category">{humanize(category)}</p>}<JobFacts item={item} locale={locale}/>{summary&&<p className="job-result-summary">{summary}</p>}<div className="job-result-footer"><div>{salary&&<strong className="job-result-salary">{salary}</strong>}{published&&<span>{t.published} {published}</span>}{item.deadline_label&&<span className={!isOpen(item)?"job-deadline-expired":""}>{item.deadline_label}</span>}</div><div className="job-result-actions"><ButtonLink href={href} variant="text">{t.details}</ButtonLink></div></div></article>;}
 
-function JobFilters({locale,search}:{locale:Locale;search:JobSearch}){const t=copy[locale],clearHref=`${marketplacePath(locale,"/shida/emplois")}${jobSearchQuery({view:search.view})}`;return <aside className="job-filter-column"><details className="job-filter-sheet"><summary>{t.filters}</summary><form action={marketplacePath(locale,"/shida/emplois")} method="get">{search.view&&<input type="hidden" name="view" value={search.view}/>}<label>{t.search}<input type="search" name="query" defaultValue={search.query} placeholder={t.placeholder}/></label><label>{t.city}<input name="city" defaultValue={search.city}/></label><label>{t.area}<input name="area" defaultValue={search.area}/></label><label>{t.commune}<input name="commune" defaultValue={search.commune}/></label><button className="button button-primary" type="submit">{t.applyFilters}</button>{hasSearch(search)&&<Link className="job-clear-filters" href={clearHref}>{t.clear}</Link>}</form></details></aside>;}
+function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
+  const t=copy[locale],clearHref=`${marketplacePath(locale,"/shida/emplois")}${jobSearchQuery({view:search.view})}`;
+  return <form className="jobs-public-filters" action={marketplacePath(locale,"/shida/emplois")} method="get" role="search" aria-label={t.search}>
+    {search.view&&<input type="hidden" name="view" value={search.view}/>}
+    <div className="jobs-search-primary">
+      <label>{t.search}<input type="search" name="query" defaultValue={search.query} placeholder={t.placeholder} maxLength={120}/></label>
+      <label>{t.city}<input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label>
+      <button className="button button-primary" type="submit">{t.applyFilters}<span aria-hidden="true">→</span></button>
+    </div>
+    <div className="jobs-search-secondary">
+      <details open={Boolean(search.area||search.commune)||undefined}>
+        <summary>{t.filters}</summary>
+        <div className="jobs-search-advanced">
+          <label>{t.area}<input name="area" defaultValue={search.area} maxLength={120}/></label>
+          <label>{t.commune}<input name="commune" defaultValue={search.commune} maxLength={120}/></label>
+        </div>
+      </details>
+      {hasSearch(search)&&<Link className="job-clear-filters" href={clearHref}>{t.clear}</Link>}
+    </div>
+  </form>;
+}
 function JobPagination({locale,search,collection}:{locale:Locale;search:JobSearch;collection:JobCollection}){const t=copy[locale],p=collection.pagination;if(p.total_pages<=1)return null;return <nav className="marketplace-pagination" aria-label={`${t.page} ${p.page} ${t.of} ${p.total_pages}`}><span>{p.page>1?<Link href={pageHref(locale,search,p.page-1)}>{t.previous}</Link>:t.previous}</span><span>{t.page} {p.page} {t.of} {p.total_pages}</span><span>{p.page<p.total_pages?<Link href={pageHref(locale,search,p.page+1)}>{t.next}</Link>:t.next}</span></nav>;}
 function JobGroup({id,title,items,locale}:{id:string;title:string;items:PublicJobSummary[];locale:Locale}){if(!items.length)return null;return <section className="job-result-group" id={id}><h2>{title}<span>{items.length}</span></h2><div className="job-result-list">{items.map((item)=><JobCard key={item.public_ref} item={item} locale={locale}/>)}</div></section>;}
 
 export async function JobCollectionPage({locale,search}:{locale:Locale;search:JobSearch}) {
-  const t=copy[locale];
+  const t=copy[locale],d=discoveryCopy[locale];
+  const applicationsHref=marketplacePath(locale,locale==="fr"?"/shida/mes-candidatures":"/shida/my-applications");
   let collection:JobCollection|undefined;
   try { collection=await getJobs({...search,page:search.page??1,page_size:search.page_size??12},locale); }
   catch(error){if(!(error instanceof ShidaApiError)||error.kind==="not-found")throw error;}
@@ -63,19 +109,23 @@ export async function JobCollectionPage({locale,search}:{locale:Locale;search:Jo
   const individual=collection?.items.filter((item)=>item.offer_type==="individual")??[];
   const activeItems=search.view==="professional"?professional:search.view==="individual"?individual:collection?.items??[];
   const emptyMessage=search.view==="professional"?t.emptyProfessional:search.view==="individual"?t.emptyIndividual:t.empty;
-  return <>
-    <section className="marketplace-heading job-marketplace-heading"><div className="container">
-      <MarketplaceSectionBreadcrumb locale={locale} current={t.jobs}/>
-      <h1>{t.title}</h1><p>{t.intro}</p>
+  return <div className="jobs-public" lang={locale}>
+    <div className="container">
+      <div className="jobs-public-topline"><MarketplaceSectionBreadcrumb locale={locale} current={t.jobs}/><Link href={applicationsHref}>{d.applications}<span aria-hidden="true"> ↗</span></Link></div>
+      <header className="jobs-public-hero">
+        <div><p className="jobs-public-eyebrow">{d.eyebrow}</p><h1>{t.title}</h1><p>{t.intro}</p><a className="jobs-discover-link" href="#job-discovery">{d.browse}<span aria-hidden="true">↓</span></a></div>
+        <div className="jobs-public-art"><Image src="/home/employment.png" alt={d.image} width={1254} height={1254} sizes="(max-width: 600px) calc(100vw - 32px), (max-width: 1200px) 42vw, 500px" preload/><span aria-hidden="true">SHIDA / {t.jobs.toLocaleUpperCase(locale)}</span></div>
+      </header>
+    <section id="job-discovery" className="jobs-public-discovery" aria-labelledby="job-discovery-title">
+      <JobFilters locale={locale} search={search}/>
       <nav className="job-offer-tabs" aria-label={t.jobs}>
+        <Link href={pageHref(locale,{...search,view:undefined},1)} className={!search.view?"job-offer-tab-active":undefined} aria-current={!search.view?"page":undefined}>{d.all}</Link>
         <Link href={viewHref(locale,search,"professional")} className={search.view==="professional"?"job-offer-tab-active":undefined} aria-current={search.view==="professional"?"page":undefined}>{t.professional}</Link>
         <Link href={viewHref(locale,search,"individual")} className={search.view==="individual"?"job-offer-tab-active":undefined} aria-current={search.view==="individual"?"page":undefined}>{t.individual}</Link>
       </nav>
-    </div></section>
-    <section className="section marketplace-collection job-marketplace"><div className="container job-marketplace-layout">
-      <JobFilters locale={locale} search={search}/>
-      <main className="job-results" id="job-results">
-        {collection?<><p className="marketplace-result-count" role="status">{search.view?activeItems.length:collection.pagination.total_items} {(search.view?activeItems.length:collection.pagination.total_items)===1?t.result:t.results}</p>
+      <div className="jobs-results-heading"><h2 id="job-discovery-title">{d.opportunities}</h2>{collection&&<p className="marketplace-result-count" role="status">{search.view?activeItems.length:collection.pagination.total_items} {(search.view?activeItems.length:collection.pagination.total_items)===1?t.result:t.results}</p>}</div>
+      <div className="job-results" id="job-results">
+        {collection?<>
           {activeItems.length
             ? search.view==="professional"?<JobGroup id="professional-offers" title={t.professional} items={professional} locale={locale}/>
               :search.view==="individual"?<JobGroup id="individual-offers" title={t.individual} items={individual} locale={locale}/>
@@ -83,9 +133,12 @@ export async function JobCollectionPage({locale,search}:{locale:Locale;search:Jo
             :<div className="job-view-empty"><MarketplaceState>{emptyMessage}</MarketplaceState><ButtonLink href={marketplacePath(locale,"/shida")} variant="secondary">{t.exploreMarketplaces}</ButtonLink></div>}
           <JobPagination locale={locale} search={search} collection={collection}/>
         </>:<div className="job-api-error" role="alert"><MarketplaceState>{t.unavailable}</MarketplaceState><ButtonLink href={pageHref(locale,search,search.page??1)} variant="secondary">{t.retry}</ButtonLink></div>}
-      </main>
-    </div></section>
-  </>;
+      </div>
+    </section>
+    <section className="jobs-public-how"><h2>{d.how}</h2><p>{d.howIntro}</p></section>
+    <section className="jobs-public-candidate"><div><p className="jobs-public-eyebrow">{d.candidateEyebrow}</p><h2>{d.candidateTitle}</h2><p>{d.candidateIntro}</p></div><ButtonLink href={applicationsHref}>{d.candidateAction}</ButtonLink></section>
+    </div>
+  </div>;
 }
 
 function JobUnavailable({locale,employer=false}:{locale:Locale;employer?:boolean}){const t=copy[locale];return <section className="section"><div className="container job-unavailable"><h1>{employer?t.employerUnavailable:t.jobUnavailable}</h1><ButtonLink href={marketplacePath(locale,"/shida/emplois")} variant="secondary">{t.back}</ButtonLink></div></section>;}
