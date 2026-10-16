@@ -29,16 +29,16 @@ export function WenzeBuyerProvider({locale,children}:{locale:Locale;children:Rea
  },[]);
  return <Context.Provider value={{binding:session?.binding??null,checking,login:()=>setOpen(true)}}>{open&&<section ref={loginPanel} tabIndex={-1} className="wzp-buyer-login container" role="region" aria-label={t.signIn}><button className="wzp-close" onClick={()=>setOpen(false)}>{t.close}</button><p>{t.login}</p>{failed&&<p role="alert">{t.failed}</p>}<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>{window.dispatchEvent(new Event(PERSONAL_SESSION_EVENT));}}/></section>}{children}</Context.Provider>;
 }
-export function WenzeRelation({locale,reference,kind,follow=false}:{locale:Locale;reference:string;kind:'wenze_store'|'wenze_product';follow?:boolean}){
+export function WenzeRelation({locale,reference,kind,follow=false,iconOnly=false}:{locale:Locale;reference:string;kind:'wenze_store'|'wenze_product';follow?:boolean;iconOnly?:boolean}){
  const buyer=useContext(Context),t=words[locale];
- return <Relation key={`${buyer.binding}:${reference}`} buyer={buyer} t={t} reference={reference} kind={kind} follow={follow}/>;
+ return <Relation key={`${buyer.binding}:${reference}`} buyer={buyer} t={t} reference={reference} kind={kind} follow={follow} iconOnly={iconOnly}/>;
 }
-function Relation({buyer,t,reference,kind,follow}:{buyer:Buyer;t:typeof words.en|typeof words.fr;reference:string;kind:string;follow:boolean}){
+function Relation({buyer,t,reference,kind,follow,iconOnly}:{buyer:Buyer;t:typeof words.en|typeof words.fr;reference:string;kind:string;follow:boolean;iconOnly:boolean}){
  const [enabled,setEnabled]=useState(false),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(false),alive=useRef(true);
  const path=`relations/${kind}/${reference}`,relation=follow?'following':'saved';
  useEffect(()=>{alive.current=true;if(buyer.binding)void buyerRequest(path,buyer.binding).then(v=>{if(alive.current){setEnabled(v[relation]);setReady(true);}}).catch(()=>{if(alive.current)setError(true);});return()=>{alive.current=false;};},[buyer.binding,path,relation]);
  async function toggle(){if(!buyer.binding){buyer.login();return;}if(busy)return;setBusy(true);setError(false);try{if(!ready){const value=await buyerRequest(path,buyer.binding);if(alive.current){setEnabled(value[relation]);setReady(true);}return;}const value=await buyerRequest(path,buyer.binding,'PUT',{relation,enabled:!enabled});if(alive.current)setEnabled(value.enabled);}catch{if(alive.current)setError(true);}finally{if(alive.current)setBusy(false);}}
- return <div className="wzp-relation"><button type="button" aria-pressed={ready?enabled:undefined} disabled={buyer.checking||busy||Boolean(buyer.binding&&!ready&&!error)} onClick={()=>void toggle()}>{follow?(enabled?t.following:t.follow):(enabled?t.saved:t.save)}</button>{error&&<small role="alert">{t.failed}</small>}</div>;
+ return <div className={iconOnly?"wzp-relation wzp-relation-icon":"wzp-relation"}><button type="button" aria-pressed={ready?enabled:undefined} disabled={buyer.checking||busy||Boolean(buyer.binding&&!ready&&!error)} onClick={()=>void toggle()}>{iconOnly?<><svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill={enabled?"currentColor":"none"} stroke="currentColor" strokeWidth="1.5"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg><span className="wzp-visually-hidden">{enabled?t.saved:t.save}</span></>:follow?(enabled?t.following:t.follow):(enabled?t.saved:t.save)}</button>{error&&<small role="alert">{t.failed}</small>}</div>;
 }
 export function WenzeFavourites({locale}:{locale:Locale}){
  const buyer=useContext(Context);return <Favourites key={buyer.binding??'guest'} buyer={buyer} locale={locale}/>;
