@@ -8,6 +8,7 @@ import { personalLoginCopy } from "../app/lib/personal-login-copy";
 const ref = "DWC_isolated_fixture", verifier = "v".repeat(43), token = "s".repeat(43);
 const ctx = (path: string[] = []) => ({ params: Promise.resolve({ path }) });
 const req = (method: string, origin = "https://nihiloba.com") => new Request("https://nihiloba.com/api/shida/personal/auth/whatsapp/", { method, headers: { origin } });
+const codeReq = (value: unknown = { code: "610294" }) => new Request("https://nihiloba.com/api/shida/personal/auth/whatsapp/", { method: "POST", headers: { origin: "https://nihiloba.com", "content-type": "application/json" }, body: JSON.stringify(value) });
 function bound() { jar.set("nihiloba_personal_challenge", `${ref}.${Date.now() + 300000}.${verifier}`); }
 beforeEach(() => { jar.clear(); set.mockClear(); vi.unstubAllGlobals(); });
 describe("Personal WhatsApp restricted gateway", () => {
@@ -40,10 +41,10 @@ describe("Personal WhatsApp restricted gateway", () => {
   });
   it("rejects missing, wrong-reference and expired browser bindings before exchange", async () => {
     const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
-    expect((await POST(req("POST"), ctx([ref, "session"]))).status).toBe(404);
+    expect((await POST(codeReq(), ctx([ref, "session"]))).status).toBe(404);
     bound(); expect((await POST(req("POST"), ctx(["DWC_different_fixture", "session"]))).status).toBe(404);
     jar.set("nihiloba_personal_challenge", `${ref}.1.${verifier}`);
-    expect((await POST(req("POST"), ctx([ref, "session"]))).status).toBe(404); expect(fetcher).not.toHaveBeenCalled();
+    expect((await POST(codeReq(), ctx([ref, "session"]))).status).toBe(404); expect(fetcher).not.toHaveBeenCalled();
   });
   it("forwards only the bound verifier; Backend denies a wrong verifier", async () => {
     bound(); const fetcher = vi.fn(async () => Response.json({}, { status: 404 })); vi.stubGlobal("fetch", fetcher);
@@ -56,9 +57,9 @@ describe("Personal WhatsApp restricted gateway", () => {
   });
   it("exchanges once into shared session, clears challenge and prevents duplicate exchange", async () => {
     bound(); const fetcher = vi.fn(async () => Response.json({ authenticated: true, user: { display_name: "Private" } }, { headers: { "set-cookie": `shida_dashboard_session=${token}; Path=/; HttpOnly` } })); vi.stubGlobal("fetch", fetcher);
-    expect(await (await POST(req("POST"), ctx([ref, "session"]))).json()).toEqual({ authenticated: true });
+    expect(await (await POST(codeReq(), ctx([ref, "session"]))).json()).toEqual({ authenticated: true });
     expect(jar.get(PERSONAL_SESSION_COOKIE)).toBe(token); expect(jar.has("nihiloba_personal_challenge")).toBe(false);
-    expect((await POST(req("POST"), ctx([ref, "session"]))).status).toBe(404); expect(fetcher).toHaveBeenCalledTimes(1);
+    expect((await POST(codeReq(), ctx([ref, "session"]))).status).toBe(404); expect(fetcher).toHaveBeenCalledTimes(1);
   });
   it("cancel removes browser binding without fabricating a Backend cancellation endpoint", async () => {
     bound(); const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
@@ -67,7 +68,19 @@ describe("Personal WhatsApp restricted gateway", () => {
   });
   it.each([429, 503, 409])("retains safe %s failure without issuing session", async status => {
     bound(); vi.stubGlobal("fetch", vi.fn(async () => Response.json({ detail: "private" }, { status })));
-    const result = await POST(req("POST"), ctx([ref, "session"])); expect(result.status).toBe(status); expect(await result.text()).not.toContain("private"); expect(jar.has(PERSONAL_SESSION_COOKIE)).toBe(false);
+    const result = await POST(codeReq(), ctx([ref, "session"])); expect(result.status).toBe(status); expect(await result.text()).not.toContain("private"); expect(jar.has(PERSONAL_SESSION_COOKIE)).toBe(false);
+  });
+  it.each([{}, { code: 610294 }, { code: "12345" }, { code: "610294", account_id: 1 }, { code: "x".repeat(300) }])("rejects invalid code input without forwarding or reflecting it", async value => {
+    bound(); const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
+    const result = await POST(codeReq(value), ctx([ref, "session"]));
+    expect(result.status).toBe(422); expect(await result.json()).toEqual({ error: { code: "invalid_code" } }); expect(fetcher).not.toHaveBeenCalled();
+  });
+  it("forwards only the code and permits correction after definite rejection", async () => {
+    bound(); const fetcher = vi.fn(async () => Response.json({ detail: "invalid_code" }, { status: 400 })); vi.stubGlobal("fetch", fetcher);
+    const result = await POST(codeReq(), ctx([ref, "session"]));
+    expect(result.status).toBe(400); expect(await result.json()).toEqual({ error: { code: "invalid_code" } });
+    expect(fetcher).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ body: JSON.stringify({ code: "610294" }), headers: expect.objectContaining({ "Content-Type": "application/json" }) }));
+    expect(jar.has("nihiloba_personal_challenge")).toBe(true); expect(jar.has(PERSONAL_SESSION_COOKIE)).toBe(false);
   });
   it("has all shared lifecycle labels in EN/FR/LN/SW", () => {
     for (const labels of Object.values(personalLoginCopy)) expect(Object.keys(labels).sort()).toEqual(Object.keys(personalLoginCopy.en).sort());

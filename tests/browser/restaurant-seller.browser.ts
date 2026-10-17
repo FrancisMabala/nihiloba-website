@@ -173,7 +173,7 @@ test("expired offering copy stays unconfirmed until a separate confirmation", as
  await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("I confirm these changes", { exact: true }).check(); await page.getByRole("button", { name: "Save changes", exact: true }).click(); expect(s.writes[1].body?.fields).toEqual({ confirm: true });
 });
 test("isolated WhatsApp challenge sign-in, shared session and logout", async ({ page }) => {
- const s = await fixture(page); s.session = false; await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Continue with WhatsApp", exact: true }).click(); await expect(page.getByText("Isolated Malewa", { exact: true })).toBeVisible();
+ const s = await fixture(page); s.session = false; await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Continue with WhatsApp", exact: true }).click(); await page.getByLabel("Six-digit code", { exact: true }).fill("610294"); await page.getByRole("button", { name: "Verify and sign in", exact: true }).click(); await expect(page.getByText("Isolated Malewa", { exact: true })).toBeVisible();
  await page.locator(".rst-account summary").click();await page.getByRole("button", { name: "Change account", exact: true }).click(); await expect(page.getByRole("button", { name: "Continue with WhatsApp", exact: true })).toBeVisible(); await expect(page.getByText("Isolated Malewa", { exact: true })).toHaveCount(0);
 });
 test("lost access and account switching clear editor values", async ({ page }) => {

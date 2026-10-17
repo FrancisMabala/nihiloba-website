@@ -19,7 +19,7 @@ async function fixture(page: Page) {
       return reply({ challenge_ref: `DWC_fixture_${state.starts}`, expires_at: new Date(Date.now() + 300000).toISOString(), whatsapp_url: "https://wa.me/243000000000?text=synthetic-not-sent" }, 201);
     }
     if (path.includes("/personal/auth/whatsapp/DWC_")) {
-      if (path.endsWith("/session")) { state.exchanges++; state.loggedIn = true; return state.uncertain ? route.abort() : reply({ authenticated: true }); }
+      if (path.endsWith("/session")) { state.exchanges++; if (route.request().postDataJSON()?.code !== "610294") return reply({ error: { code: "invalid_code" } }, 400); state.loggedIn = true; return state.uncertain ? route.abort() : reply({ authenticated: true }); }
       state.polls++; return reply({ status: state.status, reason: state.reason });
     }
     return reply({}, 404);
@@ -39,6 +39,9 @@ for (const locale of ["en", "fr", "ln", "sw"] as const) for (const width of [390
     expect(s.exchanges).toBe(0); expect(await page.locator('input[autocomplete="one-time-code"]').count()).toBe(0);
     await expect.poll(() => s.polls).toBeGreaterThan(0);
     s.status = "verified"; await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await expect(page.getByLabel(t.codeLabel)).toBeVisible(); expect(s.exchanges).toBe(0);
+    if (locale === "en") await page.screenshot({ path: `.s3a-local/personal-code-${width}.png`, fullPage: true });
+    await page.getByLabel(t.codeLabel).fill("610294"); await page.getByRole("button", { name: t.verify, exact: true }).click();
     await expect(page.getByText("Synthetic Personal", { exact: false })).toBeVisible(); expect(s.exchanges).toBe(1); expect(page.url()).toContain(path);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect(await page.evaluate(() => Object.values(localStorage).some(v => v.includes("synthetic-not-sent") || v.includes("DWC_")))).toBe(false);
@@ -48,6 +51,7 @@ test("Employment uses the same flow and preserves intended application URL", asy
   const s = await fixture(page); await page.goto("/shida/my-applications/?from=jobs");
   await page.getByRole("button", { name: "Continue with WhatsApp" }).click();
   s.status = "verified"; await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await page.getByLabel(personalLoginCopy.en.codeLabel).fill("610294"); await page.getByRole("button", { name: personalLoginCopy.en.verify }).click();
   await expect(page.getByText("You have no applications yet.")).toBeVisible(); expect(page.url()).toContain("/shida/my-applications/?from=jobs");
 });
 for (const status of ["expired", "cancelled", "onboarding_required"] as const) test(`${status} is truthful and never exchanges`, async ({ page }) => {
@@ -66,6 +70,7 @@ test("cancel and cross-tab supersession stop old polls", async ({ page }) => {
 test("uncertain exchange signs out instead of retrying or adopting a session", async ({ page }) => {
   const s = await fixture(page); s.status = "verified"; s.uncertain = true;
   await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Continue with WhatsApp" }).click();
+  await page.getByLabel(personalLoginCopy.en.codeLabel).fill("610294"); await page.getByRole("button", { name: personalLoginCopy.en.verify }).click();
   await expect(page.getByText(personalLoginCopy.en.uncertain, { exact: true })).toBeVisible(); expect(s.exchanges).toBe(1); expect(s.loggedIn).toBe(false);
   await page.getByRole("button", { name: "Sign out and retry" }).click(); await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
 });
@@ -88,7 +93,25 @@ test("lost exchange and failed cleanup cannot restore an uncertain account on fo
   const s = await fixture(page); s.status = "verified"; s.uncertain = true;
   await page.route("**/employment/logout/", route => route.abort());
   await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Continue with WhatsApp" }).click();
+  await page.getByLabel(personalLoginCopy.en.codeLabel).fill("610294"); await page.getByRole("button", { name: personalLoginCopy.en.verify }).click();
   await expect(page.getByText(personalLoginCopy.en.uncertain, { exact: true })).toBeVisible();
   await page.evaluate(() => window.dispatchEvent(new Event("focus"))); await expect(page.getByText("Synthetic Personal")).toHaveCount(0);
   await page.reload(); await expect(page.getByRole("button", { name: "Continue with WhatsApp" })).toBeVisible(); await expect(page.getByText("Synthetic Personal")).toHaveCount(0);
+});
+
+test("wrong code remains editable; only explicit valid submission authenticates", async ({ page }) => {
+  const s = await fixture(page); s.status = "verified";
+  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: personalLoginCopy.en.start }).click();
+  const field = page.getByLabel(personalLoginCopy.en.codeLabel);
+  await field.fill("000000"); await page.getByRole("button", { name: personalLoginCopy.en.verify }).click();
+  await expect(page.getByRole("alert").filter({ hasText: personalLoginCopy.en.invalidCode })).toHaveText(personalLoginCopy.en.invalidCode); expect(s.loggedIn).toBe(false);
+  await field.fill("610294"); await page.getByRole("button", { name: personalLoginCopy.en.verify }).click();
+  await expect(page.getByText("Synthetic Personal", { exact: false })).toBeVisible(); expect(s.exchanges).toBe(2);
+});
+test("changing tabs while awaiting a code discards the old code form", async ({ page }) => {
+  const s = await fixture(page); s.status = "verified";
+  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: personalLoginCopy.en.start }).click();
+  await page.getByLabel(personalLoginCopy.en.codeLabel).fill("610294");
+  await page.evaluate(() => window.dispatchEvent(new StorageEvent("storage", { key: "shida-personal-login-attempt", newValue: "new-attempt" })));
+  await expect(page.getByLabel(personalLoginCopy.en.codeLabel)).toHaveCount(0); expect(s.exchanges).toBe(0);
 });

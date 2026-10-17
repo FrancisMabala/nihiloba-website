@@ -40,15 +40,37 @@ async function handle(request: Request, context: Context) {
   }
   if (!create && (ref !== path[0] || !secret.test(verifier ?? "") || !(Number(deadline) > Date.now())))
     return privateEmploymentJson({ error: { code: "expired" } }, 404);
+  let codeBody: string | undefined;
+  if (exchange) {
+    try {
+      const reader = request.body?.getReader();
+      if (!reader) throw new Error();
+      const chunks: Uint8Array[] = []; let size = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > 128) { await reader.cancel(); throw new Error(); }
+        chunks.push(value);
+      }
+      const raw = new Uint8Array(size); let offset = 0;
+      for (const chunk of chunks) { raw.set(chunk, offset); offset += chunk.length; }
+      const data = JSON.parse(new TextDecoder().decode(raw));
+      if (!data || Array.isArray(data) || Object.keys(data).join() !== "code" || typeof data.code !== "string" || !/^[0-9]{6}$/.test(data.code)) throw new Error();
+      codeBody = JSON.stringify({ code: data.code });
+    } catch { return privateEmploymentJson({ error: { code: "invalid_code" } }, 422); }
+  }
   try {
     const origin = new URL(process.env.SHIDA_API_BASE_URL ?? "https://api.nihiloba.com");
     if (origin.protocol !== "https:" || origin.username || origin.password) throw new Error();
     const response = await fetch(`${origin.origin}/api/dashboard/auth/whatsapp-challenge${path.length ? `/${path.join("/")}` : ""}`, {
       method: request.method, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(8000),
+      ...(exchange ? { body: codeBody } : {}),
       headers: { Accept: "application/json", Origin: publicOrigin,
+        ...(exchange ? { "Content-Type": "application/json" } : {}),
         ...(!create ? { Cookie: `shida_dashboard_challenge=${verifier}` } : {}) },
     });
-    if (!response.ok) return privateEmploymentJson({ error: { code: response.status === 429 ? "rate_limited" : response.status === 404 ? "expired" : response.status === 409 ? "cancelled" : "unavailable" } }, response.status >= 400 ? response.status : 502);
+    if (!response.ok) return privateEmploymentJson({ error: { code: exchange && response.status === 400 ? "invalid_code" : response.status === 429 ? "rate_limited" : response.status === 404 ? "expired" : response.status === 409 ? "cancelled" : "unavailable" } }, response.status >= 400 ? response.status : 502);
     const data = await response.json();
     if (create) {
       const binding = upstreamCookie(response, "shida_dashboard_challenge");

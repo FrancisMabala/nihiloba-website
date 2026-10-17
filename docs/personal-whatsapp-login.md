@@ -1,5 +1,7 @@
 # Shared Personal WhatsApp sign-in
 
+> **Superseded login-completion behavior, 17 October 2026:** [the mandatory WhatsApp code login contract](platform-whatsapp-code-login-2026-10-17.md) now requires a six-digit code entered in the originating browser for both NIHILOBA and Business Dashboard. Sender verification alone does not complete sign-in. Migration 0171 and a coordinated deployment are required. The older implementation/validation below is historical; its expiry, eligibility and privacy safeguards remain applicable.
+
 Implementation evidence: 2026-09-10. Local integration, not deployment or live WhatsApp acceptance.
 
 ## Existing versus changed behavior
