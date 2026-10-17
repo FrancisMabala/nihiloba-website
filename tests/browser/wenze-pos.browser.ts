@@ -1,0 +1,60 @@
+import {test,expect} from '@playwright/test';
+import {sellerText} from '../../app/lib/wenze-seller-copy';
+import {posText} from '../../app/lib/wenze-pos-copy';
+for(const locale of ['en','fr','ln','sw'] as const)test(`basket labels receipts ${locale}`,async({page})=>{
+ const t=(k:string)=>posText(locale,k),s=(k:string)=>sellerText(locale,k);
+ const store={public_ref:'WNZ_fixture',name:'Boutique du Fleuve',city:'Kinshasa',category:'fashion_clothing',revision:1,status:'active',visible:'true',catalog_ready:true,order_ready:true};
+ const product={public_ref:'WNP_fixture',name:'Chemise blanche',status:'active',visible:'true',price:'15000',currency:'CDF',available_stock:10,photos:[{url:'/images/wenze-boutique-market.webp'}],variants:[]};
+ const item={product_ref:product.public_ref,variant_ref:null,barcode:product.public_ref,name:product.name,variant:null,price:product.price,currency:'CDF',available:10,image_url:product.photos[0].url};
+ const receipt={store_ref:store.public_ref,receipt_ref:'WRC_fixture',shop_name:store.name,city:'Kinshasa',source:'basket',sold_at:'2026-10-17T12:30:00Z',payment:'not_recorded',totals:[{currency:'CDF',amount:'30000'}],lines:[{name:product.name,quantity:2,unit_price:'15000',total:'30000',currency:'CDF'}]};
+ const keys:string[]=[];let attempts=0;
+ await page.route('**/api/**',async route=>{
+  const req=route.request(),path=new URL(req.url()).pathname.replace(/\/$/,'');const reply=(json:unknown,status=200)=>route.fulfill({json,status});
+  if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Test seller'}});
+  if(path.endsWith('/catalog-imports/options'))return reply({stores:[store],categories:[],currencies:['CDF','USD'],issues:{},support_url:null});
+  if(path.endsWith('/stores'))return reply({stores:[store],categories:[],currencies:['CDF','USD']});
+  if(path.endsWith('/WNZ_fixture'))return reply(store);
+  if(path.endsWith('/products'))return reply({products:[product],total:1});
+  if(path.endsWith('/plan'))return reply({plan:'pro',source:'personal_pilot'});
+  if(path.endsWith('/today'))return reply({date:'2026-10-17',timezone:'Africa/Kinshasa',followers:0,new_followers:0,orders_today:0,reviews:{count:0},financial_access:true,currency_summaries:[],sold_items:[]});
+  if(path.endsWith('/orders'))return reply({orders:[],counts:{},total:0});
+  if(path.endsWith('/inventory/summary'))return reply({low_stock_items:0,untracked_items:0});
+  if(path.endsWith('/inventory/stock'))return reply({items:[{item_ref:'INV_fixture',product_ref:product.public_ref,catalog_label:product.name,on_hand:10,reserved:2,available:8,unit:'piece'}]});
+  if(path.endsWith('/catalog-imports'))return reply({jobs:[],total:0});
+  if(path.endsWith('/pro/dashboard'))return reply({currency_summaries:[{currency:'CDF',combined_sales:{total_revenue:'30000',known_gross_profit:'10000'},recorded_operating_expenses:{total:'2000'},operational_result:'8000',completeness:{profit_complete:true}}],current_inventory:{valued_targets:1,missing_cost:0,unknown_stock:0,total_targets:1,complete:true},top_items:{top_by_quantity:[{label:'Chemise blanche',quantity:2,currency:'CDF',revenue:'30000'}]},low_stock:{items:[]}});
+  if(path.endsWith('/physical-sales/priced'))return reply({sales:[]});
+  if(path.endsWith('/pos/catalog'))return reply({items:[item],total:1});
+  if(path.endsWith('/pos/lookup/WNP_fixture'))return reply(item);
+  if(path.endsWith('/pos/checkout')){keys.push(req.headers()['idempotency-key']);expect(req.postDataJSON().lines[0].quantity).toBe(2);attempts++;return reply(attempts===1?{detail:'temporarily unavailable'}:receipt,attempts===1?503:200);}
+  if(path.endsWith('/pos/receipts/WRC_fixture'))return reply(receipt);
+  if(path.endsWith('/pos/receipts'))return reply({receipts:[receipt],total:1});
+  if(path.endsWith('/labels/WNP_fixture'))return reply({...item,shop_name:store.name,bars:[[10,2],[14,3],[20,1]],width:40});
+  if(path.endsWith('/labels/pdf')||path.endsWith('/WRC_fixture/pdf'))return route.fulfill({body:'%PDF-1.4\nfixture',contentType:'application/pdf',headers:{'Content-Disposition':'attachment; filename="receipt.pdf"'}});
+  return reply({},404);
+ });
+ await page.setViewportSize({width:390,height:844});await page.goto(`${locale==='en'?'':'/'+locale}/shida/seller/wenze/`);
+ if(locale==='en')for(const view of ['orders','imports','inventory','costs','reports']){
+  await page.locator('.seller-navigation').getByRole('button',{name:s(view),exact:true}).click();
+  await expect(page.locator('.seller-navigation').getByRole('button',{name:s(view),exact:true})).toHaveAttribute('aria-current','page');
+  await expect(page.locator('.wz [role=status]')).toHaveCount(0);
+  await expect(page.getByText('This access is no longer available.',{exact:true})).toHaveCount(0);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:`docs/evidence/wenze-pos/${view}-mobile.png`,fullPage:true});
+ }
+ await page.locator('.seller-navigation').getByRole('button',{name:s('sales'),exact:true}).click();
+ const pos=page.locator('.wz-pos');await expect(pos.getByRole('button',{name:t('add'),exact:true})).toBeVisible();
+ await pos.getByRole('button',{name:t('add'),exact:true}).click();
+ await pos.getByLabel(t('scan'),{exact:true}).fill('WNP_fixture');await pos.getByRole('button',{name:t('search'),exact:true}).click();
+ await expect(pos.getByLabel(t('quantity'),{exact:true})).toHaveValue('2');
+ await pos.getByRole('button',{name:t('checkout'),exact:true}).click();await expect(pos.getByText(t('uncertain'),{exact:true})).toBeVisible();
+ await pos.getByRole('button',{name:t('retry'),exact:true}).click();await expect(pos.locator('.wz-receipt-paper')).toBeVisible();expect(keys[0]).toBe(keys[1]);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`docs/evidence/wenze-pos/receipt-${locale}-mobile.png`,fullPage:true});
+ await pos.locator('.wz-receipt-panel').getByRole('button',{name:t('close'),exact:true}).click();
+ await pos.getByRole('button',{name:t('labels'),exact:true}).click();await pos.getByLabel(t('copies'),{exact:true}).fill('2');await pos.getByRole('button',{name:t('preview'),exact:true}).click();await expect(pos.locator('.wz-label-paper')).toBeVisible();
+ const download=page.waitForEvent('download');await pos.getByRole('button',{name:t('download'),exact:true}).click();expect((await download).suggestedFilename()).toBe('receipt.pdf');
+ await page.screenshot({path:`docs/evidence/wenze-pos/labels-${locale}-mobile.png`,fullPage:true});
+ await page.setViewportSize({width:1440,height:1000});await pos.getByRole('button',{name:t('sell'),exact:true}).click();await pos.getByRole('button',{name:t('add'),exact:true}).click();
+ if(locale==='en')await page.screenshot({path:'docs/evidence/wenze-pos/basket-desktop.png',fullPage:true});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

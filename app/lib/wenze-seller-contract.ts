@@ -1,5 +1,16 @@
 // Explicit Personal gateway surface, traced to the existing Wenze routes.
 const routes=[
+["GET", "stores/{store_ref}/pos/catalog"],
+["GET", "stores/{store_ref}/pos/lookup/{code}"],
+["POST", "stores/{store_ref}/pos/checkout"],
+["GET", "stores/{store_ref}/pos/receipts"],
+["GET", "stores/{store_ref}/pos/receipts/{reference}"],
+["GET", "stores/{store_ref}/pos/receipts/{reference}/pdf"],
+["GET", "stores/{store_ref}/labels/{code}"],
+["POST", "stores/{store_ref}/labels/pdf"],
+["GET", "stores/{store_ref}/share"],
+["POST", "orders/{reference}/receipt"],
+
  ["GET","stores/{store_ref}/today"],
  ["PUT","stores/{store_ref}/profile-photo"],
  [
@@ -406,6 +417,6 @@ const routes=[
 export function wenzeRouteAllowed(parts:string[],method:string,query:URLSearchParams){
  if(!parts.length||parts.some(p=>!p||p==='.'||p==='..'||!/^[A-Za-z0-9_.-]{1,200}$/.test(p)))return false;
  const found=routes.some(([verb,path])=>verb===method&&path.split('/').length===parts.length&&path.split('/').every((p,i)=>p.startsWith('{')?/^[A-Za-z0-9_-]+$/.test(parts[i]):p===parts[i]));
- const keys=new Set(['timezone','archived','status','search','offset','limit','language','store_ref','bucket','expected_review_version','variant_ref','tracking_state','unit','low_stock_state','cursor','item_ref','movement_kind','reason','date_from','date_to','period','top_limit','low_stock_limit','frequency']);
+ const keys=new Set(['width','timezone','archived','status','search','offset','limit','language','store_ref','bucket','expected_review_version','variant_ref','tracking_state','unit','low_stock_state','cursor','item_ref','movement_kind','reason','date_from','date_to','period','top_limit','low_stock_limit','frequency']);
  return found&&[...query].every(([key,value])=>keys.has(key)&&query.getAll(key).length===1&&value.length<=500);
 }

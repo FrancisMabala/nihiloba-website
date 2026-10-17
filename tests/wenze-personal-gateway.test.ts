@@ -16,3 +16,11 @@ it('supports private binary downloads without exposing the session',async()=>{fe
 it('clears expired credentials and does not call management routes',async()=>{fetcher.mockResolvedValueOnce(Response.json({}, {status:401}));expect((await GET(req('stores'),context('stores'))).status).toBe(401);expect(jar.size).toBe(0);expect(fetcher).toHaveBeenCalledTimes(1);});
 it('supports exact variant costs and report schedule deletion',async()=>{const cost='stores/WNS_fixture/products/WNP_fixture/private-cost';expect((await PUT(req(cost+'?variant_ref=WNV_fixture','PUT',{expected_revision:2,amount:'10',currency:'USD'}),context(cost))).status).toBe(200);const schedules='stores/WNS_fixture/report-schedules';expect((await DELETE(req(schedules+'?frequency=weekly','DELETE',{}),context(schedules))).status).toBe(200);});
 it('does not return backend diagnostic text',async()=>{fetcher.mockImplementation(async input=>String(input).endsWith('/contexts')?Response.json({contexts:[{type:'personal',public_ref:'USR_self'}]}):Response.json({detail:'database failed at secret path'}, {status:500}));const response=await GET(req('stores'),context('stores'));expect(await response.json()).toEqual({detail:'service_unavailable'});});
+
+it.each(['stores/WNZ_fixture/labels/pdf','stores/WNZ_fixture/pos/receipts/WRC_fixture/pdf?language=fr&width=58'])('forwards protected PDF bytes and print settings: %s',async path=>{
+ fetcher.mockImplementation(async input=>String(input).endsWith('/contexts')?Response.json({contexts:[{type:'personal',public_ref:'USR_self'}]}):new Response('%PDF-1.4 fixture',{headers:{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="receipt.pdf"'}}));
+ const isPost=path.includes('/labels/'),method=isPost?'POST':'GET';
+ const response=await (isPost?POST:GET)(req(path,method,isPost?{items:[{code:'WNP_fixture',copies:2}]}:undefined),context(path.split('?')[0]));
+ expect(response.status).toBe(200);expect(response.headers.get('content-type')).toBe('application/pdf');expect(await response.text()).toBe('%PDF-1.4 fixture');
+ if(!isPost)expect(String(fetcher.mock.calls[1][0])).toContain('width=58');
+});

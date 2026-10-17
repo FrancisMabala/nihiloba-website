@@ -15,3 +15,7 @@ Complete agreed implementations, update documentation, run relevant checks, and 
 Do not push unless I explicitly authorize it, because pushing may trigger deployment. Before release, report what changed, validation results, and any migration or deployment requirements.
 
 These standing instructions constitute explicit authorization for task-scoped local commits and supersede any earlier requirement to ask separately before committing. All other existing instructions remain in force.
+
+## Routine decisions and design questions
+
+For agreed work, proceed with routine implementation, documentation, relevant checks and task-scoped local commits without asking for repeated approval. Ask only when a product/design decision materially changes the agreed experience or when a genuine required permission or missing fact prevents safe progress. Do not push without explicit authorization. Preserve unrelated changes and the protected project mirror.

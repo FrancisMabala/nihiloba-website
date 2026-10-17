@@ -32,7 +32,7 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
   const response=await fetch(target,{method:request.method,headers:{...headers,...(body?{'Content-Type':'application/json'}:{}),...(key?{'Idempotency-Key':key}:{})},body,cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(40000)});
   if(response.status===401)await clearEmploymentToken();
   if(!response.ok){const value=await response.json().catch(()=>null);return fail(response.status>=400&&response.status<600?response.status:502,typeof value?.detail==='string'&&/^[a-z][a-z0-9_]{1,100}$/.test(value.detail)?value.detail:undefined);}
-  if(parts.at(-1)?.endsWith('.csv')||parts.at(-1)==='template'||parts.includes('artifacts'))return new Response(await response.arrayBuffer(),{headers:{...PRIVATE_HEADERS,'Content-Type':response.headers.get('content-type')??'application/octet-stream','Content-Disposition':response.headers.get('content-disposition')??'attachment; filename=wenze-report','X-Content-Type-Options':'nosniff'}});
+  if(parts.at(-1)==='pdf'||parts.at(-1)?.endsWith('.csv')||parts.at(-1)==='template'||parts.includes('artifacts'))return new Response(await response.arrayBuffer(),{headers:{...PRIVATE_HEADERS,'Content-Type':response.headers.get('content-type')??'application/octet-stream','Content-Disposition':response.headers.get('content-disposition')??'attachment; filename=wenze-report','X-Content-Type-Options':'nosniff'}});
   return Response.json(await response.json(),{headers:PRIVATE_HEADERS});
  }catch{return fail(503);}
 }
