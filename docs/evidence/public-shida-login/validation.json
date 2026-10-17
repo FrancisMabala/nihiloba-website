@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-17",
+  "scope": "Visible public SHIDA account entry; existing WhatsApp code login and logout reused",
+  "unit_passed": 106,
+  "browser_passed": 14,
+  "production_build": "passed (including TypeScript)",
+  "lint": "passed without warnings",
+  "backend_changed": false,
+  "full_platform_suite": "not run",
+  "live_whatsapp": "not used; synthetic fixtures only",
+  "screenshots": [
+    "code-en-1440.png",
+    "code-en-320.png",
+    "code-fr-1024.png",
+    "code-fr-390.png",
+    "header-en-1440.png",
+    "header-en-320.png",
+    "header-fr-1024.png",
+    "header-fr-390.png"
+  ]
+}

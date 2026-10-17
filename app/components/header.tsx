@@ -9,6 +9,7 @@ import { BrandLogo } from "./brand-logo";
 import { CartIcon } from "./icons";
 import { useCart } from "./shida/cart-provider";
 import { wenzeCartCopy, wenzeCartPath } from "./shida/wenze-cart-copy";
+import { PublicShidaAccount } from "./shida/public-account";
 
 const links = [
   ["home", ""],
@@ -32,6 +33,8 @@ export function Header({ locale }: { locale: Locale }) {
     pathname.replace(/^\/(en|fr|ln|sw)(?=\/|$)/, "") || "/";
 
   const comparableSuffix = suffix === "/" ? suffix : suffix.replace(/\/$/, "");
+  const shida = /^\/shida(?:\/|$)/.test(suffix);
+  const accountLocale = /^\/ln(?:\/|$)/.test(pathname) ? "ln" : /^\/sw(?:\/|$)/.test(pathname) ? "sw" : locale;
 
   const languageHref = comparableSuffix === "/data-protection"
     ? "/fr/protection-des-donnees"
@@ -62,7 +65,7 @@ export function Header({ locale }: { locale: Locale }) {
         : `/${otherLocale}${suffix}`;
 
   return (
-    <header className="site-header" lang={locale}>
+    <header className={shida ? "site-header shida-header" : "site-header"} lang={locale}>
       <div className="container nav-shell">
         <Link
           className="header-logo"
@@ -129,6 +132,7 @@ export function Header({ locale }: { locale: Locale }) {
             </a>
           </div>
         </nav>
+        {shida && <PublicShidaAccount key={`${pathname}:${accountLocale}`} locale={accountLocale}/>}
       </div>
     </header>
   );

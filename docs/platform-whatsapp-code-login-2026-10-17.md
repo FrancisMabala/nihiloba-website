@@ -1,5 +1,9 @@
 # Platform-wide WhatsApp code login — 17 October 2026
 
+> Public navigation follow-up: [visible SHIDA sign-in](public-shida-login-2026-10-17.md)
+> adds a shared public-header entry to this existing login flow. The authentication
+> contract below is unchanged; the original batch status and validation are historical.
+
 ## Implementation status
 
 Implemented locally in Backend, NIHILOBA Website and SHIDA Business. Not deployed and not live WhatsApp acceptance. This batch implements the shared login foundation only. Provider calendars, opening hours, QR sharing, global bills and further management-copy cleanup remain separate planned work.
