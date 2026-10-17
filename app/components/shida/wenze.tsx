@@ -1,3 +1,4 @@
+import Image from "next/image";
 import "./wenze-public.css";
 import { PublicMarketplaceHero } from "./public-marketplace";
 import Link from "next/link"; import type{Metadata}from"next"; import{notFound}from"next/navigation";
@@ -52,7 +53,7 @@ export async function WenzeStorePage({l,id}:{l:Locale;id:string}) {
  return <WenzeBuyerProvider locale={l}><div className="wenze-public wzp-boutique container">
   <div className="wzp-topline"><MarketplaceBreadcrumb label={l==="fr"?"Fil d’Ariane":"Breadcrumb"} items={[{label:"SHIDA",href:marketplacePath(l,"/shida")},{label:"Wenze",href:marketplacePath(l,"/shida/wenze")}]}/><Link href={marketplacePath(l,"/shida/wenze")}>← {u.back}</Link></div>
   <header className="wzp-store-heading">
-   <div className="wzp-store-monogram" aria-hidden="true">{s.name.trim().slice(0,1).toUpperCase()}</div>
+   <div className="wzp-store-monogram" aria-hidden="true">{s.profile_image?.url?<Image unoptimized src={s.profile_image.url} alt="" width={72} height={72}/>:s.name.trim().slice(0,1).toUpperCase()}</div>
    <div className="wzp-store-identity"><p className="wzp-eyebrow">{label(s.category,l)||"Wenze"}</p><h1>{s.name}</h1><p className="wzp-store-location">{where||wenzeStoreTypeLabel(s.store_type,l)}</p></div>
    <div className="wzp-buyer-actions"><WenzeRelation locale={l} kind="wenze_store" reference={s.public_ref} follow/><WenzeRelation locale={l} kind="wenze_store" reference={s.public_ref}/></div>
   </header>
