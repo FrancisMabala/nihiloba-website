@@ -1,3 +1,5 @@
+import { PublicMarketplaceHero, PublicMarketplaceClosing } from "./public-marketplace";
+import { restaurantLandingCopy } from "./restaurant-landing-copy";
 import { restaurantCopy, restaurantPath } from "../../lib/restaurant-i18n";
 import { discoveryCopy } from "../../lib/restaurant-discovery-copy";
 import { restaurantReviewCopy } from "../../lib/restaurant-review-copy";
@@ -10,24 +12,24 @@ import { DiscoveryLanguage } from "./restaurant-discovery-controls";
 import "./restaurant-discovery.css";
 
 export async function RestaurantDiscovery({ locale, search = {} }: { locale: RestaurantLocale; search?: RestaurantSearch }) {
- const t = restaurantCopy[locale], d = discoveryCopy[locale], params = restaurantQuery(search), path = restaurantPath(locale);
+ const landing = restaurantLandingCopy[locale], t = restaurantCopy[locale], d = discoveryCopy[locale], params = restaurantQuery(search), path = restaurantPath(locale);
  let result: Awaited<ReturnType<typeof getRestaurants>> | null = null;
  try { result = await getRestaurants(locale, search); } catch { /* Keep the complete search form and exact-document retry. */ }
  const modes = [...new Set([...(params.get("service_mode") ? [params.get("service_mode")!] : []), ...(result?.service_mode_options ?? [])])];
  const advanced = ["name", "area", "dish", "service_mode"].filter(key => params.get(key)).length + (["fast_food", "catering"].includes(params.get("food_type") ?? "") ? 1 : 0);
- return <section className="restaurant-public restaurant-discovery" lang={locale}><div className="container">
+ return <section className="restaurant-public restaurant-discovery marketplace-public" lang={locale}><div className="container">
   <RestaurantRevalidation/>
-  <div className="rd-top"><MarketplaceBreadcrumb label={t.breadcrumb} items={[{ label: "SHIDA", href: locale === "en" ? "/shida" : "/fr/shida" }, { label: t.title }]}/><div className="rd-tools"><a href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{d.seller}</a><DiscoveryLanguage locale={locale} search={params.toString()}/></div></div>
-  <header className="rd-intro"><h1>{t.title}</h1></header>
+  <div className="rd-top mp-topline"><MarketplaceBreadcrumb label={t.breadcrumb} items={[{ label: "SHIDA", href: locale === "en" ? "/shida" : "/fr/shida" }, { label: t.title }]}/><div className="rd-tools"><a href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{d.seller}</a><DiscoveryLanguage locale={locale} search={params.toString()}/></div></div>
+  <PublicMarketplaceHero className="rd-intro" eyebrow={landing.eyebrow} title={t.title} intro={landing.intro} image="/shida/shida-restaurant-family.png" imageAlt={landing.image} badge="SHIDA / RESTAURANTS" browse={landing.browse} href="#restaurant-discovery"/>
  </div>
  <div className="container">
-  <form action={path} method="get" className="rd-search">
-   <div className="rd-primary"><label><span className="rd-primary-label">{t.search}</span><input name="query" placeholder={d.query} defaultValue={params.get("query") ?? ""} maxLength={200}/></label><label><span className="rd-primary-label">{t.city}</span><input name="city" placeholder={t.city} defaultValue={params.get("city") ?? ""} maxLength={200}/></label><button className="rd-submit" type="submit">{t.search}</button></div>
+  <form id="restaurant-discovery" action={path} method="get" className="rd-search mp-search">
+   <div className="rd-primary mp-search-primary"><label><span className="rd-primary-label">{t.search}</span><input name="query" placeholder={d.query} defaultValue={params.get("query") ?? ""} maxLength={200}/></label><label><span className="rd-primary-label">{t.city}</span><input name="city" placeholder={t.city} defaultValue={params.get("city") ?? ""} maxLength={200}/></label><button className="rd-submit" type="submit">{t.search}</button></div>
    <fieldset className="rd-types"><legend className="sr-only">{t.type}</legend>{(["", "malewa", "restaurant", "cafe"] as const).map(type => <label className="rd-chip" key={type}><input type="radio" name="food_type" value={type} defaultChecked={(params.get("food_type") ?? "") === type}/><span>{type ? t[type] : t.all}</span></label>)}<label className="rd-chip rd-open"><input type="checkbox" name="open_now" value="true" defaultChecked={params.get("open_now") === "true"}/><span>{t.openOnly.split(" — ")[0]}</span></label></fieldset>
    <details className="rd-advanced"><summary>{d.filters}{advanced > 0 ? ` (${advanced})` : ""}</summary><div className="rd-fields">{(["name", "area", "dish"] as const).map(key => <label key={key}>{key === "dish" ? d.dish : t[key]}<input name={key} defaultValue={params.get(key) ?? ""} maxLength={200}/></label>)}<label>{t.mode}<select name="service_mode" defaultValue={params.get("service_mode") ?? ""}><option value="">{t.all}</option>{modes.map(mode => <option key={mode} value={mode}>{mode}</option>)}</select></label><fieldset><legend>{t.type}</legend>{(["fast_food", "catering"] as const).map(type => <label className="rd-chip" key={type}><input type="radio" name="food_type" value={type} defaultChecked={params.get("food_type") === type}/><span>{t[type]}</span></label>)}</fieldset></div></details>
    <a className="rd-reset" href={path}>{t.reset}</a>
   </form>
-  <div className="rd-results-heading"><h2>{d.discover}{params.get("city") ? ` · ${params.get("city")}` : ""}</h2>{result && <p role="status">{result.total} {t.results}</p>}</div>
+  <div className="rd-results-heading mp-results-heading"><h2>{d.discover}{params.get("city") ? ` · ${params.get("city")}` : ""}</h2>{result && <p role="status">{result.total} {t.results}</p>}</div>
   {!result ? <div className="rd-empty" role="status"><p>{t.error}</p><RestaurantRetry label={t.retry}/></div> : <>
    {!result.items.length && <div className="rd-empty"><p>{t.empty}</p><a href={locale === "en" ? "/shida" : "/fr/shida"}>SHIDA</a></div>}
    <div className="rd-grid">{result.items.map(item => {
@@ -41,5 +43,6 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
    })}</div>
    <nav className="restaurant-pagination" aria-label={t.page}>{result.page > 1 && <a className="restaurant-link" href={`${path}?${new URLSearchParams({ ...Object.fromEntries(params), page: String(result.page - 1) })}`}>{t.previous}</a>}<span aria-current="page">{t.page} {result.page} / {Math.max(1, Math.ceil(result.total / result.page_size))}</span>{result.page * result.page_size < result.total && <a className="restaurant-link" href={`${path}?${new URLSearchParams({ ...Object.fromEntries(params), page: String(result.page + 1) })}`}>{t.next}</a>}</nav>
   </>}
+ <PublicMarketplaceClosing copy={landing} badge="SHIDA / RESTAURANTS" href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}/>
  </div></section>;
 }

@@ -11,11 +11,11 @@ import { marketplaceCopy } from "./marketplace-copy";
 import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 
 function hasAdvancedFilters(search: ApartmentSearch): boolean {
-  return Boolean(search.city || search.area || search.property_type || search.bedrooms != null || search.min_price != null || search.max_price != null);
+  return Boolean(search.area || search.property_type || search.bedrooms != null || search.min_price != null || search.max_price != null);
 }
 
 export function hasApartmentSearch(search: ApartmentSearch): boolean {
-  return Boolean(search.query || hasAdvancedFilters(search));
+  return Boolean(search.query || search.city || hasAdvancedFilters(search));
 }
 
 function value(value: string | number | undefined): string | number | undefined {
@@ -29,15 +29,15 @@ export function ApartmentFilters({ locale, search, propertyTypes }: {
 }) {
   const t = marketplaceCopy[locale];
   const action = marketplacePath(locale, "/shida/appartements");
-  return <form className="marketplace-filters" action={action} method="get">
-    <div className="marketplace-search-row">
+  return <form className="marketplace-filters mp-search" action={action} method="get">
+    <div className="marketplace-search-row mp-search-primary">
       <label><span>{t.searchLabel}</span><input type="search" name="query" defaultValue={search.query} placeholder={t.searchPlaceholder} maxLength={120}/></label>
+      <label><span>{t.city}</span><input name="city" defaultValue={search.city} maxLength={120}/></label>
       <button className="button button-primary" type="submit">{t.search}</button>
     </div>
     <details className="marketplace-advanced-filters" open={hasAdvancedFilters(search) || undefined}>
       <summary>{t.filters}</summary>
       <div className="marketplace-filter-grid">
-        <label><span>{t.city}</span><input name="city" defaultValue={search.city} maxLength={120}/></label>
         <label><span>{t.area}</span><input name="area" defaultValue={search.area} maxLength={120}/></label>
         <label><span>{t.propertyType}</span><select name="property_type" defaultValue={search.property_type ?? ""}>
           <option value="">{t.any}</option>

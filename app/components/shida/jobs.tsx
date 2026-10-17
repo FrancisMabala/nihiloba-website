@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { PublicMarketplaceHero } from "./public-marketplace";
 import Link from "next/link";
 import "./jobs-public.css";
 import type { Locale } from "../../lib/i18n";
@@ -77,9 +77,9 @@ export function JobCard({item,locale}:{item:PublicJobSummary;locale:Locale}){con
 
 function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
   const t=copy[locale],clearHref=`${marketplacePath(locale,"/shida/emplois")}${jobSearchQuery({view:search.view})}`;
-  return <form className="jobs-public-filters" action={marketplacePath(locale,"/shida/emplois")} method="get" role="search" aria-label={t.search}>
+  return <form className="jobs-public-filters mp-search" action={marketplacePath(locale,"/shida/emplois")} method="get" role="search" aria-label={t.search}>
     {search.view&&<input type="hidden" name="view" value={search.view}/>}
-    <div className="jobs-search-primary">
+    <div className="jobs-search-primary mp-search-primary">
       <label>{t.search}<input type="search" name="query" defaultValue={search.query} placeholder={t.placeholder} maxLength={120}/></label>
       <label>{t.city}<input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label>
       <button className="button button-primary" type="submit">{t.applyFilters}<span aria-hidden="true">→</span></button>
@@ -109,21 +109,18 @@ export async function JobCollectionPage({locale,search}:{locale:Locale;search:Jo
   const individual=collection?.items.filter((item)=>item.offer_type==="individual")??[];
   const activeItems=search.view==="professional"?professional:search.view==="individual"?individual:collection?.items??[];
   const emptyMessage=search.view==="professional"?t.emptyProfessional:search.view==="individual"?t.emptyIndividual:t.empty;
-  return <div className="jobs-public" lang={locale}>
+  return <div className="jobs-public marketplace-public" lang={locale}>
     <div className="container">
-      <div className="jobs-public-topline"><MarketplaceSectionBreadcrumb locale={locale} current={t.jobs}/><Link href={applicationsHref}>{d.applications}<span aria-hidden="true"> ↗</span></Link></div>
-      <header className="jobs-public-hero">
-        <div><p className="jobs-public-eyebrow">{d.eyebrow}</p><h1>{t.title}</h1><p>{t.intro}</p><a className="jobs-discover-link" href="#job-discovery">{d.browse}<span aria-hidden="true">↓</span></a></div>
-        <div className="jobs-public-art"><Image src="/home/employment.png" alt={d.image} width={1254} height={1254} sizes="(max-width: 600px) calc(100vw - 32px), (max-width: 1200px) 42vw, 500px" preload/><span aria-hidden="true">SHIDA / {t.jobs.toLocaleUpperCase(locale)}</span></div>
-      </header>
+      <div className="jobs-public-topline mp-topline"><MarketplaceSectionBreadcrumb locale={locale} current={t.jobs}/><Link href={applicationsHref}>{d.applications}<span aria-hidden="true"> ↗</span></Link></div>
+      <PublicMarketplaceHero className="jobs-public-hero" imageClassName="jobs-public-art" eyebrow={d.eyebrow} title={t.title} intro={t.intro} image="/home/employment.png" imageAlt={d.image} badge={`SHIDA / ${t.jobs.toLocaleUpperCase(locale)}`} browse={d.browse} href="#job-discovery"/>
     <section id="job-discovery" className="jobs-public-discovery" aria-labelledby="job-discovery-title">
       <JobFilters locale={locale} search={search}/>
-      <nav className="job-offer-tabs" aria-label={t.jobs}>
+      <nav className="job-offer-tabs mp-chips" aria-label={t.jobs}>
         <Link href={pageHref(locale,{...search,view:undefined},1)} className={!search.view?"job-offer-tab-active":undefined} aria-current={!search.view?"page":undefined}>{d.all}</Link>
         <Link href={viewHref(locale,search,"professional")} className={search.view==="professional"?"job-offer-tab-active":undefined} aria-current={search.view==="professional"?"page":undefined}>{t.professional}</Link>
         <Link href={viewHref(locale,search,"individual")} className={search.view==="individual"?"job-offer-tab-active":undefined} aria-current={search.view==="individual"?"page":undefined}>{t.individual}</Link>
       </nav>
-      <div className="jobs-results-heading"><h2 id="job-discovery-title">{d.opportunities}</h2>{collection&&<p className="marketplace-result-count" role="status">{search.view?activeItems.length:collection.pagination.total_items} {(search.view?activeItems.length:collection.pagination.total_items)===1?t.result:t.results}</p>}</div>
+      <div className="jobs-results-heading mp-results-heading"><h2 id="job-discovery-title">{d.opportunities}</h2>{collection&&<p className="marketplace-result-count" role="status">{search.view?activeItems.length:collection.pagination.total_items} {(search.view?activeItems.length:collection.pagination.total_items)===1?t.result:t.results}</p>}</div>
       <div className="job-results" id="job-results">
         {collection?<>
           {activeItems.length
@@ -135,8 +132,8 @@ export async function JobCollectionPage({locale,search}:{locale:Locale;search:Jo
         </>:<div className="job-api-error" role="alert"><MarketplaceState>{t.unavailable}</MarketplaceState><ButtonLink href={pageHref(locale,search,search.page??1)} variant="secondary">{t.retry}</ButtonLink></div>}
       </div>
     </section>
-    <section className="jobs-public-how"><h2>{d.how}</h2><p>{d.howIntro}</p></section>
-    <section className="jobs-public-candidate"><div><p className="jobs-public-eyebrow">{d.candidateEyebrow}</p><h2>{d.candidateTitle}</h2><p>{d.candidateIntro}</p></div><ButtonLink href={applicationsHref}>{d.candidateAction}</ButtonLink></section>
+    <section className="jobs-public-how mp-how"><h2>{d.how}</h2><p>{d.howIntro}</p></section>
+    <section className="jobs-public-candidate mp-invitation"><div><p className="jobs-public-eyebrow mp-eyebrow">{d.candidateEyebrow}</p><h2>{d.candidateTitle}</h2><p>{d.candidateIntro}</p></div><ButtonLink href={applicationsHref}>{d.candidateAction}</ButtonLink></section>
     </div>
   </div>;
 }
