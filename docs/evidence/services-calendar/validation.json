@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-17",
+  "scope": "Personal Services calendar, opening hours, approval/instant appointments, booking links, QR sharing and management copy",
+  "website": {
+    "unit_passed": 70,
+    "services_browser_passed": 80,
+    "calendar_browser_final_rerun_passed": 6,
+    "production_build": "passed (includes TypeScript)",
+    "scoped_lint": "passed"
+  },
+  "backend": {
+    "services-final-6be1efc9": {
+      "passed": 321,
+      "failed": 65,
+      "skipped": 4
+    },
+    "migration-final-f40ecb03": {
+      "passed": 21
+    },
+    "regression-final-5753c6df": {
+      "passed": 114,
+      "skipped": 3
+    },
+    "latest_unique_results": {
+      "passed": 387,
+      "skipped": 4
+    },
+    "unresolved_failures": [],
+    "skipped": [
+      "tests.test_service_booking_reminder_security::test_concurrent_due_discovery_creates_one_logical_row_per_participant",
+      "tests.test_service_provider_identity::test_postgresql_reactivation_race",
+      "tests.test_service_provider_identity::test_postgresql_concurrent_provider_and_limit[0]",
+      "tests.test_service_provider_identity::test_postgresql_concurrent_provider_and_limit[4]"
+    ]
+  },
+  "backend_test_files": [
+    "test_public_service_marketplace.py",
+    "test_service_appointments_migration.py",
+    "test_service_booking.py",
+    "test_service_booking_reminder_security.py",
+    "test_service_calendar_resources.py",
+    "test_service_provider_identity.py",
+    "test_service_provider_schedule.py",
+    "test_service_public_privacy.py",
+    "test_service_reschedule_decisions.py",
+    "test_service_reschedule_proposals.py",
+    "test_service_reschedule_whatsapp.py",
+    "test_services_imp14a_pilot.py"
+  ],
+  "migration": {
+    "head": "0172",
+    "fresh_sqlite_chain": "passed",
+    "legacy_preservation": "passed",
+    "postgresql_offline": "passed",
+    "single_head": "passed"
+  },
+  "visual_review": {
+    "screenshots": [
+      "agenda-en-1440.png",
+      "agenda-fr-390.png",
+      "agenda-ln-820.png",
+      "agenda-sw-320.png",
+      "hours-en-1440.png",
+      "hours-fr-390.png",
+      "hours-ln-820.png",
+      "hours-sw-320.png",
+      "sharing-en-1440.png",
+      "sharing-fr-390.png",
+      "sharing-ln-820.png",
+      "sharing-sw-320.png"
+    ],
+    "languages": [
+      "en",
+      "fr",
+      "ln",
+      "sw"
+    ],
+    "widths": [
+      1440,
+      390,
+      820,
+      320
+    ]
+  },
+  "full_platform_suite": "not run (Services-focused scope)",
+  "live_acceptance_pending": [
+    "PostgreSQL runtime concurrency",
+    "real-phone WhatsApp",
+    "native device sharing and QR scanning"
+  ],
+  "production_access": false
+}

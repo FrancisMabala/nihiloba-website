@@ -19,6 +19,11 @@ globalThis.fetch=async(input,init)=>{
   return Response.json({items:selected,count:selected.length,total:selected.length,page:1,page_size:12});
  }
  if(path.startsWith("/api/public/shida/services/providers/"))return Response.json({...provider,location,categories:["repair_maintenance","cleaning","education_training"],service_count:3,rating:service.rating,services:items});
+ if(path==="/api/public/shida/services/appointments/availability"){
+  const day=new Date(Date.now()+7*86400000).toISOString().slice(0,10);
+  return Response.json({service_ref:'SVC_appointments',appointment_booking:true,timezone:'Africa/Kinshasa',availability_mode:'time_slots',requested_time_requires_provider_confirmation:false,from:day,to:day,booking_url:null,slots:[{date:day,start_time:'09:00',end_time:'09:30',is_available:true,booking_url:null},{date:day,start_time:'09:30',end_time:'10:00',is_available:true,booking_url:null}]});
+ }
+ if(path==="/api/public/shida/services/appointments")return Response.json({...service,public_ref:'SVC_appointments',slug:'appointments',service_name:'Haircut appointments',availability_mode:'time_slots',duration_minutes:30,description:'Book a time at Studio Kin.',offerings:[],images:[],social_link:null,completion_mode:null,availability_endpoint:path+'/availability'});
  if(path.endsWith("/availability"))return Response.json({service_ref:service.public_ref,availability_mode:"flexible",requested_time_requires_provider_confirmation:true,from:"2026-10-16",to:"2026-11-16",slots:[],booking_url:null});
  if(path.endsWith("/reviews"))return Response.json({items:[],count:0,total:0,page:1,page_size:10});
  if(path.startsWith("/api/public/shida/services/")){const item=items.find(row=>path.endsWith('/'+row.slug));return item?Response.json({...item,description:item.short_description,offerings:[],images:[],social_link:null,completion_mode:null,availability_endpoint:path+"/availability"}):Response.json({detail:"missing"},{status:404});}

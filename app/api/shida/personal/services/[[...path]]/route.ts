@@ -8,9 +8,11 @@ type Context={params:Promise<{path?:string[]}>};
 const fail=(status:number,detail="service_unavailable")=>Response.json({detail},{status,headers:PRIVATE_HEADERS});
 function allowed(parts:string[],method:string){
  if(parts.length===0)return method==="GET"||method==="POST";
- if(parts.length===1&&parts[0]==="capabilities")return method==="GET";
+ if(parts.length===1&&["capabilities","calendar"].includes(parts[0]))return method==="GET";
  if(!/^SVC_[A-Za-z0-9_-]+$/.test(parts[0]))return false;
  if(parts.length===1)return ["GET","PATCH","DELETE"].includes(method);
+ if(parts.length===2&&parts[1]==="schedule")return ["GET","PATCH"].includes(method);
+ if(parts.length===2&&parts[1]==="share")return method==="GET";
  if(parts.length===2)return parts[1]==="reactivate"&&method==="POST"||parts[1]==="details"&&method==="PATCH"||parts[1]==="pilot-review"&&["GET","PATCH"].includes(method)||parts[1]==="reviews"&&method==="GET"||parts[1]==="request-capability"&&method==="PATCH"||parts[1]==="packages"&&method==="POST";
  if(parts[1]!=="packages"||!/^SPK_[A-Za-z0-9_-]+$/.test(parts[2]))return false;
  if(parts.length===3)return method==="PATCH";
@@ -22,7 +24,12 @@ async function handle(request:Request,context:Context){
  const transaction=transactionPath(parts,request.method);
  const lifecycle=/^SVC_[A-Za-z0-9_-]+$/.test(parts[0]??"")&&(parts.length===1&&request.method==="DELETE"||parts.length===2&&parts[1]==="reactivate"&&request.method==="POST");
  const lifecycleQuery=lifecycle&&[...query].length===1&&/^[1-9][0-9]{0,8}$/.test(query.get("expected_revision")??"");
- if(transaction?!transactionQuery(parts,query,request.method):(!allowed(parts,request.method)||((lifecycle?!lifecycleQuery:[...query].length>0)&&!(parts.length===2&&parts[1]==="reviews"&&[...query].length===1&&["fr","en","ln","sw"].includes(query.get("language")??"")))))return fail(404);
+ const calendar=parts.length===1&&parts[0]==="calendar"&&request.method==="GET";
+ const localized=parts.length===2&&["reviews","share"].includes(parts[1])&&request.method==="GET";
+ const unique=[...query.keys()].length===new Set(query.keys()).size;
+ const calendarQuery=calendar&&unique&&[...query.keys()].every(key=>["date_from","date_to","page","offering_ref"].includes(key))&&/^\d{4}-\d{2}-\d{2}$/.test(query.get("date_from")??"")&&/^\d{4}-\d{2}-\d{2}$/.test(query.get("date_to")??"")&&(!query.has("page")||/^[1-9][0-9]{0,3}$/.test(query.get("page")!))&&(!query.has("offering_ref")||/^SVC_[A-Za-z0-9_-]+$/.test(query.get("offering_ref")!));
+ const validQuery=calendar?calendarQuery:lifecycle?lifecycleQuery:localized?(![...query].length||[...query].length===1&&["fr","en","ln","sw"].includes(query.get("language")??"")):![...query].length;
+ if(transaction?!transactionQuery(parts,query,request.method):(!allowed(parts,request.method)||!validQuery))return fail(404);
  if(request.headers.get("sec-fetch-site")==="cross-site")return fail(403);
  const origin=personalRequestOrigin(request);
  if(request.method!=="GET"&&!origin)return fail(403);
@@ -46,7 +53,8 @@ async function handle(request:Request,context:Context){
   const target=new URL(transaction?`/api/dashboard/${transaction}`:`/api/dashboard/service-profiles${parts.length?`/${parts.join("/")}`:""}`,base.origin);
   if(transaction)target.search=transactionSearch(parts,query).toString();
   if(lifecycle)target.search=new URLSearchParams({expected_revision:query.get("expected_revision")!}).toString();
-  if(parts[1]==="reviews")target.search=new URLSearchParams({language:query.get("language")??"fr"}).toString();
+  if(calendar)target.search=query.toString();
+  if(localized)target.search=new URLSearchParams({language:query.get("language")??"fr"}).toString();
   const response=await fetch(target,{method:request.method,cache:"no-store",redirect:"manual",signal:AbortSignal.timeout(12000),headers:{Accept:"application/json",Cookie:`shida_dashboard_session=${token}`,...(origin?{Origin:origin}:{}),...(body?{"Content-Type":"application/json"}:{}),...(key&&methodNeedsKey(parts,request.method)?{"Idempotency-Key":key}:{})},body});
   if(response.status===401)await clearEmploymentToken();
   if(transaction?.endsWith('.csv'))return new Response(await response.arrayBuffer(),{status:response.status,headers:{...PRIVATE_HEADERS,"Content-Type":response.ok?"text/csv; charset=utf-8":"application/json",...(response.ok?{"Content-Disposition":response.headers.get("content-disposition")??"attachment; filename=services-report.csv"}:{})}});

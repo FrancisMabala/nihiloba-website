@@ -15,7 +15,7 @@ const copy:Record<string,[string,string,string,string]> = {
  quote:['Quote','Devis','Devis','Makadirio'],create_quote:['Prepare a private quote','Préparer un devis privé','Bongisa devis ya sekele','Andaa makadirio ya binafsi'],
  edit:['Correct private draft','Corriger le brouillon privé','Bongisa mokanda ya sekele','Sahihisha rasimu binafsi'],
  save:['Save private draft','Enregistrer le brouillon privé','Bomba mokanda ya sekele','Hifadhi rasimu binafsi'],
- private:['Private draft — visible only to your authorized provider context.','Brouillon privé — visible uniquement dans votre contexte prestataire autorisé.','Mokanda ya sekele — kaka na esika ya mosali oyo azali na ndingisa.','Rasimu binafsi — inaonekana tu katika mazingira yako ya mtoa huduma aliyeidhinishwa.'],
+ private:['Draft — only you can see it.','Brouillon — vous seul pouvez le voir.','Mokanda — kaka yo okoki komona yango.','Rasimu — ni wewe tu unayeiona.'],
  review:['Review request','Examiner la demande','Tala bosengi','Kagua ombi'],decline:['Decline','Refuser','Boya','Kataa'],
  accept:['Approve booking','Approuver la réservation','Ndima rendez-vous','Idhinisha nafasi'],reject:['Reject proposal','Refuser la proposition','Boya likanisi','Kataa pendekezo'],
  send:['Issue quote','Émettre le devis','Tinda devis','Toa makadirio'],withdraw:['Withdraw quote','Retirer le devis','Longola devis','Ondoa makadirio'],

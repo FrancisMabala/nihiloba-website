@@ -1,7 +1,7 @@
 import {servicesProviderOffering} from "./fixtures/services-provider";
 import {test,expect} from '@playwright/test';
 import {servicesText} from '../../app/components/shida/services-transaction-copy';
-for(const [locale,sendLabel,retryLabel,accepted] of [['en','Send bill','Retry WhatsApp notice','Accepted by Meta'],['fr','Envoyer la facture','Réessayer la notification WhatsApp','Accepté par Meta'],['ln','Tinda facture','Meka lisusu koyebisa na WhatsApp','Meta endimi'],['sw','Tuma bili','Jaribu tena taarifa ya WhatsApp','Imekubaliwa na Meta']] as const)test(`Personal provider send and retry ${locale}`,async({page})=>{
+for(const [locale,sendLabel,retryLabel,accepted] of [['en','Send bill','Retry WhatsApp notice','Submitted to WhatsApp'],['fr','Envoyer la facture','Réessayer la notification WhatsApp','Transmis à WhatsApp'],['ln','Tinda facture','Meka lisusu koyebisa na WhatsApp','WhatsApp eyambi botindi'],['sw','Tuma bili','Jaribu tena taarifa ya WhatsApp','Imewasilishwa kwa WhatsApp']] as const)test(`Personal provider send and retry ${locale}`,async({page})=>{
  const t=(key:string)=>servicesText(locale,key);
  const bill={bill_ref:'SBF_one',version_ref:'SBV_one',revision:2,status:'issued',source_kind:'accepted_quote',currency:'USD',total:'15.25',issue_date:'2026-10-16',due_date:'2026-10-23',lines:[{ordinal:1,label:'Agreed work',amount:'15.25'}]};
  const booking={reservation_ref:'RSV_one',offering_ref:'SVC_one',service_name:'Repairs',requester_name:'Customer',status:'confirmed',revision:1,can_respond:false};

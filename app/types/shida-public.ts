@@ -42,6 +42,7 @@ export type PublicServiceProvider = {
 export type ServiceCollection = PublicCollection<PublicServiceSummary> & { total: number; page: number; page_size: number };
 export type ServiceAvailabilitySlot = { date: string; start_time: string; end_time: string; is_available: boolean; booking_url: string | null };
 export type ServiceAvailability = {
+  appointment_booking?: boolean; timezone?: string|null;
   service_ref: string; offering_ref?: string | null; availability_mode: "time_slots" | "flexible";
   requested_time_requires_provider_confirmation: boolean; from: string | null; to: string | null;
   slots: ServiceAvailabilitySlot[]; booking_url: string | null;

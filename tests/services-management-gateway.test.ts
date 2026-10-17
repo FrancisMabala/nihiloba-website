@@ -10,6 +10,19 @@ const request=(path='',method='GET',body?:object,extra:Record<string,string>={})
 beforeEach(()=>{jar.clear();jar.set(PERSONAL_SESSION_COOKIE,token);vi.stubEnv('SHIDA_API_BASE_URL','https://backend.test');vi.stubGlobal('fetch',fetcher);fetcher.mockReset();fetcher.mockImplementation(async()=>Response.json({profiles:[]}));});
 afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();});
 
+it('routes exact Personal calendar, hours and QR reads and authenticated schedule writes',async()=>{
+ for(const path of ['calendar?date_from=2026-12-01&date_to=2027-01-01&page=1&offering_ref=SVC_one','SVC_one/schedule','SVC_one/share?language=ln']){
+  expect((await GET(request(path),context(path.split('?')[0]))).status).toBe(200);
+ }
+ const body={expected_revision:1,operation_key:'hours-1',mode:'appointments',confirmation:'automatic',hours:[{day:'monday',start:'09:00',end:'17:00'}]};
+ expect((await PATCH(request('SVC_one/schedule','PATCH',body),context('SVC_one/schedule'))).status).toBe(200);
+ expect(JSON.parse(fetcher.mock.calls.at(-1)?.[1]?.body as string)).toEqual(body);
+ for(const path of ['calendar?date_from=bad&date_to=2027-01-01','calendar?date_from=2026-12-01&date_from=2026-12-02&date_to=2027-01-01','calendar?organization_ref=BUS_other']){
+  expect((await GET(request(path),context('calendar'))).status).toBe(404);
+ }
+ expect(fetcher).toHaveBeenCalledTimes(4);
+});
+
 describe('Personal Services gateway',()=>{
  it('routes bounded aggregate reports and private CSV without Organization selectors',async()=>{
   const path='transactions/reports/operational.csv';

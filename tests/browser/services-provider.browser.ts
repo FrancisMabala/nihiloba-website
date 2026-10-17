@@ -47,7 +47,7 @@ for(const [locale,width] of [['en',1440],['en',360],['fr',1440],['ln',820],['sw'
  const t=providerCopy[locale],nav=page.getByRole('navigation',{name:t.navigation});
  await expect(page.getByRole('heading',{name:t.overview,exact:true})).toBeVisible();
  await expect(nav.getByRole('button')).toHaveCount(7);
- await expect(page.getByText(t.pilot).last()).toBeVisible();
+ await expect(page.getByText(t.pilot)).toHaveCount(0);
  await page.screenshot({path:`docs/evidence/seller-workspace/services-overview-${locale}-${width}.png`,fullPage:true});
  for(const section of ['services','work','finance','reports','templates','settings'] as const){
   await nav.getByRole('button',{name:t[section],exact:true}).click();

@@ -28,8 +28,8 @@ test('Personal provider records and corrects a partial receipt after offering wi
  });
  await page.goto('/shida/seller/services?view=finance');
  const journal=page.getByRole('region',{name:'Services journal'});
- await expect(journal.getByText(/does not verify payment/)).toBeVisible();
- await journal.getByLabel('Select or enter an authorized reservation').fill('RSV_one');
+ await expect(journal.getByText("Keep track of money received and spent.")).toBeVisible();
+ await journal.getByLabel('Choose a booking').fill('RSV_one');
  await journal.getByLabel('Exact amount').fill('12.25');
  await journal.getByRole('button',{name:'Record entry'}).click();
  await expect(journal.getByRole('button',{name:'Correct'})).toBeVisible();
