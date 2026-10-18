@@ -27,7 +27,7 @@ const copy = {
     business: {
       label: "Business", title: "Your business. One SHIDA space.",
       intro: "Set up your organisation and access the tools available for your activity.",
-      alt: "A business owner presenting colourful fabrics to a customer in her shop.",
+      alt: "A business owner using her laptop and phone on a terrace overlooking a lake.",
       heading: "Start with your organisation",
       cards: [
         ["Create or claim", "Connect your organisation to your SHIDA account. Create a business or claim an existing one through the guided process."],
@@ -57,7 +57,7 @@ const copy = {
     business: {
       label: "Business", title: "Votre activité. Un espace SHIDA.",
       intro: "Créez votre organisation et accédez aux outils disponibles pour votre activité.",
-      alt: "Une commerçante présente des tissus colorés à une cliente dans sa boutique.",
+      alt: "Une entrepreneuse utilise son ordinateur et son téléphone sur une terrasse avec vue sur un lac.",
       heading: "Commencez avec votre organisation",
       cards: [
         ["Créer ou revendiquer", "Reliez votre organisation à votre compte SHIDA. Créez une entreprise ou revendiquez une entreprise existante grâce au parcours guidé."],
