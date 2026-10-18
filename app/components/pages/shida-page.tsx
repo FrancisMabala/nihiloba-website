@@ -14,8 +14,8 @@ const stories = [
   { id: "housing", image: "/product/products-shida-housing.png", route: "/shida/appartements", Icon: HomeIcon },
   { id: "hotels", image: "/shida/shida-hotel.png", route: "/shida/hotels", Icon: BookIcon },
   { id: "restaurants", image: "/shida/shida-restaurant-family.png", route: "/shida/restaurants", Icon: StoreIcon },
-  { id: "transport", image: "/shida/shida-transport-driver.png", route: null, Icon: CarIcon },
-  { id: "business", image: "/shida/shida-kivu-landscape.png", route: null, Icon: BriefcaseIcon },
+  { id: "transport", image: "/shida/shida-transport-driver.png", route: "/shida/transport", Icon: CarIcon },
+  { id: "business", image: "/shida/shida-kivu-landscape.png", route: "/shida/business", Icon: BriefcaseIcon },
 ] as const;
 const journeyIcons = [GlobeIcon, BookIcon, MessageIcon, CheckIcon];
 const connectionIcons = [GlobeIcon, MessageIcon, CheckIcon];
@@ -46,7 +46,7 @@ export function ShidaPage({ locale }: { locale: Locale }) {
             {s.body.map(p => <p key={p}>{p}</p>)}
             {id === "business" && <p className="shida-story-note">{t.businessNote}</p>}
             <ol className="shida-story-journey">{s.steps.map((step, index) => { const Icon = journeyIcons[index]; return <li key={step}><Icon /><span>{step}</span>{index < 3 && <ArrowRightIcon className="shida-journey-arrow" />}</li>; })}</ol>
-            {route ? <Link className="shida-story-link" href={localizedPath(locale, route)}>{s.action}<ArrowRightIcon /></Link> : <a className="shida-story-link" href={OFFICIAL_CHANNELS.whatsapp} target="_blank" rel="noopener noreferrer">{s.action}<ArrowRightIcon /></a>}
+            {route ? <Link className="shida-story-link" href={localizedPath(locale, route)} target={id === "transport" ? "_blank" : undefined} rel={id === "transport" ? "noopener noreferrer" : undefined}>{s.action}<ArrowRightIcon /></Link> : <a className="shida-story-link" href={OFFICIAL_CHANNELS.whatsapp} target="_blank" rel="noopener noreferrer">{s.action}<ArrowRightIcon /></a>}
           </div>
           <figure className="shida-story-visual"><StoryImage src={image} alt={s.alt} /><figcaption><p>{s.aside}</p><span>{s.person}</span><small>{s.role}</small></figcaption></figure>
         </section>;

@@ -11,7 +11,7 @@ const markets = [
   ["employment", "/shida/emplois"], ["services", "/shida/services"],
   ["wenze", "/shida/wenze"], ["housing", "/shida/appartements"],
   ["hotels", "/shida/hotels"], ["restaurants", "/shida/restaurants"],
-  ["transport", null],
+  ["transport", "/shida/transport"],
 ] as const;
 
 function HomeImage({ name, alt, className = "", eager = false, sizes = "(max-width: 700px) calc(100vw - 32px), (max-width: 940px) calc(100vw - 48px), 560px" }: {
@@ -45,7 +45,7 @@ export function HomePage({ locale }: { locale: Locale }) {
       <ul className="home-markets">{markets.map(([image, path], i) => {
         const [label, description] = t.markets[i];
         const content = <><HomeImage name={image} alt={description} sizes="(max-width: 700px) 44vw, (max-width: 940px) 29vw, 210px" /><div className="home-market-title"><h3>{label}</h3><ArrowRightIcon /></div><p>{description}</p></>;
-        return <li key={image}>{path ? <Link href={localizedPath(locale, path)}>{content}</Link> : <a href={OFFICIAL_CHANNELS.whatsapp} target="_blank" rel="noopener noreferrer">{content}</a>}</li>;
+        return <li key={image}>{path ? <Link href={localizedPath(locale, path)} target={image === "transport" ? "_blank" : undefined} rel={image === "transport" ? "noopener noreferrer" : undefined}>{content}</Link> : <a href={OFFICIAL_CHANNELS.whatsapp} target="_blank" rel="noopener noreferrer">{content}</a>}</li>;
       })}</ul>
     </div></section>
 

@@ -1,0 +1,28 @@
+body .shida-information { padding-bottom: 3.5rem; }
+body .shida-information .info-breadcrumb { display:flex; gap:.75rem; align-items:center; margin:0 0 2rem; font-size:.85rem; color:var(--mp-muted); }
+body .shida-information .info-breadcrumb a { display:inline-flex; align-items:center; min-height:44px; }
+body .shida-information .mp-hero { gap:clamp(2rem,4vw,4rem); margin-bottom:2.5rem; }
+body .shida-information .mp-art { height:430px; border-radius:40px 12px 12px; }
+body .shida-information .info-status { display:inline-block; margin:0 0 .5rem; border-radius:24px; padding:.4rem .8rem; background:#ffe3a5; color:#40391f; text-transform:uppercase; letter-spacing:.07em; font-size:.75rem; font-weight:700; }
+body .shida-information .info-dashboard .button { margin-top:.5rem; border-radius:6px; max-width:100%; }
+body .shida-information .info-dashboard p { font-size:.8rem; color:var(--mp-muted); line-height:1.6; margin:.75rem 0 0; }
+body .shida-information .info-notice { display:flex; align-items:center; gap:1rem; background:#ffe9b8; border:1px solid #efcf86; border-radius:12px; padding:1.25rem 1.5rem; margin:0 0 2.5rem; line-height:1.65; }
+body .shida-information .info-notice svg { width:26px; height:26px; flex-shrink:0; color:#80601e; }
+body .shida-information h2 { font:500 clamp(1.8rem,3vw,2.6rem)/1.15 Georgia,serif; letter-spacing:-.025em; margin:0 0 1.25rem; }
+body .shida-information .info-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.25rem; }
+body .shida-information .info-cards article { background:var(--mp-paper); border:1px solid var(--mp-line); border-radius:12px; padding:1.5rem; }
+body .shida-information .info-cards svg { width:34px; height:34px; color:#987326; margin-bottom:1rem; }
+body .shida-information h3 { font:500 1.35rem/1.25 Georgia,serif; margin:0 0 .75rem; }
+body .shida-information .info-cards p { color:var(--mp-muted); font-size:.95rem; line-height:1.7; margin:0; }
+body .shida-information .info-steps { display:flex; justify-content:space-around; gap:1.5rem; margin:1.5rem 0 0; list-style:none; padding:1.5rem; background:#e9eddf; border-radius:12px; }
+body .shida-information .info-steps li { display:flex; align-items:center; gap:.75rem; font-weight:600; }
+body .shida-information .info-steps span { display:grid; place-items:center; width:30px; height:30px; flex-shrink:0; border:1px solid #82977b; border-radius:50%; font-size:.8rem; }
+body .shida-information .info-note { margin:1.25rem auto; max-width:850px; text-align:center; color:var(--mp-muted); font-size:.85rem; line-height:1.7; }
+body .shida-information .info-back { text-align:center; margin-top:1.5rem; }
+@media(max-width:700px) {
+  body .shida-information .mp-hero { grid-template-columns:1fr; }
+  body .shida-information .mp-art { height:290px; }
+  body .shida-information .info-cards { grid-template-columns:1fr; }
+  body .shida-information .info-steps { flex-direction:column; }
+  body .shida-information .info-notice { padding:1rem; align-items:flex-start; }
+}
