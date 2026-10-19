@@ -12,13 +12,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Complete agreed implementations, update documentation, run relevant checks, and commit locally without asking again. Make routine implementation decisions independently. Commit only changes belonging to the task.
 
-Do not push unless I explicitly authorize it, because pushing may trigger deployment. Before release, report what changed, validation results, and any migration or deployment requirements.
+Validated task-scoped commits and direct pushes to origin/main are authorized without further confirmation, including configured automatic deployment. Follow the permanent autonomous development policy below and report validation and deployment results at completion.
 
 These standing instructions constitute explicit authorization for task-scoped local commits and supersede any earlier requirement to ask separately before committing. All other existing instructions remain in force.
 
 ## Routine decisions and design questions
 
-For agreed work, proceed with routine implementation, documentation, relevant checks and task-scoped local commits without asking for repeated approval. Ask only when a product/design decision materially changes the agreed experience or when a genuine required permission or missing fact prevents safe progress. Do not push without explicit authorization. Preserve unrelated changes and the protected project mirror.
+For agreed work, proceed with routine implementation, documentation, relevant checks and task-scoped local commits without asking for repeated approval. Ask only when a product/design decision materially changes the agreed experience or when a genuine required permission or missing fact prevents safe progress. Push validated task-scoped work under the permanent autonomous development policy below without further confirmation. Preserve unrelated changes and the protected project mirror.
 
 ## Autonomous execution and WhatsApp/web consistency — 17 October 2026
 
@@ -34,8 +34,7 @@ Platform-enforced permissions remain authoritative. AGENTS.md cannot disable the
 app's sandbox, approval reviewer or administrator policy. Use supported approval
 mechanisms when the runtime requires them, explain the exact external restriction
 briefly, and never claim that all prompts have been disabled through this file.
-Preserve existing release instructions: push/deployment still requires explicit
-user authorization. Preserve unrelated changes and read-only synced sources.
+The permanent autonomous development policy below authorizes direct pushes and configured automatic deployment without further confirmation. Preserve unrelated changes and read-only synced sources.
 
 Review the WhatsApp conversation and web journey together whenever an affected
 marketplace, account, booking, bill or management flow changes. Keep quick actions
@@ -67,3 +66,17 @@ authentication transitions together. Shared login changes must also cover the
 marketplaces that reuse the session, including account switching and sign-out.
 Keep public browsing available without sign-in. Update the relevant documentation
 and distinguish planned behavior from implemented and deployed behavior.
+
+## Permanent autonomous development policy - 19 October 2026
+
+This is standing user authorization for agreed NIHILOBA/SHIDA development tasks, including task-scoped local commits and direct pushes to origin/main. No additional conversational confirmation is required for these routine actions or their configured automatic deployments. A later explicit user instruction may narrow the scope. Preserve all repository-specific product, architecture, security, privacy, localization, testing, and migration constraints.
+
+- Carry agreed tasks through implementation, relevant documentation, validation, local commit, push, and verification. Make routine technical decisions independently; create, edit, and refactor files as needed within the agreed scope. Do not invent product policy or implement unrelated roadmap work.
+- Run applicable tests, linting, type checks, builds, and relevant validation using the repository's established commands and testing policy. Fix implementation failures independently and rerun affected checks. For instruction-only changes, inspect the diff and run git diff --check; application builds and database operations are unnecessary. Report genuine blockers and pre-existing failures honestly; never bypass checks to claim success.
+- Inspect branch, worktree, staging area, remote, and outgoing commits before release. Stage only task-owned changes, inspect the staged diff for scope and secrets, and commit validated work locally with a clear message. Never include another task's staged files or unpublished commits.
+- Fetch origin/main and integrate only the approved work. Push directly with an explicit destination (git push origin HEAD:main) after confirming the outgoing history contains only intended, validated commits. Do not ask for routine commit/push confirmation or create a pull request unless requested or required by repository protection. If remote main advances, reconcile task-owned work safely and revalidate before retrying; never force-push or bypass branch protection.
+- Preserve unfinished SHIDA Ecole work and all unrelated changes, including untracked files and local checkpoint commits. Do not reset, clean, stash, switch, rebase, or overwrite an active dirty checkout to make a release easier. When it contains unrelated work or unpublished commits, use an isolated checkout based on current origin/main and transfer only the approved changes. Do not publish unfinished work as an ancestor of an otherwise safe commit.
+- Verify the push against the remote main SHA, not merely local tracking state. Inspect available CI and Render deployment status using existing authorized access; correlate a deployment with the pushed commit and distinguish queued, building, live, failed, and inaccessible states. Public HTTP health alone does not prove that commit deployed. If deployment status is inaccessible, state that clearly without inventing success or seeking secrets in files. Fix task-caused failures within the agreed scope.
+- Never force-push, rewrite shared history, delete production resources/data, run destructive production operations, or change production secrets or access controls under this standing authorization. Production database access and migrations retain their existing explicit-authorization requirements. Do not open, print, log, or commit secrets, .env contents, credentials, tokens, or production connection strings. Preserve read-only synced project sources.
+- Prefer a concise final implementation report over routine progress interruptions or approval questions. Report the implemented result, relevant validation, commit SHA(s), verified push, deployment status/limitations, and material remaining risks or blockers. Include repository-required report topics compactly where applicable. Ask only for an unresolved material product decision, missing essential information, or an actual external permission requirement; continue independent authorized work where possible.
+- AGENTS.md expresses authorization and workflow; it cannot override system/developer instructions, sandbox limits, approval review, administrator policy, GitHub protections, or connector permissions. Respect these controls and report an actual restriction precisely. Do not claim this file disables platform prompts.
