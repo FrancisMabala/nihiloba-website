@@ -1,5 +1,23 @@
 # NIHILOBA website
 
+## Documentation and route scope
+
+This README covers local setup and the production Node-service topology. The
+route list below is an overview, not the full current marketplace inventory;
+the `app/` tree also contains Wenze, Services and Restaurant public/management
+interfaces. [Public marketplace contracts](docs/shida-public-marketplaces.md)
+and [management entry rules](docs/marketplace-management-access-2026-10-16.md)
+describe the consumer boundary. [Browser code login](docs/platform-whatsapp-code-login-2026-10-17.md)
+documents the shared sign-in flow.
+
+Shared policy remains in the backend
+[Platform Foundation Handbook](https://github.com/FrancisMabala/shida-backend/blob/main/docs/platform/platform_foundation_handbook.md)
+and [module contract](https://github.com/FrancisMabala/shida-backend/blob/main/docs/business_modules/module_contract.md).
+Website reports describe this consumer's implementation and dated validation;
+they do not override backend ownership, permissions or module rollout gates.
+Route existence does not prove production acceptance. Pending legal review and
+Education programme decisions below remain unresolved by this documentation batch.
+
 The bilingual English/French production website for NIHILOBA, built with Next.js App Router, TypeScript and Tailwind CSS. It runs as a Render Node web service so public SHIDA marketplace pages can be rendered from the official API.
 
 ## Requirements
