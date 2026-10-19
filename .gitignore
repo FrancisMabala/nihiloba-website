@@ -1,7 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+# Installed dependencies at every depth; retain source manifests and lockfiles.
+node_modules/
 /.s3a-local/
 /.pnp
 .pnp.*
