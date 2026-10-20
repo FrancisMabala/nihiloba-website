@@ -302,3 +302,22 @@ creation. Four-language browser checks cover those hints, category choices,
 keyboard focus and an interrupted first save. Of the initial 25 browser checks,
 17 passed; eight delivery tests had ambiguous status selectors. Those eight
 passed after selecting the exact visible status and explicit Kinshasa time.
+
+### R03o — Request, quotation and booking recovery (21 October, local)
+
+The existing direct-provider editor now freezes the exact submitted action and
+retry key until an uncertain result is recovered. It keeps stale form values,
+requires an explicit refresh before a new action, and warns before leaving a
+draft. Failed reads are distinct from an empty queue. Account/context changes and
+revoked access remove private details; delayed history reads are generation
+checked. Existing quotation, booking, rescheduling and message rules are unchanged.
+The editor uses SHIDA colours and touch-sized controls.
+
+Validation: nine focused command/editor checks passed, plus nine production-browser
+journeys in each frontend. The four-language direct journey now commits a quote,
+loses its response and retries the identical body/key before continuing through
+send, booking approval and messaging. Exact task handoffs and Personal customer
+history remain covered. Both webpack/TypeScript builds and scoped lint passed.
+Initial unit failures were fixture URL/label/timing mismatches; the tests were
+corrected to use the actual paginated route and enabled action. Local only;
+coordinated release and operational gates remain open.
