@@ -1,4 +1,5 @@
 "use client";
+import type {ServiceTaskLink} from "./services-today";
 import {serviceLocalInput,serviceUtcInput,serviceTimestamp,serviceAmount,serviceProposalInput} from "../../lib/service-time";
 import {useWorkDraft,leaveWork} from "@/app/lib/restaurant-work";
 import {providerCopy} from "@/app/lib/services-provider-copy";
@@ -17,7 +18,7 @@ const branchLabel=(row:Row)=>{const branch=row.selected_branch as Row|undefined;
 const transactionRef=(row:Row)=>str(row,'thread_ref')||str(row,'request_ref')||str(row,'reservation_ref');
 const inputDate=serviceLocalInput;
 
-export function ServicesTransactions({base,binding,locale,initialKind='requests',initialReservationRef=null,offeringRef,billAvailable,financeAvailable,onDenied}:{base:string;binding:string;locale:ServicesLocale;initialKind?:Kind;initialReservationRef?:string|null;offeringRef?:string|null;billAvailable:boolean;financeAvailable:boolean;onDenied:()=>void}) {
+export function ServicesTransactions({base,binding,locale,initialKind='requests',initialReservationRef=null,offeringRef,initialTask=null,billAvailable,financeAvailable,onDenied}:{base:string;binding:string;locale:ServicesLocale;initialKind?:Kind;initialReservationRef?:string|null;offeringRef?:string|null;initialTask?:ServiceTaskLink|null;billAvailable:boolean;financeAvailable:boolean;onDenied:()=>void}) {
  const t=useCallback((key:string)=>servicesText(locale,key),[locale]);
  const [kind,setKind]=useState<Kind>(initialKind),[rows,setRows]=useState<Row[]>([]),[offset,setOffset]=useState(0),[more,setMore]=useState(false);
  const [detail,setDetail]=useState<Row|null>(null),[lifecycle,setLifecycle]=useState<Row|null>(null),[quotes,setQuotes]=useState<Row[]>([]),[quote,setQuote]=useState<Row|null>(null),[quoteOffset,setQuoteOffset]=useState(0),[quoteMore,setQuoteMore]=useState(false);
@@ -25,6 +26,8 @@ export function ServicesTransactions({base,binding,locale,initialKind='requests'
  const replay=useRef<{fingerprint:string;key:string}|null>(null);
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[form,setForm]=useState<string|null>(null),[fields,setFields]=useState<Record<string,string>>({});
  useWorkDraft(form!==null,providerCopy[locale].leave);
+ const activeDraft=useRef<{path:string;revision:unknown}|null>(null);
+ useEffect(()=>{activeDraft.current=form&&detail?{path:quote?`quotes/${str(quote,'quote_ref')}`:`${kind}/${transactionRef(detail)}`,revision:quote?.revision??detail.revision}:null;},[form,detail,quote,kind]);
  const pendingBooking=useRef<string|null>(initialReservationRef);
  const pendingLink=useRef<{kind:Kind;ref:string;quoteRef?:string}|null>(null);
  const generation=useRef(0),alive=useRef(false),denied=useRef(onDenied);
@@ -46,15 +49,16 @@ export function ServicesTransactions({base,binding,locale,initialKind='requests'
  const load=useCallback(async()=>{
   const ticket=++generation.current;clear();setBusy(true);
   try{const value=await call(`${kind}${kind==='messages'?'':`?offset=${offset}`}`);if(alive.current&&ticket===generation.current){setRows(list(value,kind==='messages'?'threads':kind));setMore(kind==='reservations'?list(value,kind).length===100:!!value.has_more);}
-   if(kind==='reservations'&&pendingBooking.current){const target=pendingBooking.current;pendingBooking.current=null;const booking=await call(`reservations/${target}`);const life=await call(`reservations/${target}/lifecycle`);if(alive.current&&ticket===generation.current){setDetail(booking);setLifecycle(life);}}
-   if(pendingLink.current?.kind===kind&&alive.current){const target=pendingLink.current;pendingLink.current=null;
+   if(kind==='reservations'&&pendingBooking.current&&ticket===generation.current){const target=pendingBooking.current;pendingBooking.current=null;const booking=await call(`reservations/${target}`);const life=await call(`reservations/${target}/lifecycle`);if(alive.current&&ticket===generation.current){setDetail(booking);setLifecycle(life);}}
+   if(pendingLink.current?.kind===kind&&alive.current&&ticket===generation.current){const target=pendingLink.current;pendingLink.current=null;
     const detail=await call(`${kind}/${target.ref}`);const lifecycle=kind==='reservations'?await call(`reservations/${target.ref}/lifecycle`):null;
     const history=kind==='requests'?await call(`requests/${target.ref}/quotes`):null;
     const selectedQuote=target.quoteRef?await call(`quotes/${target.quoteRef}`):null;
     if(alive.current&&ticket===generation.current){setDetail(detail);setLifecycle(lifecycle);setQuotes(history?list(history,'quotes'):[]);setQuoteOffset(0);setQuoteMore(!!history?.has_more);setQuote(selectedQuote);setMessageOffset(0);}}}
   catch(e){if(alive.current&&ticket===generation.current)error(e);}finally{if(alive.current&&ticket===generation.current)setBusy(false);}
  },[call,clear,error,kind,offset]);
- useEffect(()=>{let mounted=true;alive.current=true;const abort=new AbortController();controller.current=abort;queueMicrotask(()=>{if(mounted)void load();});const focus=()=>void load();window.addEventListener('focus',focus);return()=>{mounted=false;alive.current=false;abort.abort();window.removeEventListener('focus',focus);};},[load]);
+ useEffect(()=>{let mounted=true;alive.current=true;const abort=new AbortController();controller.current=abort;queueMicrotask(()=>{if(mounted)void load();});const focus=()=>{const draft=activeDraft.current;if(!draft){void load();return;}const ticket=generation.current;void call(draft.path).then(value=>{if(alive.current&&ticket===generation.current&&value.revision!==draft.revision)setNotice(t('stale'));}).catch(value=>{if(alive.current&&ticket===generation.current)error(value);});};window.addEventListener('focus',focus);return()=>{mounted=false;alive.current=false;abort.abort();window.removeEventListener('focus',focus);};},[load,call,error,t]);
+ useEffect(()=>{let active=true;queueMicrotask(()=>{if(!active||!initialTask)return;if(form&&!window.confirm(t('leave_draft')))return;pendingLink.current=initialTask.ref?initialTask:null;if(kind===initialTask.kind&&offset===0)void load();else{setKind(initialTask.kind);setOffset(0);}});return()=>{active=false;};},[initialTask]); // eslint-disable-line react-hooks/exhaustive-deps
  async function open(row:Row){
   const ticket=++generation.current;setBusy(true);setDetail(null);setLifecycle(null);setQuote(null);setQuotes([]);setForm(null);setNotice('');setFields({});setMessageOffset(0);
   try{const value=await call(`${kind}/${transactionRef(row)}`);let extra:Row|null=null;

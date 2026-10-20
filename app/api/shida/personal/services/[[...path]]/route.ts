@@ -8,7 +8,7 @@ type Context={params:Promise<{path?:string[]}>};
 const fail=(status:number,detail="service_unavailable")=>Response.json({detail},{status,headers:PRIVATE_HEADERS});
 function allowed(parts:string[],method:string){
  if(parts.length===0)return method==="GET"||method==="POST";
- if(parts.length===1&&["capabilities","calendar"].includes(parts[0]))return method==="GET";
+ if(parts.length===1&&["capabilities","calendar","today"].includes(parts[0]))return method==="GET";
  if(!/^SVC_[A-Za-z0-9_-]+$/.test(parts[0]))return false;
  if(parts.length===1)return ["GET","PATCH","DELETE"].includes(method);
  if(parts.length===2&&parts[1]==="schedule")return ["GET","PATCH"].includes(method);
@@ -25,7 +25,7 @@ async function handle(request:Request,context:Context){
  const lifecycle=/^SVC_[A-Za-z0-9_-]+$/.test(parts[0]??"")&&(parts.length===1&&request.method==="DELETE"||parts.length===2&&parts[1]==="reactivate"&&request.method==="POST");
  const lifecycleQuery=lifecycle&&[...query].length===1&&/^[1-9][0-9]{0,8}$/.test(query.get("expected_revision")??"");
  const calendar=parts.length===1&&parts[0]==="calendar"&&request.method==="GET";
- const localized=parts.length===2&&["reviews","share"].includes(parts[1])&&request.method==="GET";
+ const localized=(parts.length===1&&parts[0]==="today"||parts.length===2&&["reviews","share"].includes(parts[1]))&&request.method==="GET";
  const unique=[...query.keys()].length===new Set(query.keys()).size;
  const calendarQuery=calendar&&unique&&[...query.keys()].every(key=>["date_from","date_to","page","offering_ref"].includes(key))&&/^\d{4}-\d{2}-\d{2}$/.test(query.get("date_from")??"")&&/^\d{4}-\d{2}-\d{2}$/.test(query.get("date_to")??"")&&(!query.has("page")||/^[1-9][0-9]{0,3}$/.test(query.get("page")!))&&(!query.has("offering_ref")||/^SVC_[A-Za-z0-9_-]+$/.test(query.get("offering_ref")!));
  const validQuery=calendar?calendarQuery:lifecycle?lifecycleQuery:localized?(![...query].length||[...query].length===1&&["fr","en","ln","sw"].includes(query.get("language")??"")):![...query].length;

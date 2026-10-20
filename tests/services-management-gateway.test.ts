@@ -24,6 +24,13 @@ it('routes exact Personal calendar, hours and QR reads and authenticated schedul
 });
 
 describe('Personal Services gateway',()=>{
+ it('keeps Today Personal and preserves only an allowed language',async()=>{
+  expect((await GET(request('today?language=sw'),context('today'))).status).toBe(200);
+  expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/service-profiles/today?language=sw');
+  fetcher.mockClear();
+  expect((await GET(request('today?organization_ref=BUS_other'),context('today'))).status).toBe(404);
+  expect(fetcher).not.toHaveBeenCalled();
+ });
  it('routes bounded aggregate reports and private CSV without Organization selectors',async()=>{
   const path='transactions/reports/operational.csv';
   const query='?start_date=2026-10-01&end_date=2026-10-15';

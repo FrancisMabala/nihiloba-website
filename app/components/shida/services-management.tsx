@@ -1,4 +1,5 @@
 "use client";
+import {ServicesToday,type ServiceTaskLink} from "./services-today";
 import {serviceCategoryExperience} from "../../lib/services-category-experience";
 import Link from "next/link";
 import {ServicesCalendar} from "./services-calendar";
@@ -47,6 +48,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
  const lang:Locale = locale in words ? locale as Locale : "fr", t=words[lang], ui=providerCopy[lang],lc=lifecycleCopy[lang],design=workspaceCopy[lang];
  const [view,setView]=useState<ProviderView>(offeringRef?"services":"overview"),[visited,setVisited]=useState<Set<ProviderView>>(new Set(offeringRef?["services"]:["overview"]));
  const [workVisit,setWorkVisit]=useState(0);
+ const [todayTask,setTodayTask]=useState<ServiceTaskLink|null>(null);
  const [calendarBooking,setCalendarBooking]=useState<string|null>(null);
  const [initialKind,setInitialKind]=useState<"requests"|"reservations"|"messages">("requests");
  const [loading,setLoading]=useState(true),[loadFailed,setLoadFailed]=useState(false);
@@ -57,7 +59,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
  useEffect(()=>{const value=new URLSearchParams(window.location.search).get("view");if(value&&["overview","services","calendar","work","finance","reports","templates","settings"].includes(value)){setView(value as ProviderView);setVisited(new Set([value as ProviderView]));}},[]);
  function navigate(next:ProviderView,kind?:"requests"|"reservations"|"messages"){
   if(kind&&!leaveWork())return;
-  if(kind){setInitialKind(kind);setWorkVisit(value=>value+1);}setView(next);setVisited(old=>new Set([...old,next]));
+  if(kind){setTodayTask(null);setInitialKind(kind);setWorkVisit(value=>value+1);}setView(next);setVisited(old=>new Set([...old,next]));
   const url=new URL(window.location.href);url.searchParams.set("view",next);window.history.replaceState(null,"",url);
  }
  function addService(){navigate("services");requestAnimationFrame(()=>{const disclosure=createForm.current?.closest("details");if(disclosure)disclosure.open=true;createForm.current?.scrollIntoView({block:"center",behavior:"smooth"});createForm.current?.querySelector("input")?.focus();});}
@@ -142,6 +144,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
 
    {message&&<p className="svc-notice" role="status">{message}</p>}{pending&&!busy&&<button type="button" onClick={()=>void runOperation(pending)}>{ui.retry}</button>}
    {selectedView==="calendar"&&<ServicesCalendar initialService={offeringRef} base={base} binding={binding} locale={lang} offerings={rows} onSaved={()=>void refresh()} onOpen={ref=>{setCalendarBooking(ref);navigate("work","reservations");}} onDenied={()=>{setRows([]);setCapabilities([]);setBlocked(true);}}/>}
+   {selectedView==="overview"&&can("reservations")&&can("messages")&&<ServicesToday base={base} binding={binding} locale={lang} onDenied={()=>{setCapabilities([]);setRows([]);setBlocked(true);}} onAll={kind=>navigate("work",kind)} onOpen={task=>{if(!leaveWork())return;setTodayTask(task);setInitialKind(task.kind);setCalendarBooking(null);setWorkVisit(value=>value+1);navigate("work");}}/>}
    {selectedView==="overview"&&<ServicesProviderOverview locale={lang} rows={rows.filter(row=>row.is_active==="yes")} capabilities={capabilities} onNavigate={navigate} onCreate={addService}/>}
    {visited.has("finance")&&<div className="svc-panel-stack" hidden={selectedView!=="finance"}>
     {can("basic_totals")&&<ServicesTotalsPanel key={costRef??"all"} base={base} binding={binding} locale={lang} initialReservationRef={costRef}/>}
@@ -153,7 +156,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
     {can("bill_templates")&&<ServicesTemplateLibrary base={base} binding={binding} locale={lang} kind="bill"/>}
    </div>}
    {visited.has("settings")&&can("bills")&&<div hidden={selectedView!=="settings"}><ServicesBillBranding base={base} binding={binding} locale={lang} onDenied={()=>{setRows([]);setSelected(null);setCapabilities([]);setBlocked(true);}}/></div>}
-   {visited.has("work")&&can("reservations")&&can("messages")&&<div className="svc-panel-stack" hidden={selectedView!=="work"}><ServicesTransactions key={workVisit} base={base} binding={binding} locale={lang} initialKind={initialKind} initialReservationRef={calendarBooking} offeringRef={offeringRef} billAvailable={can("bills")} financeAvailable={can("basic_totals")} onDenied={()=>{setRows([]);setSelected(null);setReviews([]);setCapabilities([]);setBlocked(true);}}/></div>}
+   {visited.has("work")&&can("reservations")&&can("messages")&&<div className="svc-panel-stack" hidden={selectedView!=="work"}><ServicesTransactions key={workVisit} base={base} binding={binding} locale={lang} initialKind={initialKind} initialTask={todayTask} initialReservationRef={calendarBooking} offeringRef={offeringRef} billAvailable={can("bills")} financeAvailable={can("basic_totals")} onDenied={()=>{setRows([]);setSelected(null);setReviews([]);setCapabilities([]);setBlocked(true);}}/></div>}
    <div hidden={selectedView!=="services"}>
   {can("profile")&&<fieldset disabled={busy||pending!==null} className="svc-catalog">
    <div className="svc-service-list"><h2>{ui.allServices}</h2><label>{ui.services}<select value={showArchived?"archived":"active"} onChange={event=>{if(!leaveWork())return;const archived=event.target.value==="archived";setShowArchived(archived);setSelected(rows.find(row=>archived?row.is_active!=="yes":row.is_active==="yes")?.public_ref??null);}}><option value="active">{lc.active}</option><option value="archived">{lc.archivedServices}</option></select></label>{visibleRows.length===0&&<p>{t.empty}</p>}{visibleRows.map(row=><button type="button" key={row.public_ref} onClick={()=>{if(leaveWork())setSelected(row.public_ref);}} aria-pressed={row.public_ref===selected} style={{display:"block",width:"100%",textAlign:"left",padding:12,marginBottom:6}}>{row.service_name}<small style={{display:"block"}}>{row.is_active!=="yes"?lc.archived:row.publication_origin==="pilot"?t.published:row.publication_origin==="historical"?ui.history:t.private}</small></button>)}

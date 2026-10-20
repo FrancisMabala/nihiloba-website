@@ -91,3 +91,35 @@ and provider authorization, Owner-only money, correction history and recorded
 receipt versus verified-payment distinctions remain unchanged.
 Today queues, remaining panel language/recovery, saved briefs, documents,
 open requests, proposals and atomic award remain unfinished.
+
+## R03b — Today queues and exact task recovery
+
+Personal providers and Organization managers now start with bounded Today queues:
+requests still needing a reply, pending bookings, work over the next seven local
+days, and unread conversations. The endpoint reuses existing exact-provider
+checks and redacted projections; it is not an analytics count or booking engine.
+Closed and expired requests are filtered before pagination. Workers retain their
+separate permitted jobs/schedule experience. Queue links open the exact existing
+request, booking or conversation even when it is absent from the first list page.
+
+Focus refresh preserves a quotation/action draft while rechecking its current
+access and revision. Revocation clears private state; stale revisions show the
+existing recovery message. A generation guard prevents an older list response
+from consuming a newer task handoff. This does not claim general offline draft
+persistence or synchronized WhatsApp drafts.
+
+Validation: 103 focused backend tests (queues, ownership, revocation, direct
+requests, reservations and messages), 17 Website gateway tests, 27 Business
+Today/navigation/gateway/handoff tests, and 12 production-browser scenarios per
+frontend passed. Browser checks include EN/FR/LN/SW, 320px layout, unavailable
+queue retry, exact task opening, access removal and existing transaction/history
+journeys. Production builds, TypeScript, scoped lint and diff checks passed.
+Missing template responses in new browser fixtures were corrected; old
+transaction tests now explicitly navigate to Requests & jobs after the default
+landing changed to Today. No tests were removed, skipped or weakened.
+
+No schema, migration, dependency, environment variable, worker, Meta template or
+production database change. No change to WhatsApp commands, booking lifecycle,
+financial authority or document audience. Remaining redesign items, including
+saved briefs, PDF processing, open requests and competing proposals, remain
+unreleased and are tracked separately.

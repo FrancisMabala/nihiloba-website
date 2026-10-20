@@ -171,3 +171,16 @@
 .svc-secondary-tools{border-top:1px solid var(--svc-border,#d8e1d9);margin-top:20px;padding-top:12px}
 .svc-secondary-tools summary{padding:12px;min-height:44px;cursor:pointer;color:var(--svc-ink,#203e32)}
 .svc-secondary-tools summary:focus-visible{outline:3px solid #95732b;outline-offset:2px}
+
+
+.svc-today{margin-bottom:2rem}
+.svc-today header{margin-bottom:1rem}
+.svc-today-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.svc-today-card{padding:1.25rem;border:1px solid #dce1d5;border-radius:16px;background:#fffefa;overflow-wrap:anywhere}
+.svc-today-card h3{margin-top:0}
+.svc-today-card ul{list-style:none;padding:0}
+.svc-today-card li{padding:.8rem 0;border-bottom:1px solid #e4e6dd}
+.svc-today-card p{margin:.35rem 0;color:#52645b}
+.svc-today button{min-height:44px;padding:.6rem 1rem;border:1px solid #c6d2c7;border-radius:8px;background:#fffefa;color:#1e4034;cursor:pointer}
+.svc-today button:focus-visible{outline:3px solid #9a8037;outline-offset:3px}
+@media(max-width:700px){.svc-today-grid{grid-template-columns:minmax(0,1fr)}}
