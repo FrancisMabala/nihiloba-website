@@ -1,3 +1,4 @@
+import {servicesText} from "../../app/components/shida/services-transaction-copy";
 import {providerCopy} from "../../app/lib/services-provider-copy";
 import {test,expect} from '@playwright/test';
 
@@ -37,8 +38,12 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`IMP-16A Personal mobile
   return route.fulfill({json:{}});
  });
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=work`);
- const history=page.getByRole('region',{name:labels[locale].history});
- await history.getByRole('combobox').selectOption('RSV_one');
+ const workspace=page.locator('.services-transactions');
+ await expect(workspace.locator('.svc-customer-history')).toHaveCount(0);
+ await workspace.getByRole('button',{name:servicesText(locale,'reservations'),exact:true}).click();
+ await workspace.locator('.transaction-row').first().click();
+ const history=workspace.locator('.svc-customer-history');
+ await history.locator('summary').click();
  await expect(history.getByRole('article')).toHaveCount(2);
  await history.getByRole('button',{name:labels[locale].costs}).first().click();
  const totals=page.getByRole('region',{name:locale==='en'?'Services totals':locale==='fr'?'Totaux Services':locale==='ln'?'Mitango ya Services':'Jumla za Huduma'});

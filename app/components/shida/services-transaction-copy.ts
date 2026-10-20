@@ -1,6 +1,8 @@
 export type ServicesLocale = 'en'|'fr'|'ln'|'sw';
 // Same channel vocabulary in both private Services areas.
 const copy:Record<string,[string,string,string,string]> = {
+ invalid_time_amount:["Check the amount, date and time.", "Vérifiez le montant, la date et l’heure.", "Tala motuya, mokolo mpe ngonga.", "Kagua kiasi, tarehe na saa."],
+ overnight_interval:["Check the amount and times. For this booking, choose a time range within one day from 01:00 Kinshasa time.", "Vérifiez le montant et les horaires. Pour cette réservation, choisissez une plage sur une journée à partir de 01 h, heure de Kinshasa.", "Tala motuya mpe ngonga. Mpo na rendez-vous oyo, pona ngonga ya mokolo moko kobanda 01:00 ya Kinshasa.", "Kagua kiasi na nyakati. Kwa nafasi hii, chagua muda ndani ya siku moja kuanzia saa 01:00 za Kinshasa."],
  reply_saved:["Saved in this conversation. WhatsApp delivery may follow.", "Enregistré dans cette conversation. L’envoi WhatsApp peut suivre.", "Ebombami na lisolo oyo. Nsango ya WhatsApp ekoki koya na nsima.", "Imehifadhiwa kwenye mazungumzo haya. Ujumbe wa WhatsApp unaweza kufuata."],
  other_reason:['Another reason','Autre motif','Ntina mosusu','Sababu nyingine'],
  workspace:["Customer requests", "Demandes clients", "Masengi ya bakiliya", "Maombi ya wateja"],
@@ -26,8 +28,8 @@ const copy:Record<string,[string,string,string,string]> = {
  propose:['Propose another time','Proposer un autre horaire','Pesa ngonga mosusu','Pendekeza muda mwingine'],
  confirm:['Confirm action','Confirmer l’action','Ndima likambo','Thibitisha hatua'],reason:['Reason','Motif','Ntina','Sababu'],description:['Details','Détails','Makambo','Maelezo'],
  amount:['Amount','Montant','Motuya','Kiasi'],currency:['Currency','Devise','Mbongo','Sarafu'],duration:['Duration (minutes)','Durée (minutes)','Ntango (miniti)','Muda (dakika)'],
- date:['Date','Date','Mokolo','Tarehe'],start_time:['Start time (UTC)','Début (UTC)','Ebandeli (UTC)','Mwanzo (UTC)'],end_time:['End time (UTC)','Fin (UTC)','Nsuka (UTC)','Mwisho (UTC)'],
- scheduled:['Scheduled time (UTC)','Horaire prévu (UTC)','Ngonga ebongisami (UTC)','Muda uliopangwa (UTC)'],expires:['Valid until (UTC)','Valable jusqu’au (UTC)','Esuka na (UTC)','Halali hadi (UTC)'],terms:['Terms','Conditions','Mibeko','Masharti'],
+ date:['Date','Date','Mokolo','Tarehe'],start_time:['Start time (Kinshasa)','Début (Kinshasa)','Ebandeli (Kinshasa)','Mwanzo (Kinshasa)'],end_time:['End time (Kinshasa)','Fin (Kinshasa)','Nsuka (Kinshasa)','Mwisho (Kinshasa)'],
+ scheduled:['Scheduled time (Kinshasa)','Horaire prévu (Kinshasa)','Ngonga ebongisami (Kinshasa)','Muda uliopangwa (Kinshasa)'],expires:['Valid until (Kinshasa)','Valable jusqu’au (Kinshasa)','Esuka na (Kinshasa)','Halali hadi (Kinshasa)'],terms:['Terms','Conditions','Mibeko','Masharti'],
  schedule_note:["Choose a start time and how long the work will take. The time must still be available when the customer accepts.", "Indiquez le début et la durée du travail. Le créneau doit encore être libre quand le client accepte.", "Pona ngonga ya ebandeli mpe ntango ya mosala. Ngonga esengeli kozala polele ntango kiliya andimi.", "Chagua muda wa kuanza na muda wa kazi. Nafasi lazima iwe wazi mteja anapokubali."],
  pending_note:['This booking awaits provider approval.','Cette réservation attend l’accord du prestataire.','Rendez-vous oyo ezali kozela ndima ya mosali.','Nafasi hii inasubiri idhini ya mtoa huduma.'],
  reply:["Reply", "Répondre", "Yanola", "Jibu"],body:['Message','Message','Nsango','Ujumbe'],close:['Close conversation','Fermer la conversation','Kanga masolo','Funga mazungumzo'],reopen:['Request reopening','Demander la réouverture','Senga kofungola lisusu','Omba kufungua tena'],reopen_accept:['Accept reopening','Accepter la réouverture','Ndima kofungola lisusu','Kubali kufungua tena'],reopen_decline:['Decline reopening','Refuser la réouverture','Boya kofungola lisusu','Kataa kufungua tena'],

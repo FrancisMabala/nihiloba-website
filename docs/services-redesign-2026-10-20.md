@@ -55,3 +55,39 @@ corrected before the successful rerun. No test removed or skipped.
 
 No schema, dependency, configuration, worker or production-data changes.
 No native-language comprehension or physical-device validation claim.
+
+## R03a — local entry, money choices and contextual customer history
+
+Customer history now opens inside the selected booking and loads only on demand.
+The existing exact-provider history endpoint and financial permissions remain
+authoritative. Access denial clears private history; navigation retains the
+existing booking, quote, conversation, bill and job-cost destinations.
+
+Quote inputs and reschedule proposals display Kinshasa time and convert back to
+the existing UTC command format. Explicit appointment timezone is preserved.
+Legacy one-UTC-day reschedule boundaries remain enforced, with a visible recovery
+message rather than silently changing the scheduling policy. Timestamp displays
+identify Kinshasa; historical free-text requested dates remain unchanged.
+
+Money forms accept a decimal point or comma without rounding or exchanging CDF
+and USD. Booking selectors show customer/service/date labels and offer older
+pages. An obsolete page response cannot append another owner's jobs after a
+context change. Totals use inclusive From/Through dates, including a single day,
+and translate the final day into the existing exclusive backend boundary.
+Financial effective dates remain calendar dates. Reports retain their existing
+period semantics pending the separate report review.
+
+Validation: Website 24 focused unit tests and nine production-browser scenarios;
+Business 14 focused unit tests and nine production-browser scenarios, including
+four-language customer history, local quote round trips, decimal entry and
+financial access revocation. Both production builds/TypeScript and scoped lint
+passed. Pagination context-change protection has a focused regression test.
+No test removed or skipped. The old standalone history chooser tests now open
+history from a real selected booking and retain access/link assertions.
+
+No backend runtime, database, migration, dependency, environment variable,
+notification worker or Meta template changes in this batch. Existing customer
+and provider authorization, Owner-only money, correction history and recorded
+receipt versus verified-payment distinctions remain unchanged.
+Today queues, remaining panel language/recovery, saved briefs, documents,
+open requests, proposals and atomic award remain unfinished.

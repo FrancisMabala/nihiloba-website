@@ -25,7 +25,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`provider transaction jo
    if(request.method()!=='GET'){
     const body=request.postDataJSON();writes.push({path,body});
     if(tx==='requests/SWR_one/review'){expect(body.revision).toBe(parent.revision);parent={...parent,status:'IN_REVIEW',revision:2,actions:['decline']};}
-    if(tx==='quotes/SQT_private'){expect(body.revision).toBe(quote.revision);quote={...quote,...body,revision:quote.revision+1};}
+    if(tx==='quotes/SQT_private'){expect(body.revision).toBe(quote.revision);expect(body.amount).toBe('75.50');expect(body.proposed_start).toBe('2030-01-16T10:00:00.000Z');quote={...quote,...body,revision:quote.revision+1};}
     if(tx==='quotes/SQT_private/send'){expect(body.revision).toBe(quote.revision);quote={...quote,status:'SENT',revision:quote.revision+1,actions:['withdraw']};parent={...parent,status:'QUOTED',revision:3,actions:[]};}
     if(tx==='reservations/RSV_one/decision'){expect(body.revision).toBe(booking.revision);booking={...booking,status:'confirmed',revision:2,can_respond:false};}
     if(tx==='messages/MSG_one/actions'){expect(body.revision).toBe(thread.revision);thread={...thread,revision:'b'.repeat(64),messages:[...thread.messages,{sender:'you',body:body.body,created_at:'2026-10-13T11:00:00Z'}]};}
@@ -49,7 +49,8 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`provider transaction jo
  await workspace.getByRole('button',{name:new RegExp(t('quote'))}).click();
  await expect(workspace.getByText(t('private'))).toBeVisible();
  await workspace.getByRole('button',{name:t('edit'),exact:true}).click();
- await workspace.getByLabel(t('amount'),{exact:true}).fill('75.00');
+ await expect(workspace.getByLabel(t('scheduled'),{exact:true})).toHaveValue('2030-01-16T11:00');
+ await workspace.getByLabel(t('amount'),{exact:true}).fill('75,50');
  await workspace.getByRole('button',{name:t('save'),exact:true}).click();
  await workspace.getByRole('button',{name:new RegExp(t('quote'))}).click();
  await workspace.getByRole('button',{name:t('send'),exact:true}).click();

@@ -1,4 +1,5 @@
 "use client";
+import {serviceLocalInput,serviceUtcInput,serviceTimestamp,serviceAmount,serviceProposalInput} from "../../lib/service-time";
 import {useWorkDraft,leaveWork} from "@/app/lib/restaurant-work";
 import {providerCopy} from "@/app/lib/services-provider-copy";
 import {useCallback,useEffect,useRef,useState} from 'react';
@@ -14,7 +15,7 @@ const list=(row:Row,key:string)=>Array.isArray(row[key])?row[key] as Row[]:[];
 const actions=(row:Row)=>Array.isArray(row.actions)?row.actions as string[]:[];
 const branchLabel=(row:Row)=>{const branch=row.selected_branch as Row|undefined;return branch?String(branch.name??'')+' · '+String(branch.broad_area??''):'';};
 const transactionRef=(row:Row)=>str(row,'thread_ref')||str(row,'request_ref')||str(row,'reservation_ref');
-const inputDate=(value:string)=>value?value.replace(/Z$/,'').slice(0,16):'';
+const inputDate=serviceLocalInput;
 
 export function ServicesTransactions({base,binding,locale,initialKind='requests',initialReservationRef=null,offeringRef,billAvailable,financeAvailable,onDenied}:{base:string;binding:string;locale:ServicesLocale;initialKind?:Kind;initialReservationRef?:string|null;offeringRef?:string|null;billAvailable:boolean;financeAvailable:boolean;onDenied:()=>void}) {
  const t=useCallback((key:string)=>servicesText(locale,key),[locale]);
@@ -41,6 +42,7 @@ export function ServicesTransactions({base,binding,locale,initialKind='requests'
   if(['401','403','404'].includes(status)){clear();denied.current();}
   else setNotice(t(status==='409'?'stale':'failed'));
  },[clear,t]);
+ const clearHistoryAccess=useCallback(()=>{clear();denied.current();},[clear]);
  const load=useCallback(async()=>{
   const ticket=++generation.current;clear();setBusy(true);
   try{const value=await call(`${kind}${kind==='messages'?'':`?offset=${offset}`}`);if(alive.current&&ticket===generation.current){setRows(list(value,kind==='messages'?'threads':kind));setMore(kind==='reservations'?list(value,kind).length===100:!!value.has_more);}
@@ -66,16 +68,18 @@ export function ServicesTransactions({base,binding,locale,initialKind='requests'
  async function openQuote(row:Row){setBusy(true);setForm(null);try{const value=await call(`quotes/${str(row,'quote_ref')}`);if(alive.current)setQuote(value);}catch(e){if(alive.current)error(e);}finally{if(alive.current)setBusy(false);}}
  function begin(action:string){replay.current=null;setForm(action);setFields(action==='edit'&&quote?{amount:str(quote,'amount'),currency:str(quote,'currency'),pricing_description:str(quote,'pricing_description'),duration_minutes:String(quote.duration_minutes??''),proposed_start:inputDate(str(quote,'proposed_start')),proposed_end:inputDate(str(quote,'proposed_end')),terms:str(quote,'terms'),expires_at:inputDate(str(quote,'expires_at'))}:{});}
  async function submit(event:React.FormEvent){
-  event.preventDefault();if(!detail||!form||busy)return;setBusy(true);setNotice('');
+  event.preventDefault();if(!detail||!form||busy)return;
+  try{if(form==='create_quote'||form==='edit'){serviceAmount(fields.amount??'');serviceUtcInput(fields.proposed_start??'');if(fields.proposed_end)serviceUtcInput(fields.proposed_end);if(fields.expires_at)serviceUtcInput(fields.expires_at);}if(form==='propose')serviceProposalInput(fields.date,fields.start_time,fields.end_time,str((scheduling.schedule??{}) as Row,'timezone'));}catch(error){setNotice(t(error instanceof Error&&error.message==='unsupported_overnight_interval'?'overnight_interval':'invalid_time_amount'));return;}
+  setBusy(true);setNotice('');
   const current=detail,action=form,epoch=generation.current;const fingerprint=JSON.stringify([kind,transactionRef(current),current.revision,quote?.revision,action,fields]);if(replay.current?.fingerprint!==fingerprint)replay.current={fingerprint,key:crypto.randomUUID()};const key=replay.current.key;let path=`${kind}/${transactionRef(current)}`,method='POST';let body:Row={revision:current.revision,idempotency_key:key};
   if(action==='create_quote'||action==='edit'){
    path=action==='edit'?`quotes/${str(quote!,'quote_ref')}`:`requests/${transactionRef(current)}/quotes`;method=action==='edit'?'PATCH':'POST';body.revision=action==='edit'?quote!.revision:current.revision;
-   body={...body,amount:fields.amount,currency:fields.currency||'USD',duration_minutes:Number(fields.duration_minutes),pricing_description:fields.pricing_description||null,terms:fields.terms||null,proposed_start:fields.proposed_start+':00Z',proposed_end:fields.proposed_end?fields.proposed_end+':00Z':null,expires_at:fields.expires_at?fields.expires_at+':00Z':null};
+   body={...body,amount:serviceAmount(fields.amount),currency:fields.currency||'USD',duration_minutes:Number(fields.duration_minutes),pricing_description:fields.pricing_description||null,terms:fields.terms||null,proposed_start:serviceUtcInput(fields.proposed_start),proposed_end:fields.proposed_end?serviceUtcInput(fields.proposed_end):null,expires_at:fields.expires_at?serviceUtcInput(fields.expires_at):null};
   }else if(['send','withdraw'].includes(action)&&kind==='requests'){path=`quotes/${str(quote!,'quote_ref')}/${action}`;body.revision=quote!.revision;}
   else if(kind==='requests'){path+=`/${action}`;if(action==='decline')body.reason_code=fields.reason;}
   else if(kind==='messages'){path+='/actions';body={...body,action:action==='reply'?'send':action,body:fields.body||''};}
   else if(action==='accept'||action==='decline'){path+='/decision';body={...body,decision:action,...(action==='decline'?{reason_code:fields.reason,reason_text:fields.description||t(fields.reason)}:{})};}
-  else if(action==='propose'){path+='/reschedule-proposals';body={...body,revision:lifecycle!.revision,proposed_date:fields.date,proposed_start_time:fields.start_time,proposed_end_time:fields.end_time||null,...(appointmentZone?{proposed_timezone:'Africa/Kinshasa'}:{}),description:fields.description||''};}
+  else if(action==='propose'){path+='/reschedule-proposals';body={...body,revision:lifecycle!.revision,...serviceProposalInput(fields.date,fields.start_time,fields.end_time,str((scheduling.schedule??{}) as Row,'timezone')),description:fields.description||''};}
   else if(action==='reschedule_accept'||action==='reschedule_reject'){const scheduling=lifecycle?.rescheduling as Row;const proposal=scheduling.proposal as Row;path+=`/reschedule-proposals/${str(proposal,'proposal_ref')}/decision`;body={...body,revision:lifecycle!.revision,proposal_revision:proposal.revision,decision:action.replace('reschedule_','')};}
   else{path+=`/lifecycle/${action}`;body={...body,revision:lifecycle!.revision,reason_code:fields.reason||'',description:fields.description||''};}
   try{await call(path,method,body);if(alive.current&&epoch===generation.current){replay.current=null;await open(current);setNotice(t(action==='reply'?'reply_saved':'saved'));}}
@@ -85,14 +89,12 @@ export function ServicesTransactions({base,binding,locale,initialKind='requests'
  const pageSize=kind==='reservations'?100:20;
  const visibleRows=offeringRef? [...rows].sort((a,b)=>Number(b.offering_ref===offeringRef)-Number(a.offering_ref===offeringRef)):rows;
  const scheduling=(lifecycle?.rescheduling??{}) as Row,proposal=scheduling.proposal as Row|undefined;
- const appointmentZone=str((scheduling.schedule??{}) as Row,'timezone')==='Africa/Kinshasa';
  const title=(row:Row)=>str(row,'offering')||str(row,'service_name')||str(row,'title');
- const stamp=(value:unknown,zone='UTC')=>typeof value==='string'&&Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{dateStyle:'medium',timeStyle:'short',timeZone:zone}).format(new Date(value)):'';
- function field(name:string,label:string,type='text',required=false){return <label key={name}>{form==='propose'&&appointmentZone?t(label).replace('(UTC)','(Kinshasa)'):t(label)}<input type={type} required={required} min={type==='number'?1:undefined} maxLength={2000} value={fields[name]??''} onChange={e=>setFields(old=>({...old,[name]:e.target.value}))}/></label>;}
+ const stamp=(value:unknown)=>typeof value==='string'?serviceTimestamp(value,locale):'';
+ function field(name:string,label:string,type='text',required=false){return <label key={name}>{t(label)}<input type={type} inputMode={name==='amount'?'decimal':undefined} required={required} min={type==='number'?1:undefined} maxLength={2000} value={fields[name]??''} onChange={e=>setFields(old=>({...old,[name]:e.target.value}))}/></label>;}
  const quoteForm=form==='edit'||form==='create_quote';
  const reasonChoices=form==='decline'?kind==='requests'?['NOT_AVAILABLE','OUTSIDE_SCOPE','CANNOT_SERVE_LOCATION','INSUFFICIENT_INFORMATION','OTHER']:['provider_unavailable','slot_unavailable','request_mismatch','area_too_far','insufficient_information','other']:form==='cancel'?['UNAVAILABLE','EMERGENCY','SCHEDULING_ISSUE','CANNOT_PERFORM_SERVICE','OTHER']:form==='dispute'?(lifecycle?.dispute_reasons as string[]??[]):[];
  return <section className="services-transactions" aria-label={t('workspace')}>
-  <ServicesCustomerHistory base={base} binding={binding} locale={locale} financeAvailable={financeAvailable} onOpen={(target,ref,quoteRef)=>{pendingLink.current={kind:target,ref,quoteRef};if(kind===target&&offset===0)void load();else{setKind(target);setOffset(0);}}}/>
   <h2>{t('workspace')}</h2><fieldset disabled={busy}><div className="transaction-actions">{(['requests','reservations','messages'] as Kind[]).map(value=><button type="button" key={value} aria-pressed={kind===value} onClick={()=>{if(!leaveWork())return;clear();setOffset(0);setKind(value);setNotice('');}}>{t(value)}</button>)}<button type="button" onClick={()=>void load()}>{t('refresh')}</button></div></fieldset>
   {busy&&<p role="status" aria-live="polite">…</p>}{notice&&<p role="status">{notice}</p>}
   {!detail?<fieldset disabled={busy}>{visibleRows.length===0&&!busy&&<p>{t('empty')}</p>}{visibleRows.map(row=><button className="transaction-row" type="button" key={transactionRef(row)} onClick={()=>void open(row)}><strong>{title(row)}</strong><span>{t(str(row,'status'))} · {str(row,'requester')||str(row,'requester_name')||str(row,'preview')}</span><span>{str(row,'requested_datetime')||stamp(row.created_at||row.last_message_at)}</span></button>)}<div className="transaction-actions">{offset>0&&<button onClick={()=>setOffset(Math.max(0,offset-pageSize))}>{t('previous')}</button>}{more&&<button onClick={()=>setOffset(offset+pageSize)}>{t('more')}</button>}</div></fieldset>:
@@ -103,12 +105,13 @@ export function ServicesTransactions({base,binding,locale,initialKind='requests'
      {quote&&<article>{branchLabel(quote)&&<p>📍 {branchLabel(quote)}</p>}<h4>{t('quote')} · {t(str(quote,'status'))}</h4>{quote.status==='DRAFT'&&<p>{t('private')}</p>}<p>{str(quote,'amount')} {str(quote,'currency')} · {String(quote.duration_minutes??'')} {t('duration')}</p><p>{str(quote,'pricing_description')}</p><p>{str(quote,'terms')}</p><p>{t('scheduled')}: {stamp(quote.proposed_start)} — {stamp(quote.proposed_end)}</p><p>{t('expires')}: {stamp(quote.expires_at)}</p><p>{t('schedule_note')}</p><div className="transaction-actions">{actions(quote).filter(a=>['edit','send','withdraw'].includes(a)).map(a=><button key={a} onClick={()=>begin(a)}>{t(a)}</button>)}</div></article>}
     </>}
     {kind==='reservations'&&<><p>{str(detail,'requested_datetime')} · {str(detail,'selected_offering_name')}</p>{detail.status==='pending'&&<p>{t('pending_note')}</p>}<div className="transaction-actions">{!!detail.can_respond&&<><button onClick={()=>begin('accept')}>{t('accept')}</button><button onClick={()=>begin('decline')}>{t('decline')}</button></>}{lifecycle&&actions(lifecycle).map(a=><button key={a} onClick={()=>begin(a)}>{t(a)}</button>)}{actions(scheduling).includes('propose')&&<button onClick={()=>begin('propose')}>{t('propose')}</button>}</div>
+     <ServicesCustomerHistory key={transactionRef(detail)} reservationRef={transactionRef(detail)} onDenied={clearHistoryAccess} base={base} binding={binding} locale={locale} financeAvailable={financeAvailable} onOpen={(target,ref,quoteRef)=>{pendingLink.current={kind:target,ref,quoteRef};if(kind===target&&offset===0)void load();else{setKind(target);setOffset(0);}}}/>
      <h4>{t('history')}</h4>{['confirmed_at','started_at','completed_at','cancelled_at','no_show_at'].filter(key=>lifecycle?.[key]).map(key=><p key={key}>{t(({confirmed_at:'confirmed',started_at:'in_progress',completed_at:'completed',cancelled_at:'cancelled',no_show_at:'no_show_reported'} as Record<string,string>)[key])} · {stamp(lifecycle![key])}</p>)}
      {!!lifecycle?.accepted_quote&&<p>{t('quote')} · {str(lifecycle.accepted_quote as Row,'amount')} {str(lifecycle.accepted_quote as Row,'currency')} · {str(lifecycle.accepted_quote as Row,'terms')}</p>}
      {billAvailable&&<ServicesBillPanel key={transactionRef(detail)} base={base} binding={binding} locale={locale}
       reservationRef={transactionRef(detail)} reservationRevision={Number(lifecycle?.revision??detail.revision)}
       status={str(lifecycle??detail,'status')} blocked={!!lifecycle?.no_show_at||['OPEN','UNDER_REVIEW'].includes(str((lifecycle?.dispute??{}) as Row,'status'))}/>}
-     {proposal&&<article><p>{t('propose')} · {t(str(proposal,'status'))} · {appointmentZone?'Kinshasa':'UTC'}</p><p>{stamp(proposal.proposed_start,appointmentZone?'Africa/Kinshasa':'UTC')} {stamp(proposal.proposed_start_at,appointmentZone?'Africa/Kinshasa':'UTC')} — {stamp(proposal.proposed_end,appointmentZone?'Africa/Kinshasa':'UTC')} {stamp(proposal.proposed_end_at,appointmentZone?'Africa/Kinshasa':'UTC')}</p><p>{str(proposal,'description')}</p>{!!proposal.actionable&&actions(proposal).map(a=><button key={a} onClick={()=>begin(`reschedule_${a}`)}>{t(a==='accept'?'confirm':'reject')}</button>)}</article>}
+     {proposal&&<article><p>{t('propose')} · {t(str(proposal,'status'))} · Kinshasa</p><p>{stamp(proposal.proposed_start)} {stamp(proposal.proposed_start_at)} — {stamp(proposal.proposed_end)} {stamp(proposal.proposed_end_at)}</p><p>{str(proposal,'description')}</p>{!!proposal.actionable&&actions(proposal).map(a=><button key={a} onClick={()=>begin(`reschedule_${a}`)}>{t(a==='accept'?'confirm':'reject')}</button>)}</article>}
     </>}
     {kind==='messages'&&<><h4>{t('history')}</h4>{list(detail,'messages').map((row,index)=><p key={index}><strong>{str(row,'sender_name')||t(str(row,'sender'))}</strong> · {stamp(row.created_at)}<br/><span>{str(row,'body')}</span></p>)}<div className="transaction-actions">{messageOffset>0&&<button onClick={()=>void messagePage(Math.max(0,messageOffset-20))}>{t('previous')}</button>}{!!detail.has_more&&<button onClick={()=>void messagePage(messageOffset+20)}>{t('more')}</button>}{actions(detail).filter(a=>a!=='read').map(a=><button key={a} onClick={()=>begin(a==='send'?'reply':a)}>{t(a==='send'?'reply':a)}</button>)}</div></>}
     {form&&<form onSubmit={submit}><h4>{t(quoteForm?form==='edit'?'edit':'create_quote':form.startsWith('reschedule_')?'confirm':form)}</h4>
