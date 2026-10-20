@@ -10,7 +10,7 @@ test(`Provider private quotation review, exact retry and history ${locale}`, asy
   const t = opportunityWords(locale), c = comparisonWords(locale), common = requestWords(locale);
   const offering = {public_ref:"SVC_one",provider_ref:"SVI_one",name:"Provider",service_name:"Cleaning",category:"cleaning",description:"Cleaning",
     service_duration_minutes:60,commune:"Gombe",service_location_type:"public_place",home_service_available:"no",booking_mode:"flexible",
-    availability:"Weekdays",publication_origin:"pilot",requests_enabled:true,is_active:"yes",revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
+    availability:"Weekdays",publication_origin:"pilot",visible_to_customers:true,requests_enabled:true,is_active:"yes",revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
   const posted = {posted_ref: "SPR_one", revision: 1, status: "OPEN", brief_revision_ref: "SCV_one",
     summary: {category: "cleaning", description: "Clean two rooms", commune: "Gombe", timing: "Wednesday"},
     expires_at: "2026-12-01T20:00:00Z", created_at: "2026-11-29T20:00:00Z"};

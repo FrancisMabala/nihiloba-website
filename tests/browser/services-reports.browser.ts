@@ -7,7 +7,7 @@ for(const {locale,money} of [...(["en","fr","ln","sw"] as const).map(locale=>({l
  await page.clock.setFixedTime(new Date("2026-10-20T12:00:00Z"));
  let failed=true;
  const queries:string[]=[];
- const offering={public_ref:"SVC_one",provider_ref:"SVI_one",name:"Provider",service_name:"Repair service",category:"repair_maintenance",description:"Repairs",service_duration_minutes:60,commune:"Gombe",service_location_type:"public_place",home_service_available:"no",booking_mode:"flexible",availability:"Weekdays",publication_origin:"pilot",requests_enabled:true,is_active:"yes",revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
+ const offering={public_ref:"SVC_one",provider_ref:"SVI_one",name:"Provider",service_name:"Repair service",category:"repair_maintenance",description:"Repairs",service_duration_minutes:60,commune:"Gombe",service_location_type:"public_place",home_service_available:"no",booking_mode:"flexible",availability:"Weekdays",publication_origin:"pilot",visible_to_customers:true,requests_enabled:true,is_active:"yes",revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
  await page.route("**/api/shida/**",async route=>{
   const url=new URL(route.request().url()),path=url.pathname.replace(/\/$/,"");
   const reply=(json:unknown,status=200)=>route.fulfill({json,status});

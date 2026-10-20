@@ -233,3 +233,18 @@ private-contact filtering in the review, explicit confirmation, a lost response,
 identical retry and disabled old-quotation acceptance at 390 px. Six gateway
 checks, production webpack build/TypeScript and scoped lint passed. These changes
 remain local with the new backend adapters unregistered.
+
+### Local visibility and catalogue guidance
+
+Overview counts, catalogue labels, publication status and preview availability
+now use the backend's `visible_to_customers` decision. A historical publication
+marker cannot claim current visibility. Hidden published services show a refresh
+explanation rather than an invalid Publish action. Request availability remains a
+separate choice. The editor explains the shared provider name and optional
+quotation-based package price.
+
+Validation: 22 affected production-browser checks passed across publication,
+setup, details and bill appearance, including a published marker with false
+visibility. Four old management checks needed their heading selector scoped to
+the page heading after the earlier task-navigation redesign; all four passed
+after that fixture correction. Production build/TypeScript and scoped lint passed.

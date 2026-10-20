@@ -11,7 +11,7 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  const t=words[locale],templates:Record<string,unknown>[]=[];
  let quote:Record<string,unknown>|null=null,bill:Record<string,unknown>|null=null;
  let presentation={display_name:null as string|null,accent:'slate',revision:1,fallback_display_name:'Provider',preview:{display_name:'Provider',accent:'slate'}};
- const offering={public_ref:'SVC_one',provider_ref:'SVI_one',name:'Provider',service_name:'Repairs',category:'repair_maintenance',description:'Repairs',service_duration_minutes:60,commune:'Gombe',service_location_type:'private_home',home_service_available:'yes',booking_mode:'flexible',availability:'Weekdays',publication_origin:'pilot',requests_enabled:true,is_active:'yes',revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
+ const offering={public_ref:'SVC_one',provider_ref:'SVI_one',name:'Provider',service_name:'Repairs',category:'repair_maintenance',description:'Repairs',service_duration_minutes:60,commune:'Gombe',service_location_type:'private_home',home_service_available:'yes',booking_mode:'flexible',availability:'Weekdays',publication_origin:'pilot',visible_to_customers:true,requests_enabled:true,is_active:'yes',revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
  const request={request_ref:'SWR_one',offering_ref:'SVC_one',offering:'Repairs',requester:'Customer',description:'Fix a sink',status:'SUBMITTED',revision:1,actions:[],can_create_quote:true,draft_quote_ref:null};
  const reservation={reservation_ref:'RSV_one',offering_ref:'SVC_one',service_name:'Repairs',requester_name:'Customer',status:'confirmed',revision:1,can_respond:false};
  const writes:string[]=[];

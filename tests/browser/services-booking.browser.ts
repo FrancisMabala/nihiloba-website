@@ -2,7 +2,7 @@ import {test,expect,type Page} from '@playwright/test';
 import {workspaceCopy} from '../../app/components/shida/services-workspace-ui';
 
 async function fixture(page:Page){
- const state={row:{public_ref:'SVC_booking',provider_ref:'SVI_booking',name:'Atelier Kin',service_name:'Home repair',category:'repair_maintenance',description:'',service_duration_minutes:null as number|null,commune:'',service_location_type:'public_place',home_service_available:'unknown',booking_mode:null as string|null,availability:'',publication_origin:'unclassified',requests_enabled:false,is_active:'yes',revision:1,missing_fields:[] as string[],packages:[],rating:{average:null,count:0}},writes:[] as Record<string,unknown>[],rejectNext:false};
+ const state={row:{public_ref:'SVC_booking',provider_ref:'SVI_booking',name:'Atelier Kin',service_name:'Home repair',category:'repair_maintenance',description:'',service_duration_minutes:null as number|null,commune:'',service_location_type:'public_place',home_service_available:'unknown',booking_mode:null as string|null,availability:'',publication_origin:'unclassified',visible_to_customers:false,requests_enabled:false,is_active:'yes',revision:1,missing_fields:[] as string[],packages:[],rating:{average:null,count:0}},writes:[] as Record<string,unknown>[],rejectNext:false};
  const missing=()=>{
   const row=state.row;
   row.missing_fields=['description','service_duration_minutes','commune','availability'].filter(key=>!row[key as keyof typeof row]);
@@ -30,7 +30,7 @@ async function fixture(page:Page){
     const {expected_revision:revision,...fields}=body;expect(revision).toBe(state.row.revision);
     Object.assign(state.row,fields);missing();
    }else if(path.endsWith('/pilot-review')){
-    expect(state.row.missing_fields).toEqual([]);state.row.publication_origin='pilot';
+    expect(state.row.missing_fields).toEqual([]);state.row.publication_origin='pilot';state.row.visible_to_customers=true;
    }else return reply({},404);
    state.row.revision++;return reply(state.row);
   }
