@@ -196,3 +196,26 @@ horizontal overflow and denied-access clearing. Webpack production build,
 TypeScript and scoped lint passed. Mobile Personal and desktop Organization
 screenshots were inspected after fixing the card collision. This is browser
 coverage, not physical-device or native-speaker validation.
+
+### Local direct-request entry and channel continuity
+
+The public Services collection offers My requests and a new request, and each
+service offers a direct quotation request. The selected service determines the
+category. Customers review their summary and choose an available customer branch
+before sending; exact branch/coverage revisions are checked again by the backend.
+Authorized job pages show the retained reviewed summary, never the original PDF.
+
+Lingala and Swahili direct links initially fell back to French because the shared
+Services path helper omitted the new request route. The helper now preserves all
+four languages, including query strings. Four direct-request browser journeys
+cover this regression; the combined customer brief/comparison/history/direct
+selection passed 14 browser checks. Eight gateway/routing checks passed.
+Webpack production build and TypeScript passed.
+
+Exact WhatsApp provider links can also open a saved request and its quotation.
+A quotation is checked against its parent request before rendering. This is
+navigation only: no operation is automatically submitted.
+New request features remain unpublished with the backend adapters unregistered.
+Eight additional production-browser checks passed for exact quotation links and
+the existing Today/offline recovery paths in all four languages. Scoped lint
+passed after moving link initialization below its loader declaration.

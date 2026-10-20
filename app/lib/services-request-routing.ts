@@ -5,7 +5,9 @@ export function servicesRequestTarget(parts: string[], method: string, query: UR
   if (!get && !post) return null;
   const reference = (prefix: string, value = ref) => new RegExp(`^${prefix}_[A-Za-z0-9_-]{1,28}$`).test(value ?? "");
   let path: string | null = null, keys: string[] = [];
-  if (kind === "briefs") {
+  if (kind === "destinations" && parts.length === 2 && get && reference("SVC")) {
+    path = `service-direct-briefs/offerings/${ref}`; keys = ["language"];
+  } else if (kind === "briefs") {
     if (parts.length === 1) {
       path = "service-briefs";
       if (get) keys = ["offset"];
@@ -47,7 +49,7 @@ export function servicesRequestTarget(parts: string[], method: string, query: UR
     path = `service-reservations/${ref}/lifecycle`;
   }
   if (!path || [...query].some(([key, value]) => !keys.includes(key) || query.getAll(key).length !== 1 ||
-    !(key === "offset" ? /^\d{1,5}$/.test(value) && Number(value) <= 10000 :
+    !(key === "language" ? ["en", "fr", "ln", "sw"].includes(value) : key === "offset" ? /^\d{1,5}$/.test(value) && Number(value) <= 10000 :
       key === "offering_ref" ? reference("SVC", value) :
       /^(SPR|SPF|SPV)_[A-Za-z0-9_-]{1,28}$/.test(value)))) return null;
   if ((kind === "proposals" && parts.length === 1 || kind === "postings" && ref === "available") && !query.has("offering_ref")) return null;

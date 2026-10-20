@@ -13,7 +13,7 @@ import {serviceCategoryExperience, type ServiceLocale} from "../../lib/services-
 import {leaveWork, dateText} from "../../lib/restaurant-work";
 import "./service-request-workspace.css";
 
-type Props = {locale: ServiceLocale; briefRef?: string; newRequest?: boolean; requestRef?: string; bookingRef?: string};
+type Props = {locale: ServiceLocale; briefRef?: string; newRequest?: boolean; requestRef?: string; bookingRef?: string; directRef?: string};
 export function PersonalServiceRequests(props: Props) {
   const {locale} = props, t = requestWords(locale);
   const [session, setSession] = useState<PersonalSession | null>(null);
@@ -62,9 +62,10 @@ export function PersonalServiceRequests(props: Props) {
     {offline && <section className="svc-request"><p role="status">{t.offline}</p><button onClick={() => setAttempt(value => value + 1)}>{t.retry}</button></section>}
   </main>;
 }
-function CustomerRequests({locale, binding, briefRef, newRequest, requestRef, bookingRef, onDenied}: Props & {binding: string; onDenied: () => void}) {
+function CustomerRequests({locale, binding, briefRef, newRequest, requestRef, bookingRef, directRef, onDenied}: Props & {binding: string; onDenied: () => void}) {
   const t = requestWords(locale);
   const [selected, setSelected] = useState<string | null>(briefRef ?? (newRequest ? "new" : null));
+  const [directTarget, setDirectTarget] = useState(directRef);
   const [rows, setRows] = useState<CustomerBrief[]>([]), [hasMore, setHasMore] = useState(false);
   const [posted, setPosted] = useState<PostedRequest[]>([]), [postedCursor, setPostedCursor] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
@@ -92,6 +93,7 @@ function CustomerRequests({locale, binding, briefRef, newRequest, requestRef, bo
   function choose(reference: string | null) {
     if (!leaveWork()) return;
     setResult(null); setSelected(reference);
+    setDirectTarget(undefined);
     const url = new URL(window.location.href);
     url.search = reference === "new" ? "?new=1" : reference ? `?brief=${reference}` : "";
     window.history.replaceState(null, "", url);
@@ -124,7 +126,7 @@ function CustomerRequests({locale, binding, briefRef, newRequest, requestRef, bo
         booking={!!result.reservation_ref} onDenied={onDenied} onBooking={reference => follow({reservation_ref: reference})}/>}
   </>;
   if (selected) return <><div className="svc-request"><button type="button" onClick={() => choose(null)}>{t.requests}</button></div>
-    <ServiceBriefEditor binding={binding} locale={locale} reference={selected === "new" ? undefined : selected}
+    <ServiceBriefEditor binding={binding} locale={locale} directRef={selected === "new" ? directTarget : undefined} reference={selected === "new" ? undefined : selected}
       onDenied={onDenied} onSaved={reference => {
         const url = new URL(window.location.href); url.search = `?brief=${reference}`; window.history.replaceState(null, "", url);
       }} onComplete={follow}/></>;

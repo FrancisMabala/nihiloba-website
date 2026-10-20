@@ -3,14 +3,16 @@ import {useEffect, useRef, useState} from "react";
 import {serviceCategoryExperience, type ServiceLocale} from "../../lib/services-category-experience";
 import categories from "../../lib/services-category-experience.json";
 import {requestWords} from "../../lib/services-request-copy";
+import {comparisonWords} from "../../lib/services-comparison-copy";
 import {serviceRequest, ServiceRequestError, isCustomerBrief, requestBase,
-  type BriefContent, type CustomerBrief, type BriefDocument} from "../../lib/services-request-browser";
+  type BriefContent, type CustomerBrief, type BriefDocument, type CustomerBranch} from "../../lib/services-request-browser";
 import {useWorkDraft, dateText} from "../../lib/restaurant-work";
 import "./service-request-workspace.css";
 
 type Completion = {posted_ref?: string; request_ref?: string; brief_ref?: string};
 type Props = {
   binding: string; locale: ServiceLocale; reference?: string;
+  directRef?: string;
   direct?: {offering_ref: string; category: string; name: string};
   branchChoice?: {selected_branch_ref: string; selected_branch_revision: number; selected_coverage_revision: number};
   onDenied: () => void; onSaved?: (reference: string) => void; onComplete: (result: Completion) => void;
@@ -21,13 +23,16 @@ const normalize = (content: BriefContent): BriefContent => Object.fromEntries(Ob
   .filter(([, value]) => typeof value === "string" && value.trim() !== "").map(([key, value]) => [key, value.trim()])) as BriefContent;
 
 export function ServiceBriefEditor(props: Props) {
-  return <BriefEditor key={`${props.binding}:${props.reference ?? "new"}:${props.direct?.offering_ref ?? ""}`} {...props}/>;
+  return <BriefEditor key={`${props.binding}:${props.reference ?? "new"}:${props.direct?.offering_ref ?? props.directRef ?? ""}`} {...props}/>;
 }
-function BriefEditor({binding, locale, reference, direct, branchChoice, onDenied, onSaved, onComplete}: Props) {
-  const t = requestWords(locale);
+type Destination = {offering_ref: string; category: string; name: string; branch_coverage_specified: boolean; customer_branches: CustomerBranch[]};
+function BriefEditor({binding, locale, reference, direct, directRef, branchChoice, onDenied, onSaved, onComplete}: Props) {
+  const t = requestWords(locale), c = comparisonWords(locale);
   const [brief, setBrief] = useState<CustomerBrief | null>(null);
   const [content, setContent] = useState<BriefContent>({category: direct?.category ?? "", language: locale,
-    ...(direct ? {direct_offering_ref: direct.offering_ref} : {})});
+    ...(direct || directRef ? {direct_offering_ref: direct?.offering_ref ?? directRef} : {})});
+  const [destination, setDestination] = useState<Destination | null>(null), [destinationError, setDestinationError] = useState(false);
+  const [branch, setBranch] = useState("");
   const [documents, setDocuments] = useState<BriefDocument[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(!!reference), [loadError, setLoadError] = useState(false);
@@ -46,6 +51,22 @@ function BriefEditor({binding, locale, reference, direct, branchChoice, onDenied
     return () => {alive.current = false; window.removeEventListener("online", update); window.removeEventListener("offline", update);};
   }, []);
   const deny = () => {setDenied(true); setBrief(null); setDocuments([]); setContent({category: "", language: locale}); setFile(null); setPending(null); callbacks.current.onDenied();};
+  const target = content.direct_offering_ref;
+  const canEdit = editable(brief);
+  useEffect(() => {
+    if (!target || !canEdit) return;
+    let active = true; const controller = new AbortController();
+    serviceRequest<Destination>(binding, `destinations/${target}?language=${locale}`, {signal: controller.signal})
+      .then(value => {
+        if (value.offering_ref !== target || !serviceCategoryExperience(value.category, locale) || !Array.isArray(value.customer_branches)) throw new Error();
+        if (active) {setDestination(value); setDestinationError(false); setBranch("");
+          if (!reference) setContent(current => current.category ? current : {...current, category: value.category});}
+      }).catch(error => {if (active) {
+        if (error instanceof ServiceRequestError && [401, 403].includes(error.status)) callbacks.current.onDenied();
+        else {setDestination(null); setDestinationError(true);}
+      }});
+    return () => {active = false; controller.abort();};
+  }, [binding, target, locale, reference, canEdit, reload]);
   useEffect(() => {
     if (!reference) return;
     const controller = new AbortController(); let active = true;
@@ -108,8 +129,11 @@ function BriefEditor({binding, locale, reference, direct, branchChoice, onDenied
   }
   function publish() {
     if (!brief || brief.status !== "REVIEWED" || dirty) return;
+    const selected = destination?.customer_branches.find(row => row.branch_ref === branch);
+    if (brief.content.direct_offering_ref && (!destination || destination.branch_coverage_specified && !selected)) return;
+    const choice = selected ? {selected_branch_ref: selected.branch_ref, selected_branch_revision: selected.revision, selected_coverage_revision: selected.coverage_revision} : branchChoice;
     return run({path: `briefs/${brief.brief_ref}/${brief.content.direct_offering_ref ? "send" : "publish"}`, kind: "publish",
-      body: JSON.stringify({operation_id: crypto.randomUUID(), revision: brief.revision, ...(brief.content.direct_offering_ref ? branchChoice : {})})});
+      body: JSON.stringify({operation_id: crypto.randomUUID(), revision: brief.revision, ...(brief.content.direct_offering_ref ? choice : {})})});
   }
   async function download(document: BriefDocument) {
     if (!brief || lock.current) return;
@@ -145,13 +169,15 @@ function BriefEditor({binding, locale, reference, direct, branchChoice, onDenied
   const selectedCategory = serviceCategoryExperience(content.category, locale);
   return <section className="svc-request" lang={locale} aria-label={t.title}>
     <header><span className="svc-request-tag">{status}</span><h1>{t.title}</h1>
-      {direct && <p>{direct.name}</p>}
+      {(destination || direct) && <p>{destination?.name ?? direct?.name}</p>}
       {editable(brief) && <><p>{t.expiry}</p>{brief && <p>{t.expires} {dateText(brief.expires_at, locale, "Africa/Kinshasa")} · Kinshasa</p>}</>}
     </header>
     {!online && <p role="status">{t.offline}</p>}
     {message && <p className="svc-request-notice" role="status">{message}</p>}
     {pending && !busy && <button type="button" className="button button-primary" disabled={!online} onClick={() => void run(pending)}>{t.retry}</button>}
     {conflict && <button type="button" onClick={reloadSaved}>{t.reload}</button>}
+    {target && canEdit && !destination && <p role="status">{destinationError ? t.unavailable : t.loading}</p>}
+    {destinationError && canEdit && <button disabled={busy || !!pending} onClick={() => setReload(value => value + 1)}>{t.retry}</button>}
     {editable(brief) ? <>
       <ol className="svc-request-steps" aria-label={t.title}>
         <li aria-current={!reviewing ? "step" : undefined}>{t.description}</li>
@@ -160,7 +186,7 @@ function BriefEditor({binding, locale, reference, direct, branchChoice, onDenied
       </ol>
       {!reviewing ? <>
         <form className="svc-brief-card" onSubmit={event => {event.preventDefault(); void command("save");}}>
-          <fieldset disabled={disabled}><legend>{t.description}</legend>
+          <fieldset disabled={disabled || !!target && !destination}><legend>{t.description}</legend>
             <label>{t.category}<select value={content.category} required disabled={!!content.direct_offering_ref} onChange={event => field("category", event.target.value)}>
               <option value="">{t.choose}</option>{Object.keys(categories.categories).map(category =>
                 <option key={category} value={category}>{serviceCategoryExperience(category, locale)?.service}</option>)}
@@ -207,8 +233,12 @@ function BriefEditor({binding, locale, reference, direct, branchChoice, onDenied
         <h2>{t.summary}</h2><p>{content.direct_offering_ref ? t.directAudience : t.audience}</p>
         <dl>{(["description", "city", "commune", "timing", "preferred_date", "preferred_start_time", "preferred_end_time", "budget_amount", "budget_currency"] as const).filter(key => brief.summary[key]).map(key =>
           <div key={key}><dt>{key === "budget_amount" ? t.budget : key === "budget_currency" ? t.currency : t[key]}</dt><dd>{brief.summary[key]}</dd></div>)}</dl>
+        {destination?.branch_coverage_specified && <><p>{c.branchPrivacy}</p><label>{c.branch}
+          <select value={branch} disabled={disabled} onChange={event => setBranch(event.target.value)}><option value="">{c.branch}</option>
+            {destination.customer_branches.map(row => <option key={row.branch_ref} value={row.branch_ref}>{row.name} · {row.broad_area}</option>)}
+          </select></label></>}
         <div className="svc-request-actions"><button type="button" disabled={disabled} onClick={() => setReviewing(false)}>{t.edit}</button>
-          {brief.status === "REVIEWED" ? <button type="button" className="button button-primary" disabled={disabled} onClick={() => void publish()}>{content.direct_offering_ref ? t.send : t.publish}</button>
+          {brief.status === "REVIEWED" ? <button type="button" className="button button-primary" disabled={disabled || !!target && (!destination || destination.branch_coverage_specified && !branch)} onClick={() => void publish()}>{content.direct_offering_ref ? t.send : t.publish}</button>
             : <button type="button" className="button button-primary" disabled={disabled} onClick={() => void command("review")}>{t.confirm}</button>}
         </div>
       </section>}

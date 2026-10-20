@@ -8,8 +8,10 @@ export default async function Page({params, searchParams}: {
 }) {
   const {lang} = await params; if (!["en", "fr", "ln", "sw"].includes(lang)) notFound();
   const query = await searchParams;
+  const directRef = typeof query.service === "string" && /^SVC_[A-Za-z0-9_-]{1,28}$/.test(query.service) ? query.service : undefined;
+  if (query.service !== undefined && !directRef) notFound();
   const briefRef = typeof query.brief === "string" && /^SCB_[A-Za-z0-9_-]{1,28}$/.test(query.brief) ? query.brief : undefined;
   const requestRef = typeof query.request === "string" && /^(SPR|SWR)_[A-Za-z0-9_-]{1,28}$/.test(query.request) ? query.request : undefined;
   const bookingRef = typeof query.booking === "string" && /^RSV_[A-Za-z0-9_-]{1,28}$/.test(query.booking) ? query.booking : undefined;
-  return <PersonalServiceRequests locale={lang as ServiceLocale} briefRef={briefRef} requestRef={requestRef} bookingRef={bookingRef} newRequest={query.new === "1"}/>;
+  return <PersonalServiceRequests locale={lang as ServiceLocale} directRef={directRef} briefRef={briefRef} requestRef={requestRef} bookingRef={bookingRef} newRequest={query.new === "1" || !!directRef}/>;
 }

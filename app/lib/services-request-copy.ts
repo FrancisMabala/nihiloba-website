@@ -3,6 +3,7 @@ const text = {
   title: ["Describe what you need", "Décrivez votre besoin", "Limbola bosengi na yo", "Eleza unachohitaji"],
   requests: ["My requests", "Mes demandes", "Masengi na ngai", "Maombi yangu"],
   newRequest: ["New request", "Nouvelle demande", "Bosengi ya sika", "Ombi jipya"],
+  askQuote: ["Request a quotation", "Demander un devis", "Senga devis", "Omba makadirio"],
   category: ["Service category", "Catégorie de service", "Lolenge ya mosala", "Aina ya huduma"],
   description: ["What needs doing?", "Que faut-il faire ?", "Mosala nini esengeli ?", "Ni kazi gani inahitajika?"],
   city: ["City", "Ville", "Engumba", "Jiji"],

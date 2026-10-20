@@ -7,10 +7,11 @@ import {requestWords} from "../../lib/services-request-copy";
 import {comparisonWords} from "../../lib/services-comparison-copy";
 import {servicesText} from "./services-transaction-copy";
 import {dateText, useWorkDraft} from "../../lib/restaurant-work";
+import {ServiceReviewedBrief} from "./service-reviewed-brief";
 
 type Quote = QuoteTerms & {quote_ref: string; revision: number; status: string; actions: string[]; provider: string; reservation_ref?: string};
 type Work = {request_ref?: string; reservation_ref?: string; revision: number; status: string; role: string;
-  service_name?: string; offering?: string; provider?: string; description?: string;
+  service_name?: string; offering?: string; provider?: string; description?: string; reviewed_brief?: unknown;
   current_quote?: {quote_ref: string} | null; accepted_quote?: QuoteTerms | null};
 type Props = {binding: string; locale: ServiceLocale; reference: string; booking?: boolean; onDenied: () => void; onBooking: (reference: string) => void};
 export function ServiceCustomerWork(props: Props) {
@@ -60,6 +61,7 @@ function CustomerWork({binding, locale, reference, booking, onDenied, onBooking}
       {message && <p role="status">{message}</p>}
       {work && <><span className="svc-request-tag">{servicesText(locale, work.status.toLowerCase())}</span>
         {work.provider && <p>{work.provider}</p>}{work.description && <p>{work.description}</p>}
+        <ServiceReviewedBrief value={work.reviewed_brief} locale={locale}/>
         {agreement && <section className="svc-brief-card"><h2>{c.quote}</h2>
           <dl><div><dt>{c.amount}</dt><dd>{agreement.amount} {agreement.currency}</dd></div>
             <div><dt>{c.scope}</dt><dd>{agreement.pricing_description}</dd></div>
