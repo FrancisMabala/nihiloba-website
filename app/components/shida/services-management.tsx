@@ -1,4 +1,5 @@
 "use client";
+import {ServicesOpportunities} from "./services-opportunities";
 import {ServicesToday,type ServiceTaskLink} from "./services-today";
 import {serviceCategoryExperience} from "../../lib/services-category-experience";
 import Link from "next/link";
@@ -56,7 +57,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
  const setupTrigger=useRef<HTMLButtonElement>(null);
  const [settingUp,setSettingUp]=useState(false);
  const entry=marketplaceEntryCopy[lang],setup=entry.services;
- useEffect(()=>{const value=new URLSearchParams(window.location.search).get("view");if(value&&["overview","services","calendar","work","finance","reports","templates","settings"].includes(value)){setView(value as ProviderView);setVisited(new Set([value as ProviderView]));}},[]);
+ useEffect(()=>{const value=new URLSearchParams(window.location.search).get("view");if(value&&["overview","available","proposals","services","calendar","work","finance","reports","templates","settings"].includes(value)){setView(value as ProviderView);setVisited(new Set([value as ProviderView]));}},[]);
  function navigate(next:ProviderView,kind?:"requests"|"reservations"|"messages"){
   if(kind&&!leaveWork())return;
   if(kind){setTodayTask(null);setInitialKind(kind);setWorkVisit(value=>value+1);}setView(next);setVisited(old=>new Set([...old,next]));
@@ -130,12 +131,12 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
   </div>
   {!settingUp&&<p className="svc-setup-back"><Link href={`${lang==="en"?"":`/${lang}`}/shida/services`} onClick={event=>{if(!leaveWork())event.preventDefault();}}><span aria-hidden="true">← </span>{entry.browse}</Link></p>}
  </section>;
- const navigation:ProviderView[]=["overview",...(can("reservations")&&can("messages")?["work" as const]:[]),...(can("structured_availability")?["calendar" as const]:[]),...(can("profile")?["services" as const]:[]),...(can("manual_journal")||can("basic_totals")?["finance" as const]:[]),...(can("operational_reports")?["reports" as const]:[]),...(can("quote_templates")||can("bill_templates")?["templates" as const]:[]),...(can("bills")?["settings" as const]:[])];
+ const navigation:ProviderView[]=["overview",...(can("requests_quotes")?["available" as const,"proposals" as const]:[]),...(can("reservations")&&can("messages")?["work" as const]:[]),...(can("structured_availability")?["calendar" as const]:[]),...(can("profile")?["services" as const]:[]),...(can("manual_journal")||can("basic_totals")?["finance" as const]:[]),...(can("operational_reports")?["reports" as const]:[]),...(can("quote_templates")||can("bill_templates")?["templates" as const]:[]),...(can("bills")?["settings" as const]:[])];
  const selectedView=navigation.includes(view)?view:"overview";
  const fieldLabels:Record<string,string>={name:t.name,service_name:t.service,category:t.category,description:t.description,service_duration_minutes:t.duration,commune:t.area,service_location_type:t.location,home_service_available:t.home,booking_mode:t.booking,availability:t.availability};
  return <section aria-label={t.title} className="svc-workspace container seller-layout" lang={lang}>
   <aside className="svc-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="S" title={ui.title} subtitle={ui.personal}/>
-   <SellerWorkspaceNavigation label={ui.navigation} items={navigation.filter(key=>!["reports","templates","settings"].includes(key)).map(key=>({key,label:ui[key],icon:key==="services"?"catalog":key==="templates"?"document":key}))} current={selectedView} onNavigate={key=>navigate(key as ProviderView)}/>
+   <SellerWorkspaceNavigation label={ui.navigation} items={navigation.filter(key=>!["reports","templates","settings"].includes(key)).map(key=>({key,label:ui[key],icon:key==="available"||key==="proposals"?"work":key==="services"?"catalog":key==="templates"?"document":key}))} current={selectedView} onNavigate={key=>navigate(key as ProviderView)}/>
    <details className="svc-secondary-tools" open={["reports","templates","settings"].includes(selectedView)||undefined}><summary>{ui.tools}</summary><SellerWorkspaceNavigation label={ui.tools} items={navigation.filter(key=>["reports","templates","settings"].includes(key)).map(key=>({key,label:ui[key],icon:key==="templates"?"document":key==="reports"?"reports":"settings"}))} current={selectedView} onNavigate={key=>navigate(key as ProviderView)}/></details>
 
   </aside>
@@ -143,6 +144,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
    <header className="svc-view-heading"><div><p className="eyebrow">{ui.area}</p><h1>{ui.title}</h1><h2 id="services-view-title" tabIndex={-1}>{ui[selectedView]}</h2><p>{ui[`${selectedView}Intro`]}</p></div><button type="button" className="svc-refresh" disabled={busy||pending!==null} onClick={()=>{if(leaveWork())void refresh();}}>{ui.refresh}</button></header>
 
    {message&&<p className="svc-notice" role="status">{message}</p>}{pending&&!busy&&<button type="button" onClick={()=>void runOperation(pending)}>{ui.retry}</button>}
+   {(["available","proposals"] as const).filter(key=>visited.has(key)&&can("requests_quotes")).map(key=><div key={key} hidden={selectedView!==key}><ServicesOpportunities base={base} binding={binding} locale={lang} services={rows} mine={key==="proposals"} onDenied={()=>{setRows([]);setCapabilities([]);setBlocked(true);}}/></div>)}
    {selectedView==="calendar"&&<ServicesCalendar initialService={offeringRef} base={base} binding={binding} locale={lang} offerings={rows} onSaved={()=>void refresh()} onOpen={ref=>{setCalendarBooking(ref);navigate("work","reservations");}} onDenied={()=>{setRows([]);setCapabilities([]);setBlocked(true);}}/>}
    {selectedView==="overview"&&can("reservations")&&can("messages")&&<ServicesToday base={base} binding={binding} locale={lang} onDenied={()=>{setCapabilities([]);setRows([]);setBlocked(true);}} onAll={kind=>navigate("work",kind)} onOpen={task=>{if(!leaveWork())return;setTodayTask(task);setInitialKind(task.kind);setCalendarBooking(null);setWorkVisit(value=>value+1);navigate("work");}}/>}
    {selectedView==="overview"&&<ServicesProviderOverview locale={lang} rows={rows.filter(row=>row.is_active==="yes")} capabilities={capabilities} onNavigate={navigate} onCreate={addService}/>}

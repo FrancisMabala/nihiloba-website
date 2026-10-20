@@ -163,3 +163,36 @@ Validation: four production-browser scenarios passed across EN/FR/LN/SW at
 The webpack production build, TypeScript and scoped lint passed. Existing
 failed-load and uncertain-save recovery remains in place. No API, migration,
 environment, dependency or financial-policy changes; no tests removed or skipped.
+# Local customer requests and provider proposals — 20 October 2026
+
+Unpublished work adds the authenticated Services request workspace: saved text
+briefs, optional private PDF review, explicit summary approval, open publication,
+private clarification replies, quotation comparison and exact-version acceptance.
+The customer can recover the canonical booking after acceptance, reopen closed
+requests and access retained originals from the customer-only brief view.
+
+Provider navigation now exposes Available requests and My proposals through the
+existing session-bound gateway. A draft is private until explicitly reviewed and
+submitted. Uncertain writes retain the exact operation for retry. Changed
+revisions require reload; denied access removes private state. Proposal history
+shows the reviewed request associated with each quotation version. All new copy
+has EN/FR/LN/SW variants; prices retain CDF/USD separation and appointment input
+uses Kinshasa time.
+
+The new card class is isolated from the existing service-settings request toggle
+card. Screenshot review found that the old shared class forced mobile content
+into narrow columns; the isolated class and minimum readable-width browser
+assertion address that collision.
+
+This is not a production release. Same-draft WhatsApp intake, public direct-request
+entry, published-summary revision, remaining audit closeout and operational
+release prerequisites are still in progress. Backend adapters remain unregistered.
+
+Validation: 8 gateway/routing unit checks and 14 production-browser checks passed
+across customer briefs, private PDF preview, stale/uncertain recovery, exact quote
+acceptance, closed history and provider quotation review. Provider browser checks
+cover EN/FR/LN/SW at 320/390/820/1440 px, including readable card width, no
+horizontal overflow and denied-access clearing. Webpack production build,
+TypeScript and scoped lint passed. Mobile Personal and desktop Organization
+screenshots were inspected after fixing the card collision. This is browser
+coverage, not physical-device or native-speaker validation.

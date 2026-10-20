@@ -36,11 +36,12 @@ async function handle(request:Request,context:Context){
  const token=(await cookies()).get(PERSONAL_SESSION_COOKIE)?.value;
  if(!token||!/^[A-Za-z0-9_-]{20,256}$/.test(token)||request.headers.get("X-Shida-Session")!==personalSessionBinding(token))return fail(401);
  let body:string|undefined;
+ const bodyLimit=parts[0]==="transactions"&&parts[1]==="competition"?65536:10000;
  if(request.method!=="GET"){
   if(!request.headers.get("content-type")?.startsWith("application/json"))return fail(415);
-  if(Number(request.headers.get("content-length"))>10000)return fail(413);
+  if(Number(request.headers.get("content-length"))>bodyLimit)return fail(413);
   const reader=request.body?.getReader(),chunks:Uint8Array[]=[];let size=0;
-  if(reader)for(;;){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>10000){await reader.cancel();return fail(413);}chunks.push(part.value);}
+  if(reader)for(;;){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>bodyLimit){await reader.cancel();return fail(413);}chunks.push(part.value);}
   const raw=Buffer.concat(chunks).toString("utf8");
   try{const value:unknown=JSON.parse(raw);if(!value||typeof value!=="object"||Array.isArray(value))return fail(422);}catch{return fail(422);}
   body=raw;
