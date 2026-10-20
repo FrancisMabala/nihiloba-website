@@ -14,6 +14,13 @@ it('forwards bounded order pagination without buyer identity parameters',async()
  expect(response.status).toBe(200);
  expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/personal/wenze-buyer/orders?offset=20&limit=20');
 });
+it('allows only read-only order updates and explicit read markers',async()=>{
+ fetcher.mockImplementation(async()=>Response.json({updates:[],unread_count:0}));
+ expect((await GET(req('orders/SO_fixture/updates'),context('orders/SO_fixture/updates'))).status).toBe(200);
+ expect((await POST(req('orders/SO_fixture/updates/read','POST',{}),context('orders/SO_fixture/updates/read'))).status).toBe(200);
+ expect((await POST(req('orders/SO_fixture/updates/send','POST',{body:'unsupported'}),context('orders/SO_fixture/updates/send'))).status).toBe(404);
+ expect((await GET(req('orders/SO_fixture/updates?buyer_id=1'),context('orders/SO_fixture/updates'))).status).toBe(404);
+});
 it.each(['orders?user_id=1','orders?limit=51','orders?offset=-1','orders?limit=1&limit=2'])('rejects invalid order query %s',async path=>{
  expect((await GET(req(path),context('orders'))).status).toBe(404);
  expect(fetcher).not.toHaveBeenCalled();

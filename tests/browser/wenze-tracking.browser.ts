@@ -3,6 +3,7 @@ import {progressText} from "../../app/components/shida/wenze-order-timeline";
 for(const locale of ["en","fr"] as const)test(`buyer tracking mobile ${locale}`,async({page})=>{
  await page.route("**/api/**",route=>{
   const path=new URL(route.request().url()).pathname;
+  if(path.includes("/updates"))return route.fulfill({json:{unread_count:path.endsWith("read/")?0:1,updates:[{event:"web_preparing",created_at:"2026-10-20T12:00:00Z"}]}});
   if(path.includes("/employment/session"))return route.fulfill({json:{binding:"a".repeat(64),user:{display_name:"Buyer"}}});
   if(path.includes("/wenze-buyer/orders"))return route.fulfill({json:{total:1,orders:[{reference:"SO_fixture",store_name:"Boutique du Fleuve",total:"15000",currency:"CDF",items:[{name:"Chemise blanche",quantity:1,variant:"M"}],timeline:{current:"preparing",steps:["processing","preparing","ready","collected"]},estimates:{preparation:"2 heures",delivery:null}}]}});
   return route.fulfill({json:{}});
@@ -12,13 +13,15 @@ for(const locale of ["en","fr"] as const)test(`buyer tracking mobile ${locale}`,
  await expect(page.getByRole("status")).toContainText(progressText(locale,"preparing"));
  await expect(page.locator('[aria-current="step"]')).toHaveText(progressText(locale,"preparing"));
  await expect(page.getByText("Chemise blanche M × 1")).toBeVisible();
+ await expect(page.getByRole("region",{name:({en:"Order updates",fr:"Actualités de la commande",ln:"Nsango ya commande",sw:"Taarifa za agizo"})[locale]})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/wenze-tracking/${locale}-buyer-mobile.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/wenze-updates/${locale}-buyer-mobile.png`,fullPage:true});
 });
 for(const locale of ["en","fr","ln","sw"] as const)test(`seller preparing mobile ${locale}`,async({page})=>{
  const order={reference:"SO_fixture",source:"fixed",shop_name:"Boutique du Fleuve",buyer_name:"Test buyer",status_label:"Order received",total:"15000",currency:"CDF",fulfillment_method:"pickup",payment_verified:false,created_at:"2026-10-20T10:00:00Z",updated_at:"2026-10-20T10:00:00Z",items:[{name:"Chemise blanche",quantity:1,unit_price:"15000"}],allowed_actions:["preparing","ready"],action_revision:"WOR_fixture",timeline:{current:"processing",steps:["processing","preparing","ready","collected"]}};
  await page.route("**/api/**",route=>{
   const path=new URL(route.request().url()).pathname.replace(/\/$/,"");
+  if(path.includes("/updates"))return route.fulfill({json:{unread_count:path.endsWith("read")?0:1,updates:[{event:"new_order",created_at:"2026-10-20T12:00:00Z"}]}});
   if(path.endsWith("/employment/session"))return route.fulfill({json:{binding:"a".repeat(64),user:{display_name:"Seller"}}});
   const shop={public_ref:"WNZ_fixture",name:"Boutique du Fleuve",status:"active"};
   if(path.endsWith("/stores")||path.endsWith("/catalog-imports/options"))return route.fulfill({json:{stores:[shop],categories:[],currencies:["CDF","USD"]}});
@@ -32,6 +35,7 @@ for(const locale of ["en","fr","ln","sw"] as const)test(`seller preparing mobile
  await page.goto(`${locale==="en"?"":"/"+locale}/shida/seller/wenze/?view=orders&store=WNZ_fixture`);
  await page.getByRole("button",{name:/Chemise blanche/}).click();
  await expect(page.getByRole("button",{name:progressText(locale,"preparing"),exact:true})).toBeVisible();
+ await expect(page.getByRole("region",{name:({en:"Order updates",fr:"Actualités de la commande",ln:"Nsango ya commande",sw:"Taarifa za agizo"})[locale]})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/wenze-tracking/${locale}-seller-mobile.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/wenze-updates/${locale}-seller-mobile.png`,fullPage:true});
 });

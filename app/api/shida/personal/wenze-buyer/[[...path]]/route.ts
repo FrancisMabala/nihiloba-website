@@ -5,9 +5,9 @@ export const dynamic='force-dynamic';
 const fail=(status:number,detail='wenze_buyer_unavailable')=>Response.json({detail},{status,headers:PRIVATE_HEADERS});
 const ref='[A-Za-z0-9_-]{4,64}';
 function buyerRouteAllowed(path:string,method:string){
- if(method==='GET')return path==='saved'||path==='orders'||new RegExp(`^(orders/${ref}|relations/(wenze_store|wenze_product)/${ref}|stores/${ref}/review-eligibility)$`).test(path);
+ if(method==='GET')return path==='saved'||path==='orders'||new RegExp(`^(orders/${ref}(/updates)?|relations/(wenze_store|wenze_product)/${ref}|stores/${ref}/review-eligibility)$`).test(path);
  if(method==='PUT')return new RegExp(`^(relations/(wenze_store|wenze_product)/${ref}|stores/${ref}/review)$`).test(path);
- if(method==='POST')return new RegExp(`^stores/${ref}/(review/withdraw|reviews/${ref}/report)$`).test(path);
+ if(method==='POST')return new RegExp(`^(orders/${ref}/updates/read|stores/${ref}/(review/withdraw|reviews/${ref}/report))$`).test(path);
  return false;
 }
 async function handle(request:Request,context:{params:Promise<{path?:string[]}>}){

@@ -4,6 +4,8 @@ import Link from "next/link";
 import type {Locale} from "../../lib/i18n";
 import {WenzeBuyerProvider,useWenzeBuyer} from "./wenze-buyer";
 import {WenzeOrderTimeline,type Timeline} from "./wenze-order-timeline";
+import {WenzeOrderUpdates} from "./wenze-order-updates";
+import {buyerRequest} from "./wenze-buyer";
 import styles from "./wenze-buyer-orders.module.css";
 type Order={reference:string;store_name:string;total:string|null;currency:string;timeline:Timeline;items:{name:string;quantity:number;variant:string|null}[];estimates?:{preparation:string|null;delivery:string|null}|null};
 const copy={
@@ -31,7 +33,7 @@ function Orders({binding,locale}:{binding:string;locale:Locale}){
  {error?<p role="alert">{t.failed}</p>:!data?<p role="status">{t.loading}</p>:!data.orders.length?<p>{t.empty}</p>:<div style={{display:"grid",gap:"1rem",marginBlock:"1.5rem"}}>{data.orders.map(order=><article key={order.reference} style={{padding:"1.25rem",border:"1px solid #deded3",borderRadius:".75rem",minWidth:0,overflowWrap:"anywhere"}}>
  <h2>{order.store_name}</h2><small>{order.reference}</small><ul>{order.items.map((item,i)=><li key={i}>{item.name} {item.variant} × {item.quantity}</li>)}</ul>
  <p><strong>{order.total===null?t.unknown:`${t.amount}: ${new Intl.NumberFormat(locale).format(Number(order.total))} ${order.currency}`}</strong></p>
- <WenzeOrderTimeline locale={locale} timeline={order.timeline}/>
+ <WenzeOrderTimeline locale={locale} timeline={order.timeline}/><WenzeOrderUpdates key={`${binding}:${order.reference}`} locale={locale} identity={`${binding}:${order.reference}`} load={()=>buyerRequest(`orders/${order.reference}/updates`,binding)} read={()=>buyerRequest(`orders/${order.reference}/updates/read`,binding,"POST",{})}/>
  {order.estimates?.preparation&&<p>{t.prepare}: {order.estimates.preparation}</p>}{order.estimates?.delivery&&<p>{t.delivery}: {order.estimates.delivery}</p>}
  </article>)}</div>}
  <nav style={{display:"flex",gap:"1rem"}}><button disabled={!data||page===0} onClick={()=>load(page-1)}>{t.previous}</button><button disabled={!data||(page+1)*20>=data.total} onClick={()=>load(page+1)}>{t.next}</button></nav></>;

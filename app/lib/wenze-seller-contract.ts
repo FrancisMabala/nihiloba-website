@@ -335,6 +335,8 @@ const routes=[
   "POST",
   "orders/{reference}/actions"
  ],
+ ["GET", "orders/{reference}/updates"],
+ ["POST", "orders/{reference}/updates/read"],
  [
   "GET",
   "catalog-imports/options"
