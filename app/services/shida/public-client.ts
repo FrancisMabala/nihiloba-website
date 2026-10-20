@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { wenzeDiscoveryQuery, type WenzeDiscoverySearch } from "../../lib/wenze-discovery";
 import type {
   ApartmentCollection,
   ApartmentListing,
@@ -317,6 +318,13 @@ export const getHotel = cache(async (slug: string): Promise<HotelListing> =>
 export async function getWenzeStores(search:WenzeSearch={}):Promise<PublicCollection<WenzeStore>> { const params=new URLSearchParams(); for(const key of ["query","city","area","category"] as const){const value=search[key]?.trim();if(value)params.set(key,value.slice(0,120));} if(search.limit&&Number.isInteger(search.limit)&&search.limit>0&&search.limit<=50)params.set("limit",String(search.limit)); const suffix=params.size?`?${params}`:""; return collection(await request(`/api/public/shida/wenze/stores${suffix}`,60),(v)=>wenzeStore(v)); }
 export const getWenzeStore=cache(async(key:string)=>wenzeStore(await request(`/api/public/shida/wenze/stores/${encodeURIComponent(key)}`,false),true));
 export const getWenzeProduct=cache(async(key:string)=>wenzeProduct(await request(`/api/public/shida/wenze/products/${encodeURIComponent(key)}`,false)));
+export async function getWenzeProducts(search: WenzeDiscoverySearch) {
+  const data = record(await request(`/api/public/shida/wenze/products?${wenzeDiscoveryQuery(search)}&page_size=20`,false));
+  const base = collection(data,wenzeProduct);
+  const next = text(data.next_cursor);
+  if (flag(data.has_more) !== Boolean(next)) throw new ShidaApiError("malformed");
+  return {...base,next_cursor:next};
+}
 
 const serviceSearchKeys = ["query", "city", "area", "commune", "category", "location_type"] as const;
 export function parseServiceSearchParams(value:ApartmentRawSearchParams):ServiceSearch { const result:ServiceSearch={}; for(const key of serviceSearchKeys){const parsed=firstQueryValue(value[key]);if(parsed)result[key]=parsed;} const rating=numericQuery(value.min_rating,{min:0,max:5}),page=numericQuery(value.page,{integer:true,min:1,max:100_000}),size=numericQuery(value.page_size,{integer:true,min:1,max:50}); if(rating!=null)result.min_rating=rating;if(page!=null)result.page=page;if(size!=null)result.page_size=size;return result; }
