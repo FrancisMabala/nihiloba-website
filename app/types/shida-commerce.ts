@@ -23,6 +23,7 @@ export type CommerceSellerGroup = {
   store_name: string;
   subtotal: string;
   currency: string | null;
+  estimates?: {preparation: string|null; delivery: string|null};
   fulfillment_method: "pickup" | "delivery" | null;
   delivery_fee: string | null;
   delivery_fee_status: string | null;

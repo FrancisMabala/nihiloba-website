@@ -56,6 +56,7 @@ function parseCart(value: unknown): CommerceCart {
     if (method != null && method !== "pickup" && method !== "delivery") throw new CommerceApiError("malformed_response", 502);
     return {
       store_reference: text(group.store_reference, true)!, store_name: text(group.store_name, true)!, subtotal: text(group.subtotal, true)!, currency: text(group.currency),
+      estimates: group.estimates == null ? undefined : {preparation: text(record(group.estimates).preparation), delivery: text(record(group.estimates).delivery)},
       fulfillment_method: method ?? null, delivery_fee: text(group.delivery_fee), delivery_fee_status: text(group.delivery_fee_status),
       items: group.items.map((rawItem) => {
         const line = record(rawItem);

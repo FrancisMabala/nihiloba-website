@@ -40,6 +40,7 @@ export function WenzeFulfillmentInfo({ fulfillment, locale, city, compact = fals
       {pickup && <li><span aria-hidden="true">📍</span> {compact ? t.pickupCompact : t.pickup}</li>}
       {delivery && <li><span aria-hidden="true">🚚</span> {deliveryLabel}</li>}
     </ul>
+    {!compact && fulfillment.estimates && <div>{fulfillment.estimates.preparation && <p>{locale === "fr" ? "Préparation estimée" : "Estimated preparation"}: {fulfillment.estimates.preparation}</p>}{delivery && fulfillment.estimates.delivery && <p>{locale === "fr" ? "Livraison estimée" : "Estimated delivery"}: {fulfillment.estimates.delivery}</p>}</div>}
     {!compact && delivery && areas.length > 0 && <div className="wenze-delivery-areas">
       <strong>{city?.toLowerCase() === "kinshasa" ? t.communes : t.areas}</strong>
       <div>{areas.map((area) => <span key={area}>{area}</span>)}</div>

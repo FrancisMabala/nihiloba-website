@@ -87,6 +87,7 @@ export function WenzeCartPage({ locale }: { locale: Locale }) {
             {(itemErrors[item.reference]||conflict)&&<p className="wenze-cart-line-error" role="alert">{itemErrors[item.reference]||commerceErrorMessage(locale,conflict!.code)}{conflict?.current_value!=null?` (${conflict.current_value}${conflict.code==="price_changed"&&cart.currency?` ${cart.currency}`:""})`:""}</p>}
           </div><strong className="wenze-cart-line-total">{formatCommerceMoney(item.line_total,item.currency,locale)}</strong>
         </article>})}</div>
+        {group.estimates && <div>{group.estimates.preparation && <p>{locale === "fr" ? "Préparation estimée" : "Estimated preparation"}: {group.estimates.preparation}</p>}{group.estimates.delivery && <p>{locale === "fr" ? "Livraison estimée" : "Estimated delivery"}: {group.estimates.delivery}</p>}</div>}
         <footer><span>{t.sellerSubtotal}</span><strong>{formatCommerceMoney(group.subtotal,group.currency,locale)}</strong></footer>
       </section>)}
       <div className="wenze-cart-secondary-actions"><Link href={shoppingPath}>{t.continueShopping}</Link><button type="button" onClick={() => void clearCart()} disabled={pendingAction!==null}>{t.clear}</button></div>
