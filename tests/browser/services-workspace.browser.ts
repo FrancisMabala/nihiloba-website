@@ -1,5 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {workspaceCopy} from '../../app/components/shida/services-workspace-ui';
+import {serviceCategoryExperience} from '../../app/lib/services-category-experience';
 
 const caps=['profile','packages','pilot_publication','reviews_read','requests_quotes','reservations','messages','bills','manual_journal','basic_totals','operational_reports','financial_reports','quote_templates','bill_templates'];
 async function fixture(page:Page,{loadFailure=false,saveFailure=false}={}){
@@ -35,6 +36,13 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
   await page.setViewportSize({width,height:1000});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=services`);
   const panel=page.getByRole('region',{name:t.publication}),button=panel.getByRole('button',{name:publish[locale]});
   await expect(panel).toBeVisible();await expect(button).toBeDisabled();await expect(panel.locator('li')).toHaveCount(4);
+  for(const category of ["beauty_wellness","home_housing","repair_maintenance","education_training","photo_video","professional_services","cleaning"]){
+   await page.locator('#svc-field-category').selectOption(category);
+   await expect(page.locator('#svc-category-help')).toHaveText(serviceCategoryExperience(category,locale)!.description);
+   await expect(page.locator('#svc-field-description')).toHaveValue('');
+   expect(state.writes).toHaveLength(0);
+  }
+  await page.locator('#svc-field-category').selectOption('repair_maintenance');
   await page.screenshot({path:`docs/evidence/seller-workspace/services-publication-${locale}-${width}.png`,fullPage:true});
   await panel.locator('li button').first().click();await expect(page.locator('#svc-field-description')).toBeFocused();
   await page.locator('#svc-field-description').fill('Repairs and maintenance with a careful finish.');
@@ -45,7 +53,7 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
   await page.locator('#svc-field-commune').fill('Lingwala');await expect(button).toBeDisabled();await page.locator('#svc-field-commune').fill('Gombe');await expect(button).toBeEnabled();
   await button.click();await expect(panel.getByRole('heading',{name:t.liveHelp})).toBeVisible();
   expect(state.writes).toHaveLength(2);expect(state.writes[1].body).toEqual({expected_revision:2});
-  await expect(page.locator('.svc-public-link a')).toHaveAttribute('href',`${locale==='en'?'':'/fr'}/shida/services/SVC_one/`);
+  await expect(page.locator('.svc-public-link a')).toHaveAttribute('href',`${locale==='en'?'':`/${locale}`}/shida/services/SVC_one/`);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  });
  test(`bill presentation live preview ${locale} ${width}`,async({page})=>{

@@ -39,6 +39,8 @@ export function galleryReducer(state: GalleryState, action: GalleryAction): Gall
 }
 
 const labels = {
+ ln:{open:"Fungola foto na écran mobimba",close:"Kanga foto monene",previous:"Foto ya liboso",next:"Foto elandi",dialog:"Kotala foto na écran mobimba"},
+ sw:{open:"Fungua picha kwenye skrini nzima",close:"Funga picha ya skrini nzima",previous:"Picha iliyotangulia",next:"Picha inayofuata",dialog:"Mtazamaji wa picha ya skrini nzima"},
   en: { open: "Open image in full screen", close: "Close full-screen image", previous: "Previous image", next: "Next image", dialog: "Full-screen image viewer" },
   fr: { open: "Ouvrir l'image en plein écran", close: "Fermer l'image en plein écran", previous: "Image précédente", next: "Image suivante", dialog: "Visionneuse d'image en plein écran" },
 } as const;
@@ -51,7 +53,7 @@ type ImageGalleryProps = {
   preload?: boolean;
   sizes?: string;
   variant?: "default" | "portfolio";
-  locale?: "en" | "fr";
+  locale?: "en" | "fr" | "ln" | "sw";
   thumbnailLimit?: number;
 };
 

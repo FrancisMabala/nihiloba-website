@@ -9,6 +9,10 @@ import { ServicesAdSlot } from "../app/components/shida/services-ad-slot";
 import { ImageGallery } from "../app/components/shida/image-gallery";
 import { serviceCategories, type PublicServiceSummary, type ServiceAvailability } from "../app/types/shida-public";
 import ServiceRoute from "../app/(default)/shida/services/[service]/page";
+import LocalizedServiceRoute from "../app/(localized)/[lang]/shida/services/[service]/page";
+import {serviceMetadata,servicesMetadata,serviceCategoryLabel} from "../app/components/shida/services";
+import {serviceCategoryExperience} from "../app/lib/services-category-experience";
+import {servicesLocalizedPath} from "../app/lib/services-i18n";
 
 const image={url:"https://res.cloudinary.com/dbrxpvmzp/image/upload/shida/services/work.jpg",alt:"Consultation work"};
 const location={country_code:"CD",city:"Kinshasa",area:null,commune:"Gombe",quartier:"Cliniques",address_visibility:"public" as const,address:"Avenue Publique 10",landmark:"Centre"};
@@ -16,6 +20,24 @@ const summary:PublicServiceSummary={public_ref:"SVC-1",slug:"consultation",provi
 const fixed:ServiceAvailability={service_ref:"SVC-1",availability_mode:"time_slots",requested_time_requires_provider_confirmation:true,from:"2026-08-12",to:"2026-09-11",slots:[{date:"2026-08-12",start_time:"10:30",end_time:"11:00",is_available:true,booking_url:"https://wa.me/exact-slot"},{date:"2026-08-13",start_time:"11:00",end_time:"11:30",is_available:false,booking_url:"https://wa.me/unavailable-slot"}],booking_url:null};
 
 afterEach(()=>vi.unstubAllGlobals());
+
+it.each(["en","fr","ln","sw"] as const)("preserves %s across public routes, filters, metadata and category guidance",async locale=>{
+ const prefix=locale==="en"?"":`/${locale}`;
+ const entry=await LocalizedServiceRoute({params:Promise.resolve({lang:locale,service:"consultation"}),searchParams:Promise.resolve({option:"SPK-1",from:"2026-11-01"})});
+ expect(entry.props).toMatchObject({locale,slug:"consultation",option:"SPK-1",from:"2026-11-01"});
+ vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({items:[summary],count:1,total:1,page:1,page_size:12}))));
+ const html=renderToStaticMarkup(await ServiceCollectionPage({locale,search:{category:"professional_services",commune:"Gombe"}}));
+ expect(html).toContain(`href="${prefix}/shida/services/consultation"`);
+ expect(html).toContain(`href="${prefix}/shida/seller/services"`);
+ for(const language of ["en","fr","ln","sw"] as const)expect(html).toContain(`href="${language==="en"?"":`/${language}`}/shida/services?commune=Gombe&amp;category=professional_services"`);
+ for(const category of serviceCategories){expect(serviceCategoryLabel(category,locale)).toBeTruthy();expect(serviceCategoryExperience(category,locale)?.description).toBeTruthy();}
+ expect(serviceCategoryExperience("health",locale)).toBeUndefined();
+ expect(serviceCategoryExperience("__proto__",locale)).toBeUndefined();
+ expect(servicesMetadata(locale).alternates?.languages).toMatchObject({ln:"/ln/shida/services",sw:"/sw/shida/services"});
+ vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({...summary,description:"Brief",images:[],offerings:[],availability_endpoint:"/api/public/shida/services/consultation/availability"}))));
+ expect((await serviceMetadata(locale,"consultation")).alternates?.canonical).toBe(`${prefix}/shida/services/consultation`);
+ expect(servicesLocalizedPath(locale,"/shida/hotels")).toBe(`${locale==="en"?"":"/fr"}/shida/hotels`);
+});
 
 describe("public Services marketplace",()=>{
   it("offers only the seven publishable groups and a clear empty state",async()=>{vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({items:[],count:0,total:0,page:1,page_size:12}))));const html=renderToStaticMarkup(await ServiceCollectionPage({locale:"en",search:{}}));expect(serviceCategories).toHaveLength(7);for(const category of serviceCategories)expect(html).toContain(`value="${category}"`);for(const category of ["health","food_catering","restaurant","transport","public_services","church_pastoral","other"])expect(html).not.toContain(`value="${category}"`);expect(html).toContain("No public services match your search.");expect(html).toContain('href="/shida/restaurants"');expect(html).toContain('href="/shida/hotels"');});

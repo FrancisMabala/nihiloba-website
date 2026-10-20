@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "categories": {
+    "beauty_wellness": {
+      "en": {"service": "Treatment or style", "description": "Describe the treatment or style, how long it takes, its price and where you welcome customers.", "request": "Which treatment or style would you like, and when?"},
+      "fr": {"service": "Soin ou coiffure", "description": "Décrivez le soin ou la coiffure, sa durée, son prix et votre lieu d’accueil.", "request": "Quel soin ou quelle coiffure souhaitez-vous, et quand ?"},
+      "ln": {"service": "Soin to coiffure", "description": "Limbola soin to coiffure, ntango yango ezwaka, ntalo mpe esika oyambaka bakiliya.", "request": "Olingi soin to coiffure nini, mpe mokolo nini ?"},
+      "sw": {"service": "Huduma ya urembo au mtindo", "description": "Eleza huduma au mtindo, muda wake, bei na mahali unapopokea wateja.", "request": "Ungependa huduma au mtindo gani, na lini?"}
+    },
+    "home_housing": {
+      "en": {"service": "Home service", "description": "Describe the work you do, the areas you serve and what a visit includes.", "request": "What needs doing at home? Give your broad area and preferred visit time."},
+      "fr": {"service": "Service à domicile", "description": "Décrivez les travaux proposés, les zones desservies et ce qui est compris dans une visite.", "request": "De quels travaux avez-vous besoin ? Indiquez votre zone et le moment souhaité pour la visite."},
+      "ln": {"service": "Mosala ya ndako", "description": "Limbola misala osalaka, bisika okendaka mpe makambo osalaka na visite.", "request": "Mosala nini esengeli na ndako ? Pesa zone na yo mpe ntango olingi visite."},
+      "sw": {"service": "Huduma ya nyumbani", "description": "Eleza kazi unazofanya, maeneo unayohudumia na kinachojumuishwa katika ziara.", "request": "Ni kazi gani inahitajika nyumbani? Taja eneo lako na muda unaopendelea kwa ziara."}
+    },
+    "repair_maintenance": {
+      "en": {"service": "Repair service", "description": "Say which items you repair, what your visit covers and how you agree the repair price.", "request": "What item needs repair, and what is the problem? When would you prefer a visit?"},
+      "fr": {"service": "Service de réparation", "description": "Précisez les objets réparés, ce que comprend la visite et comment vous convenez du prix.", "request": "Quel objet faut-il réparer, et quel est le problème ? Quand souhaitez-vous une visite ?"},
+      "ln": {"service": "Mosala ya kobongisa", "description": "Pesa biloko obongisaka, makambo ya visite mpe ndenge boyokanaka na ntalo.", "request": "Eloko nini ebebi, mpe mokakatano ezali nini ? Olingi visite ntango nini ?"},
+      "sw": {"service": "Huduma ya matengenezo", "description": "Taja vitu unavyotengeneza, kinachojumuishwa katika ziara na jinsi mnavyokubaliana bei.", "request": "Ni kitu gani kinahitaji kutengenezwa, na tatizo ni nini? Unapendelea ziara lini?"}
+    },
+    "education_training": {
+      "en": {"service": "Lesson or subject", "description": "Describe the subject, learner level, lesson length and available times.", "request": "Which subject and learning level? How long should the lesson be, and when?"},
+      "fr": {"service": "Cours ou matière", "description": "Précisez la matière, le niveau, la durée du cours et les horaires disponibles.", "request": "Quelle matière et quel niveau ? Quelle durée et quel horaire souhaitez-vous ?"},
+      "ln": {"service": "Liteya to matière", "description": "Pesa matière, niveau ya moyekoli, ntango ya liteya mpe ngonga ya kosala.", "request": "Matière nini mpe niveau nini ? Liteya eumelaka boni, mpe ntango nini ?"},
+      "sw": {"service": "Somo", "description": "Eleza somo, kiwango cha mwanafunzi, muda wa somo na nyakati zinazopatikana.", "request": "Somo gani na kiwango gani? Somo liwe la muda gani, na lini?"}
+    },
+    "photo_video": {
+      "en": {"service": "Photo or video session", "description": "Describe your sessions, packages, duration, locations and what photos or videos customers receive.", "request": "What occasion or session, on which date and in which area? What photos or videos do you need?"},
+      "fr": {"service": "Séance photo ou vidéo", "description": "Décrivez vos séances, forfaits, durées, lieux et les photos ou vidéos remises au client.", "request": "Quelle occasion ou séance, à quelle date et dans quelle zone ? Quelles photos ou vidéos souhaitez-vous ?"},
+      "ln": {"service": "Séance ya foto to video", "description": "Limbola ba séance, forfait, ntango, bisika mpe foto to video oyo kiliya akozwa.", "request": "Likambo to séance nini, mokolo nini mpe zone nini ? Olingi foto to video nini ?"},
+      "sw": {"service": "Kipindi cha picha au video", "description": "Eleza vipindi, vifurushi, muda, maeneo na picha au video atakazopokea mteja.", "request": "Tukio au kipindi gani, tarehe gani na eneo gani? Unahitaji picha au video zipi?"}
+    },
+    "professional_services": {
+      "en": {"service": "Professional service", "description": "Describe the client needs you help with, the scope of your consultation or scheduled work and your terms.", "request": "What help do you need? Describe the scope and your preferred consultation or work time."},
+      "fr": {"service": "Service professionnel", "description": "Décrivez les besoins accompagnés, le contenu de la consultation ou de la prestation prévue et vos conditions.", "request": "De quelle aide avez-vous besoin ? Décrivez le besoin et le moment souhaité pour la consultation ou la prestation."},
+      "ln": {"service": "Mosala ya mayele", "description": "Limbola bosalisi opesaka, makambo ya consultation to mosala ebongisami mpe mibeko na yo.", "request": "Osengeli na lisalisi nini ? Limbola bosengi mpe ntango olingi consultation to mosala."},
+      "sw": {"service": "Huduma ya kitaalamu", "description": "Eleza mahitaji unayosaidia, maudhui ya ushauri au kazi iliyopangwa na masharti yako.", "request": "Unahitaji msaada gani? Eleza kazi na muda unaopendelea kwa ushauri au huduma."}
+    },
+    "cleaning": {
+      "en": {"service": "Cleaning service", "description": "Describe the places and tasks you clean, package duration and whether cleaning supplies are included.", "request": "What place and tasks need cleaning, and when? Will you provide cleaning supplies?"},
+      "fr": {"service": "Service de nettoyage", "description": "Décrivez les lieux et tâches, la durée du forfait et si les produits sont compris.", "request": "Quels lieux et tâches faut-il nettoyer, et quand ? Fournirez-vous les produits ?"},
+      "ln": {"service": "Mosala ya bopeto", "description": "Limbola bisika mpe misala ya bopeto, ntango ya forfait mpe soki produits ezali na kati.", "request": "Bisika nini mpe misala nini ya bopeto, mpe ntango nini ? Okopesa produits ya bopeto ?"},
+      "sw": {"service": "Huduma ya usafi", "description": "Eleza maeneo na kazi za usafi, muda wa kifurushi na kama vifaa vya usafi vimejumuishwa.", "request": "Ni sehemu na kazi gani zinahitaji usafi, na lini? Utatoa vifaa vya usafi?"}
+    }
+  }
+}

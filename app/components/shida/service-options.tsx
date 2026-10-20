@@ -1,8 +1,8 @@
-import type { Locale } from "../../lib/i18n";
+import type {ServiceLocale as Locale} from "../../lib/services-i18n";
 import type { ServiceOffering } from "../../types/shida-public";
 import { formatServiceDuration } from "./service-format";
 
-const copy={en:{title:"1. Choose an option",selected:"Selected",choose:"Choose"},fr:{title:"1. Choisissez une option",selected:"Sélectionnée",choose:"Choisir"}} as const;
+const copy={ln:{title:"1. Pona mosala",selected:"Eponami",choose:"Pona"},sw:{title:"1. Chagua huduma",selected:"Imechaguliwa",choose:"Chagua"},en:{title:"1. Choose an option",selected:"Selected",choose:"Choose"},fr:{title:"1. Choisissez une option",selected:"Sélectionnée",choose:"Choisir"}} as const;
 
 function price(option:ServiceOffering):string|null {if(!option.price)return null;return /[A-Za-z]{3}|[$€£]|CDF/i.test(option.price)?option.price:`${option.price}${option.currency?` ${option.currency}`:""}`;}
 
