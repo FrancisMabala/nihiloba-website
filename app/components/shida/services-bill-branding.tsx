@@ -7,10 +7,10 @@ import {ServiceBillStatement,type BillStatementVersion} from "./service-bill-sta
 type Locale="fr"|"en"|"ln"|"sw";
 type Settings={display_name:string|null;accent:string;revision:number;fallback_display_name:string;preview:{display_name:string;accent:string}};
 const words={
- en:{title:"Bill presentation",name:"Name shown on new bills",help:"Only new issued versions use changes made here. Leave blank to use your public provider name.",accent:"Accent color",save:"Save presentation",preview:"Draft presentation preview",saved:"Presentation saved.",failed:"Could not save. Refresh and try again.",slate:"Slate",blue:"Blue",green:"Green",plum:"Plum"},
- fr:{title:"Présentation du relevé",name:"Nom affiché sur les nouveaux relevés",help:"Seules les nouvelles versions émises utilisent ces modifications. Laissez vide pour utiliser le nom public du prestataire.",accent:"Couleur d’accent",save:"Enregistrer",preview:"Aperçu du brouillon",saved:"Présentation enregistrée.",failed:"Enregistrement impossible. Actualisez et réessayez.",slate:"Ardoise",blue:"Bleu",green:"Vert",plum:"Prune"},
- ln:{title:"Lolenge ya mokanda",name:"Nkombo na mikanda ya sika",help:"Bobongoli etali kaka mikanda ya sika. Tika polele mpo na kosalela nkombo ya mopesi mosala.",accent:"Langi",save:"Bomba",preview:"Elilingi ya brouillon",saved:"Ebombami.",failed:"Kobomba elongi te. Zongisa mpe meka lisusu.",slate:"Motane ya mabanga",blue:"Bule",green:"Vert",plum:"Violet"},
- sw:{title:"Mwonekano wa bili",name:"Jina kwenye bili mpya",help:"Mabadiliko haya hutumika kwenye matoleo mapya pekee. Acha wazi kutumia jina la umma la mtoa huduma.",accent:"Rangi",save:"Hifadhi",preview:"Muhtasari wa rasimu",saved:"Mwonekano umehifadhiwa.",failed:"Imeshindikana kuhifadhi. Sasisha na ujaribu tena.",slate:"Kijivu",blue:"Bluu",green:"Kijani",plum:"Zambarau"}
+ en:{title:"Bill presentation",name:"Name shown on new bills",help:"Changes apply the next time you issue a bill. Bills already issued keep their appearance. Leave the name blank to use your public provider name.",accent:"Accent color",save:"Save presentation",preview:"Draft presentation preview",saved:"Presentation saved.",failed:"Could not save. Refresh and try again.",slate:"Slate",blue:"Blue",green:"Green",plum:"Plum"},
+ fr:{title:"Présentation des factures",name:"Nom affiché sur les nouvelles factures",help:"Les modifications s’appliquent à la prochaine facture émise. Les factures déjà émises gardent leur présentation. Laissez le nom vide pour utiliser votre nom public.",accent:"Couleur d’accent",save:"Enregistrer",preview:"Aperçu du brouillon",saved:"Présentation enregistrée.",failed:"Enregistrement impossible. Actualisez et réessayez.",slate:"Ardoise",blue:"Bleu",green:"Vert",plum:"Prune"},
+ ln:{title:"Lolenge ya mokanda",name:"Nkombo na mikanda ya sika",help:"Bobongoli ekosalelama na facture oyo okobimisa sima. Ba facture oyo esila kobima ekobongwana te. Tika nkombo polele mpo na kosalela nkombo na yo ya bato nyonso.",accent:"Langi",save:"Bomba",preview:"Elilingi ya brouillon",saved:"Ebombami.",failed:"Kobomba elongi te. Zongisa mpe meka lisusu.",slate:"Motane ya mabanga",blue:"Bule",green:"Vert",plum:"Violet"},
+ sw:{title:"Mwonekano wa bili",name:"Jina kwenye bili mpya",help:"Mabadiliko yatatumika utakapotoa bili inayofuata. Bili zilizotolewa tayari hazibadiliki. Acha jina wazi kutumia jina lako la umma.",accent:"Rangi",save:"Hifadhi",preview:"Muhtasari wa rasimu",saved:"Mwonekano umehifadhiwa.",failed:"Imeshindikana kuhifadhi. Sasisha na ujaribu tena.",slate:"Kijivu",blue:"Bluu",green:"Kijani",plum:"Zambarau"}
 } as const;
 
 const previewCopy={
@@ -22,7 +22,10 @@ const previewCopy={
 const accents={slate:"#334155",blue:"#1d4ed8",green:"#166534",plum:"#7e22ce"} as const;
 function validSettings(value:Settings):boolean{return !!value&&typeof value.fallback_display_name==="string"&&Number.isInteger(value.revision)&&value.revision>=0&&value.accent in accents&&(value.display_name===null||typeof value.display_name==="string");}
 
-export function ServicesBillBranding({base,binding,locale,onDenied}:{base:string;binding:string;locale:Locale;onDenied?:()=>void}){
+export function ServicesBillBranding(props:{base:string;binding:string;locale:Locale;onDenied?:()=>void}){
+ return <BillBranding key={`${props.base}:${props.binding}`} {...props}/>;
+}
+function BillBranding({base,binding,locale,onDenied}:{base:string;binding:string;locale:Locale;onDenied?:()=>void}){
  const t=words[locale],ui=providerCopy[locale],p=previewCopy[locale];
  const [settings,setSettings]=useState<Settings|null>(null),[name,setName]=useState(""),[accent,setAccent]=useState("slate"),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[reload,setReload]=useState(0),[pending,setPending]=useState<string|null>(null);
  const lock=useRef(false),alive=useRef(true),denied=useRef(onDenied);
@@ -58,7 +61,7 @@ export function ServicesBillBranding({base,binding,locale,onDenied}:{base:string
  if(!settings)return <section className="svc-editor-card"><p role="alert">{p.loadFailed}</p><button type="button" onClick={refresh}>{ui.retry}</button></section>;
  const preview:BillStatementVersion={version_ref:"",bill_ref:p.sample,revision:1,status:"private_draft",currency:"USD",total:"50.00",issue_date:null,due_date:null,lines:[{ordinal:1,label:p.line,amount:"50.00"}],presentation:{identity_name:settings.fallback_display_name,display_name:name.trim()||settings.fallback_display_name,accent}};
  const dirty=name!==(settings.display_name??"")||accent!==settings.accent;
- return <section className="svc-branding" aria-label={t.title}>
+ return <section className="svc-branding" aria-label={p.identity}>
   <form className="svc-branding-controls svc-editor-card" onSubmit={event=>void save(event)}>
    <p className="svc-kicker">{p.look}</p><h3>{p.identity}</h3><p>{t.help}</p>
    <fieldset disabled={busy||pending!==null}><label>{t.name}<input maxLength={120} placeholder={settings.fallback_display_name} value={name} onChange={event=>setName(event.target.value)}/></label>

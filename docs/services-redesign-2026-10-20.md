@@ -149,3 +149,17 @@ screenshots were reviewed; Organization report styling was improved after the
 first visual pass. No native-speaker or physical-device validation is claimed.
 No API, schema, dependency, environment or lifecycle policy changes. Other
 management panels and the unreleased customer-brief journey remain separate work.
+
+## R03e — bill appearance continuity
+
+Plain EN/FR/LN/SW guidance now explains that appearance changes apply to future
+bills and preserve already issued bills. The French appearance destination and
+form use consistent wording. A session/provider-context change remounts the
+editor so a previous provider's draft or response cannot populate the new editor.
+The inner appearance landmark has its own descriptive name.
+
+Validation: four production-browser scenarios passed across EN/FR/LN/SW at
+320–768px, including saving appearance and retained quote/bill template behavior.
+The webpack production build, TypeScript and scoped lint passed. Existing
+failed-load and uncertain-save recovery remains in place. No API, migration,
+environment, dependency or financial-policy changes; no tests removed or skipped.
