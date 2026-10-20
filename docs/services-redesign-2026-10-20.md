@@ -321,3 +321,22 @@ history remain covered. Both webpack/TypeScript builds and scoped lint passed.
 Initial unit failures were fixture URL/label/timing mismatches; the tests were
 corrected to use the actual paginated route and enabled action. Local only;
 coordinated release and operational gates remain open.
+
+### R03p — Day-first calendar and category schedules (21 October, local)
+
+Services places the selected day's work before the month grid. Filtering a service
+uses the appropriate appointment, visit, lesson, session, consultation or cleaning
+label in all four languages. The all-services view retains every authorized item.
+The shared calendar defaults remain unchanged for other marketplaces. Services
+shows a plain Kinshasa-time label, a loading announcement, and explains that the
+shared link opens the customer booking page using the provider's booking settings.
+No scheduling, publication, capacity or permission policy changed.
+
+Twelve focused calendar/gateway/presentation checks passed. Eleven browser journeys
+passed: the existing four-language calendar, hours and QR flows, save recovery,
+duration handoff and explicit WhatsApp booking-link selection, plus crowded/empty
+schedules across all seven categories in each language. Initial crowded-test
+failures were duplicate Refresh selectors, fixed by targeting the calendar panel.
+The French mobile crowded agenda was visually inspected after correcting smooth-
+scroll screenshot timing. Production webpack/TypeScript and scoped lint passed.
+These changes are local and await the coordinated release.

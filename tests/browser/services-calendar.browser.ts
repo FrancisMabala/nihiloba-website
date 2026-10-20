@@ -3,6 +3,8 @@ import {test,expect,type Page} from '@playwright/test';
 import {scheduleCopy} from '../../app/lib/services-calendar-copy';
 import {calendarCopy,localDate} from '../../app/lib/shida-calendar';
 import {servicesProviderOffering} from './fixtures/services-provider';
+import {serviceCalendarLabel} from '../../app/lib/services-calendar-labels';
+import categories from '../../app/lib/services-category-experience.json';
 const today=()=>localDate(new Date().toISOString(),'Africa/Kinshasa');
 async function capture(page:Page,path:string){
  // Capture fixed navigation at the top after Playwright scrolls to a form action.
@@ -12,14 +14,14 @@ async function capture(page:Page,path:string){
 }
 async function fixture(page:Page,uncertain=false,duration:number|null=30){
  const qr=await QRCode.toDataURL('https://nihiloba.com/shida/services/SVC_one#booking');
- const state={schedule:{offering_ref:'SVC_one',revision:1,mode:'appointments',confirmation:'provider_approval',timezone:'Africa/Kinshasa',duration_minutes:duration,hours:[{day:'monday',start:'09:00',end:'17:00'}]},writes:[] as object[],deny:false,uncertain,opened:[] as string[]};
+ const state={category:'beauty_wellness',schedule:{offering_ref:'SVC_one',revision:1,mode:'appointments',confirmation:'provider_approval',timezone:'Africa/Kinshasa',duration_minutes:duration,hours:[{day:'monday',start:'09:00',end:'17:00'}]},writes:[] as object[],deny:false,uncertain,opened:[] as string[]};
  await page.route('**/api/**',async route=>{
   const req=route.request(),url=new URL(req.url()),path=url.pathname.replace(/\/$/,'');
   const reply=(json:unknown,status=200)=>route.fulfill({json,status});
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Studio Kin'}});
   if(state.deny)return reply({},403);
   if(path.endsWith('/capabilities'))return reply({capabilities:['profile','packages','pilot_publication','structured_availability','reservations','messages','requests_quotes']});
-  if(path.endsWith('/services'))return reply({profiles:[{...servicesProviderOffering,service_name:'Studio Kin · Haircut'}]});
+  if(path.endsWith('/services'))return reply({profiles:[{...servicesProviderOffering,category:state.category,service_name:'Studio Kin · Haircut'}]});
   if(path.endsWith('/calendar'))return reply({timezone:'Africa/Kinshasa',page:1,has_more:false,items:[{reference:'RSV_today',startsAt:`${today()}T10:00:00+01:00`,endsAt:`${today()}T10:30:00+01:00`,timeZone:'Africa/Kinshasa',title:'Haircut',status:'confirmed',tone:'confirmed'}]});
   if(path.endsWith('/schedule')){
    if(req.method()==='PATCH'){const body=req.postDataJSON();state.writes.push(body);if(state.uncertain){state.uncertain=false;return reply({},503);}state.schedule={...state.schedule,...body,revision:2};}
@@ -94,4 +96,29 @@ test('public appointment selection creates one WhatsApp handoff and handles a st
  await expect(panel.getByRole('status')).toContainText('no longer available');await expect(panel.getByRole('link',{name:'Continue on WhatsApp'})).toHaveCount(0);
  await panel.getByRole('button',{name:'09:30–10:00',exact:true}).click();await expect(panel.getByRole('link',{name:'Continue on WhatsApp'})).toHaveAttribute('href',/START%20opaque/);expect(calls).toHaveLength(2);
  await expect(panel).toContainText('confirmed when you finish booking');
+});
+
+for(const locale of ['en','fr','ln','sw'] as const)test(`day agenda, category schedules and crowded or empty work ${locale}`,async({page})=>{
+ const state=await fixture(page),t=scheduleCopy[locale];
+ let count=24;
+ await page.route('**/api/shida/**/calendar?**',route=>route.fulfill({json:{items:Array.from({length:count},(_,index)=>({reference:`RSV_${index}`,startsAt:`${today()}T${String(6+Math.floor(index/2)).padStart(2,'0')}:${index%2?'30':'00'}:00+01:00`,timeZone:'Africa/Kinshasa',title:`Work ${index+1}`,status:'confirmed',tone:'confirmed'})),has_more:false}}));
+ await page.setViewportSize({width:390,height:850});
+ const url=`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=calendar`;
+ for(const category of Object.keys(categories.categories)){
+  state.category=category;await page.goto(url);
+  const planner=page.locator('.svc-planner');
+  await planner.getByRole('combobox',{name:t.service,exact:true}).selectOption('SVC_one');
+  await expect(planner.locator('.shida-cal-agenda h4')).toContainText(serviceCalendarLabel(category,locale)!);
+  await expect(planner.locator('.shida-cal-agenda li')).toHaveCount(24);
+  expect(await planner.locator('.shida-calendar').evaluate(element=>{
+   const agenda=element.querySelector('.shida-cal-agenda')!,grid=element.querySelector('.shida-cal-grid')!;
+   return !!(agenda.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING)&&agenda.getBoundingClientRect().top<grid.getBoundingClientRect().top;
+  })).toBe(true);
+ }
+ await page.locator('.shida-cal-agenda').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));
+ await page.screenshot({path:`test-results/calendar-crowded-${locale}.png`,fullPage:false});
+ count=0;await page.locator('.svc-planner').getByRole('button',{name:t.refresh,exact:true}).click();
+ await expect(page.locator('.shida-cal-agenda')).toContainText(calendarCopy[locale].empty);
+ await expect(page.locator('.shida-cal-agenda li')).toHaveCount(0);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
