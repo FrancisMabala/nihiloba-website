@@ -27,7 +27,7 @@ export function WenzePaymentPreferences({path,locale,request,onRevision}:Props){
   try{
    const next=await request(`${path}/payment-preferences`,{method:"PUT",body:JSON.stringify({expected_revision:data.revision,methods:selected})}) as Preferences;
    setData(next);setSelected(next.selected);onRevision(next.revision);setMessage("saved");
-  }catch(e){const conflict=!!e&&typeof e==="object"&&"status" in e&&e.status===409;setStale(conflict);setMessage(conflict?"conflict":"error");}
+  }catch(e){if(e&&typeof e==="object"&&"status" in e&&[401,403,404].includes(Number(e.status))){setData(null);setSelected([]);}const conflict=!!e&&typeof e==="object"&&"status" in e&&e.status===409;setStale(conflict);setMessage(conflict?"conflict":"error");}
   finally{setBusy(false);}
  }
  return <section aria-label={t("title")}><h3>{t("title")}</h3><p>{t("help")}</p>
