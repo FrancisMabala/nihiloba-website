@@ -78,7 +78,7 @@ export function ServicesTransactions({base,binding,locale,initialKind='requests'
   else if(action==='propose'){path+='/reschedule-proposals';body={...body,revision:lifecycle!.revision,proposed_date:fields.date,proposed_start_time:fields.start_time,proposed_end_time:fields.end_time||null,...(appointmentZone?{proposed_timezone:'Africa/Kinshasa'}:{}),description:fields.description||''};}
   else if(action==='reschedule_accept'||action==='reschedule_reject'){const scheduling=lifecycle?.rescheduling as Row;const proposal=scheduling.proposal as Row;path+=`/reschedule-proposals/${str(proposal,'proposal_ref')}/decision`;body={...body,revision:lifecycle!.revision,proposal_revision:proposal.revision,decision:action.replace('reschedule_','')};}
   else{path+=`/lifecycle/${action}`;body={...body,revision:lifecycle!.revision,reason_code:fields.reason||'',description:fields.description||''};}
-  try{await call(path,method,body);if(alive.current&&epoch===generation.current){replay.current=null;await open(current);setNotice(t('saved'));}}
+  try{await call(path,method,body);if(alive.current&&epoch===generation.current){replay.current=null;await open(current);setNotice(t(action==='reply'?'reply_saved':'saved'));}}
   catch(e){if(alive.current&&epoch===generation.current){if(e instanceof Error&&e.message==='409'){await open(current);setNotice(t('stale'));}else error(e);}}
   finally{if(alive.current)setBusy(false);}
  }

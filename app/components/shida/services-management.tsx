@@ -125,12 +125,13 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
   </div>
   {!settingUp&&<p className="svc-setup-back"><Link href={`${lang==="en"?"":"/fr"}/shida/services`} onClick={event=>{if(!leaveWork())event.preventDefault();}}><span aria-hidden="true">← </span>{entry.browse}</Link></p>}
  </section>;
- const navigation:ProviderView[]=["overview",...(can("profile")?["services" as const]:[]),...(can("structured_availability")?["calendar" as const]:[]),...(can("reservations")&&can("messages")?["work" as const]:[]),...(can("manual_journal")||can("basic_totals")?["finance" as const]:[]),...(can("operational_reports")?["reports" as const]:[]),...(can("quote_templates")||can("bill_templates")?["templates" as const]:[]),...(can("bills")?["settings" as const]:[])];
+ const navigation:ProviderView[]=["overview",...(can("reservations")&&can("messages")?["work" as const]:[]),...(can("structured_availability")?["calendar" as const]:[]),...(can("profile")?["services" as const]:[]),...(can("manual_journal")||can("basic_totals")?["finance" as const]:[]),...(can("operational_reports")?["reports" as const]:[]),...(can("quote_templates")||can("bill_templates")?["templates" as const]:[]),...(can("bills")?["settings" as const]:[])];
  const selectedView=navigation.includes(view)?view:"overview";
  const fieldLabels:Record<string,string>={name:t.name,service_name:t.service,category:t.category,description:t.description,service_duration_minutes:t.duration,commune:t.area,service_location_type:t.location,home_service_available:t.home,booking_mode:t.booking,availability:t.availability};
  return <section aria-label={t.title} className="svc-workspace container seller-layout" lang={lang}>
   <aside className="svc-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="S" title={ui.title} subtitle={ui.personal}/>
-   <SellerWorkspaceNavigation label={ui.navigation} items={navigation.map(key=>({key,label:ui[key],icon:key==="services"?"catalog":key==="templates"?"document":key}))} current={selectedView} onNavigate={key=>navigate(key as ProviderView)}/>
+   <SellerWorkspaceNavigation label={ui.navigation} items={navigation.filter(key=>!["reports","templates","settings"].includes(key)).map(key=>({key,label:ui[key],icon:key==="services"?"catalog":key==="templates"?"document":key}))} current={selectedView} onNavigate={key=>navigate(key as ProviderView)}/>
+   <details className="svc-secondary-tools" open={["reports","templates","settings"].includes(selectedView)||undefined}><summary>{ui.tools}</summary><SellerWorkspaceNavigation label={ui.tools} items={navigation.filter(key=>["reports","templates","settings"].includes(key)).map(key=>({key,label:ui[key],icon:key==="templates"?"document":key==="reports"?"reports":"settings"}))} current={selectedView} onNavigate={key=>navigate(key as ProviderView)}/></details>
 
   </aside>
   <div className="svc-content">

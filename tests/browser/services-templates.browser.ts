@@ -29,7 +29,7 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  });
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=settings`);
  const branding=page.getByRole('region',{name:brand[locale].title});await branding.getByLabel(brand[locale].name).fill('Studio Kivu');await branding.getByRole('button',{name:brand[locale].save}).click();await expect(branding.getByText('Studio Kivu')).toBeVisible();
- await page.getByRole("navigation",{name:providerCopy[locale].navigation}).getByRole("button",{name:providerCopy[locale].templates,exact:true}).click();
+ await page.getByRole("navigation",{name:providerCopy[locale].tools,exact:true}).getByRole("button",{name:providerCopy[locale].templates,exact:true}).click();
  const quotes=page.getByRole('region',{name:t.quote});await quotes.getByRole('button',{name:t.new}).click();await quotes.getByLabel(t.name).fill('Standard repair');await quotes.getByLabel(t.amount).fill('80.00');await quotes.getByRole('button',{name:t.save}).click();await expect(quotes.getByText('Standard repair')).toBeVisible();
  const bills=page.getByRole('region',{name:t.bill});await bills.getByRole('button',{name:t.new}).click();await bills.getByLabel(t.name).fill('Standard bill');await bills.getByRole('textbox').nth(1).fill('Agreed work');await bills.getByLabel(t.amount).fill('80.00');await bills.getByRole('button',{name:t.save}).click();await expect(bills.getByText('Standard bill')).toBeVisible();
  await page.getByRole("navigation",{name:providerCopy[locale].navigation}).getByRole("button",{name:providerCopy[locale].work,exact:true}).click();
