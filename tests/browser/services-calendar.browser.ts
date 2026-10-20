@@ -10,9 +10,9 @@ async function capture(page:Page,path:string){
  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>resolve())));
  await page.screenshot({path,fullPage:true});
 }
-async function fixture(page:Page,uncertain=false){
+async function fixture(page:Page,uncertain=false,duration:number|null=30){
  const qr=await QRCode.toDataURL('https://nihiloba.com/shida/services/SVC_one#booking');
- const state={schedule:{offering_ref:'SVC_one',revision:1,mode:'appointments',confirmation:'provider_approval',timezone:'Africa/Kinshasa',duration_minutes:30,hours:[{day:'monday',start:'09:00',end:'17:00'}]},writes:[] as object[],deny:false,uncertain,opened:[] as string[]};
+ const state={schedule:{offering_ref:'SVC_one',revision:1,mode:'appointments',confirmation:'provider_approval',timezone:'Africa/Kinshasa',duration_minutes:duration,hours:[{day:'monday',start:'09:00',end:'17:00'}]},writes:[] as object[],deny:false,uncertain,opened:[] as string[]};
  await page.route('**/api/**',async route=>{
   const req=route.request(),url=new URL(req.url()),path=url.pathname.replace(/\/$/,'');
   const reply=(json:unknown,status=200)=>route.fulfill({json,status});
@@ -42,7 +42,10 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
   await capture(page,`docs/evidence/services-calendar/agenda-${locale}-${width}.png`);
   await tabs.getByRole('button',{name:t.hours,exact:true}).click();
   await expect(planner.getByLabel(t.confirmation)).toBeVisible();
+  await expect(planner.getByRole('region',{name:t.bookingPreview})).toContainText(t.approval);
   await planner.getByLabel(t.confirmation).selectOption('automatic');
+  await expect(planner.getByRole('region',{name:t.bookingPreview})).toContainText(t.instant);
+  await expect(planner.getByRole('region',{name:t.bookingPreview})).toContainText(t.previewDraft);
   await planner.getByRole('button',{name:t.add,exact:true}).click();
   await expect(planner.locator('input[type=time]')).toHaveCount(4);
   await planner.getByRole('button',{name:t.save,exact:true}).click();
@@ -65,6 +68,21 @@ test('uncertain hours save retries exactly and access revocation removes private
  await expect(page.getByRole('status')).toHaveText(t.uncertain);await expect(page.getByLabel(t.confirmation)).toBeDisabled();
  await page.getByRole('button',{name:t.retry,exact:true}).click();await expect(page.getByRole('status')).toHaveText(t.saved);expect(state.writes[0]).toEqual(state.writes[1]);
  state.deny=true;await page.locator('.svc-planner-tabs').getByRole('button',{name:t.share,exact:true}).click();await expect(page.locator('.svc-planner')).toHaveCount(0);
+});
+
+test('missing duration opens the selected service editor and protects unsaved hours',async({page})=>{
+ const state=await fixture(page,false,null),t=scheduleCopy.en;
+ await page.goto('/shida/seller/services?view=calendar&offering=SVC_one');
+ await page.locator('.svc-planner-tabs').getByRole('button',{name:t.hours,exact:true}).click();
+ await expect(page.getByRole('button',{name:t.save,exact:true})).toBeDisabled();
+ await page.getByLabel(t.confirmation).selectOption('automatic');
+ page.once('dialog',dialog=>dialog.dismiss());
+ await page.getByRole('button',{name:t.editDuration,exact:true}).click();
+ await expect(page.locator('.svc-planner')).toBeVisible();
+ page.once('dialog',dialog=>dialog.accept());
+ await page.getByRole('button',{name:t.editDuration,exact:true}).click();
+ await expect(page.locator('#svc-field-service_duration_minutes')).toBeFocused();
+ expect(state.writes).toHaveLength(0);
 });
 test('public appointment selection creates one WhatsApp handoff and handles a stale time',async({page})=>{
  const calls:string[]=[];

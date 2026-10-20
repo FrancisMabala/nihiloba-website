@@ -184,3 +184,4 @@
 .svc-today button{min-height:44px;padding:.6rem 1rem;border:1px solid #c6d2c7;border-radius:8px;background:#fffefa;color:#1e4034;cursor:pointer}
 .svc-today button:focus-visible{outline:3px solid #9a8037;outline-offset:3px}
 @media(max-width:700px){.svc-today-grid{grid-template-columns:minmax(0,1fr)}}
+.svc-booking-preview{margin-top:1.25rem;padding:1.25rem;background:#edf0e8;border:1px solid #dce2d2;border-radius:12px;overflow-wrap:anywhere}.svc-booking-preview p{margin:.45rem 0}

@@ -261,3 +261,16 @@ Validation: four production-browser journeys passed in EN/FR/LN/SW, including a
 failed list load, comma price and a committed save whose response was lost.
 Webpack production build, TypeScript and scoped lint passed. This batch remains
 local pending the coordinated release.
+
+### Opening-hours review and missing-duration recovery
+
+Opening hours now include a customer booking preview showing the selected mode,
+duration, hours and approval choice. Unsaved changes are identified. A missing
+duration links to that exact service's editor and focuses its duration field,
+with confirmation before leaving unsaved hours. The saved preview leads to the
+existing booking-link/QR panel; category changes do not select instant approval.
+
+Validation: seven production-browser checks passed, including four languages,
+missing-duration recovery, unchanged retry after an uncertain save, access
+revocation and stale public-slot recovery before WhatsApp handoff. Production
+webpack build, TypeScript and scoped lint passed. This is local, not deployed.
