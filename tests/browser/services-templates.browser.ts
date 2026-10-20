@@ -1,8 +1,9 @@
+import {requestWords} from "../../app/lib/services-request-copy";
 import {providerCopy} from "../../app/lib/services-provider-copy";
 import {test,expect} from '@playwright/test';
 import {servicesText} from '../../app/components/shida/services-transaction-copy';
 
-const words={en:{quote:'Quote templates',bill:'Bill draft templates',new:'New template',name:'Template name',amount:'Amount',currency:'Currency',save:'Save template',choose:'Choose a template',apply:'Prefill draft',requests:'Requests and quotes',reservations:'Reservations'},fr:{quote:'Modèles de devis',bill:'Modèles de brouillons de facture',new:'Nouveau modèle',name:'Nom du modèle',amount:'Montant',currency:'Devise',save:'Enregistrer le modèle',choose:'Choisir un modèle',apply:'Préremplir le brouillon',requests:'Demandes et devis',reservations:'Réservations'},ln:{quote:'Ba modèle ya devis',bill:'Ba modèle ya brouillon ya facture',new:'Modèle ya sika',name:'Nkombo ya modèle',amount:'Motango',currency:'Mbongo',save:'Bomba modèle',choose:'Pona modèle',apply:'Tondisa brouillon',requests:'Masengi mpe devis',reservations:'Ba réservation'},sw:{quote:'Violezo vya makadirio',bill:'Violezo vya rasimu ya bili',new:'Kiolezo kipya',name:'Jina la kiolezo',amount:'Kiasi',currency:'Sarafu',save:'Hifadhi kiolezo',choose:'Chagua kiolezo',apply:'Jaza rasimu',requests:'Maombi na makadirio',reservations:'Nafasi'}} as const;
+const words={en:{quote:'Saved quotes',bill:'Saved bill layouts',new:'New template',name:'Template name',amount:'Amount',currency:'Currency',save:'Save template',choose:'Choose a template',apply:'Use this template',requests:'Requests and quotes',reservations:'Reservations'},fr:{quote:'Devis enregistrés',bill:'Modèles de facture',new:'Nouveau modèle',name:'Nom du modèle',amount:'Montant',currency:'Devise',save:'Enregistrer le modèle',choose:'Choisir un modèle',apply:'Utiliser ce modèle',requests:'Demandes et devis',reservations:'Réservations'},ln:{quote:'Ba devis ebombami',bill:'Ba modèle ya facture',new:'Modèle ya sika',name:'Nkombo ya modèle',amount:'Motango',currency:'Mbongo',save:'Bomba modèle',choose:'Pona modèle',apply:'Salela modèle oyo',requests:'Masengi mpe devis',reservations:'Ba réservation'},sw:{quote:'Makadirio yaliyohifadhiwa',bill:'Miundo ya bili',new:'Kiolezo kipya',name:'Jina la kiolezo',amount:'Kiasi',currency:'Sarafu',save:'Hifadhi kiolezo',choose:'Chagua kiolezo',apply:'Tumia kiolezo hiki',requests:'Maombi na makadirio',reservations:'Nafasi'}} as const;
 const brand={en:{title:'Bill presentation',name:'Name shown on new bills',save:'Save presentation'},fr:{title:'Présentation des factures',name:'Nom affiché sur les nouvelles factures',save:'Enregistrer'},ln:{title:'Lolenge ya mokanda',name:'Nkombo na mikanda ya sika',save:'Bomba'},sw:{title:'Mwonekano wa bili',name:'Jina kwenye bili mpya',save:'Hifadhi'}} as const;
 
 for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as const)test(`Personal template drafts ${locale}`,async({page})=>{
@@ -15,14 +16,26 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  const request={request_ref:'SWR_one',offering_ref:'SVC_one',offering:'Repairs',requester:'Customer',description:'Fix a sink',status:'SUBMITTED',revision:1,actions:[],can_create_quote:true,draft_quote_ref:null};
  const reservation={reservation_ref:'RSV_one',offering_ref:'SVC_one',service_name:'Repairs',requester_name:'Customer',status:'confirmed',revision:1,can_respond:false};
  const writes:string[]=[];
+ const common=requestWords(locale), attempts:string[]=[];
+ const receipts=new Map<string,Record<string,unknown>>();
+ let failLoad=true,lostSave=true;
  await page.route('**/api/shida/**',async route=>{
   const req=route.request(),path=new URL(req.url()).pathname,tx=path.split('/transactions/')[1];
   if(path.endsWith('/employment/session/'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Provider'}}});
   if(path.endsWith('/services/capabilities'))return route.fulfill({json:{bundle:'personal_pro',access_policy:'pilot',purchase_required:false,capabilities:['profile','packages','requests_quotes','reservations','messages','quote_templates','bill_templates','bills']}});
   if(!tx){if(path.endsWith('/reviews'))return route.fulfill({json:{reviews:[]}});if(path.endsWith('/services'))return route.fulfill({json:{profiles:[offering]}});return route.fulfill({status:404,json:{detail:'unavailable'}});}
   if(tx==='bill-presentation'){if(req.method()==='PATCH'){const body=req.postDataJSON() as {display_name:string;accent:string};presentation={display_name:body.display_name,accent:body.accent,revision:presentation.revision+1,fallback_display_name:'Provider',preview:{display_name:body.display_name,accent:body.accent}};}return route.fulfill({json:presentation});}
+  if(tx==='templates'&&req.method()==='GET'&&new URL(req.url()).searchParams.get('kind')==='quote'&&failLoad){failLoad=false;return route.fulfill({status:503,json:{}});}
   if(tx==='templates'&&req.method()==='GET')return route.fulfill({json:{templates:templates.filter(row=>row.kind===new URL(req.url()).searchParams.get('kind'))}});
-  if(tx==='templates'&&req.method()==='POST'){const body=req.postDataJSON() as Record<string,unknown>;const value={template_ref:`SDT_${templates.length+1}`,kind:body.kind,name:body.name,content:body.content,revision:1,archived:false};templates.push(value);writes.push(tx);return route.fulfill({json:value});}
+  if(tx==='templates'&&req.method()==='POST'){
+   const body=req.postDataJSON() as Record<string,unknown>,key=String(body.idempotency_key);
+   if(body.kind==='quote')attempts.push(req.postData()!);
+   if(receipts.has(key))return route.fulfill({json:receipts.get(key)});
+   const value={template_ref:`SDT_${templates.length+1}`,kind:body.kind,name:body.name,content:body.content,revision:1,archived:false};
+   templates.push(value);receipts.set(key,value);writes.push(tx);
+   if(body.kind==='quote'){expect(body.content).toMatchObject({amount:'80.00',currency:'USD'});if(lostSave){lostSave=false;return route.abort('failed');}}
+   return route.fulfill({json:value});
+  }
   if(tx?.startsWith('templates/SDT_')&&tx.endsWith('/apply')){const template=templates.find(row=>tx.includes(String(row.template_ref)))!;const body=req.postDataJSON() as Record<string,unknown>;writes.push(tx);if(template.kind==='quote'){quote={quote_ref:'SQT_one',request_ref:'SWR_one',status:'DRAFT',revision:1,amount:'80.00',currency:'USD',duration_minutes:60,actions:['edit','send']};return route.fulfill({json:quote});}bill={bill_ref:'SBF_one',version_ref:'SBV_one',revision:1,status:'private_draft',source_kind:'accepted_quote',currency:'USD',total:'80.00',lines:(template.content as Record<string,unknown>).lines};expect(body.target_ref).toBe('RSV_one');return route.fulfill({json:bill});}
   const responses:Record<string,unknown>={requests:{requests:[request],has_more:false},'requests/SWR_one':request,'requests/SWR_one/quotes':{quotes:quote?[quote]:[],has_more:false},'quotes/SQT_one':quote,reservations:{reservations:[reservation]},'reservations/RSV_one':reservation,'reservations/RSV_one/lifecycle':{...reservation,actions:[],rescheduling:{actions:[],proposal:null}},'reservations/RSV_one/bills':{bill_ref:bill?'SBF_one':null,current:bill,drafts:bill?[bill]:[]},'bills/SBF_one/history':{versions:bill?[bill]:[]},messages:{threads:[]}};
   return route.fulfill({json:responses[tx]??{}});
@@ -30,7 +43,13 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=settings`);
  const branding=page.locator('.svc-branding');await branding.getByLabel(brand[locale].name).fill('Studio Kivu');await branding.getByRole('button',{name:brand[locale].save}).click();await expect(branding.getByText('Studio Kivu')).toBeVisible();
  await page.getByRole("navigation",{name:providerCopy[locale].tools,exact:true}).getByRole("button",{name:providerCopy[locale].templates,exact:true}).click();
- const quotes=page.getByRole('region',{name:t.quote});await quotes.getByRole('button',{name:t.new}).click();await quotes.getByLabel(t.name).fill('Standard repair');await quotes.getByLabel(t.amount).fill('80.00');await quotes.getByRole('button',{name:t.save}).click();await expect(quotes.getByText('Standard repair')).toBeVisible();
+ const quotes=page.getByRole('region',{name:t.quote,exact:true});
+ await quotes.getByRole('button',{name:common.retry,exact:true}).click();
+ await quotes.getByRole('button',{name:t.new}).click();await quotes.getByLabel(t.name).fill('Standard repair');await quotes.getByLabel(t.amount).fill('80,00');await quotes.getByRole('button',{name:t.save}).click();await expect(quotes.getByText(common.uncertain,{exact:true})).toBeVisible();
+ await expect(quotes.getByLabel(t.name)).toBeDisabled();
+ await quotes.getByRole('button',{name:common.retry,exact:true}).click();
+ await expect(quotes.getByText('Standard repair')).toBeVisible();
+ expect(attempts).toHaveLength(2);expect(attempts[0]).toBe(attempts[1]);
  const bills=page.getByRole('region',{name:t.bill});await bills.getByRole('button',{name:t.new}).click();await bills.getByLabel(t.name).fill('Standard bill');await bills.getByRole('textbox').nth(1).fill('Agreed work');await bills.getByLabel(t.amount).fill('80.00');await bills.getByRole('button',{name:t.save}).click();await expect(bills.getByText('Standard bill')).toBeVisible();
  await page.getByRole("navigation",{name:providerCopy[locale].navigation}).getByRole("button",{name:providerCopy[locale].work,exact:true}).click();
  const workspace=page.getByRole('region',{name:servicesText(locale,'workspace')});await workspace.getByRole('button',{name:/Repairs/}).click();const quotePicker=workspace.getByLabel(t.choose).first();await quotePicker.selectOption('SDT_1');await workspace.getByRole('button',{name:t.apply}).first().click();await expect(workspace.getByText('80.00 USD').first()).toBeVisible();

@@ -248,3 +248,16 @@ setup, details and bill appearance, including a published marker with false
 visibility. Four old management checks needed their heading selector scoped to
 the page heading after the earlier task-navigation redesign; all four passed
 after that fixture correction. Production build/TypeScript and scoped lint passed.
+### Saved quotes and bill layouts — local validation
+
+Template tools now explain the task in all four languages, accept comma decimals,
+and keep incomplete bill items visible for correction. Failed reads have a retry
+action. A lost save or apply response locks the original operation and retries
+the same content and idempotency key; it does not create another template or send
+a quote or bill. Leaving an unfinished draft warns the user. Current access
+denial removes the private template list.
+
+Validation: four production-browser journeys passed in EN/FR/LN/SW, including a
+failed list load, comma price and a committed save whose response was lost.
+Webpack production build, TypeScript and scoped lint passed. This batch remains
+local pending the coordinated release.
