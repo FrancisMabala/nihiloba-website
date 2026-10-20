@@ -6,6 +6,8 @@ import {comparisonWords} from "../../lib/services-comparison-copy";
 import {requestWords} from "../../lib/services-request-copy";
 import type {ServiceLocale} from "../../lib/services-category-experience";
 import {dateText, useWorkDraft} from "../../lib/restaurant-work";
+import {ServiceRequestRevision} from "./service-request-revision";
+import {revisionWords} from "../../lib/services-revision-copy";
 
 type Props = {binding: string; locale: ServiceLocale; reference: string; onDenied: () => void; onBooking: (reference: string) => void};
 type Comparison = {request: PostedRequest; proposals: PrivateProposal[]; next_ref: string | null};
@@ -16,6 +18,7 @@ export function ServiceRequestComparison(props: Props) {
 function ComparisonPanel({binding, locale, reference, onDenied, onBooking}: Props) {
   const t = comparisonWords(locale), common = requestWords(locale);
   const [data, setData] = useState<Comparison | null>(null), [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState(""), [busy, setBusy] = useState(false), [pending, setPending] = useState<Pending | null>(null);
   const [selected, setSelected] = useState<PrivateProposal | null>(null), [branch, setBranch] = useState("");
   const [answers, setAnswers] = useState<Record<string, string>>({}), [withdraw, setWithdraw] = useState(false);
@@ -102,6 +105,8 @@ function ComparisonPanel({binding, locale, reference, onDenied, onBooking}: Prop
   }
   if (denied) return <p className="svc-request" role="alert">{common.denied}</p>;
   if (loading) return <p className="svc-request" role="status">{common.loading}</p>;
+  if (editing && data) return <ServiceRequestRevision binding={binding} locale={locale} request={data.request}
+    onDenied={deny} onBack={() => {setEditing(false); void load();}} onSaved={() => {setEditing(false); void load();}}/>;
   const disabled = busy || !!pending || conflict;
   const choice = selected?.provider?.customer_branches.find(row => row.branch_ref === branch);
   return <section className="svc-request" aria-label={t.title} lang={locale}>
@@ -112,6 +117,8 @@ function ComparisonPanel({binding, locale, reference, onDenied, onBooking}: Prop
     {pending && !busy && <button onClick={() => void run(pending)}>{common.retry}</button>}
     {(!data || conflict) && <button disabled={busy || !!pending} onClick={() => void load()}>{common.reload}</button>}
     {data?.request.booking && <button className="button button-primary" onClick={() => callbacks.current.onBooking(data.request.booking!.reservation_ref)}>{t.booking}</button>}
+    {data?.request.status === "OPEN" && data.request.brief_ref && <button disabled={disabled || !!selected || withdraw || Object.values(answers).some(Boolean)}
+      onClick={() => setEditing(true)}>{revisionWords(locale).edit}</button>}
     {selected?.current ? <section className="svc-brief-card" aria-label={t.review}>
       <p>{t.beforeAccept}</p>{provider(selected)}{quotation(selected.current)}
       {selected.provider?.branch_coverage_specified && <><p>{t.branchPrivacy}</p><label>{t.branch}

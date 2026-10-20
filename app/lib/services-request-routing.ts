@@ -25,7 +25,7 @@ export function servicesRequestTarget(parts: string[], method: string, query: UR
     if (parts.length === 2 && ref === "available" && get) { path = "service-postings/available"; keys = ["offering_ref", "before_ref"]; }
     if (reference("SPR")) {
       if (parts.length === 2 && get) { path = `service-postings/${ref}`; keys = ["offering_ref"]; }
-      if (parts.length === 3 && (action === "proposals" || post && ["revise", "withdraw", "accept"].includes(action))) {
+      if (parts.length === 3 && (action === "proposals" || post && ["revision-preview", "revise", "withdraw", "accept"].includes(action))) {
         path = `service-postings/${ref}/${action}`;
         if (get) keys = ["before_ref"];
       }

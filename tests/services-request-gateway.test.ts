@@ -27,6 +27,7 @@ it("allows only exact Personal paths, methods and bounded nonduplicated query se
     ["briefs/SCB_one/publish", "POST", "service-postings/from-brief/SCB_one"],
     ["briefs/SCB_one/send", "POST", "service-direct-briefs/SCB_one/submit"],
     ["postings/SPR_one/accept", "POST", "service-postings/SPR_one/accept"],
+    ["postings/SPR_one/revision-preview", "POST", "service-postings/SPR_one/revision-preview"],
     ["proposals/SPF_one/history", "GET", "service-proposals/SPF_one/history"],
     ["destinations/SVC_one", "GET", "service-direct-briefs/offerings/SVC_one"],
   ]) expect(servicesRequestTarget(path.split("/"), method, new URLSearchParams())).toBe(target);

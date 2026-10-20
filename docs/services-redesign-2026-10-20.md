@@ -219,3 +219,17 @@ New request features remain unpublished with the backend adapters unregistered.
 Eight additional production-browser checks passed for exact quotation links and
 the existing Today/offline recovery paths in all four languages. Scoped lint
 passed after moving link initialization below its loader declaration.
+
+### Local published-request editing
+
+An open request now offers Edit request. Customers review the backend-filtered
+summary before confirming the change; the deadline stays visible and unchanged.
+The screen explains that providers must send a quotation for the updated need.
+Earlier quotations remain in history and cannot be accepted for the new brief.
+An uncertain confirmation retries the exact saved operation.
+
+Validation: four production-browser cases passed in EN/FR/LN/SW, including
+private-contact filtering in the review, explicit confirmation, a lost response,
+identical retry and disabled old-quotation acceptance at 390 px. Six gateway
+checks, production webpack build/TypeScript and scoped lint passed. These changes
+remain local with the new backend adapters unregistered.
