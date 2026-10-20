@@ -123,3 +123,29 @@ production database change. No change to WhatsApp commands, booking lifecycle,
 financial authority or document audience. Remaining redesign items, including
 saved briefs, PDF processing, open requests and competing proposals, remain
 unreleased and are tracked separately.
+## R03c — clear report periods and summaries
+
+Reports now start with This month and offer This week, inclusive From/To dates,
+readable Kinshasa timestamps, and SHIDA cards, headings and touch-sized controls.
+The request and CSV export both convert the included final date to the existing
+exclusive API boundary, including single-day and month/year-end periods. The
+report still counts UTC days; its visible date note keeps that accounting
+boundary explicit. Financial effective dates are not shifted between time zones.
+
+Current publication/booking statuses remain distinct from requests and bookings
+created within the chosen period. Detailed definitions and the unavailable
+quote-to-booking metric sit under an expandable explanation. Receipts and surplus
+are described as provider records, not verified payments or profit. CDF and USD
+remain separate. Financial capability checks and existing backend authorization
+are unchanged. Dates survive failed loads, and stale downloads cannot complete
+after the period changes.
+
+Validation: 10 focused date/presentation tests and five production-browser
+scenarios passed in each frontend. Browser coverage includes EN/FR/LN/SW at
+320px, same-day inclusive queries and downloads, failed-load recovery, presets,
+optional definitions and absent financial permission. Both webpack production
+builds (including TypeScript), scoped lint and diff checks passed. Small-screen
+screenshots were reviewed; Organization report styling was improved after the
+first visual pass. No native-speaker or physical-device validation is claimed.
+No API, schema, dependency, environment or lifecycle policy changes. Other
+management panels and the unreleased customer-brief journey remain separate work.

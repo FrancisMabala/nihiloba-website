@@ -1,0 +1,70 @@
+.panel {
+  margin-block: 1.5rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  color: #203d34;
+  background: #fffefa;
+  border: 1px solid #deded0;
+  border-radius: 18px;
+  overflow-wrap: anywhere;
+}
+.panel h2, .panel h3, .panel h4 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  line-height: 1.25;
+}
+.panel h2 { font-size: 1.75rem; margin: 0 0 .75rem; }
+.panel h3 { font-size: 1.4rem; margin: 2rem 0 .75rem; }
+.panel h4 { font-size: 1.15rem; margin: 1.5rem 0 .75rem; }
+.panel h5 { font-weight: 600; margin: 1rem 0 .5rem; }
+.panel p { margin: .7rem 0; line-height: 1.6; }
+.panel label { display: grid; gap: .4rem; font-weight: 600; max-width: 100%; }
+.panel input {
+  min-height: 44px;
+  padding: .6rem .75rem;
+  color: inherit;
+  background: white;
+  border: 1px solid #c9d1c6;
+  border-radius: 8px;
+}
+.panel button {
+  min-height: 44px;
+  padding: .65rem 1rem;
+  color: inherit;
+  background: #fffefa;
+  border: 1px solid #becbbd;
+  border-radius: 9px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+.panel button:hover { background: #edf1e7; }
+.panel button:disabled { opacity: .6; cursor: wait; }
+.panel button:focus-visible, .panel input:focus-visible, .panel summary:focus-visible {
+  outline: 3px solid #a99452;
+  outline-offset: 3px;
+}
+.panel .primary { background: #203d34; color: #fffefa; border-color: #203d34; }
+.panel .primary:hover { background: #2f5346; }
+.panel details {
+  padding: .8rem 1rem;
+  margin-block: 1rem;
+  background: #f3f4eb;
+  border-radius: 10px;
+}
+.panel summary { cursor: pointer; min-height: 28px; font-weight: 600; }
+.panel dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .65rem 1rem;
+  padding-block: .75rem;
+}
+.panel dl > div { display: contents; }
+.panel dd { margin: 0; text-align: end; font-weight: 600; font-variant-numeric: tabular-nums; }
+.panel article { padding: 1rem; border: 1px solid #deded0; border-radius: 12px; background: #f8f8f1; }
+.panel article h4 { margin-top: 0; }
+.panel ul { padding-inline-start: 1.25rem; margin-block: .7rem 1rem; }
+.panel li { margin-block: .35rem; }
+.panel [role="alert"] { padding: .8rem 1rem; background: #fff3d7; border-inline-start: 3px solid #a99452; }
+@media (max-width: 420px) {
+  .panel dl { grid-template-columns: minmax(0, 1fr); gap: .25rem; }
+  .panel dd { text-align: start; margin-bottom: .6rem; }
+}
