@@ -85,7 +85,7 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
           if (editor?.review) review = await send(`${productPath}/operations/${editor.kind === "duplicate" ? "duplication" : "conversion"}/preflight`, "POST", {}) as Review;
           setEditor(old => old ? { ...old, revision: review?.revision ?? latest.revision, review: review ?? old.review, stale: true, latest } : null);
         } catch { setError("unavailable"); setStore(null); setProduct(null); setEditor(null); }
-      } else if (caught instanceof DashboardApiError && caught.kind === "validation") setError("validation");
+      } else if (caught instanceof DashboardApiError && [401,403,404].includes(caught.status)) { setError("unavailable"); setStore(null); setProduct(null); setStores([]); setProducts([]); setEditor(null); setPreview(null); setPlan(null); } else if (caught instanceof DashboardApiError && caught.kind === "validation") setError("validation");
       else { setError("unavailable"); }
     } finally { setBusy(false); }
   }
