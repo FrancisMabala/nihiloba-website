@@ -1,5 +1,10 @@
 "use client";
+import "./services-financial.css";
 import {useCallback,useEffect,useRef,useState} from "react";
+import {serviceTimestamp} from "../../lib/service-time";
+import {useWorkDraft} from "../../lib/restaurant-work";
+import {financialRequest,useFinancialCommand} from "../../lib/services-financial-state";
+import {billReviewCopy} from "../../lib/services-bill-review-copy";
 type Locale="fr"|"en"|"ln"|"sw";
 type Reminder={version_ref:string;revision:number;scheduled_at:string|null;state:"off"|"scheduled"|"suppressed"|"recorded";can_enable:boolean;can_disable:boolean;status:string|null;account_notice:string|null};
 const reminderCopy={"en": {"stopped": "Reminder stopped", "title": "Automatic bill reminder", "enable": "Enable one reminder", "disable": "Disable reminder", "off": "Off", "scheduled": "Scheduled", "suppressed": "No reminder needed", "recorded": "Reminder recorded in customer account", "timing": "Send the bill first. One reminder the day after it is due, at 10:00 Kinshasa time.", "basis": "Recording a receipt can stop this reminder.", "unavailable": "Send the bill before its reminder time."}, "fr": {"stopped": "Rappel arrêté", "title": "Rappel automatique de facture", "enable": "Activer un rappel", "disable": "Désactiver le rappel", "off": "Désactivé", "scheduled": "Programmé", "suppressed": "Aucun rappel nécessaire", "recorded": "Rappel enregistré dans le compte du client", "timing": "Envoyez la facture d’abord. Un rappel le lendemain de l’échéance à 10 h, heure de Kinshasa.", "basis": "Un encaissement enregistré peut arrêter ce rappel.", "unavailable": "Envoyez la facture avant l’heure du rappel."}, "ln": {"stopped": "Bokundoli etelemi", "title": "Bokundoli ya facture na ndenge ya automatique", "enable": "Fungola bokundoli moko", "disable": "Kanga bokundoli", "off": "Ekangami", "scheduled": "Etyami na manaka", "suppressed": "Bokundoli esengeli te", "recorded": "Bokundoli ebombami na compte ya client", "timing": "Tinda facture liboso. Bokundoli moko mokolo elandi échéance na 10:00, ngonga ya Kinshasa.", "basis": "Kokoma mbongo ozwi ekoki kotelemisa bokundoli.", "unavailable": "Tinda facture liboso ya ngonga ya bokundoli."}, "sw": {"stopped": "Kikumbusho kimesimamishwa", "title": "Kikumbusho cha bili kiotomatiki", "enable": "Washa kikumbusho kimoja", "disable": "Zima kikumbusho", "off": "Kimezimwa", "scheduled": "Kimepangwa", "suppressed": "Hakuna kikumbusho kinachohitajika", "recorded": "Kikumbusho kimehifadhiwa katika akaunti ya mteja", "timing": "Tuma bili kwanza. Kikumbusho kimoja siku baada ya tarehe ya malipo, saa 10:00 za Kinshasa.", "basis": "Kurekodi mapokezi kunaweza kusimamisha kikumbusho.", "unavailable": "Tuma bili kabla ya muda wa kikumbusho."}} as const;
@@ -10,34 +15,62 @@ const copy={
  ln:{send:"Tinda facture",retry:"Meka lisusu koyebisa na WhatsApp",refresh:"Zongisa lisolo ya kotinda",history:"Lisolo ya kotinda facture",recorded:"Liyebisi ebombami na compte ya client",pending:"WhatsApp ezali kozela",processing:"Kotinda na WhatsApp",sent:"WhatsApp eyambi botindi",delivered:"WhatsApp ekomisi",read:"Etangami na WhatsApp",deferred_outside_service_window:"Kozela client atinda message na SHIDA",deferred_context:"Liyebisi ya WhatsApp ezali naino te",retryable_failure:"WhatsApp elongi te ; meka lisusu",terminal_failure:"Liyebisi ya WhatsApp ezali te",ambiguous:"Kokoma endimami naino te",superseded:"Facture oyo ebongwani",unresolved_recipient:"WhatsApp ezali te",failed:"Elongi te. Zongisa mpe meka lisusu.",stale:"Facture ebongwani. Facture ya sikawa efungwami.",note:"Landela botindi ya facture awa.",version:"Version"},
  sw:{send:"Tuma bili",retry:"Jaribu tena taarifa ya WhatsApp",refresh:"Sasisha historia ya kutuma",history:"Historia ya kutuma bili",recorded:"Taarifa imehifadhiwa katika akaunti ya mteja",pending:"WhatsApp inasubiri",processing:"Inatumwa kwa WhatsApp",sent:"Imewasilishwa kwa WhatsApp",delivered:"Imefikishwa na WhatsApp",read:"Imesomwa kwenye WhatsApp",deferred_outside_service_window:"Inasubiri mteja atume ujumbe kwa SHIDA",deferred_context:"Taarifa ya WhatsApp haipatikani kwa sasa",retryable_failure:"WhatsApp imeshindwa; jaribu tena",terminal_failure:"Taarifa ya WhatsApp haipatikani",ambiguous:"Ufikishaji haujathibitishwa",superseded:"Bili hii imebadilika",unresolved_recipient:"WhatsApp haipatikani",failed:"Hatua haikukamilika. Sasisha na ujaribu tena.",stale:"Bili imebadilika. Bili ya sasa imefunguliwa.",note:"Fuatilia utumaji wa bili yako hapa.",version:"Toleo"}
 } as const;
+
 type Props={base:string;binding:string;locale:Locale;reservationRef:string;reservationRevision:number;billRef:string;versionRef:string;revision:number;onStale:()=>Promise<void>};
 export function ServicesBillDelivery(props:Props){return <DeliveryPanel key={[props.base,props.binding,props.reservationRef,props.versionRef].join(":")} {...props}/>;}
 function DeliveryPanel({base,binding,locale,reservationRef,reservationRevision,billRef,versionRef,revision,onStale}:Props){
- const t=copy[locale],[rows,setRows]=useState<Delivery[]>([]),[reminder,setReminder]=useState<Reminder|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState("");
- const alive=useRef(false),inFlight=useRef(false),replay=useRef<{action:string;key:string}|null>(null);
- const call=useCallback(async(path:string,body?:object)=>{const response=await fetch(`${base}/transactions/${path}`,{method:body?"POST":"GET",credentials:"include",cache:"no-store",headers:{"X-Shida-Session":binding,...(body?{"Content-Type":"application/json"}:{})},body:body?JSON.stringify(body):undefined});if(!response.ok)throw new Error(String(response.status));return await response.json() as {deliveries:Delivery[];reminder?:Reminder};},[base,binding]);
- const load=useCallback(async()=>{const value=await call(`bills/${billRef}/deliveries`);if(alive.current){setRows(value.deliveries??[]);setReminder(value.reminder??null);}},[call,billRef]);
- useEffect(()=>{alive.current=true;void load().catch(()=>{if(alive.current)setError(t.failed);});return()=>{alive.current=false;};},[load,t.failed]);
- async function send(action:"send"|"retry"|"enable"|"disable"){
-  if(inFlight.current)return;inFlight.current=true;setBusy(true);setError("");
-  if(replay.current?.action!==action)replay.current={action,key:crypto.randomUUID()};
-  try{const value=await call(`reservations/${reservationRef}/bills/${billRef}/${action==="enable"||action==="disable"?"reminder":action}`,{version_ref:versionRef,revision,reservation_revision:reservationRevision,idempotency_key:replay.current.key,...(action==="enable"||action==="disable"?{enabled:action==="enable",reminder_revision:reminder?.revision??0}:{})});if(alive.current){setRows(value.deliveries);setReminder(value.reminder??null);replay.current=null;}}
-  catch(e){if(alive.current){const stale=e instanceof Error&&e.message==="409";setError(stale?t.stale:t.failed);if(stale)await onStale();}}
-  finally{inFlight.current=false;if(alive.current)setBusy(false);}
+ const t=copy[locale],c=billReviewCopy[locale],rt=reminderCopy[locale],command=useFinancialCommand(binding);
+ const [rows,setRows]=useState<Delivery[]>([]),[reminder,setReminder]=useState<Reminder|null>(null),[loading,setLoading]=useState(true),[loaded,setLoaded]=useState(false),[error,setError]=useState<""|"failed"|"denied">("");
+ const alive=useRef(true),generation=useRef(0);
+ useWorkDraft(!!command.pending,c.leave);
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;generation.current++;};},[]);
+ const load=useCallback(async()=>{
+  const ticket=++generation.current;setLoading(true);
+  try{
+   const value=await financialRequest<{deliveries:Delivery[];reminder?:Reminder}>(binding,`${base}/transactions/bills/${billRef}/deliveries`);
+   if(!alive.current||ticket!==generation.current)return;
+   setRows(value.deliveries??[]);setReminder(value.reminder??null);setLoaded(true);setError("");
+  }catch(failure){if(alive.current&&ticket===generation.current){const denied=failure instanceof Error&&["401","403","404"].includes(failure.message);setError(denied?"denied":"failed");if(denied){setRows([]);setReminder(null);}}}
+  finally{if(alive.current&&ticket===generation.current)setLoading(false);}
+ },[base,binding,billRef]);
+ useEffect(()=>{let active=true;queueMicrotask(()=>{if(active)void load();});const focus=()=>void load();window.addEventListener("focus",focus);return()=>{active=false;window.removeEventListener("focus",focus);};},[load]);
+ useEffect(()=>{if(command.status==="stale")void onStale();},[command.status,onStale]);
+ async function send(action?:"send"|"retry"|"enable"|"disable"){
+  if(!command.pending&&(!action||!loaded||error))return;
+  const body={version_ref:versionRef,revision,reservation_revision:reservationRevision,idempotency_key:crypto.randomUUID(),
+   ...(action==="enable"||action==="disable"?{enabled:action==="enable",reminder_revision:reminder?.revision??0}:{})};
+  const value=await command.run<{deliveries:Delivery[];reminder?:Reminder}>(command.pending??{
+   path:`${base}/transactions/reservations/${reservationRef}/bills/${billRef}/${action==="enable"||action==="disable"?"reminder":action}`,method:"POST",body:JSON.stringify(body)});
+  if(value){generation.current++;setRows(value.deliveries??[]);setReminder(value.reminder??null);setError("");setLoading(false);}
  }
- const rt=reminderCopy[locale];
- const current=rows.find(row=>row.version_ref===versionRef);
- return <section aria-label={t.history}><h5>{t.history}</h5><p>{t.note}</p>{error&&<p role="status">{error}</p>}
-  {!current&&<button type="button" disabled={busy} onClick={()=>void send("send")}>{t.send}</button>}
-  {current?.can_retry&&<button type="button" disabled={busy} onClick={()=>void send("retry")}>{t.retry}</button>}
-  <button type="button" disabled={busy} onClick={()=>void load().catch(()=>setError(t.failed))}>{t.refresh}</button>
-  {reminder&&<section aria-label={rt.title}><h5>{rt.title}</h5><p>{rt.timing}</p><p>{rt.basis}</p>
+ if(error==="denied"||command.status==="denied")return <section className="svc-financial-panel" aria-label={t.history}><p role="alert">{c.denied}</p></section>;
+ const current=rows.find(row=>row.version_ref===versionRef),locked=command.busy||!!command.pending||!!error||!loaded||command.status==="stale";
+ const deliveryText=(row:Delivery)=>t[row.status as keyof typeof t]??t.unresolved_recipient;
+ return <section className="svc-financial-panel" aria-label={t.history} style={{padding:"1rem 0"}}>
+  <h5>{t.history}</h5><p>{t.note}</p>
+  {loading&&<p role="status">{c.loading}</p>}
+  {error&&<p role="alert">{t.failed}</p>}
+  {command.status&&<p role="status">{c[command.status]}</p>}
+  {loaded&&<>
+   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))",gap:16}}>
+    <div><h6>{c.account}</h6><p>{current?t.recorded:c.notSent}</p></div>
+    <div><h6>{c.whatsapp}</h6><p>{current?deliveryText(current):c.notSent}</p></div>
+   </div>
+   <div style={{display:"flex",gap:12,flexWrap:"wrap",margin:"1rem 0"}}>
+    {!current&&<button type="button" disabled={locked} onClick={()=>void send("send")}>{t.send}</button>}
+    {current?.can_retry&&<button type="button" disabled={locked} onClick={()=>void send("retry")}>{t.retry}</button>}
+   </div>
+  </>}
+  {command.pending&&<button type="button" disabled={command.busy} onClick={()=>void send()}>{c.retry}</button>}
+  <button type="button" disabled={loading||command.busy} onClick={()=>{command.clear();void load();}}>{t.refresh}</button>
+  {loaded&&reminder&&<section aria-label={rt.title} style={{margin:"1rem 0",padding:"1rem",background:"#f1f4e9",borderRadius:12}}>
+   <h5>{rt.title}</h5><p>{rt.timing}</p><p>{rt.basis}</p>
    <p role="status">{rt[reminder.state]}{reminder.status&&` · ${reminder.status==="superseded"?rt.stopped:t[reminder.status as keyof typeof t]??t.unresolved_recipient}`}</p>
-   {reminder.scheduled_at&&<p><time dateTime={reminder.scheduled_at}>{new Date(reminder.scheduled_at).toISOString().slice(0,10)} · 10:00 Kinshasa</time></p>}
-   {reminder.can_enable&&<button type="button" disabled={busy} onClick={()=>void send("enable")}>{rt.enable}</button>}
-   {reminder.can_disable&&<button type="button" disabled={busy} onClick={()=>void send("disable")}>{rt.disable}</button>}
+   {reminder.scheduled_at&&<p><time dateTime={reminder.scheduled_at}>{serviceTimestamp(reminder.scheduled_at,locale)}</time></p>}
+   {reminder.can_enable&&<button type="button" disabled={locked} onClick={()=>void send("enable")}>{rt.enable}</button>}
+   {reminder.can_disable&&<button type="button" disabled={locked} onClick={()=>void send("disable")}>{rt.disable}</button>}
    {!reminder.can_enable&&!reminder.can_disable&&reminder.state==="off"&&<p>{rt.unavailable}</p>}
   </section>}
-  <ul>{rows.map(row=><li key={row.version_ref}>{t.version} {row.revision} · {t.recorded} · {t[row.status as keyof typeof t]??t.unresolved_recipient} · <time dateTime={row.created_at}>{new Date(row.created_at).toLocaleString(locale)}</time></li>)}</ul>
+  {rows.length>0&&<details><summary>{t.history}</summary><ul>{rows.map(row=><li key={row.version_ref}>{t.version} {row.revision} · {t.recorded} · {deliveryText(row)} · <time dateTime={row.created_at}>{serviceTimestamp(row.created_at,locale)}</time></li>)}</ul></details>}
  </section>;
 }

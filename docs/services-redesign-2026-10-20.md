@@ -274,3 +274,31 @@ Validation: seven production-browser checks passed, including four languages,
 missing-duration recovery, unchanged retry after an uncertain save, access
 revocation and stale public-slot recovery before WhatsApp handoff. Production
 webpack build, TypeScript and scoped lint passed. This is local, not deployed.
+
+### R03m — Money and bill review/recovery (21 October, local)
+
+Money entries, corrections and reversals now have an explicit review step.
+Bills review exact decimal totals before saving, issuing, replacing or voiding.
+Incomplete lines are rejected rather than silently omitted. Existing currency
+separation, accepted-quotation requirements, immutable bill versions and
+correction history remain authoritative.
+
+An interrupted command retains its exact body, revisions and retry key. Editing
+and new commands remain paused until its result is resolved. Reads and commands
+are scoped to the captured account and booking; denied access clears private
+content. Loading failures stay distinct from empty history. Account bill notices
+and WhatsApp delivery have separate status labels. Histories are collapsed and
+the financial panels use SHIDA styling with labelled mobile controls.
+
+Validation: 25 production-browser journeys passed,
+including four-language money/bill review, lost-response retries and template
+regressions. Production webpack/TypeScript and scoped lint passed. Organization French mobile
+money and bill screenshots were inspected. Initial browser selectors were made
+specific to the visible current status after history became collapsible.
+These changes are local; coordinated release and operational gates remain open.
+Personal setup now distinguishes the provider's public name from the specific
+service name, retaining all seven category examples and explicit private-draft
+creation. Four-language browser checks cover those hints, category choices,
+keyboard focus and an interrupted first save. Of the initial 25 browser checks,
+17 passed; eight delivery tests had ambiguous status selectors. Those eight
+passed after selecting the exact visible status and explicit Kinshasa time.

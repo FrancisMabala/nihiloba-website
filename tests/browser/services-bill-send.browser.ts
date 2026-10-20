@@ -20,6 +20,6 @@ for(const [locale,sendLabel,retryLabel,accepted] of [['en','Send bill','Retry Wh
  await workspace.getByRole('button',{name:/Repairs/}).click();
  await page.getByRole('button',{name:sendLabel,exact:true}).click();
  await page.getByRole('button',{name:retryLabel,exact:true}).click();
- await expect(page.getByText(new RegExp(accepted))).toBeVisible();expect(writes).toBe(2);
+ await expect(page.getByText(accepted,{exact:true})).toBeVisible();expect(writes).toBe(2);
  await expect(page.getByRole('button',{name:retryLabel})).toHaveCount(0);
 });

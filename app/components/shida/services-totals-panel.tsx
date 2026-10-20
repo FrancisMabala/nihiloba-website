@@ -1,5 +1,6 @@
 "use client";
-import {inclusiveDateRange,shiftDay,serviceTimestamp} from "../../lib/service-time";
+import "./services-financial.css";
+import {inclusiveDateRange,shiftDay,serviceTimestamp,serviceLocalInput} from "../../lib/service-time";
 import {useCallback,useEffect,useRef,useState} from "react";
 
 type Locale="fr"|"en"|"ln"|"sw";
@@ -25,11 +26,13 @@ const categoryCopy:Record<Locale,Record<string,string>>={
  ln:{general:"Ya nyonso",inventory_purchase:"Biloko ya mosala",transport:"Transport",rent:"Loyer",utilities:"Mayi mpe courant",salary_wages:"Lifuti ya basali",supplies:"Biloko",maintenance:"Bobateli",other_expense:"Depanse mosusu"},
  sw:{general:"Jumla",inventory_purchase:"Vifaa na bidhaa",transport:"Usafiri",rent:"Kodi",utilities:"Huduma za matumizi",salary_wages:"Mishahara",supplies:"Vifaa",maintenance:"Matengenezo",other_expense:"Gharama nyingine"},
 };
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>serviceLocalInput(new Date().toISOString()).slice(0,10);
 const first=()=>today().slice(0,7)+"-01";
 const next=()=>{const [year,month]=today().split("-").map(Number);return new Date(Date.UTC(year,month,1)).toISOString().slice(0,10);};
 
-export function ServicesTotalsPanel({base,binding,locale,initialReservationRef=null}:{base:string;binding:string;locale:Locale;initialReservationRef?:string|null}){
+type Props={base:string;binding:string;locale:Locale;initialReservationRef?:string|null};
+export function ServicesTotalsPanel(props:Props){return <BoundTotals key={`${props.base}:${props.binding}`} {...props}/>;}
+function BoundTotals({base,binding,locale,initialReservationRef=null}:Props){
 
  const [moreBookings,setMoreBookings]=useState(true);
  const bookingPageScope=useRef(0),bookingPageBusy=useRef(false);
@@ -37,7 +40,7 @@ export function ServicesTotalsPanel({base,binding,locale,initialReservationRef=n
  async function loadMoreBookings(){
   if(bookingPageBusy.current)return;
   const scope=bookingPageScope.current;bookingPageBusy.current=true;setBusy(true);
-  try{const response=await fetch(`${base}/transactions/reservations?offset=${jobs.length}`,{credentials:"include",cache:"no-store",headers:{Accept:"application/json","X-Shida-Session":binding}});
+  try{const response=await fetch(`${base}/transactions/reservations?offset=${jobs.length}`,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000),headers:{Accept:"application/json","X-Shida-Session":binding}});
    if(scope!==bookingPageScope.current)return;
    if(!response.ok){if([401,403].includes(response.status)){setJobs([]);setPeriod(null);setJob(null);setEntries([]);}throw Error();}
    const data=await response.json();if(scope!==bookingPageScope.current)return;const added=Array.isArray(data.reservations)?data.reservations:[];
@@ -50,6 +53,7 @@ export function ServicesTotalsPanel({base,binding,locale,initialReservationRef=n
  const [period,setPeriod]=useState<Totals|null>(null),[job,setJob]=useState<Totals|null>(null),[asOf,setAsOf]=useState(""),[error,setError]=useState(false),[busy,setBusy]=useState(false);
  const [entries,setEntries]=useState<Entry[]>([]),[nextEntry,setNextEntry]=useState<number|null>(null);
  const requestId=useRef(0);
+ useEffect(()=>()=>{requestId.current++;},[]);
  const sectionRef=useRef<HTMLElement|null>(null);
  const headers={Accept:"application/json","X-Shida-Session":binding};
  const load=useCallback(async()=>{
@@ -59,23 +63,35 @@ export function ServicesTotalsPanel({base,binding,locale,initialReservationRef=n
   const cutoff=new Date().toISOString();
   try{
    const query=new URLSearchParams({...inclusiveDateRange(start,end),as_of:cutoff});
-   const periodResponse=await fetch(`${base}/transactions/finance/totals?${query}`,{credentials:"include",cache:"no-store",headers});
+   const periodResponse=await fetch(`${base}/transactions/finance/totals?${query}`,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000),headers});
    if(!periodResponse.ok)throw new Error("period");
    const periodData=await periodResponse.json() as Totals;
    if(!periodData?.currencies?.CDF||!periodData?.currencies?.USD)throw new Error("period");
    let jobData:Totals|null=null;
    let history:{entries:Entry[];next_offset:number|null}={entries:[],next_offset:null};
    if(selected){const [response,historyResponse]=await Promise.all([
-    fetch(`${base}/transactions/finance/reservations/${encodeURIComponent(selected)}/totals?as_of=${encodeURIComponent(cutoff)}`,{credentials:"include",cache:"no-store",headers}),
-    fetch(`${base}/transactions/finance/entries?reservation_ref=${encodeURIComponent(selected)}`,{credentials:"include",cache:"no-store",headers})]);
+    fetch(`${base}/transactions/finance/reservations/${encodeURIComponent(selected)}/totals?as_of=${encodeURIComponent(cutoff)}`,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000),headers}),
+    fetch(`${base}/transactions/finance/entries?reservation_ref=${encodeURIComponent(selected)}`,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000),headers})]);
     if(!response.ok||!historyResponse.ok)throw new Error("job");jobData=await response.json() as Totals;if(!jobData?.currencies?.CDF||!jobData?.currencies?.USD)throw new Error("job");history=await historyResponse.json();}
    if(current===requestId.current){setPeriod(periodData);setJob(jobData);setAsOf(cutoff);setEntries(history.entries??[]);setNextEntry(history.next_offset??null);}
   }catch{if(current===requestId.current){setPeriod(null);setJob(null);setEntries([]);setNextEntry(null);setAsOf("");setError(true);}}finally{if(current===requestId.current)setBusy(false);}
  },[base,binding,start,end,selected]); // eslint-disable-line react-hooks/exhaustive-deps
- useEffect(()=>{let active=true;fetch(`${base}/transactions/reservations?offset=0`,{credentials:"include",cache:"no-store",headers}).then(r=>r.ok?r.json():null).then(data=>{if(active&&Array.isArray(data?.reservations)){setJobs(data.reservations);setMoreBookings(data.reservations.length===100);setSelected(old=>old||data.reservations[0]?.reservation_ref||"");}}).catch(()=>{});return()=>{active=false;};},[base,binding]); // eslint-disable-line react-hooks/exhaustive-deps
+ useEffect(()=>{let active=true;fetch(`${base}/transactions/reservations?offset=0`,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000),headers}).then(r=>r.ok?r.json():null).then(data=>{if(active&&Array.isArray(data?.reservations)){setJobs(data.reservations);setMoreBookings(data.reservations.length===100);setSelected(old=>old||data.reservations[0]?.reservation_ref||"");}}).catch(()=>{});return()=>{active=false;};},[base,binding]); // eslint-disable-line react-hooks/exhaustive-deps
  useEffect(()=>{queueMicrotask(()=>void load());},[load]);
  useEffect(()=>{const choose=(event:Event)=>{const ref=(event as CustomEvent<string>).detail;if(/^RSV_[A-Za-z0-9_-]+$/.test(ref)){setSelected(ref);sectionRef.current?.scrollIntoView({behavior:"smooth",block:"start"});}};window.addEventListener("services:job-cost",choose);return()=>window.removeEventListener("services:job-cost",choose);},[]);
- async function moreEntries(){if(nextEntry===null||!selected)return;const ticket=requestId.current,ref=selected;const response=await fetch(`${base}/transactions/finance/entries?reservation_ref=${encodeURIComponent(ref)}&offset=${nextEntry}`,{credentials:"include",cache:"no-store",headers});if(ticket!==requestId.current)return;if(!response.ok){setEntries([]);setNextEntry(null);setError(true);return;}const history=await response.json() as {entries:Entry[];next_offset:number|null};if(ticket!==requestId.current)return;setEntries(old=>[...old,...history.entries]);setNextEntry(history.next_offset??null);}
+ async function moreEntries(){
+  if(nextEntry===null||!selected||busy)return;
+  const ticket=requestId.current,ref=selected;setBusy(true);
+  try{
+   const response=await fetch(`${base}/transactions/finance/entries?reservation_ref=${encodeURIComponent(ref)}&offset=${nextEntry}`,{credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000),headers});
+   if(ticket!==requestId.current)return;
+   if(!response.ok){if([401,403,404].includes(response.status)){setPeriod(null);setJob(null);setEntries([]);setNextEntry(null);}throw new Error("history");}
+   const history=await response.json() as {entries:Entry[];next_offset:number|null};
+   if(ticket!==requestId.current)return;
+   setEntries(old=>[...old,...history.entries]);setNextEntry(history.next_offset??null);setError(false);
+  }catch{if(ticket===requestId.current)setError(true);}
+  finally{if(ticket===requestId.current)setBusy(false);}
+ }
  const render=(value:Totals,includeOverhead:boolean)=><div className="svc-money-grid">{(["CDF","USD"] as const).map(currency=>{const bucket=value.currencies[currency];return <div key={currency} className="svc-currency-card"><h4>{currency}</h4><dl className="svc-money-rows">{([["billed",t.billed],["declared_received",t.received],["outstanding",t.outstanding],["unbilled_receipts",t.unbilled],["declared_excess",t.excess],["job_expenses",t.jobCosts],...(includeOverhead?[["services_overhead",t.overhead]]:[]),["recorded_expenses",t.expenses],["declared_surplus",t.surplus]] as [keyof Bucket,string][]).map(([key,label])=><div key={key}><dt>{label}</dt><dd>{bucket[key]} {currency}</dd></div>)}</dl></div>;})}</div>;
- return <section className="services-totals" ref={sectionRef} aria-label={t.title} style={{margin:"1.5rem 0",padding:"1rem",border:"1px solid #cbd5e1",borderRadius:12}}><h2>{t.title}</h2><p>{t.intro}</p><div style={{display:"flex",gap:10,flexWrap:"wrap"}}><label>{t.start}<input type="date" value={start} onChange={e=>setStart(e.target.value)}/></label><label>{t.end}<input type="date" value={end} onChange={e=>setEnd(e.target.value)}/></label><label>{t.job}<select value={selected} onChange={e=>setSelected(e.target.value)}><option value="">{t.empty}</option>{selected&&!jobs.some(row=>row.reservation_ref===selected)&&<option value={selected}>{t.job}</option>}{jobs.map((row,index)=>row.reservation_ref&&<option key={row.reservation_ref} value={row.reservation_ref}>{[row.requester_name,row.service_name||row.offering||`${t.job} ${index+1}`,row.requested_datetime].filter(Boolean).join(" · ")}</option>)}</select></label>{moreBookings&&jobs.length>0&&jobs.length%100===0&&<button type="button" disabled={busy} onClick={()=>void loadMoreBookings()}>{t.moreBookings}</button>}<button type="button" disabled={busy} onClick={()=>void load()}>{t.refresh}</button></div>{error&&<p role="alert">{t.failed}</p>}{asOf&&<p>{t.asOf}: <time dateTime={asOf}>{serviceTimestamp(asOf,locale)}</time></p>}{period&&<><h3>{t.period}</h3>{render(period,true)}</>}{job&&<><h3>{t.job}</h3>{render(job,false)}<h4>{d.categories}</h4><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))",gap:12}}>{(["CDF","USD"] as const).map(currency=><div key={currency}><strong>{currency}</strong>{Object.entries(job.expense_categories?.[currency]??{}).length?<ul>{Object.entries(job.expense_categories?.[currency]??{}).map(([code,amount])=><li key={code}>{categoryCopy[locale][code]??categoryCopy[locale].other_expense}: {amount} {currency}</li>)}</ul>:<p>{d.none}</p>}</div>)}</div><h4>{d.current}</h4><ul>{entries.filter(entry=>entry.direction>0&&entry.correction_state!=="corrected_original").map(entry=><li key={entry.entry_ref}>{entry.measure==="recorded_income"?d.receipt:d.expense} · {entry.amount} {entry.currency} · {entry.effective_date}{entry.measure==="recorded_expense"?` · ${categoryCopy[locale][entry.category]??categoryCopy[locale].other_expense}`:""}</li>)}</ul><h4>{d.trail}</h4><ul>{entries.map(entry=><li key={entry.entry_ref}>{entry.effect==="reversal"?d.reversal:entry.effect==="replacement"?d.replacement:d.initial} · {entry.measure==="recorded_income"?d.receipt:d.expense} · {entry.direction<0?"−":"+"}{entry.amount} {entry.currency} · {entry.effective_date} · {serviceTimestamp(entry.recorded_at,locale)}</li>)}</ul>{nextEntry!==null&&<button type="button" onClick={()=>void moreEntries()}>{d.more}</button>}</>}</section>;
+ return <section className="services-totals svc-financial-panel" ref={sectionRef} aria-label={t.title} style={{margin:"1.5rem 0",padding:"1rem",border:"1px solid #cbd5e1",borderRadius:12}}><h2>{t.title}</h2><p>{t.intro}</p><div style={{display:"flex",gap:10,flexWrap:"wrap"}}><label>{t.start}<input type="date" value={start} onChange={e=>setStart(e.target.value)}/></label><label>{t.end}<input type="date" value={end} onChange={e=>setEnd(e.target.value)}/></label><label>{t.job}<select value={selected} onChange={e=>setSelected(e.target.value)}><option value="">{t.empty}</option>{selected&&!jobs.some(row=>row.reservation_ref===selected)&&<option value={selected}>{t.job}</option>}{jobs.map((row,index)=>row.reservation_ref&&<option key={row.reservation_ref} value={row.reservation_ref}>{[row.requester_name,row.service_name||row.offering||`${t.job} ${index+1}`,row.requested_datetime].filter(Boolean).join(" · ")}</option>)}</select></label>{moreBookings&&jobs.length>0&&jobs.length%100===0&&<button type="button" disabled={busy} onClick={()=>void loadMoreBookings()}>{t.moreBookings}</button>}<button type="button" disabled={busy} onClick={()=>void load()}>{t.refresh}</button></div>{error&&<p role="alert">{t.failed}</p>}{asOf&&<p>{t.asOf}: <time dateTime={asOf}>{serviceTimestamp(asOf,locale)}</time></p>}{period&&<><h3>{t.period}</h3>{render(period,true)}</>}{job&&<><h3>{t.job}</h3>{render(job,false)}<h4>{d.categories}</h4><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))",gap:12}}>{(["CDF","USD"] as const).map(currency=><div key={currency}><strong>{currency}</strong>{Object.entries(job.expense_categories?.[currency]??{}).length?<ul>{Object.entries(job.expense_categories?.[currency]??{}).map(([code,amount])=><li key={code}>{categoryCopy[locale][code]??categoryCopy[locale].other_expense}: {amount} {currency}</li>)}</ul>:<p>{d.none}</p>}</div>)}</div><h4>{d.current}</h4><ul>{entries.filter(entry=>entry.direction>0&&entry.correction_state!=="corrected_original").map(entry=><li key={entry.entry_ref}>{entry.measure==="recorded_income"?d.receipt:d.expense} · {entry.amount} {entry.currency} · {entry.effective_date}{entry.measure==="recorded_expense"?` · ${categoryCopy[locale][entry.category]??categoryCopy[locale].other_expense}`:""}</li>)}</ul><h4>{d.trail}</h4><ul>{entries.map(entry=><li key={entry.entry_ref}>{entry.effect==="reversal"?d.reversal:entry.effect==="replacement"?d.replacement:d.initial} · {entry.measure==="recorded_income"?d.receipt:d.expense} · {entry.direction<0?"−":"+"}{entry.amount} {entry.currency} · {entry.effective_date} · {serviceTimestamp(entry.recorded_at,locale)}</li>)}</ul>{nextEntry!==null&&<button type="button" disabled={busy} onClick={()=>void moreEntries()}>{d.more}</button>}</>}</section>;
 }
