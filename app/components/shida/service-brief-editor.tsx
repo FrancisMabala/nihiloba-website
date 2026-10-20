@@ -117,7 +117,7 @@ function BriefEditor({binding, locale, reference, direct, directRef, branchChoic
       else if (error instanceof ServiceRequestError && error.status >= 400 && error.status < 500 && error.status !== 408) {
         setPending(null);
         if (error.status === 409) {setConflict(true); setMessage(t.stale);}
-        else setMessage(error.status === 413 ? t.pdfHelp : t.invalid);
+        else setMessage(error.status === 429 ? t.busy : error.status === 413 ? t.pdfHelp : t.invalid);
       } else setMessage(t.uncertain);
     } finally {lock.current = false; if (alive.current) setBusy(false);}
   }

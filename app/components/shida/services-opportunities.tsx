@@ -5,6 +5,7 @@ import {serviceCategoryExperience, type ServiceLocale} from "../../lib/services-
 import {requestWords} from "../../lib/services-request-copy";
 import {comparisonWords} from "../../lib/services-comparison-copy";
 import {opportunityWords} from "../../lib/services-opportunity-copy";
+import {ServicesRequestSupport} from "./services-request-support";
 import {serviceAmount, serviceLocalInput, serviceUtcInput} from "../../lib/service-time";
 import {dateText, useWorkDraft, leaveWork} from "../../lib/restaurant-work";
 import "./service-request-workspace.css";
@@ -51,6 +52,7 @@ function Opportunities({base, binding, locale, services, mine, onDenied, initial
     url.searchParams.set("proposal", value.proposal_ref); url.searchParams.set("request", value.posted_ref);
     if (value.offering_ref) url.searchParams.set("offering", value.offering_ref);
     window.history.replaceState(null, "", url);
+    window.dispatchEvent(new Event("services:location"));
   }
   useEffect(() => {
     alive.current = true; let active = true; const controller = new AbortController();
@@ -122,7 +124,7 @@ function Opportunities({base, binding, locale, services, mine, onDenied, initial
       if (!alive.current) return;
       if (error instanceof Failure && [401, 403, 404].includes(error.status)) deny();
       else if (error instanceof Failure && error.status >= 400 && error.status < 500 && error.status !== 408) {
-        setPending(null); setConflict(error.status === 409); setMessage(error.status === 409 ? common.stale : common.invalid);
+        setPending(null); setConflict(error.status === 409); setMessage(error.status === 429 ? common.busy : error.status === 409 ? common.stale : common.invalid);
       } else setMessage(common.uncertain);
     } finally {lock.current = false; if (alive.current) setBusy(false);}
   }
@@ -221,6 +223,7 @@ function Opportunities({base, binding, locale, services, mine, onDenied, initial
         </article>) : <p>{common.empty}</p> : requests.length ? requests.map(row => <article className="svc-brief-card" key={row.posted_ref}>
           {summary(row)}<button className="button button-primary" disabled={disabled} onClick={() => void run({kind: "start",
             path: `postings/${row.posted_ref}/proposals`, body: JSON.stringify({operation_id: crypto.randomUUID(), offering_ref: offering})})}>{t.prepare}</button>
+          <ServicesRequestSupport reference={row.posted_ref} url={row.support_url} locale={locale}/>
         </article>) : <p>{t.empty}</p>}
         {cursor && <button disabled={disabled} onClick={() => void more()}>{common.more}</button>}
         <button disabled={disabled} onClick={() => {setLoading(true); setMessage(""); setReload(value => value + 1);}}>{common.reload}</button>

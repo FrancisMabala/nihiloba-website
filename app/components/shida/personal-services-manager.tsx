@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {serviceLanguageQuery} from "../../lib/service-transaction-link";
 import { managementCopy } from "../../lib/restaurant-management-copy";
 import { leaveWork } from "../../lib/restaurant-work";
 import { SellerLanding } from "./seller-landing";
@@ -24,6 +25,13 @@ export function PersonalServicesManager({ locale, offeringRef = null }: { locale
  const copy = providerCopy[locale];
  const management = managementCopy[locale];
  const [signedOutView, setSignedOutView] = useState(false);
+ const [languageQuery,setLanguageQuery]=useState(()=>serviceLanguageQuery("",offeringRef));
+ useEffect(()=>{
+  let active=true;
+  const update=()=>setLanguageQuery(serviceLanguageQuery(window.location.search,offeringRef));
+  queueMicrotask(()=>{if(active)update();});window.addEventListener("popstate",update);window.addEventListener("services:location",update);
+  return()=>{active=false;window.removeEventListener("popstate",update);window.removeEventListener("services:location",update);};
+ },[offeringRef]);
  const design = {area:copy.area,title:copy.title,intro:copy.intro,personal:copy.personal};
  const [session, setSession] = useState<PersonalSession | null>(null);
  const [connectionLost, setConnectionLost] = useState(false);
@@ -68,12 +76,12 @@ export function PersonalServicesManager({ locale, offeringRef = null }: { locale
  }
  return <div lang={locale} className="rst-seller svc-provider seller-design">
 <section className="rst container rst-shell"><div className="rst-topline">
- <Link className="rst-brand" prefetch={false} href={`${locale === "en" ? "" : "/fr"}/shida/services`} aria-label={`SHIDA · ${management.marketplace}`}>SHIDA<span>{management.marketplace} ↗</span></Link>
+ <Link className="rst-brand" prefetch={false} href={`${locale === "en" ? "" : `/${locale}`}/shida/services`} aria-label={`SHIDA · ${management.marketplace}`}>SHIDA<span>{management.marketplace} ↗</span></Link>
  <span className="rst-workspace-label">{copy.title}</span>
- <details className="rst-dropdown"><summary aria-label={t.languages}>{locale.toUpperCase()}</summary><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)+(offeringRef?`?offering=${encodeURIComponent(offeringRef)}`:"")} hrefLang={lang} onClick={event=>{if(!leaveWork())event.preventDefault();}} aria-current={locale === lang ? "page" : undefined}>{({fr:'FR',en:'EN',ln:'Lingala',sw:'Swahili'})[lang]}</Link>)}</nav></details>
+ <details className="rst-dropdown"><summary aria-label={t.languages}>{locale.toUpperCase()}</summary><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)+languageQuery} hrefLang={lang} onClick={event=>{if(!leaveWork())event.preventDefault();}} aria-current={locale === lang ? "page" : undefined}>{({fr:'FR',en:'EN',ln:'Lingala',sw:'Swahili'})[lang]}</Link>)}</nav></details>
  {session && <details className="rst-dropdown rst-account"><summary aria-label={management.account}>{session.user.display_name}</summary><div><button disabled={pending} onClick={()=>void logout(true)}>{management.changeAccount}</button><button disabled={pending} onClick={()=>void logout()}>{management.signOut}</button></div></details>}
  </div>
-   {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <SellerLanding marketplace="services" locale={locale} design={design} browseHref={`${locale === "en" ? "" : "/fr"}/shida/services`} onAuthenticated={() => { signedOut.current = false; }}/>)}
+   {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <SellerLanding marketplace="services" locale={locale} design={design} browseHref={`${locale === "en" ? "" : `/${locale}`}/shida/services`} onAuthenticated={() => { signedOut.current = false; }}/>)}
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
   </section>

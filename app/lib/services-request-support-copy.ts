@@ -1,0 +1,12 @@
+import type {ServiceLocale} from "./services-category-experience";
+const copy={
+ en:{report:"Report this request",help:"Copy the reference below. Open SHIDA support, send the prepared message, then choose Services and include the reference with your concern. Opening WhatsApp does not send a report or hide this request.",reference:"Request reference",copy:"Copy reference",copied:"Reference copied.",manual:"Select and copy the reference above.",open:"Open SHIDA support",unavailable:"Open your SHIDA WhatsApp conversation, send “support”, then choose Services and include this reference."},
+ fr:{report:"Signaler cette demande",help:"Copiez la référence ci-dessous. Ouvrez l’assistance SHIDA, envoyez le message préparé, puis choisissez Services et indiquez la référence avec votre signalement. Ouvrir WhatsApp n’envoie pas de signalement et ne masque pas la demande.",reference:"Référence de la demande",copy:"Copier la référence",copied:"Référence copiée.",manual:"Sélectionnez et copiez la référence ci-dessus.",open:"Ouvrir l’assistance SHIDA",unavailable:"Ouvrez votre conversation WhatsApp SHIDA, envoyez « support », puis choisissez Services et indiquez cette référence."},
+ ln:{report:"Yebisa mokakatano ya bosengi",help:"Kopi référence oyo ezali na nse. Fungola lisungi ya SHIDA, tinda message ebongisami, pona Services mpe tinda référence na mokakatano na yo. Kofungola WhatsApp etindaka signalement te mpe ebombaka bosengi te.",reference:"Référence ya bosengi",copy:"Kopi référence",copied:"Référence ekopami.",manual:"Pona mpe kopi référence oyo ezali likolo.",open:"Fungola lisungi ya SHIDA",unavailable:"Fungola lisolo na yo ya WhatsApp SHIDA, tinda « support », pona Services mpe tinda référence oyo."},
+ sw:{report:"Ripoti ombi hili",help:"Nakili rejea hapa chini. Fungua msaada wa SHIDA, tuma ujumbe ulioandaliwa, kisha chagua Services na uweke rejea pamoja na tatizo. Kufungua WhatsApp hakutumi ripoti wala kuficha ombi.",reference:"Rejea ya ombi",copy:"Nakili rejea",copied:"Rejea imenakiliwa.",manual:"Chagua na unakili rejea hapo juu.",open:"Fungua msaada wa SHIDA",unavailable:"Fungua mazungumzo yako ya WhatsApp ya SHIDA, tuma “support”, kisha chagua Services na uweke rejea hii."},
+};
+export const requestSupportCopy=(locale:ServiceLocale)=>copy[locale];
+export function safeSupportUrl(value:unknown):string|null{
+ if(typeof value!=="string")return null;
+ return /^https:\/\/wa\.me\/[0-9]{7,15}\?text=support$/.test(value)?value:null;
+}

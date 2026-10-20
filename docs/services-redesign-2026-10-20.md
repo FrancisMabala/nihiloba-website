@@ -340,3 +340,32 @@ failures were duplicate Refresh selectors, fixed by targeting the calendar panel
 The French mobile crowded agenda was visually inspected after correcting smooth-
 scroll screenshot timing. Production webpack/TypeScript and scoped lint passed.
 These changes are local and await the coordinated release.
+
+### R03q / R09b — Catalogue recovery, language continuity and reporting (21 October, local)
+
+Catalogue refreshes preserve unsaved details. A conflicting saved revision keeps
+the draft visible and requires a deliberate refresh before further changes.
+Package writes retry the same body and operation key after a lost response while
+keeping unrelated description edits. Prices accept comma decimals; blank prices
+remain unspecified. Optional social links can be removed. Service cards show the
+existing review summary, and unused plan explanations have been removed.
+
+Changing language retains the selected service and exact direct request/quote,
+booking or posted-request/proposal. Lingala and Swahili management headers return
+to their matching public marketplace. Navigation hints never grant access.
+
+Available requests include a report disclosure. It lets the provider copy the
+request reference and open the existing SHIDA WhatsApp support command. The
+instructions require the user to send that message, choose Services and explain
+the concern. No brief, document or quote is placed in the link; opening support
+does not create a report, notify the customer or hide a request. Invalid/missing
+support configuration has manual recovery. New-request rate limits show a plain
+wait-and-retry message while retaining the form.
+
+Six focused unit checks and 24 production-browser journeys passed, covering four
+languages, narrow layouts, catalogue stale/lost-response recovery, setup,
+navigation, exact task links and private proposal review/history. The first
+browser run exposed trailing-slash and duplicate-heading selectors plus an old
+navigation count; these were corrected to assert the current destinations.
+Production webpack/TypeScript and scoped lint passed. No runtime dependency or
+configuration was added to the website. The coordinated release is still pending.

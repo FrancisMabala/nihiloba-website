@@ -2,6 +2,7 @@ import {test, expect} from "@playwright/test";
 import {opportunityWords} from "../../app/lib/services-opportunity-copy";
 import {comparisonWords} from "../../app/lib/services-comparison-copy";
 import {requestWords} from "../../app/lib/services-request-copy";
+import {requestSupportCopy} from "../../app/lib/services-request-support-copy";
 
 for (const [locale, width] of [["en", 320], ["fr", 390], ["ln", 820], ["sw", 1440]] as const)
 test(`Provider private quotation review, exact retry and history ${locale}`, async ({page}) => {
@@ -12,6 +13,7 @@ test(`Provider private quotation review, exact retry and history ${locale}`, asy
     service_duration_minutes:60,commune:"Gombe",service_location_type:"public_place",home_service_available:"no",booking_mode:"flexible",
     availability:"Weekdays",publication_origin:"pilot",visible_to_customers:true,requests_enabled:true,is_active:"yes",revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
   const posted = {posted_ref: "SPR_one", revision: 1, status: "OPEN", brief_revision_ref: "SCV_one",
+    support_url:"https://wa.me/243811000000?text=support",
     summary: {category: "cleaning", description: "Clean two rooms", commune: "Gombe", timing: "Wednesday"},
     expires_at: "2026-12-01T20:00:00Z", created_at: "2026-11-29T20:00:00Z"};
   let proposal = {proposal_ref: "SPF_one", posted_ref: "SPR_one", offering_ref: "SVC_one", revision: 1,
@@ -45,7 +47,17 @@ test(`Provider private quotation review, exact retry and history ${locale}`, asy
   });
   await page.goto(`${locale==="en"?"":`/${locale}`}/shida/seller/services?view=available`);
   const panel = page.locator(".svc-request");
+  const support=requestSupportCopy(locale);
+  await panel.getByText(support.report,{exact:true}).click();
+  await expect(panel.getByLabel(support.reference,{exact:true})).toHaveValue("SPR_one");
+  await expect(panel.getByRole("link",{name:support.open,exact:false})).toHaveAttribute("href",posted.support_url);
+  await expect(panel.getByText(support.help,{exact:true})).toBeVisible();
+  expect(saves).toHaveLength(0);expect(submits).toHaveLength(0);
+  if(locale==="fr")await panel.screenshot({path:"test-results/services-request-report-fr.png"});
   await panel.getByRole("button", {name:t.prepare,exact:true}).click();
+  await page.locator(".rst-dropdown").first().locator("summary").click();
+  await expect(page.locator('a[hreflang="fr"]')).toHaveAttribute("href",/view=available.*request=SPR_one.*proposal=SPF_one/);
+  await page.locator(".rst-dropdown").first().locator("summary").click();
   await panel.getByRole("textbox",{name:c.scope,exact:true}).fill("Two rooms including windows");
   await panel.getByRole("textbox",{name:c.amount,exact:true}).fill("75,50");
   await panel.getByRole("button",{name:t.save,exact:true}).click();

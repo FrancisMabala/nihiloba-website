@@ -19,7 +19,7 @@ export type ProposalVersion = {version_ref: string; number: number; brief_revisi
   brief_summary?: BriefContent; expires_at: string; submitted_at: string; answers_current_brief?: boolean; expired?: boolean};
 export type CustomerBranch = {branch_ref: string; name: string; broad_area: string; revision: number; coverage_revision: number};
 export type PostedRequest = {posted_ref: string; revision: number; status: "OPEN" | "WITHDRAWN" | "EXPIRED" | "AWARDED";
-  brief_ref?: string;
+  brief_ref?: string; support_url?: string|null;
   summary: BriefContent; brief_revision_ref: string; expires_at: string; created_at: string;
   booking?: {reservation_ref: string; request_ref: string; quote_ref: string}};
 export type PrivateProposal = {proposal_ref: string; posted_ref: string; revision: number;

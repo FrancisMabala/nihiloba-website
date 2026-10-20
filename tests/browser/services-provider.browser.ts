@@ -45,9 +45,11 @@ for(const [locale,width] of [['en',1440],['en',360],['fr',1440],['ln',820],['sw'
  await fixture(page,{bundle:locale==='en'?'personal_free':'personal_pro'});
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services`);
  const t=providerCopy[locale],nav=page.getByRole('navigation',{name:t.navigation});
- await expect(page.getByRole('heading',{name:t.overview,exact:true})).toBeVisible();
- await expect(nav.getByRole('button')).toHaveCount(4);
- await expect(page.getByText(t.pilot)).toHaveCount(0);
+ await expect(page.locator('#services-view-title')).toHaveText(t.overview);
+ await expect(nav.getByRole('button')).toHaveCount(6);
+ await expect(nav.getByRole('button',{name:t.available,exact:true})).toBeVisible();
+ await expect(nav.getByRole('button',{name:t.proposals,exact:true})).toBeVisible();
+ await expect(page.getByText("Free + Pro · Pilot access",{exact:true})).toHaveCount(0);
  await page.screenshot({path:`docs/evidence/seller-workspace/services-overview-${locale}-${width}.png`,fullPage:true});
  for(const section of ['services','work','finance','reports','templates','settings'] as const){
   const secondary=['reports','templates','settings'].includes(section);

@@ -1,5 +1,6 @@
 import type {ServiceLocale} from "./services-category-experience";
 const text = {
+  busy: ["Please wait before trying again. Your saved work is kept.", "Patientez avant de réessayer. Votre travail enregistré est conservé.", "Zela liboso ya komeka lisusu. Mosala na yo oyo ebombami ezali kaka.", "Subiri kabla ya kujaribu tena. Kazi yako iliyohifadhiwa imebaki."],
   title: ["Describe what you need", "Décrivez votre besoin", "Limbola bosengi na yo", "Eleza unachohitaji"],
   requests: ["My requests", "Mes demandes", "Masengi na ngai", "Maombi yangu"],
   newRequest: ["New request", "Nouvelle demande", "Bosengi ya sika", "Ombi jipya"],

@@ -18,6 +18,10 @@ for(const locale of ["en","fr","ln","sw"] as const)test(`Exact saved quotation h
  await page.goto(`${locale==="en"?"":`/${locale}`}/shida/seller/services?view=work&request=SWR_exact&quote=SQT_exact`);
  await expect(page.locator(".services-transactions").getByRole("heading",{name:"Exact saved repair",exact:true})).toBeVisible();
  await expect(page.locator(".services-transactions").getByText("Saved quotation scope",{exact:true})).toBeVisible();
+ for(const language of ["en","fr","ln","sw"]){
+  const destination=`${language==="en"?"":`/${language}`}/shida/seller/services/?view=work&request=SWR_exact&quote=SQT_exact`;
+  await expect(page.locator(`.rst-dropdown a[hreflang="${language}"]`)).toHaveAttribute("href",destination);
+ }
  expect(writes).toEqual([]);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
