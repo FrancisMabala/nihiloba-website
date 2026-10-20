@@ -55,6 +55,8 @@ function parseCart(value: unknown): CommerceCart {
     const method = group.fulfillment_method;
     if (method != null && method !== "pickup" && method !== "delivery") throw new CommerceApiError("malformed_response", 502);
     return {
+      available_methods: Array.isArray(group.available_methods) ? group.available_methods.filter((v):v is "pickup"|"delivery"=>v==="pickup"||v==="delivery") : [],
+      delivery_areas: Array.isArray(group.delivery_areas) ? group.delivery_areas.filter((v):v is string=>typeof v==="string") : [],
       store_reference: text(group.store_reference, true)!, store_name: text(group.store_name, true)!, subtotal: text(group.subtotal, true)!, currency: text(group.currency),
       estimates: group.estimates == null ? undefined : {preparation: text(record(group.estimates).preparation), delivery: text(record(group.estimates).delivery)},
       fulfillment_method: method ?? null, delivery_fee: text(group.delivery_fee), delivery_fee_status: text(group.delivery_fee_status),
@@ -160,4 +162,14 @@ export async function createCommerceHandoff(token: string): Promise<CommerceHand
   const url = new URL(whatsapp);
   if (url.protocol !== "https:" || url.hostname !== "wa.me" || url.username || url.password) throw new CommerceApiError("malformed_response", 502);
   return { handoff_reference: text(value.handoff_reference, true)!, expires_at: text(value.expires_at, true)!, whatsapp_url: url.toString() };
+}
+
+export async function setCommerceFulfillment(token:string,store:string,fields:Record<string,unknown>):Promise<CommerceCart>{
+ return enrichCart(cartFromEnvelope(await backendRequest(`/api/v1/carts/${encodeURIComponent(token)}/fulfillments/${encodeURIComponent(store)}`,{method:"PUT",body:JSON.stringify(fields)})));
+}
+export async function confirmCommerceWeb(token:string,session:string,origin:string,key:string):Promise<{reference:string;created:boolean;whatsapp_url:string|null}>{
+ const data=record(await backendRequest(`/api/v1/carts/${encodeURIComponent(token)}/confirm-web`,{method:"POST",headers:{Cookie:`shida_dashboard_session=${session}`,Origin:origin},body:JSON.stringify({idempotency_key:key})}));
+ let whatsapp:string|null=null;
+ if(typeof data.whatsapp_url==="string"){const url=new URL(data.whatsapp_url);if(url.protocol==="https:"&&url.hostname==="wa.me"&&!url.username&&!url.password)whatsapp=url.toString();}
+ return {reference:text(data.reference,true)!,created:data.created===true,whatsapp_url:whatsapp};
 }

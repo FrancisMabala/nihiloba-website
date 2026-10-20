@@ -19,6 +19,8 @@ export type CommerceCartItem = {
 };
 
 export type CommerceSellerGroup = {
+  available_methods?: ("pickup"|"delivery")[];
+  delivery_areas?: string[];
   store_reference: string;
   store_name: string;
   subtotal: string;

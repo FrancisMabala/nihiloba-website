@@ -14,7 +14,7 @@ export async function buyerRequest(path:string,binding:string,method='GET',body?
  const response=await fetch(`/api/shida/personal/wenze-buyer/${path}/`,{method,credentials:'same-origin',cache:'no-store',headers:{'X-Shida-Session':binding,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});
  if(!response.ok)throw Error(String(response.status));return response.json();
 }
-export function WenzeBuyerProvider({locale,children}:{locale:Locale;children:ReactNode}){
+export function WenzeBuyerProvider({locale,children,loginMessage}:{locale:Locale;children:ReactNode;loginMessage?:string}){
  const [session,setSession]=useState<PersonalSession|null>(null),[checking,setChecking]=useState(true),[open,setOpen]=useState(false),[failed,setFailed]=useState(false);
  const loginPanel=useRef<HTMLElement>(null),t=words[locale];
  useEffect(()=>{if(open){loginPanel.current?.scrollIntoView({block:"center",behavior:"smooth"});loginPanel.current?.focus();}},[open]);
@@ -28,7 +28,7 @@ export function WenzeBuyerProvider({locale,children}:{locale:Locale;children:Rea
   void check();window.addEventListener(PERSONAL_SESSION_EVENT,changed);window.addEventListener('focus',focus);window.addEventListener('storage',storage);
   return()=>{alive=false;++epoch;request?.abort();window.removeEventListener(PERSONAL_SESSION_EVENT,changed);window.removeEventListener('focus',focus);window.removeEventListener('storage',storage);};
  },[]);
- return <Context.Provider value={{binding:session?.binding??null,checking,login:()=>setOpen(true)}}>{open&&<section ref={loginPanel} tabIndex={-1} className="wzp-buyer-login container" role="region" aria-label={t.signIn}><button className="wzp-close" onClick={()=>setOpen(false)}>{t.close}</button><p>{t.login}</p>{failed&&<p role="alert">{t.failed}</p>}<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>{window.dispatchEvent(new Event(PERSONAL_SESSION_EVENT));}}/></section>}{children}</Context.Provider>;
+ return <Context.Provider value={{binding:session?.binding??null,checking,login:()=>setOpen(true)}}>{open&&<section ref={loginPanel} tabIndex={-1} className="wzp-buyer-login container" role="region" aria-label={t.signIn}><button className="wzp-close" onClick={()=>setOpen(false)}>{t.close}</button><p>{loginMessage??t.login}</p>{failed&&<p role="alert">{t.failed}</p>}<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>{window.dispatchEvent(new Event(PERSONAL_SESSION_EVENT));}}/></section>}{children}</Context.Provider>;
 }
 export function WenzeRelation({locale,reference,kind,follow=false,iconOnly=false}:{locale:Locale;reference:string;kind:'wenze_store'|'wenze_product';follow?:boolean;iconOnly?:boolean}){
  const buyer=useContext(Context),t=words[locale];
