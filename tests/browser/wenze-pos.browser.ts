@@ -48,6 +48,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`basket labels receipts 
  await expect(pos.getByLabel(t('quantity'),{exact:true})).toHaveValue('2');
  await pos.getByRole('button',{name:t('checkout'),exact:true}).click();await expect(pos.getByText(t('uncertain'),{exact:true})).toBeVisible();
  await pos.getByRole('button',{name:t('retry'),exact:true}).click();await expect(pos.locator('.wz-receipt-paper')).toBeVisible();expect(keys[0]).toBe(keys[1]);
+ await expect(pos.locator('.wz-receipt-paper').getByText(t('commercialReceipt'),{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`docs/evidence/wenze-pos/receipt-${locale}-mobile.png`,fullPage:true});
  await pos.locator('.wz-receipt-panel').getByRole('button',{name:t('close'),exact:true}).click();
