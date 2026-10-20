@@ -47,6 +47,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/shida/my-applications/:path*", headers: privatePageHeaders },
       { source: "/shida/seller/:path*", headers: privatePageHeaders },
+      { source: "/shida/school-receipts/:path*", headers: privatePageHeaders },
+      { source: "/:lang(en|fr|ln|sw)/shida/school-receipts/:path*", headers: privatePageHeaders },
       { source: "/:lang(en|fr|ln|sw)/shida/seller/:path*", headers: privatePageHeaders },
       { source: "/en/shida/my-applications/:path*", headers: privatePageHeaders },
       { source: "/fr/shida/mes-candidatures/:path*", headers: privatePageHeaders },
