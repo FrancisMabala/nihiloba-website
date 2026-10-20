@@ -9,6 +9,15 @@ const context=(path:string)=>({params:Promise.resolve({path:path.split('/')})});
 function req(path:string,method='GET',body?:object,headers:Record<string,string>={}){return new Request('https://nihiloba.com/api/shida/personal/wenze-buyer/'+path,{method,headers:{Origin:'https://nihiloba.com','X-Shida-Session':personalSessionBinding(token),'Content-Type':'application/json',...headers},...(body?{body:JSON.stringify(body)}:{})});}
 beforeEach(()=>{jar.set(PERSONAL_SESSION_COOKIE,token);vi.stubEnv('SHIDA_API_BASE_URL','https://backend.test');vi.stubGlobal('fetch',fetcher);fetcher.mockReset();fetcher.mockResolvedValue(Response.json({saved:true}));});
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();jar.clear();});
+it('forwards bounded order pagination without buyer identity parameters',async()=>{
+ const response=await GET(req('orders?offset=20&limit=20'),context('orders'));
+ expect(response.status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/personal/wenze-buyer/orders?offset=20&limit=20');
+});
+it.each(['orders?user_id=1','orders?limit=51','orders?offset=-1','orders?limit=1&limit=2'])('rejects invalid order query %s',async path=>{
+ expect((await GET(req(path),context('orders'))).status).toBe(404);
+ expect(fetcher).not.toHaveBeenCalled();
+});
 it('forwards only cookie authority to the exact buyer target',async()=>{const path='relations/wenze_product/WNP_fixture';const result=await PUT(req(path,'PUT',{relation:'saved',enabled:true}),context(path));expect(result.status).toBe(200);expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/personal/wenze-buyer/'+path);expect(result.headers.get('cache-control')).toContain('private, no-store');expect((fetcher.mock.calls[0][1]?.headers as Record<string,string>).Cookie).toBe('shida_dashboard_session='+token);});
 it.each(['saved?user_id=123','relations/restaurant/RST_fixture','stores/WNZ_fixture/reviews/RVW_fixture/moderate','stores/../admin'])('rejects authority injection and unsupported paths: %s',async path=>{expect((await GET(req(path),context(path.split('?')[0]))).status).toBe(404);expect(fetcher).not.toHaveBeenCalled();});
 it('rejects cross-site requests and stale session bindings',async()=>{expect((await GET(req('saved','GET',undefined,{'X-Shida-Session':'old'}),context('saved'))).status).toBe(401);const path='stores/WNZ_fixture/review';expect((await PUT(req(path,'PUT',{}, {Origin:'https://attacker.test'}),context(path))).status).toBe(403);expect((await GET(req('saved','GET',undefined,{'sec-fetch-site':'cross-site'}),context('saved'))).status).toBe(403);expect(fetcher).not.toHaveBeenCalled();});

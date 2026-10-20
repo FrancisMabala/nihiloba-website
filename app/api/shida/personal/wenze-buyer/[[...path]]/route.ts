@@ -5,14 +5,16 @@ export const dynamic='force-dynamic';
 const fail=(status:number,detail='wenze_buyer_unavailable')=>Response.json({detail},{status,headers:PRIVATE_HEADERS});
 const ref='[A-Za-z0-9_-]{4,64}';
 function buyerRouteAllowed(path:string,method:string){
- if(method==='GET')return path==='saved'||new RegExp(`^(relations/(wenze_store|wenze_product)/${ref}|stores/${ref}/review-eligibility)$`).test(path);
+ if(method==='GET')return path==='saved'||path==='orders'||new RegExp(`^(orders/${ref}|relations/(wenze_store|wenze_product)/${ref}|stores/${ref}/review-eligibility)$`).test(path);
  if(method==='PUT')return new RegExp(`^(relations/(wenze_store|wenze_product)/${ref}|stores/${ref}/review)$`).test(path);
  if(method==='POST')return new RegExp(`^stores/${ref}/(review/withdraw|reviews/${ref}/report)$`).test(path);
  return false;
 }
 async function handle(request:Request,context:{params:Promise<{path?:string[]}>}){
  const path=((await context.params).path??[]).join('/');
- if(!buyerRouteAllowed(path,request.method)||new URL(request.url).searchParams.size)return fail(404);
+ const query=new URL(request.url).searchParams;
+ if(!buyerRouteAllowed(path,request.method))return fail(404);
+ if(query.size&&(path!=='orders'||request.method!=='GET'||[...query.keys()].some(key=>!['offset','limit'].includes(key))||[...query].some(([key,value])=>! /^\d+$/.test(value)||Number(value)>(key==='limit'?50:10000)||(key==='limit'&&Number(value)<1))||query.getAll('offset').length>1||query.getAll('limit').length>1))return fail(404);
  if(request.headers.get('sec-fetch-site')==='cross-site')return fail(403);
  const origin=personalRequestOrigin(request);if(request.method!=='GET'&&!origin)return fail(403);
  const token=(await cookies()).get(PERSONAL_SESSION_COOKIE)?.value;
@@ -26,7 +28,7 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
  }
  try{
   const base=new URL(process.env.SHIDA_API_BASE_URL??'https://api.nihiloba.com');if(base.protocol!=='https:'||base.username||base.password)return fail(503);
-  const response=await fetch(new URL(`/api/dashboard/personal/wenze-buyer/${path}`,base.origin),{method:request.method,headers:{Accept:'application/json',Cookie:`shida_dashboard_session=${token}`,...(origin?{Origin:origin}:{}),...(body?{'Content-Type':'application/json'}:{})},body,cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(12000)});
+  const response=await fetch(new URL(`/api/dashboard/personal/wenze-buyer/${path}${query.size?'?'+query.toString():''}`,base.origin),{method:request.method,headers:{Accept:'application/json',Cookie:`shida_dashboard_session=${token}`,...(origin?{Origin:origin}:{}),...(body?{'Content-Type':'application/json'}:{})},body,cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(12000)});
   if(response.status===401)await clearEmploymentToken();
   if(!response.ok)return fail(response.status>=400&&response.status<600?response.status:502,response.status===409?'review_stale':undefined);
   return Response.json(await response.json(),{headers:PRIVATE_HEADERS});
