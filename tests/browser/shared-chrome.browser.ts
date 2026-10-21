@@ -17,7 +17,7 @@ for(const width of [320,390,820,1366])test(`shared account and language ${width}
  await account.click();await menu.getByRole('link',{name:'Boîte de réception'}).click();await expect(page.getByRole('heading',{level:1})).toHaveText('Boîte de réception');
  await expect(page.getByRole('link',{name:'Demandes et messages Services'})).toHaveAttribute('href','/fr/shida/service-requests');
  await language.click();await page.getByRole('button',{name:'English',exact:true}).click();await expect(page.getByRole('heading',{level:1})).toHaveText('Inbox');expect(new URL(page.url()).searchParams.get('view')).toBe('inbox');
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/shared-chrome/public-account-${width}.png`,fullPage:true});
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`docs/evidence/shared-workspaces/public-account-${width}.png`,fullPage:true});
  expect(writes).toBe(0);expect(errors).toEqual([]);
 });

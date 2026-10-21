@@ -1,0 +1,3 @@
+import {defineConfig} from '@playwright/test';
+process.env.RESTAURANT_TEST_BASE_URL='http://127.0.0.1:3045';
+export default defineConfig({testDir:'./tests/browser',testMatch:['wenze-mobile-chrome.browser.ts','shared-chrome.browser.ts','services-workday.browser.ts','restaurant-seller.browser.ts'],grep:/mobile chrome|shared account|Workday|management Today/,workers:1,timeout:60000,use:{baseURL:'http://127.0.0.1:3045',channel:'chrome',headless:true,hasTouch:true},webServer:{command:'node node_modules/next/dist/bin/next start -p 3045',url:'http://127.0.0.1:3045',reuseExistingServer:false},reporter:'list'});

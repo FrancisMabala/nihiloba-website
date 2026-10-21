@@ -1,0 +1,14 @@
+/* Approved shared marketplace workspace surface. Screen only: receipt output is unchanged. */
+@media screen {
+ .rst-seller.seller-design{--seller-paper:#fffefa;--seller-line:#e0dfd4;background:#faf8f2}
+ .seller-design .rst-shell{background:#faf8f2}
+ .rst-seller.seller-design .wz-personal .seller-sidebar{background:transparent;color:#173e32;border-radius:0;padding:4px 0}
+ .rst-seller.seller-design .wz-personal .seller-identity{border-color:#e0dfd4}
+ .rst-seller.seller-design .wz-personal .seller-identity small{color:#697566}
+ .rst-seller.seller-design .wz-personal .seller-sidebar .seller-navigation button{color:#405547}
+ .rst-seller.seller-design .wz-personal .seller-sidebar .seller-navigation button:hover{background:#edf0e6}
+ .rst-seller.seller-design .wz-personal .seller-sidebar .seller-navigation button[aria-current=page]{background:#173e32;color:#fff;box-shadow:inset 3px 0 #ad8545}
+ .seller-design .seller-content :is(.wz-today-metric,.rst-today-card){background:#fffefa}
+ .seller-design .seller-content :is(.wz-card,.rst-card){box-shadow:none}
+ .seller-design .seller-content :is(h1,h2,h3){text-wrap:pretty}
+}

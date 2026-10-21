@@ -25,7 +25,7 @@ for(const [locale,width] of [["en",1440],["en",390],["fr",390],["ln",820],["sw",
  await expect(page.getByRole("heading",{name:t.headline})).toBeVisible();
  await expect(page.locator(".svc-today").getByText("Junior M.")).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/workday/today-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/shared-workspaces/services-today-${locale}-${width}.png`,fullPage:true});
  const nav=page.getByRole("navigation",{name:navCopy.navigation});
  if(width<=760){await expect(nav.getByRole("button",{name:navCopy.services,exact:true})).toBeHidden();await nav.locator(".svc-mobile-more").click();}
  await nav.getByRole("button",{name:navCopy.services,exact:true}).click();
@@ -36,5 +36,5 @@ for(const [locale,width] of [["en",1440],["en",390],["fr",390],["ln",820],["sw",
  await expect(page.getByRole("link",{name:t.whatsapp})).toHaveAttribute("href",`https://wa.me/?text=${encodeURIComponent(url)}`);
  await expect(page.locator(".svc-planner-tabs").getByRole("button",{name:scheduleCopy[locale].share,exact:true})).toHaveAttribute("aria-pressed","true");
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/workday/share-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/shared-workspaces/services-share-${locale}-${width}.png`,fullPage:true});
 });
