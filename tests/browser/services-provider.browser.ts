@@ -46,24 +46,29 @@ for(const [locale,width] of [['en',1440],['en',360],['fr',1440],['ln',820],['sw'
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services`);
  const t=providerCopy[locale],nav=page.getByRole('navigation',{name:t.navigation});
  await expect(page.locator('#services-view-title')).toHaveText(t.overview);
- await expect(nav.getByRole('button')).toHaveCount(6);
+ if(width<=760)await nav.locator('.svc-mobile-more').click();
+ await expect(nav.getByRole('button',{name:t.overview,exact:true})).toBeVisible();
  await expect(nav.getByRole('button',{name:t.available,exact:true})).toBeVisible();
  await expect(nav.getByRole('button',{name:t.proposals,exact:true})).toBeVisible();
+ if(width<=760)await nav.locator('.svc-mobile-close').click();
  await expect(page.getByText("Free + Pro · Pilot access",{exact:true})).toHaveCount(0);
  await page.screenshot({path:`docs/evidence/seller-workspace/services-overview-${locale}-${width}.png`,fullPage:true});
  for(const section of ['services','work','finance','reports','templates','settings'] as const){
   const secondary=['reports','templates','settings'].includes(section);
+  if(width<=760&&!['overview','work','calendar'].includes(section)&&await nav.getAttribute('data-expanded')!=='true')await nav.locator('.svc-mobile-more').click();
   if(secondary&&await page.locator('.svc-secondary-tools').getAttribute('open')===null)await page.locator('.svc-secondary-tools summary').click();
   const destination=secondary?page.getByRole('navigation',{name:t.tools,exact:true}):nav;
   await destination.getByRole('button',{name:t[section],exact:true}).click();
-  await expect(destination.getByRole('button',{name:t[section],exact:true})).toHaveAttribute('aria-current','page');
+  await expect(nav.locator('button[aria-current="page"]')).toHaveText(t[section]);
   await expect(page.locator('#services-view-title')).toHaveText(t[section]);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   if(locale==='en'&&width===1440&&['work','finance','reports','templates'].includes(section))await page.screenshot({path:`docs/evidence/seller-workspace/services-${section}-en-1440.png`,fullPage:true});
  }
+ if(width<=760&&await nav.getAttribute('data-expanded')!=='true')await nav.locator('.svc-mobile-more').click();
  await nav.getByRole('button',{name:t.services,exact:true}).click();
  const editor=page.locator('.svc-service-editor');await editor.getByRole('textbox').first().fill('Draft provider name');
  await nav.getByRole('button',{name:t.overview,exact:true}).click();
+ if(width<=760&&await nav.getAttribute('data-expanded')!=='true')await nav.locator('.svc-mobile-more').click();
  await nav.getByRole('button',{name:t.services,exact:true}).click();
  await expect(editor.getByRole('textbox').first()).toHaveValue('Draft provider name');
  await page.screenshot({path:`docs/evidence/seller-workspace/services-services-${locale}-${width}.png`,fullPage:true});

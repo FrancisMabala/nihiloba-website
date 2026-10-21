@@ -1,5 +1,6 @@
 "use client";
 import Image from 'next/image';
+import {workdayCopy} from '../../lib/services-workday-copy';
 import {serviceCalendarLabel,calendarStateCopy} from '../../lib/services-calendar-labels';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {ShidaCalendar} from './shida-calendar';
@@ -22,9 +23,9 @@ function splitHours(rows:Hours[]):Hours[]|null{
  return [...rows.slice(0,-1),{...last,end:time(middle)},{...last,start:time(middle+30)}];
 }
 const nowDay=()=>localDate(new Date().toISOString(),'Africa/Kinshasa');
-export function ServicesCalendar({base,binding,locale,offerings,initialService,onSaved,onOpen,onDenied,onEditDuration}:{base:string;binding:string;locale:ProviderLocale;offerings:Offering[];initialService?:string|null;onSaved:()=>void;onOpen:(ref:string)=>void;onDenied:()=>void;onEditDuration?:(ref:string)=>void}){
+export function ServicesCalendar({base,binding,locale,offerings,initialService,initialTab="calendar",onSaved,onOpen,onDenied,onEditDuration}:{base:string;binding:string;locale:ProviderLocale;offerings:Offering[];initialService?:string|null;initialTab?:"calendar"|"hours"|"share";onSaved:()=>void;onOpen:(ref:string)=>void;onDenied:()=>void;onEditDuration?:(ref:string)=>void}){
  const t=scheduleCopy[locale];
- const [tab,setTab]=useState<'calendar'|'hours'|'share'>('calendar'),[service,setService]=useState(initialService??offerings.find(row=>row.is_active==='yes')?.public_ref??'');
+ const [tab,setTab]=useState<'calendar'|'hours'|'share'>(initialTab),[service,setService]=useState(initialService??offerings.find(row=>row.is_active==='yes')?.public_ref??'');
  const [filter,setFilter]=useState(''),[month,setMonth]=useState(()=>nowDay().slice(0,7)),[day,setDay]=useState(nowDay),[page,setPage]=useState(1);
  const [events,setEvents]=useState<ProtectedCalendarProjection[]>([]),[more,setMore]=useState(false),[loading,setLoading]=useState(false),[error,setError]=useState('');
  const [schedule,setSchedule]=useState<Schedule|null>(null),[saved,setSaved]=useState(''),[share,setShare]=useState<Share|null>(null),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[pending,setPending]=useState<object|null>(null);
@@ -92,7 +93,7 @@ export function ServicesCalendar({base,binding,locale,offerings,initialService,o
      {days.map((name,index)=>{const hours=schedule.hours.filter(row=>row.day===name);return <p key={name}><strong>{t.days[index]}</strong>: {hours.length?hours.map(row=>`${row.start}–${row.end}`).join(', '):t.closed}</p>;})}</>}
     {dirty&&<p>{t.previewDraft}</p>}{!dirty&&<button type="button" disabled={busy||!!pending} onClick={()=>switchTab('share')}>{t.preview}</button>}
    </section><div className="svc-form-actions"><button className="svc-primary" type="submit" disabled={busy||schedule.mode==='appointments'&&!schedule.duration_minutes}>{pending?t.retry:t.save}</button></div></form>}
-   {tab==='share'&&share&&<div className="svc-sharing"><div className="svc-qr-paper"><span>SHIDA</span><h3>{share.name}</h3><Image unoptimized src={share.qr_image} width={240} height={240} alt={t.share}/><p>{t.preview}</p></div><div><h3>{t.shareLink}</h3><p>{calendarStateCopy[locale].linkHelp}</p><p>{t.shareHelp}</p><label>{t.copy}<input readOnly value={share.url} onFocus={event=>event.currentTarget.select()}/></label><div className="svc-share-actions"><button className="svc-primary" type="button" onClick={()=>void nativeShare()}>{t.shareLink}</button><button type="button" onClick={()=>void copy()}>{t.copy}</button><a className="button" href={share.qr_image} download="shida-service-qr.png">{t.download}</a><a href={share.url} target="_blank" rel="noopener noreferrer">{t.preview} ↗</a></div></div></div>}
+   {tab==='share'&&share&&<div className="svc-sharing"><div className="svc-qr-paper"><span>SHIDA</span><h3>{share.name}</h3><Image unoptimized src={share.qr_image} width={240} height={240} alt={t.share}/><p>{t.preview}</p></div><div><h3>{t.shareLink}</h3><p>{calendarStateCopy[locale].linkHelp}</p><p>{t.shareHelp}</p><label>{t.copy}<input readOnly value={share.url} onFocus={event=>event.currentTarget.select()}/></label><div className="svc-share-actions"><button className="svc-primary" type="button" onClick={()=>void nativeShare()}>{t.shareLink}</button><button type="button" onClick={()=>void copy()}>{t.copy}</button><a href={`https://wa.me/?text=${encodeURIComponent(share.url)}`} target="_blank" rel="noopener noreferrer">{workdayCopy[locale].whatsapp}</a><a className="button" href={share.qr_image} download="shida-service-qr.png">{t.download}</a><a href={share.url} target="_blank" rel="noopener noreferrer">{t.preview} ↗</a></div></div></div>}
   </div>}
  </section>;
 }

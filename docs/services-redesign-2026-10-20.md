@@ -1,5 +1,10 @@
 # Services redesign — Personal task navigation
 
+## Approved workday design — 21 October 2026
+
+The approved phone and desktop provider mockup is implemented locally. See
+[behaviour, validation and the continuing release/PDF hold](services-provider-workday-2026-10-21.md).
+
 ## Current hold — 21 October 2026
 
 The user explicitly blocked release and customer PDF uploads while approving

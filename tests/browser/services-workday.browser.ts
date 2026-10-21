@@ -1,0 +1,40 @@
+import {test,expect} from "@playwright/test";
+import QRCode from "qrcode";
+import {servicesProviderOffering} from "./fixtures/services-provider";
+import {workdayCopy} from "../../app/lib/services-workday-copy";
+import {providerCopy} from "../../app/lib/services-provider-copy";
+import {scheduleCopy} from "../../app/lib/services-calendar-copy";
+for(const [locale,width] of [["en",1440],["fr",390],["ln",820],["sw",320]] as const)test(`Workday mobile tools and direct sharing ${locale} ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:950});
+ const row={...servicesProviderOffering,name:"Studio Kin",service_name:"Studio Kin · Haircut",category:"beauty_wellness"};
+ const empty={items:[],has_more:false},url=`https://nihiloba.com/${locale==="en"?"":`${locale}/`}shida/services/SVC_one#booking`,qr=await QRCode.toDataURL(url);
+ await page.route("**/api/**",async route=>{
+  const path=new URL(route.request().url()).pathname.replace(/\/$/,"");
+  const reply=(json:unknown)=>route.fulfill({json});
+  if(path.endsWith("/employment/session"))return reply({binding:"a".repeat(64),user:{display_name:"Studio Kin"}});
+  if(path.endsWith("/capabilities"))return reply({capabilities:["profile","structured_availability","reservations","messages"]});
+  if(path.endsWith("/services"))return reply({profiles:[row]});
+  if(path.endsWith("/today"))return reply({date:"2026-10-21",timezone:"Africa/Kinshasa",requests:{items:[{request_ref:"SWR_one",offering:"Haircut request",requester:"Grâce L."}],has_more:false},pending:empty,upcoming:{items:[{reservation_ref:"RSV_one",offering:row.service_name,requester:"Junior M.",starts_at:"2026-10-21T09:30:00Z"}],has_more:false},messages:empty});
+  if(path.endsWith("/reviews"))return reply({reviews:[]});
+  if(path.endsWith("/calendar"))return reply({items:[],has_more:false});
+  if(path.endsWith("/share"))return reply({name:row.service_name,url,qr_image:qr});
+  return route.fulfill({status:404,json:{detail:"unavailable"}});
+ });
+ const t=workdayCopy[locale],navCopy=providerCopy[locale];
+ await page.goto(`${locale==="en"?"":`/${locale}`}/shida/seller/services`);
+ await expect(page.getByRole("heading",{name:t.headline})).toBeVisible();
+ await expect(page.locator(".svc-today").getByText("Junior M.")).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`docs/evidence/workday/today-${locale}-${width}.png`,fullPage:true});
+ const nav=page.getByRole("navigation",{name:navCopy.navigation});
+ if(width<=760){await expect(nav.getByRole("button",{name:navCopy.services,exact:true})).toBeHidden();await nav.locator(".svc-mobile-more").click();}
+ await nav.getByRole("button",{name:navCopy.services,exact:true}).click();
+ await expect(page.locator(".svc-service-editor h2")).toHaveText(row.service_name);
+ await page.locator(".svc-view-heading").getByRole("button",{name:new RegExp(t.share)}).click();
+ await expect(page.locator(".svc-sharing img")).toBeVisible();
+ await expect(page.locator(".svc-sharing input")).toHaveValue(url);
+ await expect(page.getByRole("link",{name:t.whatsapp})).toHaveAttribute("href",`https://wa.me/?text=${encodeURIComponent(url)}`);
+ await expect(page.locator(".svc-planner-tabs").getByRole("button",{name:scheduleCopy[locale].share,exact:true})).toHaveAttribute("aria-pressed","true");
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`docs/evidence/workday/share-${locale}-${width}.png`,fullPage:true});
+});

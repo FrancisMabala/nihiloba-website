@@ -16,7 +16,10 @@ import {ServicesBillBranding} from "./services-bill-branding";
 import {useEffect, useRef, useState} from "react";
 import {leaveWork, useWorkDraft} from "@/app/lib/restaurant-work";
 import {providerCopy, type ProviderView} from "@/app/lib/services-provider-copy";
-import {SellerWorkspaceIdentity, SellerWorkspaceNavigation} from "./seller-workspace";
+import {workdayCopy} from "../../lib/services-workday-copy";
+import {ServicesProviderNavigation} from "./services-provider-navigation";
+import "./services-workday.css";
+import {SellerWorkspaceIdentity} from "./seller-workspace";
 import {ServicesPublication, workspaceCopy} from "./services-workspace-ui";
 import {ServicesProviderOverview} from "./services-provider-overview";
 
@@ -50,6 +53,8 @@ const unavailable:Record<Locale,string>={en:"This saved service is no longer ava
 export function ServicesManagement({binding,locale,offeringRef=null,onUnauthorized}:{binding:string;locale:string;offeringRef?:string|null;onUnauthorized?:()=>void}) {
  const lang:Locale = locale in words ? locale as Locale : "fr", t=words[lang], ui=providerCopy[lang],lc=lifecycleCopy[lang],design=workspaceCopy[lang];
  const [view,setView]=useState<ProviderView>(offeringRef?"services":"overview"),[visited,setVisited]=useState<Set<ProviderView>>(new Set(offeringRef?["services"]:["overview"]));
+ const [calendarTab,setCalendarTab]=useState<"calendar"|"hours"|"share">("calendar");
+ const openPlanner=(tab:"calendar"|"hours"|"share")=>{if(!leaveWork())return;setCalendarTab(tab);navigate("calendar");};
  const [workVisit,setWorkVisit]=useState(0);
  const [todayTask,setTodayTask]=useState<ServiceTaskLink|null>(null);
  const [calendarBooking,setCalendarBooking]=useState<string|null>(null);
@@ -149,19 +154,19 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
  const navigation:ProviderView[]=["overview",...(can("requests_quotes")?["available" as const,"proposals" as const]:[]),...(can("reservations")&&can("messages")?["work" as const]:[]),...(can("structured_availability")?["calendar" as const]:[]),...(can("profile")?["services" as const]:[]),...(can("manual_journal")||can("basic_totals")?["finance" as const]:[]),...(can("operational_reports")?["reports" as const]:[]),...(can("quote_templates")||can("bill_templates")?["templates" as const]:[]),...(can("bills")?["settings" as const]:[])];
  const selectedView=navigation.includes(view)?view:"overview";
  const fieldLabels:Record<string,string>={name:t.name,service_name:t.service,category:t.category,description:t.description,service_duration_minutes:t.duration,commune:t.area,service_location_type:t.location,home_service_available:t.home,booking_mode:t.booking,availability:t.availability};
- return <section aria-label={t.title} className="svc-workspace container seller-layout" lang={lang}>
+ return <section aria-label={t.title} className="svc-workspace svc-workday container seller-layout" lang={lang}>
   <aside className="svc-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="S" title={ui.title} subtitle={ui.personal}/>
-   <SellerWorkspaceNavigation label={ui.navigation} items={navigation.filter(key=>!["reports","templates","settings"].includes(key)).map(key=>({key,label:ui[key],icon:key==="available"||key==="proposals"?"work":key==="services"?"catalog":key==="templates"?"document":key}))} current={selectedView} onNavigate={key=>navigate(key as ProviderView)}/>
-   <details className="svc-secondary-tools" open={["reports","templates","settings"].includes(selectedView)||undefined}><summary>{ui.tools}</summary><SellerWorkspaceNavigation label={ui.tools} items={navigation.filter(key=>["reports","templates","settings"].includes(key)).map(key=>({key,label:ui[key],icon:key==="templates"?"document":key==="reports"?"reports":"settings"}))} current={selectedView} onNavigate={key=>navigate(key as ProviderView)}/></details>
+   <ServicesProviderNavigation locale={lang} items={navigation} current={selectedView} onNavigate={key=>{if(selectedView==="calendar"&&!leaveWork())return;setCalendarTab("calendar");navigate(key);}}/>
+   {can("structured_availability")&&<button type="button" className="svc-sidebar-share" onClick={()=>openPlanner("share")}>{workdayCopy[lang].share} ↗</button>}
 
   </aside>
   <div className="svc-content">
-   <header className="svc-view-heading"><div><p className="eyebrow">{ui.area}</p><h1>{ui.title}</h1><h2 id="services-view-title" tabIndex={-1}>{ui[selectedView]}</h2><p>{ui[`${selectedView}Intro`]}</p></div><button type="button" className="svc-refresh" disabled={busy||pending!==null} onClick={()=>{if(leaveWork())void refresh(true);}}>{ui.refresh}</button></header>
+   <header className="svc-view-heading"><div><p className="eyebrow">{rows.find(row=>row.is_active==="yes")?.name||ui.area}</p><h1 id="services-view-title" tabIndex={-1}>{ui[selectedView]}</h1>{selectedView!=="overview"&&<p>{ui[`${selectedView}Intro`]}</p>}</div><div className="svc-heading-actions">{can("structured_availability")&&<button type="button" className="svc-primary" onClick={()=>openPlanner("share")}>{workdayCopy[lang].share} ↗</button>}{selectedView!=="overview"&&<button type="button" className="svc-refresh" disabled={busy||pending!==null} onClick={()=>{if(leaveWork())void refresh(true);}}>{ui.refresh}</button>}</div></header>
 
    {catalogStale&&<p className="svc-notice" role="status">{t.stale}</p>}{message&&(!catalogStale||message!==t.stale)&&<p className="svc-notice" role="status">{message}</p>}{pending&&!busy&&<button type="button" onClick={()=>void runOperation(pending)}>{ui.retry}</button>}
    {(["available","proposals"] as const).filter(key=>visited.has(key)&&can("requests_quotes")).map(key=><div key={key} hidden={selectedView!==key}><ServicesOpportunities base={base} binding={binding} locale={lang} services={rows} mine={key==="proposals"} onDenied={()=>{setRows([]);setCapabilities([]);setBlocked(true);}}/></div>)}
-   {selectedView==="calendar"&&<ServicesCalendar onEditDuration={ref=>{setSelected(ref);setShowArchived(false);navigate("services");requestAnimationFrame(()=>document.getElementById("svc-field-service_duration_minutes")?.focus());}} initialService={offeringRef} base={base} binding={binding} locale={lang} offerings={rows} onSaved={()=>void refresh()} onOpen={ref=>{setCalendarBooking(ref);navigate("work","reservations");}} onDenied={()=>{setRows([]);setCapabilities([]);setBlocked(true);}}/>}
-   {selectedView==="overview"&&can("reservations")&&can("messages")&&<ServicesToday base={base} binding={binding} locale={lang} onDenied={()=>{setCapabilities([]);setRows([]);setBlocked(true);}} onAll={kind=>navigate("work",kind)} onOpen={task=>{if(!leaveWork())return;setTodayTask(task);setInitialKind(task.kind);setCalendarBooking(null);setWorkVisit(value=>value+1);navigate("work");}}/>}
+   {selectedView==="calendar"&&<ServicesCalendar key={calendarTab} initialTab={calendarTab} onEditDuration={ref=>{setSelected(ref);setShowArchived(false);navigate("services");requestAnimationFrame(()=>document.getElementById("svc-field-service_duration_minutes")?.focus());}} initialService={offeringRef} base={base} binding={binding} locale={lang} offerings={rows} onSaved={()=>void refresh()} onOpen={ref=>{setCalendarBooking(ref);navigate("work","reservations");}} onDenied={()=>{setRows([]);setCapabilities([]);setBlocked(true);}}/>}
+   {selectedView==="overview"&&can("reservations")&&can("messages")&&<ServicesToday actions={can("structured_availability")&&<div className="svc-workday-share"><div><h3>{workdayCopy[lang].shareTitle}</h3><p>{workdayCopy[lang].shareHelp}</p></div><button type="button" className="svc-primary" onClick={()=>openPlanner("share")}>{workdayCopy[lang].share} ↗</button><button type="button" onClick={()=>openPlanner("hours")}>{workdayCopy[lang].hours}</button></div>} base={base} binding={binding} locale={lang} onDenied={()=>{setCapabilities([]);setRows([]);setBlocked(true);}} onAll={kind=>navigate("work",kind)} onOpen={task=>{if(!leaveWork())return;setTodayTask(task);setInitialKind(task.kind);setCalendarBooking(null);setWorkVisit(value=>value+1);navigate("work");}}/>}
    {selectedView==="overview"&&<ServicesProviderOverview locale={lang} rows={rows.filter(row=>row.is_active==="yes")} capabilities={capabilities} onNavigate={navigate} onCreate={addService}/>}
    {visited.has("finance")&&<div className="svc-panel-stack" hidden={selectedView!=="finance"}>
     {can("basic_totals")&&<ServicesTotalsPanel key={costRef??"all"} base={base} binding={binding} locale={lang} initialReservationRef={costRef}/>}
