@@ -52,3 +52,7 @@
 .seller-design .rst-management .rst-desktop-group>summary{padding:12px 10px;font:600 .75rem Arial,sans-serif;color:#526459;cursor:pointer}
 .seller-design .rst-management .rst-desktop-group .seller-navigation{max-height:none}
 .seller-design .rst-management .rst-desktop-groups{max-height:calc(100dvh - 180px);overflow:auto}
+
+.rst-management .rst-bottom-nav {grid-template-columns:repeat(3,minmax(0,1fr))}
+.rst-plate-tools {margin: .75rem 0}
+.rst-settings > details > summary {cursor:pointer;padding:1rem;font-weight:600}

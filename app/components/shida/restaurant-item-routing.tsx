@@ -1,8 +1,9 @@
 'use client';
+import {soloCopy} from '../../lib/restaurant-solo-copy';
 
 import { useState } from 'react';
 import { request, DashboardApiError } from '../../lib/restaurant-seller-browser';
-import { preparationCopy, soloPreparationCopy, type PreparationLocale } from '../../lib/restaurant-preparation-copy';
+import { preparationCopy, type PreparationLocale } from '../../lib/restaurant-preparation-copy';
 import { preparationEnvelope, type ItemRoute } from '../../lib/restaurant-preparation-contract';
 
 export type RoutingPage = { items: { item_ref: string; station: ItemRoute | null }[]; has_more: boolean; revision: string };
@@ -32,14 +33,14 @@ export function RestaurantItemRouting({ path, binding, locale, itemRef, page, ro
       else setMessage(t.uncertain);
     } finally { setBusy(false); }
   }
-  return <div className="rst-item-routing" aria-label={t.routing}>
-    <span>{t.routing}</span>
-    <div role="group" aria-label={t.routing}>
-      {(['serve', 'kitchen', 'bar'] as const).map(station => <button type="button" key={station} aria-pressed={selected === station} disabled={busy || !!pending || !revision || route === undefined} onClick={() => { setChoice(station); setConfirmed(false); setMessage(''); }}>{station === 'serve' ? soloPreparationCopy[locale].serve : t[station]}</button>)}
+  return <div className="rst-item-routing" aria-label={soloCopy[locale].service}>
+    <span>{soloCopy[locale].service}</span>
+    <div role="group" aria-label={soloCopy[locale].service}>
+      {(['serve', 'kitchen'] as const).map(station => <button type="button" key={station} aria-pressed={selected === station} disabled={busy || !!pending || !revision || route === undefined} onClick={() => { setChoice(station); setConfirmed(false); setMessage(''); }}>{station === 'serve' ? soloCopy[locale].single : soloCopy[locale].prepare}</button>)}
     </div>
     {selected === 'bar' && choice === 'bar' && !pending && <label><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)}/>{t.declaration}</label>}
-    {route === null && <small>{t.unconfigured}</small>}
-    <small>{soloPreparationCopy[locale].help}</small>
+    {route === null && <small>{soloCopy[locale].prepare}</small>}
+    <small>{soloCopy[locale].serviceHelp}</small>
     {choice !== null && choice !== route && <button type="button" className="rst-route-save" disabled={busy || selected === 'bar' && !confirmed} onClick={() => void save()}>{t.save}</button>}
     {pending && <button type="button" disabled={busy} onClick={() => void save()}>{t.retry}</button>}
     {message && <small role="status">{message}</small>}

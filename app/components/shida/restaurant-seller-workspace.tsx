@@ -28,14 +28,13 @@ import { localInstant, performRestaurant as perform, pricing, readRestaurant as 
 import "./restaurant-seller.css";
 import { RestaurantOrderScreen } from './restaurant-order-screen';
 import { RestaurantReservationCalendarSeller } from './restaurant-reservation-calendar-seller';
-import {PreparationRouting} from './restaurant-preparation-routing';
+
 import { RestaurantSellerReviews } from './restaurant-seller-reviews';
 import { restaurantReviewCopy } from '@/app/lib/restaurant-review-copy';
 import {RestaurantService} from './restaurant-service';
 import {RestaurantMoneyRecovery,RestaurantPaymentMethods} from './restaurant-money';
 import {RestaurantDaily} from './restaurant-daily';
 import { RestaurantCounter } from './restaurant-counter';
-import { sellingCopy } from '../../lib/restaurant-selling-copy';
 import { RestaurantInventory } from './restaurant-inventory';
 import { RestaurantIntake } from './restaurant-intake';
 import { RestaurantGuestAutoAccept } from './restaurant-guest-auto-accept';
@@ -128,8 +127,8 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     if(next==='pos'||next==='service'||next==='paymentMethods'||next==='daily'){const value=await readRestaurant<{capabilities:{capability:string;available:boolean}[]}>(`${path}/capabilities`,locale);const allowed=value.capabilities.some(entry=>entry.capability==='restaurant.pos'&&entry.available);setPosAvailable(allowed);setTab(next==='service'?next:allowed?next:'counter');return;}
     if (next === "settings") { await select(selected!.public_ref, "settings"); setSettingsGeneration(value=>value+1); return; }
     if (next === "profile") { await select(selected!.public_ref, "profile"); return; }
-    if (["today","orders","reservations","routing","counter","inventory","intake","activity","batch","reviews","photos","recovery"].includes(next)) { setTab(next); return; }
-    if (next === "kitchen") {const value=await readRestaurant<{capabilities:{capability:string;available:boolean}[]}>(`${path}/capabilities`,locale);const allowed=value.capabilities.some(entry=>entry.capability==='restaurant.kitchen'&&entry.available);setKitchenAvailable(allowed);setTab(allowed?next:'orders');return;}
+    if (["today","orders","reservations","counter","inventory","intake","activity","batch","reviews","photos","recovery"].includes(next)) { setTab(next); return; }
+    if (next === 'kitchen' || next === 'routing') {setTab('orders');return;}
     if (next === "sharing") { setTab(next); return; }
     if (next === "preview") { const value = await readRestaurant<Establishment>(`${path}/preview`, locale); if (alive.current) { setPreview(value.preview ?? {}); setTab(next); } return; }
     if (next === "hours") { const value = await readRestaurant<Envelope<Hours>>(`${path}/hours`, locale); if (alive.current) { setHours(value.result); setTab(next); } return; }
@@ -399,9 +398,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
         {tab === 'today' && <RestaurantToday path={path} binding={binding} locale={locale} zone={selected.profile.timezone_name} canPrepare={kitchenAvailable} canSell={posAvailable} canStock={capabilities.includes('restaurant.inventory')} canEditIntake={selected.actions.includes('edit')} onOpen={next=>void run(()=>loadTab(next==='kitchen'?'orders':next))}/>}
         {tab === 'orders'  && <RestaurantOrderScreen key={path} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onFailure={workFailure} onIntake={selected.actions.includes('edit')?()=>void run(()=>loadTab('intake')):undefined} onSelling={()=>void run(()=>loadTab(posAvailable?'pos':'counter'))}/>}
         {tab === 'reservations' && <RestaurantReservationCalendarSeller key={`${path}:${binding}`} path={path} binding={binding} locale={locale} seated={selected.profile.service_modes?.split(',').some(mode=>mode.trim().toLowerCase()==='eat_there')??false} capable={capabilities.includes('restaurant.reservations')} onSettings={()=>void run(()=>loadTab('settings'))} onHours={()=>void run(()=>loadTab('hours'))}/>}
-        {tab === 'routing' && <PreparationRouting path={path} binding={binding} locale={locale}/>}
         {tab === 'reviews' && <RestaurantSellerReviews key={path} path={path} binding={binding} locale={locale}/>}
-        {['pos','counter','service'].includes(tab) && <div className="rst-selling-modes" aria-label={management.selling}><button type="button" aria-pressed={tab==='pos'||tab==='counter'} onClick={()=>{if(leaveWork())void run(()=>loadTab(posAvailable?'pos':'counter'));}}>{sellingCopy(locale).counter}</button>{posAvailable&&<button type="button" aria-pressed={tab==='service'} onClick={()=>{if(leaveWork())void run(()=>loadTab('service'));}}>{sellingCopy(locale).table}</button>}</div>}
         {tab === 'service' && posAvailable && <RestaurantService key={path+binding} path={path} binding={binding} locale={locale}/>}
         {tab === 'recovery' && <RestaurantMoneyRecovery key={path+binding} path={path} binding={binding} locale={locale}/>}
         {tab === 'paymentMethods' && <RestaurantPaymentMethods key={path+binding} path={path} binding={binding} locale={locale}/>}

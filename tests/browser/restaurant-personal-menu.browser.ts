@@ -1,3 +1,4 @@
+import {soloCopy} from '../../app/lib/restaurant-solo-copy';
 import { test, expect, type Page } from '@playwright/test';
 import { managementNavigation } from './restaurant-management-navigation';
 import { sellerDesignCopy } from '../../app/lib/restaurant-seller-design-copy';
@@ -83,10 +84,12 @@ test('create unavailable, configure preparation, then change availability',async
  await expect(page.locator('.rst-editor')).toContainText('Tea');
  expect((state.writes.find(value=>value.path.endsWith('/menu/items'))?.body.fields as Record<string,unknown>).availability).toBe('temporarily_unavailable');
  const routing=page.locator('.rst-editor .rst-item-routing');
- await routing.getByRole('button',{name:preparationCopy.en.bar,exact:true}).click();
- await routing.getByRole('checkbox').check();
+ await expect(routing.getByRole('button',{name:preparationCopy.en.kitchen,exact:true})).toHaveCount(0);
+ await expect(routing.getByRole('button',{name:preparationCopy.en.bar,exact:true})).toHaveCount(0);
+ await routing.getByRole('button',{name:soloCopy.en.single,exact:true}).click();
  await routing.getByRole('button',{name:preparationCopy.en.save}).click();
- await expect(routing.getByRole('button',{name:preparationCopy.en.bar,exact:true})).toHaveAttribute('aria-pressed','true');
+ await expect(routing.getByRole('button',{name:soloCopy.en.single,exact:true})).toHaveAttribute('aria-pressed','true');
+ await expect(routing.getByRole('button',{name:soloCopy.en.single,exact:true})).toBeEnabled();
  await page.locator('.rst-editor select').filter({has:page.locator('option[value="available"]')}).selectOption('available');
  await page.locator('.rst-editor').getByRole('button',{name:'Save',exact:false}).first().click();
  await expect(page.locator('.rst-personal-menu .rst-menu-row')).toHaveCount(2);

@@ -1,4 +1,5 @@
 'use client';
+import {soloCopy} from '../../lib/restaurant-solo-copy';
 import { useState } from 'react';
 import type { RestaurantLocale } from '@/app/services/shida/restaurants-client';
 import type { Order, Configuration } from '@/app/lib/restaurant-work';
@@ -17,14 +18,7 @@ export function nextStep(order:Order,locale:RestaurantLocale){
  const c=ordersCopy(locale), t=(key:string)=>workText(locale,key);
  if(order.cancellation_pending)return c.reviewCancellation;
  if(order.state==='pending')return t('accept')+' / '+t('reject');
- if(['accepted','preparing'].includes(order.state)){
-  if(order.preparation && Object.keys(order.preparation).length){
-   const station=(['kitchen','bar'] as const).find(key=>order.preparation?.[key] && order.preparation[key]!=='ready');
-   if(station)return (station==='bar'?soloPreparationCopy[locale].drinks:soloPreparationCopy[locale].food)+' · '+(order.preparation[station]==='preparing'?c.markReady:c.start);
-   return c.waiting;
-  }
-  return order.state==='accepted'?c.start:c.markReady;
- }
+ if(['accepted','preparing'].includes(order.state))return soloCopy[locale].ready;
  if(order.state==='ready' || order.state==='out_for_delivery'){
   const actions=actionsFor(order);
   const next=['assisted_handover','table_handover','dispatch','verify_pickup','verify_delivery','pickup_exception','delivery_exception'].find(a=>actions.includes(a));

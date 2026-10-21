@@ -1,10 +1,11 @@
 'use client';
+import {soloCopy} from '../../lib/restaurant-solo-copy';
 
 import { useState } from 'react';
 import type { RestaurantLocale } from '@/app/services/shida/restaurants-client';
 import type { Row } from '@/app/lib/restaurant-seller';
 import { personalMenuCopy } from '@/app/lib/restaurant-personal-menu-copy';
-import { preparationCopy, soloPreparationCopy } from '@/app/lib/restaurant-preparation-copy';
+import { soloPreparationCopy } from '@/app/lib/restaurant-preparation-copy';
 import { restaurantText } from '@/app/lib/restaurant-seller-copy';
 import { managementCopy } from '@/app/lib/restaurant-management-copy';
 import { photoText } from '@/app/lib/restaurant-photo-copy';
@@ -38,7 +39,7 @@ export function RestaurantPersonalMenu({items,routes,bindings,offerings,publicAv
  function preparation(row:Row) {
    if(!routes)return m.routeUnknown;
    const station=routeFor(row);
-   return station==='serve'?soloPreparationCopy[locale].serve:station==='kitchen'?preparationCopy[locale].kitchen:station==='bar'?preparationCopy[locale].bar:m.unconfigured;
+   return station==='serve'?soloPreparationCopy[locale].serve:soloCopy[locale].prepare;
  }
  return <section className="rst-personal-menu" aria-label={m.all}>
    <header className="rst-menu-heading"><div><h2>{t('items')}</h2><p>{m.intro}</p></div><div className="rst-actions"><button type="button" className="button button-primary" disabled={busy||!fresh} onClick={onAdd}>+ {m.addItem}</button><button type="button" disabled={busy} onClick={onRefresh}>{m.refresh}</button><button type="button" disabled={busy} onClick={onBatch}>{photoText(locale,'batch')}</button></div></header>

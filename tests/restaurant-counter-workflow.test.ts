@@ -26,3 +26,13 @@ describe('counter workflow',()=>{
   for(const fulfillment_method of ['takeaway','on_premise'])expect(actionsFor({state:'ready',fulfillment_method} as Order)).toEqual(['assisted_handover','cancel']);
  });
 });
+
+it('requires an explicit bounded personal readiness attestation',()=>{
+ for(const action of ['solo_ready','table_handover']){
+ const path='RST_one/orders/ROD_one/actions/'+action;
+ expect(orderRoutes.some(([p,m])=>p.test(path)&&m.includes('POST'))).toBe(true);
+ expect(validOrderBody(path,{operation_key:'ready',expected_revision:1,confirm:true})).toBe(true);
+ expect(validOrderBody(path,{operation_key:'ready',expected_revision:1,confirm:false})).toBe(false);
+ expect(validOrderBody(path,{operation_key:'ready',expected_revision:1,confirm:true,reason:'other'})).toBe(false);
+ }
+});

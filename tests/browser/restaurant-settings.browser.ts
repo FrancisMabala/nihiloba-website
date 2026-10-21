@@ -1,3 +1,4 @@
+import {soloCopy} from '../../app/lib/restaurant-solo-copy';
 import {receivingCopy} from '../../app/lib/restaurant-receiving';
 import {test,expect,type Page} from '@playwright/test';
 import {fixture} from './restaurant-c1e-fixture';
@@ -43,12 +44,12 @@ async function seed(page:Page,kind='malewa',paid=true) {
  return state;
 }
 async function open(page:Page,locale:keyof typeof settingsCopy='en'){
- await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants`);await page.locator('.rst-grid .rst-card button').first().click();await managementNavigation(page,managementCopy[locale].settings);await expect(page.locator('.rst-settings')).toBeVisible();
+ await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants`);await page.locator('.rst-grid .rst-card button').first().click();await managementNavigation(page,managementCopy[locale].settings);await expect(page.locator('.rst-settings')).toBeVisible();await page.locator('.rst-settings > details > summary').click();
 }
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,820,1440])test(`Settings ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000});await seed(page,width===360?'malewa':width===820?'fast_food':'cafe');await open(page,locale);
  const c=settingsCopy[locale],root=page.locator('.rst-settings');await expect(root.getByText('Cash CDF',{exact:true})).toBeVisible();await expect(root.getByText('Mobile USD',{exact:true})).toBeVisible();
- await expect(root.getByRole('heading',{name:c.reservations,exact:true})).toBeVisible();await expect(root.getByText(c.preserved,{exact:true})).toBeVisible();
+ await expect(root.getByRole('heading',{name:soloCopy[locale].reservation,exact:true})).toBeVisible();await expect(root.getByText(c.preserved,{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await expect(root.locator('.rst-settings-reservation').getByText(''+c.saved+': '+c.off,{exact:true})).toBeVisible();
  if(locale==='en')await root.locator('#settings-intake').screenshot({path:`docs/evidence/seller-workspace/restaurant-settings-intake-${width}.png`});
@@ -106,4 +107,17 @@ test('unconfirmed hours and closed rollout gate cannot be opened by business lab
  await seed(page,'restaurant');await page.route('**/RST_fixture/hours**',route=>route.fulfill({json:{revision:'hours',result:{schedule:{windows:[]},confirmed_at:null,exceptional_closures:[],status:'closed',timezone_name:'Africa/Kinshasa'}}}));
  await page.route('**/RST_fixture/order-configuration/**',route=>route.fulfill({json:{revision:'1',intake_released:false,pickup:null,delivery:null}}));
  await open(page);await expect(page.locator('.rst-settings-reservation').getByRole('button',{name:reservationCopy.en.enable,exact:true})).toBeDisabled();await page.locator('#settings-intake .rst-intake').getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await expect(page.locator('#settings-intake .rst-intake').getByRole('checkbox')).toBeDisabled();await expect(page.locator('#settings-reservations .rst-details')).toContainText(settingsCopy.en.setup);
+});
+
+test('simple QR activation uses opening hours and exact retry without enabling reservations',async({page})=>{
+ await page.setViewportSize({width:390,height:844});const state=await seed(page,'restaurant');await open(page,'fr');
+ const qr=page.locator('.rst-quick-qr');await expect(qr).toContainText('sans compte SHIDA');
+ await qr.getByRole('button',{name:soloCopy.fr.enableQr,exact:true}).click();expect(state.writes).toHaveLength(0);
+ state.uncertain=true;await qr.getByRole('button',{name:workText('fr','confirm'),exact:true}).click();
+ await qr.getByRole('button',{name:soloCopy.fr.retry,exact:true}).click();
+ await expect(qr.getByText(soloCopy.fr.enabled,{exact:true})).toBeVisible();
+ expect(state.writes).toHaveLength(2);expect(state.writes[0]).toBe(state.writes[1]);
+ expect(JSON.parse(state.writes[0]).schedule).toEqual({weekly_periods:[{weekday:3,start:'08:00',end:'20:00'}],minimum_lead_minutes:0,cutoff_minutes:0,allow_tomorrow:false});
+ expect(state.reservation).toBe(false);
+ await page.screenshot({path:'docs/evidence/counter-2026-10-21/personal-options-phone.png',fullPage:true});
 });
