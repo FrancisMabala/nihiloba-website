@@ -60,6 +60,7 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
    }
   }
   if(pos){const queue=await api.run<{items:CounterOrder[];has_more:boolean}>(`${path}/counter-unpaid?page=${unpaidPage}`);if(queue){setUnpaid(queue.items);setUnpaidMore(queue.has_more);}else{setLoadFailed(true);return false;}}
+  const drafts=await api.run<{items:Basket[];has_more:boolean}>(`${salesPath}/counter-baskets`);if(drafts){setHeld(drafts.items);setHeldMore(drafts.has_more);}
   setConfig(current);setItems(menu);setMenuTotal(total);if(recentOrders)setRecent(recentOrders);
   setFresh(true);return true;
  }
@@ -110,13 +111,13 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
  </section>;
  if(accessLost)return <article className="rst-card rst-work"><p role="alert">{t('posAccessLost')}</p><button type="button" onClick={onFreeCounter}>{t('counter')}</button></article>;
  return <article className="rst-selling" lang={locale}>
-  <header className="rst-selling-header"><h2>{ux.title}</h2><details><summary>{simple.other}</summary><button type="button" disabled={locked} onClick={()=>void loadHeld()}>{ux.held}</button></details></header>
+  <header className="rst-selling-header"><h2>{ux.title}</h2><button type="button" className="rst-held-entry" disabled={locked} onClick={()=>void loadHeld()}>{ux.held} ({held.length}{heldMore?'+':''})</button></header>
   {!fresh&&<p role="status">{loadFailed?simple.failed:simple.loading}{loadFailed&&<button type="button" disabled={api.busy||!api.online} onClick={()=>void validate()}>{simple.refresh}</button>}</p>}
   {notice&&<p role="status">{notice}</p>}
   {config&&!config.intake_released&&<p role="status" className="rst-selling-closed">{c.closed}</p>}
   {api.message&&api.message!=='saved'&&<p role="status">{t(api.message)}</p>}
   {(api.conflict||basketChanged)&&<><p role="status">{t('conflict')}</p><button type="button" disabled={api.busy||!api.online} onClick={async()=>{if(await validate(true)){setDirty(true);api.reset();}}}>{t('review')}</button></>}
-  {order&&showPayment&&<section className="rst-selling-money"><button type="button" disabled={api.busy||!!api.pending} onClick={newSale}>{ux.newSale}</button>{moneyGroupRef?<RestaurantMoney counter key={path+':'+moneyGroupRef} path={path} groupRef={moneyGroupRef} binding={binding} locale={locale}/>:<p role="alert">{ux.noMethods}</p>}</section>}
+  {order&&showPayment&&<section className="rst-selling-money"><button type="button" disabled={api.busy||!!api.pending} onClick={newSale}>{ux.newSale}</button>{moneyGroupRef?<RestaurantMoney counter onFinish={newSale} key={path+':'+moneyGroupRef} path={path} groupRef={moneyGroupRef} binding={binding} locale={locale}/>:<p role="alert">{ux.noMethods}</p>}</section>}
   {!order&&!showPayment&&!heldOpen&&<div className="rst-selling-layout">
    {menu}
    <aside className={'rst-selling-basket'+(basketOpen?' is-open':'')} aria-label={c.basket}>

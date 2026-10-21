@@ -1,13 +1,12 @@
 'use client';
+import './restaurant-counter-ux.css';
 import {soloCopy} from '../../lib/restaurant-solo-copy';
-import { useState } from 'react';
 import type { RestaurantLocale } from '@/app/services/shida/restaurants-client';
 import type { Order, Configuration } from '@/app/lib/restaurant-work';
 import { actionsFor, dateText } from '@/app/lib/restaurant-work';
 import { workText } from '@/app/lib/restaurant-work-copy';
 import { ordersCopy } from '@/app/lib/restaurant-orders-copy';
 import { soloPreparationCopy } from '@/app/lib/restaurant-preparation-copy';
-import { FoodSummary } from './restaurant-projection';
 
 export type QueueSection='decision'|'preparation'|'handover'|'history';
 export type QueueList={items:Order[];total:number;as_of:string};
@@ -34,11 +33,11 @@ function source(order:Order,locale:RestaurantLocale){
  return order.channel==='web'?c.customerWeb:order.channel==='whatsapp'?c.customerWhatsapp:c.customer;
 }
 export function RestaurantOrderQueue({locale,timezone,lists,pages,configuration,blocked,onPage,onOpen,onIntake,onSelling}:{locale:RestaurantLocale;timezone:string|null;lists:Partial<Record<QueueSection,QueueList>>;pages:Record<QueueSection,number>;configuration:Configuration|null;blocked:boolean;onPage:(key:QueueSection,page:number)=>void;onOpen:(order:Order)=>void;onIntake?:()=>void;onSelling?:()=>void}){
- const c=ordersCopy(locale),t=(key:string)=>workText(locale,key),[copied,setCopied]=useState('');
+ const c=ordersCopy(locale),t=(key:string)=>workText(locale,key);
  const total=keys.reduce((sum,key)=>sum+(lists[key]?.total??0),0);
  const active=keys.slice(0,3).reduce((sum,key)=>sum+(lists[key]?.total??0),0);
  const loaded=keys.every(key=>!!lists[key]);
- async function copy(ref:string){try{await navigator.clipboard.writeText(ref);setCopied(ref);}catch{setCopied('');}}
+
  return <div className="rst-order-queue">
   <div className="rst-order-heading"><div><p className="rst-order-eyebrow">{t('orders')}</p><h2>{c.title}</h2><p>{c.intro}</p></div>{onSelling&&<button type="button" disabled={blocked} onClick={onSelling}>{c.selling}</button>}</div>
   {configuration && !configuration.intake_released && <div className="rst-order-notice"><p>{c.closed}</p>{onIntake&&<button type="button" disabled={blocked} onClick={onIntake}>{workText(locale,'intake')}</button>}</div>}
@@ -50,14 +49,7 @@ export function RestaurantOrderQueue({locale,timezone,lists,pages,configuration,
    return <section className="rst-order-section" key={key} aria-label={c[key]}>
     <div className="rst-order-section-heading"><div><h3>{c[key]}</h3><p>{c[`${key}Help` as keyof typeof c]}</p></div><strong>{list.total}</strong></div>
     {!list.total && <p className="rst-order-section-empty">{c.noHistory}</p>}
-    <div className="rst-order-rows">{list.items.map(order=><article className={`rst-order-row${order.cancellation_pending?' has-cancellation':''}`} key={order.order_ref}>
-     <div className="rst-order-row-head"><div><h4>{order.order_ref}</h4><button type="button" className="rst-order-copy" onClick={()=>void copy(order.order_ref)} aria-label={`${c.copy}: ${order.order_ref}`}>{copied===order.order_ref?c.copied:c.copy}</button></div><span className="rst-order-state">{t(order.state)}</span></div>
-     <div className="rst-order-meta"><span><b>{c.source}:</b> {source(order,locale)}</span><span><b>{c.placed}:</b> {dateText(order.submitted_at,locale,timezone)}</span><span><b>{c.fulfillment}:</b> {t(order.fulfillment_method)}</span></div>
-     <FoodSummary preview={order.food_preview} locale={locale}/>
-     {order.response_deadline && order.state==='pending' && <p className="rst-order-deadline"><strong>{c.response}:</strong> {dateText(order.response_deadline,locale,timezone)}</p>}
-     {order.cancellation_pending && <p className="rst-order-cancellation">{t('cancellation')}</p>}
-     <div className="rst-order-next"><p><span>{c.nextAction}</span><strong>{nextStep(order,locale)}</strong></p><button type="button" className="button button-secondary" disabled={blocked} onClick={()=>onOpen(order)}>{key==='history'?c.receipt:order.cancellation_pending?c.reviewCancellation:c.open}</button></div>
-    </article>)}</div>
+    <div className="rst-order-rows">{list.items.map(order=><button type="button" className="rst-compact-order" key={order.order_ref} disabled={blocked} onClick={()=>onOpen(order)}><span><strong>{order.order_ref.replace(/^ROD_/, '')}</strong><small>{dateText(order.submitted_at,locale,timezone)}</small></span><span>{source(order,locale)}<small>{t(order.fulfillment_method)}</small></span><span>{order.order_total} {order.currency}</span><span className="rst-order-state">{t(order.state)}{order.cancellation_pending&&<small>{t('cancellation')}</small>}</span></button>)}</div>
     {list.total>pageSize && <div className="rst-order-pages"><span>{c.showing} {(pages[key]-1)*pageSize+1}–{Math.min(pages[key]*pageSize,list.total)} {c.of} {list.total}</span><button type="button" disabled={blocked||pages[key]===1} onClick={()=>onPage(key,pages[key]-1)}>{t('previous')}</button><button type="button" disabled={blocked||pages[key]*pageSize>=list.total} onClick={()=>onPage(key,pages[key]+1)}>{t('next')}</button></div>}
    </section>;
   })}

@@ -32,7 +32,7 @@ async function setup(page:Page){
   if(p.endsWith('/money/recover'))return json({found:state.paid,bill:bill()});
   if(p.endsWith('/bill'))return json(bill());
   if(p.endsWith('/money/receipts')){state.writes.push({path:p,body:route.request().postDataJSON()});state.paid=true;if(state.failPayment){state.failPayment=false;return route.abort();}return json({bill:bill(),operation_outcome:{entry_ref:'RME_one'}});}
-  if(p.endsWith('/receipt'))return json({...bill(),original_rounds:[{...order(),amount:'20000',currency:'CDF',immutable_terms:{...terms,food:{standalone:terms.standalone,plates:[]}}}],statement:'Paiement enregistré au restaurant.',settlement_statement:'Aucun solde restant.',settled_in_restaurant_records:state.paid});
+  if(p.endsWith('/receipt'))return json({...bill(),original_rounds:[{...order(),customer_receipt:{number:'001248',restaurant:'Restaurant SHIDA',date:stamp,currency:'CDF',total:'20000.00',paid:state.paid,standalone:terms.standalone,plates:[],payments:[{method:'Espèces',amount:'20000.00',kind:'receipt'}],url:'https://api.example.test/api/restaurant-receipts/view#ROD_one.'+'a'.repeat(64),food_subtotal:'20000.00',delivery_fee:null},amount:'20000',currency:'CDF',immutable_terms:{...terms,food:{standalone:terms.standalone,plates:[]}}}],statement:'Paiement enregistré au restaurant.',settlement_statement:'Aucun solde restant.',settled_in_restaurant_records:state.paid});
   return route.fallback();
  });
  page.on('dialog',d=>d.accept());
@@ -53,7 +53,7 @@ for(const width of [320,390,820,1440])for(const payment of ['Espèces','Mobile M
  await expect(page.getByRole('button',{name:'Vérifier la vente',exact:true})).toHaveCount(0);
  await expect(page.getByRole('button',{name:'Confirmer la commande',exact:true})).toHaveCount(0);
  await expect(page.getByRole('button',{name:'Mettre en attente',exact:true})).not.toBeVisible();
- await page.screenshot({path:`docs/evidence/simple-counter/basket-${width}-${payment}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/receipt-counter/basket-${width}-${payment}.png`,fullPage:true});
  if(payment==='later'){
   await page.getByRole('button',{name:'Payer plus tard',exact:true}).click();
   await expect(page.locator('.rst-selling-recent')).toContainText('Poulet braisé');
@@ -73,7 +73,7 @@ for(const width of [320,390,820,1440])for(const payment of ['Espèces','Mobile M
   await page.getByRole('textbox',{name:'Montant reçu'}).fill('25000');
   await expect(page.locator('.rst-payment-change')).toContainText('5 000');
  }else await expect(page.getByRole('textbox',{name:'Montant reçu'})).toHaveCount(0);
- await page.screenshot({path:`docs/evidence/simple-counter/payment-${width}-${payment}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/receipt-counter/payment-${width}-${payment}.png`,fullPage:true});
  await page.getByRole('button',{name:'Confirmer le paiement reçu',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Payé',exact:true})).toBeVisible();
  expect(state.writes.filter(w=>w.path.endsWith('/money/receipts'))).toHaveLength(1);
@@ -82,7 +82,7 @@ for(const width of [320,390,820,1440])for(const payment of ['Espèces','Mobile M
  expect(body?.change_returned).toBe(payment==='Espèces'||payment==='later'?'5000.00':'0');
  await page.getByRole('button',{name:'Imprimer le reçu',exact:true}).click();
  await expect(page.locator('html')).toHaveAttribute('data-printed','yes');
- await expect(page.locator('.rst-money-receipt')).toContainText('Sans piment');
+ await expect(page.locator('.rst-thermal')).toContainText('Grande');
  await page.emulateMedia({media:'print'});
  await expect(page.getByRole('button',{name:'Imprimer le reçu',exact:true})).not.toBeVisible();
  await page.emulateMedia({media:'screen'});
@@ -123,3 +123,20 @@ test('lost payment response recovers the recorded payment without charging twice
  await expect(page.getByRole('heading',{name:'Payé',exact:true})).toBeVisible();
  expect(state.writes.filter(w=>w.path.endsWith('/money/receipts'))).toHaveLength(1);
 });
+
+ test('finish without printing and receipt QR remain optional',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await setup(page);await fillBasket(page);
+ await page.locator('.rst-selling-mobile-summary').click();
+ await page.getByRole('button',{name:/^Encaisser ·/}).click();
+ await page.getByRole('button',{name:'Espèces',exact:true}).click();
+ await page.getByRole('button',{name:'Montant exact',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Imprimer le reçu',exact:true})).toHaveCount(0);
+ await page.getByRole('button',{name:'Confirmer le paiement reçu',exact:true}).click();
+ await page.getByRole('button',{name:'Afficher le QR du reçu',exact:true}).click();
+ await expect(page.locator('.qr-only canvas')).toBeVisible();
+ await expect(page.locator('html')).not.toHaveAttribute('data-printed','yes');
+ await page.getByRole('button',{name:'Terminer sans imprimer',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Ajouter Poulet braisé',exact:true})).toBeEnabled();
+ await expect(page.locator('html')).not.toHaveAttribute('data-printed','yes');
+ await expect(page.getByRole('button',{name:/En attente/})).toBeVisible();
+ });

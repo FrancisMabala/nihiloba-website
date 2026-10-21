@@ -9,6 +9,7 @@ export const deliveryExceptionReasons = [...pickupExceptionReasons, 'recipient_h
 const ref = '[A-Za-z0-9_-]{1,64}';
 export const orderRoutes: [RegExp, readonly string[]][] = [
   ...preparationRoutes,
+  [new RegExp(`^RST_${ref}/orders/${ref}/payment-bill$`), ['POST']],
   [new RegExp(`^RST_${ref}/counter-unpaid$`), ['GET']],
   [new RegExp(`^RST_${ref}/pos$`), ['GET']],
   [new RegExp(`^RST_${ref}/pos/counter-baskets$`), ['GET','POST']],
@@ -86,6 +87,7 @@ export function validOrderBody(path: string, value: unknown): boolean {
     return exact(v,['operation_key','expected_updated_at','enabled','windows','schedule',...(delivery ? ['fee','areas'] : [])]) && (v.schedule === undefined || validSchedule(v.schedule) && Array.isArray(v.windows) && v.windows.length===0) && str(v.expected_updated_at,64) && typeof v.enabled === 'boolean' && list(v.windows,20,w=>obj(w) && exact(w,['starts_at','ends_at']) && str(w.starts_at,100) && str(w.ends_at,100)) && (!delivery || obj(v.fee) && exact(v.fee,['amount','currency']) && decimal(v.fee.amount) && enumOf(v.fee.currency,['CDF','USD']) && list(v.areas,100,a=>obj(a) && exact(a,['country','city','commune','quartier','scope']) && ['country','city','commune'].every(k=>str(a[k])) && (a.quartier == null || str(a.quartier)) && enumOf(a.scope,['whole_commune','quartier']),1));
   }
   if (!Number.isSafeInteger(v.expected_revision) || Number(v.expected_revision)<1) return false;
+  if(path.endsWith('/payment-bill'))return exact(v,['operation_key','expected_revision']);
   if(path.endsWith('/actions/table_handover')||path.endsWith('/actions/assisted_handover')||path.endsWith('/actions/solo_ready'))return exact(v,['operation_key','expected_revision','confirm'])&&v.confirm===true;
   if (path.includes('/actions/')) return exact(v,['operation_key','expected_revision','reason','pickup_code','delivery_code','confirm']) && (v.reason == null || enumOf(v.reason,orderReasons)) && (path.endsWith('/verify_pickup') ? typeof v.pickup_code === 'string' && /^[0-9]{6}$/.test(v.pickup_code) && v.reason == null : v.pickup_code == null) && (path.endsWith('/verify_delivery') ? typeof v.delivery_code === 'string' && /^[0-9]{6}$/.test(v.delivery_code) && v.reason == null : v.delivery_code == null) && (!path.endsWith('/pickup_exception') || enumOf(v.reason,pickupExceptionReasons)) && (path.endsWith('/delivery_exception') ? enumOf(v.reason,deliveryExceptionReasons) && v.confirm === true : v.confirm == null);
   if (path.endsWith('/prepare')) return exact(v,['operation_key','expected_revision','quote_ref','confirm','fulfillment_method']) && str(v.quote_ref,64) && v.confirm===true && enumOf(v.fulfillment_method,['on_premise','takeaway']);

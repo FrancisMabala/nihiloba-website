@@ -2,7 +2,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { managementNavigation } from './restaurant-management-navigation';
 import {receivingCopy} from '../../app/lib/restaurant-receiving';
 import { workText } from '../../app/lib/restaurant-work-copy';
-import { soloPreparationCopy } from '../../app/lib/restaurant-preparation-copy';
 
 const stamp='2026-10-14T09:18:00+00:00';
 const preview=(name:string)=>({available:true,groups:[{kind:'standalone',plate_number:null,lines:[{name,currency:'CDF',quantity:2,sale_unit_label:'portions'}],remaining_lines:0}],total_groups:1,total_lines:1,remaining_groups:0,remaining_lines:0,truncated:false});
@@ -49,27 +48,28 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/');
  await managementNavigation(page,labels[locale]);
  await expect(page.locator('#restaurant-navigation')).not.toContainText('Kitchen');
- const row=page.locator('.rst-order-row').filter({hasText:'ORD_SERVE_MALEWA_6P8Q'});
+ const row=page.locator('.rst-compact-order').filter({hasText:'ORD_SERVE_MALEWA_6P8Q'});
  await expect(row).toContainText('ORD_SERVE_MALEWA_6P8Q');
- await row.getByRole('button').last().click();
- await expect(page.locator('.rst-order-next-detail')).toContainText(soloPreparationCopy[locale].serve);
+ await row.click();
+ await expect(page.locator('.rst-order-detail')).toContainText('Fufu et pondu');
+ await expect(page.locator('.rst-order-queue')).toHaveCount(0);
  await expect(page.locator('.rst-preparation-owner')).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.addStyleTag({content:'nextjs-portal{display:none!important}.skip-link{transform:translateY(-150%)!important}'});
- await page.screenshot({path:`docs/evidence/seller-workspace/restaurant-orders-after-ready-serve-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/receipt-orders/orders-ready-serve-${locale}-${width}.png`,fullPage:true});
 });
 for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1440])test(`owner Orders queue ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900});await seed(page);
  await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/');
  await managementNavigation(page,labels[locale]);
  await expect(page.locator('.rst-order-section')).toHaveCount(4);
- await expect(page.locator('.rst-order-row')).toHaveCount(7);
- await expect(page.locator('.rst-order-row').first()).toContainText('ORD_QR_7G3F9P2L');
- await expect(page.locator('.rst-order-row').filter({hasText:'ORD_WEB_CANCEL_4V8H'})).toContainText('Poulet braisé');
- await expect(page.locator('.rst-order-row').filter({hasText:'ORD_COUNTER_5J7S'})).toContainText('Fufu et pondu');
- await expect(page.locator('.rst-order-row').filter({hasText:'ORD_PICKUP_2N6R'})).not.toContainText(labels[locale]==='Orders'?'Handed over':'Remise effectuée');
+ await expect(page.locator('.rst-compact-order')).toHaveCount(7);
+ await expect(page.locator('.rst-compact-order').first()).toContainText('ORD_QR_7G3F9P2L');
+ await expect(page.locator('.rst-compact-order').filter({hasText:'ORD_WEB_CANCEL_4V8H'})).toContainText('6000.00');
+ await expect(page.locator('.rst-compact-order').filter({hasText:'ORD_COUNTER_5J7S'})).toContainText('6000.00');
+ await expect(page.locator('.rst-compact-order').filter({hasText:'ORD_PICKUP_2N6R'})).not.toContainText(labels[locale]==='Orders'?'Handed over':'Remise effectuée');
  await page.addStyleTag({content:'nextjs-portal{display:none!important}.skip-link{transform:translateY(-150%)!important}'});
- await page.screenshot({path:`docs/evidence/seller-workspace/restaurant-orders-after-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/receipt-orders/orders-${locale}-${width}.png`,fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1440])test(`closed intake and no orders ${locale} ${width}`,async({page})=>{
@@ -77,11 +77,11 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await managementNavigation(page,labels[locale]);
  await expect(page.locator('.rst-order-empty')).toBeVisible();
  await expect(page.locator('.rst-order-notice')).toBeVisible();
- await expect(page.locator('.rst-order-row')).toHaveCount(0);
+ await expect(page.locator('.rst-compact-order')).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  if(locale==='fr'&&width===360){
   await page.addStyleTag({content:'nextjs-portal{display:none!important}.skip-link{transform:translateY(-150%)!important}'});
-  await page.screenshot({path:'docs/evidence/seller-workspace/restaurant-orders-after-empty-closed-360.png',fullPage:true});
+  await page.screenshot({path:'docs/evidence/receipt-orders/orders-empty-closed-360.png',fullPage:true});
   await page.locator('.rst-order-empty').getByRole('button').click();
   await expect(page.locator('.rst-selling')).toBeVisible();
   await managementNavigation(page,'Commandes');
@@ -92,17 +92,17 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
 test('history only says nothing needs action',async({page})=>{
  await seed(page,{historyOnly:true});await page.goto('/shida/seller/restaurants/');await managementNavigation(page,'Orders');
  await expect(page.locator('.rst-order-quiet')).toContainText('Nothing needs action');
- await expect(page.locator('.rst-order-row')).toHaveCount(2);
+ await expect(page.locator('.rst-compact-order')).toHaveCount(2);
 });
 test('routed preparation and cancellation show distinct next work',async({page})=>{
  await seed(page);await page.goto('/shida/seller/restaurants/');await managementNavigation(page,'Orders');
- await expect(page.locator('.rst-order-row').filter({hasText:'ORD_ASSISTED_8K2M'})).toContainText('Start preparing');
- await expect(page.locator('.rst-order-row').filter({hasText:'ORD_WEB_CANCEL_4V8H'})).toContainText('Review cancellation request');
- await expect(page.locator('.rst-order-row').filter({hasText:'ORD_PICKUP_2N6R'})).toContainText('Verify pickup code');
+ await expect(page.locator('.rst-compact-order').filter({hasText:'ORD_ASSISTED_8K2M'})).toContainText('Accepted');
+ await expect(page.locator('.rst-compact-order').filter({hasText:'ORD_WEB_CANCEL_4V8H'})).toContainText(workText('en','cancellation'));
+ await expect(page.locator('.rst-compact-order').filter({hasText:'ORD_PICKUP_2N6R'})).toContainText(workText('en','ready'));
 });
 for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1440])test(`stale acceptance requires review ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900});await seed(page,{stale:true});await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/');await managementNavigation(page,labels[locale]);
- await page.locator('.rst-order-row').filter({hasText:'ORD_QR_7G3F9P2L'}).getByRole('button').last().click();
+ await page.locator('.rst-compact-order').filter({hasText:'ORD_QR_7G3F9P2L'}).click();
  await page.locator('.rst-order-detail').getByRole('button',{name:workText(locale,'accept')}).click();
  await page.locator('.rst-order-detail').getByRole('button',{name:workText(locale,'confirm')}).click();
  await expect(page.locator('.rst-order-detail')).toContainText(workText(locale,'conflict'));
@@ -111,6 +111,6 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  if(locale==='en'&&width===1440){
   await page.evaluate(()=>{(document.activeElement as HTMLElement|null)?.blur();window.scrollTo(0,0);});
   await page.addStyleTag({content:'nextjs-portal{display:none!important}.skip-link{transform:translateY(-150%)!important}'});
-  await page.screenshot({path:'docs/evidence/seller-workspace/restaurant-orders-after-stale-en-1440.png',fullPage:true});
+  await page.screenshot({path:'docs/evidence/receipt-orders/orders-stale-en-1440.png',fullPage:true});
  }
 });
