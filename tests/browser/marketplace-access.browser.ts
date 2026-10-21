@@ -6,7 +6,7 @@ const setupTitles={services:'Start offering services',restaurants:'Start selling
 const nav={services:'.svc-sidebar',restaurants:'.rst-management-nav',wenze:'.rst-management-nav'};
 const store={public_ref:'WNS_access',revision:1,name:'My Wenze shop',status:'active',visible:'true',category:'other',city:'Kinshasa'};
 const restaurant={public_ref:'RST_access',revision:'2026-10-16T10:00:00+00:00',status:'draft',profile:{name:'My restaurant',food_business_type:'restaurant',timezone_name:'Africa/Kinshasa'},menu_currency:null,missing_publication_fields:[],actions:['read','edit','menu']};
-const provider={public_ref:'SVC_access',provider_ref:'SVI_access',name:'My provider profile',service_name:'My service',category:'repair_maintenance',is_active:'yes',revision:1,missing_fields:[],packages:[],rating:{average:null,count:0},publication_origin:'pilot',requests_enabled:false};
+const provider={public_ref:'SVC_access',provider_ref:'SVI_access',name:'My provider profile',service_name:'My service',category:'repair_maintenance',is_active:'yes',revision:1,missing_fields:[],packages:[],rating:{average:null,count:0},publication_origin:'pilot',visible_to_customers:true,requests_enabled:false};
 const capabilities=['profile','reservations','messages','manual_journal','basic_totals','operational_reports','financial_reports','quote_templates','bill_templates','bills'];
 
 async function fixture(page:Page,market:Market|null=null){

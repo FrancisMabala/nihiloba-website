@@ -4,7 +4,7 @@ import {marketplaceEntryCopy} from '../../app/lib/marketplace-entry-copy';
 
 const capabilities=['profile','offerings','packages','pilot_publication','reviews_read','requests_quotes','reservations','messages','bills','bill_reminders','manual_journal','basic_totals','operational_reports','financial_reports','quote_templates','bill_templates'];
 async function fixture(page:Page,{empty=false,bundle='personal_free'}={}){
- const state={signedIn:true,binding:'a'.repeat(64),failCreate:false,failed:false,rows:empty?[]:[{public_ref:'SVC_one',provider_ref:'SVI_one',name:'Atelier Kin',service_name:'Home repair',category:'repair_maintenance',description:'Careful repairs around the home.',service_duration_minutes:60,commune:'Gombe',service_location_type:'public_place',home_service_available:'yes',booking_mode:'flexible',availability:'Weekdays',publication_origin:'pilot',requests_enabled:true,is_active:'yes',revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}}],writes:[] as {path:string;method:string;body:Record<string,unknown>;key:string|undefined}[]};
+ const state={signedIn:true,binding:'a'.repeat(64),failCreate:false,failed:false,rows:empty?[]:[{public_ref:'SVC_one',provider_ref:'SVI_one',name:'Atelier Kin',service_name:'Home repair',category:'repair_maintenance',description:'Careful repairs around the home.',service_duration_minutes:60,commune:'Gombe',service_location_type:'public_place',home_service_available:'yes',booking_mode:'flexible',availability:'Weekdays',publication_origin:'pilot',visible_to_customers:true,requests_enabled:true,is_active:'yes',revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}}],writes:[] as {path:string;method:string;body:Record<string,unknown>;key:string|undefined}[]};
  await page.route('**/api/**',async route=>{
   const req=route.request(),url=new URL(req.url()),path=url.pathname.replace(/\/$/,'');
   const reply=(json:unknown,status=200)=>route.fulfill({json,status});
@@ -17,7 +17,7 @@ async function fixture(page:Page,{empty=false,bundle='personal_free'}={}){
   if(path.endsWith('/services')&&req.method()==='POST'){
    const body=req.postDataJSON();state.writes.push({path,method:req.method(),body,key:req.headers()['idempotency-key']});
    if(state.failCreate&&!state.failed){state.failed=true;return reply({},503);}
-   const row={public_ref:'SVC_new',provider_ref:'SVI_one',...body,service_duration_minutes:null,commune:null,service_location_type:'public_place',home_service_available:'no',booking_mode:'flexible',availability:null,publication_origin:'unclassified',requests_enabled:false,is_active:'yes',revision:1,missing_fields:['description'],packages:[],rating:{average:null,count:0}};state.rows.push(row);return reply(row);
+   const row={public_ref:'SVC_new',provider_ref:'SVI_one',...body,service_duration_minutes:null,commune:null,service_location_type:'public_place',home_service_available:'no',booking_mode:'flexible',availability:null,publication_origin:'unclassified',visible_to_customers:false,requests_enabled:false,is_active:'yes',revision:1,missing_fields:['description'],packages:[],rating:{average:null,count:0}};state.rows.push(row);return reply(row);
   }
   if(path.endsWith('/services'))return reply({profiles:state.rows});
   if(path.endsWith('/reviews'))return reply({reviews:[]});
@@ -45,23 +45,30 @@ for(const [locale,width] of [['en',1440],['en',360],['fr',1440],['ln',820],['sw'
  await fixture(page,{bundle:locale==='en'?'personal_free':'personal_pro'});
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services`);
  const t=providerCopy[locale],nav=page.getByRole('navigation',{name:t.navigation});
- await expect(page.getByRole('heading',{name:t.overview,exact:true})).toBeVisible();
- await expect(nav.getByRole('button')).toHaveCount(4);
- await expect(page.getByText(t.pilot)).toHaveCount(0);
+ await expect(page.locator('#services-view-title')).toHaveText(t.overview);
+ if(width<=760)await nav.locator('.svc-mobile-more').click();
+ await expect(nav.getByRole('button',{name:t.overview,exact:true})).toBeVisible();
+ await expect(nav.getByRole('button',{name:t.available,exact:true})).toBeVisible();
+ await expect(nav.getByRole('button',{name:t.proposals,exact:true})).toBeVisible();
+ if(width<=760)await nav.locator('.svc-mobile-close').click();
+ await expect(page.getByText("Free + Pro · Pilot access",{exact:true})).toHaveCount(0);
  await page.screenshot({path:`docs/evidence/seller-workspace/services-overview-${locale}-${width}.png`,fullPage:true});
  for(const section of ['services','work','finance','reports','templates','settings'] as const){
   const secondary=['reports','templates','settings'].includes(section);
+  if(width<=760&&!['overview','work','calendar'].includes(section)&&await nav.getAttribute('data-expanded')!=='true')await nav.locator('.svc-mobile-more').click();
   if(secondary&&await page.locator('.svc-secondary-tools').getAttribute('open')===null)await page.locator('.svc-secondary-tools summary').click();
   const destination=secondary?page.getByRole('navigation',{name:t.tools,exact:true}):nav;
   await destination.getByRole('button',{name:t[section],exact:true}).click();
-  await expect(destination.getByRole('button',{name:t[section],exact:true})).toHaveAttribute('aria-current','page');
+  await expect(nav.locator('button[aria-current="page"]')).toHaveText(t[section]);
   await expect(page.locator('#services-view-title')).toHaveText(t[section]);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   if(locale==='en'&&width===1440&&['work','finance','reports','templates'].includes(section))await page.screenshot({path:`docs/evidence/seller-workspace/services-${section}-en-1440.png`,fullPage:true});
  }
+ if(width<=760&&await nav.getAttribute('data-expanded')!=='true')await nav.locator('.svc-mobile-more').click();
  await nav.getByRole('button',{name:t.services,exact:true}).click();
  const editor=page.locator('.svc-service-editor');await editor.getByRole('textbox').first().fill('Draft provider name');
  await nav.getByRole('button',{name:t.overview,exact:true}).click();
+ if(width<=760&&await nav.getAttribute('data-expanded')!=='true')await nav.locator('.svc-mobile-more').click();
  await nav.getByRole('button',{name:t.services,exact:true}).click();
  await expect(editor.getByRole('textbox').first()).toHaveValue('Draft provider name');
  await page.screenshot({path:`docs/evidence/seller-workspace/services-services-${locale}-${width}.png`,fullPage:true});

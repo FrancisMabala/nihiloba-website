@@ -9,7 +9,7 @@ const labels={
  sw:{history:'Kazi za awali na mteja',costs:'Gharama za kazi',category:'Gharama kwa aina',trail:'Historia ya masahihisho'},
 } as const;
 const zero={billed:'0.00',declared_received:'0.00',outstanding:'0.00',unbilled_receipts:'0.00',declared_excess:'0.00',job_expenses:'0.00',services_overhead:'0.00',recorded_expenses:'0.00',declared_surplus:'0.00'};
-const offering={public_ref:'SVC_one',provider_ref:'SVI_one',name:'Provider',service_name:'Repair',category:'repair_maintenance',description:'Repair work',service_duration_minutes:60,commune:'Gombe',service_location_type:'public_place',home_service_available:'no',booking_mode:'flexible',availability:'Weekdays',publication_origin:'pilot',requests_enabled:true,is_active:'yes',revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
+const offering={public_ref:'SVC_one',provider_ref:'SVI_one',name:'Provider',service_name:'Repair',category:'repair_maintenance',description:'Repair work',service_duration_minutes:60,commune:'Gombe',service_location_type:'public_place',home_service_available:'no',booking_mode:'flexible',availability:'Weekdays',publication_origin:'pilot',visible_to_customers:true,requests_enabled:true,is_active:'yes',revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
 const reservations=[{reservation_ref:'RSV_one',service_name:'Repair',requester_name:'Customer',status:'completed',revision:1},{reservation_ref:'RSV_two',service_name:'Repair',requester_name:'Customer',status:'confirmed',revision:1}];
 const entries=[
  {entry_ref:'PSE_replace',measure:'recorded_expense',direction:1,amount:'9.00',currency:'USD',effective_date:'2026-10-14',category:'transport',effect:'replacement',correction_state:'replacement',recorded_at:'2026-10-14T12:00:00Z'},

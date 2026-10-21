@@ -4,7 +4,7 @@ export const serviceLocales=["en","fr","ln","sw"] as const;
 export function isServiceLocale(value:string):value is ServiceLocale{return serviceLocales.includes(value as ServiceLocale);}
 /** Other NIHILOBA sections still use their existing supported languages. */
 export function servicesLocalizedPath(locale:ServiceLocale,path:string){
- const supported=/^\/shida\/(?:services|seller\/services|service-bills|restaurants)(?:\/|$)/.test(path);
+ const supported=/^\/shida\/(?:services|seller\/services|service-bills|service-requests|restaurants)(?:[/?#]|$)/.test(path);
  const language=supported?locale:locale==="en"?"en":"fr";
  return `${language==="en"?"":`/${language}`}${path}`;
 }

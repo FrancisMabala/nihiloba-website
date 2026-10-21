@@ -1,6 +1,8 @@
+import {proposalPath, proposalQuery} from "./services-proposal-routing";
 // Channel routing only. Authorization and transitions stay in the Services backend.
 export function transactionPath(parts: string[], method: string): string | null {
   if (parts[0] !== 'transactions') return null;
+  if (parts[1] === 'competition') return proposalPath(parts.slice(2), method);
   if (parts[1] === 'reports' && parts.length === 3 && method === 'GET' && /^(operational|financial)(\.csv)?$/.test(parts[2])) return `services/reports/${parts[2]}`;
   if (parts[1] === 'bill-presentation' && parts.length === 2 && ['GET', 'PATCH'].includes(method)) return 'services/bill-presentation';
   if (parts[1] === 'templates') {
@@ -61,6 +63,7 @@ export function transactionPath(parts: string[], method: string): string | null 
   return null;
 }
 export function transactionQuery(parts:string[], query:URLSearchParams, method:string): boolean {
+  if(parts[1]==='competition')return proposalQuery(parts.slice(2),query,method);
   if(parts[1]==='customer'&&parts[2]==='bill-notices'&&parts.length===3&&method==='GET')return [...query].every(([key,value])=>key==='offset'&&query.getAll(key).length===1&&/^\d{1,6}$/.test(value));
   if(parts[1]==='reports'&&parts.length===3&&method==='GET')return [...query].length===2&&['start_date','end_date'].every(key=>query.getAll(key).length===1&&/^\d{4}-\d{2}-\d{2}$/.test(query.get(key)??''));
   if(parts[1]==='templates'&&parts.length===2&&method==='GET')

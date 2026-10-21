@@ -1,4 +1,5 @@
 import type {ProviderLocale} from "@/app/lib/services-provider-copy";
+import {visibilityCopy} from "../../lib/services-visibility-copy";
 
 export const workspaceCopy = {
  en:{selectOption:"Choose an option",bookingHelp:"Set appointment hours and confirmation in Calendar.",invalidDetails:"Some service details are invalid. Check your field values and save again.",publication:"Marketplace publication",ready:"Ready to publish",readyHelp:"Your saved service has all the required details. Publish it to appear in the marketplace.",draftHelp:"Your service is private. Complete and save these details to publish it.",liveHelp:"Your service is published in the marketplace.",unsaved:"Save your changes before publishing or updating request availability.",details:"Service details",detailsHelp:"Tell customers what you offer and where you work.",schedule:"Location & availability",scheduleHelp:"Help customers understand how and when you work.",complete:"Complete these details",saved:"Saved details complete",newService:"Add another service",requestsHelp:"Choose whether customers can send new requests for this service.",archiveHelp:"Archiving removes this service from discovery. Existing customer history stays available.",linkHelp:"Give customers a place to learn more about your work.",packagesHelp:"Offer clear options with a duration and price.",reviewHelp:"Feedback from customers appears here.",genericField:"Review service details"},
@@ -7,16 +8,16 @@ export const workspaceCopy = {
  sw:{selectOption:"Chagua chaguo",bookingHelp:"Weka saa na uthibitisho katika Kalenda.",invalidDetails:"Baadhi ya taarifa za huduma si sahihi. Kagua sehemu ulizojaza na uhifadhi tena.",publication:"Uchapishaji sokoni",ready:"Tayari kuchapishwa",readyHelp:"Huduma iliyohifadhiwa ina taarifa zote zinazohitajika. Ichapishe ionekane sokoni.",draftHelp:"Huduma yako ni ya binafsi. Jaza na uhifadhi taarifa hizi ili kuichapisha.",liveHelp:"Huduma yako imechapishwa sokoni.",unsaved:"Hifadhi mabadiliko kabla ya kuchapisha au kubadili upokeaji wa maombi.",details:"Taarifa za huduma",detailsHelp:"Eleza huduma unayotoa na eneo unalofanyia kazi.",schedule:"Mahali na upatikanaji",scheduleHelp:"Eleza namna na wakati unaofanya kazi.",complete:"Taarifa za kujaza",saved:"Taarifa zinazohitajika zimehifadhiwa",newService:"Ongeza huduma nyingine",requestsHelp:"Chagua kama wateja wanaweza kutuma maombi mapya ya huduma hii.",archiveHelp:"Kuhifadhi kwenye kumbukumbu huondoa huduma kwenye utafutaji. Historia ya wateja inabaki.",linkHelp:"Wape wateja mahali pa kujifunza zaidi kuhusu kazi yako.",packagesHelp:"Toa vifurushi vyenye muda na bei iliyo wazi.",reviewHelp:"Maoni ya wateja yataonekana hapa.",genericField:"Kagua taarifa za huduma"}
 } as const;
 
-export function ServicesPublication({locale,missing,labels,dirty,published,publishLabel,onPublish}:{locale:ProviderLocale;missing:string[];labels:Record<string,string>;dirty:boolean;published:boolean;publishLabel:string;onPublish:()=>void}){
+export function ServicesPublication({locale,missing,labels,dirty,published,canPublish=true,publishLabel,onPublish}:{locale:ProviderLocale;missing:string[];labels:Record<string,string>;dirty:boolean;published:boolean;canPublish?:boolean;publishLabel:string;onPublish:()=>void}){
  const t=workspaceCopy[locale];
  function focusField(key:string){
   const field=document.getElementById(`svc-field-${key}`)??document.getElementById("svc-details-save");
   field?.scrollIntoView({block:"center",behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?"instant":"smooth"});field?.focus({preventScroll:true});
  }
  return <section className={`svc-publication ${published?"is-published":""}`} aria-label={t.publication}>
-  <div className="svc-publication-top"><div><p className="svc-kicker">{t.publication}</p><h3>{published?t.liveHelp:missing.length?t.complete:t.ready}</h3></div>{!published&&<button type="button" className="svc-primary" aria-describedby="svc-publication-intro svc-publication-help" disabled={missing.length>0||dirty} onClick={onPublish}>{publishLabel}<span aria-hidden="true"> ↗</span></button>}</div>
-  {!published&&<p id="svc-publication-intro">{missing.length?t.draftHelp:t.readyHelp}</p>}
+  <div className="svc-publication-top"><div><p className="svc-kicker">{t.publication}</p><h3>{published?t.liveHelp:!canPublish?visibilityCopy[locale].hidden:missing.length?t.complete:t.ready}</h3></div>{!published&&canPublish&&<button type="button" className="svc-primary" aria-describedby="svc-publication-intro svc-publication-help" disabled={missing.length>0||dirty} onClick={onPublish}>{publishLabel}<span aria-hidden="true"> ↗</span></button>}</div>
+  {!published&&<p id="svc-publication-intro">{!canPublish?visibilityCopy[locale].hiddenHelp:missing.length?t.draftHelp:t.readyHelp}</p>}
   {missing.length>0&&<ul className="svc-completion-list">{missing.map(key=><li key={key}><button type="button" onClick={()=>focusField(key)}><span aria-hidden="true">＋</span>{labels[key]??t.genericField}<span aria-hidden="true">→</span></button></li>)}</ul>}
-  <p id="svc-publication-help" className="svc-publication-help">{dirty?t.unsaved:!missing.length&&!published?t.saved:null}</p>
+  <p id="svc-publication-help" className="svc-publication-help">{dirty?t.unsaved:!missing.length&&!published&&canPublish?t.saved:null}</p>
  </section>;
 }

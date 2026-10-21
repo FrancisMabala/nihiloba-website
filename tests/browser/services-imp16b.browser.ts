@@ -2,7 +2,8 @@ import {servicesProviderOffering} from "./fixtures/services-provider";
 import {test,expect} from '@playwright/test';
 
 const titles={en:'Services reports',fr:'Rapports Services',ln:'Balapolo ya Services',sw:'Ripoti za Huduma'} as const;
-const requests={en:'Requests created',fr:'Demandes créées',ln:'Bosengi oyo esalemi',sw:'Maombi yaliyoundwa'} as const;
+const downloadLabels={en:'Download report',fr:'Télécharger le rapport',ln:'Zwa lapolo',sw:'Pakua ripoti'} as const;
+const requests={en:'New requests',fr:'Nouvelles demandes',ln:'Masengi ya sika',sw:'Maombi mapya'} as const;
 const zeros={billed:'0.00',declared_received:'0.00',outstanding:'0.00',recorded_expenses:'0.00',declared_surplus:'0.00'};
 for(const locale of ['en','fr','ln','sw'] as const)test(`IMP-16B Personal mobile reports ${locale}`,async({page})=>{
  await page.setViewportSize({width:390,height:850});
@@ -23,8 +24,9 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`IMP-16B Personal mobile
  await expect(report.getByText('Repair')).toBeVisible();
  await expect(report.getByText(requests[locale]).first()).toBeVisible();
  await expect(report.getByText('21.00 USD')).toBeVisible();
- await expect(report.getByText('2026-10-14T12:00:00+00:00').first()).toBeVisible();
- const [download]=await Promise.all([page.waitForEvent('download'),report.getByRole('button').nth(1).click()]);
+ await expect(report.locator('time').first()).toHaveAttribute('datetime','2026-10-14T12:00:00+00:00');
+ await expect(report.locator('time').first()).toContainText('Kinshasa');
+ const [download]=await Promise.all([page.waitForEvent('download'),report.getByRole('button',{name:downloadLabels[locale],exact:true}).first().click()]);
  expect(download.suggestedFilename()).toBe('services-operational-report.csv');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
 });

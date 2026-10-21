@@ -1,6 +1,13 @@
 export type ServicesLocale = 'en'|'fr'|'ln'|'sw';
 // Same channel vocabulary in both private Services areas.
 const copy:Record<string,[string,string,string,string]> = {
+ loading:["Loading requests…","Chargement des demandes…","Masengi ezali kofungwama…","Inapakia maombi…"],
+ load_failed:["Could not load these details. Try refreshing.","Impossible de charger ces informations. Réessayez avec Actualiser.","Makambo oyo efungwami te. Meka kozongisa.","Haikuweza kupakia maelezo haya. Jaribu kusasisha."],
+ retry:["Try again","Réessayer","Meka lisusu","Jaribu tena"],
+ uncertain:["The result is not confirmed. Retry this same action before changing the form.","Le résultat n’est pas confirmé. Réessayez cette même action avant de modifier le formulaire.","Eyano endimami naino te. Meka lisusu likambo wana kaka liboso ya kobongola formulaire.","Matokeo hayajathibitishwa. Jaribu kitendo hiki tena kabla ya kubadili fomu."],
+ offline:["Connection unavailable. Your changes are still here.","Connexion indisponible. Vos modifications sont conservées ici.","Connexion ezali te. Makambo na yo ezali kaka awa.","Muunganisho haupatikani. Mabadiliko yako bado yapo hapa."],
+ invalid:["Check the details before trying again.","Vérifiez les informations avant de réessayer.","Tala makambo liboso ya komeka lisusu.","Kagua maelezo kabla ya kujaribu tena."],
+ denied:["This work is no longer available to this account.","Ce travail n’est plus accessible à ce compte.","Mosala oyo ezali lisusu mpo na compte oyo te.","Kazi hii haipatikani tena kwa akaunti hii."],
  invalid_time_amount:["Check the amount, date and time.", "Vérifiez le montant, la date et l’heure.", "Tala motuya, mokolo mpe ngonga.", "Kagua kiasi, tarehe na saa."],
  overnight_interval:["Check the amount and times. For this booking, choose a time range within one day from 01:00 Kinshasa time.", "Vérifiez le montant et les horaires. Pour cette réservation, choisissez une plage sur une journée à partir de 01 h, heure de Kinshasa.", "Tala motuya mpe ngonga. Mpo na rendez-vous oyo, pona ngonga ya mokolo moko kobanda 01:00 ya Kinshasa.", "Kagua kiasi na nyakati. Kwa nafasi hii, chagua muda ndani ya siku moja kuanzia saa 01:00 za Kinshasa."],
  reply_saved:["Saved in this conversation. WhatsApp delivery may follow.", "Enregistré dans cette conversation. L’envoi WhatsApp peut suivre.", "Ebombami na lisolo oyo. Nsango ya WhatsApp ekoki koya na nsima.", "Imehifadhiwa kwenye mazungumzo haya. Ujumbe wa WhatsApp unaweza kufuata."],
@@ -12,7 +19,7 @@ const copy:Record<string,[string,string,string,string]> = {
  refresh:['Refresh','Actualiser','Zongisa','Sasisha'],back:['Back','Retour','Zonga','Rudi'],more:['Next page','Page suivante','Lokasa elandi','Ukurasa unaofuata'],previous:['Previous page','Page précédente','Lokasa eleki','Ukurasa uliopita'],
  unavailable:['Access is unavailable. Refresh or return to your Services area.','Accès indisponible. Actualisez ou revenez à votre espace Services.','Ndingisa ezali te. Zongisa to zonga na Services na yo.','Ufikiaji haupatikani. Sasisha au rudi kwenye eneo lako la Huduma.'],
  failed:['Could not save. Check the details and retry.','Enregistrement impossible. Vérifiez les détails et réessayez.','Kobomba elongi te. Tala makambo mpe meka lisusu.','Imeshindikana kuhifadhi. Kagua taarifa na ujaribu tena.'],
- stale:['This transaction changed or the time is unavailable. Current details have been reloaded.','Cette opération a changé ou cet horaire est indisponible. Les données actuelles ont été rechargées.','Makambo ebongwani to ngonga ezali te. Makambo ya sika ezongisami.','Shughuli imebadilika au muda haupatikani. Taarifa za sasa zimepakiwa upya.'],
+ stale:["This work changed or the time is unavailable. Your draft is kept here. Refresh to review the latest details before trying again.","Ce travail a changé ou cet horaire est indisponible. Votre brouillon est conservé ici. Actualisez pour vérifier les informations avant de réessayer.","Mosala ebongwani to ngonga ezali te. Brouillon na yo ezali kaka awa. Zongisa mpo na kotala makambo ya sika liboso ya komeka lisusu.","Kazi imebadilika au muda haupatikani. Rasimu yako bado ipo hapa. Sasisha ukague taarifa mpya kabla ya kujaribu tena."],
  saved:["Saved.", "Enregistré.", "Ebombami.", "Imehifadhiwa."],
  history:["History", "Historique", "Lisolo", "Historia"],
  quote:['Quote','Devis','Devis','Makadirio'],create_quote:['Prepare a private quote','Préparer un devis privé','Bongisa devis ya sekele','Andaa makadirio ya binafsi'],

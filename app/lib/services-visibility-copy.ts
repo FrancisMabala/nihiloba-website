@@ -1,0 +1,6 @@
+export const visibilityCopy = {
+  en: {hidden: "Not visible to customers", hiddenHelp: "This service is not currently visible in the marketplace. Refresh to check its current status.", nameHelp: "Your provider name is shared by all your services.", packageHelp: "An option your customer can choose. Leave the price blank if it needs a quotation."},
+  fr: {hidden: "Non visible par les clients", hiddenHelp: "Ce service n’est pas visible sur la marketplace pour le moment. Actualisez pour vérifier son statut.", nameHelp: "Le nom du prestataire est commun à tous vos services.", packageHelp: "Une formule que le client peut choisir. Laissez le prix vide si un devis est nécessaire."},
+  ln: {hidden: "Bakiliya bamonaka yango te", hiddenHelp: "Mosala oyo ezali komonana na marketplace te sikoyo. Zongisa lokasa mpo na kotala.", nameHelp: "Nkombo ya mosali ezali moko mpo na misala na yo nyonso.", packageHelp: "Forfait oyo kiliya akoki kopona. Tika ntalo mpamba soki esengeli devis."},
+  sw: {hidden: "Haionekani kwa wateja", hiddenHelp: "Huduma hii haionekani sokoni kwa sasa. Sasisha ili kuangalia hali yake.", nameHelp: "Jina la mtoa huduma linatumika kwa huduma zako zote.", packageHelp: "Chaguo ambalo mteja anaweza kuchagua. Acha bei wazi ikiwa makadirio yanahitajika."},
+} as const;

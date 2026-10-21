@@ -4,7 +4,7 @@ import {serviceCategoryExperience} from '../../app/lib/services-category-experie
 
 const caps=['profile','packages','pilot_publication','reviews_read','requests_quotes','reservations','messages','bills','manual_journal','basic_totals','operational_reports','financial_reports','quote_templates','bill_templates'];
 async function fixture(page:Page,{loadFailure=false,saveFailure=false}={}){
- const state={row:{public_ref:'SVC_one',provider_ref:'SVI_one',name:'Atelier Kin',service_name:'Home repair',category:'repair_maintenance',description:'',service_duration_minutes:null as number|null,commune:'',service_location_type:'public_place',home_service_available:'yes',booking_mode:'flexible',availability:'',publication_origin:'unclassified',requests_enabled:false,is_active:'yes',revision:1,missing_fields:['description','service_duration_minutes','commune','availability'],packages:[],rating:{average:null,count:0}},settings:{display_name:null as string|null,accent:'green',revision:1,fallback_display_name:'Atelier Kin',preview:{display_name:'Atelier Kin',accent:'green'}},writes:[] as {path:string;body:Record<string,unknown>}[],settingsReads:0,failedSave:false,deny:false};
+ const state={row:{public_ref:'SVC_one',provider_ref:'SVI_one',name:'Atelier Kin',service_name:'Home repair',category:'repair_maintenance',description:'',service_duration_minutes:null as number|null,commune:'',service_location_type:'public_place',home_service_available:'yes',booking_mode:'flexible',availability:'',publication_origin:'unclassified',visible_to_customers:false,requests_enabled:false,is_active:'yes',revision:1,missing_fields:['description','service_duration_minutes','commune','availability'],packages:[],rating:{average:null,count:0}},settings:{display_name:null as string|null,accent:'green',revision:1,fallback_display_name:'Atelier Kin',preview:{display_name:'Atelier Kin',accent:'green'}},writes:[] as {path:string;body:Record<string,unknown>}[],settingsReads:0,failedSave:false,deny:false};
  await page.route('**/api/**',async route=>{
   const req=route.request(),path=new URL(req.url()).pathname.replace(/\/$/,'');
   const reply=(json:unknown,status=200)=>route.fulfill({json,status});
@@ -22,7 +22,7 @@ async function fixture(page:Page,{loadFailure=false,saveFailure=false}={}){
    }
    expect(body.expected_revision).toBe(state.row.revision);
    if(path.endsWith('/details')){Object.assign(state.row,body);state.row.missing_fields=['description','service_duration_minutes','commune','availability'].filter(key=>!state.row[key as keyof typeof state.row]);}
-   if(path.endsWith('/pilot-review')){expect(state.row.missing_fields).toEqual([]);state.row.publication_origin='pilot';}
+   if(path.endsWith('/pilot-review')){expect(state.row.missing_fields).toEqual([]);state.row.publication_origin='pilot';state.row.visible_to_customers=true;}
    state.row.revision++;return reply(state.row);
   }
   if(path.endsWith('/bill-presentation')){state.settingsReads++;return loadFailure&&state.settingsReads===1?reply({},503):reply(state.settings);}
@@ -30,6 +30,19 @@ async function fixture(page:Page,{loadFailure=false,saveFailure=false}={}){
  });return state;
 }
 const publish={en:'Review and publish',fr:'Vérifier et publier',ln:'Tala mpe bimisa',sw:'Kagua na chapisha'};
+test('a published marker alone never claims public visibility',async({page})=>{
+ const state=await fixture(page);
+ state.row.publication_origin='pilot';state.row.missing_fields=[];state.row.visible_to_customers=false;
+ await page.goto('/shida/seller/services?view=services');
+ const panel=page.getByRole('region',{name:workspaceCopy.en.publication});
+ await expect(panel.getByRole('heading',{name:'Not visible to customers'})).toBeVisible();
+ await expect(panel.getByRole('button',{name:publish.en})).toHaveCount(0);
+ await expect(page.locator('.svc-public-link')).toHaveCount(0);
+ await page.goto('/shida/seller/services');
+ const published=page.locator('.svc-summary dl div').filter({has:page.getByText('Published services',{exact:true})});
+ await expect(published.locator('dd')).toHaveText('0');
+ expect(state.writes).toHaveLength(0);
+});
 for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as const){
  test(`publication checklist completes saved service ${locale} ${width}`,async({page})=>{
   const state=await fixture(page),t=workspaceCopy[locale];

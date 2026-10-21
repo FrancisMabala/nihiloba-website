@@ -8,7 +8,7 @@ for(const locale of ["en","fr","ln","sw"] as const)test(`Today exact task and of
  await page.setViewportSize({width:320,height:850});
  await page.addInitScript(language=>localStorage.setItem("shida-language",language),locale);
  let failed=true,denied=false;
- const offering={public_ref:"SVC_one",provider_ref:"SVI_one",name:"Provider",service_name:"Repair service",category:"repair_maintenance",description:"Repairs",service_duration_minutes:60,commune:"Gombe",service_location_type:"public_place",home_service_available:"no",booking_mode:"flexible",availability:"Weekdays",publication_origin:"pilot",requests_enabled:true,is_active:"yes",revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
+ const offering={public_ref:"SVC_one",provider_ref:"SVI_one",name:"Provider",service_name:"Repair service",category:"repair_maintenance",description:"Repairs",service_duration_minutes:60,commune:"Gombe",service_location_type:"public_place",home_service_available:"no",booking_mode:"flexible",availability:"Weekdays",publication_origin:"pilot",visible_to_customers:true,requests_enabled:true,is_active:"yes",revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
  const parent={request_ref:"SWR_older",offering:"Repair request",requester:"Customer",description:"Please repair the sink.",status:"SUBMITTED",revision:1,actions:["review","decline"],can_create_quote:true};
  const empty={items:[],has_more:false};
  await page.route("**/api/shida/**",async route=>{
