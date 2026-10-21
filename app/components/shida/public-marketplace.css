@@ -1,4 +1,6 @@
 /* Shared public collection design. Detail and account pages remain outside this scope. */
+.marketplace-public .mp-hero-actions{display:flex;align-items:center;gap:16px 24px;flex-wrap:wrap}
+.marketplace-public .mp-hero-actions .button{min-height:44px;white-space:normal}
 body .marketplace-public {
   --mp-ink: #173e32;
   --mp-muted: #626c5c;

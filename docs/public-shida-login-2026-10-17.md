@@ -1,5 +1,10 @@
 # Visible SHIDA sign-in on public pages — 17 October 2026
 
+Current navigation update: [Services account navigation, 21 October](services-account-navigation-2026-10-21.md)
+moves customer requests and received bills into Mon espace and checks provider
+access before showing its destination. Public visitors see a text sign-in button.
+The authentication and private-data boundaries described here are unchanged.
+
 ## Gap and change
 
 The shared WhatsApp code login already worked inside protected marketplace pages.

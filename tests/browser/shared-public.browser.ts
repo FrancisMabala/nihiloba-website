@@ -5,7 +5,7 @@ for(const width of [390,820,1366])for(const market of ['services','restaurants',
  await page.route('**/api/shida/**',route=>route.fulfill({status:401,json:{}}));
  await page.goto(`/fr/shida/${market}`);
  await expect(page.getByRole('heading',{level:1})).toBeVisible();
- await expect(page.locator('.market-header .market-space')).toHaveText('Mon espace↗');
+ await expect(page.locator('.market-header').getByRole('button',{name:'Se connecter à SHIDA'})).toBeVisible();
  await expect(page.locator('.market-header .market-cart')).toBeAttached();
  const search=page.locator('.mp-search-primary').filter({visible:true});await expect(search).toBeVisible();
  await expect(search.locator('[name=query]')).toHaveCSS('border-top-width','0px');await expect(search.locator('[name=city]')).toHaveCSS('border-top-width','0px');

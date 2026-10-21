@@ -4,7 +4,8 @@ for(const width of [360,820,1440])test(`Services public discovery ${width}`,asyn
  await page.setViewportSize({width,height:950});await page.goto('/fr/shida/services');
  await expect(page.getByRole('heading',{level:1})).toHaveText('La bonne personne pour votre prochain projet.');
  await expect(page.locator('.service-card')).toHaveCount(3);
- await expect(page.getByRole('link',{name:'Mon espace prestataire'})).toHaveAttribute('href',/^\/fr\/shida\/seller\/services\/?$/);
+ await expect(page.locator('.mp-hero').getByRole('link',{name:'Décrire mon besoin'})).toHaveAttribute('href','/fr/shida/service-requests/?new=1');
+ await expect(page.getByRole('link',{name:'Mon espace prestataire'})).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`docs/evidence/shared-public/services-fr-${width}.png`,fullPage:true});
  await page.getByRole('navigation',{name:'Explorer par catégorie'}).getByRole('link',{name:'Nettoyage'}).click();
@@ -15,5 +16,5 @@ for(const width of [360,820,1440])test(`Services public discovery ${width}`,asyn
 });
 test('Services empty and unavailable states keep working search and provider entry',async({page})=>{
  await page.goto('/shida/services?query=empty');await expect(page.getByText('No public services match your search.')).toBeVisible();
- await page.goto('/shida/services?query=failure');await expect(page.getByText(/Services are temporarily unavailable/)).toBeVisible();await expect(page.getByRole('link',{name:'My provider area'})).toBeVisible();
+ await page.goto('/shida/services?query=failure');await expect(page.getByText(/Services are temporarily unavailable/)).toBeVisible();await expect(page.getByRole('link',{name:'Offer a service'})).toBeVisible();
 });

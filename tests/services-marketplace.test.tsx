@@ -67,7 +67,9 @@ it('connects discovery to the Personal provider area and preserves filters acros
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify({items:[],count:0,total:0,page:3,page_size:12}))));
  const html=renderToStaticMarkup(await ServiceCollectionPage({locale:'fr',search:{city:'Kinshasa',query:'repair',page:3}}));
  expect(html).toContain('href="/fr/shida/seller/services"');
- expect(html).toContain('Mon espace prestataire');
+ expect(html).not.toContain('Mon espace prestataire');
+ expect(html).toContain('Décrire mon besoin');
+ expect(html).toContain('href="/fr/shida/service-requests?new=1"');
  expect(html).toContain('Explorer par catégorie');
  expect(html).toContain('category=cleaning');
  expect(html).toContain('city=Kinshasa');
