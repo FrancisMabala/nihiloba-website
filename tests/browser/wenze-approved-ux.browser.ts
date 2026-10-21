@@ -17,6 +17,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
  await page.route('**/api/**',async route=>{
   const req=route.request(),path=new URL(req.url()).pathname.replace(/\/$/,'');const reply=(json:unknown,status=200)=>route.fulfill({json,status});
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Demo seller'}});
+  if(path.endsWith('/me'))return reply({user:{account_type:'both',display_name:'Demo seller'},businesses:[]});
   if(path.endsWith('/contexts'))return reply({contexts:[{type:'organization',public_ref:'BUS_fixture',name:'Marché du Fleuve',role:'owner',restricted:false,onboarding_status:'complete',operational_state:'operational'}]});
   if(path.endsWith('/stores'))return reply({stores:[shop],categories:[{code:'other',labels:{en:'Other products',fr:'Autres produits',ln:'Biloko mosusu',sw:'Bidhaa nyingine'}}],currencies:['CDF','USD']});
   if(path.endsWith('/WNZ_fixture'))return reply(shop);
@@ -43,7 +44,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
  const url=business?'/wenze?context=BUS_fixture&store=WNZ_fixture':`${locale==='en'?'':'/'+locale}/shida/seller/wenze/?store=WNZ_fixture`;
  await page.setViewportSize({width:1440,height:1000});await page.goto(url);
  await expect(page.getByText('24',{exact:true})).toBeVisible();
- const evidence=`docs/evidence/wenze-approved-ux/${locale}`;
+ const evidence=`docs/evidence/wenze-mobile-chrome/regression-${locale}`;
  await expect(page.locator('.wz-mobile-navigation')).toBeHidden();
  await expect(page.locator('.seller-navigation button').nth(1)).toHaveCSS('color','rgb(224, 233, 228)');
  if(locale==='en')await page.screenshot({path:`${evidence}-today-desktop.png`,fullPage:true});
@@ -72,7 +73,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
  await page.getByRole('button',{name:u('viewReceipt')}).click();await expect(page.locator('.wz-receipt-paper')).toBeVisible();await expect(page.getByRole('button',{name:p('print'),exact:true})).toBeVisible();await expect(page.getByRole('button',{name:p('share'),exact:true})).toHaveCount(0);
  await page.screenshot({path:`${evidence}-receipt-mobile.png`,fullPage:true});
  await page.locator('.wz-receipt-panel').getByRole('button',{name:p('close'),exact:true}).click();await page.getByRole('button',{name:u('newSale')}).click();await expect(page.getByRole('button',{name:p('checkout'),exact:true})).toBeDisabled();
- await nav.getByRole('button',{name:u('more'),exact:true}).click();await nav.getByRole('button',{name:u('shop'),exact:true}).click();await page.getByRole('button',{name:wenzeDesignText(locale,'shopDetails'),exact:true}).click();await expect(page.getByLabel(w.name,{exact:true})).toBeVisible();
+ await nav.getByRole('button',{name:u('shop'),exact:true}).click();await page.locator('.wz-shop-tabs').getByRole('button',{name:wenzeDesignText(locale,'shopDetails'),exact:true}).click();await expect(page.getByLabel(w.name,{exact:true})).toBeVisible();
  await page.getByRole('button',{name:w.fulfillment,exact:true}).click();await expect(dialog).not.toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(errors).toEqual([]);
 });

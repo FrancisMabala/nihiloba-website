@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import {WenzeHeader} from "./wenze-header";
 import { managementCopy } from "../../lib/restaurant-management-copy";
 import { leaveWork } from "../../lib/wenze-work";
 import { sellerDesignCopy } from "../../lib/restaurant-seller-design-copy";
@@ -11,13 +11,13 @@ import { endEmploymentSession } from "../../services/shida/employment-browser-cl
 import { restorePersonalSession, PersonalSessionError, PERSONAL_SESSION_EVENT, type PersonalSession } from "../../lib/personal-session-browser";
 import { sellerConnectionText } from "../../lib/restaurant-seller-copy";
 import { restaurantText, sellerChrome } from "../../lib/restaurant-seller-copy";
-import { restaurantLocales } from "../../lib/restaurant-i18n";
 import type { RestaurantLocale } from "../../services/shida/restaurants-client";
 import { WenzeWorkspace } from "./wenze-workspace";
 import { WenzeApiProvider } from "@/app/lib/wenze-seller-api";
 import { sellerText } from "@/app/lib/wenze-seller-copy";
 import "./wenze-seller.css";
 import "./restaurant-seller.css";
+import "./wenze-mobile-chrome.css";
 
 export const sellerPath = (locale: RestaurantLocale) => `${locale === "en" ? "" : `/${locale}`}/shida/seller/wenze`;
 export function WenzeSeller({ locale }: { locale: RestaurantLocale }) {
@@ -67,16 +67,12 @@ export function WenzeSeller({ locale }: { locale: RestaurantLocale }) {
   finally { if (alive.current) setPending(false); }
  }
  return <div lang={locale} className="rst-seller seller-design">
-<section className="rst container rst-shell"><div className="rst-topline">
- <Link className="rst-brand" prefetch={false} href={`${locale === "en" ? "" : "/fr"}/shida/wenze`} aria-label={`SHIDA · ${management.marketplace}`}>SHIDA<span>{management.marketplace} ↗</span></Link>
- <span className="rst-workspace-label">{sellerText(locale,"title")}</span>
- <details className="rst-dropdown"><summary aria-label={t.languages}>{locale.toUpperCase()}</summary><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)} hrefLang={lang} onClick={async event=>{event.preventDefault();if(await leaveWork())window.location.assign(sellerPath(lang));}} aria-current={locale === lang ? "page" : undefined}>{({fr:'FR',en:'EN',ln:'Lingala',sw:'Swahili'})[lang]}</Link>)}</nav></details>
- {session && <details className="rst-dropdown rst-account"><summary aria-label={management.account}>{session.user.display_name}</summary><div><button disabled={pending} onClick={()=>void logout(true)}>{management.changeAccount}</button><button disabled={pending} onClick={()=>void logout()}>{management.signOut}</button></div></details>}
- </div>
+<WenzeHeader locale={locale} name={session?.user.display_name} brandHref={`${locale === "en" ? "" : "/fr"}/shida/wenze`} pending={pending} onLanguage={async lang=>{if(await leaveWork())window.location.assign(sellerPath(lang)+window.location.search);}} onAccount={()=>void logout(true)} onLogout={()=>void logout()}/>
+{(loading||pending||!session||message||connectionLost)&&<section className="rst container rst-shell">
    {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <SellerLanding marketplace="wenze" locale={locale} design={design} browseHref={`${locale === "en" ? "" : "/fr"}/shida/wenze`} onAuthenticated={() => { signedOut.current = false; }}/>)}
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
-  </section>
+  </section>}
   {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><WenzeApiProvider key={`${session.binding}:${locale}`} binding={session.binding} onUnauthorized={()=>setSession(null)}><WenzeWorkspace locale={locale}/></WenzeApiProvider></fieldset>}
  </div>;
 }
