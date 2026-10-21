@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import {paymentText} from "@/app/lib/wenze-payment-copy";
-import {useWorkDraft} from "@/app/lib/restaurant-work";
+import {useWorkDraft} from "@/app/lib/wenze-work";
 
 type Preferences={revision:number;selected:string[];available:string[];coming_soon:string[];online_collection_enabled:false};
 type Props={path:string;locale:string;request:(path:string,init?:RequestInit)=>Promise<unknown>;onRevision:(revision:number)=>void};

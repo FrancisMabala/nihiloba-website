@@ -1,3 +1,4 @@
+import {wenzeUX} from '../../app/lib/wenze-ux-copy';
 import {test,expect} from '@playwright/test';
 import {sellerText} from '../../app/lib/wenze-seller-copy';
 import {posText} from '../../app/lib/wenze-pos-copy';
@@ -34,28 +35,31 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`basket labels receipts 
  });
  await page.setViewportSize({width:390,height:844});await page.goto(`${locale==='en'?'':'/'+locale}/shida/seller/wenze/`);
  if(locale==='en')for(const view of ['orders','imports','inventory','costs','reports']){
-  await page.locator('.seller-navigation').getByRole('button',{name:s(view),exact:true}).click();
-  await expect(page.locator('.seller-navigation').getByRole('button',{name:s(view),exact:true})).toHaveAttribute('aria-current','page');
+  const group=['imports','inventory'].includes(view)?'productsStock':['costs','reports'].includes(view)?'money':null;
+  if(group==='money')await page.locator('.wz-mobile-navigation').getByRole('button',{name:wenzeUX(locale,'more'),exact:true}).click();
+  await page.locator('.wz-mobile-navigation').getByRole('button',{name:group?wenzeUX(locale,group as 'productsStock'|'money'):s(view),exact:true}).click();
+  if(group)await page.locator('.wz-section-tabs').getByRole('button',{name:s(view),exact:true}).click();
+  await expect(page.getByRole('heading',{level:1})).toBeVisible();
   await expect(page.locator('.wz [role=status]')).toHaveCount(0);
   await expect(page.getByText('This access is no longer available.',{exact:true})).toHaveCount(0);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  await page.screenshot({path:`docs/evidence/wenze-pos/${view}-mobile.png`,fullPage:true});
+  await page.screenshot({path:`docs/evidence/wenze-approved-ux/regression-wenze-pos/${view}-mobile.png`,fullPage:true});
  }
- await page.locator('.seller-navigation').getByRole('button',{name:s('sales'),exact:true}).click();
- const pos=page.locator('.wz-pos');await expect(pos.getByRole('button',{name:t('add'),exact:true})).toBeVisible();
- await pos.getByRole('button',{name:t('add'),exact:true}).click();
+ await page.locator('.wz-mobile-navigation').getByRole('button',{name:s('sales'),exact:true}).click();
+ const pos=page.locator('.wz-pos');await expect(pos.locator('.wz-pos-product-button')).toBeVisible();
+ await pos.locator('.wz-pos-product-button').click();
  await pos.getByLabel(t('scan'),{exact:true}).fill('WNP_fixture');await pos.getByRole('button',{name:t('search'),exact:true}).click();
  await expect(pos.getByLabel(t('quantity'),{exact:true})).toHaveValue('2');
  await pos.getByRole('button',{name:t('checkout'),exact:true}).click();await expect(pos.getByText(t('uncertain'),{exact:true})).toBeVisible();
- await pos.getByRole('button',{name:t('retry'),exact:true}).click();await expect(pos.locator('.wz-receipt-paper')).toBeVisible();expect(keys[0]).toBe(keys[1]);
+ await pos.getByRole('button',{name:t('retry'),exact:true}).click();await pos.getByRole('button',{name:wenzeUX(locale,'viewReceipt')}).click();await expect(pos.locator('.wz-receipt-paper')).toBeVisible();expect(keys[0]).toBe(keys[1]);
  await expect(pos.locator('.wz-receipt-paper').getByText(t('commercialReceipt'),{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/wenze-pos/receipt-${locale}-mobile.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/wenze-approved-ux/regression-wenze-pos/receipt-${locale}-mobile.png`,fullPage:true});
  await pos.locator('.wz-receipt-panel').getByRole('button',{name:t('close'),exact:true}).click();
  await pos.getByRole('button',{name:t('labels'),exact:true}).click();await pos.getByLabel(t('copies'),{exact:true}).fill('2');await pos.getByRole('button',{name:t('preview'),exact:true}).click();await expect(pos.locator('.wz-label-paper')).toBeVisible();
  const download=page.waitForEvent('download');await pos.getByRole('button',{name:t('download'),exact:true}).click();expect((await download).suggestedFilename()).toBe('receipt.pdf');
- await page.screenshot({path:`docs/evidence/wenze-pos/labels-${locale}-mobile.png`,fullPage:true});
- await page.setViewportSize({width:1440,height:1000});await pos.getByRole('button',{name:t('sell'),exact:true}).click();await pos.getByRole('button',{name:t('add'),exact:true}).click();
- if(locale==='en')await page.screenshot({path:'docs/evidence/wenze-pos/basket-desktop.png',fullPage:true});
+ await page.screenshot({path:`docs/evidence/wenze-approved-ux/regression-wenze-pos/labels-${locale}-mobile.png`,fullPage:true});
+ await page.setViewportSize({width:1440,height:1000});await pos.getByRole('button',{name:t('sell'),exact:true}).click();await pos.locator('.wz-pos-product-button').click();
+ if(locale==='en')await page.screenshot({path:'docs/evidence/wenze-approved-ux/regression-wenze-pos/basket-desktop.png',fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

@@ -1,5 +1,6 @@
 "use client";
 import Image from 'next/image';
+import {wenzeUX} from '@/app/lib/wenze-ux-copy';
 import {useEffect,useState} from 'react';
 import {useWenzeApi} from '@/app/lib/wenze-seller-api';
 import {sellerText} from '@/app/lib/wenze-seller-copy';
@@ -31,6 +32,6 @@ export function WenzeToday({store,stores,locale,onChoose,onNavigate}:{store:Shop
  <div className="wz-community"><span>{d('newFollowers')}: <strong>{daily?.new_followers??'—'}</strong></span><span>{d('customerReviews')}: <strong>{!daily?'—':daily.reviews.count?`${daily.reviews.average} / 5 · ${daily.reviews.count}`:d('noReviews')}</strong></span></div>
  <div className="wz-today-columns"><div><h3>{d('soldToday')}</h3>{daily?.sold_items.map(row=><article className="wz-sold-row" key={`${row.product_ref}:${row.variant_ref}:${row.currency}`}>{row.image_url?<Image unoptimized src={row.image_url} alt="" width={56} height={70}/>:<span className="wz-photo-fallback" aria-hidden="true">{row.label.slice(0,1)}</span>}<div><strong>{row.label}</strong><p>{t('quantity_sold')}: {row.quantity}</p></div><strong>{money(row.revenue,row.currency)}</strong></article>)}{daily&&daily.sold_items.length===0&&<p className="wz-empty">{daily.financial_access?d('noSales'):t('todayFree')}</p>}</div><div><h3>{t('actionRequired')}</h3><p className="wz-soft-note">{d('attentionHelp')}</p><div className="wz-attention">{metric(t('actionRequired'),orders?.action_required as number,'orders')}{metric(t('inProgress'),orders?.in_progress as number,'orders')}{metric(t('lowStockCount'),stock?.low_stock_items as number,'inventory')}{metric(t('stockUnknown'),stock?Number(stock.untracked_items??0)+Number(stock.uninitialized_items??0):null,'inventory')}</div></div></div>
  {!!metrics?.length&&<details className="wz-daily-details"><summary>{t('reports')}</summary>{metrics.map(row=><div key={row.currency}><h4>{row.currency}</h4><p>{t('known_gross_profit')}: {money(row.known_profit,row.currency)}</p><p>{t('recorded_operating_expenses')}: {money(row.expenses,row.currency)}</p>{!row.profit_complete&&<p>{t('missingCostsWarning')}</p>}</div>)}<button onClick={()=>onNavigate('reports')}>{t('reports')} →</button></details>}
- <div className="wz-actions">{['catalog','orders','sales'].map(tab=><button key={tab} onClick={()=>onNavigate(tab)}>{t(tab)}</button>)}</div>
+ <h3>{wenzeUX(locale,"quick")}</h3><div className="wz-actions">{['sales','catalog','orders'].map(tab=><button key={tab} onClick={()=>onNavigate(tab)}>{t(tab)}</button>)}</div>
  </section>;
 }
