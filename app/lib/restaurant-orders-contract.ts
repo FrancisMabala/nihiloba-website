@@ -10,9 +10,9 @@ const ref = '[A-Za-z0-9_-]{1,64}';
 export const orderRoutes: [RegExp, readonly string[]][] = [
   ...preparationRoutes,
   [new RegExp(`^RST_${ref}/pos$`), ['GET']],
-  [new RegExp(`^RST_${ref}/pos/counter-baskets$`), ['POST']],
+  [new RegExp(`^RST_${ref}/pos/counter-baskets$`), ['GET','POST']],
   [new RegExp(`^RST_${ref}/pos/counter-baskets/${ref}$`), ['GET','PATCH']],
-  [new RegExp(`^RST_${ref}/pos/counter-baskets/${ref}/(quote|finalize)$`), ['POST']],
+  [new RegExp(`^RST_${ref}/pos/counter-baskets/${ref}/(quote|finalize|prepare)$`), ['POST']],
   [new RegExp(`^RST_${ref}/kitchen/(orders|feed)$`), ['GET']],
   [new RegExp(`^RST_${ref}/kitchen/orders/${ref}$`), ['GET']],
   [new RegExp(`^RST_${ref}/kitchen/orders/${ref}/actions/(start|ready)$`), ['POST']],
@@ -22,8 +22,9 @@ export const orderRoutes: [RegExp, readonly string[]][] = [
   [new RegExp(`^RST_${ref}/orders/${ref}/actions/(${orderActions.join('|')})$`), ['POST']],
   [new RegExp(`^RST_${ref}/(pickup-intake|delivery-intake)$`), ['PUT']],
   [new RegExp(`^RST_${ref}/(counter-baskets|order-operations/recover|order-measurement|menu-batches)$`), ['POST']],
+  [new RegExp(`^RST_${ref}/counter-baskets$`), ['GET']],
   [new RegExp(`^RST_${ref}/counter-baskets/${ref}$`), ['GET', 'PATCH']],
-  [new RegExp(`^RST_${ref}/counter-baskets/${ref}/(quote|finalize)$`), ['POST']],
+  [new RegExp(`^RST_${ref}/counter-baskets/${ref}/(quote|finalize|prepare)$`), ['POST']],
 ];
 export const isOrderPath = (path: string) => isPreparationPath(path) || /\/(orders|order-|counter-baskets|pickup-intake|delivery-intake|guest-auto-accept|menu-batches|kitchen|pos)/.test(path);
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -32,7 +33,7 @@ const exact = (v: Record<string, unknown>, keys: string[]) => Object.keys(v).eve
 const decimal = (v: unknown) => typeof v === 'string' && /^[0-9]{1,16}(\.[0-9]{1,2})?$/.test(v);
 const enumOf = (v: unknown, values: string[]) => typeof v === 'string' && values.includes(v);
 const list = (v: unknown, max: number, check: (x: unknown) => boolean, min = 0) => Array.isArray(v) && v.length >= min && v.length <= max && v.every(check);
-const line = (v: unknown) => obj(v) && exact(v, ['key','item_ref','quantity','selected_amount']) && str(v.key,64) && str(v.item_ref,64) && (v.quantity == null || Number.isSafeInteger(v.quantity) && Number(v.quantity)>0) && (v.selected_amount == null || decimal(v.selected_amount)) && (v.quantity != null) !== (v.selected_amount != null);
+const line = (v: unknown) => obj(v) && exact(v, ['key','item_ref','quantity','selected_amount','portion_key','extra_keys','note']) && (v.portion_key==null||str(v.portion_key,40)) && (v.extra_keys==null||list(v.extra_keys,12,x=>str(x,40))) && (v.note==null||typeof v.note==='string'&&v.note.length<=200) && str(v.key,64) && str(v.item_ref,64) && (v.quantity == null || Number.isSafeInteger(v.quantity) && Number(v.quantity)>0) && (v.selected_amount == null || decimal(v.selected_amount)) && (v.quantity != null) !== (v.selected_amount != null);
 export function validOrderQuery(path: string, method: string, q: URLSearchParams) {
   if (isPreparationPath(path)) return validPreparationQuery(path,method,q);
   const kitchen = path.includes('/kitchen/');
@@ -78,7 +79,7 @@ export function validOrderBody(path: string, value: unknown): boolean {
   if (path.endsWith('/guest-auto-accept')) return exact(v,['operation_key','enabled','expected_revision']) && typeof v.enabled === 'boolean' && Number.isSafeInteger(v.expected_revision) && Number(v.expected_revision) >= 0;
   if (batch) return exact(v,['operation_key','expected_updated_at','category_ref','category_name','rows']) && str(v.expected_updated_at,64) && (v.category_ref != null) !== (v.category_name != null) && (v.category_ref == null || str(v.category_ref,64)) && (v.category_name == null || str(v.category_name,200)) && list(v.rows,20,r => obj(r) && exact(r,['key','fields','target_ref','separate','skip']) && str(r.key,64) && (r.target_ref == null || str(r.target_ref,64)) && (r.separate === undefined || typeof r.separate === 'boolean') && (r.skip === undefined || typeof r.skip === 'boolean') && [r.target_ref != null,r.separate === true,r.skip === true].filter(Boolean).length <= 1 && (r.skip === true && r.fields === undefined || itemFields(r.fields)),1) && new Set((v.rows as Record<string,unknown>[]).map(r=>r.key)).size === (v.rows as unknown[]).length && (v.rows as Record<string,unknown>[]).some(r=>r.skip !== true);
   if (/\/counter-baskets$/.test(path)) return exact(v,['operation_key']);
-  if (/\/order-operations\/recover$/.test(path)) return exact(v,['operation_key','kind','target_ref']) && str(v.target_ref,64) && enumOf(v.kind,['basket','intake','delivery_config','edit','quote','submit','destination','delivery_quote','delivery_submit','counter_handoff','action']);
+  if (/\/order-operations\/recover$/.test(path)) return exact(v,['operation_key','kind','target_ref']) && str(v.target_ref,64) && enumOf(v.kind,['basket','intake','delivery_config','edit','quote','submit','destination','delivery_quote','delivery_submit','counter_handoff','counter_prepare','action']);
   if (/\/(pickup|delivery)-intake$/.test(path)) {
     const delivery = path.endsWith('/delivery-intake');
     return exact(v,['operation_key','expected_updated_at','enabled','windows','schedule',...(delivery ? ['fee','areas'] : [])]) && (v.schedule === undefined || validSchedule(v.schedule) && Array.isArray(v.windows) && v.windows.length===0) && str(v.expected_updated_at,64) && typeof v.enabled === 'boolean' && list(v.windows,20,w=>obj(w) && exact(w,['starts_at','ends_at']) && str(w.starts_at,100) && str(w.ends_at,100)) && (!delivery || obj(v.fee) && exact(v.fee,['amount','currency']) && decimal(v.fee.amount) && enumOf(v.fee.currency,['CDF','USD']) && list(v.areas,100,a=>obj(a) && exact(a,['country','city','commune','quartier','scope']) && ['country','city','commune'].every(k=>str(a[k])) && (a.quartier == null || str(a.quartier)) && enumOf(a.scope,['whole_commune','quartier']),1));
@@ -86,6 +87,7 @@ export function validOrderBody(path: string, value: unknown): boolean {
   if (!Number.isSafeInteger(v.expected_revision) || Number(v.expected_revision)<1) return false;
   if(path.endsWith('/actions/assisted_handover'))return exact(v,['operation_key','expected_revision','confirm'])&&v.confirm===true;
   if (path.includes('/actions/')) return exact(v,['operation_key','expected_revision','reason','pickup_code','delivery_code','confirm']) && (v.reason == null || enumOf(v.reason,orderReasons)) && (path.endsWith('/verify_pickup') ? typeof v.pickup_code === 'string' && /^[0-9]{6}$/.test(v.pickup_code) && v.reason == null : v.pickup_code == null) && (path.endsWith('/verify_delivery') ? typeof v.delivery_code === 'string' && /^[0-9]{6}$/.test(v.delivery_code) && v.reason == null : v.delivery_code == null) && (!path.endsWith('/pickup_exception') || enumOf(v.reason,pickupExceptionReasons)) && (path.endsWith('/delivery_exception') ? enumOf(v.reason,deliveryExceptionReasons) && v.confirm === true : v.confirm == null);
+  if (path.endsWith('/prepare')) return exact(v,['operation_key','expected_revision','quote_ref','confirm','fulfillment_method']) && str(v.quote_ref,64) && v.confirm===true && enumOf(v.fulfillment_method,['on_premise','takeaway']);
   if (path.endsWith('/finalize')) return exact(v,['operation_key','expected_revision','quote_ref','confirm','handoff_confirmed','fulfillment_method']) && str(v.quote_ref,64) && v.confirm === true && v.handoff_confirmed === true && enumOf(v.fulfillment_method,['on_premise','takeaway']);
   return exact(v,['operation_key','expected_revision','selections','fulfillment_method','window_ref','food_preference']) && (v.food_preference == null || typeof v.food_preference === 'string' && v.food_preference.length <= 400 && !/[\u0000-\u0009\u000b-\u001f\u007f]/.test(v.food_preference)) && enumOf(v.fulfillment_method,['on_premise','takeaway']) && v.window_ref == null && obj(v.selections) && exact(v.selections,['standalone','plates']) && list(v.selections.standalone,50,line) && list(v.selections.plates,20,p=>obj(p) && exact(p,['key','components']) && str(p.key,64) && list(p.components,20,line,1));
 }

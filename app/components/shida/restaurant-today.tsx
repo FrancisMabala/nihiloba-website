@@ -1,4 +1,6 @@
 'use client';
+import {counterCopy} from '../../lib/restaurant-counter-copy';
+import './restaurant-counter-ux.css';
 
 import { useCallback, useEffect, useState } from 'react';
 import { request } from '../../lib/restaurant-seller-browser';
@@ -75,6 +77,7 @@ export function RestaurantToday({ path, binding, locale, zone, canPrepare, canSe
   return <section className="rst-today" lang={locale}>
     <div className="rst-today-heading"><div><span className="rst-overline">{day}</span><h2>{t.title}</h2><p>{t.intro}</p></div><button type="button" onClick={() => { setLoading(true); setVersion(value => value + 1); }}>{t.refresh}</button></div>
     {snapshot.intake && !snapshot.intake.intake_released && <div className="rst-today-notice"><p>{t.closed}</p>{canEditIntake && <button type="button" onClick={() => onOpen('intake')}>{t.setting}</button>}</div>}
+    <section className="rst-today-actions"><header><h3>{counterCopy(locale).actions}</h3><button type="button" onClick={()=>onOpen(canSell?'pos':'counter')}>+ {counterCopy(locale).newSale}</button></header>{loading?<p>{counterCopy(locale).loading}</p>:failed.includes('pending')?<p>{t.unavailable}</p>:snapshot.pending?.items?.length?snapshot.pending.items.map(order=><article key={order.order_ref}><div><strong>{counterCopy(locale).orders} · {order.order_ref}</strong><p>{workText(locale,order.state)}</p></div><button type="button" onClick={()=>onOpen('orders')}>{counterCopy(locale).view}</button></article>):<p>{counterCopy(locale).noWork}</p>}</section>
     <div className="rst-today-grid">
       {card('pending', t.incoming, pending, 'orders', snapshot.pending?.items[0] && workText(locale, snapshot.pending.items[0].state))}
       {card('active', t.preparing, active, canPrepare ? 'kitchen' : 'orders', snapshot.active?.items[0] && workText(locale, snapshot.active.items[0].state))}

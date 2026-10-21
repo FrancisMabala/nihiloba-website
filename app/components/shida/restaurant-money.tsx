@@ -3,8 +3,12 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {request,DashboardApiError} from '../../lib/restaurant-seller-browser';
 import {servicePath,type ServiceAssignment} from '../../lib/restaurant-service-contract';
 import {moneyText,type MoneyLocale} from '../../lib/restaurant-money-copy';
+import {useWorkDraft} from '../../lib/restaurant-work';
 import {workText} from '../../lib/restaurant-work-copy';
 import './restaurant-money.css';
+import './restaurant-counter-ux.css';
+import {counterCopy} from '../../lib/restaurant-counter-copy';
+import {cashChange,cents,displayMoney} from '../../lib/restaurant-counter-values';
 
 type Currency='CDF'|'USD';
 type Round={order_ref:string;state:string;currency:Currency;amount:string};
@@ -19,7 +23,8 @@ const decimal=(s:string)=>/^\d{1,15}(?:\.\d{1,2})?$/.test(s)&&Number(s)>0;
 const safeChange=(s:string)=>s===''||/^\d{1,15}(?:\.\d{1,2})?$/.test(s);
 const endpoint:Record<Kind,string>={receipt:'receipts',reversal:'reversals',refund:'refunds',reconciliation:'reconcile-excess'};
 
-export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assignment,paymentAssignment,onChanged,recoveryOnly=false}:{path:string;groupRef:string;groupRevision?:number;binding:string;locale:MoneyLocale;assignment?:ServiceAssignment;paymentAssignment?:ServiceAssignment;onChanged?:()=>void;recoveryOnly?:boolean}){
+export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assignment,paymentAssignment,onChanged,recoveryOnly=false,counter=false}:{path:string;groupRef:string;groupRevision?:number;binding:string;locale:MoneyLocale;assignment?:ServiceAssignment;paymentAssignment?:ServiceAssignment;onChanged?:()=>void;recoveryOnly?:boolean;counter?:boolean}){
+ const ux=counterCopy(locale),[autoReceipt,setAutoReceipt]=useState(true),[detailed,setDetailed]=useState(false);
  const t=useCallback((key:string)=>moneyText(locale,key),[locale]);
  const owner=!assignment,canPay=owner||!!paymentAssignment;
  const serviceRef=assignment?.assignment_ref,serviceRevision=assignment?.assignment_revision,paymentRef=paymentAssignment?.assignment_ref,paymentRevision=paymentAssignment?.assignment_revision;
@@ -27,8 +32,9 @@ export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assi
  const payment=useCallback((suffix:string)=>servicePath(path,suffix,owner?undefined:paymentRef&&paymentRevision?{assignment_ref:paymentRef,assignment_revision:paymentRevision}:undefined),[path,owner,paymentRef,paymentRevision]);
  const root='/groups/'+groupRef;
  const [bill,setBill]=useState<Bill|null>(null),[methods,setMethods]=useState<Method[]>([]),[receipt,setReceipt]=useState<Receipt|null>(null);
- const [kind,setKind]=useState<Kind>('receipt'),[methodRef,setMethodRef]=useState(''),[currency,setCurrency]=useState<Currency|''>(''),[amount,setAmount]=useState(''),[change,setChange]=useState(''),[target,setTarget]=useState(''),[order,setOrder]=useState(''),[reason,setReason]=useState('');
+ const [kind,setKind]=useState<Kind>('receipt'),[methodRef,setMethodRef]=useState(''),[currency,setCurrency]=useState<Currency|''>(''),[amount,setAmount]=useState(''),[manualChange,setChange]=useState(''),[target,setTarget]=useState(''),[order,setOrder]=useState(''),[reason,setReason]=useState('');
  const [pending,setPending]=useState<Pending|null>(null),[busy,setBusy]=useState(false),[fresh,setFresh]=useState(false),[message,setMessage]=useState('');
+ useWorkDraft(!!pending||busy,t('uncertain'));
  const live=useRef(true),epoch=useRef(0),lock=useRef(false);
  const clear=useCallback(()=>{epoch.current++;setBill(null);setMethods([]);setReceipt(null);setPending(null);setFresh(false);setMethodRef('');setCurrency('');setAmount('');setChange('');setTarget('');setOrder('');setReason('');},[]);
  const lost=useCallback((e:unknown)=>{if(e instanceof DashboardApiError&&[401,403,404].includes(e.status)){clear();setMessage(t('stale'));return true;}return false;},[clear,t]);
@@ -56,6 +62,7 @@ export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assi
  const checkout=()=>{if(!bill||bill.pending_rounds.length||bill.state!=='open')return;if(!window.confirm(t('freeze')))return;void execute(service(root+'/checkout'),{operation_key:crypto.randomUUID(),expected_revision:bill.group_revision},value=>setBill((value as {bill:Bill}).bill));};
  const reopen=()=>{if(!bill||bill.state!=='checkout'||bill.payment_revision)return;if(!window.confirm(t('reopen')))return;void execute(service(root+'/reopen'),{operation_key:crypto.randomUUID(),expected_revision:bill.group_revision,expected_payment_revision:bill.payment_revision},value=>setBill((value as {bill:Bill}).bill));};
  const selected=methods.find(m=>m.method_ref===methodRef),original=bill?.entries.find(e=>e.entry_ref===target);
+ const change=counter&&selected?.kind==='cash'&&currency&&bill?cashChange(amount,bill.currencies[currency].balance_due):manualChange;
  const valid=!!bill&&canPay&&!!selected&&(selected.enabled||kind==='reversal')&&!!currency&&selected.currencies.includes(currency)&&decimal(amount)&&safeChange(change)&&
   (selected.kind==='cash'||!change||Number(change)===0)&&(kind==='receipt'||!change||Number(change)===0)&&Number(change||0)<Number(amount)&&
   (kind==='receipt'||owner&&!recoveryOnly&&kind==='reconciliation'&&!!order||owner&&['reversal','refund'].includes(kind)&&!!original&&original.currency===currency&&reason.trim().length>0&&reason.length<=240);
@@ -64,7 +71,7 @@ export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assi
   const summary=`${t(kind==='receipt'?'record':kind==='reconciliation'?'excess':kind)}\n${selected?.label} · ${currency} · ${amount}${change&&Number(change)>0?` · ${t('change')}: ${change}`:''}`;
   if(!window.confirm(`${t('confirm')}\n\n${summary}`))return;
   const envelope:Pending=Object.freeze({path:payment(root+'/money/'+endpoint[kind]),body:JSON.stringify(body),kind,binding,billPath:service(root+'/bill'),recoverPath:payment(root+'/money/recover'),scope:`${path}:${groupRef}:${assignment?.assignment_ref??'owner'}:${assignment?.assignment_revision??0}:${paymentAssignment?.assignment_ref??'owner'}:${paymentAssignment?.assignment_revision??0}`,absence:false});lock.current=true;setBusy(true);setMessage('');setPending(envelope);const generation=epoch.current;
-  try{const value=await request(envelope.path,{method:'POST',body:envelope.body},binding) as {bill:Bill};if(!live.current||generation!==epoch.current)return;setPending(null);setBill(value.bill);setReceipt(null);setAmount('');setChange('');setTarget('');setReason('');await read();}
+  try{const value=await request(envelope.path,{method:'POST',body:envelope.body},binding) as {bill:Bill};if(!live.current||generation!==epoch.current)return;setPending(null);setBill(value.bill);setReceipt(null);setAmount('');setChange('');setTarget('');setReason('');await read();if(counter&&autoReceipt){try{const receipt=await request(service(root+'/receipt',{language:locale}),{},binding) as Receipt;if(live.current&&generation===epoch.current)setReceipt(receipt);}catch(e){if(!lost(e))setMessage(t('stale'));}}}
   catch(e){if(!live.current||generation!==epoch.current)return;if(e instanceof DashboardApiError&&e.status<500&&e.status!==429){setPending(null);if(!lost(e)){setAmount('');setChange('');setMessage(t('stale'));await read();}}else setMessage(t('uncertain'));}
   finally{lock.current=false;if(live.current)setBusy(false);}
  };
@@ -83,7 +90,17 @@ export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assi
  const rounds=(label:string,rows:Round[])=><section><h4>{t(label)}</h4>{rows.map(r=><p key={r.order_ref}>{r.order_ref} · {workText(locale,r.state)} · {r.amount} {r.currency}</p>)}</section>;
  const entryKind=(value:string)=>t(value==='receipt'?'entryReceipt':value==='reversal'?'entryReversal':value==='refund'?'entryRefund':'entryExcess');
  const lineText=(line:Record<string,unknown>)=>Object.entries(line).map(([k,v])=>`${t(k)}: ${typeof v==='string'?t(v):String(v)}`).join(' · ');
- return <section className="rst-money" lang={locale}><h3>{t('title')}</h3>{message&&<p role="status">{message}</p>}<button disabled={busy} onClick={()=>void read()}>{t('refresh')}</button>
+ if(counter&&!detailed)return <section className="rst-pos-payment" lang={locale}><header><h2>{ux.payment}</h2><button type="button" disabled={busy} onClick={()=>void read()}>{ux.refresh}</button></header>{message&&<p role="status">{message}</p>}{!bill?<p>{ux.loading}</p>:<>
+  <div className="rst-payment-status">{bill.chargeable_rounds.map(r=><span key={r.order_ref}>{r.order_ref} · {workText(locale,r.state)}</span>)}</div>
+  {(['CDF','USD'] as const).filter(c=>cents(bill.currencies[c].chargeable)!>BigInt(0)).map(c=><div className="rst-payment-total" key={c}><span>{ux.due}</span><strong>{displayMoney(bill.currencies[c].balance_due,locale)} {c}</strong>{cents(bill.currencies[c].balance_due)===BigInt(0)&&<p role="status">{ux.paid}</p>}{cents(bill.currencies[c].refund_owed)!>BigInt(0)&&<p>{t('owed')}: {displayMoney(bill.currencies[c].refund_owed,locale)} {c}</p>}</div>)}
+  {pending&&<div role="alert"><p>{t('uncertain')}</p><button disabled={busy} onClick={()=>void recover()}>{t('recover')}</button>{pending.absence&&<button disabled={busy} onClick={()=>void retry()}>{ux.retry}</button>}</div>}
+  {!methods.some(m=>m.enabled)&&<p>{ux.noMethods}</p>}
+  <fieldset disabled={busy||!fresh||!!pending||!canPay||bill.state==='open'}><legend>{ux.methods}</legend><div className="rst-payment-methods">{methods.filter(m=>m.enabled).map(m=><button type="button" key={m.method_ref} aria-pressed={methodRef===m.method_ref} onClick={()=>{setMethodRef(m.method_ref);const c=m.currencies.find(c=>cents(bill.currencies[c].balance_due)!>BigInt(0));setCurrency(c??m.currencies[0]??'');setAmount('');setChange('');}}>{m.label}</button>)}</div>
+  {selected&&<><label>{ux.currency}<select value={currency} onChange={e=>{setCurrency(e.target.value as Currency);setAmount('');}}><option value="">—</option>{selected.currencies.map(c=><option key={c}>{c}</option>)}</select></label><label>{ux.received}<input inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value.replace(',','.'))}/></label>{selected.kind==='cash'&&<div className="rst-payment-change"><span>{ux.change}</span><strong>{displayMoney(change||'0',locale)} {currency}</strong></div>}<div className="rst-payment-keypad">{['1','2','3','4','5','6','7','8','9','⌫','0','.'].map(k=><button type="button" key={k} aria-label={k==='⌫'?ux.reset:k} onClick={()=>setAmount(v=>k==='⌫'?v.slice(0,-1):v.length<19?v+k:v)}>{k}</button>)}</div></>}
+  <label className="rst-receipt-choice"><input type="checkbox" checked={autoReceipt} onChange={e=>setAutoReceipt(e.target.checked)}/>{ux.receipt}</label><button className="rst-pos-primary" disabled={!valid||!currency||cents(bill.currencies[currency].balance_due)===BigInt(0)} onClick={()=>void moneyWrite()}>{ux.record}</button><small>{ux.manual}</small></fieldset>
+  <button type="button" disabled={busy||!!pending} onClick={()=>setDetailed(true)}>{ux.morePayment}</button><button type="button" disabled={busy||!!pending} onClick={()=>void showReceipt()}>{ux.receipt}</button>{receipt&&<section className="rst-money-receipt"><h3>{t('receipt')}</h3><p>{receipt.statement}</p><p>{receipt.settlement_statement}</p>{receipt.original_rounds.map(r=><section key={r.order_ref}><strong>{r.order_ref}</strong>{[...r.immutable_terms.food.standalone,...r.immutable_terms.food.plates.flatMap(p=>p.components)].map((line,i)=><p key={i}>{String(line.quantity??'')} × {String(line.name??'')} {String(line.portion_label??'')} · {String(line.subtotal??'')} {r.currency}{Array.isArray(line.extras)&&line.extras.map((e:{key:string;label:string})=><small key={e.key}>+ {e.label}</small>)}{typeof line.note==='string'&&<small>{line.note}</small>}</p>)}</section>)}{receipt.entries.map(e=><p key={e.entry_ref}>{e.method.label} · {displayMoney(e.net_amount,locale)} {e.currency} · {ux.change}: {displayMoney(e.change_returned,locale)}</p>)}<button onClick={()=>window.print()}>{t('print')}</button></section>}
+ </>}</section>;
+ return <section className="rst-money" lang={locale}>{counter&&<button type="button" disabled={busy||!!pending} onClick={()=>{setDetailed(false);setKind("receipt");setMethodRef("");setCurrency("");setAmount("");setChange("");}}>{ux.back}</button>}<h3>{t('title')}</h3>{message&&<p role="status">{message}</p>}<button disabled={busy} onClick={()=>void read()}>{t('refresh')}</button>
  {bill&&(!recoveryOnly||bill.state!=='open')&&<>{rounds('chargeable',bill.chargeable_rounds)}{rounds('pending',bill.pending_rounds)}{rounds('excluded',bill.excluded_rounds)}
  <div className="rst-money-totals">{(['CDF','USD'] as const).map(c=><section key={c}><h4>{c}</h4><dl><div><dt>{t('charge')}</dt><dd>{bill.currencies[c].chargeable}</dd></div><div><dt>{t('allocated')}</dt><dd>{bill.currencies[c].net_allocated}</dd></div><div><dt>{t('due')}</dt><dd>{bill.currencies[c].balance_due}</dd></div><div><dt>{t('owed')}</dt><dd>{bill.currencies[c].refund_owed}</dd></div></dl></section>)}</div>
  {bill.state==='open'&&!recoveryOnly&&<button disabled={busy||!fresh||!!pending||!!bill.pending_rounds.length} onClick={checkout}>{t('freeze')}</button>}

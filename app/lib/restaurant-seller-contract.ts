@@ -75,7 +75,7 @@ function validInventoryBody(path: string, value: unknown): boolean {
 }
 
 export const profileKeys = ["name", "description", "food_business_type", "city", "commune", "quartier", "public_address", "landmark", "address_visibility", "timezone_name", "opening_information", "service_modes", "logo_url", "logo_secure_url"];
-export const itemKeys = ["name", "description", "image_url", "category_ref", "presentation", "pricing_model", "currency", "sale_unit_label", "unit_price", "allowed_amounts", "minimum_amount", "amount_mode", "amount_step", "visible", "availability", "permanent"];
+export const itemKeys = ["name", "description", "image_url", "category_ref", "presentation", "pricing_model", "currency", "sale_unit_label", "unit_price", "allowed_amounts", "minimum_amount", "amount_mode", "amount_step", "visible", "availability", "permanent", "counter_options"];
 export function allowedSellerRoute(path: string, method: string): boolean {
   return !path.includes('/stations/') && path.length < 400 && sellerRoutes.some(([pattern, methods]) => pattern.test(path) && methods.includes(method));
 }

@@ -5,7 +5,7 @@ export type ItemRoute = Station | 'serve';
 export type Progress = 'waiting' | 'preparing' | 'ready' | 'cancelled';
 export type Preparation = { kitchen?: Progress; bar?: Progress };
 export type PreparationAssignment = { assignment_ref: string; assignment_revision: number; bootstrap_page?: number };
-export type StationLine = { key: string; name: string; pricing_model: 'UNIT_PRICED' | 'AMOUNT_PRICED'; currency: 'CDF' | 'USD'; quantity?: number; sale_unit_label?: string; selected_amount?: string };
+export type StationLine = { portion_label?:string;extras?:{key:string;label:string}[];note?:string; key: string; name: string; pricing_model: 'UNIT_PRICED' | 'AMOUNT_PRICED'; currency: 'CDF' | 'USD'; quantity?: number; sale_unit_label?: string; selected_amount?: string };
 export type StationOrder = {
   order_ref: string; state: string; revision: number; submitted_at: string; updated_at: string;
   cancellation_pending: boolean; fulfillment_method: string; food_preference: string | null;
@@ -59,14 +59,15 @@ const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v ===
 const text = (v: unknown, max = 64): v is string => typeof v === 'string' && !!v.trim() && v.length <= max;
 export function validStationOrder(value: unknown): value is StationOrder {
   if (!object(value) || Object.keys(value).some(k => !['order_ref','state','revision','submitted_at','updated_at','cancellation_pending','fulfillment_method','food_preference','standalone','plates','station','station_state','stations','legacy_whole_order','food_preview'].includes(k))) return false;
-  if (!text(value.order_ref) || !['accepted','preparing','ready','cancelled','completed','out_for_delivery','uncollected','delivery_failed'].includes(String(value.state)) || !Number.isSafeInteger(value.revision) || Number(value.revision) < 1 || ![value.submitted_at,value.updated_at].every(v=>text(v) && Number.isFinite(Date.parse(v))) || typeof value.cancellation_pending !== 'boolean' || !['pickup','delivery','assisted'].includes(String(value.fulfillment_method)) || !(value.food_preference === null || typeof value.food_preference === 'string' && value.food_preference.length <= 400) || !['kitchen','bar'].includes(String(value.station)) || typeof value.legacy_whole_order !== 'boolean' || !object(value.stations)) return false;
+  if (!text(value.order_ref) || !['accepted','preparing','ready','cancelled','completed','out_for_delivery','uncollected','delivery_failed'].includes(String(value.state)) || !Number.isSafeInteger(value.revision) || Number(value.revision) < 1 || ![value.submitted_at,value.updated_at].every(v=>text(v) && Number.isFinite(Date.parse(v))) || typeof value.cancellation_pending !== 'boolean' || !['pickup','delivery','assisted','on_premise','takeaway'].includes(String(value.fulfillment_method)) || !(value.food_preference === null || typeof value.food_preference === 'string' && value.food_preference.length <= 400) || !['kitchen','bar'].includes(String(value.station)) || typeof value.legacy_whole_order !== 'boolean' || !object(value.stations)) return false;
   if (Object.entries(value.stations).some(([k,v]) => !['kitchen','bar'].includes(k) || !['waiting','preparing','ready','cancelled'].includes(String(v)))) return false;
   if (value.legacy_whole_order ? value.station !== 'kitchen' || Object.keys(value.stations).length > 0 || value.station_state !== value.state : value.stations[String(value.station)] !== value.station_state || !Object.keys(value.stations).length || value.food_preview !== undefined) return false;
   if (value.food_preview !== undefined && !validFoodPreview(value.food_preview)) return false;
   if (!Array.isArray(value.standalone) || !Array.isArray(value.plates) || value.plates.length > 200) return false;
   const keys = new Set<string>();
   const line = (v: unknown) => {
-    if (!object(v) || Object.keys(v).some(k=>!['key','name','pricing_model','currency','quantity','sale_unit_label','selected_amount'].includes(k)) || !text(v.key) || keys.has(v.key) || !text(v.name,200) || !['CDF','USD'].includes(String(v.currency))) return false;
+    if (!object(v) || Object.keys(v).some(k=>!['key','name','pricing_model','currency','quantity','sale_unit_label','selected_amount','portion_label','extras','note'].includes(k)) || !text(v.key) || keys.has(v.key) || !text(v.name,200) || !['CDF','USD'].includes(String(v.currency))) return false;
+    if(v.portion_label!==undefined&&!text(v.portion_label,80)||v.note!==undefined&&(typeof v.note!=='string'||v.note.length>200)||v.extras!==undefined&&(!Array.isArray(v.extras)||v.extras.length>12||!v.extras.every(e=>object(e)&&Object.keys(e).every(k=>['key','label'].includes(k))&&text(e.key,40)&&text(e.label,80))))return false;
     keys.add(v.key);
     return v.pricing_model === 'UNIT_PRICED' ? Number.isSafeInteger(v.quantity) && Number(v.quantity)>0 && text(v.sale_unit_label,80) && v.selected_amount === undefined : v.pricing_model === 'AMOUNT_PRICED' && text(v.selected_amount,19) && /^\d{1,16}(\.\d{1,2})?$/.test(v.selected_amount) && /[1-9]/.test(v.selected_amount) && v.quantity === undefined && v.sale_unit_label === undefined;
   };
