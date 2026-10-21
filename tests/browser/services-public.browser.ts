@@ -6,7 +6,7 @@ for(const width of [360,820,1440])test(`Services public discovery ${width}`,asyn
  await expect(page.locator('.service-card')).toHaveCount(3);
  await expect(page.getByRole('link',{name:'Mon espace prestataire'})).toHaveAttribute('href',/^\/fr\/shida\/seller\/services\/?$/);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/services-provider/public-fr-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/shared-public/services-fr-${width}.png`,fullPage:true});
  await page.getByRole('navigation',{name:'Explorer par catégorie'}).getByRole('link',{name:'Nettoyage'}).click();
  await expect(page.locator('.service-card')).toHaveCount(1);expect(new URL(page.url()).searchParams.get('category')).toBe('cleaning');
  const result=page.locator('.service-card h2 a');await expect(result).toHaveText('Home cleaning');await expect(result).toHaveAttribute('href',/^\/fr\/shida\/services\/cleaning\/?$/);

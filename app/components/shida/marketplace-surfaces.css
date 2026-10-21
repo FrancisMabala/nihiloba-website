@@ -1,0 +1,40 @@
+/* One public marketplace surface. Corporate pages and printed documents keep their own styles. */
+@media screen {
+ .market-surface{--mp-ink:#173e32;--mp-muted:#647169;--mp-paper:#fffefa;--mp-line:#e0dfd6;background:#faf8f2;color:var(--mp-ink)}
+ .market-surface #main-content{min-height:65vh}
+ .market-surface .marketplace-public{--mp-muted:#647169;--mp-line:#e0dfd6;--mp-paper:#fffefa;background:#faf8f2}
+ .market-surface :is(.marketplace-detail-hero,.service-detail,.wenze-public,.services-public){background:transparent;color:var(--mp-ink)}
+ .market-surface :is(.marketplace-detail-hero,.wzp-discovery) h1{font-family:Georgia,serif;font-weight:500;letter-spacing:-.025em;line-height:1.15}
+ .market-surface .marketplace-public .mp-art{border-radius:16px;box-shadow:none}
+ .market-surface .marketplace-public .mp-art span{border-radius:6px}
+ .market-surface :is(.marketplace-card,.service-card,.rd-card,.job-result){border-color:var(--mp-line);border-radius:10px;box-shadow:none;background:var(--mp-paper)}
+ .market-surface .marketplace-public .mp-search,.market-surface .wzp-discovery .mp-search{display:block;padding:0;background:transparent;border:0;box-shadow:none}
+ .market-surface .mp-search .mp-search-primary{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto;gap:0;align-items:center;background:var(--mp-paper);border:1px solid var(--mp-line);border-radius:10px;padding:6px;margin:0}
+ .market-surface .mp-search .mp-search-primary>label{position:relative;display:grid;gap:2px;min-width:0;padding:6px 16px 6px 42px;color:var(--mp-muted);font-size:12px;font-weight:400}
+ .market-surface .mp-search .mp-search-primary>label+label{border-left:1px solid var(--mp-line)}
+ .market-surface .mp-search .mp-search-primary>label:before{content:"";position:absolute;left:12px;top:50%;transform:translateY(-50%);width:20px;height:20px;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23647169' stroke-width='1.5'%3E%3Ccircle cx='10' cy='10' r='7'/%3E%3Cpath d='m15 15 6 6'/%3E%3C/svg%3E")}
+ .market-surface .mp-search .mp-search-primary>label:has([name=city]):before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23647169' stroke-width='1.5'%3E%3Cpath d='M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z'/%3E%3Ccircle cx='12' cy='10' r='2.5'/%3E%3C/svg%3E")}
+ .market-surface .marketplace-public .mp-search .mp-search-primary :is(input,select),.market-surface .wzp-discovery .mp-search .mp-search-primary :is(input,select){min-height:28px;width:100%;border:0;border-radius:3px;background:transparent;padding:2px 0;color:var(--mp-ink);font-size:14px}
+ .market-surface .mp-search .mp-search-primary>button{min-height:46px;margin:0 0 0 8px;padding:10px 22px;border:1px solid var(--mp-ink);border-radius:7px;background:var(--mp-ink);color:white;font-size:14px}
+ .market-surface .mp-search details{padding:8px 14px;margin:6px 0 0;border:0}
+ .market-surface .mp-search details[open]{background:var(--mp-paper);border:1px solid var(--mp-line);border-radius:10px}
+ .market-surface .marketplace-public .mp-chips>a{background:var(--mp-paper);border-color:var(--mp-line);font-size:13px}
+ .market-surface .marketplace-public .mp-chips>a[aria-current=page]{color:var(--mp-ink);background:#f0eadb;border-color:#e4dac3}
+ /* The same routes are available in the shared header, including retained filter queries. */
+ .market-surface :is(.svc-language-nav,.rd-language){display:none}
+ .market-surface .market-footer{margin:0;border-top:1px solid var(--mp-line);background:#f3f1e9;color:var(--mp-ink);padding-top:36px}
+ .market-surface .market-footer :is(a,p,.footer-label){color:var(--mp-ink)}
+ .market-surface .market-footer .footer-bottom{border-color:var(--mp-line);color:var(--mp-muted)}
+ .market-surface .market-footer .footer-logo{min-height:44px;display:inline-flex;align-items:center}
+ .market-surface .market-footer .footer-column{gap:8px}
+ .market-surface .market-footer .footer-column a{min-height:32px;display:inline-flex;align-items:center;font-size:13px}
+ .market-surface :is(button,a,input,select,summary):focus-visible{outline:2px solid #ad8545;outline-offset:3px}
+ @media(max-width:700px){
+  .market-surface .mp-search .mp-search-primary{grid-template-columns:minmax(0,1fr) auto}
+  .market-surface .mp-search .mp-search-primary>label:first-child{grid-column:1/-1;border-bottom:1px solid var(--mp-line);margin-bottom:6px}
+  .market-surface .mp-search .mp-search-primary>label+label{border-left:0}
+  .market-surface .mp-search .mp-search-primary>button{padding-inline:16px;font-size:13px}
+  .market-surface .marketplace-public .mp-hero h1{font-size:clamp(2rem,8vw,2.6rem)}
+  .market-surface .marketplace-public .mp-art{height:220px;border-radius:12px}
+ }
+}

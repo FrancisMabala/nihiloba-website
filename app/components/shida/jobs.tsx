@@ -82,7 +82,7 @@ function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
     <div className="jobs-search-primary mp-search-primary">
       <label>{t.search}<input type="search" name="query" defaultValue={search.query} placeholder={t.placeholder} maxLength={120}/></label>
       <label>{t.city}<input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label>
-      <button className="button button-primary" type="submit">{t.applyFilters}<span aria-hidden="true">→</span></button>
+      <button className="button button-primary" type="submit">{locale==="fr"?"Rechercher":"Search"}<span aria-hidden="true">→</span></button>
     </div>
     <div className="jobs-search-secondary">
       <details open={Boolean(search.area||search.commune)||undefined}>

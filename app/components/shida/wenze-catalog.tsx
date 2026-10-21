@@ -18,28 +18,30 @@ export async function WenzeCatalog({locale,raw}:{
   return <WenzeBuyerProvider locale={locale}><div className="wenze-public container wzp-discovery">
     <Link href={marketplacePath(locale,"/shida/wenze")}>← {fr?"Les boutiques":"Browse shops"}</Link>
     <h1>{fr?"Trouvez votre prochain coup de cœur":"Find your next favourite"}</h1>
-    <form className="marketplace-filters wzp-filters">
+    <form className="marketplace-filters wzp-filters mp-search">
       {search.store&&<input type="hidden" name="store" value={search.store}/>}
-      <div className="marketplace-filter-grid">
+      <div className="mp-search-primary">
         <label><span>{fr?"Rechercher un produit":"Search products"}</span><input name="query" type="search" defaultValue={search.query}/></label>
-        {select("category",fr?"Catégorie":"Category",categories)}
-        {select("condition",fr?"État":"Condition",{new:["New","Neuf"],like_new:["Like new","Comme neuf"],used:["Used","D’occasion"],other:["Other condition","Autre état"]})}
+        <label><span>{fr?"Ville":"City"}</span><input name="city" defaultValue={search.city}/></label>
+        <button className="button button-primary">{fr?"Rechercher":"Search"}</button>
       </div>
       <details>
         <summary>{fr?"Prix, disponibilité et options":"Price, availability and options"}</summary>
         <p>{fr?"Choisissez une devise pour filtrer les prix. Les options correspondent aux tailles ou configurations indiquées par le vendeur.":"Choose a currency to filter prices. Options match the sizes or configurations entered by the seller."}</p>
         <div className="marketplace-filter-grid">
+        {select("category",fr?"Catégorie":"Category",categories)}
+        {select("condition",fr?"État":"Condition",{new:["New","Neuf"],like_new:["Like new","Comme neuf"],used:["Used","D’occasion"],other:["Other condition","Autre état"]})}
+
           {select("currency",fr?"Devise":"Currency",{CDF:["CDF","CDF"],USD:["USD","USD"]})}
           <label><span>{fr?"Prix minimum":"Minimum price"}</span><input name="min_price" type="number" min="0" step="0.01" defaultValue={search.min_price}/></label>
           <label><span>{fr?"Prix maximum":"Maximum price"}</span><input name="max_price" type="number" min="0" step="0.01" defaultValue={search.max_price}/></label>
           {select("availability",fr?"Disponibilité":"Availability",{available:["Available to order","Disponible à commander"],in_stock:["Known stock available","Stock disponible confirmé"],sold_out:["Sold out","Épuisé"]})}
           {select("variant_type",fr?"Type d’option":"Option type",{size:["Size","Taille"],shoe_size:["Shoe size","Pointure"],storage:["Storage","Stockage"],volume:["Volume","Volume"],option:["Other option","Autre option"]})}
           <label><span>{fr?"Option recherchée":"Option to find"}</span><input name="variant_option" maxLength={80} placeholder="M, 42, 128 GB…" defaultValue={search.variant_option}/></label>
-          <label><span>{fr?"Ville":"City"}</span><input name="city" defaultValue={search.city}/></label>
           <label><span>{fr?"Quartier ou commune":"Area"}</span><input name="area" defaultValue={search.area}/></label>
         </div>
       </details>
-      <div className="wzp-discovery-actions"><button className="button button-primary">{fr?"Rechercher":"Search"}</button><Link href={root+(search.store?`?store=${encodeURIComponent(search.store)}`:"")}>{fr?"Effacer les filtres":"Clear filters"}</Link></div>
+      <div className="wzp-discovery-actions"><Link href={root+(search.store?`?store=${encodeURIComponent(search.store)}`:"")}>{fr?"Effacer les filtres":"Clear filters"}</Link></div>
     </form>
     {!data?<p role="alert">{fr?"Impossible de charger les produits. Vérifiez vos filtres : les prix nécessitent une devise et les options un type. Réessayez ensuite.":"Products could not be loaded. Check your filters: prices need a currency and options need a type. Then try again."}</p>:data.items.length?<div className="marketplace-grid wenze-product-grid">{data.items.map(p=><ProductCard key={p.public_ref} p={p} l={locale}/>)}</div>:<p>{fr?"Aucun produit ne correspond. Essayez d’élargir vos filtres.":"No matching products. Try broadening your filters."}</p>}
     <nav className="wzp-discovery-actions" aria-label={fr?"Pages de produits":"Product pages"}>

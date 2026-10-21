@@ -13,3 +13,9 @@ Approved reference: Services public/provider design and the 21 October 2026 publ
 Validation: production webpack build and TypeScript; targeted lint (no errors); browser checks at 320/390/820/1366 px for language/account menus, sharing, drafts and centered dialogs. Website also verifies WhatsApp code entry, expired/switched accounts and failed sign-out recovery. Synthetic data; no live transaction writes. Evidence: `docs/evidence/shared-chrome/`.
 
 Platform tracker: SHIDA_Platform_Master_Tracker.xlsx, Milestones UX-SHARED-01 through 03. Release SHA and deployment checks are recorded there after push.
+
+## UX-SHARED-02 — public marketplace surfaces
+
+Public SHIDA pages share the warm Services palette, compact query/city search strip, one header language selector, light footer and card treatment. Mobile navigation retains the cart link. Wenze product discovery keeps category, condition, price and variant filters in its advanced panel; store scope is preserved. Corporate pages and print styles remain separate.
+
+Validation: production webpack build/type checking and scoped ESLint pass. 24 browser journeys cover seven discovery routes plus six detail/entry destinations at 390, 820 and 1366 px, including filter submission, language changes and horizontal overflow. Evidence: `docs/evidence/shared-public/` (synthetic fixtures; employment/product search includes empty-state coverage). Four focused presentation suites pass 86 tests. The wider presentation run passes 113 and reports three pre-existing Wenze store markup assertions; both the assertions and WenzeStorePage are unchanged from the batch starting commit. No database or live inventory mutations.
