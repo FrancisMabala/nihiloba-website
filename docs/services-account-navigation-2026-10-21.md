@@ -70,8 +70,22 @@ Those assertions were corrected and the complete 38-check suite passed.
 
 The website production build was repeated successfully after integrating the
 current remote main (including the separate restaurant counter update).
-Render currently reports that automatic deployment is disabled after a specific
-commit deployment. This task preserves that setting: pushing the navigation to
-main does not itself make it live. The delivery report records the verified main
-commit and observed deployment status. No backend rollout or PDF activation
-accompanies this navigation update.
+The initial main push did not deploy automatically because Render automatic
+deployment was disabled. On the user's subsequent deployment request, commit
+`77aac28ea41b2a08ff05158661230c019ac7012c` was deployed explicitly through Render.
+Deployment `dep-dbcfs38ae00c73a52460` reported **Deploy succeeded | Live** on
+21 October 2026. Automatic deployment settings were preserved.
+
+Live browser acceptance on nihiloba.com covered desktop width 1440 and phone
+widths 390 and 320, with no horizontal page overflow. The hero action opens the
+French new-request form with `new=1`. The restored existing Personal session
+showed Mes demandes, Factures reçues and verified provider access in the menu;
+Mon espace contains the corresponding destinations. Requests and received-bill
+pages opened successfully. The new-request form displays that PDF uploads are
+not yet available and contains no file input. No request was saved, no upload
+was attempted, and no WhatsApp message was sent. These are browser viewport
+checks, not physical-device or fresh WhatsApp-login acceptance.
+
+Live hero screenshots are in `docs/evidence/services-account-navigation-live/`.
+No backend rollout, environment change or PDF activation accompanied this
+website deployment.
