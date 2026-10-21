@@ -49,7 +49,7 @@ export function validServiceQuery(path:string,method:string,q:URLSearchParams):b
 }
 export function validServiceBody(path:string,v:unknown):boolean {
  if(!obj(v))return false;
- if(path.includes('/payment-methods'))return exact(v,['expected_revision','label','kind','currencies','enabled'])&&Number.isSafeInteger(v.expected_revision)&&Number(v.expected_revision)>=0&&typeof v.label==='string'&&v.label.trim().length>0&&v.label.length<=80&&['cash','external_mobile_money'].includes(String(v.kind))&&Array.isArray(v.currencies)&&v.currencies.length>0&&v.currencies.every(c=>['CDF','USD'].includes(c))&&new Set(v.currencies).size===v.currencies.length&&typeof v.enabled==='boolean';
+ if(path.includes('/payment-methods'))return exact(v,['expected_revision','label','kind','currencies','enabled'])&&Number.isSafeInteger(v.expected_revision)&&Number(v.expected_revision)>=0&&typeof v.label==='string'&&v.label.trim().length>0&&v.label.length<=80&&['cash','external_mobile_money','external_card'].includes(String(v.kind))&&Array.isArray(v.currencies)&&v.currencies.length>0&&v.currencies.every(c=>['CDF','USD'].includes(c))&&new Set(v.currencies).size===v.currencies.length&&typeof v.enabled==='boolean';
  if(!key(v.operation_key))return false;
  if(path.includes('/money/')){
   const suffix=path.split('/').pop(),kind=suffix==='recover'?v.kind:({receipts:'receipt',reversals:'reversal',refunds:'refund','reconcile-excess':'reconciliation'} as Record<string,string>)[suffix??''];

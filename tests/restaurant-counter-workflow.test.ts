@@ -1,6 +1,6 @@
 import {describe,it,expect} from 'vitest';
 import {cashChange,cents,decimal} from '../app/lib/restaurant-counter-values';
-import {validOrderBody,orderRoutes} from '../app/lib/restaurant-orders-contract';
+import {validOrderBody,validOrderQuery,orderRoutes} from '../app/lib/restaurant-orders-contract';
 import {actionsFor,type Order} from '../app/lib/restaurant-work';
 describe('counter workflow',()=>{
  it('calculates change without losing cent precision',()=>{
@@ -35,4 +35,12 @@ it('requires an explicit bounded personal readiness attestation',()=>{
  expect(validOrderBody(path,{operation_key:'ready',expected_revision:1,confirm:false})).toBe(false);
  expect(validOrderBody(path,{operation_key:'ready',expected_revision:1,confirm:true,reason:'other'})).toBe(false);
  }
+});
+
+it('bounds unpaid counter pagination at the proxy',()=>{
+ const path='RST_one/counter-unpaid';
+ expect(orderRoutes.some(([p,m])=>p.test(path)&&m.includes('GET'))).toBe(true);
+ expect(validOrderQuery(path,'GET',new URLSearchParams('page=2'))).toBe(true);
+ expect(validOrderQuery(path,'GET',new URLSearchParams('page=0'))).toBe(false);
+ expect(validOrderQuery(path,'GET',new URLSearchParams('owner=other'))).toBe(false);
 });

@@ -55,6 +55,7 @@ const labels = {
   cashMovementWarning: ['Seulement un vrai ajout ou retrait de caisse. Une dépense payée en espèces compte déjà une fois.', 'Only a real cash addition or removal. A cash-paid expense already counts once.', 'Koma kaka mbongo oyo ebakisami to elongwe solo. Dépense ya kɛsi etangami déjà.', 'Rekodi kuongeza au kutoa taslimu halisi tu. Gharama ya taslimu tayari imehesabiwa.'],
   actually: ['Je confirme que l’argent est réellement revenu au restaurant.', 'I attest money actually returned to the restaurant.', 'Nandimi ete mbongo ezongi solo na restaurant.', 'Nathibitisha fedha zimerudi kweli kwa mgahawa.'],
   cash: ['Espèces', 'Cash', 'Mbongo ya maboko', 'Fedha taslimu'],
+  external_card: ['Carte', 'Card', 'Karte', 'Kadi'],
   external_mobile_money: ['Mobile money externe', 'External mobile money', 'Mobile money ya libanda', 'Pesa za simu za nje'],
   missing: ['Non attesté', 'Not attested', 'Endimami te', 'Haijathibitishwa'],
   close: ['Clôturer le jour', 'Close day', 'Kanga mokolo', 'Funga siku'],

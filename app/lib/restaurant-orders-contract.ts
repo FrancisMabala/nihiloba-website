@@ -9,6 +9,7 @@ export const deliveryExceptionReasons = [...pickupExceptionReasons, 'recipient_h
 const ref = '[A-Za-z0-9_-]{1,64}';
 export const orderRoutes: [RegExp, readonly string[]][] = [
   ...preparationRoutes,
+  [new RegExp(`^RST_${ref}/counter-unpaid$`), ['GET']],
   [new RegExp(`^RST_${ref}/pos$`), ['GET']],
   [new RegExp(`^RST_${ref}/pos/counter-baskets$`), ['GET','POST']],
   [new RegExp(`^RST_${ref}/pos/counter-baskets/${ref}$`), ['GET','PATCH']],
@@ -26,7 +27,7 @@ export const orderRoutes: [RegExp, readonly string[]][] = [
   [new RegExp(`^RST_${ref}/counter-baskets/${ref}$`), ['GET', 'PATCH']],
   [new RegExp(`^RST_${ref}/counter-baskets/${ref}/(quote|finalize|prepare)$`), ['POST']],
 ];
-export const isOrderPath = (path: string) => isPreparationPath(path) || /\/(orders|order-|counter-baskets|pickup-intake|delivery-intake|guest-auto-accept|menu-batches|kitchen|pos)/.test(path);
+export const isOrderPath = (path: string) => isPreparationPath(path) || /\/(orders|order-|counter-unpaid|counter-baskets|pickup-intake|delivery-intake|guest-auto-accept|menu-batches|kitchen|pos)/.test(path);
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const str = (v: unknown, n = 200): v is string => typeof v === 'string' && !!v.trim() && v.length <= n;
 const exact = (v: Record<string, unknown>, keys: string[]) => Object.keys(v).every(k => keys.includes(k));
@@ -38,7 +39,7 @@ export function validOrderQuery(path: string, method: string, q: URLSearchParams
   if (isPreparationPath(path)) return validPreparationQuery(path,method,q);
   const kitchen = path.includes('/kitchen/');
   const orders = method === 'GET' && /\/orders$/.test(path), feed = /\/(?:order-feed|kitchen\/feed)$/.test(path), summary = /\/order-summary$/.test(path);
-  const allowed = ['language', ...(orders || summary ? ['page','page_size'] : []), ...(orders ? kitchen ? ['completed'] : ['states','as_of'] : []), ...(feed ? kitchen ? ['cursor','limit'] : ['cursor','states','limit'] : []), ...(summary ? ['from_date','to_date','start_offset','end_offset'] : [])];
+  const allowed = ['language', ...(method==='GET'&&path.endsWith('/counter-unpaid')?['page']:[]), ...(orders || summary ? ['page','page_size'] : []), ...(orders ? kitchen ? ['completed'] : ['states','as_of'] : []), ...(feed ? kitchen ? ['cursor','limit'] : ['cursor','states','limit'] : []), ...(summary ? ['from_date','to_date','start_offset','end_offset'] : [])];
   for (const [key,value] of q) {
     if (!allowed.includes(key) || (key !== 'states' && q.getAll(key).length !== 1)) return false;
     if (key === 'language' && !enumOf(value,['en','fr','ln','sw'])) return false;
