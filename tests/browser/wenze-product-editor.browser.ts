@@ -17,12 +17,23 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,820,1
   if(path.endsWith('/contexts'))return reply({contexts:[{type:'organization',public_ref:'BUS_fixture',name:'Marché du Fleuve',role:'owner',restricted:false,onboarding_status:'complete',operational_state:'operational'}]});
   if(path.endsWith('/stores'))return reply({stores:[shop],categories:taxonomy.filter(row=>!row.parent),product_categories:taxonomy,currencies:['CDF','USD']});
   if(path.endsWith('/WNZ_fixture'))return reply(shop);
-  if(path.endsWith('/products'))return reply({products:[product],total:1});
+  if(path.endsWith('/drafts'))return reply({draft_ref:'WDR_fixture',revision:1});
+  if(path.endsWith('/uploads'))return reply({upload_ref:'WCU_fixture'});
+  if(path.endsWith('/products')){
+   if(req.method()==='POST'){
+    const data=req.postDataJSON();expect(data.upload_refs).toEqual(['WCU_fixture']);
+    expect(data.name).toBe('New product');expect(data.price).toBe('12000');
+    if(data.mode==='detailed'){expect(data.variant_type).toBe('option');expect(data.variants).toEqual([{label:'Rouge / M',stock_quantity:3},{label:'Noir / L',stock_quantity:4}]);}
+    else expect(data.mode).toBe('quick');
+    return reply(product);
+   }
+   return reply({products:[product],total:1});
+  }
   if(path.endsWith('/WNP_fixture')){if(req.method()==='PATCH'){const data=req.postDataJSON();expect(data.expected_revision).toBe(product.revision);Object.assign(product,data.fields);product.revision++;}return reply(product);}
   if(path.endsWith('/preview'))return reply({...product,public_detail_url:'https://nihiloba.com/shida/wenze/products/WNP_fixture'});
   if(path.endsWith('/preflight'))return reply({operation_ref:'WOP_fixture',revision:product.revision});
   if(path.endsWith('/operations/confirm')){const data=req.postDataJSON();expect(data.expected_revision).toBe(product.revision);product.variant_type=data.fields.variant_type;product.variants=data.fields.allocations.map((v:{label:string,available_quantity:number},i:number)=>({public_ref:'WNV_'+i,label:v.label,available_stock:v.available_quantity,committed_quantity:0,is_available:'yes'}));product.revision++;return reply({product_ref:product.public_ref});}
-  if(path.endsWith('/variants')){const data=req.postDataJSON();expect(data.expected_revision).toBe(product.revision);if(data.action==='rename')expect(data.label).toBe('60 ml');if(data.action==='rename')product.variants.find(v=>v.public_ref===data.variant_ref)!.label=data.label;product.revision++;return reply(product);}
+  if(path.endsWith('/variants')){const data=req.postDataJSON();expect(data.expected_revision).toBe(product.revision);if(data.action==='rename')expect(data.label).toBe('Rouge / M');if(data.action==='rename')product.variants.find(v=>v.public_ref===data.variant_ref)!.label=data.label;product.revision++;return reply(product);}
 
   if(path.endsWith('/plan'))return reply({plan:'pro',source:'personal_pilot',active_products:1,active_product_limit:1000});
   if(path.endsWith('/today'))return reply({date:'2026-10-21',timezone:'Africa/Kinshasa',followers:24,new_followers:2,orders_today:4,reviews:{count:8,average:4.8},financial_access:true,currency_summaries:[{currency:'CDF',revenue:'45000',quantity:3,known_profit:'15000',profit_complete:true,expenses:'2000'}],sold_items:[{product_ref:product.public_ref,variant_ref:null,label:product.name,currency:'CDF',quantity:3,revenue:'45000',image_url:null}]});
@@ -47,40 +58,60 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,820,1
  await page.getByText('24',{exact:true}).waitFor();
  const nav=page.locator(width<761?'.wz-mobile-navigation':'.seller-navigation');
  await nav.getByRole('button',{name:wenzeUX(locale,'productsStock'),exact:true}).click();
+ await expect(page.getByRole('button',{name:e.quick,exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:e.detailed,exact:true})).toBeVisible();
+ for(const kind of ['quick','detailed'] as const){
+  await page.getByRole('button',{name:e[kind],exact:true}).click();
+  const form=page.locator('.wz-editor');
+  await form.getByLabel(w.name,{exact:true}).fill('New product');
+  await form.getByLabel(w.price,{exact:true}).fill('12000');
+  if(kind==='quick')await expect(page.getByRole('combobox',{name:e.choiceType,exact:true})).toHaveCount(0);
+  else {
+   await page.getByRole('combobox',{name:e.choiceType,exact:true}).selectOption('option');
+   for(const [label,quantity] of [['Rouge / M','3'],['Noir / L','4']]){
+    await page.getByRole('button',{name:e.addChoice,exact:true}).click();
+    const row=form.locator('fieldset .wz-inline').last();
+    await row.getByRole('textbox').fill(label);await row.getByRole('spinbutton').fill(quantity);
+   }
+  }
+  await form.locator('input[type=file]').setInputFiles({name:'product.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j7ZkAAAAASUVORK5CYII=','base64')});
+  await expect(form.getByRole('button',{name:w.save,exact:true})).toBeEnabled();
+  await form.getByRole('button',{name:w.save,exact:true}).click();
+  await expect(form).toHaveCount(0);
+  await page.locator('.wz-product-heading').getByRole('button',{name:w.back,exact:true}).click();
+ }
  await page.getByRole('button',{name:w.manage,exact:true}).click();
  const header=page.locator('.wz-product-heading');await expect(header.getByRole('heading',{name:product.name})).toBeVisible();
  await expect(page.getByRole('button',{name:e.addChoices,exact:true})).toBeVisible();
  await page.getByRole("combobox",{name:e.category,exact:true}).selectOption('beauty_cosmetics');
  await page.getByRole("combobox",{name:e.type,exact:true}).selectOption('beauty_cosmetics:perfume');
- await page.locator('.wz-editor').getByRole('button',{name:w.save,exact:true}).click();
- await expect(page.getByRole("combobox",{name:e.type,exact:true})).toHaveValue('beauty_cosmetics:perfume');
+ await expect(page.getByRole('button',{name:e.saveContinue,exact:true})).toBeEnabled();
+ await page.getByRole('button',{name:e.saveContinue,exact:true}).click();
+ await expect(page.getByRole('combobox',{name:e.choiceType,exact:true})).toHaveValue('volume');
  expect(product.category).toBe('beauty_cosmetics:perfume');expect(shop.category).toBe('fashion_clothing');
- await header.getByRole('button',{name:w.photos,exact:true}).click();
- await expect(header.getByRole('button',{name:e.share,exact:true})).toBeVisible();
- await header.getByRole('button',{name:wenzeUX(locale,'details'),exact:true}).click();
- await page.getByRole('button',{name:e.addChoices,exact:true}).click();
- await expect(page.getByRole("combobox",{name:e.choiceType,exact:true})).toHaveValue('volume');
+ await page.getByRole('combobox',{name:e.choiceType,exact:true}).selectOption('option');
  const rows=page.locator('.wz-editor fieldset .wz-inline');
- await rows.nth(0).getByRole('textbox').fill('50 ml');await rows.nth(0).getByRole('spinbutton').fill('3');
- await rows.nth(1).getByRole('textbox').fill('100 ml');await rows.nth(1).getByRole('spinbutton').fill('4');
+ await rows.nth(0).getByRole('textbox').fill('Rouge');await rows.nth(0).getByRole('spinbutton').fill('3');
+ await rows.nth(1).getByRole('textbox').fill('Noir');await rows.nth(1).getByRole('spinbutton').fill('4');
  await page.locator('.wz-save-bar').getByRole('button').first().click();
- await expect(page.locator(".wz-product-choices").getByLabel(e.choice,{exact:true}).first()).toHaveValue('50 ml');
+ expect(product.variant_type).toBe('option');
+ await expect(page.locator(".wz-product-choices").getByLabel(e.choice,{exact:true}).first()).toHaveValue('Rouge');
  await expect(page.locator(".wz-product-choices").getByLabel(e.choice,{exact:true}).first()).toBeEnabled();
- await page.locator(".wz-product-choices").getByLabel(e.choice,{exact:true}).first().fill('60 ml');
- await expect(page.locator(".wz-product-choices").getByLabel(e.choice,{exact:true}).first()).toHaveValue('60 ml');
+ await page.locator(".wz-product-choices").getByLabel(e.choice,{exact:true}).first().fill('Rouge / M');
+ await expect(page.locator(".wz-product-choices").getByLabel(e.choice,{exact:true}).first()).toHaveValue('Rouge / M');
  await page.locator('.wz-product-choices form').first().getByRole('button',{name:w.save,exact:true}).click();
- await expect(page.locator(".wz-product-choices").getByLabel(e.choice,{exact:true}).first()).toHaveValue('60 ml');
+ await expect(page.locator(".wz-product-choices").getByLabel(e.choice,{exact:true}).first()).toHaveValue('Rouge / M');
  await header.getByRole('button',{name:wenzeUX(locale,'details'),exact:true}).click();
  await expect(page.getByRole("combobox",{name:e.type,exact:true})).toHaveValue('beauty_cosmetics:perfume');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/wenze-product-editor/${locale}-${width}-details.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/wenze-product-entry/${locale}-${width}-details.png`,fullPage:true});
  await header.getByRole('button',{name:e.share,exact:true}).click();
  const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
  await expect(dialog.locator('input')).toHaveValue('https://nihiloba.com/shida/wenze/products/WNP_fixture');
  await expect(dialog.getByRole('link',{name:e.view})).toHaveAttribute('href','https://nihiloba.com/shida/wenze/products/WNP_fixture');
  await expect(dialog.locator('canvas')).toBeVisible();
  const box=await dialog.boundingBox();expect(Math.abs(box!.x+box!.width/2-width/2)).toBeLessThan(3);
- await page.screenshot({path:`docs/evidence/wenze-product-editor/${locale}-${width}-share.png`,fullPage:false});
+ await page.screenshot({path:`docs/evidence/wenze-product-entry/${locale}-${width}-share.png`,fullPage:false});
  await dialog.getByRole('button',{name:e.close}).click();
  expect(errors).toEqual([]);
 });

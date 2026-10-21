@@ -6,7 +6,7 @@ const hints = {
     shoes_accessories: "For shoes, include the size system (for example EU), fit and material. Add photos of the sides and soles. Use shoe-size options if needed.",
     phones_electronics: "State the condition, brand, model and storage or configuration. Describe any defects and included accessories. Add photos of the actual item.",
     other: "Describe what the buyer will receive, its condition and useful measurements. Add clear photos of the actual item.",
-    stock: "Choose one way to organise stock, such as size or storage. Put colour, material and other details in the description.",
+    stock: "Use custom choices for colours or combinations such as Red / M. Each choice has its own stock.",
   },
   fr: {
     title: "Aidez les clients à choisir",
@@ -14,7 +14,7 @@ const hints = {
     shoes_accessories: "Pour les chaussures, précisez le système de pointure (par exemple EU), la coupe et la matière. Ajoutez des photos des côtés et des semelles. Utilisez les options de pointure si nécessaire.",
     phones_electronics: "Indiquez l’état, la marque, le modèle et le stockage ou la configuration. Décrivez les défauts et les accessoires inclus. Ajoutez des photos de l’article réel.",
     other: "Décrivez ce que le client recevra, l’état et les dimensions utiles. Ajoutez des photos nettes de l’article réel.",
-    stock: "Choisissez une façon de répartir le stock, par taille ou stockage par exemple. Indiquez la couleur, la matière et les autres détails dans la description.",
+    stock: "Utilisez les choix personnalisés pour les couleurs ou les combinaisons comme Rouge / M. Chaque choix a son propre stock.",
   },
   ln: {
     title: "Salisa basombi bápona",
@@ -22,7 +22,7 @@ const hints = {
     shoes_accessories: "Mpo na sapato, lakisá pointure mpe système na yango (lokola EU), ndenge efandi mpe eloko esalemi na yango. Bakisá bafɔtɔ ya mipanzi mpe ya nse.",
     phones_electronics: "Lakisá état, marque, modèle mpe mémoire to configuration. Limbolá mabeba mpe accessoires oyo ezali na kati. Bakisá bafɔtɔ ya eloko yango.",
     other: "Limbolá eloko mosombi akozwa, état na yango mpe bonene ya ntina. Bakisá bafɔtɔ ya polele ya eloko yango.",
-    stock: "Poná lolenge moko ya kokabola stock, lokola taille to mémoire. Tyá langi mpe makambo mosusu na ndimbola.",
+    stock: "Salela baponi na yo mpo na langi to lokola Motane / M. Liponi moko na moko ezali na stock na yango.",
   },
   sw: {
     title: "Wasaidie wanunuzi kuchagua",
@@ -30,7 +30,7 @@ const hints = {
     shoes_accessories: "Kwa viatu, eleza mfumo wa ukubwa (kwa mfano EU), namna vinavyokaa na vifaa vilivyotumika. Ongeza picha za pembeni na nyayo. Tumia chaguo za ukubwa wa viatu inapohitajika.",
     phones_electronics: "Eleza hali, chapa, modeli na hifadhi au usanidi. Eleza kasoro na vifaa vinavyojumuishwa. Ongeza picha za bidhaa yenyewe.",
     other: "Eleza atakachopokea mnunuzi, hali yake na vipimo muhimu. Ongeza picha wazi za bidhaa yenyewe.",
-    stock: "Chagua njia moja ya kupanga hesabu, kama ukubwa au hifadhi. Weka rangi, kitambaa na maelezo mengine katika maelezo ya bidhaa.",
+    stock: "Tumia chaguo maalum kwa rangi au mchanganyiko kama Nyekundu / M. Kila chaguo lina hesabu yake.",
   },
 };
 export function categoryVariantOptions(category: string) {
@@ -40,7 +40,7 @@ export function categoryVariantOptions(category: string) {
   return first[category] ? [first[category], ...all.filter(value => value !== first[category])] : all;
 }
 export function variantExample(kind: string) {
-  return ({size:"S, M, L",shoe_size:"EU 38, EU 39, EU 40",storage:"128 GB, 256 GB",volume:"250 ml, 500 ml"} as Record<string,string>)[kind] ?? "";
+  return ({size:"S, M, L",shoe_size:"EU 38, EU 39, EU 40",storage:"128 GB, 256 GB",volume:"250 ml, 500 ml",option:"Red / M, Blue / L"} as Record<string,string>)[kind] ?? "";
 }
 export function WenzeCategoryGuidance({category,locale,stock=false}:{category:string;locale:Locale;stock?:boolean}) {
   category=category.split(":")[0];
