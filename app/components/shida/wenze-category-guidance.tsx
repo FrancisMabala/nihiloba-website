@@ -34,6 +34,7 @@ const hints = {
   },
 };
 export function categoryVariantOptions(category: string) {
+  category=category.split(":")[0];
   const all = ["size", "shoe_size", "storage", "volume", "option"];
   const first: Record<string, string> = {fashion_clothing:"size", shoes_accessories:"shoe_size", phones_electronics:"storage", beauty_cosmetics:"volume", food_drinks:"volume"};
   return first[category] ? [first[category], ...all.filter(value => value !== first[category])] : all;
@@ -42,6 +43,7 @@ export function variantExample(kind: string) {
   return ({size:"S, M, L",shoe_size:"EU 38, EU 39, EU 40",storage:"128 GB, 256 GB",volume:"250 ml, 500 ml"} as Record<string,string>)[kind] ?? "";
 }
 export function WenzeCategoryGuidance({category,locale,stock=false}:{category:string;locale:Locale;stock?:boolean}) {
+  category=category.split(":")[0];
   const copy=hints[locale];
   const key=category in copy && ["fashion_clothing","shoes_accessories","phones_electronics"].includes(category) ? category as "fashion_clothing"|"shoes_accessories"|"phones_electronics" : "other";
   return <aside style={{gridColumn:"1 / -1",background:"#f0f2e8",padding:"1rem",borderRadius:8}} aria-label={copy.title}>

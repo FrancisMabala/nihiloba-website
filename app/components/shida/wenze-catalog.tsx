@@ -1,3 +1,4 @@
+import productCategories from "../../lib/wenze-product-categories.json";
 import Link from "next/link";
 import type { Locale } from "../../lib/i18n";
 import { parseWenzeDiscovery, wenzeDiscoveryQuery } from "../../lib/wenze-discovery";
@@ -6,15 +7,7 @@ import { marketplacePath } from "./marketplace";
 import { ProductCard } from "./wenze";
 import { WenzeBuyerProvider } from "./wenze-buyer";
 
-const categories = {
-  fashion_clothing:["Clothing","Vêtements"],shoes_accessories:["Shoes & accessories","Chaussures et accessoires"],
-  phones_electronics:["Electronics","Électronique"],beauty_cosmetics:["Beauty","Beauté"],
-  food_drinks:["Food & drinks","Alimentation"],home_equipment:["Home equipment","Équipement maison"],
-  furniture_decor:["Furniture & decor","Meubles et décoration"],hardware_diy:["Hardware & DIY","Bricolage"],
-  auto_moto_parts:["Auto & motorbike parts","Pièces auto et moto"],baby_children:["Baby & children","Bébé et enfants"],
-  books_school_office:["Books & office","Livres et bureau"],sports_leisure:["Sports & leisure","Sport et loisirs"],
-  health_hygiene:["Health & hygiene","Santé et hygiène"],other:["Other","Autre"],
-};
+const categories=Object.fromEntries(productCategories.map(row=>[row.code,[row.labels.en,row.labels.fr]]));
 export async function WenzeCatalog({locale,raw}:{
   locale:Locale;raw:Record<string,string|string[]|undefined>;
 }) {

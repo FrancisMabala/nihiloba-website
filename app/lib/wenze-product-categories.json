@@ -1,0 +1,482 @@
+[
+  {
+    "code": "fashion_clothing",
+    "parent": null,
+    "labels": {
+      "fr": "Mode & vêtements",
+      "en": "Fashion & clothing",
+      "ln": "Bilamba & mode",
+      "sw": "Nguo & fashion"
+    }
+  },
+  {
+    "code": "shoes_accessories",
+    "parent": null,
+    "labels": {
+      "fr": "Chaussures & accessoires",
+      "en": "Shoes & accessories",
+      "ln": "Sapato & accessoires",
+      "sw": "Viatu & accessories"
+    }
+  },
+  {
+    "code": "phones_electronics",
+    "parent": null,
+    "labels": {
+      "fr": "Téléphones & électronique",
+      "en": "Phones & electronics",
+      "ln": "Téléphones & électronique",
+      "sw": "Simu & electronics"
+    }
+  },
+  {
+    "code": "beauty_cosmetics",
+    "parent": null,
+    "labels": {
+      "fr": "Beauté & cosmétiques",
+      "en": "Beauty & cosmetics",
+      "ln": "Beauté & cosmétiques",
+      "sw": "Beauty & cosmetics"
+    }
+  },
+  {
+    "code": "food_drinks",
+    "parent": null,
+    "labels": {
+      "fr": "Alimentation & boissons",
+      "en": "Food & drinks",
+      "ln": "Biloko ya kolia & boissons",
+      "sw": "Chakula & vinywaji"
+    }
+  },
+  {
+    "code": "home_equipment",
+    "parent": null,
+    "labels": {
+      "fr": "Maison & équipement",
+      "en": "Home & equipment",
+      "ln": "Ndako & équipement",
+      "sw": "Nyumbani & vifaa"
+    }
+  },
+  {
+    "code": "furniture_decor",
+    "parent": null,
+    "labels": {
+      "fr": "Meubles & décoration",
+      "en": "Furniture & decor",
+      "ln": "Meubles & décoration",
+      "sw": "Furniture & decor"
+    }
+  },
+  {
+    "code": "hardware_diy",
+    "parent": null,
+    "labels": {
+      "fr": "Quincaillerie & bricolage",
+      "en": "Hardware & DIY",
+      "ln": "Quincaillerie & bricolage",
+      "sw": "Hardware & DIY"
+    }
+  },
+  {
+    "code": "auto_moto_parts",
+    "parent": null,
+    "labels": {
+      "fr": "Pièces auto & moto",
+      "en": "Auto & motorbike parts",
+      "ln": "Pièces auto & moto",
+      "sw": "Vipuri vya gari & pikipiki"
+    }
+  },
+  {
+    "code": "baby_children",
+    "parent": null,
+    "labels": {
+      "fr": "Bébé & enfants",
+      "en": "Baby & children",
+      "ln": "Bébé & bana",
+      "sw": "Watoto & baby"
+    }
+  },
+  {
+    "code": "books_school_office",
+    "parent": null,
+    "labels": {
+      "fr": "Livres, école & bureau",
+      "en": "Books, school & office",
+      "ln": "Mikanda, école & bureau",
+      "sw": "Vitabu, shule & ofisi"
+    }
+  },
+  {
+    "code": "sports_leisure",
+    "parent": null,
+    "labels": {
+      "fr": "Sport & loisirs",
+      "en": "Sports & leisure",
+      "ln": "Sport & loisirs",
+      "sw": "Michezo & leisure"
+    }
+  },
+  {
+    "code": "health_hygiene",
+    "parent": null,
+    "labels": {
+      "fr": "Santé & hygiène",
+      "en": "Health & hygiene",
+      "ln": "Santé & hygiène",
+      "sw": "Afya & hygiene"
+    }
+  },
+  {
+    "code": "other",
+    "parent": null,
+    "labels": {
+      "fr": "Autre",
+      "en": "Other",
+      "ln": "Mosusu",
+      "sw": "Nyingine"
+    }
+  },
+  {
+    "code": "fashion_clothing:tshirts",
+    "parent": "fashion_clothing",
+    "labels": {
+      "en": "T-shirts",
+      "fr": "T-shirts",
+      "ln": "T-shirts",
+      "sw": "T-shirt"
+    }
+  },
+  {
+    "code": "fashion_clothing:shirts",
+    "parent": "fashion_clothing",
+    "labels": {
+      "en": "Shirts",
+      "fr": "Chemises",
+      "ln": "Bashɛmizi",
+      "sw": "Mashati"
+    }
+  },
+  {
+    "code": "fashion_clothing:skirts",
+    "parent": "fashion_clothing",
+    "labels": {
+      "en": "Skirts",
+      "fr": "Jupes",
+      "ln": "Bajipe",
+      "sw": "Sketi"
+    }
+  },
+  {
+    "code": "fashion_clothing:dresses",
+    "parent": "fashion_clothing",
+    "labels": {
+      "en": "Dresses",
+      "fr": "Robes",
+      "ln": "Barobe",
+      "sw": "Magauni"
+    }
+  },
+  {
+    "code": "fashion_clothing:trousers",
+    "parent": "fashion_clothing",
+    "labels": {
+      "en": "Trousers",
+      "fr": "Pantalons",
+      "ln": "Bapantalɔ",
+      "sw": "Suruali"
+    }
+  },
+  {
+    "code": "shoes_accessories:shoes",
+    "parent": "shoes_accessories",
+    "labels": {
+      "en": "Shoes",
+      "fr": "Chaussures",
+      "ln": "Sapato",
+      "sw": "Viatu"
+    }
+  },
+  {
+    "code": "shoes_accessories:bags",
+    "parent": "shoes_accessories",
+    "labels": {
+      "en": "Bags",
+      "fr": "Sacs",
+      "ln": "Basaki",
+      "sw": "Mifuko"
+    }
+  },
+  {
+    "code": "shoes_accessories:jewellery",
+    "parent": "shoes_accessories",
+    "labels": {
+      "en": "Jewellery",
+      "fr": "Bijoux",
+      "ln": "Bijoux",
+      "sw": "Vito"
+    }
+  },
+  {
+    "code": "shoes_accessories:accessories",
+    "parent": "shoes_accessories",
+    "labels": {
+      "en": "Accessories",
+      "fr": "Accessoires",
+      "ln": "Biloko ya kolata",
+      "sw": "Vifaa vya mavazi"
+    }
+  },
+  {
+    "code": "beauty_cosmetics:perfume",
+    "parent": "beauty_cosmetics",
+    "labels": {
+      "en": "Perfume",
+      "fr": "Parfums",
+      "ln": "Malasi",
+      "sw": "Manukato"
+    }
+  },
+  {
+    "code": "beauty_cosmetics:haircare",
+    "parent": "beauty_cosmetics",
+    "labels": {
+      "en": "Hair care",
+      "fr": "Soins des cheveux",
+      "ln": "Bobateli ya nsuki",
+      "sw": "Utunzaji wa nywele"
+    }
+  },
+  {
+    "code": "beauty_cosmetics:skincare",
+    "parent": "beauty_cosmetics",
+    "labels": {
+      "en": "Skin care",
+      "fr": "Soins de la peau",
+      "ln": "Bobateli ya loposo",
+      "sw": "Utunzaji wa ngozi"
+    }
+  },
+  {
+    "code": "beauty_cosmetics:makeup",
+    "parent": "beauty_cosmetics",
+    "labels": {
+      "en": "Makeup",
+      "fr": "Maquillage",
+      "ln": "Maquillage",
+      "sw": "Vipodozi"
+    }
+  },
+  {
+    "code": "phones_electronics:phones",
+    "parent": "phones_electronics",
+    "labels": {
+      "en": "Phones",
+      "fr": "Téléphones",
+      "ln": "Batelefone",
+      "sw": "Simu"
+    }
+  },
+  {
+    "code": "phones_electronics:tablets",
+    "parent": "phones_electronics",
+    "labels": {
+      "en": "Tablets",
+      "fr": "Tablettes",
+      "ln": "Batableti",
+      "sw": "Kompyuta kibao"
+    }
+  },
+  {
+    "code": "phones_electronics:computers",
+    "parent": "phones_electronics",
+    "labels": {
+      "en": "Computers",
+      "fr": "Ordinateurs",
+      "ln": "Baordinatɛrɛ",
+      "sw": "Kompyuta"
+    }
+  },
+  {
+    "code": "phones_electronics:audio",
+    "parent": "phones_electronics",
+    "labels": {
+      "en": "Audio equipment",
+      "fr": "Équipement audio",
+      "ln": "Bisaleli ya mongongo",
+      "sw": "Vifaa vya sauti"
+    }
+  },
+  {
+    "code": "phones_electronics:accessories",
+    "parent": "phones_electronics",
+    "labels": {
+      "en": "Electronic accessories",
+      "fr": "Accessoires électroniques",
+      "ln": "Bisaleli ya elektroniki",
+      "sw": "Vifaa vya elektroniki"
+    }
+  },
+  {
+    "code": "food_drinks:groceries",
+    "parent": "food_drinks",
+    "labels": {
+      "en": "Groceries",
+      "fr": "Épicerie",
+      "ln": "Biloko ya kolia",
+      "sw": "Vyakula"
+    }
+  },
+  {
+    "code": "food_drinks:drinks",
+    "parent": "food_drinks",
+    "labels": {
+      "en": "Drinks",
+      "fr": "Boissons",
+      "ln": "Masanga",
+      "sw": "Vinywaji"
+    }
+  },
+  {
+    "code": "home_equipment:kitchen",
+    "parent": "home_equipment",
+    "labels": {
+      "en": "Kitchenware",
+      "fr": "Ustensiles de cuisine",
+      "ln": "Bisaleli ya kuku",
+      "sw": "Vyombo vya jikoni"
+    }
+  },
+  {
+    "code": "home_equipment:appliances",
+    "parent": "home_equipment",
+    "labels": {
+      "en": "Appliances",
+      "fr": "Électroménager",
+      "ln": "Bamashini ya ndako",
+      "sw": "Vifaa vya nyumbani"
+    }
+  },
+  {
+    "code": "furniture_decor:furniture",
+    "parent": "furniture_decor",
+    "labels": {
+      "en": "Furniture",
+      "fr": "Meubles",
+      "ln": "Bameble",
+      "sw": "Samani"
+    }
+  },
+  {
+    "code": "furniture_decor:decor",
+    "parent": "furniture_decor",
+    "labels": {
+      "en": "Decoration",
+      "fr": "Décoration",
+      "ln": "Kitoko ya ndako",
+      "sw": "Mapambo"
+    }
+  },
+  {
+    "code": "hardware_diy:tools",
+    "parent": "hardware_diy",
+    "labels": {
+      "en": "Tools",
+      "fr": "Outils",
+      "ln": "Bisaleli",
+      "sw": "Zana"
+    }
+  },
+  {
+    "code": "hardware_diy:materials",
+    "parent": "hardware_diy",
+    "labels": {
+      "en": "Building materials",
+      "fr": "Matériaux de construction",
+      "ln": "Biloko ya kotonga",
+      "sw": "Vifaa vya ujenzi"
+    }
+  },
+  {
+    "code": "auto_moto_parts:parts",
+    "parent": "auto_moto_parts",
+    "labels": {
+      "en": "Spare parts",
+      "fr": "Pièces détachées",
+      "ln": "Bapiese",
+      "sw": "Vipuri"
+    }
+  },
+  {
+    "code": "auto_moto_parts:accessories",
+    "parent": "auto_moto_parts",
+    "labels": {
+      "en": "Vehicle accessories",
+      "fr": "Accessoires auto et moto",
+      "ln": "Biloko ya mituka",
+      "sw": "Vifaa vya magari"
+    }
+  },
+  {
+    "code": "baby_children:toys",
+    "parent": "baby_children",
+    "labels": {
+      "en": "Toys",
+      "fr": "Jouets",
+      "ln": "Biloko ya kosakana",
+      "sw": "Vichezeo"
+    }
+  },
+  {
+    "code": "baby_children:babycare",
+    "parent": "baby_children",
+    "labels": {
+      "en": "Baby care",
+      "fr": "Soins du bébé",
+      "ln": "Bobateli ya bebe",
+      "sw": "Utunzaji wa mtoto"
+    }
+  },
+  {
+    "code": "books_school_office:books",
+    "parent": "books_school_office",
+    "labels": {
+      "en": "Books",
+      "fr": "Livres",
+      "ln": "Mikanda",
+      "sw": "Vitabu"
+    }
+  },
+  {
+    "code": "books_school_office:stationery",
+    "parent": "books_school_office",
+    "labels": {
+      "en": "Stationery",
+      "fr": "Papeterie",
+      "ln": "Biloko ya kokoma",
+      "sw": "Vifaa vya kuandikia"
+    }
+  },
+  {
+    "code": "sports_leisure:equipment",
+    "parent": "sports_leisure",
+    "labels": {
+      "en": "Sports equipment",
+      "fr": "Matériel de sport",
+      "ln": "Bisaleli ya sport",
+      "sw": "Vifaa vya michezo"
+    }
+  },
+  {
+    "code": "health_hygiene:hygiene",
+    "parent": "health_hygiene",
+    "labels": {
+      "en": "Personal hygiene",
+      "fr": "Hygiène personnelle",
+      "ln": "Bopɛto ya nzoto",
+      "sw": "Usafi wa mwili"
+    }
+  }
+]

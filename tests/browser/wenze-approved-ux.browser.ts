@@ -1,3 +1,4 @@
+import editorCopy from '../../app/lib/wenze-editor-copy.json' with {type:'json'};
 import {test,expect} from '@playwright/test';
 import {wenzeUX} from '../../app/lib/wenze-ux-copy';
 import {sellerText} from '../../app/lib/wenze-seller-copy';
@@ -53,7 +54,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
  const nav=page.locator('.wz-mobile-navigation');
  await nav.getByRole('button',{name:u('productsStock'),exact:true}).click();
  await page.getByRole('button',{name:w.manage,exact:true}).click();
- await expect(page.getByRole('button',{name:u('options'),exact:true}).last()).toBeVisible();
+ await expect(page.getByRole('button',{name:editorCopy[locale].stock,exact:true}).last()).toBeVisible();
  await page.getByRole('button',{name:u('details'),exact:true}).click();
  const name=page.getByLabel(w.name,{exact:true});await expect(name).toHaveValue(product.name);
  await name.fill('Changed draft');await nav.getByRole('button',{name:t('orders'),exact:true}).click();

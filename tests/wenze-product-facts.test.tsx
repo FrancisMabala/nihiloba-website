@@ -15,8 +15,11 @@ const variant = (label: string, stock = 1) => ({public_ref:label,label,variant_t
   stock_quantity:stock,available_stock:stock,is_available:stock>0,buy_url:null});
 describe("category product facts", () => {
   it("keeps older products neutral and hides unknown condition codes", () => {
-    expect(renderToStaticMarkup(<WenzeProductFacts product={product()} locale="en"/>)).toBe("");
-    expect(renderToStaticMarkup(<WenzeProductFacts product={product({condition:"internal"})} locale="fr"/>)).toBe("");
+    expect(renderToStaticMarkup(<WenzeProductFacts product={product()} locale="en"/>)).not.toContain("Condition");
+    expect(renderToStaticMarkup(<WenzeProductFacts product={product({condition:"internal"})} locale="fr"/>)).not.toContain("internal");
+  });
+  it("shows independent product types", () => {
+    expect(renderToStaticMarkup(<WenzeProductFacts product={product({category:"beauty_cosmetics:perfume"})} locale="en"/>)).toContain("Perfume");
   });
   it("shows supplied available sizes, excluding sold-out options, with a compact limit", () => {
     const html = renderToStaticMarkup(<WenzeProductFacts locale="en" compact product={product({

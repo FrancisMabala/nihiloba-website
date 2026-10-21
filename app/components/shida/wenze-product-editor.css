@@ -1,0 +1,40 @@
+/* Product editing uses the same compact hierarchy in Personal and Business. */
+.wz-personal .wz .wz-product-heading h2{margin:0;font-size:clamp(1.4rem,2.4vw,2rem)}
+.wz-personal .wz .wz-product-heading{padding:20px;margin-bottom:12px}
+.wz-personal .wz .wz-product-heading .wz-section-tabs{margin:16px 0 0}
+.wz-personal .wz .wz-compact-shop{padding:10px 16px;margin-bottom:12px;background:transparent;border:0}
+.wz-personal .wz .wz-compact-shop .wz-photo-fallback,.wz-personal .wz .wz-compact-shop img,.wz-personal .wz .wz-compact-shop button,.wz-personal .wz .wz-compact-shop .wz-status{display:none}
+.wz-personal .wz .wz-compact-shop h2{font:inherit;margin:0;color:#52675c}
+.wz-personal .wz .wz-editor{padding:24px}
+.wz-personal .wz .wz-category-help{grid-column:1/-1;margin:0;font-size:.9rem;color:#52675c}
+.wz-personal .wz .wz-product-choices fieldset{border:0;padding:0;margin:0;min-width:0}
+.wz-personal .wz .wz-product-choices legend{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.wz-personal .wz .wz-product-choices form{margin:16px 0}
+.wz-personal .wz .wz-more-actions{position:relative}
+.wz-personal .wz .wz-more-actions summary{cursor:pointer;padding:12px;min-height:44px;border:1px solid #d8ddcf;border-radius:8px}
+.wz-personal .wz .wz-more-actions[open]{padding:8px;background:#f7f6ef;border-radius:8px}
+.wz-personal .wz .wz-more-actions button{margin:4px}
+.wz-personal .wz .wz-save-bar>span:empty{display:none}
+.wz-personal .wz .wz-save-bar button[type=submit],.wz-personal .wz .wz-save-bar button:not([type]){background:#184b3b;color:white}
+.wz-personal .wz .wz-share-dialog{position:fixed;inset:0;margin:auto;width:min(440px,calc(100vw - 32px));max-height:85dvh;overflow:auto}
+.wz-personal .wz .wz-share-dialog canvas{display:block;margin:16px auto;max-width:100%}
+.wz-personal .wz .wz-share-dialog input{width:100%;min-width:0}
+.wz-personal .wz .wz-share-dialog a{display:inline-flex;align-items:center;min-height:44px;padding:10px;text-decoration:underline;color:#184b3b}
+@media(min-width:761px) and (max-width:1023px){
+ .wz-personal .seller-layout{grid-template-columns:1fr}
+ .wz-personal .seller-sidebar{position:static;padding:10px}
+ .wz-personal .seller-identity{display:none}
+ .seller-design .wz-personal .seller-sidebar .seller-navigation{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+ .seller-design .wz-personal .seller-sidebar .seller-navigation button{text-align:center;justify-content:center}
+ .wz-personal .wz .wz-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ .wz-editing-product .seller-heading{display:none}
+ .wz-editing-product .seller-content>.wz-section-tabs{display:none}
+ .wz-personal .wz .wz-product-heading{padding:14px}
+ .wz-personal .wz .wz-product-heading .wz-actions{gap:8px}
+ .wz-personal .wz .wz-editor{padding:16px}
+ .wz-personal .wz .wz-save-bar{position:sticky;bottom:calc(72px + env(safe-area-inset-bottom));z-index:20;background:#fffdf7;padding:12px 0;box-shadow:0 -4px 12px #123b3010}
+ .wz-personal .wz .wz-save-bar>span{flex-basis:100%;font-size:.85rem}
+ .wz-personal .wz .wz-product-choices .wz-inline{gap:10px}
+}
