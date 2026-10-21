@@ -8,8 +8,9 @@ The approved phone and desktop provider mockup is implemented locally. See
 ## Current hold — 21 October 2026
 
 The user explicitly blocked release and customer PDF uploads while approving
-local scanner preparation. No push/deployment is authorized until that hold is
-lifted. The request editor shows EN/FR/LN/SW text-only guidance and no file picker
+local scanner preparation. The later delivery request permits a development-branch
+push to `codex/services-provider-workday-held-20261021`; pushing to `main` and
+deployment remain blocked. The request editor shows EN/FR/LN/SW text-only guidance and no file picker
 unless the current backend brief response explicitly enables PDF intake. Missing
 capability also means disabled. If an older open page attempts an upload after
 the backend disables it, the editor removes the picker and retains the saved

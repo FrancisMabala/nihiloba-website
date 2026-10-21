@@ -4,7 +4,7 @@ import {servicesProviderOffering} from "./fixtures/services-provider";
 import {workdayCopy} from "../../app/lib/services-workday-copy";
 import {providerCopy} from "../../app/lib/services-provider-copy";
 import {scheduleCopy} from "../../app/lib/services-calendar-copy";
-for(const [locale,width] of [["en",1440],["fr",390],["ln",820],["sw",320]] as const)test(`Workday mobile tools and direct sharing ${locale} ${width}`,async({page})=>{
+for(const [locale,width] of [["en",1440],["en",390],["fr",390],["ln",820],["sw",320]] as const)test(`Workday mobile tools and direct sharing ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:950});
  const row={...servicesProviderOffering,name:"Studio Kin",service_name:"Studio Kin · Haircut",category:"beauty_wellness"};
  const empty={items:[],has_more:false},url=`https://nihiloba.com/${locale==="en"?"":`${locale}/`}shida/services/SVC_one#booking`,qr=await QRCode.toDataURL(url);

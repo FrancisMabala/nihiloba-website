@@ -7,6 +7,15 @@ and customer PDF uploads remain blocked.** This batch does not push to main,
 deploy, change production configuration or activate uploads. Existing authorized
 document history and text requests are unaffected.
 
+## Held branch delivery — 21 October 2026
+
+The follow-up request authorizes pushing the approved Services history and
+documents to `codex/services-provider-workday-held-20261021`. This is a development
+branch, not a release approval. Keep `main`, production settings and PDF intake
+unchanged. The delivery message records the remotely verified commit.
+The implementation screenshots use synthetic data and are previews of the tested
+application, not claims of a live deployment.
+
 ## What changed
 
 - Services keeps the SHIDA cream, forest-green and serif visual language. Today,
@@ -40,14 +49,15 @@ actions use the existing unsaved-work guard.
 
 - 72 Services unit tests passed.
 - Production build (including TypeScript) and scoped ESLint passed.
-- All 35 focused browser cases passed across the production-build run and the
+- All 36 focused browser cases passed across the production-build run and the
   final 16-case navigation/sharing rerun. Coverage includes calendar hours,
   uncertain saves, access revocation, saved drafts, setup, exact task handoffs,
   Today recovery and sharing in EN/FR/LN/SW at phone/tablet/desktop widths.
+  The follow-up adds a passing English 390px phone case and its two captures.
   Initial runs caught legacy mobile rules hiding labels and clipping the More
   menu. Both styles were corrected. The selected-item assertion now inspects
   the outer navigation because the phone menu closes after choosing a page.
-- Reviewed desktop Today and narrow-phone sharing screenshots. Eight synthetic
+- Reviewed desktop Today and narrow-phone sharing screenshots. Ten synthetic
   fixture captures are saved under `docs/evidence/workday/`; no real customer
   information is included. Horizontal-overflow checks passed down to 320px.
 - Backend companion checks: 48 passed, covering Today, exact Organization and
