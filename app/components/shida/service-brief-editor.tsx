@@ -116,8 +116,11 @@ function BriefEditor({binding, locale, reference, direct, directRef, branchChoic
       if (error instanceof ServiceRequestError && [401, 403, 404].includes(error.status)) deny();
       else if (error instanceof ServiceRequestError && error.status >= 400 && error.status < 500 && error.status !== 408) {
         setPending(null);
+        if (operation.kind === "document" && error.detail === "service_brief_pdf_uploads_disabled") {
+          setBrief(current => current ? {...current, pdf_uploads_enabled: false} : current); setFile(null);
+        }
         if (error.status === 409) {setConflict(true); setMessage(t.stale);}
-        else setMessage(error.status === 429 ? t.busy : error.status === 413 ? t.pdfHelp : t.invalid);
+        else setMessage(operation.kind === "document" && error.detail === "service_brief_pdf_uploads_disabled" ? t.pdfDisabled : error.status === 429 ? t.busy : error.status === 413 ? t.pdfHelp : t.invalid);
       } else setMessage(t.uncertain);
     } finally {lock.current = false; if (alive.current) setBusy(false);}
   }
@@ -210,8 +213,9 @@ function BriefEditor({binding, locale, reference, direct, directRef, branchChoic
             <button type="submit" className="button button-primary">{busy ? t.working : t.save}</button>
           </fieldset>
         </form>
-        <section className="svc-brief-card" aria-label={t.pdf}><h2>{t.pdf}</h2><p>{t.pdfHelp}</p><p>{t.retention}</p>
-          {!brief || dirty ? <p>{t.save}</p> : <fieldset disabled={disabled}>
+        <section className="svc-brief-card" aria-label={t.pdf}><h2>{t.pdf}</h2>
+          {brief?.pdf_uploads_enabled === true ? <><p>{t.pdfHelp}</p><p>{t.retention}</p></> : <p>{t.pdfDisabled}</p>}
+          {brief?.pdf_uploads_enabled !== true ? null : dirty ? <p>{t.save}</p> : <fieldset disabled={disabled}>
             <label>{t.pdf}<input type="file" accept="application/pdf,.pdf" onChange={event => {setFile(event.target.files?.[0] ?? null); setMessage("");}}/></label>
             <button type="button" disabled={!file || file.size > 10 * 1024 * 1024} onClick={() => file && void run({
               path: `briefs/${brief.brief_ref}/document-upload`, body: file, kind: "document",

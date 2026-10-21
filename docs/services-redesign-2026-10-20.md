@@ -1,5 +1,29 @@
 # Services redesign — Personal task navigation
 
+## Current hold — 21 October 2026
+
+The user explicitly blocked release and customer PDF uploads while approving
+local scanner preparation. No push/deployment is authorized until that hold is
+lifted. The request editor shows EN/FR/LN/SW text-only guidance and no file picker
+unless the current backend brief response explicitly enables PDF intake. Missing
+capability also means disabled. If an older open page attempts an upload after
+the backend disables it, the editor removes the picker and retains the saved
+request. The backend rejects disabled intake independently of this UI.
+
+Customers can still write, save, review and send/publish text requests. Existing
+authorized document history, previews, downloads and removal remain available.
+No website environment variable can override the backend gate. Scanner hosting,
+certificate provisioning and activation remain future approved operations; see
+the backend `docs/services_redesign_release.md` and `deploy/service-pdf-scanner`.
+
+Validation: six production-browser journeys passed (EN/FR/LN/SW text save,
+review, publish and retry; existing private document history; enabled-page
+recovery when intake is disabled). The initial new case needed an accessible
+textbox selector for prefilled content; the complete rerun passed. Webpack
+production build, TypeScript, scoped ESLint and diff checks passed. Backend
+evidence records 66 passing focused checks and the outstanding broader-suite
+failures. No production configuration, runtime dependency or schema changed.
+
 Batch R01a prioritizes requests/jobs, calendar, services and money. Reports,
 reusable quote/bill templates and bill appearance remain available through
 “More tools”. Existing section URLs, capability checks and draft retention

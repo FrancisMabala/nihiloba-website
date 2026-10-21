@@ -4,6 +4,7 @@ export type BriefContent = {
   preferred_end_time?: string; budget_amount?: string; budget_currency?: "CDF" | "USD"; direct_offering_ref?: string;
 };
 export type CustomerBrief = {
+  pdf_uploads_enabled?: boolean;
   brief_ref: string; revision: number; status: "DRAFT" | "REVIEWED" | "PUBLISHED" | "CLOSED" | "EXPIRED";
   content: BriefContent; summary: BriefContent; summary_digest: string; edited_at: string; expires_at: string;
   request_ref?: string; posted_ref?: string;
