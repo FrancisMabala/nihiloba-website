@@ -1,6 +1,7 @@
 import {wenzeCopy,type WenzeLocale,type WenzeKey} from './wenze-copy';
 // Order: English, French, Lingala, Swahili.
 const labels:Record<string,string[]>={
+ historicalReturn: ["This sale was recorded before sizes or colours were added. Returning it needs a choice of size or colour; this return is not supported yet. No stock changed.", "Cette vente date d’avant l’ajout des tailles ou couleurs. Le retour nécessite de choisir une taille ou couleur ; ce retour n’est pas encore pris en charge. Le stock est inchangé.", "Vente oyo esalemaki liboso ya kobakisa taille to couleur. Retour esengi kopona taille to couleur; retour oyo ezali naino te. Stock ebongwani te.", "Mauzo haya yalirekodiwa kabla ya kuongeza saizi au rangi. Kurudisha kunahitaji kuchagua saizi au rangi; bado hakutumiki. Stock haijabadilika."],
  checkingSeller:['Checking your Wenze seller access…','Vérification de votre accès vendeur Wenze…','Tozali kotala accès na yo ya moteki Wenze…','Tunakagua ufikiaji wako wa muuzaji Wenze…'],
  sellerCheckFailed:['We could not verify your Wenze shops. Please try again.','Impossible de vérifier vos boutiques Wenze. Réessayez.','Tokoki kotala baboutique na yo ya Wenze te. Meka lisusu.','Hatukuweza kukagua maduka yako ya Wenze. Jaribu tena.'],
  setupTitle:['Start selling on Wenze','Commencez à vendre sur Wenze','Banda koteka na Wenze','Anza kuuza kwenye Wenze'],

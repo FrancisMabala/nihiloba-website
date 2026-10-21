@@ -38,3 +38,5 @@
  .wz-personal .wz .wz-save-bar>span{flex-basis:100%;font-size:.85rem}
  .wz-personal .wz .wz-product-choices .wz-inline{gap:10px}
 }
+
+.wz-choice-editor{grid-column:1/-1;min-width:0}.wz-choice-types,.wz-choice-chips{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0}.wz-choice-types label{display:flex;align-items:center;gap:.5rem}.wz-choice-types input{width:auto}.wz-choice-chips button[aria-pressed=true]{background:#1b473a;color:#fff;border-color:#1b473a}.wz-choice-dimension{padding:1rem 0;border-bottom:1px solid #ddd}.wz-choice-row{margin:1rem 0}.wz-choice-balance{padding:1rem;background:#edf2e7}.wz-choice-editor button{min-height:44px}@media(max-width:600px){.wz-choice-row{display:grid;grid-template-columns:1fr}.wz-choice-editor .wz-inline{flex-wrap:wrap}.wz-choice-editor input{max-width:100%}}
