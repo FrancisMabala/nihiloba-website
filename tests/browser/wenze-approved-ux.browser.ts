@@ -43,6 +43,8 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
  await page.setViewportSize({width:1440,height:1000});await page.goto(url);
  await expect(page.getByText('24',{exact:true})).toBeVisible();
  const evidence=`docs/evidence/wenze-approved-ux/${locale}`;
+ await expect(page.locator('.wz-mobile-navigation')).toBeHidden();
+ await expect(page.locator('.seller-navigation button').nth(1)).toHaveCSS('color','rgb(224, 233, 228)');
  if(locale==='en')await page.screenshot({path:`${evidence}-today-desktop.png`,fullPage:true});
  await page.setViewportSize({width:390,height:844});
  await expect(page.locator('.wz-mobile-navigation')).toBeVisible();
