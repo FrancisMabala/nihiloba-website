@@ -16,6 +16,7 @@ import './public-account.css';
 export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCopy}) {
   const t=publicAccountCopy[locale],title=useId(),pathname=usePathname();
   const a=marketplaceAccountCopy[locale],prefix=locale==="en"?"":`/${locale}`,spaceHref=`${prefix}/shida/space`;
+  const sellerMarket=pathname.match(/\/shida\/(wenze|restaurants)(?:\/|$)/)?.[1];
   const [open,setOpen]=useState(false),[session,setSession]=useState<PersonalSession|null>(null);
   const [checking,setChecking]=useState(true),[failed,setFailed]=useState(false);
   const [pending,setPending]=useState(false),[logoutFailed,setLogoutFailed]=useState(false);
@@ -70,7 +71,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
 
   return <div className="shida-public-account" lang={locale}>
     <MarketplaceControls key={session?.binding||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref} guestLabel={t.signIn}
-      links={[{label:a.space,href:spaceHref},{label:services.requests,href:`${prefix}/shida/service-requests`},{label:services.bills,href:`${prefix}/shida/service-bills`},{label:a.inbox,href:`${spaceHref}?view=inbox`},{label:a.activity,href:spaceHref+"#activity"},...(providerAccess!=="unavailable"?[{label:providerAccess==="provider"?services.provider:services.offer,href:`${prefix}/shida/seller/services`}]:[])]}
+      links={[{label:a.space,href:spaceHref},...(sellerMarket?[{label:a.seller,href:`${prefix}/shida/seller/${sellerMarket}`}]:[]),{label:services.requests,href:`${prefix}/shida/service-requests`},{label:services.bills,href:`${prefix}/shida/service-bills`},{label:a.inbox,href:`${spaceHref}?view=inbox`},{label:a.activity,href:spaceHref+"#activity"},...(providerAccess!=="unavailable"?[{label:providerAccess==="provider"?services.provider:services.offer,href:`${prefix}/shida/seller/services`}]:[])]}
       languages={/\/shida\/(restaurants|services|seller|space|service-requests|service-bills)(?:\/|$)/.test(pathname)?["fr","en","ln","sw"]:["fr","en"]}
       onLanguage={(lang:MarketplaceLocale)=>{if(leaveWork())window.location.assign(marketplaceLanguagePath(pathname,lang)+window.location.search);}}
       onLogin={()=>setOpen(true)} onAccount={()=>{setOpen(true);void logout(true);}} onLogout={()=>{setOpen(true);void logout();}} pending={pending} beforeNavigate={leaveWork}/>

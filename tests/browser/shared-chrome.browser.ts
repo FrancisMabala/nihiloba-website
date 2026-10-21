@@ -10,7 +10,13 @@ for(const width of [320,390,820,1366])test(`shared account and language ${width}
  await page.goto('/fr/shida/space');
  const account=page.getByRole('button',{name:'Mon compte SHIDA · Francis Mabala'}),language=page.getByRole('button',{name:'Langue',exact:true});
  await expect(account).toHaveText('FM');
+ await expect(page.locator('.market-controls > .market-space')).toHaveCount(0);
+ await expect(language).toHaveCSS('background-color','rgb(8, 45, 37)');
+ await expect(page.getByRole('link',{name:'Accueil NIHILOBA'})).toHaveAttribute('href',/^\/fr\/?$/);
  await account.click();const menu=page.locator('.market-menu');await expect(menu.getByRole('link',{name:'Boîte de réception'})).toHaveAttribute('href','/fr/shida/space?view=inbox');
+ await expect(menu.getByRole('link',{name:'Mon espace',exact:true})).toHaveCount(1);
+ await menu.getByRole('link',{name:'Mon espace',exact:true}).hover();await expect(menu.getByRole('link',{name:'Mon espace',exact:true})).toHaveCSS('background-color','rgb(8, 45, 37)');
+ await expect(menu).not.toContainText('↗');
  await language.click();await expect(account).toHaveAttribute('aria-expanded','false');await expect(menu).toHaveCount(1);
  await page.keyboard.press('Escape');await expect(language).toBeFocused();await expect(menu).toHaveCount(0);
  await account.click();await page.getByRole('heading',{level:1}).click();await expect(menu).toHaveCount(0);
@@ -19,5 +25,13 @@ for(const width of [320,390,820,1366])test(`shared account and language ${width}
  await expect(account).toBeVisible();await language.click();await page.getByRole('button',{name:'English',exact:true}).click();await expect(page.getByRole('heading',{level:1})).toHaveText('Inbox');expect(new URL(page.url()).searchParams.get('view')).toBe('inbox');
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`docs/evidence/shared-workspaces/public-account-${width}.png`,fullPage:true});
+ await page.goto('/fr/shida/wenze');await page.getByRole('button',{name:'Mon compte SHIDA · Francis Mabala'}).click();
+ await expect(page.locator('.market-menu').getByRole('link',{name:'Mon espace vendeur',exact:true})).toHaveAttribute('href','/fr/shida/seller/wenze');
+ await expect(page.getByRole('link',{name:'Espace vendeur',exact:true})).toHaveCount(0);
+ await page.keyboard.press('Tab');await page.keyboard.press('Tab');
+ await expect(page.locator('.market-menu').getByRole('link',{name:'Mon espace vendeur',exact:true})).toBeFocused();
+ await expect(page.locator('.market-menu').getByRole('link',{name:'Mon espace vendeur',exact:true})).toHaveCSS('background-color','rgb(8, 45, 37)');
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`docs/evidence/header-navigation/account-${width}.png`,fullPage:true});
  expect(writes).toBe(0);expect(errors).toEqual([]);
 });

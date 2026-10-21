@@ -39,7 +39,7 @@ for(const [locale,width] of [['fr',390],['en',1440],['ln',320],['sw',820]] as co
   await expect(menu.getByRole('link',{name:t.bills,exact:true})).toHaveAttribute('href',`${prefix}/shida/service-bills`);
   await expect(menu.getByRole('link',{name:t.offer,exact:true})).toBeVisible();await expect(menu.getByRole('link',{name:t.provider,exact:true})).toHaveCount(0);
   await page.keyboard.press('Escape');await expect(account).toBeFocused();
-  await page.locator('.market-space').click();await expect(page.locator('#activity').getByRole('link',{name:t.bills})).toBeVisible();
+  await account.click();await menu.getByRole('link',{name:a.space,exact:true}).click();await expect(page.locator('#activity').getByRole('link',{name:t.bills})).toBeVisible();
   await expect(page.locator('.account-space').getByRole('link',{name:t.offer,exact:true})).toBeVisible();
   state.profiles=[{public_ref:'SVC_owned'}];await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
   await expect(page.locator('.account-space').getByRole('link',{name:t.provider,exact:true})).toBeVisible();

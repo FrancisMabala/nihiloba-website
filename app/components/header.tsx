@@ -9,6 +9,7 @@ import { BrandLogo } from "./brand-logo";
 import { CartIcon } from "./icons";
 import { useCart } from "./shida/cart-provider";
 import { wenzeCartCopy, wenzeCartPath } from "./shida/wenze-cart-copy";
+import {marketplaceAccountCopy} from "./shida/marketplace-account-copy";
 import { PublicShidaAccount } from "./shida/public-account";
 
 const links = [
@@ -67,7 +68,7 @@ export function Header({ locale }: { locale: Locale }) {
   if(shida){
     const prefix=locale==="en"?"":"/fr";
     const markets=[["Wenze","wenze"],["Restaurants","restaurants"],["Services","services"],[locale==="en"?"Jobs":"Emploi","emplois"],[locale==="en"?"Homes":"Logements","appartements"],[locale==="en"?"Hotels":"Hôtels","hotels"]];
-    return <header className="market-header"><div className="market-header-inner"><Link className="market-brand" href={`${prefix}/shida`}>SHIDA</Link><nav className="market-primary-nav" aria-label={locale==="en"?"Marketplaces":"Marchés"}>{markets.map(([label,path])=><Link key={path} href={`${prefix}/shida/${path}`} aria-current={suffix.startsWith(`/shida/${path}`)?"page":undefined}>{label}</Link>)}<Link className="market-cart" href={wenzeCartPath(locale)}>{wenzeCartCopy[locale].cart} · {cart?.item_count??0}</Link></nav><PublicShidaAccount key={`${pathname}:${accountLocale}`} locale={accountLocale}/></div></header>;
+    return <header className="market-header"><div className="market-header-inner"><div className="market-brand-group"><Link className="market-home" href={localizedPath(locale)} aria-label={marketplaceAccountCopy[locale].home}>NIHILOBA</Link><Link className="market-brand" href={`${prefix}/shida`}>SHIDA</Link></div><nav className="market-primary-nav" aria-label={locale==="en"?"Marketplaces":"Marchés"}>{markets.map(([label,path])=><Link key={path} href={`${prefix}/shida/${path}`} aria-current={suffix.startsWith(`/shida/${path}`)?"page":undefined}>{label}</Link>)}<Link className="market-cart" href={wenzeCartPath(locale)}>{wenzeCartCopy[locale].cart} · {cart?.item_count??0}</Link></nav><PublicShidaAccount key={`${pathname}:${accountLocale}`} locale={accountLocale}/></div></header>;
   }
 
   return (
