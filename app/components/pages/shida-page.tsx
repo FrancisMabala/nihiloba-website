@@ -36,7 +36,7 @@ export function ShidaPage({ locale }: { locale: Locale }) {
 
     <div className="container shida-stories" id="stories">
       <div className="shida-stories-intro"><p className="shida-story-label">{t.storiesLabel}</p><p>{t.scenarios}</p></div>
-      <nav className="shida-story-nav" aria-label={t.explore}>{stories.map(({ id, Icon }, i) => <a href={`#${id}`} key={id}><Icon />{t.stories[i].label}</a>)}</nav>
+      <nav className="shida-story-nav" aria-label={t.explore}>{stories.map(({ id, Icon }, i) => <a href={`#${id}`} key={id}><Icon />{t.stories[i].label}</a>)}<a href="#school"><BookIcon />{t.schoolLink}</a></nav>
       {stories.map(({ id, image, route }, i) => {
         const s = t.stories[i];
         return <section className={`shida-story shida-story-${id} ${i % 2 ? "shida-story-reverse" : ""}`} id={id} key={id} aria-labelledby={`${id}-title`}>
@@ -52,6 +52,8 @@ export function ShidaPage({ locale }: { locale: Locale }) {
         </section>;
       })}
     </div>
+
+    <section className="shida-school-callout" id="school" aria-labelledby="shida-school-title"><div className="container shida-school-callout-grid"><div><p className="shida-story-label">SHIDA ÉCOLE</p><h2 id="shida-school-title">{t.schoolTitle}</h2><p>{t.schoolBody}</p></div><ButtonLink href={localizedPath(locale, "/shida/ecole")} variant="secondary">{t.schoolAction}</ButtonLink></div></section>
 
     <section className="shida-story-connect" aria-labelledby="shida-connect-title"><div className="container shida-connect-grid">
       <div><p className="shida-story-label">{t.connectsLabel}</p><h2 id="shida-connect-title">{t.connectsTitle}</h2><p>{t.connectsBody}</p></div>

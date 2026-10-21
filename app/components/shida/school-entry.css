@@ -1,0 +1,24 @@
+.school-entry { background: var(--ivory); color: var(--forest); padding: 32px 0 64px; }
+.school-entry-breadcrumb { display: flex; align-items: center; gap: 10px; font-size: .78rem; margin-bottom: 24px; }
+.school-entry-breadcrumb a { min-height: 44px; display: inline-flex; align-items: center; text-underline-offset: 4px; }
+.school-entry-hero { padding: clamp(28px, 5vw, 68px); border-radius: 16px; background: #e9eddf; }
+.school-entry-label { margin: 0 0 12px; font-size: .7rem; font-weight: 700; letter-spacing: .1em; }
+.school-entry h1, .school-entry h2, .school-entry h3 { color: var(--forest); font-family: Georgia, "Times New Roman", serif; font-weight: 400; line-height: 1.12; }
+.school-entry h1 { max-width: 800px; margin: 0 0 18px; font-size: clamp(2.4rem, 5vw, 4.4rem); letter-spacing: -.04em; }
+.school-entry h2 { margin: 0 0 12px; font-size: clamp(1.5rem, 3vw, 2.3rem); letter-spacing: -.025em; }
+.school-entry h3 { font-size: 1.3rem; margin: 0 0 12px; }
+.school-entry p { line-height: 1.65; }
+.school-entry-intro { max-width: 720px; margin: 0; font-size: clamp(.95rem, 1.5vw, 1.12rem); }
+.school-entry-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.school-entry-actions .button, .school-entry-management .button { min-height: 44px; }
+.school-entry-status { margin: 24px 0 42px; padding: 26px 32px; background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--forest); border-radius: 12px; }
+.school-entry-status p { margin: 0; }
+.school-entry-preparation { margin-bottom: 42px; }
+.school-entry-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.school-entry-cards article { padding: 25px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.school-entry-cards p { margin: 0; color: var(--muted); font-size: .9rem; }
+.school-entry-management { padding: 28px 32px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+.school-entry-management p { max-width: 760px; margin: 0 0 18px; }
+.school-entry-note { font-size: .8rem; color: var(--muted); margin: 22px 0 0; }
+.school-entry a:focus-visible { outline: 2px solid var(--forest); outline-offset: 4px; }
+@media (max-width: 760px) { .school-entry { padding: 18px 0 48px; } .school-entry-cards { grid-template-columns: 1fr; } .school-entry-status, .school-entry-management { padding: 22px; } }

@@ -9,7 +9,7 @@ const legalRoutes = [
   "/shida/privacy", "/shida/privacy/1.0", "/fr/shida/confidentialite", "/fr/shida/confidentialite/1.0",
   "/shida/business/terms", "/shida/business/terms/1.0", "/fr/shida/business/conditions", "/fr/shida/business/conditions/1.0",
 ];
-const routes = ["/shida/transport", "/fr/shida/transport", "/shida/business", "/fr/shida/business", ...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/shida/emplois", "/fr/shida/emplois", "/shida/appartements", "/fr/shida/appartements", "/shida/hotels", "/fr/shida/hotels", "/shida/services", "/fr/shida/services", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance", ...legalRoutes];
+const routes = ["/shida/transport", "/fr/shida/transport", "/shida/business", "/fr/shida/business", "/shida/ecole", "/fr/shida/ecole", "/ln/shida/ecole", "/sw/shida/ecole", ...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/shida/emplois", "/fr/shida/emplois", "/shida/appartements", "/fr/shida/appartements", "/shida/hotels", "/fr/shida/hotels", "/shida/services", "/fr/shida/services", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance", ...legalRoutes];
 
 const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
   "/shida/terms": { en: "/shida/terms", fr: "/fr/shida/conditions" },
@@ -111,11 +111,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: route.includes("/shida/") ? "daily" : route.endsWith("/shida") ? "monthly" : "yearly",
       priority: route.includes("/shida/") ? 0.8 : route.endsWith("/shida") ? 0.9 : route === "/en" || route === "/fr" ? 1 : 0.7,
       alternates: {
-        languages: route.endsWith("/shida/restaurants") ? {
-          en: "https://nihiloba.com/shida/restaurants",
-          fr: "https://nihiloba.com/fr/shida/restaurants",
-          ln: "https://nihiloba.com/ln/shida/restaurants",
-          sw: "https://nihiloba.com/sw/shida/restaurants",
+        languages: route.endsWith("/shida/restaurants") || route.endsWith("/shida/ecole") ? {
+          en: `https://nihiloba.com/shida/${route.endsWith('/shida/ecole') ? 'ecole' : 'restaurants'}`,
+          fr: `https://nihiloba.com/fr/shida/${route.endsWith('/shida/ecole') ? 'ecole' : 'restaurants'}`,
+          ln: `https://nihiloba.com/ln/shida/${route.endsWith('/shida/ecole') ? 'ecole' : 'restaurants'}`,
+          sw: `https://nihiloba.com/sw/shida/${route.endsWith('/shida/ecole') ? 'ecole' : 'restaurants'}`,
         } : {
           en: `https://nihiloba.com${pair.en}`,
           fr: `https://nihiloba.com${pair.fr}`,
