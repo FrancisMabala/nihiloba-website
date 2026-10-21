@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:['wenze-mobile-chrome.browser.ts','shared-chrome.browser.ts'],workers:1,timeout:60000,use:{baseURL:'http://127.0.0.1:3043',channel:'chrome',headless:true,hasTouch:true},webServer:{command:'npx next start -p 3043',url:'http://127.0.0.1:3043',reuseExistingServer:false},reporter:'list'});

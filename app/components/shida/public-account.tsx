@@ -1,5 +1,8 @@
 "use client";
 
+import {MarketplaceControls,marketplaceAccountCopy,type MarketplaceLocale} from "./marketplace-controls";
+import {usePathname} from "next/navigation";
+import {marketplaceLanguagePath} from "../../lib/marketplace-navigation";
 import {useCallback,useEffect,useId,useRef,useState} from 'react';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {PERSONAL_SESSION_EVENT,PersonalSessionError,restorePersonalSession,type PersonalSession} from '../../lib/personal-session-browser';
@@ -9,7 +12,8 @@ import {leaveWork} from '../../lib/restaurant-work';
 import './public-account.css';
 
 export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCopy}) {
-  const t=publicAccountCopy[locale],title=useId();
+  const t=publicAccountCopy[locale],title=useId(),pathname=usePathname();
+  const a=marketplaceAccountCopy[locale],prefix=locale==="en"?"":`/${locale}`,spaceHref=`${prefix}/shida/space`;
   const [open,setOpen]=useState(false),[session,setSession]=useState<PersonalSession|null>(null);
   const [checking,setChecking]=useState(true),[failed,setFailed]=useState(false);
   const [pending,setPending]=useState(false),[logoutFailed,setLogoutFailed]=useState(false);
@@ -62,10 +66,11 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
   }
 
   return <div className="shida-public-account" lang={locale}>
-    <button className="shida-account-trigger" type="button" aria-label={session?t.accountLabel:t.signInLabel} aria-haspopup="dialog" onClick={()=>setOpen(true)}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 21v-2a7.5 7.5 0 0 1 15 0v2"/></svg>
-      <span>{session?t.account:t.signIn}</span>
-    </button>
+    <MarketplaceControls key={session?.user.display_name||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref}
+      links={[{label:a.space,href:spaceHref},{label:a.inbox,href:`${spaceHref}?view=inbox`},{label:a.activity,href:spaceHref+"#activity"}]}
+      languages={/\/shida\/(restaurants|services|seller|space|service-requests)(?:\/|$)/.test(pathname)?["fr","en","ln","sw"]:["fr","en"]}
+      onLanguage={(lang:MarketplaceLocale)=>{if(leaveWork())window.location.assign(marketplaceLanguagePath(pathname,lang)+window.location.search);}}
+      onLogin={()=>setOpen(true)} onAccount={()=>{setOpen(true);void logout(true);}} onLogout={()=>{setOpen(true);void logout();}} pending={pending} beforeNavigate={leaveWork}/>
     <dialog className="shida-account-dialog" ref={dialog} aria-labelledby={title} onClose={()=>setOpen(false)}>
       {open&&<div className="shida-account-content">
         <div className="shida-account-heading"><span>SHIDA</span><button type="button" aria-label={t.close} onClick={()=>dialog.current?.close()}>×</button></div>

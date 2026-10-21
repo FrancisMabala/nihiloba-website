@@ -64,6 +64,12 @@ export function Header({ locale }: { locale: Locale }) {
         ? suffix
         : `/${otherLocale}${suffix}`;
 
+  if(shida){
+    const prefix=locale==="en"?"":"/fr";
+    const markets=[["Wenze","wenze"],["Restaurants","restaurants"],["Services","services"],[locale==="en"?"Jobs":"Emploi","emplois"],[locale==="en"?"Homes":"Logements","appartements"],[locale==="en"?"Hotels":"Hôtels","hotels"]];
+    return <header className="market-header"><div className="market-header-inner"><Link className="market-brand" href={`${prefix}/shida`}>SHIDA</Link><nav className="market-primary-nav" aria-label={locale==="en"?"Marketplaces":"Marchés"}>{markets.map(([label,path])=><Link key={path} href={`${prefix}/shida/${path}`} aria-current={suffix.startsWith(`/shida/${path}`)?"page":undefined}>{label}</Link>)}</nav><Link className="market-cart" href={wenzeCartPath(locale)}>{wenzeCartCopy[locale].cart} · {cart?.item_count??0}</Link><PublicShidaAccount key={`${pathname}:${accountLocale}`} locale={accountLocale}/></div></header>;
+  }
+
   return (
     <header className={shida ? "site-header shida-header" : "site-header"} lang={locale}>
       <div className="container nav-shell">

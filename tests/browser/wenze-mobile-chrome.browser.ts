@@ -43,8 +43,8 @@ for(const width of [320,390,820,1366])test(`mobile chrome and dialogs ${width}`,
 
  await page.setViewportSize({width,height:900});await page.goto(url);
  await expect(page.getByText('24',{exact:true})).toBeVisible();
- const account=page.getByRole('button',{name:'Compte · Demo seller'}),language=page.getByRole('button',{name:'Langue de l’espace vendeur',exact:true});
- const panel=page.locator('.wz-header-panel'),heading=page.getByRole('heading',{level:1});
+ const account=page.getByRole('button',{name:'Mon compte SHIDA · Demo seller'}),language=page.getByRole('button',{name:'Langue',exact:true});
+ const panel=page.locator('.market-menu'),heading=page.getByRole('heading',{level:1});
  const tap=async(locator:import('@playwright/test').Locator)=>{if(width<760)await locator.tap();else await locator.click();};
  await tap(account);await expect(account).toHaveAttribute('aria-expanded','true');await expect(panel).toHaveCount(1);
  await tap(account);await expect(panel).toHaveCount(0);
@@ -56,21 +56,21 @@ for(const width of [320,390,820,1366])test(`mobile chrome and dialogs ${width}`,
  await tap(language);await page.getByRole('button',{name:'Français',exact:true}).click();await expect(panel).toHaveCount(0);
  await expect(heading).toBeVisible();expect(new URL(page.url()).searchParams.get('store')).toBe('WNZ_fixture');
  if(business)expect(new URL(page.url()).searchParams.get('context')).toBe('BUS_fixture');
- await expect(account).toBeVisible();await expect(page.locator('.wz-today-metrics')).toHaveCSS('display','grid');await expect(page.locator('.wz-today-metrics>.wz-today-metric').first()).toHaveCSS('display','flex');await page.screenshot({path:`docs/evidence/wenze-mobile-chrome/today-${width}.png`,fullPage:true});await page.screenshot({path:`docs/evidence/wenze-mobile-chrome/viewport-${width}.png`});
+ await expect(account).toBeVisible();await expect(page.locator('.wz-today-metrics')).toHaveCSS('display','grid');await expect(page.locator('.wz-today-metrics>.wz-today-metric').first()).toHaveCSS('display','flex');await page.screenshot({path:`docs/evidence/shared-chrome/today-${width}.png`,fullPage:true});await page.screenshot({path:`docs/evidence/shared-chrome/viewport-${width}.png`});
  const navigation=page.locator(width<760?'.wz-mobile-navigation':'.seller-navigation');
  if(width<760){await expect(page.locator('.wz-account-name')).toBeHidden();await expect(navigation.getByRole('button')).toHaveCount(6);expect((await navigation.boundingBox())!.height).toBeLessThan(80);}
- else await expect(page.locator('.wz-account-name')).toBeVisible();
+ else await expect(page.locator('.market-avatar')).toHaveText('DS');
  await navigation.getByRole('button',{name:u('productsStock'),exact:true}).click();
  const shopName=page.locator('.wz-shop-identity h2');await expect(shopName).toHaveText('SHIDA Boutique Test');
  if(width<760)expect((await shopName.boundingBox())!.width).toBeGreaterThan(width-160);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`docs/evidence/wenze-mobile-chrome/catalog-${width}.png`,fullPage:true});
+ await page.screenshot({path:`docs/evidence/shared-chrome/catalog-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:w.manage,exact:true}).click();await page.getByRole('button',{name:u('details'),exact:true}).click();
  const name=page.getByLabel(w.name,{exact:true});await name.fill('Unsaved test');
  await navigation.getByRole('button',{name:t('orders'),exact:true}).click();
  const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
  const centered=async()=>{const box=await dialog.boundingBox();expect(Math.abs(box!.x+box!.width/2-width/2)).toBeLessThan(3);expect(Math.abs(box!.y+box!.height/2-450)).toBeLessThan(3);};
- await centered();await page.screenshot({path:`docs/evidence/wenze-mobile-chrome/dialog-${width}.png`});
+ await centered();await page.screenshot({path:`docs/evidence/shared-chrome/dialog-${width}.png`});
  await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();await expect(name).toHaveValue('Unsaved test');
  await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
  await navigation.getByRole('button',{name:t('orders'),exact:true}).click();await expect(dialog).toBeVisible();await centered();

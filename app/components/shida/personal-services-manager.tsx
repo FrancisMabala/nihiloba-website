@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import {WenzeHeader} from "./wenze-header";
 import {serviceLanguageQuery} from "../../lib/service-transaction-link";
 import { managementCopy } from "../../lib/restaurant-management-copy";
 import { leaveWork } from "../../lib/restaurant-work";
@@ -11,7 +11,6 @@ import { endEmploymentSession } from "../../services/shida/employment-browser-cl
 import { restorePersonalSession, PersonalSessionError, PERSONAL_SESSION_EVENT, type PersonalSession } from "../../lib/personal-session-browser";
 import { sellerConnectionText } from "../../lib/restaurant-seller-copy";
 import { restaurantText, sellerChrome } from "../../lib/restaurant-seller-copy";
-import { restaurantLocales } from "../../lib/restaurant-i18n";
 import type { RestaurantLocale } from "../../services/shida/restaurants-client";
 import { ServicesManagement } from "./services-management";
 
@@ -75,12 +74,8 @@ export function PersonalServicesManager({ locale, offeringRef = null }: { locale
   finally { if (alive.current) setPending(false); }
  }
  return <div lang={locale} className="rst-seller svc-provider seller-design">
-<section className="rst container rst-shell"><div className="rst-topline">
- <Link className="rst-brand" prefetch={false} href={`${locale === "en" ? "" : `/${locale}`}/shida/services`} aria-label={`SHIDA · ${management.marketplace}`}>SHIDA<span>{management.marketplace} ↗</span></Link>
- <span className="rst-workspace-label">{copy.title}</span>
- <details className="rst-dropdown"><summary aria-label={t.languages}>{locale.toUpperCase()}</summary><nav aria-label={t.languages}>{restaurantLocales.map(lang => <Link key={lang} prefetch={false} href={sellerPath(lang)+languageQuery} hrefLang={lang} onClick={event=>{if(!leaveWork())event.preventDefault();}} aria-current={locale === lang ? "page" : undefined}>{({fr:'FR',en:'EN',ln:'Lingala',sw:'Swahili'})[lang]}</Link>)}</nav></details>
- {session && <details className="rst-dropdown rst-account"><summary aria-label={management.account}>{session.user.display_name}</summary><div><button disabled={pending} onClick={()=>void logout(true)}>{management.changeAccount}</button><button disabled={pending} onClick={()=>void logout()}>{management.signOut}</button></div></details>}
- </div>
+<WenzeHeader locale={locale} marketplace="Services" name={session?.user.display_name} brandHref={`${locale === "en" ? "" : `/${locale}`}/shida/services`} beforeNavigate={leaveWork} pending={pending} onLanguage={lang=>{if(leaveWork())window.location.assign(sellerPath(lang)+languageQuery);}} onAccount={()=>void logout(true)} onLogout={()=>void logout()}/>
+<section className="rst container rst-shell">
    {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <SellerLanding marketplace="services" locale={locale} design={design} browseHref={`${locale === "en" ? "" : `/${locale}`}/shida/services`} onAuthenticated={() => { signedOut.current = false; }}/>)}
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}

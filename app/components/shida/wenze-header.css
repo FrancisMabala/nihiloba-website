@@ -14,3 +14,7 @@
 .seller-design .wz-organization-picker{display:grid;gap:4px;max-width:520px;margin-top:12px;font-size:12px;color:#657267}
 .seller-design .wz-organization-picker select{width:100%;min-height:44px;padding:8px 12px;border:1px solid #dedfd5;border-radius:8px;background:#fffefa;color:#123b30;font:inherit;font-size:14px}
 @media(max-width:760px){.seller-design .wz-header{padding:12px 16px}.seller-design .wz-header-row{gap:8px}.seller-design .wz-header-brand{font-size:24px;gap:7px}.seller-design .wz-header-brand span{font-size:14px}.seller-design .wz-header-controls{gap:6px}.seller-design .wz-account-name{display:none}.seller-design .wz-account-trigger{padding:5px;gap:4px;border-color:transparent}.seller-design .wz-account-trigger>span:last-child{display:none}.seller-design .wz-header-trigger{min-width:44px}.seller-design .wz-organization-picker{max-width:none}}
+
+/* Shared compact chrome, including the narrowest supported phones. */
+@media(max-width:600px){.seller-design .wz-header-row{flex-wrap:wrap}.seller-design .wz-header-brand{font-size:24px}.seller-design .wz-header-brand span{font-size:12px}.seller-design .wz-header{padding:12px 16px}.seller-design .wz-header-row>.market-controls{margin-left:auto}}
+@media(max-width:360px){.seller-design .wz-header-brand span{display:none}.seller-design .wz-header-row{gap:6px}}
