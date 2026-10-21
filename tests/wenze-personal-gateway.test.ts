@@ -9,6 +9,18 @@ function req(path:string,method='GET',body?:object,headers:Record<string,string>
 beforeEach(()=>{jar.set(PERSONAL_SESSION_COOKIE,token);vi.stubEnv('SHIDA_API_BASE_URL','https://backend.test');vi.stubGlobal('fetch',fetcher);fetcher.mockReset();fetcher.mockImplementation(async input=>String(input).endsWith('/contexts')?Response.json({contexts:[{type:'organization',public_ref:'BUS_other'},{type:'personal',public_ref:'USR_self'}]}):Response.json({stores:[]}));});
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();jar.clear();});
 it('derives Personal authority from the authenticated session, never the first context',async()=>{const response=await GET(req('stores'),context('stores'));expect(response.status).toBe(200);expect(String(fetcher.mock.calls[1][0])).toBe('https://backend.test/api/dashboard/wenze/contexts/USR_self/stores');expect(response.headers.get('cache-control')).toContain('private, no-store');expect((fetcher.mock.calls[1][1]?.headers as Record<string,string>).Cookie).toBe('shida_dashboard_session='+token);});
+it('allows a bounded catalog category filter and preserves the complete keyed payment snapshot',async()=>{
+ const catalog='stores/WNZ_fixture/pos/catalog';
+ expect((await GET(req(catalog+'?category=phones_electronics&offset=0&limit=24'),context(catalog))).status).toBe(200);
+ expect(String(fetcher.mock.calls[1][0])).toContain('category=phones_electronics');
+ expect((await GET(req(catalog+'?category=a&category=b'),context(catalog))).status).toBe(404);
+ expect((await GET(req(catalog+'?category='+'a'.repeat(81)),context(catalog))).status).toBe(404);
+ expect((await GET(req('stores?category=phones_electronics'),context('stores'))).status).toBe(404);
+ const path='stores/WNZ_fixture/pos/checkout',body={lines:[{product_ref:'WNP_fixture',variant_ref:null,quantity:1,unit_sale_price:'15',currency:'USD'}],payment:'seller_recorded_card',payment_details:{provider:'External terminal',reference:'TEST-7'}};
+ expect((await POST(req(path,'POST',body,{'Idempotency-Key':'checkout_fixture_123'}),context(path))).status).toBe(200);
+ expect(fetcher.mock.calls.at(-1)?.[1]?.body).toBe(JSON.stringify(body));
+ expect((fetcher.mock.calls.at(-1)?.[1]?.headers as Record<string,string>)['Idempotency-Key']).toBe('checkout_fixture_123');
+});
 it.each(['contexts/BUS_other/stores','stores?organization_ref=BUS_other','stores?context=USR_other','stores?limit=1&limit=2','stores/../admin','plans/personal/USR_self'])('rejects authority and unsupported path injection: %s',async path=>{expect((await GET(req(path),context(path.split('?')[0]))).status).toBe(404);expect(fetcher).not.toHaveBeenCalled();});
 it('rejects stale bindings and cross-origin writes before any upstream request',async()=>{expect((await GET(req('stores','GET',undefined,{'X-Shida-Session':'stale'}),context('stores'))).status).toBe(401);expect((await POST(req('stores','POST',{}, {Origin:'https://attacker.test'}),context('stores'))).status).toBe(403);expect(fetcher).not.toHaveBeenCalled();});
 it('bounds streamed JSON and preserves keyed writes and exact revision',async()=>{const path='stores/WNS_fixture/expenses';expect((await POST(req(path,'POST',{note:'x'.repeat(140000)}),context(path))).status).toBe(413);expect(fetcher).not.toHaveBeenCalled();await POST(req(path,'POST',{amount:'100',currency:'CDF'},{'Idempotency-Key':'stable_fixture_key'}),context(path));expect(fetcher.mock.calls[1][1]?.body).toBe('{"amount":"100","currency":"CDF"}');expect((fetcher.mock.calls[1][1]?.headers as Record<string,string>)['Idempotency-Key']).toBe('stable_fixture_key');});
