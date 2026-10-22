@@ -8,6 +8,6 @@ export const metadata = candidateEmploymentMetadata("en", true);
 
 export default async function Page({ params }: { params: Promise<{ lang: string; application: string }> }) {
   const { lang, application } = await params;
-  if (lang !== "en") notFound();
-  return <CandidateEmploymentWorkspace locale="en" applicationReference={application}/>;
+  if (lang!=="en"&&lang!=="ln"&&lang!=="sw") notFound();
+  return <CandidateEmploymentWorkspace locale={lang} applicationReference={application}/>;
 }

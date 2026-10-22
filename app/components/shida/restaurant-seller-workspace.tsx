@@ -1,4 +1,5 @@
 "use client";
+import {restaurantWorkspaceGroups} from '../../lib/restaurant-workspace-navigation';
 import {RestaurantFocus,restaurantStart} from "./restaurant-focus";
 import {RestaurantCounterOptions} from "./restaurant-counter-options";
 import {RestaurantBottomNavigation} from "./restaurant-bottom-navigation";
@@ -110,7 +111,11 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     const value = await readRestaurant<Page<Establishment>>(`${root}?page=${nextPage}&page_size=20${status ? `&status=${status}` : ""}`, locale);
     if (!Array.isArray(value.items) || !Number.isSafeInteger(value.total) || value.total < value.items.length || !Array.isArray(value.actions)) throw new Error("Invalid restaurant access");
     if (alive.current) { setList(value); setPage(nextPage); setFilter(status); }
-    if (enter && value.total === 1 && value.items.length === 1) await select(value.items[0].public_ref);
+    if (enter) {
+      const ref=new URLSearchParams(window.location.search).get('establishment');
+      if(ref) await select(ref);
+      else if(value.total===1&&value.items.length===1)await select(value.items[0].public_ref);
+    }
   }
   useEffect(() => { void run(() => loadList(1, "", true)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   async function select(ref: string, initialTab = "today") {
@@ -353,11 +358,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const navigation=groups.flatMap(group=>group.entries.map(([key,label])=>({key,label,icon:icons[key],active:key==="items"&&["categories","batch"].includes(tab)||key===(posAvailable?"pos":"counter")&&tab==="service"})));
   return <section className="rst container rst-management seller-workspace" aria-label={t("restaurants")}>
     <div className={selected ? 'rst-management-layout seller-layout' : ''}>
-    {selected && <aside className="rst-management-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="R" title={t("restaurants")} subtitle={management.workspace}/><div id="restaurant-navigation" className="rst-desktop-groups">{[
- {label:({fr:'Opérations',en:'Operations',ln:'Misala',sw:'Shughuli'})[locale],keys:['today','orders','pos','counter','reservations']},
- {label:({fr:'Gestion',en:'Management',ln:'Bokambi',sw:'Usimamizi'})[locale],keys:['daily','recovery','inventory','activity','items','offerings']},
- {label:management.settings,keys:['settings','profile','hours','intake','reviews','sharing']}
- ].map((group,i)=><details className="rst-desktop-group" key={group.label} open={i===0||group.keys.includes(tab)}><summary>{group.label}</summary><SellerWorkspaceNavigation className="rst-management-nav" label={group.label} items={navigation.filter(item=>group.keys.includes(item.key))} current={tab} disabled={busy||Boolean(editor)} onNavigate={key=>void run(()=>loadTab(key))}/></details>)}</div></aside>}
+    {selected && <aside className="rst-management-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="R" title={t("restaurants")} subtitle={management.workspace}/><div id="restaurant-navigation" className="rst-desktop-groups">{restaurantWorkspaceGroups(locale).map((group,i)=><details className="rst-desktop-group" key={group.label} open={i===0||group.keys.includes(tab)}><summary>{group.label}</summary><SellerWorkspaceNavigation className="rst-management-nav" label={group.label} items={navigation.filter(item=>group.keys.includes(item.key))} current={tab} disabled={busy||Boolean(editor)} onNavigate={key=>void run(()=>loadTab(key))}/></details>)}</div></aside>}
     <div className="rst-management-content seller-content">
     {selected&&!editor&&<RestaurantFocus key={path} path={path} tab={tab} locale={locale} name={selected.profile.name??t("restaurants")}/>}
     {selected&&!editor&&<RestaurantBottomNavigation locale={locale} tab={tab} sell={posAvailable?"pos":"counter"} disabled={busy} items={navigation} onOpen={key=>void run(()=>loadTab(key))}/>}

@@ -42,11 +42,11 @@ export function ServicesToday({base,binding,locale,onOpen,onAll,onDenied,actions
   </section>;
  };
  return <section aria-label={t.title} className="svc-today">
-  <header className="svc-workday-heading"><div><p className="svc-workday-date">{data?`${data.date} · Kinshasa`:t.title}</p><h2>{w.headline}</h2><p>{t.intro}</p></div><button type="button" onClick={()=>setRefresh(value=>value+1)}>{t.refresh}</button></header>
+  <header className="svc-workday-heading"><div><p className="svc-workday-date">{data?`${data.date} · ${data.timezone.split("/").pop()?.replaceAll("_"," ")||"Kinshasa"}`:t.title}</p><h2>{w.headline}</h2><p>{t.intro}</p></div><button type="button" onClick={()=>setRefresh(value=>value+1)}>{t.refresh}</button></header>
   {!data&&!failed&&<p role="status">{t.loading}</p>}
   {failed&&<p role="alert">{t.failed}</p>}
   {data&&<>
-   <div className="svc-workday-summary">{(["upcoming","requests","messages"] as const).map(key=><button type="button" key={key} onClick={()=>onAll(key==="upcoming"?"reservations":key)}><span>{t[key]}</span><strong>{data[key].items.length}{data[key].has_more?"+":""}</strong></button>)}</div>
+   <div className="svc-workday-summary">{(["requests","pending","messages","upcoming"] as const).filter(key=>data[key].items.length||data[key].has_more).map(key=><button type="button" key={key} onClick={()=>onAll(key==="upcoming"||key==="pending"?"reservations":key)}><span>{t[key]}</span><strong>{data[key].items.length}{data[key].has_more?"+":""}</strong></button>)}</div>
    <div className="svc-today-grid"><div className="svc-workday-schedule"><h3 className="svc-workday-group-title">{w.schedule}</h3>{queue("upcoming")}</div><div className="svc-workday-replies"><h3 className="svc-workday-group-title">{w.reply}</h3>{queue("requests")}{queue("pending")}{queue("messages")}{![data.requests,data.pending,data.messages].some(queue=>queue.items.length||queue.has_more)&&<p className="svc-workday-empty">{t.empty}</p>}</div></div>
   </>}
   {actions}

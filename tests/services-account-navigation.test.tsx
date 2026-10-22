@@ -1,4 +1,5 @@
-import {expect,it} from "vitest";
+import {expect,it,vi} from "vitest";
+vi.mock("next/navigation",()=>({useRouter:()=>({push:vi.fn()})}));
 import {renderToStaticMarkup} from "react-dom/server";
 import {AccountSpace} from "../app/components/shida/account-space";
 import {servicesProviderAccess} from "../app/lib/services-account-navigation";

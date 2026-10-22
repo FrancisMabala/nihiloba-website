@@ -18,8 +18,8 @@
 }
 
 /* Private SHIDA Employment candidate workspace */
-.candidate-employment-hero { padding: clamp(7.5rem, 12vw, 10rem) 0 3rem; background: linear-gradient(145deg, #eef4ef 0%, #f7f2e9 100%); border-bottom: 1px solid rgba(8,49,39,.14); }
-.candidate-employment-hero h1 { max-width: 900px; margin: .65rem 0 .75rem; font-size: clamp(2.2rem, 5vw, 4.8rem); }
+.candidate-employment-hero { padding: 2rem 0 1.5rem; background: linear-gradient(145deg, #eef4ef 0%, #f7f2e9 100%); border-bottom: 1px solid rgba(8,49,39,.14); }
+.candidate-employment-hero h1 { max-width: 900px; margin: .65rem 0 .75rem; font-size: clamp(1.8rem, 3vw, 2.4rem); }
 .candidate-employment-hero p { max-width: 720px; }
 .candidate-employment-section { min-height: 55vh; background: #fbfaf6; }
 .candidate-session { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.75rem; padding-top: 1rem; border-top: 1px solid rgba(8,49,39,.18); }
@@ -706,3 +706,5 @@ h1, h2, h3 { text-wrap: balance; }
 .restaurant-activities li { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; }
 @media (max-width: 1050px) { .restaurant-grid, .restaurant-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .restaurant-grid, .restaurant-filters { grid-template-columns: minmax(0, 1fr); } .restaurant-actions > a { width: 100%; } }
+
+.candidate-profiles{margin:0 0 24px}.candidate-profiles>summary{cursor:pointer;padding:12px 0;min-height:44px;color:var(--forest);font-weight:600}.candidate-session button{min-height:44px}.candidate-employment-hero a{display:inline-flex;min-height:44px;align-items:center}

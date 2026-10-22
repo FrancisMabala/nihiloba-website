@@ -303,3 +303,7 @@
  .rst-management-content .rst-card { padding:16px; }
  .rst-menu-heading { gap:8px; }
 }
+
+.rst-more section{border-top:1px solid #dedbd0;padding:12px 0}.rst-more section h3{font-size:13px;color:#77633a;margin:8px 0;letter-spacing:.03em}.rst-more section>button{display:block;width:100%;text-align:left;min-height:44px;margin:4px 0}.rst-more [aria-current]{background:#203f34;color:#fff}.rst-more{max-height:85dvh;overflow:auto}.rst-bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+.seller-design .rst-management.rst-management .seller-heading:has(.rst-publication)>div:first-child{display:block}.seller-design .rst-management.rst-management .seller-heading .seller-eyebrow{display:none}

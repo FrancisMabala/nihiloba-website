@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {workspaceText} from "../../lib/personal-workspace-copy";
 import {useEffect, useRef, useState} from "react";
 import {PersonalWhatsAppLogin} from "./personal-whatsapp-login";
 import {ServiceBriefEditor} from "./service-brief-editor";
@@ -51,7 +52,7 @@ export function PersonalServiceRequests(props: Props) {
       document.removeEventListener("visibilitychange", visible);};
   }, [attempt]);
   return <main lang={locale}>
-    <nav className="svc-request"><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/services`} onClick={event => {if (!leaveWork()) event.preventDefault();}}>SHIDA · Services</Link></nav>
+    <nav className="svc-request"><Link href={`${locale==="en"?"":`/${locale}`}/shida/space?view=requests`} onClick={event=>{if(!leaveWork())event.preventDefault();}}>← {workspaceText(locale,"back")}</Link><span aria-hidden="true"> · </span><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/services`} onClick={event => {if (!leaveWork()) event.preventDefault();}}>SHIDA · Services</Link></nav>
     {loading ? <p className="svc-request" role="status">{t.loading}</p> : session ?
       <fieldset disabled={offline} inert={offline} style={{border: 0, padding: 0, margin: 0, minWidth: 0}}>
         <CustomerRequests key={session.binding} {...props} binding={session.binding} onDenied={() => setSession(null)}/>

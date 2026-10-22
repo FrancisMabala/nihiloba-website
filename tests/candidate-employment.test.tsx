@@ -56,7 +56,7 @@ describe("authenticated candidate Employment UI", () => {
     expect(html).toContain("Status timeline");
     expect(html).toContain("We would like to meet you.");
     expect(html).toContain("Online");
-    expect(html).toContain("authoritative allowed actions");
+    expect(html).toContain("existing SHIDA recruitment conversation");
     expect(html).not.toContain("Accept interview");
     expect(html).not.toContain("Withdraw application");
     expect(html).not.toContain("PRIVATE");

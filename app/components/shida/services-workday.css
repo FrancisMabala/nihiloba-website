@@ -76,3 +76,5 @@
  .svc-workday.svc-workday .svc-sharing{grid-template-columns:minmax(0,1fr)}
  .svc-workday.svc-workday .svc-workday-nav button>span{display:block}
 }
+
+.svc-workday .svc-workday-summary:empty{display:none}.svc-workday .svc-workday-summary{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}.svc-workday .svc-workday-replies{order:-1}.svc-workday .svc-workday-tools :is(button,summary):focus-visible{outline:2px solid #a98239;outline-offset:2px}

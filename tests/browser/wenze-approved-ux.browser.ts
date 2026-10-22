@@ -1,3 +1,4 @@
+import {checkoutText} from '../../app/lib/wenze-checkout-copy';
 import editorCopy from '../../app/lib/wenze-editor-copy.json' with {type:'json'};
 import {test,expect} from '@playwright/test';
 import {wenzeUX} from '../../app/lib/wenze-ux-copy';
@@ -8,7 +9,7 @@ import {posText} from '../../app/lib/wenze-pos-copy';
 const business=false;
 for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${locale}`,async({page})=>{
  const u=(k:Parameters<typeof wenzeUX>[1])=>wenzeUX(locale,k),t=(k:string)=>sellerText(locale,k),p=(k:string)=>posText(locale,k),w=wenzeCopy[locale];
- const shop={public_ref:'WNZ_fixture',name:'Marché du Fleuve',city:'Kinshasa',category:'other',description:'Maison, accessoires et produits du quotidien',revision:1,status:'active',visible:'true',catalog_ready:true,order_ready:true};
+ const shop={public_ref:'WNZ_fixture',name:'Marché du Fleuve',store_type:'online_and_physical',city:'Kinshasa',category:'other',description:'Maison, accessoires et produits du quotidien',revision:1,status:'active',visible:'true',catalog_ready:true,order_ready:true};
  const product={public_ref:'WNP_fixture',revision:1,name:'Marmite familiale',category:'other',status:'active',visible:'true',price:'15000',currency:'CDF',available_stock:7,photos:[],variants:[]};
  const stock={item_ref:'INV_fixture',catalog_ref:product.public_ref,catalog_label:product.name,revision:1,operational_code:'INV-ABC123',on_hand:7,reserved:0,available:7,unit:'piece',low_stock_threshold:2};
  const receipt={store_ref:shop.public_ref,receipt_ref:'WRC_fixture',shop_name:shop.name,city:'Kinshasa',sold_at:'2026-10-21T12:00:00Z',source:'basket',payment:'not_recorded',has_reversals:false,lines:[{name:product.name,quantity:1,unit_price:'15000',total:'15000',currency:'CDF'}],totals:[{currency:'CDF',amount:'15000'}]};
@@ -46,7 +47,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
  await expect(page.getByText('24',{exact:true})).toBeVisible();
  const evidence=`docs/evidence/wenze-mobile-chrome/regression-${locale}`;
  await expect(page.locator('.wz-mobile-navigation')).toBeHidden();
- await expect(page.locator('.seller-navigation button').nth(1)).toHaveCSS('color','rgb(224, 233, 228)');
+ await expect(page.locator('.seller-navigation button').nth(1)).toHaveCSS('color','rgb(64, 85, 71)');
  if(locale==='en')await page.screenshot({path:`${evidence}-today-desktop.png`,fullPage:true});
  await page.setViewportSize({width:390,height:844});
  await expect(page.locator('.wz-mobile-navigation')).toBeVisible();
@@ -66,13 +67,13 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
  await expect(page.getByText(u('notFound'))).toBeVisible();await expect(page.getByRole('button',{name:/Marmite familiale/})).toBeVisible();
  await page.screenshot({path:`${evidence}-inventory-mobile.png`,fullPage:true});
  await page.getByRole('button',{name:u('movements'),exact:true}).click();await expect(page.getByRole('button',{name:u('movements'),exact:true})).toHaveAttribute('aria-current','page');
- await nav.getByRole('button',{name:t('sales'),exact:true}).click();
+ await nav.getByRole('button',{name:checkoutText(locale,'counter'),exact:true}).click();
  await page.locator('.wz-pos-product-button').click();
  await page.screenshot({path:`${evidence}-basket-mobile.png`,fullPage:true});
- await page.getByRole('button',{name:p('checkout'),exact:true}).click();await expect(page.getByText(u('saleRecorded'))).toBeVisible();expect(writes).toBe(1);await expect(page.locator('.wz-receipt-paper')).toHaveCount(0);
+ await page.locator('.wz-checkout-basket-shortcut').click();await page.locator('.wz-checkout-pay').click();const payment=page.getByRole('dialog',{name:checkoutText(locale,'pay'),exact:true});await payment.getByLabel(checkoutText(locale,'received')+' · CDF').fill('15000');await payment.getByRole('checkbox').check();await payment.getByRole('button',{name:checkoutText(locale,'confirm'),exact:true}).click();await expect(page.getByText(u('saleRecorded'))).toBeVisible();expect(writes).toBe(1);await expect(page.locator('.wz-receipt-paper')).toBeVisible();await page.locator('.wz-receipt-panel').getByRole('button',{name:p('close'),exact:true}).click();
  await page.getByRole('button',{name:u('viewReceipt')}).click();await expect(page.locator('.wz-receipt-paper')).toBeVisible();await expect(page.getByRole('button',{name:p('print'),exact:true})).toBeVisible();await expect(page.getByRole('button',{name:p('share'),exact:true})).toHaveCount(0);
  await page.screenshot({path:`${evidence}-receipt-mobile.png`,fullPage:true});
- await page.locator('.wz-receipt-panel').getByRole('button',{name:p('close'),exact:true}).click();await page.getByRole('button',{name:u('newSale')}).click();await expect(page.getByRole('button',{name:p('checkout'),exact:true})).toBeDisabled();
+ await page.locator('.wz-receipt-panel').getByRole('button',{name:p('close'),exact:true}).click();await page.getByRole('button',{name:u('newSale')}).click();await expect(page.locator('.wz-sale-success')).toHaveCount(0);
  await nav.getByRole('button',{name:u('shop'),exact:true}).click();await page.locator('.wz-shop-tabs').getByRole('button',{name:wenzeDesignText(locale,'shopDetails'),exact:true}).click();await expect(page.getByLabel(w.name,{exact:true})).toBeVisible();
  await page.getByRole('button',{name:w.fulfillment,exact:true}).click();await expect(dialog).not.toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(errors).toEqual([]);

@@ -1,0 +1,3 @@
+import {it,expect} from 'vitest';
+import {restaurantWorkspaceGroups} from '../app/lib/restaurant-workspace-navigation';
+it('keeps every operational destination in exactly one group',()=>{for(const locale of ['en','fr','ln','sw'] as const){const groups=restaurantWorkspaceGroups(locale),keys=groups.flatMap(group=>group.keys);expect(new Set(keys).size).toBe(keys.length);for(const key of ['today','orders','counter','pos','inventory','daily','recovery','activity','reservations','items','offerings','settings','profile','hours','intake','reviews','sharing'])expect(keys).toContain(key);expect(groups).toHaveLength(4);}});

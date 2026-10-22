@@ -12,3 +12,6 @@
  .seller-design .seller-content :is(.wz-card,.rst-card){box-shadow:none}
  .seller-design .seller-content :is(h1,h2,h3){text-wrap:pretty}
 }
+
+.seller-space-return{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:1440px;margin:auto;padding:4px 24px;border-top:1px solid #e1dfd5;font-size:13px;color:#526358}.seller-space-return a{min-height:44px;display:inline-flex;align-items:center;color:#203f34;text-decoration:none}.seller-space-return span{overflow-wrap:anywhere;text-align:right}.seller-space-return a:focus-visible{outline:2px solid #a98239;outline-offset:2px}
+@media(max-width:700px){.seller-space-return{padding:0 16px}.seller-space-return span{max-width:60%;font-size:12px}}

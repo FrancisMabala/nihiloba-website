@@ -7,6 +7,7 @@ export const revalidate = 0;
 export const metadata = candidateEmploymentMetadata("en");
 
 export default async function Page({ params }: { params: Promise<{ lang: string }> }) {
-  if ((await params).lang !== "en") notFound();
-  return <CandidateEmploymentWorkspace locale="en"/>;
+  const {lang}=await params;
+  if (lang!=="en"&&lang!=="ln"&&lang!=="sw") notFound();
+  return <CandidateEmploymentWorkspace locale={lang}/>;
 }
