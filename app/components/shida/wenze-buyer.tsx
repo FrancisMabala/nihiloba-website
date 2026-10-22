@@ -14,9 +14,9 @@ export async function buyerRequest(path:string,binding:string,method='GET',body?
  const response=await fetch(`/api/shida/personal/wenze-buyer/${path}/`,{method,credentials:'same-origin',cache:'no-store',headers:{'X-Shida-Session':binding,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});
  if(!response.ok)throw Error(String(response.status));return response.json();
 }
-export function WenzeBuyerProvider({locale,children,loginMessage}:{locale:Locale;children:ReactNode;loginMessage?:string}){
+export function WenzeBuyerProvider({locale,children,loginMessage}:{locale:Locale|"ln"|"sw";children:ReactNode;loginMessage?:string}){
  const [session,setSession]=useState<PersonalSession|null>(null),[checking,setChecking]=useState(true),[open,setOpen]=useState(false),[failed,setFailed]=useState(false);
- const loginPanel=useRef<HTMLElement>(null),t=words[locale];
+ const loginPanel=useRef<HTMLElement>(null),t=locale==="ln"?{signIn:"Kota",close:"Kanga",login:"Kota mpo na kokoba",failed:"Meka lisusu."}:locale==="sw"?{signIn:"Ingia",close:"Funga",login:"Ingia ili kuendelea",failed:"Jaribu tena."}:words[locale];
  useEffect(()=>{if(open){loginPanel.current?.scrollIntoView({block:"center",behavior:"smooth"});loginPanel.current?.focus();}},[open]);
  useEffect(()=>{let alive=true,epoch=0;let request:AbortController|null=null;
   async function check(clear=false){const ticket=++epoch;request?.abort();const controller=new AbortController();request=controller;if(clear)setSession(null);setChecking(true);const timer=setTimeout(()=>controller.abort(),12000);

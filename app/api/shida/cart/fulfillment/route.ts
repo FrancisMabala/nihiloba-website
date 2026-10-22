@@ -6,7 +6,7 @@ export async function PUT(request:Request){
  const body=await requestObject(request);
  if(!body||!validReference(body.store_reference)||!["pickup","delivery"].includes(String(body.method)))return privateJson({error:{code:"validation_error"}},422);
  const {store_reference,...fields}=body;
- if(Object.keys(fields).some(key=>!["method","expected_version","city","commune","address","instructions"].includes(key)))return privateJson({error:{code:"validation_error"}},422);
+ if(Object.keys(fields).some(key=>!["method","expected_version","city","commune","quartier","area","landmark","address","instructions"].includes(key)))return privateJson({error:{code:"validation_error"}},422);
  try{return privateJson({cart:await setCommerceFulfillment(token,store_reference,fields)});}
  catch(error){return commerceError(error);}
 }

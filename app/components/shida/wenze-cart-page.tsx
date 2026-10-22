@@ -3,7 +3,7 @@
 import Link from "next/link";
 import "./wenze-cart.css";
 import { useState } from "react";
-import type { Locale } from "../../lib/i18n";
+type Locale = "en"|"fr"|"ln"|"sw";
 import { safePublicImageUrl, safePublicWebsiteUrl } from "../../lib/safe-public-url";
 import { acceptCartPriceChanges, CartClientError, createCartHandoff, validateCart } from "../../services/shida/cart-browser-client";
 import type { CommerceCartConflict, CommerceCartItem } from "../../types/shida-commerce";
@@ -32,7 +32,7 @@ export function WenzeCartPage({ locale }: { locale: Locale }) {
   const [itemErrors, setItemErrors] = useState<Record<string, string>>({});
   const [conflicts, setConflicts] = useState<CommerceCartConflict[]>([]);
   const t = wenzeCartCopy[locale];
-  const shoppingPath = locale === "fr" ? "/fr/shida/wenze" : "/shida/wenze";
+  const shoppingPath = locale === "en" ? "/shida/wenze" : `/${locale}/shida/wenze`;
 
   function message(caught: unknown) { return commerceErrorMessage(locale, caught instanceof CartClientError ? caught.code : "api_unavailable"); }
   async function changeQuantity(item: CommerceCartItem, quantity: number) {
@@ -75,7 +75,7 @@ export function WenzeCartPage({ locale }: { locale: Locale }) {
     finally { setPendingAction(null); }
   }
 
-  if(confirmed)return <section className="wenze-cart-page"><div className="container wenze-cart-empty" role="status"><h1>{locale==="fr"?"Commande enregistrée":"Order placed"}</h1><p>{confirmed}</p><p>{locale==="fr"?"Votre commande est enregistrée. Le paiement reste à convenir avec le vendeur.":"Your order is saved. Arrange payment with the seller."}</p><Link className="button button-primary" href={`${locale==="fr"?"/fr":""}/shida/wenze/orders/`}>{locale==="fr"?"Suivre mes commandes":"Track my orders"}</Link>{orderWhatsApp&&<><p><a className="button button-secondary" href={orderWhatsApp}>{locale==="fr"?"Voir mes commandes sur WhatsApp":"View my orders on WhatsApp"}</a></p><p>{locale==="fr"?"Appuyez sur Envoyer dans WhatsApp avec le même compte SHIDA. Ouvrir le lien n’envoie aucun message.":"Press Send in WhatsApp using the same SHIDA account. Opening this link does not send a message."}</p></>}</div></section>;
+  if(confirmed)return <section className="wenze-cart-page"><div className="container wenze-cart-empty" role="status"><h1>{{en:"Order placed",fr:"Commande enregistrée",ln:"Commande ebombami",sw:"Agizo limehifadhiwa"}[locale]}</h1><p>{confirmed}</p><p>{{en:"Your order is saved. Arrange payment with the seller.",fr:"Votre commande est enregistrée. Le paiement reste à convenir avec le vendeur.",ln:"Commande ebombami. Yokana na moteki mpo na kofuta.",sw:"Agizo limehifadhiwa. Kubaliana na muuzaji kuhusu malipo."}[locale]}</p><Link className="button button-primary" href={`${locale==="en"?"":`/${locale}`}/shida/wenze/orders/`}>{{en:"Track my orders",fr:"Suivre mes commandes",ln:"Landa bacommande na ngai",sw:"Fuatilia maagizo yangu"}[locale]}</Link>{orderWhatsApp&&<><p><a className="button button-secondary" href={orderWhatsApp}>{{en:"View my orders on WhatsApp",fr:"Voir mes commandes sur WhatsApp",ln:"Tala bacommande na WhatsApp",sw:"Angalia maagizo kwenye WhatsApp"}[locale]}</a></p><p>{{en:"Press Send in WhatsApp using the same SHIDA account. Opening this link does not send a message.",fr:"Appuyez sur Envoyer dans WhatsApp avec le même compte SHIDA. Ouvrir le lien n’envoie aucun message.",ln:"Finá Kotinda na WhatsApp na compte SHIDA moko. Kofungola lien etindaka message te.",sw:"Bonyeza Tuma kwenye WhatsApp kwa akaunti hiyo hiyo ya SHIDA. Kufungua kiungo hakutumi ujumbe."}[locale]}</p></>}</div></section>;
   if (loading) return <section className="wenze-cart-page"><div className="container marketplace-state" role="status"><p>{t.loading}</p></div></section>;
   if (!cart || cart.item_count === 0) return <section className="wenze-cart-page"><div className="container wenze-cart-empty"><CartIcon/><h1>{t.title}</h1><p>{restoreError ? commerceErrorMessage(locale, restoreError) : t.empty}</p>{restoreError&&<button className="button button-secondary" type="button" onClick={() => void refresh()}>{t.retry}</button>}<Link className="button button-primary" href={shoppingPath}>{t.continueShopping}</Link></div></section>;
 
@@ -94,7 +94,7 @@ export function WenzeCartPage({ locale }: { locale: Locale }) {
             {(itemErrors[item.reference]||conflict)&&<p className="wenze-cart-line-error" role="alert">{itemErrors[item.reference]||commerceErrorMessage(locale,conflict!.code)}{conflict?.current_value!=null?` (${conflict.current_value}${conflict.code==="price_changed"&&cart.currency?` ${cart.currency}`:""})`:""}</p>}
           </div><strong className="wenze-cart-line-total">{formatCommerceMoney(item.line_total,item.currency,locale)}</strong>
         </article>})}</div>
-        {group.estimates && <div>{group.estimates.preparation && <p>{locale === "fr" ? "Préparation estimée" : "Estimated preparation"}: {group.estimates.preparation}</p>}{group.estimates.delivery && <p>{locale === "fr" ? "Livraison estimée" : "Estimated delivery"}: {group.estimates.delivery}</p>}</div>}
+        {group.estimates && <div>{group.estimates.preparation && <p>{{en:"Estimated preparation",fr:"Préparation estimée",ln:"Ntango ya kobongisa",sw:"Muda wa maandalizi"}[locale]}: {group.estimates.preparation}</p>}{group.estimates.delivery && <p>{{en:"Estimated delivery",fr:"Livraison estimée",ln:"Ntango ya livraison",sw:"Muda wa kupeleka"}[locale]}: {group.estimates.delivery}</p>}</div>}
         <footer><span>{t.sellerSubtotal}</span><strong>{formatCommerceMoney(group.subtotal,group.currency,locale)}</strong></footer>
       </section>)}
       <div className="wenze-cart-secondary-actions"><Link href={shoppingPath}>{t.continueShopping}</Link><button type="button" onClick={() => void clearCart()} disabled={checkoutBusy||pendingItem!==null||pendingAction!==null}>{t.clear}</button></div>

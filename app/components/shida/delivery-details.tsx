@@ -1,0 +1,11 @@
+type Language = "en"|"fr"|"ln"|"sw";
+export const deliveryLabels = {
+ en:{country:"Country",city:"City",commune:"Commune / area",quartier:"Neighbourhood",area:"Area",address:"Delivery address",street:"Street",building:"Building",landmark:"Landmark",instructions:"Delivery instructions",fee:"Delivery fee",pending:"Fee to be agreed",open:"Delivery / pickup details",pickup:"Pickup",delivery:"Delivery",missing:"No destination recorded for this older order."},
+ fr:{country:"Pays",city:"Ville",commune:"Commune / zone",quartier:"Quartier",area:"Zone",address:"Adresse de livraison",street:"Avenue / rue",building:"Bâtiment",landmark:"Repère",instructions:"Instructions de livraison",fee:"Frais de livraison",pending:"Frais à convenir",open:"Détails de livraison / retrait",pickup:"Retrait",delivery:"Livraison",missing:"Aucune destination enregistrée pour cette ancienne commande."},
+ ln:{country:"Ekolo",city:"Engumba",commune:"Commune / zone",quartier:"Quartier",area:"Zone",address:"Adresse ya livraison",street:"Balabala",building:"Ndako",landmark:"Repère",instructions:"Malako ya livraison",fee:"Mbongo ya livraison",pending:"Mbongo esengeli koyokana",open:"Makambo ya livraison / retrait",pickup:"Kozwa na esika",delivery:"Livraison",missing:"Esika ebombami te mpo na commande oyo ya kala."},
+ sw:{country:"Nchi",city:"Mji",commune:"Manispaa / eneo",quartier:"Mtaa",area:"Eneo",address:"Anwani ya kupelekwa",street:"Barabara",building:"Jengo",landmark:"Alama ya eneo",instructions:"Maelekezo ya kupeleka",fee:"Ada ya kupeleka",pending:"Ada bado kujadiliwa",open:"Taarifa za kupeleka / kuchukua",pickup:"Kuchukua",delivery:"Kupeleka",missing:"Hakuna anwani iliyohifadhiwa kwa agizo hili la zamani."}
+};
+export function DeliveryDetails({locale,fields,instructions}:{locale:Language;fields:Record<string,string|null|undefined>|null;instructions?:string|null}){
+ const t=deliveryLabels[locale];
+ return <dl style={{overflowWrap:"anywhere",marginBlock:"1rem"}}>{(["country","city","commune","area","quartier","address","street","building","landmark","instructions"] as const).map(key=>{const value=key==="instructions"?instructions??fields?.[key]:fields?.[key];return value?<div key={key} style={{marginBlock:".4rem"}}><dt style={{fontWeight:600}}>{t[key]}</dt><dd style={{margin:0,whiteSpace:"pre-wrap"}}>{value}</dd></div>:null;})}</dl>;
+}
