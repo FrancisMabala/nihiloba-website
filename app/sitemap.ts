@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { publicJobEmployerKey } from "./lib/job-employer";
 import { getApartments, getHotels, getJobs, getServices, getWenzeStores } from "./services/shida/public-client";
 
 export const revalidate = 3600;
@@ -91,11 +92,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const jobPages=[await getJobs({page:1,page_size:50})];
     for(let page=2;page<=jobPages[0].pagination.total_pages;page+=1)jobPages.push(await getJobs({page,page_size:50}));
     for(const job of jobPages.flatMap((collection)=>collection.items)){
-      const jobKey=encodeURIComponent(job.slug||job.public_ref),employerKey=encodeURIComponent(job.employer.slug||job.employer.public_ref);
+      const jobKey=encodeURIComponent(job.slug||job.public_ref),employerKey=publicJobEmployerKey(job.employer);
       dynamicRoutes.add(`/shida/emplois/${jobKey}`);
       dynamicRoutes.add(`/fr/shida/emplois/${jobKey}`);
-      dynamicRoutes.add(`/shida/emplois/employeurs/${employerKey}`);
-      dynamicRoutes.add(`/fr/shida/emplois/employeurs/${employerKey}`);
+      if(employerKey){
+        dynamicRoutes.add(`/shida/emplois/employeurs/${encodeURIComponent(employerKey)}`);
+        dynamicRoutes.add(`/fr/shida/emplois/employeurs/${encodeURIComponent(employerKey)}`);
+      }
     }
   } catch {
     // Jobs collection remains indexed even if dynamic job enumeration is unavailable.

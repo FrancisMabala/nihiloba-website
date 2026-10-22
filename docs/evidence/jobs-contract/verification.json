@@ -1,0 +1,71 @@
+{
+  "base": "http://127.0.0.1:3043",
+  "checkedAt": "2026-10-22T09:47:41.340Z",
+  "checks": [
+    {
+      "path": "/shida/",
+      "width": 390,
+      "status": 200,
+      "publicJobCards": 3,
+      "matchesPublicApi": true,
+      "overflow": false
+    },
+    {
+      "path": "/shida/",
+      "width": 1440,
+      "status": 200,
+      "publicJobCards": 3,
+      "matchesPublicApi": true,
+      "overflow": false
+    },
+    {
+      "path": "/fr/shida/",
+      "width": 390,
+      "status": 200,
+      "publicJobCards": 3,
+      "matchesPublicApi": true,
+      "overflow": false
+    },
+    {
+      "path": "/fr/shida/",
+      "width": 1440,
+      "status": 200,
+      "publicJobCards": 3,
+      "matchesPublicApi": true,
+      "overflow": false
+    },
+    {
+      "path": "/ln/shida/",
+      "width": 390,
+      "status": 200,
+      "publicJobCards": 3,
+      "matchesPublicApi": true,
+      "overflow": false
+    },
+    {
+      "path": "/ln/shida/",
+      "width": 1440,
+      "status": 200,
+      "publicJobCards": 3,
+      "matchesPublicApi": true,
+      "overflow": false
+    },
+    {
+      "path": "/sw/shida/",
+      "width": 390,
+      "status": 200,
+      "publicJobCards": 3,
+      "matchesPublicApi": true,
+      "overflow": false
+    },
+    {
+      "path": "/sw/shida/",
+      "width": 1440,
+      "status": 200,
+      "publicJobCards": 3,
+      "matchesPublicApi": true,
+      "overflow": false
+    }
+  ],
+  "sitemapHasNoAnonymousEmployerUrls": true
+}

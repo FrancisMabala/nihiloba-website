@@ -74,7 +74,7 @@ export type PublicJobApplicationMode = "shida" | "redirect" | "email_assisted" |
 export type PublicJobApplicationCapability = "shida_application" | "external_redirect" | "external_instructions" | "none";
 
 export type PublicJobEmployerSummary = {
-  public_ref: string;
+  public_ref: string | null;
   slug: string | null;
   name: string;
   profile_image: PublicImage | null;
@@ -199,6 +199,7 @@ export type PublicJob = PublicJobSummary & {
 };
 
 export type PublicJobEmployer = PublicJobEmployerSummary & {
+  public_ref: string;
   description: string | null;
   open_job_count: number;
   jobs: PublicJobSummary[];

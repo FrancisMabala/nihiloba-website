@@ -33,4 +33,6 @@ Main files: `app/components/pages/shida-page.tsx`, `shida-discovery-listings.tsx
 
 ## Release
 
-The website's existing Render deployment is triggered by main. No migration or new setting is needed. Verify the pushed commit against remote main and report CI/Render status separately; HTTP availability alone is not deployment evidence.
+Render inspection during the Jobs follow-up found automatic deployment disabled after a previous commit-specific deploy. A push to main alone does not deploy this service: manually deploy the validated commit while preserving this setting. No migration or new setting is needed. Verify the pushed commit against remote main and correlate Render's live commit with the public page.
+
+The Jobs parser limitation described above is resolved by the follow-up in `shida-jobs-contract-2026-10-22.md`: anonymous individual employers are a legitimate backend contract, and their job records can now render without inventing public employer profiles.
