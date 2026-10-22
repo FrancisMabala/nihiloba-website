@@ -1,6 +1,6 @@
 # Complete Wenze program — 23 October 2026
 
-Working report; not a production-release claim. Backend companion:
+Implementation and verified release report. Earlier checkpoint notes are historical; final release evidence is below. Backend companion:
 `shida-backend/docs/wenze/COMPLETE_PROGRAM_2026_10_23.md`.
 
 ## Existing released foundation
@@ -109,3 +109,21 @@ claims the seller owns no items. Backend Quick Sell paging tests (10) and websit
 production build/TypeScript, scoped lint and 12 four-language responsive Quick Sell
 browser cases passed again. No new migration; the initial backend/Business/website
 rollout succeeded, and the final backend/website revision is verified below.
+
+## Verified release
+
+Final website `dec6e8b0d4a4ecffacab5ba5fc020584a6ba4bf3` is verified **Deploy
+succeeded | Live** on Render deployment `dep-dbd97m59fdbs73aa2ec0` (23 October
+2026, live at 00:55:55 Europe/Stockholm). Backend final `ef5a585c` is Live at
+`dep-dbd96ml9fdbs73a9v550`; Business `eabcb57` is Live at
+`dep-dbd91mu1egvs738dcchg`. Initial backend `11549532` applied authorized migration
+0198→0199 successfully at 00:42:14. Every code push matched remote main.
+
+Live read-only My Space shows Mes annonces and opens the new listing entry;
+regular shop management remains accessible. API health 200 and unauthenticated
+protected Quick Sell 401. No production test data or messages were created.
+Website GitHub reports zero check runs; private repository CI is inaccessible,
+so only actual local/Render results are claimed. The comprehensive backend report
+contains the functionality matrix, routes, architectural inventory, remaining
+limits, rollback guidance and École continuation context. This documentation-only
+follow-up does not require another deployment.
