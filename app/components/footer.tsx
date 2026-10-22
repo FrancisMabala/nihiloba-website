@@ -6,6 +6,7 @@ import { BrandLogo } from "./brand-logo";
 
 export function Footer({ locale, marketplace = false }: { locale: Locale; marketplace?: boolean }) {
   const t = nav[locale];
+  if(marketplace)return <footer className="site-footer market-footer" lang={locale}><div className="container shida-footer-row"><Link className="market-brand" href={localizedPath(locale,"/shida")}>SHIDA</Link><nav aria-label={t.product}><Link href={localizedPath(locale,"/faq")}>{t.faq}</Link><Link href={localizedPath(locale,"/contact")}>{t.contact}</Link><Link href={localizedPath(locale,"/privacy")}>{t.privacy}</Link><Link href={locale==="en"?"/en/terms":"/fr/conditions-utilisation"}>{t.terms}</Link><Link href={locale==="en"?"/en/trust":"/fr/confiance"}>{t.trustCenter}</Link></nav><small>© {new Date().getFullYear()} NIHILOBA. {t.rights}</small></div></footer>;
   return (
     <footer className={marketplace ? "site-footer market-footer" : "site-footer"} lang={locale}>
       <div className="container footer-grid">

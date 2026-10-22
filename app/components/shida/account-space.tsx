@@ -1,6 +1,6 @@
 'use client';
 import {useRouter} from 'next/navigation';
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useState} from 'react';
 import type {MarketplaceLocale} from './marketplace-account-copy';
 import {marketplaceAccountCopy} from './marketplace-account-copy';
 import {accountSpaceCopy} from '../../lib/account-space-copy';
@@ -22,7 +22,6 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
  const allowed:View[]=['home','orders','requests','messages','receipts','settings','management'];
  const view:View=inbox||initialView==='inbox'?'messages':allowed.includes(initialView as View)?initialView as View:'home';
  const [session,setSession]=useState<PersonalSession|null>(null),[checking,setChecking]=useState(true),[attempt,setAttempt]=useState(0);
- const dialog=useRef<HTMLDialogElement>(null),menuTrigger=useRef<HTMLButtonElement>(null);
  const access=useServicesProviderAccess(session?.binding??null);
  useEffect(()=>{
   let alive=true,generation=0,controller:AbortController|undefined;
@@ -65,7 +64,5 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
    {view==='management'&&<><p className="space-intro">{t.managementNote}</p>{checking?<p role="status">{t.loading}</p>:session?<PersonalActivities key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>}</>}
    {view==='settings'&&<section className="space-settings"><h2>{t.account}</h2><p>{checking?t.loading:session?.user.display_name||t.login}</p><p>{t.accountNote}</p><label htmlFor="space-language">{t.language}</label><select id="space-language" value={locale} onChange={event=>router.push(`${event.target.value==='en'?'':`/${event.target.value}`}/shida/space?view=settings`)}>{(['fr','en','ln','sw'] as const).map(language=><option key={language} value={language}>{({fr:'Français',en:'English',ln:'Lingala',sw:'Swahili'})[language]}</option>)}</select></section>}
   </div>
-  <nav className="space-bottom" aria-label={a.space}>{(['home','messages','management'] as const).map(key=><a key={key} href={href(key)} aria-current={view===key?'page':undefined}><SpaceIcon name={key}/><span>{key==='management'?t.management:t[key]}</span></a>)}<button ref={menuTrigger} type="button" aria-haspopup="dialog" onClick={()=>dialog.current?.showModal()}><SpaceIcon name="menu"/><span>{t.menu}</span></button></nav>
-  <dialog className="space-mobile-menu" ref={dialog} aria-labelledby="space-menu-title" onClose={()=>menuTrigger.current?.focus()}><div className="space-menu-heading"><h2 id="space-menu-title">{a.space}</h2><button type="button" onClick={()=>dialog.current?.close()}>{t.close}</button></div>{navigation(true)}</dialog>
  </div>;
 }

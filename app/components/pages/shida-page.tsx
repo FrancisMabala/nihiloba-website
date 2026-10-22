@@ -22,17 +22,17 @@ export function ShidaPage({ locale }: { locale: DiscoveryLocale }) {
         <button type="submit">{t.search}<ArrowRightIcon/></button>
       </form><p className="discovery-search-note" id="discovery-search-note">{t.searchNote}</p>
     </section>
-    <section aria-labelledby="discovery-markets"><h2 id="discovery-markets">{t.explore}</h2>
-      <nav className="discovery-categories" aria-label={t.explore}>{discoveryMarkets.map((market, i) => { const Icon = icons[i]; return <Link id={market === "emplois" ? "employment" : market === "appartements" ? "housing" : market} href={discoveryPath(["emplois", "appartements", "hotels", "transport"].includes(market) && (locale === "ln" || locale === "sw") ? "fr" : locale, `/shida/${market}`)} key={market}><span className={`discovery-icon discovery-icon-${i}`}><Icon/></span><strong>{t.labels[i]}</strong><small>{t.hints[i]}</small></Link>; })}</nav>
+    <section id="explore" aria-labelledby="discovery-markets"><h2 id="discovery-markets">{t.explore}</h2>
+      <nav className="discovery-categories" aria-label={t.explore}>{discoveryMarkets.map((market, i) => { const Icon = icons[i]; return <Link id={market === "emplois" ? "employment" : market === "appartements" ? "housing" : market} href={discoveryPath(locale, `/shida/${market}`)} key={market}><span className={`discovery-icon discovery-icon-${i}`}><Icon/></span><strong>{t.labels[i]}</strong><small>{t.hints[i]}</small></Link>; })}</nav>
     </section>
     <section className="discovery-listings" aria-labelledby="discovery-listings-title" id="stories"><h2 id="discovery-listings-title">{t.recent}</h2><p className="discovery-muted">{t.recentNote}</p>
       <Suspense fallback={<div className="discovery-loading" role="status">{t.loading}</div>}><DiscoveryListings locale={locale}/></Suspense>
     </section>
     <section className="discovery-entries" aria-label="SHIDA École & Business">
-      <article id="school"><DiscoveryIllustration kind="school"/><div><h2>{t.school}</h2><p>{t.schoolBody}</p><Link href={discoveryPath(locale, "/shida/ecole")}>{t.schoolAction}<ArrowRightIcon/></Link></div></article>
-      <article id="business"><DiscoveryIllustration kind="business"/><div><h2>{t.business}</h2><p>{t.businessBody}</p><a href="https://business.nihiloba.com">{t.businessAction}<ArrowRightIcon/></a></div></article>
+      <article id="school"><DiscoveryIllustration kind="school"/><div><h2>{t.school}</h2><Link href={discoveryPath(locale, "/shida/ecole")}>{t.schoolAction}<ArrowRightIcon/></Link></div></article>
+      <article id="business"><DiscoveryIllustration kind="business"/><div><h2>{t.business}</h2><a href="https://business.nihiloba.com">{t.businessAction}<ArrowRightIcon/></a></div></article>
     </section>
-    <div className="discovery-account-note"><p>{t.accountNote}</p><a href={OFFICIAL_CHANNELS.whatsapp}>{t.join}<ArrowRightIcon/></a></div>
+    <div className="discovery-account-note"><a href={OFFICIAL_CHANNELS.whatsapp}>{t.join}<ArrowRightIcon/></a></div>
     <p className="discovery-story-link"><Link href={locale === "en" ? "/about/shida" : "/fr/about/shida"}>{t.story}<ArrowRightIcon/></Link></p>
   </div>;
 }

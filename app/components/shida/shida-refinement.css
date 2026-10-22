@@ -1,0 +1,75 @@
+/* Shared SHIDA public and personal navigation. Operational workspaces use their own shell. */
+.market-surface{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+body .market-surface #main-content{flex:1;min-height:0}
+.market-surface .market-footer{padding:20px 0}
+.shida-footer-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.shida-footer-row nav{display:flex;flex-wrap:wrap;gap:8px 20px}
+.shida-footer-row nav a{display:inline-flex;align-items:center;min-height:44px;font-size:.8rem}
+.shida-footer-row small{color:var(--mp-muted);font-size:.75rem}
+.shida-navigation{display:flex;justify-content:center;gap:8px;background:#fffefa;border-bottom:1px solid #e0dfd6;padding:4px 16px}
+.shida-navigation :is(a,button){display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 14px;border:0;border-radius:8px;color:#173e32;background:transparent;font:600 .8rem/1.2 Arial,sans-serif;text-decoration:none;cursor:pointer}
+.shida-navigation svg{width:20px;height:20px;flex-shrink:0}
+.shida-navigation [aria-current=page]{background:#173e32;color:#fffefa}
+.shida-navigation :is(a,button):hover{background:#e9eddf;color:#173e32}
+.shida-navigation-menu{color:#173e32;background:#fffefa;border:1px solid #d9ddce;border-radius:14px;padding:20px;width:min(480px,calc(100% - 24px));max-height:85dvh;overflow:auto}
+.shida-navigation-menu::backdrop{background:#102d2499}
+.shida-navigation-menu header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.shida-navigation-menu h2{font:500 1.25rem Georgia,serif;margin:0}
+.shida-navigation-menu nav{display:grid;gap:4px}
+.shida-navigation-menu :is(a,button){display:flex;align-items:center;min-height:44px;padding:10px 12px;color:#173e32;border:1px solid #d9ddce;border-radius:6px;background:transparent;font-size:.9rem}
+.market-surface .button-primary{background:#173e32;color:#fffefa;border-color:#173e32}
+.market-surface .button-primary:hover{background:#245741;border-color:#245741}
+body .market-surface .marketplace-public .mp-chips>a[aria-current=page]{background:#173e32;border-color:#173e32;color:#fffefa}
+.market-surface .discovery-account-note a{background:#173e32;color:#fffefa;border-radius:7px;padding:12px 20px;font-size:.95rem;font-weight:600}
+.market-surface .discovery-story-link a{border:1px solid #ad914e;border-radius:7px;padding:10px 18px;color:#173e32;font-size:.9rem;background:#f4efdf}
+.market-surface .discovery-entries article{grid-template-columns:90px minmax(0,1fr);padding:12px 16px}
+.market-surface .discovery-illustration{max-height:90px}
+/* Compact Wenze rhythm and equal product geometry, including mixed categories. */
+body .market-surface .marketplace-public :is(.wzp-discovery,.wzp-landing)>.marketplace-breadcrumb{margin:0 0 12px;min-height:32px}
+body .market-surface .marketplace-public :is(.wzp-discovery,.wzp-landing) .mp-discovery-header{margin-bottom:12px}
+body .market-surface .marketplace-public :is(.wzp-discovery,.wzp-landing) .mp-chips{margin:8px 0 12px}
+body .market-surface .marketplace-public .wzp-discovery-actions{margin:0;min-height:44px}
+body .market-surface .marketplace-public .wenze-product-grid{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;grid-auto-rows:1fr;margin-top:12px}
+body .market-surface .wenze-public .wenze-product-card{align-self:stretch;min-width:0;height:100%;display:flex;flex-direction:column}
+body .market-surface .wenze-public .wenze-product-card .marketplace-card-image{aspect-ratio:1;height:auto;flex:none;overflow:hidden}
+body .market-surface .wenze-public .wenze-product-card .marketplace-card-image :is(img,.marketplace-image-fallback){height:100%;width:100%;min-height:0;object-fit:contain;background:#f3f1e9}
+body .market-surface .wenze-public .wenze-product-card .marketplace-card-body{display:flex;flex-direction:column;flex:1;min-width:0}
+body .market-surface .wenze-public .wenze-product-card h2{min-height:2.8em;line-height:1.4;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+body .market-surface .wenze-public .wenze-product-card .wenze-card-price{min-height:1.4em;margin:0 0 6px}
+body .market-surface .wenze-public .wenze-product-card .wzp-product-seller{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+body .market-surface .wenze-public .wenze-product-card :is(.wenze-cart-actions,.wenze-cart-action-buttons){margin-top:auto}
+body .market-surface .mp-search .mp-food-search{grid-template-columns:2fr 1fr 1.4fr auto;align-items:end}
+body .market-surface .mp-search .mp-food-search>label{align-self:stretch;align-content:center}
+@media(max-width:1000px){body .market-surface .marketplace-public .wenze-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}body .market-surface .mp-search .mp-food-search{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+@media(max-width:700px){
+ .market-surface{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+ .shida-navigation{position:fixed;z-index:50;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));border:0;border-top:1px solid #d9ddce;box-shadow:0 -3px 12px #173e3208}
+ .shida-navigation :is(a,button){flex-direction:column;gap:4px;padding:6px 2px;min-height:58px;font-size:clamp(.62rem,2.6vw,.75rem);min-width:0;overflow-wrap:anywhere}
+ .shida-navigation svg{width:22px;height:22px}
+ .shida-navigation[data-keyboard=true]{display:none}
+ .market-surface:has(.shida-navigation[data-keyboard=true]){padding-bottom:0}
+ .market-surface .account-space{padding-bottom:24px}
+ .shida-footer-row{align-items:flex-start;flex-direction:column;gap:8px}
+ body .market-surface .marketplace-public .wenze-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ body .market-surface .marketplace-public :is(.wzp-discovery,.wzp-landing) .mp-chips{margin:6px 0 8px}
+ body .market-surface .mp-search .mp-food-search{grid-template-columns:minmax(0,1fr);gap:0}
+ body .market-surface .mp-search .mp-food-search>label{grid-column:1/-1;border-left:0;border-bottom:1px solid #e0dfd6;margin:0;padding-block:8px}
+ body .market-surface .mp-search .mp-food-search>button{grid-column:1/-1;margin:8px 0 0;width:100%}
+ .market-surface input,.market-surface select{font-size:16px!important}
+}
+@media print{.shida-navigation,.shida-navigation-menu{display:none}.market-surface{padding-bottom:0}}
+
+@media(max-width:700px){
+ body .market-surface .restaurant-detail .rst-sticky-basket{bottom:calc(72px + env(safe-area-inset-bottom,0px));padding-bottom:12px}
+ .market-surface:has(.rst-sticky-basket) #main-content{padding-bottom:76px}
+ body .market-surface:has(.shida-navigation[data-keyboard=true]) .rst-sticky-basket{display:none}
+}
+
+body .market-surface .wzp-discovery .mp-search details:not([open]){padding-block:0;margin-top:4px}
+body .market-surface .wzp-discovery .mp-search{margin-bottom:4px}
+
+body .market-surface .marketplace-public .wzp-discovery .mp-search{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:4px 12px}
+body .market-surface .wzp-discovery .mp-search-primary{grid-column:1/-1}
+body .market-surface .wzp-discovery .mp-search details{margin:0}
+body .market-surface .wzp-discovery .mp-search details[open]{grid-column:1/-1}
+body .market-surface .wzp-discovery .mp-search .wzp-discovery-actions{min-height:44px}

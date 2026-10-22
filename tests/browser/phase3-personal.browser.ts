@@ -37,7 +37,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,820,1
  await expect(page.locator('.space-organization')).toContainText(w('businessNote'));
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  if(locale==='fr'&&width!==820)await page.screenshot({path:`docs/evidence/phase3/management-${width}.png`,fullPage:true});
- if(width===390){await page.locator('.space-bottom').getByRole('button',{name:t.menu,exact:true}).click();await page.keyboard.press('Escape');await expect(page.locator('.space-bottom').getByRole('button',{name:t.menu,exact:true})).toBeFocused();}
+ if(width===390){await page.locator('.shida-navigation').getByRole('button',{name:t.menu,exact:true}).click();await page.keyboard.press('Escape');await expect(page.locator('.shida-navigation').getByRole('button',{name:t.menu,exact:true})).toBeFocused();}
  expect(state.writes).toBe(0);
 });
 test('empty, unavailable and denied sources never become invented activity or access',async({page})=>{
