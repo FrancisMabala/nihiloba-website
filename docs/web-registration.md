@@ -56,8 +56,9 @@ This narrowly scoped shared adjustment also supports external keyboards.
 build time** to enable routes, entry points and profile editing. Backend independently
 requires `WEB_REGISTRATION_ENABLED`. Do not enable until Backend migration **0197**
 has explicit production authorization and is applied, the Business callback is
-deployed, approved authentication-template language variants are available, and
-the canonical legal URLs are approved and readable. Missing legal URLs disable
+deployed, the canonical legal URLs are approved and readable, and activation is
+explicitly authorized after live-flow acceptance. Registration reuses the existing
+sign-in prepared WhatsApp message and number; there is no separate template gate. Missing legal URLs disable
 new acceptance; draft legal source files are not approval evidence.
 
 Disabling/rebuilding the website hides registration while preserving sign-in and
