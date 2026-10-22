@@ -5,6 +5,13 @@ import {GET,POST,PUT,DELETE} from '../app/api/shida/personal/wenze/[[...path]]/r
 import {PERSONAL_SESSION_COOKIE,personalSessionBinding} from '../app/api/shida/employment/route-utils';
 const token='isolated_wenze_session_fixture_12345',fetcher=vi.fn<typeof fetch>();
 const context=(path:string)=>({params:Promise.resolve({path:path.split('/')})});
+it.each(['quick-sell','stores/WNZ_fixture/products/WNP_fixture/sold'])('Quick Sell resolves the Personal actor server-side: %s',async path=>{
+ const response=await POST(req(path,'POST',path==='quick-sell'?{city:'Kinshasa'}:{expected_revision:1}),context(path));
+ expect(response.status).toBe(200);
+ expect(String(fetcher.mock.calls[1][0])).toContain('/contexts/USR_self/'+path);
+ jar.clear();
+ expect((await POST(req(path,'POST',{}),context(path))).status).toBe(401);
+});
 function req(path:string,method='GET',body?:object,headers:Record<string,string>={}){return new Request('https://nihiloba.com/api/shida/personal/wenze/'+path,{method,headers:{Origin:'https://nihiloba.com','X-Shida-Session':personalSessionBinding(token),'Content-Type':'application/json',...headers},...(body?{body:JSON.stringify(body)}:{})});}
 beforeEach(()=>{jar.set(PERSONAL_SESSION_COOKIE,token);vi.stubEnv('SHIDA_API_BASE_URL','https://backend.test');vi.stubGlobal('fetch',fetcher);fetcher.mockReset();fetcher.mockImplementation(async input=>String(input).endsWith('/contexts')?Response.json({contexts:[{type:'organization',public_ref:'BUS_other'},{type:'personal',public_ref:'USR_self'}]}):Response.json({stores:[]}));});
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();jar.clear();});

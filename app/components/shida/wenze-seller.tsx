@@ -1,4 +1,6 @@
 "use client";
+import {QuickSell} from "./quick-sell";
+import {quickSellCopy} from "@/app/lib/quick-sell-copy";
 import {WenzeHeader} from "./wenze-header";
 import { managementCopy } from "../../lib/restaurant-management-copy";
 import { leaveWork } from "../../lib/wenze-work";
@@ -20,11 +22,11 @@ import "./restaurant-seller.css";
 import "./wenze-mobile-chrome.css";
 
 export const sellerPath = (locale: RestaurantLocale) => `${locale === "en" ? "" : `/${locale}`}/shida/seller/wenze`;
-export function WenzeSeller({ locale }: { locale: RestaurantLocale }) {
+export function WenzeSeller({ locale, quickSell = false }: { locale: RestaurantLocale; quickSell?: boolean }) {
  const t = sellerChrome[locale];
  const management = managementCopy[locale];
  const [signedOutView, setSignedOutView] = useState(false);
- const design = {area:"Wenze",title:sellerText(locale,"title"),intro:sellerText(locale,"intro"),personal:sellerDesignCopy[locale].personal};
+ const design = {area:"Wenze",title:quickSell?quickSellCopy[locale].title:sellerText(locale,"title"),intro:quickSell?quickSellCopy[locale].intro:sellerText(locale,"intro"),personal:sellerDesignCopy[locale].personal};
  const [session, setSession] = useState<PersonalSession | null>(null);
  const [connectionLost, setConnectionLost] = useState(false);
  const [loading, setLoading] = useState(true), [pending, setPending] = useState(false), [message, setMessage] = useState("");
@@ -67,12 +69,12 @@ export function WenzeSeller({ locale }: { locale: RestaurantLocale }) {
   finally { if (alive.current) setPending(false); }
  }
  return <div lang={locale} className="rst-seller seller-design">
-<WenzeHeader beforeNavigate={leaveWork} locale={locale} name={session?.user.display_name} brandHref={`${locale === "en" ? "" : "/fr"}/shida/wenze`} pending={pending} onLanguage={async lang=>{if(await leaveWork())window.location.assign(sellerPath(lang)+window.location.search);}} onAccount={()=>void logout(true)} onLogout={()=>void logout()}/>
+{!quickSell&&<WenzeHeader beforeNavigate={leaveWork} locale={locale} name={session?.user.display_name} brandHref={`${locale === "en" ? "" : `/${locale}`}/shida/wenze`} pending={pending} onLanguage={async lang=>{if(await leaveWork())window.location.assign((quickSell?`${lang==="en"?"":`/${lang}`}/shida/wenze/sell`:sellerPath(lang))+window.location.search);}} onAccount={()=>void logout(true)} onLogout={()=>void logout()}/>}
 {(loading||pending||!session||message||connectionLost)&&<section className="rst container rst-shell">
-   {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <SellerLanding marketplace="wenze" locale={locale} design={design} browseHref={`${locale === "en" ? "" : "/fr"}/shida/wenze`} onAuthenticated={() => { signedOut.current = false; }}/>)}
+   {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <SellerLanding compact={quickSell} marketplace="wenze" locale={locale} design={design} browseHref={`${locale === "en" ? "" : `/${locale}`}/shida/wenze`} onAuthenticated={() => { signedOut.current = false; }}/>)}
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
   </section>}
-  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><WenzeApiProvider key={`${session.binding}:${locale}`} binding={session.binding} onUnauthorized={()=>setSession(null)}><WenzeWorkspace locale={locale}/></WenzeApiProvider></fieldset>}
+  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><WenzeApiProvider key={`${session.binding}:${locale}`} binding={session.binding} onUnauthorized={()=>setSession(null)}>{quickSell?<QuickSell locale={locale}/>:<WenzeWorkspace locale={locale}/>}</WenzeApiProvider></fieldset>}
  </div>;
 }

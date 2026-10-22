@@ -1,5 +1,8 @@
 // Explicit Personal gateway surface, traced to the existing Wenze routes.
 const routes=[
+["GET","quick-sell"],
+["POST","quick-sell"],
+["POST","stores/{store_ref}/products/{product_ref}/sold"],
 ["GET", "stores/{store_ref}/payment-preferences"],
 ["PUT", "stores/{store_ref}/payment-preferences"],
 ["GET", "stores/{store_ref}/pos/catalog"],
