@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:['account-space.browser.ts','services-account-navigation.browser.ts'],workers:1,use:{baseURL:'http://127.0.0.1:3022',channel:'msedge',headless:true,serviceWorkers:'block'},webServer:{command:'node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3022',url:'http://127.0.0.1:3022/shida/space',reuseExistingServer:false,timeout:120000},reporter:'list'});

@@ -45,6 +45,8 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   async headers() {
     return [
+      { source: "/shida/space/:path*", headers: privatePageHeaders },
+      { source: "/:lang(en|fr|ln|sw)/shida/space/:path*", headers: privatePageHeaders },
       { source: "/shida/my-applications/:path*", headers: privatePageHeaders },
       { source: "/shida/seller/:path*", headers: privatePageHeaders },
       { source: "/shida/school-receipts/:path*", headers: privatePageHeaders },

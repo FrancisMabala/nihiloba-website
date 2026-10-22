@@ -68,7 +68,7 @@ export function Header({ locale }: { locale: Locale }) {
   if(shida){
     const prefix=locale==="en"?"":"/fr";
     const markets=[["Wenze","wenze"],["Restaurants","restaurants"],["Services","services"],[locale==="en"?"Jobs":"Emploi","emplois"],[locale==="en"?"Homes":"Logements","appartements"],[locale==="en"?"Hotels":"Hôtels","hotels"]];
-    return <header className="market-header"><div className="market-header-inner"><div className="market-brand-group"><Link className="market-home" href={localizedPath(locale)} aria-label={marketplaceAccountCopy[locale].home}>NIHILOBA</Link><Link className="market-brand" href={`${prefix}/shida`}>SHIDA</Link></div><nav className="market-primary-nav" aria-label={locale==="en"?"Marketplaces":"Marchés"}>{markets.map(([label,path])=><Link key={path} href={`${prefix}/shida/${path}`} aria-current={suffix.startsWith(`/shida/${path}`)?"page":undefined}>{label}</Link>)}<Link className="market-cart" href={wenzeCartPath(locale)}>{wenzeCartCopy[locale].cart} · {cart?.item_count??0}</Link></nav><PublicShidaAccount key={`${pathname}:${accountLocale}`} locale={accountLocale}/></div></header>;
+    return <header className="market-header"><div className="market-header-inner"><div className="market-brand-group"><Link className="market-home" href={localizedPath(locale)} aria-label={marketplaceAccountCopy[locale].home}>NIHILOBA</Link><Link className="market-brand" href={`${prefix}/shida`}>SHIDA</Link></div><nav className="market-primary-nav" aria-label={locale==="en"?"Marketplaces":"Marchés"}>{markets.map(([label,path])=><Link key={path} href={`${prefix}/shida/${path}`} aria-current={suffix.startsWith(`/shida/${path}`)?"page":undefined}>{label}</Link>)}</nav><div className="market-header-actions"><Link className="market-cart" href={wenzeCartPath(locale)} aria-label={`${wenzeCartCopy[locale].cart}: ${cart?.item_count??0}`}><CartIcon/><span className="market-cart-label">{wenzeCartCopy[locale].cart} · </span><span aria-live="polite" aria-busy={cartLoading}>{cartLoading?"·":cart?.item_count??0}</span></Link><PublicShidaAccount key={`${pathname}:${accountLocale}`} locale={accountLocale}/></div></div></header>;
   }
 
   return (
@@ -121,12 +121,6 @@ export function Header({ locale }: { locale: Locale }) {
           })}
 
           <span className="nav-divider" aria-hidden="true" />
-
-          <Link className="header-cart-link" href={wenzeCartPath(locale)} onClick={() => setOpen(false)} aria-label={`${wenzeCartCopy[locale].cart}: ${cart?.item_count ?? 0}`}>
-            <CartIcon />
-            <span>{wenzeCartCopy[locale].cart}</span>
-            <span className="header-cart-count" aria-live="polite" aria-busy={cartLoading}>{cartLoading ? "·" : cart?.item_count ?? 0}</span>
-          </Link>
 
           <div
             className="language-switcher"

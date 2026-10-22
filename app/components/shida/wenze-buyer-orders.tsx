@@ -30,7 +30,7 @@ function Orders({binding,locale}:{binding:string;locale:Locale}){
  },[binding,page,refresh]);
  function load(next:number){setData(null);setError(false);setPage(next);setRefresh(value=>value+1);}
  return <><p>{t.note}</p><button onClick={()=>load(page)}>{t.refresh}</button>
- {error?<p role="alert">{t.failed}</p>:!data?<p role="status">{t.loading}</p>:!data.orders.length?<p>{t.empty}</p>:<div style={{display:"grid",gap:"1rem",marginBlock:"1.5rem"}}>{data.orders.map(order=><article key={order.reference} style={{padding:"1.25rem",border:"1px solid #deded3",borderRadius:".75rem",minWidth:0,overflowWrap:"anywhere"}}>
+ {error?<p role="alert">{t.failed}</p>:!data?<p role="status">{t.loading}</p>:!data.orders.length?<p>{t.empty}</p>:<div style={{display:"grid",gap:"1rem",marginBlock:"1.5rem"}}>{data.orders.map(order=><article id={order.reference} key={order.reference} style={{padding:"1.25rem",border:"1px solid #deded3",borderRadius:".75rem",minWidth:0,overflowWrap:"anywhere"}}>
  <h2>{order.store_name}</h2><small>{order.reference}</small><ul>{order.items.map((item,i)=><li key={i}>{item.name} {item.variant} × {item.quantity}</li>)}</ul>
  <p><strong>{order.total===null?t.unknown:`${t.amount}: ${new Intl.NumberFormat(locale).format(Number(order.total))} ${order.currency}`}</strong></p>
  <WenzeOrderTimeline locale={locale} timeline={order.timeline}/><WenzeOrderUpdates key={`${binding}:${order.reference}`} locale={locale} identity={`${binding}:${order.reference}`} load={()=>buyerRequest(`orders/${order.reference}/updates`,binding)} read={()=>buyerRequest(`orders/${order.reference}/updates/read`,binding,"POST",{})}/>
