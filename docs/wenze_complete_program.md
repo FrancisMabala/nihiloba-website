@@ -69,3 +69,36 @@ ten Quick Sell/stock-filter cases, and 12 management browser cases across all fo
 languages at 390/768/1440 passed. Screenshots `evidence/wenze-program/stock-*`.
 No duplicate bottom navigation or horizontal page overflow was observed. Real
 mobile device acceptance remains distinct from emulation.
+
+## Final candidate: scanner and cross-batch regression
+
+The scanner now uses native Code128 detection when supported and lazy ZXing
+(@zxing/browser 0.1.5, @zxing/library 0.21.3) otherwise. Actual SHIDA-generated
+product and variant label geometry is decoded in automated browser tests. Product
+lookup remains exact-shop and server-authorized. Store/receipt QR content is not
+accepted as a product. Manual entry remains; camera tracks stop on success,
+Stop, timeout, backgrounding and unmount. Permission denial has four-language
+recovery guidance. No image is uploaded or recorded.
+
+Final refinements: listing status reads are bounded (20 displayed, at most 100
+candidate projections per request, next-offset paging); the browser never loads the
+entire archive. Gateway tests verify listing/availability parameters reach only the
+intended reads. Shop Settings preserves the shop-list/create action for one-shop
+owners. No account, Business authorization, order or finance formula change.
+
+Final validation: production build/TypeScript, scoped ESLint and 26 gateway,
+activity, formatting and scan-parser unit tests passed. Browser suites: 12 Quick
+Sell + 12 management + 4 scanner + 11 shop checkout + 36 delivery/checkout = 75
+passing cases. FR/EN/LN/SW and mobile/tablet/desktop sizes covered. The scanner
+cases use real decoder code with synthetic camera frames rendered from backend
+labels; this is not a physical iPhone/Android test. Backend final focused regression
+36 passed, plus 131 isolated PostgreSQL cases and earlier focused checks.
+
+The full backend platform suite has a baseline-reproduced foreign-key fixture
+teardown error (221 passed, 2 skipped, 1 error before stop); no global green claim.
+Existing unchanged dependencies have audit advisories; ZXing had none reported.
+Detailed capability inventory, routes, architecture, manual device procedure and
+remaining external gates are in backend `docs/wenze/COMPLETE_PROGRAM_2026_10_23.md`.
+Earlier all-pages loading and in-progress statements describe intermediate
+checkpoints and are superseded by this final candidate section. Deployment proof
+will be appended after exact-SHA verification.
