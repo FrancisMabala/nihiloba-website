@@ -23,6 +23,8 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1280]
  await expect(page.getByLabel(t.landmark,{exact:true})).toHaveValue('Cour bleue derrière la pharmacie — synthetic');await expect(page.getByLabel(t.instruction,{exact:true})).toHaveValue('Sonner deux fois');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`docs/evidence/delivery-workflow/restaurant-${locale}-${width}.png`,fullPage:true});
  signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));await expect(page.getByLabel(t.landmark,{exact:true})).toHaveCount(0);
+ expect(await page.evaluate(()=>sessionStorage.getItem('shida-restaurant-web:RST-CHECKOUT:basket'))).toBe('RBA-DELIVERY');
+ signedIn=true;await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));await expect(page.getByLabel(t.landmark,{exact:true})).toHaveValue('Cour bleue derrière la pharmacie — synthetic');
 });
 for(const locale of ['en','fr','ln','sw'] as const)test(`private Wenze destination ${locale}`,async({page})=>{
  let signedIn=true;const t=deliveryLabels[locale];const order={reference:'SO-private',store_name:'Boutique du Fleuve',total:'1500',currency:'CDF',fulfillment_method:'delivery',items:[{name:'Produit',quantity:1}],timeline:{current:'preparing',steps:['processing','preparing','out_for_delivery','delivered']},delivery_fee:'500',delivery_fee_status:'known'};

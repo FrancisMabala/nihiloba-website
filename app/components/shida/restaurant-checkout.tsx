@@ -30,7 +30,7 @@ export function RestaurantCheckout({locale,establishment,options:initialOptions,
  const [preference,setPreference]=useState(""),[instruction,setInstruction]=useState(""),[address,setAddress]=useState({street:"",building:"",landmark:"",quartier:""});
  const [destinationSaved,setDestinationSaved]=useState(false),[step,setStep]=useState<"menu"|"basket"|"fulfillment"|"review"|"submitted">("menu");
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(""),[orderRef,setOrderRef]=useState<string|null>(null),[pending,setPending]=useState<Submission|null>(null);
- const lock=useRef(false),lastBinding=useRef<string|null>(null);
+ const lock=useRef(false),lastBinding=useRef<string|null>(null),activeBinding=useRef<string|null>(null),sessionEpoch=useRef(0);
  const itemMap=new Map((menu?.items??[]).map(item=>[item.public_ref,item]));
  const selectedName=(id:string)=>itemMap.get(id)?.name||labels[id]||t.selected;
  const saveDraft=useCallback((next:Selections)=>{try{sessionStorage.setItem(prefix+"selections",JSON.stringify(next));}catch{ /* Optional pre-auth continuity. */ }},[prefix]);
@@ -39,13 +39,31 @@ export function RestaurantCheckout({locale,establishment,options:initialOptions,
  const perform=useCallback(async <T,>(suffix:string,method="GET",body?:unknown,binding=session?.binding):Promise<T>=>{
    if(!binding)throw new Error("auth");
    const result=await request(`${path}${suffix}`,{method,body:body===undefined?undefined:JSON.stringify(body)},binding) as T;
-   if(lastBinding.current!==binding)throw new Error("session changed");return result;
+   if(activeBinding.current!==binding)throw new Error("session changed");return result;
  },[session?.binding]);
- const loadSession=useCallback(async()=>{try{const value=await restorePersonalSession();if(lastBinding.current&&lastBinding.current!==value.binding){setBasket(null);setSelections(empty());setPending(null);setAddress({street:"",building:"",landmark:"",quartier:""});setInstruction("");setPreference("");setDestinationSaved(false);setStep("menu");try{for(const suffix of ["basket","selections","submit","create"])sessionStorage.removeItem(prefix+suffix);}catch{}}lastBinding.current=value.binding;setSession(current=>current?.binding===value.binding?current:value);}catch{if(lastBinding.current){setBasket(null);setSelections(empty());setPending(null);setPreference("");setStep("menu");try{for(const suffix of ["basket","selections","submit","create"])sessionStorage.removeItem(prefix+suffix);}catch{}}lastBinding.current=null;setSession(null);setAddress({street:"",building:"",landmark:"",quartier:""});setInstruction("");setDestinationSaved(false);}finally{setChecked(true);}},[prefix]);
- useEffect(()=>{let alive=true;queueMicrotask(()=>{if(!alive)return;try{const raw=sessionStorage.getItem(prefix+"selections");if(raw){const parsed:unknown=JSON.parse(raw);if(safe(parsed))setSelections(parsed);}const names=sessionStorage.getItem(prefix+"labels");if(names)setLabels(JSON.parse(names) as Record<string,string>);const uncertain=sessionStorage.getItem(prefix+"submit");if(uncertain)setPending(JSON.parse(uncertain) as Submission);}catch{}void loadSession();});const changed=()=>{setSession(null);setAddress({street:"",building:"",landmark:"",quartier:""});setInstruction("");setDestinationSaved(false);void loadSession();};const focused=()=>void loadSession();window.addEventListener(PERSONAL_SESSION_EVENT,changed);window.addEventListener("focus",focused);return()=>{alive=false;window.removeEventListener(PERSONAL_SESSION_EVENT,changed);window.removeEventListener("focus",focused);};},[loadSession,prefix]);
+ const invalidateSessionCheck=useCallback(()=>{++sessionEpoch.current;activeBinding.current=null;},[]);
+ const loadSession=useCallback(async()=>{
+  const ticket=++sessionEpoch.current;
+  try{
+   const value=await restorePersonalSession();if(ticket!==sessionEpoch.current)return;
+   if(lastBinding.current&&lastBinding.current!==value.binding){
+    setBasket(null);setSelections(empty());setPending(null);setAddress({street:"",building:"",landmark:"",quartier:""});setInstruction("");setPreference("");setDestinationSaved(false);setStep("menu");
+    try{for(const suffix of ["basket","selections","submit","create"])sessionStorage.removeItem(prefix+suffix);}catch{}
+   }else{
+    // Keep opaque recovery references through expiry/network failure. The server
+    // checks ownership before returning a basket or destination on reauthentication.
+    try{const uncertain=sessionStorage.getItem(prefix+"submit");if(uncertain)setPending(JSON.parse(uncertain) as Submission);}catch{}
+   }
+   lastBinding.current=value.binding;activeBinding.current=value.binding;setSession(current=>current?.binding===value.binding?current:value);
+  }catch{
+   if(ticket!==sessionEpoch.current)return;
+   activeBinding.current=null;setSession(null);setBasket(null);setPending(null);setPreference("");setOrderRef(null);setAddress({street:"",building:"",landmark:"",quartier:""});setInstruction("");setDestinationSaved(false);
+  }finally{if(ticket===sessionEpoch.current)setChecked(true);}
+ },[prefix]);
+ useEffect(()=>{let alive=true;queueMicrotask(()=>{if(!alive)return;try{const raw=sessionStorage.getItem(prefix+"selections");if(raw){const parsed:unknown=JSON.parse(raw);if(safe(parsed))setSelections(parsed);}const names=sessionStorage.getItem(prefix+"labels");if(names)setLabels(JSON.parse(names) as Record<string,string>);const uncertain=sessionStorage.getItem(prefix+"submit");if(uncertain)setPending(JSON.parse(uncertain) as Submission);}catch{}void loadSession();});const changed=()=>{activeBinding.current=null;setSession(null);setAddress({street:"",building:"",landmark:"",quartier:""});setInstruction("");setDestinationSaved(false);void loadSession();};const focused=()=>void loadSession();window.addEventListener(PERSONAL_SESSION_EVENT,changed);window.addEventListener("focus",focused);return()=>{alive=false;invalidateSessionCheck();window.removeEventListener(PERSONAL_SESSION_EVENT,changed);window.removeEventListener("focus",focused);};},[loadSession,prefix,invalidateSessionCheck]);
  useEffect(()=>{if(!session)return;let alive=true;const stored=(()=>{try{return sessionStorage.getItem(prefix+"basket");}catch{return null;}})();if(!stored)return;void perform<Basket>(`/baskets/${stored}`,"GET",undefined,session.binding).then(async value=>{if(!alive)return;if(value.channel!=="web"||value.establishment_ref!==establishment.public_ref)throw new Error("wrong basket");setBasket(value);setSelections(value.selections);saveDraft(value.selections);setPreference(value.food_preference||"");if(value.fulfillment_method==="delivery")setMethod("delivery");if(value.window_ref)setWindowRef(value.window_ref);if(value.order_ref){setOrderRef(value.order_ref);setStep("submitted");}else if(value.fulfillment_method==="delivery"){
  const {destination}=await perform<{destination:{fields:Record<string,string|null>;delivery_instruction:string|null}|null}>(`/baskets/${stored}/destination`,"GET",undefined,session.binding);
- if(!alive||lastBinding.current!==session.binding)return;
+ if(!alive||activeBinding.current!==session.binding)return;
  if(destination?.fields){const f=destination.fields;const index=initialOptions.delivery?.areas.findIndex(a=>a.country===f.country&&a.city===f.city&&a.commune===f.commune&&(!a.quartier||a.quartier===f.quartier))??-1;
  setAreaIndex(index);setAddress({street:f.street||"",building:f.building||"",landmark:f.landmark||"",quartier:f.quartier||""});setInstruction(destination.delivery_instruction||"");setDestinationSaved(true);}
  }}).catch(()=>{if(alive)setMessage(t.problem);});return()=>{alive=false;};},[session,prefix,perform,establishment.public_ref,saveDraft,initialOptions.delivery,t.problem]);

@@ -20,7 +20,10 @@ Wenze Personal and Business screens label the destination and show canonical fee
 status. Restaurant operator screens label existing protected destination fields.
 
 Restaurant checkout restores the backend destination after refresh, including
-private instructions; it stores no address in local/session storage. Whole-commune
+private instructions; it stores no address in local/session storage. Opaque basket
+and idempotency references survive session expiry/network failure, while private
+fields clear; reauthentication rechecks ownership before restoring the destination.
+Concurrent session checks cannot apply stale identity responses. Whole-commune
 areas accept an optional quartier. Review includes country/city/commune/quartier.
 Street/building OR a precise landmark continues to satisfy the existing rule.
 Stale responses after account changes are rejected, and textarea labels remain
