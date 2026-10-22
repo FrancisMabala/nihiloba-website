@@ -1,3 +1,5 @@
+> Initial activation update: see [22 October release record](registration-launch-20261022.md) for the owner’s explicit activation decision, legal version 1.1, adult/DRC self-declaration and remaining non-code obligations. Defaults remain off; production flags are changed explicitly during deployment.
+
 # SHIDA native registration — 22 October 2026
 
 ## Architecture and behavior

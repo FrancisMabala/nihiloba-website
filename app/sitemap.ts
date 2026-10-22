@@ -10,9 +10,15 @@ const legalRoutes = [
   "/shida/privacy", "/shida/privacy/1.0", "/fr/shida/confidentialite", "/fr/shida/confidentialite/1.0",
   "/shida/business/terms", "/shida/business/terms/1.0", "/fr/shida/business/conditions", "/fr/shida/business/conditions/1.0",
 ];
-const routes = ["/shida/transport", "/fr/shida/transport", "/shida/business", "/fr/shida/business", "/shida/ecole", "/fr/shida/ecole", "/ln/shida/ecole", "/sw/shida/ecole", ...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/shida/emplois", "/fr/shida/emplois", "/shida/appartements", "/fr/shida/appartements", "/shida/hotels", "/fr/shida/hotels", "/shida/services", "/fr/shida/services", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance", ...legalRoutes];
+const routes = ["/shida/transport", "/fr/shida/transport", "/shida/business", "/fr/shida/business", "/shida/ecole", "/fr/shida/ecole", "/ln/shida/ecole", "/sw/shida/ecole", ...["en", "fr"].flatMap((locale) => pages.map((page) => `/${locale}${page}`)).filter((route) => route !== "/en/shida"), "/shida", "/shida/emplois", "/fr/shida/emplois", "/shida/appartements", "/fr/shida/appartements", "/shida/hotels", "/fr/shida/hotels", "/shida/services", "/fr/shida/services", "/en/data-protection", "/fr/protection-des-donnees", "/en/security", "/fr/securite", "/en/terms", "/fr/conditions-utilisation", "/en/faq", "/fr/faq", "/en/acceptable-use", "/fr/utilisation-acceptable", "/en/trust", "/fr/confiance", ...legalRoutes, ...legalRoutes.filter(route => route.endsWith("/1.0")).map(route => route.replace("/1.0", "/1.1"))];
 
 const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
+  "/shida/terms/1.1": { en: "/shida/terms/1.1", fr: "/fr/shida/conditions/1.1" },
+  "/fr/shida/conditions/1.1": { en: "/shida/terms/1.1", fr: "/fr/shida/conditions/1.1" },
+  "/shida/privacy/1.1": { en: "/shida/privacy/1.1", fr: "/fr/shida/confidentialite/1.1" },
+  "/fr/shida/confidentialite/1.1": { en: "/shida/privacy/1.1", fr: "/fr/shida/confidentialite/1.1" },
+  "/shida/business/terms/1.1": { en: "/shida/business/terms/1.1", fr: "/fr/shida/business/conditions/1.1" },
+  "/fr/shida/business/conditions/1.1": { en: "/shida/business/terms/1.1", fr: "/fr/shida/business/conditions/1.1" },
   "/shida/terms": { en: "/shida/terms", fr: "/fr/shida/conditions" },
   "/fr/shida/conditions": { en: "/shida/terms", fr: "/fr/shida/conditions" },
   "/shida/terms/1.0": { en: "/shida/terms/1.0", fr: "/fr/shida/conditions/1.0" },

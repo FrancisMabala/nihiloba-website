@@ -1,3 +1,5 @@
+> 22 October 2026 update: version 1.1 is the owner-authorized initial-release copy, with explicit-acceptance effect. Version 1.0 remains unchanged as historical draft material. See [release decisions and limitations](registration-launch-20261022.md). The historical implementation description below records the original 1.0 rollout; current versions are defined by the registry. Publication is not counsel approval or regulatory clearance.
+
 # SHIDA versioned public legal documents
 
 Status: Version 1.0 is published as a **working draft pending legal review**. Nothing in this implementation should be described as lawyer-approved or ready for final commercial reliance.

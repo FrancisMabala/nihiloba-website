@@ -1,5 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
-import {registrationCopy} from '../../app/lib/registration/copy';
+import {registrationCopy,registrationEligibility} from '../../app/lib/registration/copy';
 import {personalLoginCopy} from '../../app/lib/personal-login-copy';
 import {PERSONAL_SESSION_EVENT} from '../../app/lib/personal-session-browser';
 test.beforeEach(async({page,browserName})=>{
@@ -19,7 +19,7 @@ async function fixture(page:Page,existing=false,business=false){
   const url=new URL(route.request().url()),path=url.pathname.replace(/\/$/,''),method=route.request().method();
   const reply=(value:unknown,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(value)});
   const projection=()=>({onboarding_ref:business?'ONB_fixture':'POD_fixture',revision:state.revision,status:state.status,values:state.values,existing_account:false,organization_types:['company','school'],sectors:['commerce_distribution'],remaining_fields:(business?['name','organization_type','sector','personal_name','city','country_code','commune_or_municipality','street_or_avenue','building_or_parcel']:['personal_name','city','country_code']).filter(key=>!state.values[key]),legal:[{document_type:'SHIDA_TERMS_OF_USE',version:'1',url:'https://nihiloba.com/shida/terms/1.0/',accepted:state.accepted},{document_type:'SHIDA_PRIVACY_POLICY',version:'1',url:'https://nihiloba.com/shida/privacy/1.0/',accepted:state.accepted},...(business?[{document_type:'SHIDA_BUSINESS_TERMS',version:'1',url:'https://nihiloba.com/shida/business/terms/1.0/',accepted:state.accepted}]:[])]});
-  if(path.endsWith('/auth/whatsapp/registration'))return reply({challenge_ref:'DWC_fixture_test',expires_at:new Date(Date.now()+300000).toISOString(),whatsapp_url:'https://wa.me/243000000000?text=synthetic-not-sent'},201);
+  if(path.endsWith('/auth/whatsapp/registration')){expect(route.request().headers()['x-shida-eligibility']).toBe('adult-drc-v1');return reply({challenge_ref:'DWC_fixture_test',expires_at:new Date(Date.now()+300000).toISOString(),whatsapp_url:'https://wa.me/243000000000?text=synthetic-not-sent'},201);}
   if(path.includes('/auth/whatsapp/registration/DWC_')){if(path.endsWith('/session')){state.verified=true;return reply({verified:true});}return reply({status:'verified'});}
   if(path.includes('/registration/')){
    if(!state.verified)return reply({error:{code:'unauthorized'}},401);
@@ -44,6 +44,8 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,768,1
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-choice-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:t.next,exact:true}).click();
+ await expect(page.getByRole('button',{name:login.start,exact:true})).toBeDisabled();
+ await page.getByLabel(registrationEligibility[locale]).check();
  await page.getByRole('button',{name:login.start,exact:true}).click();
  await page.getByLabel(login.codeLabel).fill('610294');await page.getByRole('button',{name:t.verifyButton,exact:true}).click();
  await page.locator('#registration-personal_name').fill('Synthetic Personal');await page.getByRole('button',{name:t.next,exact:true}).click();

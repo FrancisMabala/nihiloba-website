@@ -15,10 +15,10 @@ export type ShidaLegalDocumentMetadata = {
   locale: ShidaLegalSourceLocale;
   languageLabel: string;
   title: string;
-  status: "draft_pending_legal_review";
-  publicationDate: null;
-  effectiveDate: null;
-  lastUpdatedDate: null;
+  status: "draft_pending_legal_review" | "published_initial_release";
+  publicationDate: string | null;
+  effectiveDate: string | null;
+  lastUpdatedDate: string | null;
   canonicalRoute: string;
   versionRoute: string;
   sourcePath: string;
@@ -38,10 +38,16 @@ const DOCUMENTS: readonly ShidaLegalDocumentMetadata[] = [
   { documentId: "SHIDA_PRIVACY_POLICY", kind: "privacy", version: "1.0", locale: "fr", languageLabel: "Français", title: "Politique de confidentialité SHIDA", status: "draft_pending_legal_review", publicationDate: null, effectiveDate: null, lastUpdatedDate: null, canonicalRoute: "/fr/shida/confidentialite", versionRoute: "/fr/shida/confidentialite/1.0", sourcePath: "privacy/1.0/fr.md" },
   { documentId: "SHIDA_BUSINESS_TERMS", kind: "business-terms", version: "1.0", locale: "en", languageLabel: "English", title: "SHIDA Business Terms of Use", status: "draft_pending_legal_review", publicationDate: null, effectiveDate: null, lastUpdatedDate: null, canonicalRoute: "/shida/business/terms", versionRoute: "/shida/business/terms/1.0", sourcePath: "business-terms/1.0/en.md" },
   { documentId: "SHIDA_BUSINESS_TERMS", kind: "business-terms", version: "1.0", locale: "fr", languageLabel: "Français", title: "Conditions d’utilisation de SHIDA Business", status: "draft_pending_legal_review", publicationDate: null, effectiveDate: null, lastUpdatedDate: null, canonicalRoute: "/fr/shida/business/conditions", versionRoute: "/fr/shida/business/conditions/1.0", sourcePath: "business-terms/1.0/fr.md" },
+  { documentId: "SHIDA_TERMS_OF_USE", kind: "terms", version: "1.1", locale: "en", languageLabel: "English", title: "SHIDA Terms of Use", status: "published_initial_release", publicationDate: "2026-10-22", effectiveDate: null, lastUpdatedDate: "2026-10-22", canonicalRoute: "/shida/terms", versionRoute: "/shida/terms/1.1", sourcePath: "terms/1.1/en.md" },
+  { documentId: "SHIDA_TERMS_OF_USE", kind: "terms", version: "1.1", locale: "fr", languageLabel: "Français", title: "Conditions d’utilisation de SHIDA", status: "published_initial_release", publicationDate: "2026-10-22", effectiveDate: null, lastUpdatedDate: "2026-10-22", canonicalRoute: "/fr/shida/conditions", versionRoute: "/fr/shida/conditions/1.1", sourcePath: "terms/1.1/fr.md" },
+  { documentId: "SHIDA_PRIVACY_POLICY", kind: "privacy", version: "1.1", locale: "en", languageLabel: "English", title: "SHIDA Privacy Policy", status: "published_initial_release", publicationDate: "2026-10-22", effectiveDate: null, lastUpdatedDate: "2026-10-22", canonicalRoute: "/shida/privacy", versionRoute: "/shida/privacy/1.1", sourcePath: "privacy/1.1/en.md" },
+  { documentId: "SHIDA_PRIVACY_POLICY", kind: "privacy", version: "1.1", locale: "fr", languageLabel: "Français", title: "Politique de confidentialité SHIDA", status: "published_initial_release", publicationDate: "2026-10-22", effectiveDate: null, lastUpdatedDate: "2026-10-22", canonicalRoute: "/fr/shida/confidentialite", versionRoute: "/fr/shida/confidentialite/1.1", sourcePath: "privacy/1.1/fr.md" },
+  { documentId: "SHIDA_BUSINESS_TERMS", kind: "business-terms", version: "1.1", locale: "en", languageLabel: "English", title: "SHIDA Business Terms of Use", status: "published_initial_release", publicationDate: "2026-10-22", effectiveDate: null, lastUpdatedDate: "2026-10-22", canonicalRoute: "/shida/business/terms", versionRoute: "/shida/business/terms/1.1", sourcePath: "business-terms/1.1/en.md" },
+  { documentId: "SHIDA_BUSINESS_TERMS", kind: "business-terms", version: "1.1", locale: "fr", languageLabel: "Français", title: "Conditions d’utilisation de SHIDA Business", status: "published_initial_release", publicationDate: "2026-10-22", effectiveDate: null, lastUpdatedDate: "2026-10-22", canonicalRoute: "/fr/shida/business/conditions", versionRoute: "/fr/shida/business/conditions/1.1", sourcePath: "business-terms/1.1/fr.md" },
 ] as const;
 
 export const shidaLegalDocuments = DOCUMENTS;
-export const shidaLegalCurrentVersions: Readonly<Record<ShidaLegalDocumentKind, string>> = { terms: "1.0", privacy: "1.0", "business-terms": "1.0" };
+export const shidaLegalCurrentVersions: Readonly<Record<ShidaLegalDocumentKind, string>> = { terms: "1.1", privacy: "1.1", "business-terms": "1.1" };
 
 export function shidaLegalLocaleFallback(locale: ShidaLegalRequestedLocale): ShidaLegalSourceLocale {
   return locale === "en" ? "en" : "fr";
@@ -105,8 +111,8 @@ export function shidaLegalPageMetadata(document: ShidaLegalDocumentMetadata, his
   const canonical = historical ? document.versionRoute : document.canonicalRoute;
   const otherRoute = historical ? other.versionRoute : other.canonicalRoute;
   const description = document.locale === "fr"
-    ? `Version ${document.version} du document public ${document.title}. Document de travail en attente de validation juridique.`
-    : `Version ${document.version} of the public ${document.title}. Working draft pending legal review.`;
+    ? `Version ${document.version} du document public ${document.title}. ${document.status === "draft_pending_legal_review" ? "Document de travail en attente de validation juridique." : "Version initiale applicable sur acceptation expresse."}`
+    : `Version ${document.version} of the public ${document.title}. ${document.status === "draft_pending_legal_review" ? "Working draft pending legal review." : "Initial-release terms; applicable on express acceptance."}`;
   return {
     title: `${document.title} — Version ${document.version}`,
     description,

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { PersonalWhatsAppLogin } from "./personal-whatsapp-login";
 import { authMutation, markLoginUnconfirmed } from "../../lib/personal-login-browser";
 import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib/personal-session-browser";
-import { registrationCopy, type RegistrationLocale } from "../../lib/registration/copy";
+import { registrationCopy, privacyAcknowledgement, type RegistrationLocale } from "../../lib/registration/copy";
 import { onboardingText, catalogLabel } from "../../lib/registration/onboarding-copy";
 import "./registration.css";
 
@@ -42,7 +42,17 @@ export function RegistrationWizard({ locale }: { locale: RegistrationLocale }) {
   const terminal = ["cancelled", "expired"].includes(draft?.status ?? "");
   const existing = kind === "personal" && draft?.existing_account;
   const documentName = (key: string) => key === "SHIDA_TERMS_OF_USE" ? t.terms : key === "SHIDA_PRIVACY_POLICY" ? t.privacy : t.businessTerms;
-  const documentUrl = (document: Document) => document.url?.startsWith("https://") ? document.url : null;
+  const documentUrl = (document: Document) => {
+    if (!document.url?.startsWith("https://")) return null;
+    try {
+      const url = new URL(document.url);
+      if (locale !== "en" && url.hostname === "nihiloba.com") {
+        const paths: Record<string,string> = {SHIDA_TERMS_OF_USE:"/fr/shida/conditions",SHIDA_PRIVACY_POLICY:"/fr/shida/confidentialite",SHIDA_BUSINESS_TERMS:"/fr/shida/business/conditions"};
+        if (paths[document.document_type] && /^(1\.0|1\.1)$/.test(document.version)) return `${url.origin}${paths[document.document_type]}/${document.version}`;
+      }
+      return document.url;
+    } catch { return null; }
+  };
   function recover(error: unknown) {
     setSaved(false);
     if (error instanceof RegistrationError) {
@@ -174,7 +184,7 @@ export function RegistrationWizard({ locale }: { locale: RegistrationLocale }) {
             {visible.map(key => { const options = key === "organization_type" ? draft.organization_types : key === "sector" ? draft.sectors : null;
               return <div key={key}><label htmlFor={`registration-${key}`}>{label(key)}</label>{options ? <select id={`registration-${key}`} name={key} value={values[key] ?? ""} aria-invalid={fields.includes(key)} onBlur={e=>saveField(key,e.target.value)} onChange={e=>{setValues({...values,[key]:e.target.value});setSaved(false);}}><option value="">{onboardingText(locale,"choose")}</option>{options.map(value=><option value={value} key={value}>{catalogLabel(locale,value)}</option>)}</select> : <input id={`registration-${key}`} name={key} value={values[key] ?? ""} maxLength={500} autoComplete={key === "personal_name" ? "name" : key === "city" ? "address-level2" : "off"} aria-invalid={fields.includes(key)} onBlur={e=>saveField(key,e.target.value)} onChange={e=>{setValues({...values,[key]:e.target.value});setSaved(false);}}/>}{fields.includes(key) && <p className="form-error">{onboardingText(locale,"invalid")}</p>}</div>;
             })}
-            {group === legalStep && documents.map(document=><label className="registration-consent" key={document.document_type}><input type="checkbox" checked={document.accepted || decisions[document.document_type] === document.version} disabled={document.accepted || !documentUrl(document)} onChange={e=>{const next={...decisions};if(e.target.checked)next[document.document_type]=document.version;else delete next[document.document_type];setDecisions(next);}}/><span>{t.consent} {documentUrl(document) ? <a href={documentUrl(document)!} target="_blank" rel="noopener noreferrer">{documentName(document.document_type)} · {document.version}</a> : <>{documentName(document.document_type)} · {document.version} — {onboardingText(locale,"unavailable")}</>}</span></label>)}
+            {group === legalStep && documents.map(document=><label className="registration-consent" key={document.document_type}><input type="checkbox" checked={document.accepted || decisions[document.document_type] === document.version} disabled={document.accepted || !documentUrl(document)} onChange={e=>{const next={...decisions};if(e.target.checked)next[document.document_type]=document.version;else delete next[document.document_type];setDecisions(next);}}/><span>{document.document_type === "SHIDA_PRIVACY_POLICY" ? privacyAcknowledgement[locale] : t.consent} {documentUrl(document) ? <a href={documentUrl(document)!} target="_blank" rel="noopener noreferrer">{documentName(document.document_type)} · {document.version}{locale === "ln" || locale === "sw" ? " (FR)" : ""}</a> : <>{documentName(document.document_type)} · {document.version} — {onboardingText(locale,"unavailable")}</>}</span></label>)}
             {group === reviewStep && <dl className="registration-review">{Object.entries(draft.values).filter(([,v])=>v).map(([key,value])=><div key={key}><dt>{label(key)}</dt><dd>{key === "organization_type" || key === "sector" ? catalogLabel(locale,value!) : value}</dd></div>)}</dl>}
           </fieldset>
           <p role="status" className="registration-save">{busy ? t.saving : saved ? t.saved : ""}</p>

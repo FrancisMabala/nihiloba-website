@@ -24,9 +24,9 @@ const routeFiles = [
 
 describe("versioned SHIDA legal documents", () => {
   it("registers six canonical bilingual documents and immutable Version 1.0 sources", () => {
-    expect(shidaLegalDocuments).toHaveLength(6);
-    expect(new Set(shidaLegalDocuments.map((item) => `${item.documentId}:${item.version}`)).size).toBe(3);
-    for (const document of shidaLegalDocuments) {
+    expect(shidaLegalDocuments).toHaveLength(12);
+    expect(new Set(shidaLegalDocuments.map((item) => `${item.documentId}:${item.version}`)).size).toBe(6);
+    for (const document of shidaLegalDocuments.filter(d => d.version === "1.0")) {
       expect(document.version).toBe("1.0");
       expect(document.status).toBe("draft_pending_legal_review");
       expect(document.effectiveDate).toBeNull();
@@ -46,11 +46,11 @@ describe("versioned SHIDA legal documents", () => {
     const expectations = { terms: 23, privacy: 24, "business-terms": 26 } as const;
     for (const kind of Object.keys(expectations) as (keyof typeof expectations)[]) {
       for (const locale of ["en", "fr"] as const) {
-        const document = loadShidaLegalDocument(kind, locale);
+        const document = loadShidaLegalDocument(kind, locale, "1.0");
         expect(document).not.toBeNull();
         expect(document!.content.sections).toHaveLength(expectations[kind]);
         expect(document!.content.introduction.length).toBeGreaterThan(1);
-        const html = renderToStaticMarkup(<ShidaVersionedLegalPage kind={kind} locale={locale}/>);
+        const html = renderToStaticMarkup(<ShidaVersionedLegalPage kind={kind} locale={locale} version="1.0"/>);
         expect(html).toContain('data-document-version="1.0"');
         expect(html).toContain(locale === "fr" ? "Validation juridique en attente" : "Pending legal review");
         expect((html.match(/<h1/g) ?? [])).toHaveLength(1);
@@ -64,23 +64,23 @@ describe("versioned SHIDA legal documents", () => {
     const english = getShidaLegalMetadata("terms", "en")!;
     const french = getOtherLanguageDocument(english);
     expect(english.canonicalRoute).toBe("/shida/terms");
-    expect(english.versionRoute).toBe("/shida/terms/1.0");
+    expect(english.versionRoute).toBe("/shida/terms/1.1");
     expect(french.canonicalRoute).toBe("/fr/shida/conditions");
     const currentMetadata = shidaLegalPageMetadata(english);
     const historicalMetadata = shidaLegalPageMetadata(english, true);
     expect(currentMetadata.alternates?.canonical).toBe("/shida/terms");
-    expect(historicalMetadata.alternates?.canonical).toBe("/shida/terms/1.0");
-    expect(currentMetadata.other).toMatchObject({ "shida-legal-document-id": "SHIDA_TERMS_OF_USE", "shida-legal-document-version": "1.0" });
+    expect(historicalMetadata.alternates?.canonical).toBe("/shida/terms/1.1");
+    expect(currentMetadata.other).toMatchObject({ "shida-legal-document-id": "SHIDA_TERMS_OF_USE", "shida-legal-document-version": "1.1" });
   });
 
   it("switches to the exact corresponding locale and keeps all internal links valid", () => {
     for (const document of shidaLegalDocuments) {
-      const html = renderToStaticMarkup(<ShidaVersionedLegalPage kind={document.kind} locale={document.locale}/>);
+      const html = renderToStaticMarkup(<ShidaVersionedLegalPage kind={document.kind} locale={document.locale} version={document.version}/>);
       const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((match) => match[1].replaceAll("&amp;", "&"));
       const expected = getOtherLanguageDocument(document).canonicalRoute;
       expect(hrefs).toContain(expected);
       expect(hrefs).toContain(document.versionRoute);
-      const sectionIds = loadShidaLegalDocument(document.kind, document.locale)!.content.sections.map((section) => `#${section.id}`);
+      const sectionIds = loadShidaLegalDocument(document.kind, document.locale, document.version)!.content.sections.map((section) => `#${section.id}`);
       for (const href of hrefs) expect(href === "/shida" || href === "/fr/shida" || sectionIds.includes(href) || shidaLegalDocuments.some((item) => item.canonicalRoute === href || item.versionRoute === href)).toBe(true);
     }
   });
@@ -107,4 +107,18 @@ describe("versioned SHIDA legal documents", () => {
     const parsed = parseLegalMarkdown("# Title\n\nIntro\n\n## 1. Section\n\n- One\n- Two");
     expect(parsed.sections[0].blocks[0]).toEqual({ type: "list", items: ["One", "Two"] });
   });
+});
+
+it("publishes complete bilingual 1.1 sources while keeping 1.0 available", () => {
+ for (const kind of ["terms","privacy","business-terms"] as const) for (const locale of ["en","fr"] as const) {
+  const doc=loadShidaLegalDocument(kind,locale)!;
+  expect(doc.metadata.version).toBe("1.1");
+  const raw=readFileSync(join("content/legal/shida",doc.metadata.sourcePath),"utf8");
+  expect(raw).toContain("Francis Mabala Lemoya");
+  expect(raw).not.toMatch(/\[B\d{2}/);
+  expect(loadShidaLegalDocument(kind,locale,"1.0")).not.toBeNull();
+  const html=renderToStaticMarkup(<ShidaVersionedLegalPage kind={kind} locale={locale}/>);
+  expect(html).toContain("2026-10-22");
+  expect(html).not.toContain("Pending legal review");
+ }
 });

@@ -93,3 +93,10 @@ describe("Personal WhatsApp restricted gateway", () => {
     for (const labels of Object.values(personalLoginCopy)) expect(Object.keys(labels).sort()).toEqual(Object.keys(personalLoginCopy.en).sort());
   });
 });
+
+it("requires the registration eligibility declaration before contacting upstream",async()=>{
+ const fetcher=vi.fn();vi.stubGlobal("fetch",fetcher);
+ const request=new Request("https://nihiloba.com/api/shida/personal/auth/whatsapp/registration/",{method:"POST",headers:{Origin:"https://nihiloba.com"}});
+ const result=await POST(request,ctx(["registration"]));
+ expect(result.status).toBe(422);expect(fetcher).not.toHaveBeenCalled();
+});

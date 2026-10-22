@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { personalLoginCopy } from "../../lib/personal-login-copy";
 import { announceLoginAttempt, authMutation, LOGIN_EVENT, loginRequest, markLoginUnconfirmed } from "../../lib/personal-login-browser";
 import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib/personal-session-browser";
-import { registrationCopy } from "../../lib/registration/copy";
+import { registrationCopy, registrationEligibility } from "../../lib/registration/copy";
 
 type State = "idle" | "creating" | "pending" | "code" | "exchanging" | "expired" | "onboarding_required" | "cancelled" | "unavailable" | "rate_limited" | "uncertain";
 type Challenge = { challenge_ref: string; whatsapp_url: string; expires_at: string };
@@ -16,6 +16,8 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState(false);
   const codeId = useId();
+  const eligibilityId = useId();
+  const [eligible, setEligible] = useState(false);
   const submitting = useRef(false);
   const epoch = useRef(0), alive = useRef(false), read = useRef<AbortController | null>(null);
   const started = useRef(false);
@@ -30,13 +32,14 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   }, []);
   const failure = (error: unknown): State => error instanceof Error && ["expired", "cancelled", "rate_limited"].includes(error.message) ? error.message as State : "unavailable";
   async function start() {
+    if (registration && !eligible) return;
     announceLoginAttempt(); const current = ++epoch.current;
     started.current = true;
     setChallenge(null); setCode(""); setCodeError(false); setState("creating");
     try {
       const value = await authMutation(async () => {
         if (current !== epoch.current || !alive.current) return null;
-        return loginRequest("", "POST", undefined, undefined, registration, locale);
+        return loginRequest("", "POST", undefined, undefined, registration, locale, eligible);
       });
       if (!alive.current || current !== epoch.current || !value) return;
       setChallenge(value); setState("pending");
@@ -125,7 +128,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   }
   const busy = state === "creating" || state === "exchanging";
   return <section className="candidate-login candidate-private-panel" lang={locale}>
-    <h2>{t.title}</h2><p>{t.help}</p>
+    <h2>{t.title}</h2><p>{t.help}</p>{registration && <label htmlFor={eligibilityId} className="registration-consent"><input id={eligibilityId} type="checkbox" checked={eligible} onChange={event => setEligible(event.target.checked)}/><span>{registrationEligibility[locale]}</span></label>}
     {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/`}>{registrationCopy[locale].title}</a>}
     {state !== "idle" && <p role="status" aria-live="polite">{t[state]}</p>}
     {state === "pending" && challenge && <><a className="button button-primary" href={challenge.whatsapp_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{t.open}</a><button className="button button-secondary" type="button" onClick={() => void cancel()}>{t.cancel}</button></>}
@@ -136,6 +139,6 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
       <button className="button button-primary" type="submit" disabled={busy || !/^[0-9]{6}$/.test(code)}>{busy ? t.exchanging : t.verify}</button>
       <button className="button button-secondary" type="button" disabled={busy} onClick={() => void cancel()}>{t.restart}</button>
     </form>}
-    {state === "uncertain" ? <button className="button button-secondary" type="button" onClick={() => void cancel(true)}>{t.reset}</button> : !["pending", "code", "exchanging"].includes(state) && <button className="button button-primary" type="button" disabled={busy} onClick={() => void start()}>{state === "idle" ? t.start : busy ? t[state] : t.retry}</button>}
+    {state === "uncertain" ? <button className="button button-secondary" type="button" onClick={() => void cancel(true)}>{t.reset}</button> : !["pending", "code", "exchanging"].includes(state) && <button className="button button-primary" type="button" disabled={busy || registration && !eligible} onClick={() => void start()}>{state === "idle" ? t.start : busy ? t[state] : t.retry}</button>}
   </section>;
 }
