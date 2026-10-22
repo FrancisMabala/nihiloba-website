@@ -1,6 +1,6 @@
 # Quick Sell / Vente rapide — Batch 2
 
-Implementation candidate, 22 October 2026. Not yet a production release.
+Released 22 October 2026. Deployment evidence is recorded below.
 
 ## Architecture and scope
 
@@ -80,11 +80,34 @@ A new WhatsApp Quick Sell creation conversation is deferred. Existing order and
 negotiation services/notifications remain shared. Fixed-order completion retains
 existing seller attestation; no new customer OTP is claimed.
 
-## Release gates
+## Release and verification
 
-Required live PostgreSQL concurrency checks passed. Explicit production
-authorization for migration 0198 remains pending under repository AGENTS.md. Deploy
-the migrated backend before publishing the website entry. Preserve additive
+Required live PostgreSQL concurrency checks passed. The user explicitly authorized
+production migration 0198 and release. The migrated backend was verified live before
+deploying the website entry. Preserve additive
 schema/history on application rollback; schema downgrade intentionally refuses
 existing individual selling history. Do not claim this candidate is live until
 the deployed commits are verified.
+
+- Backend `ec808a56d811daece9fa21fe168c149bdc93ee2d`: Render deployment
+  `dep-dbd85tbncjis73bf78ng`, **Deploy succeeded | Live**. The guarded pre-deploy
+  runner logged successful migration 0197 -> 0198 at 23:43:05 Europe/Stockholm.
+- Website `bbe7207434e423f7c1d918ddc6f524c8c267bd81`: Render deployment
+  `dep-dbd87pdg1s2s73e457qg`, **Deploy succeeded | Live**, at 23:47:47.
+- Both pushes were verified against remote main. The later evidence-only commit
+  does not change application code or require another deployment.
+- Live backend health/discovery returned 200 and existing items remain `shop`.
+  Unauthenticated backend Quick Sell context access returned 401.
+- Raw script requests to NIHILOBA were blocked with 403 by its edge. The normal
+  browser loaded the deployed Quick Sell entry successfully using the existing
+  Personal session in EN/FR/LN/SW; Wenze discovery exposes the working Sell an item
+  link. No location was saved and no production listing or order was
+  created. Browser entry verification is distinct from the fixture-backed full
+  publication/transaction tests above.
+- GitHub CI could not be independently established: private backend check-run
+  access returned 404 and the website query reported zero checks. Local checks
+  and successful Render builds are the verified evidence.
+
+Release screenshots: [backend](evidence/quick-sell/backend-render-live.png),
+[website](evidence/quick-sell/website-render-live.png), and
+[live French entry](evidence/quick-sell/live-fr-entry.png).
