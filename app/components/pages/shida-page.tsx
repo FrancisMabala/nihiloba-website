@@ -6,6 +6,7 @@ import { ArrowRightIcon, BookIcon, BriefcaseIcon, CarIcon, HomeIcon, StoreIcon, 
 import { DiscoveryIllustration } from "./discovery-illustration";
 import { DiscoveryListings } from "./shida-discovery-listings";
 import "./shida-discovery.css";
+import { registrationCopy } from "../../lib/registration/copy";
 
 const icons = [BriefcaseIcon, ToolsIcon, StoreIcon, HomeIcon, BookIcon, StoreIcon, CarIcon];
 export function ShidaPage({ locale }: { locale: DiscoveryLocale }) {
@@ -32,7 +33,7 @@ export function ShidaPage({ locale }: { locale: DiscoveryLocale }) {
       <article id="school"><DiscoveryIllustration kind="school"/><div><h2>{t.school}</h2><Link href={discoveryPath(locale, "/shida/ecole")}>{t.schoolAction}<ArrowRightIcon/></Link></div></article>
       <article id="business"><DiscoveryIllustration kind="business"/><div><h2>{t.business}</h2><a href="https://business.nihiloba.com">{t.businessAction}<ArrowRightIcon/></a></div></article>
     </section>
-    <div className="discovery-account-note"><a href={OFFICIAL_CHANNELS.whatsapp}>{t.join}<ArrowRightIcon/></a></div>
+    <div className="discovery-account-note"><a href={process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" ? `${locale === "en" ? "" : `/${locale}`}/shida/register/` : OFFICIAL_CHANNELS.whatsapp}>{process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" ? registrationCopy[locale].title : t.join}<ArrowRightIcon/></a></div>
     <p className="discovery-story-link"><Link href={locale === "en" ? "/about/shida" : "/fr/about/shida"}>{t.story}<ArrowRightIcon/></Link></p>
   </div>;
 }

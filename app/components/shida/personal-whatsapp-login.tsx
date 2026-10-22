@@ -3,13 +3,14 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { personalLoginCopy } from "../../lib/personal-login-copy";
 import { announceLoginAttempt, authMutation, LOGIN_EVENT, loginRequest, markLoginUnconfirmed } from "../../lib/personal-login-browser";
 import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib/personal-session-browser";
+import { registrationCopy } from "../../lib/registration/copy";
 
 type State = "idle" | "creating" | "pending" | "code" | "exchanging" | "expired" | "onboarding_required" | "cancelled" | "unavailable" | "rate_limited" | "uncertain";
 type Challenge = { challenge_ref: string; whatsapp_url: string; expires_at: string };
 
 // In-place authentication deliberately leaves the complete local URL, filters and language intact.
-export function PersonalWhatsAppLogin({ locale, onAuthenticated }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void }) {
-  const t = personalLoginCopy[locale];
+export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = false, heading }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void; registration?: boolean; heading?: string }) {
+  const t = { ...personalLoginCopy[locale], ...(registration ? { help: registrationCopy[locale].verificationHelp, verify: registrationCopy[locale].verifyButton } : {}), ...(heading ? { title: heading } : {}) };
   const [state, setState] = useState<State>("idle");
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [code, setCode] = useState("");
@@ -35,7 +36,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated }: { locale: key
     try {
       const value = await authMutation(async () => {
         if (current !== epoch.current || !alive.current) return null;
-        return loginRequest("", "POST");
+        return loginRequest("", "POST", undefined, undefined, registration, locale);
       });
       if (!alive.current || current !== epoch.current || !value) return;
       setChallenge(value); setState("pending");
@@ -57,7 +58,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated }: { locale: key
       const controller = new AbortController(); read.current = controller;
       const timeout = setTimeout(() => controller.abort(), 12000);
       try {
-        const value = await loginRequest(challenge!.challenge_ref, "GET", controller.signal);
+        const value = await loginRequest(challenge!.challenge_ref, "GET", controller.signal, undefined, registration);
         if (!active()) return;
         if (value.status === "pending") { timer = setTimeout(poll, 3000); return; }
         if (value.status !== "verified") { setChallenge(null); setState(value.reason === "onboarding_required" ? "onboarding_required" : value.status === "expired" ? "expired" : "cancelled"); return; }
@@ -69,7 +70,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated }: { locale: key
     timer = setTimeout(poll, 1000);
     window.addEventListener("focus", foreground); window.addEventListener("online", foreground); document.addEventListener("visibilitychange", foreground);
     return () => { stopped = true; clearTimeout(timer); read.current?.abort(); window.removeEventListener("focus", foreground); window.removeEventListener("online", foreground); document.removeEventListener("visibilitychange", foreground); };
-  }, [challenge, state]);
+  }, [challenge, state, registration]);
   useEffect(() => {
     if (!challenge || state !== "code") return;
     const timer = setTimeout(() => { setCode(""); setChallenge(null); setState("expired"); }, Math.max(0, Date.parse(challenge.expires_at) - Date.now()));
@@ -86,7 +87,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated }: { locale: key
         if (!alive.current || current !== epoch.current) return "obsolete";
         markLoginUnconfirmed(true);
         try {
-          await loginRequest(`${ref}/session`, "POST", undefined, enteredCode);
+          await loginRequest(`${ref}/session`, "POST", undefined, enteredCode, registration);
           if (alive.current && current === epoch.current) { markLoginUnconfirmed(false); return "accepted"; }
         } catch (error) {
           // These definite rejections cannot have issued a session. A typo can be corrected.
@@ -117,7 +118,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated }: { locale: key
           if (!result.ok) throw new Error();
           markLoginUnconfirmed(false);
         }
-        if (target) await loginRequest(target, "DELETE");
+        if (target) await loginRequest(target, "DELETE", undefined, undefined, registration);
       });
       if (alive.current && current === epoch.current) setState("cancelled");
     } catch { if (alive.current && current === epoch.current) setState("uncertain"); }
@@ -125,6 +126,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated }: { locale: key
   const busy = state === "creating" || state === "exchanging";
   return <section className="candidate-login candidate-private-panel" lang={locale}>
     <h2>{t.title}</h2><p>{t.help}</p>
+    {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/`}>{registrationCopy[locale].title}</a>}
     {state !== "idle" && <p role="status" aria-live="polite">{t[state]}</p>}
     {state === "pending" && challenge && <><a className="button button-primary" href={challenge.whatsapp_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{t.open}</a><button className="button button-secondary" type="button" onClick={() => void cancel()}>{t.cancel}</button></>}
     {(state === "code" || state === "exchanging") && <form className="candidate-form" onSubmit={verify}>

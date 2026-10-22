@@ -25,8 +25,8 @@ export function announceLoginAttempt() {
   window.dispatchEvent(new Event(LOGIN_EVENT));
   try { localStorage.setItem(LOGIN_EVENT, crypto.randomUUID()); } catch { /* storage disabled */ }
 }
-export async function loginRequest(path: string, method = "GET", signal?: AbortSignal, code?: string) {
-  const result = await fetch(`/api/shida/personal/auth/whatsapp/${path}${path ? "/" : ""}`, { method, signal, credentials: "same-origin", cache: "no-store", ...(code !== undefined ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code }) } : {}) });
+export async function loginRequest(path: string, method = "GET", signal?: AbortSignal, code?: string, registration = false, language = "fr") {
+  const result = await fetch(`/api/shida/personal/auth/whatsapp/${registration ? "registration/" : ""}${path}${path ? "/" : ""}`, { method, signal, credentials: "same-origin", cache: "no-store", ...(registration && !path ? {headers:{"X-Shida-Language":language}} : {}), ...(code !== undefined ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code }) } : {}) });
   const value = await result.json();
   if (!result.ok) throw new Error(["expired", "cancelled", "rate_limited", "invalid_code"].includes(value?.error?.code) ? value.error.code : "unavailable");
   return value;

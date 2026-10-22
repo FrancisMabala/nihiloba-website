@@ -55,6 +55,8 @@ const nextConfig: NextConfig = {
       { source: "/en/shida/my-applications/:path*", headers: privatePageHeaders },
       { source: "/fr/shida/mes-candidatures/:path*", headers: privatePageHeaders },
       { source: "/:path*", headers: securityHeaders },
+      { source: "/shida/register/:path*", headers: [...privatePageHeaders, { key: "Referrer-Policy", value: "strict-origin" }, { key: "Content-Security-Policy", value: contentSecurityPolicy.replace("form-action 'self'", "form-action 'self' https://business.nihiloba.com") }] },
+      { source: "/:lang(en|fr|ln|sw)/shida/register/:path*", headers: [...privatePageHeaders, { key: "Referrer-Policy", value: "strict-origin" }, { key: "Content-Security-Policy", value: contentSecurityPolicy.replace("form-action 'self'", "form-action 'self' https://business.nihiloba.com") }] },
     ];
   },
   images: {

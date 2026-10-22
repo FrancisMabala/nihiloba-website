@@ -14,6 +14,7 @@ import {PersonalActivities} from './personal-activities';
 import {PersonalActivityOverview} from './personal-activity-overview';
 import {workspaceText} from '../../lib/personal-workspace-copy';
 import './account-space.css';
+import {PersonalProfileSettings} from './personal-profile-settings';
 type View='home'|'orders'|'requests'|'messages'|'receipts'|'settings'|'management';
 export function AccountSpace({locale,initialView,inbox=false}:{locale:MarketplaceLocale;initialView?:string;inbox?:boolean}){
  const router=useRouter();
@@ -63,6 +64,7 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
    {view==='receipts'&&<><p className="space-intro">{t.receiptNote}</p>{rows([[t.bills,`${prefix}/shida/service-bills`,'receipts'],[t.foodReceipts,`${prefix}/shida/restaurant-orders`,'restaurant'],[t.shopReceipts,`${bilingual}/shida/wenze/orders`,'shop']])}</>}
    {view==='management'&&<><p className="space-intro">{t.managementNote}</p>{checking?<p role="status">{t.loading}</p>:session?<PersonalActivities key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>}</>}
    {view==='settings'&&<section className="space-settings"><h2>{t.account}</h2><p>{checking?t.loading:session?.user.display_name||t.login}</p><p>{t.accountNote}</p><label htmlFor="space-language">{t.language}</label><select id="space-language" value={locale} onChange={event=>router.push(`${event.target.value==='en'?'':`/${event.target.value}`}/shida/space?view=settings`)}>{(['fr','en','ln','sw'] as const).map(language=><option key={language} value={language}>{({fr:'Français',en:'English',ln:'Lingala',sw:'Swahili'})[language]}</option>)}</select></section>}
+   {view==='settings'&&session&&process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==='true'&&<PersonalProfileSettings locale={locale}/>}
   </div>
  </div>;
 }

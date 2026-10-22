@@ -12,6 +12,13 @@ const codeReq = (value: unknown = { code: "610294" }) => new Request("https://ni
 function bound() { jar.set("nihiloba_personal_challenge", `${ref}.${Date.now() + 300000}.${verifier}`); }
 beforeEach(() => { jar.clear(); set.mockClear(); vi.unstubAllGlobals(); });
 describe("Personal WhatsApp restricted gateway", () => {
+  it("registration exchanges only its purpose-bound challenge and never claims full sign-in", async () => {
+    bound();
+    const fetcher=vi.fn(async()=>Response.json({verified:true},{headers:{"set-cookie":`shida_dashboard_session=${token}; HttpOnly`}}));vi.stubGlobal("fetch",fetcher);
+    const response=await POST(codeReq(),ctx(["registration",ref,"session"]));
+    expect(response.status).toBe(200);expect(await response.json()).toEqual({verified:true});
+    expect(fetcher).toHaveBeenCalledWith(`https://api.nihiloba.com/api/dashboard/registration/challenge/${ref}/session`,expect.any(Object));
+  });
   it("forwards public Origin behind the hosting proxy, never its internal URL or spoofed headers", async () => {
     bound();
     const fetcher = vi.fn(async () => Response.json({ status: "pending" })); vi.stubGlobal("fetch", fetcher);

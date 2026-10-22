@@ -13,13 +13,19 @@ export function ShidaNavigation(){
  const prefix=locale==='en'?'':`/${locale}`,base=`${prefix}/shida`,path=pathname.replace(/^\/(fr|en|ln|sw)(?=\/)/,'').replace(/\/$/,''),t=copy[locale],a=accountSpaceCopy[locale];
  const dialog=useRef<HTMLDialogElement>(null),trigger=useRef<HTMLButtonElement>(null),[keyboard,setKeyboard]=useState(false);
  useEffect(()=>{
-  const update=()=>queueMicrotask(()=>setKeyboard(Boolean(document.activeElement?.matches('input:not([type=checkbox]):not([type=radio]),textarea,select,[contenteditable=true]'))));
+  const viewport=window.visualViewport;
+  // Focus alone does not mean a keyboard is open (desktop and external keyboards).
+  // Keep the bar hidden until the visual viewport recovers, including on blur.
+  const update=()=>queueMicrotask(()=>setKeyboard(viewport
+   ? window.innerHeight-viewport.height-viewport.offsetTop>120
+   : Boolean(document.activeElement?.matches('input:not([type=checkbox]):not([type=radio]),textarea,select,[contenteditable=true]'))));
   update();
+  viewport?.addEventListener('resize',update);viewport?.addEventListener('scroll',update);
   document.addEventListener('focusin',update);document.addEventListener('focusout',update);
-  return()=>{document.removeEventListener('focusin',update);document.removeEventListener('focusout',update);};
+  return()=>{viewport?.removeEventListener('resize',update);viewport?.removeEventListener('scroll',update);document.removeEventListener('focusin',update);document.removeEventListener('focusout',update);};
  },[]);
  const personal=/^\/shida\/(space|my-applications|mes-candidatures|service-requests|service-bills|restaurant-orders|restaurant-reservations|inbox)(?:\/|$)/.test(path)||path==='/shida/wenze/orders';
- const active=path==='/shida'?(hash==='#explore'?1:0):personal?(query.get('view')==='management'?3:query.get('view')==='settings'?4:2):1;
+ const active=path==='/shida/register'?4:path==='/shida'?(hash==='#explore'?1:0):personal?(query.get('view')==='management'?3:query.get('view')==='settings'?4:2):1;
  const hrefs=[base,`${base}#explore`,`${base}/space`,`${base}/space?view=management`];
  const icons:SpaceIconName[]=['home','shop','requests','management'];
  const menuLinks=[[marketplaceAccountCopy[locale].account,`${base}/space?view=settings`],[a.orders,`${base}/space?view=orders`],[a.requests,`${base}/space?view=requests`],[a.messages,`${base}/space?view=messages`],[a.receipts,`${base}/space?view=receipts`],[a.settings,`${base}/space?view=settings`],[marketplaceAccountCopy[locale].language,`${base}/space?view=settings#space-language`],[t[6],`${locale==='en'?'':'/fr'}/shida/wenze/${locale==='en'?'cart':'panier'}`],[t[7],'https://business.nihiloba.com/'],[t[5],`${locale==='en'?'/en':'/fr'}/faq`]];

@@ -24,8 +24,12 @@ async function handle(request: Request, context: Context) {
   const publicOrigin = personalRequestOrigin(request, true);
   if (!publicOrigin)
     return privateEmploymentJson({ error: { code: "forbidden" } }, 403);
-  const path = (await context.params).path ?? [];
+  const segments = (await context.params).path ?? [];
+  const registration = segments[0] === "registration";
+  const path = registration ? segments.slice(1) : segments;
   const create = !path.length && request.method === "POST";
+  const language = request.headers.get("x-shida-language") ?? "fr";
+  if (registration && create && !["fr","en","ln","sw"].includes(language)) return privateEmploymentJson({error:{code:"invalid_language"}},422);
   const cancel = path.length === 1 && reference.test(path[0]) && request.method === "DELETE";
   const status = path.length === 1 && reference.test(path[0]) && request.method === "GET";
   const exchange = path.length === 2 && reference.test(path[0]) && path[1] === "session" && request.method === "POST";
@@ -63,10 +67,12 @@ async function handle(request: Request, context: Context) {
   try {
     const origin = new URL(process.env.SHIDA_API_BASE_URL ?? "https://api.nihiloba.com");
     if (origin.protocol !== "https:" || origin.username || origin.password) throw new Error();
-    const response = await fetch(`${origin.origin}/api/dashboard/auth/whatsapp-challenge${path.length ? `/${path.join("/")}` : ""}`, {
+    const endpoint = registration && (create || exchange) ? "registration/challenge" : "auth/whatsapp-challenge";
+    const response = await fetch(`${origin.origin}/api/dashboard/${endpoint}${path.length ? `/${path.join("/")}` : ""}`, {
       method: request.method, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(8000),
       ...(exchange ? { body: codeBody } : {}),
       headers: { Accept: "application/json", Origin: publicOrigin,
+        ...(registration && create ? { "X-Shida-Language":language } : {}),
         ...(exchange ? { "Content-Type": "application/json" } : {}),
         ...(!create ? { Cookie: `shida_dashboard_challenge=${verifier}` } : {}) },
     });
@@ -83,9 +89,9 @@ async function handle(request: Request, context: Context) {
     }
     if (exchange) {
       const token = upstreamCookie(response, "shida_dashboard_session");
-      if (!token || data.authenticated !== true) throw new Error();
+      if (!token || (registration ? data.verified !== true : data.authenticated !== true)) throw new Error();
       await setEmploymentToken(token); clear();
-      return privateEmploymentJson({ authenticated: true });
+      return privateEmploymentJson(registration ? { verified: true } : { authenticated: true });
     }
     if (!["pending", "verified", "expired", "cancelled"].includes(data.status)) throw new Error();
     return privateEmploymentJson({ status: data.status, ...(data.reason === "onboarding_required" ? { reason: "onboarding_required" } : {}) });

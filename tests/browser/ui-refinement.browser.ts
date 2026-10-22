@@ -56,6 +56,6 @@ test('navigation menu, keyboard, language, canonical links and workspace boundar
  await page.locator('.market-language').click();await page.getByRole('button',{name:'English',exact:true}).click();await expect(page).toHaveURL(/\/shida\/?$/);
  await nav.getByRole('link',{name:'Explore',exact:true}).click();await expect(page).toHaveURL(/#explore$/);await expect(nav.locator('[aria-current=page]')).toHaveText('Explore');
  for(const market of ['wenze','restaurants','services']){await page.goto(`/shida/seller/${market}`);await expect(page.locator('.shida-navigation')).toHaveCount(0);await expect(page.locator('.space-bottom')).toHaveCount(0);}
- await page.goto('/shida/wenze');await expect(nav).toBeVisible();await page.locator('input[name=query]').focus();await expect(nav).toHaveAttribute('data-keyboard','true');await page.setViewportSize({width:390,height:900});await page.locator('input[name=query]').blur();await expect(nav).toBeVisible();
+ await page.goto('/shida/wenze');await expect(nav).toBeVisible();await page.locator('input[name=query]').focus();await expect(nav).toBeVisible();await page.locator('input[name=query]').blur();await expect(nav).toBeVisible();
  await page.goto('/shida/space?view=management');await expect(page.locator('.shida-navigation [aria-current=page]')).toHaveText('Manage');await expect(page.locator('.space-bottom')).toHaveCount(0);
 });
