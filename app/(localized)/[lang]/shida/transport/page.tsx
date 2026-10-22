@@ -1,6 +1,4 @@
-import { notFound } from "next/navigation";
-import { ShidaInformationPage, informationMetadata } from "../../../../components/pages/shida-information-page";
-import { isLocale } from "../../../../lib/i18n";
-type Props = { params: Promise<{ lang: string }> };
-export async function generateMetadata({ params }: Props) { const { lang } = await params; if (!isLocale(lang)) notFound(); return informationMetadata(lang, "transport"); }
-export default async function Page({ params }: Props) { const { lang } = await params; if (!isLocale(lang)) notFound(); return <ShidaInformationPage locale={lang} kind="transport" />; }
+import {TransportDiscovery,transportMetadata} from "../../../../components/shida/transport-discovery";
+import {isServiceLocale} from "../../../../lib/services-i18n";
+export async function generateMetadata({params}:{params:Promise<{lang:string}>}){const {lang}=await params;return transportMetadata(isServiceLocale(lang)?lang:"en");}
+export default async function Page({params}:{params:Promise<{lang:string}>}){const {lang}=await params;return <TransportDiscovery locale={isServiceLocale(lang)?lang:"en"}/>;}

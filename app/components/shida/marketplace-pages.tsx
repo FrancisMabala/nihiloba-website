@@ -1,10 +1,11 @@
-import { PublicMarketplaceHero, PublicMarketplaceClosing } from "./public-marketplace";
+import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
+import { MarketplaceDiscoveryHeader } from "./public-marketplace";
 import { propertyDiscoveryCopy } from "./property-discovery-copy";
-import { filterPublicHotels, type HotelSearch } from "../../lib/hotel-search";
+import { hotelSearchQuery, type HotelSearch } from "../../lib/hotel-search";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { Locale } from "../../lib/i18n";
+import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 import { safePublicImageUrl } from "../../lib/safe-public-url";
 import { apartmentSearchQuery, getApartment, getApartmentOwner, getApartments, getHotel, getHotels, ShidaApiError } from "../../services/shida/public-client";
 import type { ApartmentSearch } from "../../types/shida-public";
@@ -23,7 +24,7 @@ function marketplaceMetadata(locale: Locale, kind: "apartments" | "hotels"): Met
   const description = isApartments ? t.apartmentIntro : t.hotelIntro;
   return {
     title, description,
-    alternates: { canonical: marketplacePath(locale, path), languages: { en: path, fr: `/fr${path}`, "x-default": path } },
+    alternates: { canonical: marketplacePath(locale, path), languages: { en: path, fr: `/fr${path}`, ln:`/ln${path}`,sw:`/sw${path}`, "x-default": path } },
     openGraph: { title, description, url: marketplacePath(locale, path), images: [{ url: "/NIHILOBA_logo.png", width: 1536, height: 1024, alt: "NIHILOBA" }] },
   };
 }
@@ -44,7 +45,7 @@ export async function ApartmentCollectionPage({ locale, search = {} }: { locale:
   const types = listings?.filters.property_types ?? [...apartmentPropertyTypes];
   return <div className="marketplace-public apartment-public"><div className="container">
     <div className="mp-topline"><MarketplaceSectionBreadcrumb locale={locale} current={t.apartments}/><Link href={marketplacePath(locale,"/shida/hotels")}>{d.related} <span aria-hidden="true">↗</span></Link></div>
-    <PublicMarketplaceHero eyebrow={d.eyebrow} title={d.title} intro={t.apartmentIntro} image="/images/apartment-discovery.webp" unoptimized imageAlt={d.image} badge={`SHIDA / ${t.apartments.toLocaleUpperCase(locale)}`} browse={d.browse} href="#apartment-discovery"/>
+    <MarketplaceDiscoveryHeader title={t.apartments} intro={t.apartmentIntro}/>
     <section id="apartment-discovery" aria-labelledby="apartment-results-title">
       <ApartmentFilters locale={locale} search={search} propertyTypes={types}/>
       <nav className="mp-chips" aria-label={t.propertyType}><Link href={`${path}${apartmentSearchQuery({...search,property_type:undefined,page:1})}`} aria-current={!search.property_type?"page":undefined}>{d.all}</Link>{types.map(type=><Link key={type} href={`${path}${apartmentSearchQuery({...search,property_type:type,page:1})}`} aria-current={search.property_type===type?"page":undefined}>{propertyTypeLabel(type,locale)}</Link>)}</nav>
@@ -56,34 +57,35 @@ export async function ApartmentCollectionPage({ locale, search = {} }: { locale:
         <ApartmentPagination locale={locale} search={search} collection={listings}/>
       </> : <MarketplaceState>{t.unavailable}</MarketplaceState>}
     </section>
-    <PublicMarketplaceClosing copy={d} badge="SHIDA" href={marketplacePath(locale,"/shida")}/>
   </div></div>;
 }
 
 export async function HotelCollectionPage({ locale, search = {} }: { locale: Locale; search?: HotelSearch }) {
-  const t = marketplaceCopy[locale], d = propertyDiscoveryCopy[locale].hotels;
+  const t = marketplaceCopy[locale], d = propertyDiscoveryCopy[locale].hotels, words=marketplaceDiscoveryCopy[locale];
   const path = marketplacePath(locale,"/shida/hotels");
   let listings;
-  try { listings = await getHotels(); }
+  try { listings = await getHotels(search); }
   catch (error) { if (!unavailable(error)) throw error; }
-  const items = listings ? filterPublicHotels(listings.items, search) : [];
-  const cities = [...new Set(listings?.items.map(item=>item.city?.trim()).filter((city):city is string=>Boolean(city)) ?? [])].sort((a,b)=>a.localeCompare(b,locale));
-  const cityHref = (city?:string) => { const params = new URLSearchParams(); if(search.query)params.set("query",search.query); if(city)params.set("city",city); return `${path}${params.size?`?${params}`:""}`; };
+  const items = listings?.items ?? [];
   return <div className="marketplace-public hotel-public"><div className="container">
     <div className="mp-topline"><MarketplaceSectionBreadcrumb locale={locale} current={t.hotels}/><Link href={marketplacePath(locale,"/shida/appartements")}>{d.related} <span aria-hidden="true">↗</span></Link></div>
-    <PublicMarketplaceHero eyebrow={d.eyebrow} title={d.title} intro={t.hotelIntro} image="/shida/shida-hotel.png" imageAlt={d.image} badge={`SHIDA / ${t.hotels.toLocaleUpperCase(locale)}`} browse={d.browse} href="#hotel-discovery"/>
+    <MarketplaceDiscoveryHeader title={t.hotels} intro={t.hotelIntro}/>
     <section id="hotel-discovery" aria-labelledby="hotel-results-title">
       <form className="mp-search" action={path} method="get" role="search" aria-label={d.search}>
         <div className="mp-search-primary"><label>{d.search}<input type="search" name="query" defaultValue={search.query} placeholder={d.placeholder} maxLength={120}/></label><label>{t.city}<input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label><button className="button button-primary" type="submit">{t.search}</button></div>
-        {(search.query||search.city)&&<Link className="mp-search-reset" href={path}>{t.resetFilters}</Link>}
+        <details open={Boolean(search.area||search.rooms||search.rental_period)||undefined}><summary>{t.filters}</summary><div className="marketplace-filter-grid">
+          <label>{t.area}<input name="area" defaultValue={search.area} maxLength={120}/></label>
+          <label>{words.rooms}<input type="number" name="rooms" min="1" max="100" defaultValue={search.rooms}/></label>
+          <label>{words.period}<select name="rental_period" defaultValue={search.rental_period||""}><option value="">{t.any}</option><option value="night">{words.night}</option><option value="day">{words.day}</option><option value="hourly">{words.hourly}</option></select></label>
+        </div></details><p className="mp-help">{words.inventory}</p>
+        {hotelSearchQuery(search)&&<Link className="mp-search-reset" href={path}>{t.resetFilters}</Link>}
       </form>
-      {cities.length>0&&<nav className="mp-chips" aria-label={t.city}><Link href={cityHref()} aria-current={!search.city?"page":undefined}>{d.all}</Link>{cities.map(city=><Link key={city} href={cityHref(city)} aria-current={search.city?.toLocaleLowerCase()===city.toLocaleLowerCase()?"page":undefined}>{city}</Link>)}</nav>}
+
       <div className="mp-results-heading"><h2 id="hotel-results-title">{d.results}</h2>{listings&&<p role="status">{items.length} {items.length===1?d.one:d.many}</p>}</div>
       {listings ? items.length>0 ? <div className="marketplace-grid">{items.map(listing=><HotelCard key={listing.public_ref} listing={listing} locale={locale}/>)}</div>
-        : <MarketplaceState>{search.query||search.city?d.empty:t.emptyHotels}</MarketplaceState>
+        : <MarketplaceState>{hotelSearchQuery(search)?d.empty:t.emptyHotels}</MarketplaceState>
         : <MarketplaceState>{t.unavailable}</MarketplaceState>}
     </section>
-    <PublicMarketplaceClosing copy={d} badge={`SHIDA / ${t.apartments.toLocaleUpperCase(locale)}`} href={marketplacePath(locale,"/shida/appartements")}/>
   </div></div>;
 }
 

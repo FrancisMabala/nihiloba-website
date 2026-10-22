@@ -1,6 +1,5 @@
-import type { Locale } from "../../lib/i18n";
 
-export const marketplaceCopy = {
+const baseCopy = {
   en: {
     apartments: "Apartments", hotels: "Hotels", wenze: "Wenze", services: "Services", jobs: "Jobs", browse: "Browse on NIHILOBA", gateway: "Explore SHIDA listings",
     gatewayText: "Browse public jobs, apartments, hotels, services and Wenze shops, then continue securely through SHIDA on WhatsApp.",
@@ -47,4 +46,9 @@ export const marketplaceCopy = {
     ownerNotFound: "Ce profil immobilier est introuvable.", backToListings: "Tous les logements",
     propertyTypes: { apartment: "Appartement", house: "Maison", studio: "Studio", room: "Chambre", office: "Bureau", commercial: "Local commercial", land: "Terrain", other: "Autre" },
   },
-} as const satisfies Record<Locale, object>;
+} as const ;
+
+export const marketplaceCopy={...baseCopy,
+ ln:{...baseCopy.fr,apartments:"Bandako",hotels:"Ba hôtels",apartmentIntro:"Luka ndako mpe senga botali na SHIDA.",hotelIntro:"Tala ba hôtels mpe bashambre, mpe senga esika ya kolala na SHIDA.",details:"Tala makambo",rooms:"bashambre",perMonth:"sanza",from:"Kobanda",imageUnavailable:"Elilingi ezali te",unavailable:"Zando oyo ezali naino kosala te. Meka lisusu.",emptyApartments:"Ndako ya bato nyonso ezali naino te.",emptyHotels:"Hôtel ya bato nyonso ezali naino te.",searchLabel:"Luka ndako",searchPlaceholder:"Kartye, engumba, studio…",search:"Luka",filters:"Baponami mosusu",city:"Engumba",area:"Esika / kartye",propertyType:"Lolenge ya ndako",bedrooms:"Bashambre",minimumPrice:"Ntalo ya moke",maximumPrice:"Ntalo ya monene",any:"Nyonso",applyFilters:"Salela baponami",resetFilters:"Longola baponami",result:"ndako",results:"bandako",previous:"Ya liboso",next:"Elandi",page:"Lokasa",of:"na",noSearchResults:"Ndako ekokani na boluki ezali te.",publishedBy:"Epesami na",availability:"Bozali",propertyTypes:{apartment:"Apartema",house:"Ndako",studio:"Studio",room:"Shambre",office:"Biro",commercial:"Esika ya mombongo",land:"Mabele",other:"Mosusu"}},
+ sw:{...baseCopy.fr,apartments:"Nyumba",hotels:"Hoteli",apartmentIntro:"Tafuta nyumba na uombe kuitembelea kupitia SHIDA.",hotelIntro:"Gundua hoteli na vyumba, kisha uombe malazi kupitia SHIDA.",details:"Tazama maelezo",rooms:"vyumba",perMonth:"mwezi",from:"Kuanzia",imageUnavailable:"Picha haipatikani",unavailable:"Soko hili halipatikani kwa sasa. Jaribu tena.",emptyApartments:"Bado hakuna nyumba zilizochapishwa.",emptyHotels:"Bado hakuna hoteli zilizochapishwa.",searchLabel:"Tafuta nyumba",searchPlaceholder:"Mtaa, mji, studio…",search:"Tafuta",filters:"Vichujio zaidi",city:"Mji",area:"Eneo / mtaa",propertyType:"Aina ya nyumba",bedrooms:"Vyumba",minimumPrice:"Bei ya chini",maximumPrice:"Bei ya juu",any:"Zote",applyFilters:"Tumia vichujio",resetFilters:"Ondoa vichujio",result:"nyumba",results:"nyumba",previous:"Iliyotangulia",next:"Inayofuata",page:"Ukurasa",of:"kati ya",noSearchResults:"Hakuna nyumba inayolingana na utafutaji wako.",publishedBy:"Imechapishwa na",availability:"Upatikanaji",propertyTypes:{apartment:"Fleti",house:"Nyumba",studio:"Studio",room:"Chumba",office:"Ofisi",commercial:"Sehemu ya biashara",land:"Kiwanja",other:"Nyingine"}}
+};

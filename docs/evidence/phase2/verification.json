@@ -1,0 +1,626 @@
+{
+  "base": "http://127.0.0.1:3044",
+  "checkedAt": "2026-10-22T10:23:01.929Z",
+  "checks": [
+    {
+      "path": "/shida/wenze/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 350,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/restaurants/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/services/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 399,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/emplois/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/appartements/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/hotels/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/transport/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 356,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/wenze/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 377,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/restaurants/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/services/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 339,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/emplois/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/appartements/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/hotels/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/transport/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 374,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/wenze/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 365,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/restaurants/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/services/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 308,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/emplois/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/appartements/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/hotels/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/shida/transport/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 343,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/wenze/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 350,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/restaurants/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 331,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/services/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 399,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/emplois/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 364,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/appartements/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/hotels/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/transport/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 379,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/wenze/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 377,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/restaurants/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/services/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 339,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/emplois/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/appartements/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/hotels/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/transport/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 374,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/wenze/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 365,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/restaurants/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/services/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 308,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/emplois/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/appartements/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/hotels/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/fr/shida/transport/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 343,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/wenze/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 350,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/restaurants/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/services/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 377,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/emplois/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/appartements/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 286,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/hotels/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/transport/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 356,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/wenze/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 377,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/restaurants/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/services/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 339,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/emplois/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/appartements/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/hotels/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/transport/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 374,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/wenze/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 365,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/restaurants/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/services/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 308,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/emplois/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/appartements/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/hotels/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/ln/shida/transport/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 343,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/wenze/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 350,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/restaurants/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/services/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 377,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/emplois/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/appartements/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 286,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/hotels/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 309,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/transport/",
+      "width": 390,
+      "status": 200,
+      "primaryY": 379,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/wenze/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 377,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/restaurants/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/services/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 339,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/emplois/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/appartements/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/hotels/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 304,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/transport/",
+      "width": 820,
+      "status": 200,
+      "primaryY": 374,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/wenze/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 365,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/restaurants/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/services/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 308,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/emplois/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/appartements/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/hotels/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 273,
+      "noOverflow": true
+    },
+    {
+      "path": "/sw/shida/transport/",
+      "width": 1440,
+      "status": 200,
+      "primaryY": 343,
+      "noOverflow": true
+    }
+  ],
+  "details": [
+    {
+      "market": "wenze",
+      "path": "/shida/wenze/products/WNP_JERM8AMU",
+      "status": 200
+    },
+    {
+      "market": "restaurants",
+      "path": "/shida/restaurants/RST_6FZK2JFF",
+      "status": 200
+    },
+    {
+      "market": "services",
+      "path": "/shida/services/SVC_KMMYDKQK/",
+      "status": 200
+    },
+    {
+      "market": "emplois",
+      "path": "/shida/emplois/JOB_b75fab582d6f480e06afa85c/",
+      "status": 200
+    },
+    {
+      "market": "appartements",
+      "path": "/shida/appartements/limete-1-chambres/",
+      "status": 200
+    },
+    {
+      "market": "hotels",
+      "skipped": "No published listings"
+    }
+  ],
+  "searchSubmissions": 6
+}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Locale } from "../../lib/i18n";
+import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 import { safePublicActionUrl, safePublicImageUrl } from "../../lib/safe-public-url";
 import type { ApartmentListing, HotelListing, HotelRoomType, PublicApartmentOwnerSummary } from "../../types/shida-public";
 import { ButtonLink } from "../button-link";
@@ -156,6 +156,8 @@ function rentalPeriodLabel(period: string | null, locale: Locale): string | null
   if (!period) return null;
   const labels: Record<Locale, Record<string, string>> = {
     en: { night: "night", day: "day", week: "week", month: "month" },
+    ln: {night:"butu",day:"mokolo",week:"poso",month:"sanza"},
+    sw: {night:"usiku",day:"siku",week:"wiki",month:"mwezi"},
     fr: { night: "nuit", day: "jour", week: "semaine", month: "mois" },
   };
   return labels[locale][period.trim().toLowerCase()] ?? null;
@@ -182,14 +184,14 @@ export function HotelRoomCard({ room, hotelName, locale, bookingUrl = null }: { 
 export function HotelCard({ listing, locale }: { listing: HotelListing; locale: Locale }) {
   const t = marketplaceCopy[locale];
   const location = publicLocation(listing.quartier, listing.commune, listing.area, listing.city, listing.country_code);
-  const prices = listing.room_types.map((room) => room.price).filter((price): price is number => price != null);
-  const minimum = prices.length ? Math.min(...prices) : null;
-  const currency = listing.room_types.find((room) => room.price === minimum)?.currency ?? null;
+  // Compare only like currencies and rental periods, never USD against CDF.
+  const rates=new Map<string,{price:number;currency:string|null;period:string|null}>();
+  for(const room of listing.room_types){if(room.price==null)continue;const key=`${room.currency}|${room.rental_period}`;if(!rates.has(key)||rates.get(key)!.price>room.price)rates.set(key,{price:room.price,currency:room.currency,period:room.rental_period});}
   return <article className="marketplace-card">
     <Link className="marketplace-card-image" href={marketplacePath(locale, `/shida/hotels/${listing.slug}`)}><MarketplaceImage src={hotelImage(listing)} alt={listing.name} fallback={t.imageUnavailable}/></Link>
     <div className="marketplace-card-body"><h2><Link href={marketplacePath(locale, `/shida/hotels/${listing.slug}`)}>{listing.name}</Link></h2>
       {location && <p className="marketplace-location">{location}</p>}
-      {minimum != null && <p><span>{t.from} </span><strong>{formatPrice(minimum, currency, locale)}</strong></p>}
+      {rates.size>0&&<div className="hotel-prices">{[...rates].map(([key,rate])=><p key={key}>{t.from} <strong>{formatPrice(rate.price,rate.currency,locale)}</strong>{rentalPeriodLabel(rate.period,locale)&&<> / {rentalPeriodLabel(rate.period,locale)}</>}</p>)}</div>}{listing.room_types.length>0&&<p>{listing.room_types.length} {({en:"room options",fr:"types de chambre",ln:"lolenge ya bashambre",sw:"aina za vyumba"})[locale]}</p>}
       {listing.description && <p className="marketplace-description">{listing.description}</p>}
       <ButtonLink href={marketplacePath(locale, `/shida/hotels/${listing.slug}`)} variant="text">{t.details}</ButtonLink>
     </div>

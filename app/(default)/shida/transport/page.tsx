@@ -1,3 +1,3 @@
-import { ShidaInformationPage, informationMetadata } from "../../../components/pages/shida-information-page";
-export const metadata = informationMetadata("en", "transport");
-export default function Page() { return <ShidaInformationPage locale="en" kind="transport" />; }
+import {TransportDiscovery,transportMetadata} from "../../../components/shida/transport-discovery";
+export const metadata=transportMetadata("en");
+export default function Page(){return <TransportDiscovery locale="en"/>;}

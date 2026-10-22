@@ -3,7 +3,7 @@ import {requestWords} from "../../lib/services-request-copy";
 import {ServiceBranchChoice} from "./service-branch-choice";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PublicMarketplaceHero } from "./public-marketplace";
+import { MarketplaceDiscoveryHeader } from "./public-marketplace";
 import "./services-public.css";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
@@ -61,7 +61,7 @@ export function serviceDuration(minutes:number):string { if(minutes<60)return `$
 export function ServiceCard({item,locale}:{item:PublicServiceSummary;locale:Locale}) {
   const t=copy[locale],serviceImage=safePublicImageUrl(item.image_preview?.url),providerImage=safePublicImageUrl(item.provider.profile_image?.url),image=serviceImage??providerImage,location=broadLocation(item.location),rating=ratingText(item.rating,locale),mode=serviceMode(item,locale),price=item.starting_price?offeringPrice(item.starting_price):null,href=servicePublicPath(item,locale),category=serviceCategoryLabel(item.category,locale);
   const imageAlt=serviceImage?(item.image_preview?.alt||item.service_name):(item.provider.profile_image?.alt||item.provider.name);
-  return <article className="marketplace-card service-card">
+  return <article className="marketplace-card service-card" data-category={item.category} data-has-image={Boolean(image)}>
     <Link className="marketplace-card-image service-card-image" href={href}><MarketplaceImage src={image} fallbackSrc={serviceImage?providerImage:null} alt={imageAlt} fallback={category} sizes="(max-width: 600px) calc(100vw - 32px), (max-width: 1000px) 45vw, 30vw"/></Link>
     <div className="marketplace-card-body"><p className="service-category">{category}</p><h2><Link href={href}>{item.service_name}</Link></h2>
       <div className="service-provider-line"><span className="service-provider-mini"><MarketplaceImage src={providerImage} alt={item.provider.profile_image?.alt||item.provider.name} fallback={item.provider.name.slice(0,1).toUpperCase()} sizes="36px"/></span><Link href={providerPath(locale,item.provider.slug)}>{item.provider.name}</Link></div>
@@ -82,8 +82,8 @@ export function ServiceResults({items,locale,ad}:{items:PublicServiceSummary[];l
 function hasSearch(search:ServiceSearch){return Object.entries(search).some(([key,value])=>key!=="page_size"&&value!=null&&value!=="");}
 function pageHref(locale:Locale,search:ServiceSearch,page:number){return `${marketplacePath(locale,"/shida/services")}${serviceSearchQuery({...search,page})}`;}
 export async function ServiceCollectionPage({locale,search}:{locale:Locale;search:ServiceSearch}) { const t=copy[locale],p=publicCopy[locale];let result;try{result=await getServices({...search,page:search.page??1,page_size:search.page_size??12});}catch(error){if(!(error instanceof ShidaApiError)||error.kind==="not-found")throw error;}const pages=result?Math.max(1,Math.ceil(result.total/result.page_size)):1;return <div className="services-public marketplace-public"><div className="container svc-public-topline mp-topline"><MarketplaceBreadcrumb label={serviceNavigationCopy[locale].breadcrumb} items={[{label:"SHIDA",href:marketplacePath(locale,"/shida")},{label:t.services}]}/></div>
-  <div className="container"><ServicesLanguageNavigation locale={locale} path="/shida/services" query={serviceSearchQuery(search)}/></div>
-  <PublicMarketplaceHero className="container svc-public-hero" imageClassName="svc-public-art" eyebrow={p.eyebrow} title={p.headline} intro={p.intro} image="/shida/shida-services-braiding.png" imageAlt={p.image} badge="SHIDA / SERVICES" browse={p.all} href="#service-discovery" primaryAction={{label:servicesAccountCopy[locale].describe,href:marketplacePath(locale,"/shida/service-requests?new=1")}}/>
+  <div className="container mp-collection-tools"><ServicesLanguageNavigation locale={locale} path="/shida/services" query={serviceSearchQuery(search)}/><Link href={marketplacePath(locale,"/shida/seller/services")}>{p.start}</Link></div>
+  <MarketplaceDiscoveryHeader className="container svc-public-hero" title={t.services} intro={t.intro} primaryAction={{label:servicesAccountCopy[locale].describe,href:marketplacePath(locale,"/shida/service-requests?new=1")}}/>
   <section id="service-discovery" className="section marketplace-collection"><div className="container">
   <form className="marketplace-filters svc-public-filters mp-search" action={marketplacePath(locale,"/shida/services")} method="get"><div className="mp-search-primary"><label htmlFor="service-query">{t.search}<input id="service-query" type="search" name="query" defaultValue={search.query} placeholder={t.placeholder}/></label><label>{t.city}<input name="city" defaultValue={search.city}/></label><button className="button button-primary" type="submit">{({en:"Search",fr:"Rechercher",ln:"Luka",sw:"Tafuta"})[locale]}</button></div><details className="marketplace-advanced-filters" open={Boolean(search.category||search.area||search.commune||search.location_type||search.min_rating)||undefined}><summary>{t.filters}</summary><div className="marketplace-filter-grid"><label>{t.category}<select name="category" defaultValue={search.category||""}><option value="">{t.any}</option>{serviceCategories.map((category)=><option value={category} key={category}>{serviceCategoryLabel(category,locale)}</option>)}</select></label><label>{t.area}<input name="area" defaultValue={search.area}/></label><label>{t.commune}<input name="commune" defaultValue={search.commune}/></label>
     <label>{t.locationType}<select name="location_type" defaultValue={search.location_type||""}><option value="">{t.any}</option><option value="public_place">{t.atProvider}</option></select></label>
@@ -93,8 +93,6 @@ export async function ServiceCollectionPage({locale,search}:{locale:Locale;searc
   <div className="svc-results-heading mp-results-heading"><h2>{hasSearch(search)?p.filtered:p.results}</h2>{result&&<span role="status">{result.total} {t.results}</span>}</div>
   {result?<>{result.items.length?<ServiceResults items={result.items} locale={locale}/>:<MarketplaceState>{t.empty}</MarketplaceState>}
     {pages>1&&<nav className="marketplace-pagination" aria-label={`${t.page} ${result.page} ${t.of} ${pages}`}><span>{result.page>1?<Link href={pageHref(locale,search,result.page-1)}>{t.previous}</Link>:t.previous}</span><span>{t.page} {result.page} {t.of} {pages}</span><span>{result.page<pages?<Link href={pageHref(locale,search,result.page+1)}>{t.next}</Link>:t.next}</span></nav>}</>:<MarketplaceState>{t.unavailable}</MarketplaceState>}
-  <section className="svc-public-how mp-how"><h2>{p.how}</h2><p>{p.howIntro}</p></section>
-  <section className="svc-public-provider mp-invitation"><div><p className="mp-eyebrow">SHIDA / SERVICES</p><h2>{p.provider}</h2><p>{p.providerIntro}</p></div><ButtonLink href={marketplacePath(locale,"/shida/seller/services")}>{p.start}</ButtonLink></section>
   <p className="marketplace-module-guidance">{moduleGuidance[locale].restaurants} <Link href={marketplacePath(locale,"/shida/restaurants")}>{moduleGuidance[locale].browseRestaurants}</Link> · {moduleGuidance[locale].hotels} <Link href={marketplacePath(locale,"/shida/hotels")}>{moduleGuidance[locale].browseHotels}</Link></p>
   </div></section></div>; }
 

@@ -1,8 +1,10 @@
 import Link from "next/link";
-import type { Locale } from "../../lib/i18n";
+import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 
 const availabilityLabels: Record<Locale, Record<string, string>> = {
   en: { AVAILABLE: "Available", RENTED: "Rented", INACTIVE: "Unavailable", UNAVAILABLE: "Unavailable" },
+  ln: {AVAILABLE:"Ezali",RENTED:"Efutami",INACTIVE:"Ezali te",UNAVAILABLE:"Ezali te"},
+  sw: {AVAILABLE:"Inapatikana",RENTED:"Imekodishwa",INACTIVE:"Haipatikani",UNAVAILABLE:"Haipatikani"},
   fr: { AVAILABLE: "Disponible", RENTED: "Loué", INACTIVE: "Indisponible", UNAVAILABLE: "Indisponible" },
 };
 
@@ -29,8 +31,8 @@ export function MarketplaceBreadcrumb({ label, items }: { label: string; items: 
 
 export function MarketplaceSectionBreadcrumb({ locale, current }: { locale: Locale; current: string }) {
   return <MarketplaceBreadcrumb
-    label={locale === "fr" ? "Fil d’Ariane" : "Breadcrumb"}
-    items={[{ label: "SHIDA", href: locale === "fr" ? "/fr/shida" : "/shida" }, { label: current }]}
+    label={({en:"Breadcrumb",fr:"Fil d’Ariane",ln:"Nzela ya lokasa",sw:"Njia ya ukurasa"})[locale]}
+    items={[{ label: "SHIDA", href: locale === "en" ? "/shida" : `/${locale}/shida` }, { label: current }]}
   />;
 }
 

@@ -1,3 +1,4 @@
+import { hotelSearchQuery, type HotelSearch } from "../../lib/hotel-search";
 import { cache } from "react";
 import { wenzeDiscoveryQuery, type WenzeDiscoverySearch } from "../../lib/wenze-discovery";
 import type {
@@ -310,8 +311,8 @@ export async function getApartments(search: ApartmentSearch = {}): Promise<Apart
   return apartmentCollection(await request(`/api/public/shida/apartments${apartmentSearchQuery(search)}`, 60));
 }
 
-export async function getHotels(): Promise<PublicCollection<HotelListing>> {
-  return collection(await request("/api/public/shida/hotels", 60), hotel);
+export async function getHotels(search:HotelSearch={}): Promise<PublicCollection<HotelListing>> {
+  return collection(await request(`/api/public/shida/hotels${hotelSearchQuery(search)?`?${hotelSearchQuery(search)}`:""}`, 60), hotel);
 }
 
 export const getApartment = cache(async (slug: string): Promise<ApartmentListing> =>
@@ -326,7 +327,15 @@ export const getHotel = cache(async (slug: string): Promise<HotelListing> =>
   hotel(await request(`/api/public/shida/hotels/${encodeURIComponent(slug)}`, false)),
 );
 
-export async function getWenzeStores(search:WenzeSearch={}):Promise<PublicCollection<WenzeStore>> { const params=new URLSearchParams(); for(const key of ["query","city","area","category"] as const){const value=search[key]?.trim();if(value)params.set(key,value.slice(0,120));} if(search.limit&&Number.isInteger(search.limit)&&search.limit>0&&search.limit<=50)params.set("limit",String(search.limit)); const suffix=params.size?`?${params}`:""; return collection(await request(`/api/public/shida/wenze/stores${suffix}`,60),(v)=>wenzeStore(v)); }
+export async function getWenzeStores(search:WenzeSearch={}):Promise<PublicCollection<WenzeStore>&{next_cursor:string|null}> {
+ const params=new URLSearchParams();
+ for(const key of ["query","city","area","category"] as const){const value=search[key]?.trim();if(value)params.set(key,value.slice(0,120));}
+ if(search.limit&&Number.isInteger(search.limit)&&search.limit>0&&search.limit<=50)params.set("limit",String(search.limit));
+ if(search.cursor)params.set("cursor",search.cursor.slice(0,512));
+ const data=record(await request(`/api/public/shida/wenze/stores${params.size?`?${params}`:""}`,60));
+ return {...collection(data,v=>wenzeStore(v)),next_cursor:text(data.next_cursor)};
+}
+
 export const getWenzeStore=cache(async(key:string)=>wenzeStore(await request(`/api/public/shida/wenze/stores/${encodeURIComponent(key)}`,false),true));
 export const getWenzeProduct=cache(async(key:string)=>wenzeProduct(await request(`/api/public/shida/wenze/products/${encodeURIComponent(key)}`,false)));
 export async function getWenzeProducts(search: WenzeDiscoverySearch) {

@@ -1,18 +1,12 @@
-import Image from "next/image";
 import { ButtonLink } from "../button-link";
 import "./public-marketplace.css";
 
-type HeroProps = {
-  eyebrow: string; title: string; intro: string; image: string; imageAlt: string;
-  badge: string; browse: string; href: string; className?: string; imageClassName?: string; unoptimized?: boolean;
-  primaryAction?: {label:string;href:string};
-};
-
-/** The same public discovery header for every SHIDA marketplace. */
-export function PublicMarketplaceHero({eyebrow,title,intro,image,imageAlt,badge,browse,href,className="",imageClassName="",unoptimized=false,primaryAction}: HeroProps) {
-  return <header className={`mp-hero ${className}`}>
-    <div><p className="mp-eyebrow">{eyebrow}</p><h1>{title}</h1><p className="mp-intro">{intro}</p>{primaryAction?<div className="mp-hero-actions"><ButtonLink href={primaryAction.href}>{primaryAction.label}</ButtonLink><a className="mp-browse" href={href}>{browse}<span aria-hidden="true">↓</span></a></div>:<a className="mp-browse" href={href}>{browse}<span aria-hidden="true">↓</span></a>}</div>
-    <div className={`mp-art ${imageClassName}`}><Image src={image} alt={imageAlt} fill unoptimized={unoptimized} sizes="(max-width: 700px) calc(100vw - 32px), (max-width: 1200px) 42vw, 500px" preload/><span aria-hidden="true">{badge}</span></div>
+/** Compact collection heading; useful listing photography belongs in results. */
+export function MarketplaceDiscoveryHeader({title,intro,className="",primaryAction}: {
+  title:string; intro:string; className?:string; primaryAction?:{label:string;href:string};
+}) {
+  return <header className={`mp-discovery-header ${className}`}><div><h1>{title}</h1><p>{intro}</p></div>
+    {primaryAction&&<ButtonLink href={primaryAction.href} variant="secondary">{primaryAction.label}</ButtonLink>}
   </header>;
 }
 

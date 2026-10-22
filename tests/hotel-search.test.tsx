@@ -25,17 +25,17 @@ it("passes normalized search through both public hotel routes",async()=>{
   expect((await HotelRoute({searchParams})).props).toMatchObject({locale:"en",search:{query:"Jardin",city:"Kinshasa"}});
   expect((await FrenchHotelRoute({params:Promise.resolve({lang:"fr"}),searchParams})).props).toMatchObject({locale:"fr",search:{query:"Jardin",city:"Kinshasa"}});
 });
-it("renders only matching hotels, accurate counts and locale-preserving city links",async()=>{
-  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(Response.json({items:[hotel,other],count:2})));
+it("requests backend hotel filters and renders the returned page",async()=>{
+  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(Response.json({items:[hotel],count:1})));
   const html=renderToStaticMarkup(await HotelCollectionPage({locale:"fr",search:{query:"Jardin",city:"Kinshasa"}}));
   expect(html).toContain("Hôtel du Jardin");
   expect(html).not.toContain('href="/fr/shida/hotels/lac"');
   expect(html).toContain("1 hôtel affiché");
-  expect(html).toContain('href="/fr/shida/hotels?query=Jardin&amp;city=Goma"');
+  expect(vi.mocked(fetch).mock.calls[0][0]).toContain("/api/public/shida/hotels?query=Jardin&city=Kinshasa");
   expect(html).toContain('href="/fr/shida/hotels/hotel-jardin"');
 });
 it("retains a search and reset action when no hotels match",async()=>{
-  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(Response.json({items:[hotel],count:1})));
+  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(Response.json({items:[],count:0})));
   const html=renderToStaticMarkup(await HotelCollectionPage({locale:"en",search:{query:"missing"}}));
   expect(html).toContain("No hotels match your search.");
   expect(html).toContain("0 hotels shown");

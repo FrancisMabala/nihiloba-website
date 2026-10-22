@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Locale } from "../../lib/i18n";
+import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 import type {
   ApartmentCollection,
   ApartmentPropertyType,
@@ -49,9 +49,10 @@ export function ApartmentFilters({ locale, search, propertyTypes }: {
       </div>
       <div className="marketplace-filter-actions">
         <button className="button button-secondary" type="submit">{t.applyFilters}</button>
-        {hasApartmentSearch(search) && <Link href={action}>{t.resetFilters}</Link>}
+
       </div>
     </details>
+    {hasApartmentSearch(search)&&<Link className="mp-search-reset" href={action}>{t.resetFilters}</Link>}
   </form>;
 }
 
