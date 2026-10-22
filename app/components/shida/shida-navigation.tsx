@@ -25,7 +25,7 @@ export function ShidaNavigation(){
   return()=>{viewport?.removeEventListener('resize',update);viewport?.removeEventListener('scroll',update);document.removeEventListener('focusin',update);document.removeEventListener('focusout',update);};
  },[]);
  const personal=/^\/shida\/(space|my-applications|mes-candidatures|service-requests|service-bills|restaurant-orders|restaurant-reservations|inbox)(?:\/|$)/.test(path)||path==='/shida/wenze/orders';
- const active=path==='/shida/register'?4:path==='/shida'?(hash==='#explore'?1:0):personal?(query.get('view')==='management'?3:query.get('view')==='settings'?4:2):1;
+ const active=path==='/shida/wenze/sell'?3:path==='/shida/register'?4:path==='/shida'?(hash==='#explore'?1:0):personal?(query.get('view')==='management'?3:query.get('view')==='settings'?4:2):1;
  const hrefs=[base,`${base}#explore`,`${base}/space`,`${base}/space?view=management`];
  const icons:SpaceIconName[]=['home','shop','requests','management'];
  const menuLinks=[[marketplaceAccountCopy[locale].account,`${base}/space?view=settings`],[a.orders,`${base}/space?view=orders`],[a.requests,`${base}/space?view=requests`],[a.messages,`${base}/space?view=messages`],[a.receipts,`${base}/space?view=receipts`],[a.settings,`${base}/space?view=settings`],[marketplaceAccountCopy[locale].language,`${base}/space?view=settings#space-language`],[t[6],`${locale==='en'?'':'/fr'}/shida/wenze/${locale==='en'?'cart':'panier'}`],[t[7],'https://business.nihiloba.com/'],[t[5],`${locale==='en'?'/en':'/fr'}/faq`]];
