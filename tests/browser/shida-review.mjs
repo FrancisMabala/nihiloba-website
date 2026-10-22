@@ -1,4 +1,4 @@
-﻿import { chromium } from '@playwright/test';
+import { chromium } from '@playwright/test';
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 
@@ -13,7 +13,7 @@ try {
       const page = await browser.newPage({ viewport: { width, height: 1000 } });
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
-      const path = locale === 'en' ? '/shida/' : '/fr/shida/';
+      const path = locale === 'en' ? '/about/shida/' : '/fr/about/shida/';
       const response = await page.goto(`${base}${path}`, { waitUntil: 'networkidle' });
       assert.equal(response.status(), 200);
       assert.equal(await page.locator('html').getAttribute('lang'), locale);
@@ -73,4 +73,3 @@ try {
   await fs.writeFile(`${output}/verification.json`, JSON.stringify(results, null, 2));
   console.log(`Passed ${results.length} SHIDA viewport/locale reviews, marketplace links and shared-page smoke checks.`);
 } finally { await browser.close(); }
-

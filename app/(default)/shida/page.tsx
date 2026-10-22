@@ -1,7 +1,8 @@
 import { ShidaPage } from "../../components/pages/localized-pages";
-import { pageMetadata } from "../../lib/i18n";
+import { discoveryMetadata } from "../../lib/discovery-metadata";
 
-export const metadata = pageMetadata("en", "shida", "/shida");
+export const metadata = discoveryMetadata("en");
+export const revalidate = 60;
 
 export default function Page() {
   return <ShidaPage locale="en" />;

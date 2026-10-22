@@ -69,7 +69,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
   return <div className="shida-public-account" lang={locale}>
     <MarketplaceControls key={session?.binding||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref} guestLabel={t.signIn}
       links={[{label:a.space,href:spaceHref},{label:accountSpaceCopy[locale].settings,href:`${spaceHref}?view=settings`}]}
-      languages={/\/shida\/(restaurants|services|seller|space|service-requests|service-bills)(?:\/|$)/.test(pathname)?["fr","en","ln","sw"]:["fr","en"]}
+      languages={/\/shida\/?$/.test(pathname)||/\/shida\/(restaurants|services|seller|space|service-requests|service-bills)(?:\/|$)/.test(pathname)?["fr","en","ln","sw"]:["fr","en"]}
       onLanguage={(lang:MarketplaceLocale)=>{if(leaveWork())window.location.assign(marketplaceLanguagePath(pathname,lang)+window.location.search);}}
       onLogin={()=>setOpen(true)} onAccount={()=>{setOpen(true);void logout(true);}} onLogout={()=>{setOpen(true);void logout();}} pending={pending} beforeNavigate={leaveWork}/>
     <dialog className="shida-account-dialog" ref={dialog} aria-labelledby={title} onClose={()=>setOpen(false)}>

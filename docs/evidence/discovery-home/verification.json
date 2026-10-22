@@ -1,0 +1,130 @@
+[
+  {
+    "locale": "en",
+    "width": 320,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "en",
+    "width": 390,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "en",
+    "width": 820,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "en",
+    "width": 1440,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "fr",
+    "width": 320,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "fr",
+    "width": 390,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "fr",
+    "width": 820,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "fr",
+    "width": 1440,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "ln",
+    "width": 320,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "ln",
+    "width": 390,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "ln",
+    "width": 820,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "ln",
+    "width": 1440,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "sw",
+    "width": 320,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "sw",
+    "width": 390,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "sw",
+    "width": 820,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  },
+  {
+    "locale": "sw",
+    "width": 1440,
+    "status": 200,
+    "overflow": false,
+    "groups": 2,
+    "errors": []
+  }
+]

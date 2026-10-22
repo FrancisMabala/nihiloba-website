@@ -1,67 +1,38 @@
-import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { OFFICIAL_CHANNELS } from "../../lib/brand";
-import { localizedPath, type Locale } from "../../lib/i18n";
-import { shidaCopy } from "../../lib/shida-copy";
-import { ButtonLink } from "../button-link";
-import { ArrowRightIcon, BookIcon, BriefcaseIcon, CarIcon, CheckIcon, GlobeIcon, HomeIcon, MessageIcon, QrCodeIcon, StoreIcon, ToolsIcon } from "../icons";
-import "./shida-page.css";
+import { discoveryCopy, discoveryMarkets, discoveryPath, type DiscoveryLocale } from "../../lib/discovery-copy";
+import { ArrowRightIcon, BookIcon, BriefcaseIcon, CarIcon, HomeIcon, StoreIcon, ToolsIcon } from "../icons";
+import { DiscoveryIllustration } from "./discovery-illustration";
+import { DiscoveryListings } from "./shida-discovery-listings";
+import "./shida-discovery.css";
 
-const stories = [
-  { id: "employment", image: "/shida/shida-employment-christian.png", route: "/shida/emplois", Icon: BriefcaseIcon },
-  { id: "services", image: "/shida/shida-services-braiding.png", route: "/shida/services", Icon: ToolsIcon },
-  { id: "wenze", image: "/shida/shida-business-mireille.png", route: "/shida/wenze", Icon: StoreIcon },
-  { id: "housing", image: "/product/products-shida-housing.png", route: "/shida/appartements", Icon: HomeIcon },
-  { id: "hotels", image: "/shida/shida-hotel.png", route: "/shida/hotels", Icon: BookIcon },
-  { id: "restaurants", image: "/shida/shida-restaurant-family.png", route: "/shida/restaurants", Icon: StoreIcon },
-  { id: "transport", image: "/shida/shida-transport-driver.png", route: "/shida/transport", Icon: CarIcon },
-  { id: "business", image: "/shida/shida-kivu-landscape.png", route: "/shida/business", Icon: BriefcaseIcon },
-] as const;
-const journeyIcons = [GlobeIcon, BookIcon, MessageIcon, CheckIcon];
-const connectionIcons = [GlobeIcon, MessageIcon, CheckIcon];
-
-function StoryImage({ src, alt, className = "", hero = false }: { src: string; alt: string; className?: string; hero?: boolean }) {
-  return <div className={`shida-story-image ${className}`}><Image src={src} alt={alt} fill sizes={hero ? "(max-width: 700px) 100vw, 65vw" : "(max-width: 700px) calc(100vw - 32px), (max-width: 1100px) 40vw, 460px"} loading={hero ? "eager" : "lazy"} fetchPriority={hero ? "high" : undefined} /></div>;
-}
-
-export function ShidaPage({ locale }: { locale: Locale }) {
-  const t = shidaCopy[locale];
-  return <div className="shida-editorial">
-    <section className="shida-story-hero" aria-labelledby="shida-title">
-      <div className="container shida-story-hero-grid">
-        <div className="shida-story-hero-copy"><p className="shida-story-label">SHIDA</p><h1 id="shida-title">{t.title}</h1><p>{t.intro}</p><p>{t.continuation}</p><div className="shida-story-actions"><ButtonLink href="#stories">{t.start}</ButtonLink><ButtonLink href={OFFICIAL_CHANNELS.whatsapp} external variant="secondary">{t.whatsapp}</ButtonLink></div></div>
-      </div>
-      <StoryImage src="/shida/shida-hero.png" alt={t.heroAlt} hero className="shida-story-hero-image" />
+const icons = [BriefcaseIcon, ToolsIcon, StoreIcon, HomeIcon, BookIcon, StoreIcon, CarIcon];
+export function ShidaPage({ locale }: { locale: DiscoveryLocale }) {
+  const t = discoveryCopy[locale];
+  return <div className="discovery container" lang={locale}>
+    <section className="discovery-hero" aria-labelledby="discovery-title">
+      <p className="discovery-eyebrow">{t.eyebrow}</p><h1 id="discovery-title">{t.title}</h1><p>{t.intro}</p>
+      <form className="discovery-search" action="/shida/find/" method="get" role="search" aria-describedby="discovery-search-note">
+        <input type="hidden" name="locale" value={locale}/>
+        <label><span>{t.market}</span><select name="market" defaultValue="emplois">{discoveryMarkets.slice(0, 6).map((market, i) => <option value={market} key={market}>{t.labels[i]}</option>)}</select></label>
+        <label className="discovery-query"><span>{t.query}</span><input name="query" type="search" maxLength={120}/></label>
+        <label><span>{t.city}</span><input name="city" list="discovery-cities" placeholder={t.anywhere} maxLength={120}/></label>
+        <datalist id="discovery-cities">{["Kinshasa", "Lubumbashi", "Goma", "Bukavu", "Kisangani", "Matadi"].map(city => <option key={city} value={city}/>)}</datalist>
+        <button type="submit">{t.search}<ArrowRightIcon/></button>
+      </form><p className="discovery-search-note" id="discovery-search-note">{t.searchNote}</p>
     </section>
-
-    <div className="container shida-stories" id="stories">
-      <div className="shida-stories-intro"><p className="shida-story-label">{t.storiesLabel}</p><p>{t.scenarios}</p></div>
-      <nav className="shida-story-nav" aria-label={t.explore}>{stories.map(({ id, Icon }, i) => <a href={`#${id}`} key={id}><Icon />{t.stories[i].label}</a>)}<a href="#school"><BookIcon />{t.schoolLink}</a></nav>
-      {stories.map(({ id, image, route }, i) => {
-        const s = t.stories[i];
-        return <section className={`shida-story shida-story-${id} ${i % 2 ? "shida-story-reverse" : ""}`} id={id} key={id} aria-labelledby={`${id}-title`}>
-          <div className="shida-story-copy">
-            <p className="shida-story-label"><span>{String(i + 1).padStart(2, "0")}</span>{s.label}</p>
-            <h2 id={`${id}-title`}>{s.title}</h2>
-            {s.body.map(p => <p key={p}>{p}</p>)}
-            {id === "business" && <p className="shida-story-note">{t.businessNote}</p>}
-            <ol className="shida-story-journey">{s.steps.map((step, index) => { const Icon = journeyIcons[index]; return <li key={step}><Icon /><span>{step}</span>{index < 3 && <ArrowRightIcon className="shida-journey-arrow" />}</li>; })}</ol>
-            {route ? <Link className="shida-story-link" href={localizedPath(locale, route)} target={id === "transport" ? "_blank" : undefined} rel={id === "transport" ? "noopener noreferrer" : undefined}>{s.action}<ArrowRightIcon /></Link> : <a className="shida-story-link" href={OFFICIAL_CHANNELS.whatsapp} target="_blank" rel="noopener noreferrer">{s.action}<ArrowRightIcon /></a>}
-          </div>
-          <figure className="shida-story-visual"><StoryImage src={image} alt={s.alt} /><figcaption><p>{s.aside}</p><span>{s.person}</span><small>{s.role}</small></figcaption></figure>
-        </section>;
-      })}
-    </div>
-
-    <section className="shida-school-callout" id="school" aria-labelledby="shida-school-title"><div className="container shida-school-callout-grid"><div><p className="shida-story-label">SHIDA ÉCOLE</p><h2 id="shida-school-title">{t.schoolTitle}</h2><p>{t.schoolBody}</p></div><ButtonLink href={localizedPath(locale, "/shida/ecole")} variant="secondary">{t.schoolAction}</ButtonLink></div></section>
-
-    <section className="shida-story-connect" aria-labelledby="shida-connect-title"><div className="container shida-connect-grid">
-      <div><p className="shida-story-label">{t.connectsLabel}</p><h2 id="shida-connect-title">{t.connectsTitle}</h2><p>{t.connectsBody}</p></div>
-      <ol className="shida-connection-steps">{t.connectionSteps.map((step, i) => { const Icon = connectionIcons[i]; return <li key={step}><Icon /><span>{step}</span>{i < 2 && <ArrowRightIcon className="shida-connection-arrow" />}</li>; })}</ol>
-    </div></section>
-    <section className="container shida-direct" aria-labelledby="shida-direct-title"><QrCodeIcon /><h2 id="shida-direct-title">{t.directTitle}</h2><p>{t.directBody}</p></section>
-    <section className="shida-story-final" aria-labelledby="shida-final-title"><div className="container shida-final-copy"><div><p className="shida-story-label">{t.ready}</p><h2 id="shida-final-title">{t.finalTitle}</h2><p>{t.finalBody}</p></div><div className="shida-story-actions"><ButtonLink href={OFFICIAL_CHANNELS.whatsapp} external>{t.open}</ButtonLink><ButtonLink href="#stories" variant="secondary">{t.explore}</ButtonLink></div></div>
-      <div className="shida-closing-image"><Image src="/product/products-closing-pont-marechal.png" alt={t.closingAlt} fill sizes="100vw" /></div>
+    <section aria-labelledby="discovery-markets"><h2 id="discovery-markets">{t.explore}</h2>
+      <nav className="discovery-categories" aria-label={t.explore}>{discoveryMarkets.map((market, i) => { const Icon = icons[i]; return <Link id={market === "emplois" ? "employment" : market === "appartements" ? "housing" : market} href={discoveryPath(["emplois", "appartements", "hotels", "transport"].includes(market) && (locale === "ln" || locale === "sw") ? "fr" : locale, `/shida/${market}`)} key={market}><span className={`discovery-icon discovery-icon-${i}`}><Icon/></span><strong>{t.labels[i]}</strong><small>{t.hints[i]}</small></Link>; })}</nav>
     </section>
+    <section className="discovery-listings" aria-labelledby="discovery-listings-title" id="stories"><h2 id="discovery-listings-title">{t.recent}</h2><p className="discovery-muted">{t.recentNote}</p>
+      <Suspense fallback={<div className="discovery-loading" role="status">{t.loading}</div>}><DiscoveryListings locale={locale}/></Suspense>
+    </section>
+    <section className="discovery-entries" aria-label="SHIDA École & Business">
+      <article id="school"><DiscoveryIllustration kind="school"/><div><h2>{t.school}</h2><p>{t.schoolBody}</p><Link href={discoveryPath(locale, "/shida/ecole")}>{t.schoolAction}<ArrowRightIcon/></Link></div></article>
+      <article id="business"><DiscoveryIllustration kind="business"/><div><h2>{t.business}</h2><p>{t.businessBody}</p><a href="https://business.nihiloba.com">{t.businessAction}<ArrowRightIcon/></a></div></article>
+    </section>
+    <div className="discovery-account-note"><p>{t.accountNote}</p><a href={OFFICIAL_CHANNELS.whatsapp}>{t.join}<ArrowRightIcon/></a></div>
+    <p className="discovery-story-link"><Link href={locale === "en" ? "/about/shida" : "/fr/about/shida"}>{t.story}<ArrowRightIcon/></Link></p>
   </div>;
 }

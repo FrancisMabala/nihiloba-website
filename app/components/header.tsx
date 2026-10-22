@@ -11,6 +11,7 @@ import { useCart } from "./shida/cart-provider";
 import { wenzeCartCopy, wenzeCartPath } from "./shida/wenze-cart-copy";
 import {marketplaceAccountCopy} from "./shida/marketplace-account-copy";
 import { PublicShidaAccount } from "./shida/public-account";
+import { discoveryCopy } from "../lib/discovery-copy";
 
 const links = [
   ["home", ""],
@@ -66,9 +67,11 @@ export function Header({ locale }: { locale: Locale }) {
         : `/${otherLocale}${suffix}`;
 
   if(shida){
-    const prefix=locale==="en"?"":"/fr";
-    const markets=[["Wenze","wenze"],["Restaurants","restaurants"],["Services","services"],[locale==="en"?"Jobs":"Emploi","emplois"],[locale==="en"?"Homes":"Logements","appartements"],[locale==="en"?"Hotels":"Hôtels","hotels"]];
-    return <header className="market-header"><div className="market-header-inner"><div className="market-brand-group"><Link className="market-home" href={localizedPath(locale)} aria-label={marketplaceAccountCopy[locale].home}>NIHILOBA</Link><Link className="market-brand" href={`${prefix}/shida`}>SHIDA</Link></div><nav className="market-primary-nav" aria-label={locale==="en"?"Marketplaces":"Marchés"}>{markets.map(([label,path])=><Link key={path} href={`${prefix}/shida/${path}`} aria-current={suffix.startsWith(`/shida/${path}`)?"page":undefined}>{label}</Link>)}</nav><div className="market-header-actions"><Link className="market-cart" href={wenzeCartPath(locale)} aria-label={`${wenzeCartCopy[locale].cart}: ${cart?.item_count??0}`}><CartIcon/><span className="market-cart-label">{wenzeCartCopy[locale].cart} · </span><span aria-live="polite" aria-busy={cartLoading}>{cartLoading?"·":cart?.item_count??0}</span></Link><PublicShidaAccount key={`${pathname}:${accountLocale}`} locale={accountLocale}/></div></div></header>;
+    const homepage=comparableSuffix==="/shida";
+    const prefix=homepage?(accountLocale==="en"?"":`/${accountLocale}`):(locale==="en"?"":"/fr");
+    const labels=discoveryCopy[accountLocale].labels;
+    const markets=homepage?[[labels[2],"wenze"],[labels[5],"restaurants"],[labels[1],"services"],[labels[0],"emplois"],[labels[3],"appartements"],[labels[4],"hotels"]]:[["Wenze","wenze"],["Restaurants","restaurants"],["Services","services"],[locale==="en"?"Jobs":"Emploi","emplois"],[locale==="en"?"Homes":"Logements","appartements"],[locale==="en"?"Hotels":"Hôtels","hotels"]];
+    return <header className="market-header"><div className="market-header-inner"><div className="market-brand-group"><Link className="market-home" href={localizedPath(locale)} aria-label={marketplaceAccountCopy[locale].home}>NIHILOBA</Link><Link className="market-brand" href={`${prefix}/shida`}>SHIDA</Link></div><nav className="market-primary-nav" aria-label={locale==="en"?"Marketplaces":"Marchés"}>{markets.map(([label,path])=><Link key={path} href={`${homepage && (accountLocale === "ln" || accountLocale === "sw") && ["emplois", "appartements", "hotels"].includes(path) ? "/fr" : prefix}/shida/${path}`} aria-current={suffix.startsWith(`/shida/${path}`)?"page":undefined}>{label}</Link>)}</nav><div className="market-header-actions"><Link className="market-cart" href={wenzeCartPath(locale)} aria-label={`${wenzeCartCopy[locale].cart}: ${cart?.item_count??0}`}><CartIcon/><span className="market-cart-label">{wenzeCartCopy[locale].cart} · </span><span aria-live="polite" aria-busy={cartLoading}>{cartLoading?"·":cart?.item_count??0}</span></Link><PublicShidaAccount key={`${pathname}:${accountLocale}`} locale={accountLocale}/></div></div></header>;
   }
 
   return (

@@ -1,0 +1,34 @@
+.discovery{max-width:1240px;padding-bottom:26px;color:#173e32}
+.discovery h1,.discovery h2{font-family:Georgia,serif;font-weight:500;letter-spacing:-.025em}
+.discovery h2{font-size:clamp(1.35rem,2.2vw,1.8rem);margin:0 0 16px}
+.discovery p{line-height:1.55}
+.discovery-hero{text-align:center;padding:30px 0 22px}
+.discovery-hero h1{font-size:clamp(1.9rem,3.7vw,3rem);line-height:1.12;margin:8px 0 12px}
+.discovery-hero>p{margin:0;color:#58665e}
+.discovery-hero .discovery-eyebrow{color:#806021;text-transform:uppercase;font-size:.72rem;letter-spacing:.13em;font-weight:700}
+.discovery-search{display:grid;grid-template-columns:minmax(140px,1fr) minmax(180px,2fr) minmax(130px,1fr) auto;gap:12px;text-align:left;margin-top:24px;padding:12px;background:#fffefa;border:1px solid #d7dbcf;border-radius:12px;align-items:end}
+.discovery-search label{display:grid;gap:4px;min-width:0;font-size:.75rem;color:#58665e}
+.discovery-search :is(input:not([type=hidden]),select){width:100%;min-width:0;border:1px solid #d7dbcf;background:#fffefa;border-radius:6px;padding:10px;color:#173e32;font:inherit;font-size:.9rem;min-height:44px}
+.discovery-search button{display:flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:7px;background:#173e32;color:white;padding:12px 20px;min-height:44px;font:inherit;font-size:.9rem;cursor:pointer}
+.discovery :is(button,input,select,a):focus-visible{outline:3px solid #a47b2d;outline-offset:3px}
+.discovery svg:not(.discovery-illustration){width:20px;height:20px;flex-shrink:0}
+.discovery .discovery-search-note{font-size:.75rem;text-align:left;margin:8px 0 0}
+.discovery-categories{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.discovery-categories>a{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:16px 6px 13px;border:1px solid #dddfd4;border-radius:10px;background:#fffefa;text-decoration:none;min-width:0;scroll-margin-top:100px}
+.discovery-categories>a:hover{border-color:#658573;background:#f1f5ec}
+.discovery-categories strong{font-size:.82rem;line-height:1.3}.discovery-categories small{font-size:.7rem;color:#58665e}
+.discovery-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#edf2e8;color:#287057}.discovery-icon svg{width:28px!important;height:28px!important}
+.discovery-icon-0{color:#9d4930;background:#faeee5}.discovery-icon-1{color:#376783;background:#e9f2f5}.discovery-icon-2{color:#80547d;background:#f3edf3}.discovery-icon-4{color:#655585;background:#efedf5}.discovery-icon-5{color:#936b26;background:#f6efdd}
+.discovery-listings{margin-top:30px}.discovery-muted{color:#58665e;font-size:.84rem}.discovery-listings>p{margin:-8px 0 16px}
+.discovery-feed{display:grid;gap:24px}.discovery-group-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.discovery-group-heading h3{font-size:1rem;margin:0}.discovery-group-heading a{display:flex;align-items:center;gap:6px;font-size:.8rem;min-height:44px}
+.discovery-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.discovery-job{padding:18px;border:1px solid #dddfd4;border-radius:10px;background:#fffefa;display:flex;flex-direction:column;align-items:start;gap:8px;min-width:0;overflow-wrap:anywhere}
+.discovery-job h4{margin:0;font-size:1rem;line-height:1.4}.discovery-job p{margin:0;font-size:.82rem}.discovery-job time{font-size:.72rem;color:#58665e}.discovery-job-icon{background:#f5eddd;padding:9px;border-radius:9px}
+.discovery-detail{display:flex;gap:8px;align-items:center;margin-top:auto;padding-top:8px;font-size:.8rem;min-height:44px}
+.discovery .service-card{min-width:0;display:flex;flex-direction:column}.discovery .service-card-image{width:100%;height:145px;min-height:145px}.discovery .service-card .marketplace-card-body{padding:14px}.discovery .service-card h2{font-family:inherit;font-size:1rem;font-weight:650;margin:4px 0 8px}.discovery .marketplace-description{display:none}
+.discovery-loading{min-height:380px;padding:30px;border-radius:10px;background:#f0f2e9}.discovery-state{padding:24px;border:1px dashed #bfcabb;border-radius:10px;color:#58665e;font-size:.9rem}.discovery-state a{display:inline-flex;align-items:center;min-height:44px}
+.discovery-entries{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px}.discovery-entries article{display:grid;grid-template-columns:36% minmax(0,1fr);align-items:center;border:1px solid #dddfd4;border-radius:12px;background:#f4f3e9;padding:15px;gap:12px;scroll-margin-top:100px}.discovery-entries article+article{background:#eef3eb}
+.discovery-illustration{width:100%;height:auto;max-height:170px}.discovery-entries h2{font-family:inherit;font-size:1.05rem;font-weight:700;margin:0 0 8px}.discovery-entries p{font-size:.8rem;margin:0 0 10px;color:#4e6256}.discovery-entries a{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:.8rem;font-weight:650}
+.discovery-account-note{text-align:center;font-size:.78rem;color:#58665e;margin:18px auto;max-width:740px}.discovery-account-note a,.discovery-story-link a{display:inline-flex;align-items:center;gap:8px;min-height:44px}.discovery-story-link{text-align:center;font-size:.78rem;margin:4px 0 0}
+@media(max-width:1000px){.discovery-categories{grid-template-columns:repeat(4,minmax(0,1fr))}.discovery-entries article{grid-template-columns:1fr}.discovery-illustration{max-height:130px}.discovery-search{grid-template-columns:1fr 2fr}.discovery-results{gap:10px}}
+@media(max-width:600px){.discovery-hero{padding-top:20px}.discovery-hero h1{font-size:1.9rem}.discovery-hero>p{font-size:.85rem}.discovery-search{margin-top:16px;padding:10px;gap:10px;grid-template-columns:1fr 1fr}.discovery-query{grid-column:1/-1;grid-row:1}.discovery-search button{grid-column:1/-1}.discovery-categories{gap:7px}.discovery-categories>a{padding:10px 3px}.discovery-categories strong{font-size:.69rem}.discovery-categories small{display:none}.discovery-icon{width:36px;height:36px}.discovery-results{grid-template-columns:1fr}.discovery .service-card{display:grid;grid-template-columns:100px minmax(0,1fr)}.discovery .service-card-image{height:100%;min-height:150px}.discovery .service-card .marketplace-card-body{padding:12px}.discovery-entries{grid-template-columns:1fr}.discovery-entries article{grid-template-columns:100px minmax(0,1fr);padding:12px;gap:10px}.discovery-listings{margin-top:22px}.discovery-job{display:grid;grid-template-columns:40px minmax(0,1fr);gap:5px 12px;padding:14px}.discovery-job-icon{grid-row:1/5;padding:8px}.discovery-job>:not(.discovery-job-icon){grid-column:2}.discovery-loading{min-height:600px}}

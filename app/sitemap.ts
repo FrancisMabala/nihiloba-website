@@ -48,6 +48,7 @@ const localizedTrustRoutes: Record<string, { en: string; fr: string }> = {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const dynamicRoutes = new Set<string>();
+  for (const route of ["/about/shida", "/fr/about/shida", "/ln/shida", "/sw/shida"]) dynamicRoutes.add(route);
   for (const prefix of ["", "/fr", "/ln", "/sw"]) dynamicRoutes.add(`${prefix}/shida/restaurants`);
   dynamicRoutes.add("/shida/wenze");
   dynamicRoutes.add("/fr/shida/wenze");
