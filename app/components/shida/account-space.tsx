@@ -15,6 +15,7 @@ import {PersonalActivityOverview} from './personal-activity-overview';
 import {workspaceText} from '../../lib/personal-workspace-copy';
 import './account-space.css';
 import {PersonalProfileSettings} from './personal-profile-settings';
+import {listingCopy} from '../../lib/wenze-listings-copy';
 type View='home'|'orders'|'requests'|'messages'|'receipts'|'settings'|'management';
 export function AccountSpace({locale,initialView,inbox=false}:{locale:MarketplaceLocale;initialView?:string;inbox?:boolean}){
  const router=useRouter();
@@ -39,7 +40,7 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
  },[attempt]);
  const href=(key:View)=>key==='home'?base:`${base}?view=${key}`;
  const entries:{key:View;label:string;icon:SpaceIconName}[]=[{key:'home',label:t.home,icon:'home'},{key:'orders',label:t.orders,icon:'orders'},{key:'requests',label:t.requests,icon:'requests'},{key:'messages',label:t.messages,icon:'messages'},{key:'receipts',label:t.receipts,icon:'receipts'}];
- const managementLinks=[{label:t.shop,url:`${prefix}/shida/seller/wenze`,icon:'shop' as const},...(access!=='unavailable'?[{label:access==='provider'?t.services:servicesAccountCopy[locale].offer,url:`${prefix}/shida/seller/services`,icon:'management' as const}]:[]),{label:t.restaurant,url:`${prefix}/shida/seller/restaurants`,icon:'restaurant' as const},{label:w('business'),url:'https://business.nihiloba.com/',icon:'management' as const}];
+ const managementLinks=[{label:listingCopy[locale].title,url:`${prefix}/shida/wenze/sell`,icon:"shop" as const},{label:t.shop,url:`${prefix}/shida/seller/wenze`,icon:'shop' as const},...(access!=='unavailable'?[{label:access==='provider'?t.services:servicesAccountCopy[locale].offer,url:`${prefix}/shida/seller/services`,icon:'management' as const}]:[]),{label:t.restaurant,url:`${prefix}/shida/seller/restaurants`,icon:'restaurant' as const},{label:w('business'),url:'https://business.nihiloba.com/',icon:'management' as const}];
  const managementRows=()=>managementLinks.map(item=><a key={item.url} href={item.url}><SpaceIcon name={item.icon}/><span>{item.label}</span></a>);
  const navigation=(mobile=false)=><nav aria-label={a.space}>
   {entries.map(item=><a key={item.key} href={href(item.key)} aria-current={view===item.key?'page':undefined}><SpaceIcon name={item.icon}/><span>{item.label}</span></a>)}

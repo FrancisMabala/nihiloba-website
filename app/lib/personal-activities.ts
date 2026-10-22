@@ -6,7 +6,7 @@ export function managedActivities(market:ManagedActivity['market'],value:unknown
  const rows=data[market==='wenze'?'stores':market==='restaurants'?'items':'profiles'];
  if(!Array.isArray(rows))throw Error('Unavailable activities');
  if(market==='services'&&servicesProviderAccess(rows,(policy as {capabilities?:unknown})?.capabilities)==='unavailable')throw Error('Unavailable activities');
- const items=rows.map(row=>{
+ const items=rows.filter(row=>market!=="wenze"||row.selling_mode!=="individual").map(row=>{
   if(!row||typeof row.public_ref!=='string'||!row.public_ref)throw Error('Unavailable activity');
   const name=market==='restaurants'?row.profile?.name:market==='services'?row.service_name:row.name;
   if(typeof name!=='string'||!name)throw Error('Unavailable activity');
