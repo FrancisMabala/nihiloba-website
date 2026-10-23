@@ -8,6 +8,7 @@ const store={public_ref:'WNZ_STYLE',slug:'atelier-kin',name:'Atelier Kin',catego
 globalThis.fetch=async(input,init)=>{
  const url=new URL(typeof input==='string'||input instanceof URL?input:input.url),p=url.pathname.replace(/\/$/,'');
  if(url.origin!==process.env.SHIDA_API_BASE_URL)return servicesFetch(input,init);
+ if(p==='/api/public/shida/jobs/catalogs')return Response.json({organization_types:[{id:'company'},{id:'school'}],business_sectors:[{id:'commerce_distribution'},{id:'education_training'}]});
  if(p==='/api/public/shida/apartments')return Response.json({...collection([apartment],1,1,12),filters:{property_types:['apartment']}});
  if(p==='/api/public/shida/apartments/bright-flat')return Response.json(apartment);
  if(p==='/api/public/shida/hotels')return Response.json(collection([hotel]));

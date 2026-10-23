@@ -27,7 +27,7 @@ for(const locale of ['en','fr','ln','sw'])for(const width of [390,820,1440])test
   const response=await page.goto(`${locale==='en'?'':`/${locale}`}/shida/${market}`);expect(response?.status()).toBe(200);
   await expect(page.locator('h1')).toHaveCount(1);await expect(page.locator('.shida-navigation')).toHaveCount(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  expect(await page.locator('.shida-navigation').evaluate(el=>getComputedStyle(el).position)).toBe(width<=700?'fixed':'static');
+  if(width<=700)await expect(page.locator('.shida-navigation')).toBeVisible();else await expect(page.locator('.shida-navigation')).toBeHidden();
   await expect(page.locator('.market-footer')).not.toContainText(/Roots|Racines/);
   await expect(page.locator('.market-language span')).toHaveCount(0);
   await expect(page.locator('.shida-navigation [aria-current=page]')).toHaveCount(1);
@@ -52,7 +52,7 @@ test('navigation menu, keyboard, language, canonical links and workspace boundar
  await page.setViewportSize({width:390,height:900});await page.route('**/api/shida/**',r=>r.fulfill({status:401,json:{}}));await page.goto('/fr/shida');
  const nav=page.locator('.shida-navigation'),menu=nav.getByRole('button',{name:'Menu',exact:true});await menu.focus();await page.keyboard.press('Enter');await expect(page.locator('#shida-menu')).toBeVisible();
  await expect(page.locator('#shida-menu a[href="https://business.nihiloba.com/"]')).toBeVisible();await page.keyboard.press('Escape');await expect(menu).toBeFocused();
- await expect(page.locator('.discovery-account-note a')).toHaveAttribute('href','https://wa.me/46769709059?text=Bonjour');await expect(page.locator('.discovery-story-link a')).toHaveAttribute('href',/\/fr\/about\/shida\/?$/);await expect(page.locator('.discovery-entries p')).toHaveCount(0);
+ await expect(page.locator('.discovery-account-note a')).toHaveAttribute('href','/fr/shida/register/');await expect(page.locator('.discovery-story-link a')).toHaveAttribute('href',/\/fr\/about\/shida\/?$/);await expect(page.locator('.discovery-entries p')).toHaveCount(0);
  await page.locator('.market-language').click();await page.getByRole('button',{name:'English',exact:true}).click();await expect(page).toHaveURL(/\/shida\/?$/);
  await nav.getByRole('link',{name:'Explore',exact:true}).click();await expect(page).toHaveURL(/#explore$/);await expect(nav.locator('[aria-current=page]')).toHaveText('Explore');
  for(const market of ['wenze','restaurants','services']){await page.goto(`/shida/seller/${market}`);await expect(page.locator('.shida-navigation')).toHaveCount(0);await expect(page.locator('.space-bottom')).toHaveCount(0);}

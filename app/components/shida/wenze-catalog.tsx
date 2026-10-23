@@ -22,7 +22,7 @@ export async function WenzeCatalog({locale,raw,landing=false}:{
   const select=(name:keyof typeof search,title:string,options:Record<string,string>)=><label><span>{title}</span><select name={name} defaultValue={search[name]||""}><option value="">{name==="availability"?t.available:t.all}</option>{Object.entries(options).map(([key,value])=><option key={key} value={key}>{value}</option>)}</select></label>;
   return <WenzeBuyerProvider locale={locale==="en"?"en":"fr"}><div className="marketplace-public"><div className="wenze-public container wzp-discovery">
     <MarketplaceSectionBreadcrumb locale={locale} current="Wenze"/>
-    <MarketplaceDiscoveryHeader title="Wenze" intro={t.productIntro}/><Link className="button button-primary" href={marketplacePath(locale,"/shida/wenze/sell")}>{quickSellCopy[locale].title}</Link>
+    <MarketplaceDiscoveryHeader title="Wenze" intro={t.productIntro}/>
     <nav className="mp-chips" aria-label="Wenze"><Link href={root} aria-current="page">{t.products}</Link><Link href={marketplacePath(locale,"/shida/wenze")+"?view=shops"}>{t.shops}</Link><Link href={marketplacePath(locale,"/shida/wenze/orders")}>{t.orders}</Link></nav>
     <form className="marketplace-filters wzp-filters mp-search">
       {search.store&&<input type="hidden" name="store" value={search.store}/>}
@@ -55,5 +55,6 @@ export async function WenzeCatalog({locale,raw,landing=false}:{
       {search.cursor&&<Link href={`${root}?${wenzeDiscoveryQuery(search,null)}`}>{t.first}</Link>}
       {data?.next_cursor&&<Link className="button button-secondary" href={`${root}?${wenzeDiscoveryQuery(search,data.next_cursor)}`}>{t.next} →</Link>}
     </nav>
+    <aside className="wzp-sell-entry"><Link className="button button-secondary" href={marketplacePath(locale,"/shida/wenze/sell")}>{quickSellCopy[locale].title}</Link></aside>
   </div></div></WenzeBuyerProvider>;
 }

@@ -9,10 +9,10 @@ for (const width of [390, 1366]) test(`actual Backend challenge remains pending 
   await page.addInitScript(() => { window.open = () => null; });
   await page.goto("/fr/shida/seller/restaurants/");
   const created = page.waitForResponse(r => r.url().endsWith("/api/shida/personal/auth/whatsapp/") && r.request().method() === "POST");
-  await page.getByRole("button", { name: "Continuer avec WhatsApp", exact: true }).click();
+  await page.getByRole("button", { name: "Ouvrir WhatsApp et envoyer le message", exact: true }).click();
   expect((await created).status()).toBe(201);
   await expect(page.getByText("En attente de l’envoi du message…", { exact: true })).toBeVisible();
-  const link = page.getByRole("link", { name: "Ouvrir SHIDA sur WhatsApp" });
+  const link = page.getByRole("link", { name: "Ouvrir WhatsApp et envoyer le message" });
   // Assert boolean only, keeping the actual challenge URL out of failure output.
   expect((await link.getAttribute("href"))?.startsWith("https://wa.me/243000000000?")).toBe(true);
   const status = await page.waitForResponse(r => r.url().includes("/api/shida/personal/auth/whatsapp/DWC_") && r.request().method() === "GET");

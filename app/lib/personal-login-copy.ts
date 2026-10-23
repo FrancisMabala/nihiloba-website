@@ -1,6 +1,6 @@
 export const personalLoginCopy = {
   en: {
-    title: "Sign in with SHIDA", start: "Continue with WhatsApp", open: "Open SHIDA on WhatsApp",
+    title: "Sign in with SHIDA", start: "Open WhatsApp and send the message", open: "Open WhatsApp and send the message",
     help: "Send the prepared message to SHIDA on WhatsApp. Then enter the code you receive here to sign in.",
     pending: "Send the WhatsApp message to receive your code, then return to this page.", creating: "Preparing secure sign-in…", exchanging: "Checking your code…",
     expired: "This sign-in attempt expired. Start again.", onboarding_required: "Complete your SHIDA account setup in WhatsApp, then try again.",
@@ -14,7 +14,7 @@ export const personalLoginCopy = {
     restart: "No code? Start again",
   },
   fr: {
-    title: "Se connecter avec SHIDA", start: "Continuer avec WhatsApp", open: "Ouvrir SHIDA sur WhatsApp",
+    title: "Se connecter avec SHIDA", start: "Ouvrir WhatsApp et envoyer le message", open: "Ouvrir WhatsApp et envoyer le message",
     help: "Envoyez le message préparé à SHIDA sur WhatsApp. Saisissez ensuite ici le code reçu pour vous connecter.",
     pending: "Envoyez le message WhatsApp pour recevoir votre code, puis revenez sur cette page.", creating: "Préparation de la connexion sécurisée…", exchanging: "Vérification du code…",
     expired: "Cette tentative a expiré. Recommencez.", onboarding_required: "Terminez la création de votre compte SHIDA dans WhatsApp, puis réessayez.",
@@ -28,7 +28,7 @@ export const personalLoginCopy = {
     restart: "Pas de code ? Recommencer",
   },
   ln: {
-    title: "Kokɔta na SHIDA", start: "Kokoba na WhatsApp", open: "Fungola SHIDA na WhatsApp",
+    title: "Kokɔta na SHIDA", start: "Fungola WhatsApp mpe tinda nsango", open: "Fungola WhatsApp mpe tinda nsango",
     help: "Tindá nsango oyo ebongisami na SHIDA na WhatsApp. Na nsima tyá code oyo okozwa awa mpo na kokɔta.",
     pending: "Tindá nsango na WhatsApp mpo ozwa code, na nsima zongá na lokasa oyo.", creating: "Tozali kobongisa kokɔta na bokengi…", exchanging: "Tozali kotala code na yo…",
     expired: "Ntango ya kokɔta esili. Bandá lisusu.", onboarding_required: "Silisá kofungola compte na yo ya SHIDA na WhatsApp, mpe meká lisusu.",
@@ -42,7 +42,7 @@ export const personalLoginCopy = {
     restart: "Code ezwi yo te? Bandá lisusu",
   },
   sw: {
-    title: "Ingia na SHIDA", start: "Endelea na WhatsApp", open: "Fungua SHIDA kwenye WhatsApp",
+    title: "Ingia na SHIDA", start: "Fungua WhatsApp na utume ujumbe", open: "Fungua WhatsApp na utume ujumbe",
     help: "Tuma ujumbe ulioandaliwa kwa SHIDA kwenye WhatsApp. Kisha uweke msimbo utakaopokea hapa ili kuingia.",
     pending: "Tuma ujumbe wa WhatsApp kupokea msimbo wako, kisha urudi kwenye ukurasa huu.", creating: "Tunaandaa kuingia kwa usalama…", exchanging: "Tunakagua msimbo wako…",
     expired: "Jaribio hili limeisha muda. Anza tena.", onboarding_required: "Kamilisha usajili wa akaunti yako ya SHIDA kwenye WhatsApp, kisha ujaribu tena.",

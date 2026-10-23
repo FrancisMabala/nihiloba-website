@@ -1,15 +1,17 @@
 "use client";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { usePathname } from "next/navigation";
 import { personalLoginCopy } from "../../lib/personal-login-copy";
 import { announceLoginAttempt, authMutation, LOGIN_EVENT, loginRequest, markLoginUnconfirmed } from "../../lib/personal-login-browser";
 import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib/personal-session-browser";
-import { registrationCopy, registrationEligibility } from "../../lib/registration/copy";
+import { registrationCopy, registrationEligibility, registrationFlowCopy } from "../../lib/registration/copy";
 
 type State = "idle" | "creating" | "pending" | "code" | "exchanging" | "expired" | "onboarding_required" | "cancelled" | "unavailable" | "rate_limited" | "uncertain";
 type Challenge = { challenge_ref: string; whatsapp_url: string; expires_at: string };
 
 // In-place authentication deliberately leaves the complete local URL, filters and language intact.
 export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = false, heading }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void; registration?: boolean; heading?: string }) {
+  const pathname = usePathname();
   const t = { ...personalLoginCopy[locale], ...(registration ? { help: registrationCopy[locale].verificationHelp, verify: registrationCopy[locale].verifyButton } : {}), ...(heading ? { title: heading } : {}) };
   const [state, setState] = useState<State>("idle");
   const [challenge, setChallenge] = useState<Challenge | null>(null);
@@ -128,8 +130,8 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   }
   const busy = state === "creating" || state === "exchanging";
   return <section className="candidate-login candidate-private-panel" lang={locale}>
-    <h2>{t.title}</h2><p>{t.help}</p>{registration && <label htmlFor={eligibilityId} className="registration-consent"><input id={eligibilityId} type="checkbox" checked={eligible} onChange={event => setEligible(event.target.checked)}/><span>{registrationEligibility[locale]}</span></label>}
-    {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/`}>{registrationCopy[locale].title}</a>}
+    <h2>{t.title}</h2><p>{t.help}</p>{registration && <><label htmlFor={eligibilityId} className="registration-consent"><input id={eligibilityId} type="checkbox" checked={eligible} onChange={event => setEligible(event.target.checked)}/><span>{registrationEligibility[locale]}</span></label><p>{registrationFlowCopy[locale].scope}</p></>}
+    {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}>{registrationCopy[locale].title}</a>}
     {state !== "idle" && <p role="status" aria-live="polite">{t[state]}</p>}
     {state === "pending" && challenge && <><a className="button button-primary" href={challenge.whatsapp_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{t.open}</a><button className="button button-secondary" type="button" onClick={() => void cancel()}>{t.cancel}</button></>}
     {(state === "code" || state === "exchanging") && <form className="candidate-form" onSubmit={verify}>

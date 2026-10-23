@@ -360,6 +360,14 @@ const jobSearchKeys=["query","city","area","commune"] as const;
 export function parseJobSearchParams(value:ApartmentRawSearchParams):JobSearch { const result:JobSearch={};for(const key of jobSearchKeys){const parsed=firstQueryValue(value[key]);if(parsed)result[key]=parsed;}const view=firstQueryValue(value.view);if(view==="professional"||view==="individual")result.view=view;const page=numericQuery(value.page,{integer:true,min:1,max:100_000}),size=numericQuery(value.page_size,{integer:true,min:1,max:50});if(page!=null)result.page=page;if(size!=null)result.page_size=size;return result; }
 export function jobSearchQuery(search:JobSearch):string { const params=new URLSearchParams();for(const key of jobSearchKeys){const value=search[key]?.trim();if(value)params.set(key,value.slice(0,120));}if(search.view==="professional"||search.view==="individual")params.set("view",search.view);if(search.page&&Number.isInteger(search.page)&&search.page>0)params.set("page",String(search.page));if(search.page_size&&Number.isInteger(search.page_size)&&search.page_size>0&&search.page_size<=50)params.set("page_size",String(search.page_size));return params.size?`?${params}`:""; }
 function jobCollection(value:unknown):JobCollection { const item=record(value),pagination=record(item.pagination);if(!Array.isArray(item.items))throw new ShidaApiError("malformed");const page=integer(pagination.page,true)!,pageSize=integer(pagination.page_size,true)!,totalItems=integer(pagination.total_items,true)!,totalPages=integer(pagination.total_pages,true)!;if(page<1||pageSize<1||pageSize>50)throw new ShidaApiError("malformed");return {items:item.items.map(jobSummary),pagination:{page,page_size:pageSize,total_items:totalItems,total_pages:totalPages}}; }
+export async function getRegistrationCatalogs() {
+  const data = record(await request('/api/public/shida/jobs/catalogs', 60));
+  const ids = (value: unknown) => {
+    if (!Array.isArray(value)) throw new ShidaApiError('malformed');
+    return value.map(item => text(record(item).id, true)!);
+  };
+  return {organization_types: ids(data.organization_types), sectors: ids(data.business_sectors)};
+}
 export async function getJobs(search:JobSearch={},language:"en"|"fr"="en"):Promise<JobCollection> { const {view:_,...apiSearch}=search;void _;const query=new URLSearchParams(jobSearchQuery(apiSearch).slice(1));query.set("language",language);return jobCollection(await request(`/api/public/shida/jobs?${query}`,60)); }
 export const getJob=cache(async(key:string,language:"en"|"fr"="en"):Promise<PublicJob>=>job(await request(`/api/public/shida/jobs/${encodeURIComponent(key)}?language=${language}`,false)));
 export const getJobEmployer=cache(async(key:string):Promise<PublicJobEmployer>=>jobEmployerDetail(await request(`/api/public/shida/jobs/employers/${encodeURIComponent(key)}`,false)));

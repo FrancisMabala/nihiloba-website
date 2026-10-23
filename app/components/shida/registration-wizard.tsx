@@ -4,9 +4,10 @@ import { useRouter } from "next/navigation";
 import { PersonalWhatsAppLogin } from "./personal-whatsapp-login";
 import { authMutation, markLoginUnconfirmed } from "../../lib/personal-login-browser";
 import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib/personal-session-browser";
-import { registrationCopy, privacyAcknowledgement, type RegistrationLocale } from "../../lib/registration/copy";
+import { registrationCopy, registrationFlowCopy, privacyAcknowledgement, type RegistrationLocale } from "../../lib/registration/copy";
 import { onboardingText, catalogLabel } from "../../lib/registration/onboarding-copy";
 import "./registration.css";
+import { registrationReturnPath } from "../../lib/registration/return-path";
 
 const subscribeHydration = () => () => {};
 type Kind = "personal" | "business";
@@ -23,10 +24,10 @@ async function request(path: string, method = "GET", body?: unknown): Promise<Dr
   return data;
 }
 const businessGroups = [["name", "organization_type", "custom_organization_type", "sector"], ["personal_name", "country_code", "city"], ["commune_or_municipality", "street_or_avenue", "building_or_parcel", "quartier_or_area", "landmark"]];
-export function RegistrationWizard({ locale }: { locale: RegistrationLocale }) {
+export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationLocale; catalogs: {organization_types:string[];sectors:string[]} | null }) {
   const router = useRouter();
   const hydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
-  const t = registrationCopy[locale], label = (key: string) => key === "area" ? t.area : onboardingText(locale, key);
+  const t = registrationCopy[locale], flow = registrationFlowCopy[locale], label = (key: string) => key === "area" ? t.area : onboardingText(locale, key);
   const base = locale === "en" ? "/shida" : `/${locale}/shida`;
   const [kind, setKind] = useState<Kind>("personal"), [step, setStep] = useState(1), [group, setGroup] = useState(0);
   const [draft, setDraft] = useState<Draft | null>(null), [values, setValues] = useState<Record<string,string>>({});
@@ -34,6 +35,8 @@ export function RegistrationWizard({ locale }: { locale: RegistrationLocale }) {
   const [message, setMessage] = useState(""), [fields, setFields] = useState<string[]>([]), [confirmCancel, setConfirmCancel] = useState(false), [saved, setSaved] = useState(false);
   const lock = useRef(false), current = useRef<Draft | null>(null), heading = useRef<HTMLHeadingElement>(null);
   const autosave = useRef<Promise<void> | null>(null), actorEpoch = useRef(0), primaryIntent = useRef(false);
+  // Unverified input is memory-only. It is never an actor-owned/server draft.
+  const unverified = useRef<Record<string,string> | null>(null);
   useEffect(() => () => { ++actorEpoch.current; }, []);
   const apply = (next: Draft) => { current.current = next; setDraft(next); setValues(Object.fromEntries(Object.entries(next.values ?? {}).map(([k,v]) => [k,v ?? ""]))); setDecisions({}); };
   const groups = kind === "personal" ? [["personal_name"], ["city", "country_code", "area"]] : businessGroups;
@@ -57,7 +60,7 @@ export function RegistrationWizard({ locale }: { locale: RegistrationLocale }) {
     setSaved(false);
     if (error instanceof RegistrationError) {
       setFields(error.fields);
-      if (error.code === "unauthorized") { setStep(2); setMessage(t.unauthorized); return; }
+      if (error.code === "unauthorized") { setStep(2); setMessage(current.current ? t.unauthorized : ""); return; }
       if (["stale_onboarding","legal_version_changed","onboarding_completed","onboarding_expired","onboarding_cancelled"].includes(error.code)) { setMessage(t.changed); return; }
       if (error.fields.length) { setMessage(onboardingText(locale,"invalid")); return; }
       if (error.code === "organization_name_conflict") { setMessage(onboardingText(locale,error.code)); return; }
@@ -70,23 +73,43 @@ export function RegistrationWizard({ locale }: { locale: RegistrationLocale }) {
     lock.current = true; setBusy(true); setMessage("");
     try {
       let next = await request(kind);
+      if (epoch !== actorEpoch.current) return;
+      const fresh = next.status === "not_started";
       if (start || next.status === "not_started") next = await request(kind,"POST",{ language: locale });
       if (epoch !== actorEpoch.current) return;
+      const local = unverified.current;
+      const importLocal = fresh && local && next.revision === 1 && !Object.entries(next.values ?? {}).some(([key,value]) => value && !(kind === "business" && key === "personal_name"));
+      // Never replace a saved cross-channel draft or an existing identity with local input.
+      if (importLocal && !next.existing_account && next.onboarding_ref) {
+        apply(next);
+        setStep(3); setGroup(0);
+        try {
+          const missingValues = Object.fromEntries(Object.entries(local).filter(([key]) => !next.values[key]));
+          next = await request(`${kind}/${next.onboarding_ref}`,"PATCH",{revision:next.revision,language:locale,values:missingValues});
+        } catch (error) {
+          if (epoch !== actorEpoch.current) return;
+          setValues(local); unverified.current = null; recover(error); return;
+        }
+      }
+      if (epoch !== actorEpoch.current) return;
+      unverified.current = null;
       apply(next); setStep(3); setGroup(next.existing_account ? legalStep : 0);
+      if (importLocal && !next.remaining_fields.length) setGroup(legalStep);
+      else if (local && !next.existing_account) setMessage(flow.savedWins);
     } catch(error) { if (epoch === actorEpoch.current) recover(error); }
     finally { lock.current = false; setBusy(false); }
   }
-  // Only the non-sensitive account choice is remembered. All private progress stays server-side.
+  // Only the account choice persists in browser storage. Unverified details stay in memory.
   useEffect(() => { let alive=true;void Promise.resolve().then(()=>{try { const choice = sessionStorage.getItem("shida-registration-choice"); if (alive && choice === "business") setKind(choice); } catch {}});return()=>{alive=false;}; }, []);
   useEffect(()=>{
-    const clear=()=>{++actorEpoch.current;if(step!==3)return;current.current=null;setDraft(null);setValues({});setDecisions({});setStep(2);setMessage(t.unauthorized);};
+    const clear=()=>{++actorEpoch.current;unverified.current=null;current.current=null;setDraft(null);setValues({});setDecisions({});setStep(2);setMessage(t.unauthorized);};
     const local=()=>{if(!lock.current)clear();};
     const storage=(event:StorageEvent)=>{if(event.key===PERSONAL_SESSION_EVENT)clear();};
     window.addEventListener(PERSONAL_SESSION_EVENT,local);window.addEventListener("storage",storage);
     return()=>{window.removeEventListener(PERSONAL_SESSION_EVENT,local);window.removeEventListener("storage",storage);};
   },[step,t.unauthorized]);
   useLayoutEffect(() => { heading.current?.focus(); }, [step, group, confirmCancel]);
-  const dirty = draft && Object.entries(values).some(([key,value]) => value !== (draft.values[key] ?? ""));
+  const dirty = step === 4 || step === 2 && !draft ? Object.values(values).some(Boolean) : draft && Object.entries(values).some(([key,value]) => value !== (draft.values[key] ?? ""));
   useEffect(() => {
     const prevent = (event: BeforeUnloadEvent) => { if (dirty) { event.preventDefault(); event.returnValue = ""; } };
     window.addEventListener("beforeunload",prevent); return () => window.removeEventListener("beforeunload",prevent);
@@ -148,7 +171,7 @@ export function RegistrationWizard({ locale }: { locale: RegistrationLocale }) {
         await request("finish/session","POST",{});
         if (epoch !== actorEpoch.current) return;
         markLoginUnconfirmed(false); announcePersonalSessionChange();
-      if (kind === "personal") router.push(`${base}/space/`);
+      if (kind === "personal") router.push(registrationReturnPath(new URLSearchParams(window.location.search).get("returnTo"), `${base}/space/`));
       else {
         const grant = await request("business-handoff","POST",{}) as unknown as {token:string};
         if (epoch !== actorEpoch.current) return;
@@ -172,11 +195,21 @@ export function RegistrationWizard({ locale }: { locale: RegistrationLocale }) {
   return <div className="registration-shell" lang={locale}>
     <section className="registration-card" aria-busy={busy}>
       <a href={`${base}/`} className="registration-brand"><small>NIHILOBA</small><strong>SHIDA</strong></a>
-      <p className="registration-progress">{t.step} {step} {t.of} 3</p>
-      <h1 ref={heading} tabIndex={-1}>{step === 1 ? t.title : step === 2 ? t.verify : group === reviewStep ? t.review : group === legalStep ? onboardingText(locale,"terms") : t.profile}</h1>
+      <p className="registration-progress">{t.step} {step === 4 ? 2 : step === 2 ? 3 : step === 3 ? 4 : 1} {t.of} 4</p>
+      <h1 ref={heading} tabIndex={-1}>{step === 1 ? t.title : step === 2 ? t.verify : step === 4 ? t.profile : group === reviewStep ? t.review : group === legalStep ? onboardingText(locale,"terms") : t.profile}</h1>
       {message && <div role="alert"><p>{message}</p>{message === t.changed && <button type="button" className="button button-secondary" disabled={busy} onClick={()=>void load()}>{t.reload}</button>}</div>}
-      {step === 1 && <><p>{t.choice}</p><fieldset className="registration-choices" disabled={!hydrated || busy}><legend className="sr-only">{t.choice}</legend>{(["personal","business"] as const).map(value => <label key={value} className={kind === value ? "selected" : ""}><input type="radio" name="account-kind" value={value} checked={kind === value} onChange={()=>{setKind(value);try{sessionStorage.setItem("shida-registration-choice",value);}catch{}}}/><span><strong>{t[value]}</strong><small>{value === "personal" ? t.personalHelp : t.businessHelp}</small></span></label>)}</fieldset><button className="button button-primary" disabled={!hydrated || busy} onClick={()=>{setStep(2);void load();}}>{t.next}</button><a href={`${base}/space/`}>{t.signin}</a></>}
-      {step === 2 && <>{busy ? <p role="status">{t.loading}</p> : <PersonalWhatsAppLogin locale={locale} registration heading={t.verify} onAuthenticated={()=>void load()}/>}<button className="button button-secondary" disabled={busy} onClick={()=>setStep(1)}>{t.back}</button></>}
+      {step === 1 && <><p>{t.choice}</p><fieldset className="registration-choices" disabled={!hydrated || busy}><legend className="sr-only">{t.choice}</legend>{(["personal","business"] as const).map(value => <label key={value} className={kind === value ? "selected" : ""}><input type="radio" name="account-kind" value={value} checked={kind === value} onChange={()=>{setKind(value);try{sessionStorage.setItem("shida-registration-choice",value);}catch{}}}/><span><strong>{t[value]}</strong><small>{value === "personal" ? t.personalHelp : t.businessHelp}</small></span></label>)}</fieldset><button className="button button-primary" disabled={!hydrated || busy} onClick={()=>{setValues({});setGroup(0);setMessage("");setStep(4);}}>{t.next}</button><button type="button" className="registration-text-button" onClick={()=>{unverified.current=null;setStep(2);void load();}}>{t.resume}</button><a href={`${base}/space/`} onClick={event=>{event.preventDefault();router.push(registrationReturnPath(new URLSearchParams(window.location.search).get("returnTo"),`${base}/space/`));}}>{t.signin}</a></>}
+      {step === 4 && <form onSubmit={event=>{event.preventDefault();if(group<groups.length-1){setGroup(group+1);return;}unverified.current={...values};setStep(2);void load();}}>
+        <p>{flow.localHelp}</p>
+        {kind === "business" && !catalogs ? <p role="alert">{flow.catalogError}</p> : <fieldset className="registration-fields">
+          {visible.map(key=>{const options=key==="organization_type"?catalogs?.organization_types:key==="sector"?catalogs?.sectors:null;
+            const required=!["area","quartier_or_area","landmark"].includes(key);
+            return <div key={key}><label htmlFor={`registration-${key}`}>{label(key)}</label>{options?<select id={`registration-${key}`} name={key} required value={values[key]??""} onChange={event=>setValues({...values,[key]:event.target.value})}><option value="">{onboardingText(locale,"choose")}</option>{options.map(value=><option key={value} value={value}>{catalogLabel(locale,value)}</option>)}</select>:<input id={`registration-${key}`} name={key} required={required} maxLength={500} autoComplete={key==="personal_name"?"name":key==="city"?"address-level2":"off"} value={values[key]??""} onChange={event=>setValues({...values,[key]:event.target.value})}/>}</div>;
+          })}
+        </fieldset>}
+        <div className="registration-actions"><button type="button" className="button button-secondary" onClick={()=>group?setGroup(group-1):setStep(1)}>{t.back}</button><button type="submit" className="button button-primary" disabled={kind==="business"&&!catalogs}>{t.next}</button></div>
+      </form>}
+      {step === 2 && <>{busy ? <p role="status">{t.loading}</p> : <PersonalWhatsAppLogin locale={locale} registration heading={t.verify} onAuthenticated={()=>void load()}/>}<button className="button button-secondary" disabled={busy} onClick={()=>{setStep(unverified.current?4:1);setMessage("");}}>{t.back}</button></>}
       {step === 3 && draft && (terminal ? <><p>{t.cancelled}</p><button className="button button-primary" disabled={busy} onClick={()=>void load(true)}>{t.restart}</button></> : confirmCancel ? <><p>{t.cancelQuestion}</p><button className="button button-secondary" disabled={busy} onClick={()=>setConfirmCancel(false)}>{t.back}</button><button className="button button-primary" disabled={busy} onClick={()=>void cancel()}>{t.cancel}</button></> : <>
         {existing && <p>{t.existing}</p>}
         {draft.status === "completed" && !existing ? <><p>{t.completed}</p><button className="button button-primary" disabled={busy} onClick={()=>void complete()}>{t.finish}</button></> : <form onSubmit={event=>{event.preventDefault();const submitted={...values,...Object.fromEntries(new FormData(event.currentTarget).entries())} as Record<string,string>;void(group === reviewStep ? complete() : save(true,submitted));}}>

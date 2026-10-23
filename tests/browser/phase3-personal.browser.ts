@@ -42,7 +42,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,820,1
 });
 test('empty, unavailable and denied sources never become invented activity or access',async({page})=>{
  const state=await fixture(page);state.empty=true;await page.goto('/shida/space');await expect(page.locator('.space-empty')).toBeVisible();state.failed=true;await page.locator('.space-recent').getByRole('button',{name:'Refresh'}).click();await expect(page.locator('.space-recent')).toContainText(workspaceText('en','partial'));await expect(page.locator('.space-empty')).toHaveCount(0);
- state.denied=true;await page.goto('/shida/space?view=management');await expect(page.locator('.space-managed')).toContainText(workspaceText('en','partial'));await expect(page.locator('.space-managed-grid article')).toHaveCount(0);await expect(page.locator('.space-managed .space-destinations')).toHaveCount(0);expect(state.writes).toBe(0);
+ state.denied=true;await page.goto('/shida/space?view=management');await expect(page.locator('.space-managed')).toContainText(workspaceText('en','partial'));await expect(page.locator('.space-managed-grid article')).toHaveCount(0);await expect(page.locator('.space-managed .space-destinations')).toHaveCount(1);await expect(page.locator('.space-managed .space-destinations a')).toHaveAttribute('href','/shida/wenze/sell');expect(state.writes).toBe(0);
 });
 test('guest does not read private activity and identity changes remove prior content',async({page})=>{
  const state=await fixture(page);state.signedIn=false;await page.goto('/shida/space?view=management');await expect(page.locator('.space-sign-in')).toBeVisible();expect(state.reads).toBe(0);

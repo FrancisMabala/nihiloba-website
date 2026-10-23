@@ -8,3 +8,5 @@
 .registration-card h1:focus-visible{outline:none}.registration-card .button{border-radius:.55rem}
 /* Step/focus changes must settle immediately, including Safari's click targeting. */
 html:has(.registration-shell){scroll-behavior:auto}
+.registration-card h1{font-family:Georgia,serif}
+.registration-fields+.registration-actions{margin-top:1rem}

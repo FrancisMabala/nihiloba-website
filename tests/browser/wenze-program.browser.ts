@@ -56,5 +56,8 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,768,1
  await nav.getByRole('button',{name:wenzeUX(locale,'money'),exact:true}).click();
  await expect(page.getByText(managementRefinement[locale].scope,{exact:true})).toBeVisible();
  await expect(page.getByText(managementRefinement[locale].coverage,{exact:true})).toBeVisible();
+ await expect(page.locator('.wz-report-group')).toHaveCount(0);
+ await page.locator('.wz-section-tabs').getByRole('button',{name:sellerText(locale,'reports'),exact:true}).click();
+ await expect(page.getByText(managementRefinement[locale].exports,{exact:true})).toBeVisible();
  expect(errors).toEqual([]);
 });

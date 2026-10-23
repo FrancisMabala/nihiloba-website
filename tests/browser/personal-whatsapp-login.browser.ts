@@ -49,18 +49,18 @@ for (const locale of ["en", "fr", "ln", "sw"] as const) for (const width of [390
 }
 test("Employment uses the same flow and preserves intended application URL", async ({ page }) => {
   const s = await fixture(page); await page.goto("/shida/my-applications/?from=jobs");
-  await page.getByRole("button", { name: "Continue with WhatsApp" }).click();
+  await page.getByRole("button", { name: "Open WhatsApp and send the message" }).click();
   s.status = "verified"; await page.evaluate(() => window.dispatchEvent(new Event("focus")));
   await page.getByLabel(personalLoginCopy.en.codeLabel).fill("610294"); await page.getByRole("button", { name: personalLoginCopy.en.verify }).click();
   await expect(page.getByText("You have no applications yet.")).toBeVisible(); expect(page.url()).toContain("/shida/my-applications/?from=jobs");
 });
 for (const status of ["expired", "cancelled", "onboarding_required"] as const) test(`${status} is truthful and never exchanges`, async ({ page }) => {
   const s = await fixture(page); s.status = status === "onboarding_required" ? "cancelled" : status; s.reason = status;
-  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Continue with WhatsApp" }).click();
+  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Open WhatsApp and send the message" }).click();
   await expect(page.getByText(personalLoginCopy.en[status], { exact: true })).toBeVisible(); expect(s.exchanges).toBe(0);
 });
 test("cancel and cross-tab supersession stop old polls", async ({ page }) => {
-  const s = await fixture(page); await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Continue with WhatsApp" }).click();
+  const s = await fixture(page); await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Open WhatsApp and send the message" }).click();
   await page.getByRole("button", { name: "Cancel sign-in" }).click(); s.status = "verified";
   await page.evaluate(() => window.dispatchEvent(new Event("focus"))); expect(s.exchanges).toBe(0);
   await page.getByRole("button", { name: "Try again" }).click();
@@ -69,7 +69,7 @@ test("cancel and cross-tab supersession stop old polls", async ({ page }) => {
 });
 test("uncertain exchange signs out instead of retrying or adopting a session", async ({ page }) => {
   const s = await fixture(page); s.status = "verified"; s.uncertain = true;
-  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Continue with WhatsApp" }).click();
+  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Open WhatsApp and send the message" }).click();
   await page.getByLabel(personalLoginCopy.en.codeLabel).fill("610294"); await page.getByRole("button", { name: personalLoginCopy.en.verify }).click();
   await expect(page.getByText(personalLoginCopy.en.uncertain, { exact: true })).toBeVisible(); expect(s.exchanges).toBe(1); expect(s.loggedIn).toBe(false);
   await page.getByRole("button", { name: "Sign out and retry" }).click(); await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
@@ -79,7 +79,7 @@ test("late verified response after cancellation cannot exchange", async ({ page 
   const delayed = new Promise<void>(resolve => { release = resolve; });
   let seen = false;
   await page.route("**/personal/auth/whatsapp/DWC_fixture_1/", async route => { seen = true; await delayed; await route.fulfill({ json: { status: "verified" } }).catch(() => {}); });
-  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Continue with WhatsApp" }).click();
+  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Open WhatsApp and send the message" }).click();
   await expect.poll(() => seen).toBe(true); await page.getByRole("button", { name: "Cancel sign-in" }).click(); release();
   await expect(page.getByText(personalLoginCopy.en.cancelled, { exact: true })).toBeVisible(); expect(s.exchanges).toBe(0);
 });
@@ -92,11 +92,11 @@ test("rate limit is localized, retryable and does not poll", async ({ page }) =>
 test("lost exchange and failed cleanup cannot restore an uncertain account on focus or reload", async ({ page }) => {
   const s = await fixture(page); s.status = "verified"; s.uncertain = true;
   await page.route("**/employment/logout/", route => route.abort());
-  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Continue with WhatsApp" }).click();
+  await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: "Open WhatsApp and send the message" }).click();
   await page.getByLabel(personalLoginCopy.en.codeLabel).fill("610294"); await page.getByRole("button", { name: personalLoginCopy.en.verify }).click();
   await expect(page.getByText(personalLoginCopy.en.uncertain, { exact: true })).toBeVisible();
   await page.evaluate(() => window.dispatchEvent(new Event("focus"))); await expect(page.getByText("Synthetic Personal")).toHaveCount(0);
-  await page.reload(); await expect(page.getByRole("button", { name: "Continue with WhatsApp" })).toBeVisible(); await expect(page.getByText("Synthetic Personal")).toHaveCount(0);
+  await page.reload(); await expect(page.getByRole("button", { name: "Open WhatsApp and send the message" })).toBeVisible(); await expect(page.getByText("Synthetic Personal")).toHaveCount(0);
 });
 
 test("wrong code remains editable; only explicit valid submission authenticates", async ({ page }) => {

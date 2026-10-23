@@ -20,10 +20,17 @@ export const registrationCopy: Record<RegistrationLocale, typeof en> = {
 };
 
 export const registrationEligibility = {
- en: "I am at least 18 and will use SHIDA for activities in the DRC. This initial service has no SHIDA platform charges and does not accept student records.",
- fr: "J’ai au moins 18 ans et j’utiliserai SHIDA pour des activités en RDC. Ce service initial est sans frais de plateforme SHIDA et n’accepte pas de dossiers d’élèves.",
- ln: "Nazali na mbula 18 to koleka mpe nakosalela SHIDA mpo na misala na RDC. Service oyo ezali na frais ya plateforme SHIDA te mpe eyambaka mikanda ya bana-kelasi te.",
- sw: "Nina miaka 18 au zaidi na nitatumia SHIDA kwa shughuli nchini DRC. Huduma hii ya mwanzo haina ada za jukwaa la SHIDA na haipokei rekodi za wanafunzi.",
+ en: "I am at least 18 and will use SHIDA for activities in the DRC.",
+ fr: "J’ai au moins 18 ans et j’utiliserai SHIDA pour des activités en RDC.",
+ ln: "Nazali na mbula 18 to koleka mpe nakosalela SHIDA mpo na misala na RDC.",
+ sw: "Nina miaka 18 au zaidi na nitatumia SHIDA kwa shughuli nchini DRC.",
+};
+
+export const registrationFlowCopy = {
+ en: {localHelp:"These details stay in this page until WhatsApp verification. They are lost if you close or reload the page. No account is created yet.",savedWins:"Your saved registration was found. Review it below; it has not been replaced by the details entered here.",catalogError:"Business choices are temporarily unavailable. Reload this page or resume a saved registration.",scope:"This initial service has no SHIDA platform charges and does not accept student records."},
+ fr: {localHelp:"Ces informations restent dans cette page jusqu’à la vérification WhatsApp. Elles sont perdues si vous fermez ou rechargez la page. Aucun compte n’est encore créé.",savedWins:"Votre inscription enregistrée a été retrouvée. Vérifiez-la ci-dessous ; les informations saisies ici ne l’ont pas remplacée.",catalogError:"Les choix Business sont temporairement indisponibles. Rechargez la page ou reprenez une inscription enregistrée.",scope:"Ce service initial est sans frais de plateforme SHIDA et n’accepte pas de dossiers d’élèves."},
+ ln: {localHelp:"Makambo oyo etikali na lokasa oyo kino WhatsApp endimami. Soki okangi to ozongisi lokasa, ekobunga. Compte esalemi naino te.",savedWins:"Tozwi inscription na yo oyo ebombami. Tala yango awa; makambo okomi awa ezwi esika na yango te.",catalogError:"Boponi Business ezali kosala te sikoyo. Zongisa lokasa to koba inscription oyo ebombami.",scope:"Service oyo ezali na frais ya plateforme SHIDA te mpe eyambaka mikanda ya bana-kelasi te."},
+ sw: {localHelp:"Taarifa hizi zinabaki kwenye ukurasa huu hadi uthibitisho wa WhatsApp. Ukifunga au kupakia upya ukurasa, zitapotea. Hakuna akaunti iliyoundwa bado.",savedWins:"Usajili wako uliohifadhiwa umepatikana. Ukague hapa; taarifa ulizoandika hazijaubadilisha.",catalogError:"Chaguo za Business hazipatikani kwa sasa. Pakia ukurasa upya au endelea na usajili uliohifadhiwa.",scope:"Huduma hii ya mwanzo haina ada za jukwaa la SHIDA na haipokei rekodi za wanafunzi."},
 };
 
 export const privacyAcknowledgement = {en:"I have read",fr:"J’ai pris connaissance de",ln:"Natangi",sw:"Nimesoma"};
