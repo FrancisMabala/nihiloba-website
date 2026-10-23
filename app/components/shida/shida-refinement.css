@@ -21,10 +21,6 @@ body .market-surface #main-content{flex:1;min-height:0}
 .market-surface .button-primary{background:#173e32;color:#fffefa;border-color:#173e32}
 .market-surface .button-primary:hover{background:#245741;border-color:#245741}
 body .market-surface .marketplace-public .mp-chips>a[aria-current=page]{background:#173e32;border-color:#173e32;color:#fffefa}
-.market-surface .discovery-account-note a{background:#173e32;color:#fffefa;border-radius:7px;padding:12px 20px;font-size:.95rem;font-weight:600}
-.market-surface .discovery-story-link a{border:1px solid #ad914e;border-radius:7px;padding:10px 18px;color:#173e32;font-size:.9rem;background:#f4efdf}
-.market-surface .discovery-entries article{grid-template-columns:90px minmax(0,1fr);padding:12px 16px}
-.market-surface .discovery-illustration{max-height:90px}
 /* Compact Wenze rhythm and equal product geometry, including mixed categories. */
 body .market-surface .marketplace-public :is(.wzp-discovery,.wzp-landing)>.marketplace-breadcrumb{margin:0 0 12px;min-height:32px}
 body .market-surface .marketplace-public :is(.wzp-discovery,.wzp-landing) .mp-discovery-header{margin-bottom:12px}
@@ -33,7 +29,7 @@ body .market-surface .marketplace-public .wzp-discovery-actions{margin:0;min-hei
 body .market-surface .marketplace-public .wenze-product-grid{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;grid-auto-rows:1fr;margin-top:12px}
 body .market-surface .wenze-public .wenze-product-card{align-self:stretch;min-width:0;height:100%;display:flex;flex-direction:column}
 body .market-surface .wenze-public .wenze-product-card .marketplace-card-image{aspect-ratio:1;height:auto;flex:none;overflow:hidden}
-body .market-surface .wenze-public .wenze-product-card .marketplace-card-image :is(img,.marketplace-image-fallback){height:100%;width:100%;min-height:0;object-fit:contain;background:#f3f1e9}
+body .market-surface .wenze-public .wenze-product-card .marketplace-card-image :is(img,.marketplace-image-fallback){height:100%;width:100%;min-height:0;object-fit:contain;background:var(--accent-soft,#f3f1e9)}
 body .market-surface .wenze-public .wenze-product-card .marketplace-card-body{display:flex;flex-direction:column;flex:1;min-width:0}
 body .market-surface .wenze-public .wenze-product-card h2{min-height:2.8em;line-height:1.4;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 body .market-surface .wenze-public .wenze-product-card .wenze-card-price{min-height:1.4em;margin:0 0 6px}
@@ -74,7 +70,5 @@ body .market-surface .wzp-discovery .mp-search details{margin:0}
 body .market-surface .wzp-discovery .mp-search details[open]{grid-column:1/-1}
 body .market-surface .wzp-discovery .mp-search .wzp-discovery-actions{min-height:44px}
 
-.wzp-selling{margin-top:24px;padding-top:20px;border-top:1px solid #deddd1}.wzp-selling>h2{font:500 1.5rem/1.3 Georgia,serif;color:#123d30}.wzp-selling-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.wzp-selling article{background:#f6f5ed;border:1px solid #deddd1;border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}.wzp-selling h3{font-size:1.1rem;margin:0;color:#123d30}.wzp-selling p{line-height:1.6;margin:0 0 6px}.wzp-selling .button{margin-top:auto;white-space:normal}.wzp-selling-accent{color:#8b6b2d;font-size:1.8rem;line-height:1}.wzp-selling a:focus-visible{outline:3px solid #b88a39;outline-offset:3px}@media(max-width:600px){.wzp-selling-grid{grid-template-columns:1fr}}
-.wzp-selling .button{transition:background .16s ease,color .16s ease}.wzp-selling .button:hover{transform:none}
 
 html:has(.wzp-selling){scroll-behavior:auto}

@@ -8,6 +8,7 @@ import "./shida/shida-refinement.css";
 import { Footer } from "./footer";
 import { CartProvider } from "./shida/cart-provider";
 import "./shida/marketplace-surfaces.css";
+import "./shida/discovery-visual.css";
 
 export function SiteChrome({ children, locale }: { children: ReactNode; locale: Locale }) {
   const pathname = usePathname();

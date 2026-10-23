@@ -8,6 +8,7 @@ import {getHotels} from "../app/services/shida/public-client";
 import {parseHotelSearch} from "../app/lib/hotel-search";
 import {HotelCard} from "../app/components/shida/marketplace";
 import type {HotelListing} from "../app/types/shida-public";
+vi.mock("next/navigation",()=>({useRouter:()=>({push:vi.fn()}),usePathname:()=>"/shida/wenze"}));
 afterEach(()=>vi.unstubAllGlobals());
 it.each(["en","fr","ln","sw"] as const)("keeps %s discovery public, localized and without promotional art",async locale=>{
  const fetcher=vi.fn(async(input:RequestInfo|URL)=>{const url=String(input);return Response.json(url.includes('/jobs?')?{items:[],pagination:{page:1,page_size:12,total_items:0,total_pages:1}}:url.includes('/apartments')?{items:[],count:0,total:0,page:1,page_size:12,filters:{property_types:["house"]}}:{items:[],count:0,has_more:false,next_cursor:null});});vi.stubGlobal("fetch",fetcher);

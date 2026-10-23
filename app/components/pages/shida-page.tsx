@@ -24,14 +24,14 @@ export function ShidaPage({ locale }: { locale: DiscoveryLocale }) {
       </form><p className="discovery-search-note" id="discovery-search-note">{t.searchNote}</p>
     </section>
     <section id="explore" aria-labelledby="discovery-markets"><h2 id="discovery-markets">{t.explore}</h2>
-      <nav className="discovery-categories" aria-label={t.explore}>{discoveryMarkets.map((market, i) => { const Icon = icons[i]; return <Link id={market === "emplois" ? "employment" : market === "appartements" ? "housing" : market} href={discoveryPath(locale, `/shida/${market}`)} key={market}><span className={`discovery-icon discovery-icon-${i}`}><Icon/></span><strong>{t.labels[i]}</strong><small>{t.hints[i]}</small></Link>; })}</nav>
+      <nav className="discovery-categories" aria-label={t.explore}>{discoveryMarkets.map((market, i) => { const Icon = icons[i]; return <Link data-market={market} id={market === "emplois" ? "employment" : market === "appartements" ? "housing" : market} href={discoveryPath(locale, `/shida/${market}`)} key={market}><span className="discovery-icon"><Icon/></span><strong>{t.labels[i]}</strong><small>{t.hints[i]}</small><span className="discovery-category-arrow" aria-hidden="true"><ArrowRightIcon/></span></Link>; })}</nav>
     </section>
     <section className="discovery-listings" aria-labelledby="discovery-listings-title" id="stories"><h2 id="discovery-listings-title">{t.recent}</h2><p className="discovery-muted">{t.recentNote}</p>
       <Suspense fallback={<div className="discovery-loading" role="status">{t.loading}</div>}><DiscoveryListings locale={locale}/></Suspense>
     </section>
     <section className="discovery-entries" aria-label="SHIDA École & Business">
-      <article id="school"><DiscoveryIllustration kind="school"/><div><h2>{t.school}</h2><Link href={discoveryPath(locale, "/shida/ecole")}>{t.schoolAction}<ArrowRightIcon/></Link></div></article>
-      <article id="business"><DiscoveryIllustration kind="business"/><div><h2>{t.business}</h2><a href="https://business.nihiloba.com">{t.businessAction}<ArrowRightIcon/></a></div></article>
+      <article id="school"><DiscoveryIllustration kind="school"/><div><h2>{t.school}</h2><p>{t.schoolBody}</p><Link href={discoveryPath(locale, "/shida/ecole")}>{t.schoolAction}<ArrowRightIcon/></Link></div></article>
+      <article id="business"><DiscoveryIllustration kind="business"/><div><h2>{t.business}</h2><p>{t.businessBody}</p><a href="https://business.nihiloba.com">{t.businessAction}<ArrowRightIcon/></a></div></article>
     </section>
     <div className="discovery-account-note"><a href={process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" ? `${locale === "en" ? "" : `/${locale}`}/shida/register/` : OFFICIAL_CHANNELS.whatsapp}>{process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" ? registrationCopy[locale].title : t.join}<ArrowRightIcon/></a></div>
     <p className="discovery-story-link"><Link href={locale === "en" ? "/about/shida" : "/fr/about/shida"}>{t.story}<ArrowRightIcon/></Link></p>
