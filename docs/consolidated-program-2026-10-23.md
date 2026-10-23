@@ -91,7 +91,10 @@ presentation, corresponding browser fixtures/tests, and this documentation.
 - Public/Personal navigation: all 74 cases passed across the full run and focused rerun (60 initial passes, 14 rerun passes). Updated outdated expectations for the new account menu, existing My Listings entry, and enabled web-registration route. Checks include seven marketplaces, desktop/tablet/mobile, empty states, missing images, long titles, equal cards, footer placement, keyboard and local-workspace boundaries. Fixture processes intentionally block external network requests.
 - Wenze management: 12 passed in FR/EN/LN/SW at 390/768/1440px, including Money versus Reports. Existing shared WhatsApp login: 19 passed. Checkout/delivery: 36 passed. Quick Sell: 12 passed. Scanner: 4 passed with synthetic native/fallback streams and canonical label data.
 - No full Backend rerun is claimed for this frontend-only change. Prior isolated PostgreSQL and baseline full-suite findings remain in the companion Wenze release report.
-- Exact pushed commit and Render release evidence: pending release verification.
+- Implementation commit `56c4e521b54528b3c6fd06c6bd9da3c2bbe0c425` was pushed to `origin/main` and independently matched against `git ls-remote`.
+- Render deployment [`dep-dbdha6oae00c73870bd0`](https://dashboard.render.com/web/srv-d9s8g1c9v7es73effevg/deploys/dep-dbdha6oae00c73870bd0) reports **Live / Deploy succeeded** for that exact commit on 23 October 2026. Manual specific-commit deployment; auto-deploy remains disabled. The GitHub checks endpoint returned zero checks, so no separate CI success is claimed.
+- Live French Wenze confirms removal of the redundant desktop navigation row and the secondary Sell entry below buyer results. Live registration confirms both Personal and Business details at step 2 before WhatsApp verification, including populated canonical Business type/sector catalogs. No production account, draft, consent or WhatsApp message was submitted during this verification.
+- This release-record update is documentation only; the deployed application remains the implementation commit above. Local live screenshots are saved under `docs/evidence/consolidated-20261023/live/`; representative synthetic screenshots below are committed.
 
 ## Remaining gaps
 
