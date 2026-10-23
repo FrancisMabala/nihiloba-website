@@ -29,11 +29,21 @@ The older Phase 2 static rendering test lacked a Next router mock for the alread
 
 Evidence directory: `docs/evidence/visual-v2-20261023/`. `before-home-live.png` is the previous public homepage. Other pre-release images use synthetic fixtures and are labeled by page/width; they are not production listings. Full-page mobile captures pin the fixed navigation at the captured viewport position, not the page bottom. Use viewport captures to assess overlays.
 
+Representative screenshots: [previous live homepage](evidence/visual-v2-20261023/before-home-live.png), [desktop homepage](evidence/visual-v2-20261023/home-1440.png), [tablet homepage](evidence/visual-v2-20261023/home-820.png), [mobile homepage](evidence/visual-v2-20261023/home-360.png), [mobile selling invitations](evidence/visual-v2-20261023/selling-360.png), [Services desktop](evidence/visual-v2-20261023/services-populated-1440.png), [Restaurants mobile](evidence/visual-v2-20261023/restaurants-populated-390.png).
+
 Final local validation: **64/64 browser scenarios passed** (32 Chromium + 32 WebKit), **24/24 focused unit/rendering tests passed**, production build passed, TypeScript passed, scoped ESLint passed, and `git diff --check` passed. The isolated fixture server logs denied background external fetches; its network guard remains enabled and the tested content/interaction assertions pass. No production flow was exercised with synthetic mutations.
 
 Reproduce with Node 24 and the unchanged lockfile. Browser build: set `NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED=true`, `SERVICES_FIXTURE_MODE=1`, and `SHIDA_API_BASE_URL=https://services-00000000-0000-4000-8000-000000000023.fixture.invalid`; run `node --import ./scripts/refinement-fixture-fetch.mjs node_modules/next/dist/bin/next build`, then `node node_modules/@playwright/test/cli.js test --config=playwright.visual-v2.config.ts`. These environment values are local test configuration only. Unit command: `vitest run tests/phase2-discovery.test.tsx tests/wenze-discovery.test.ts tests/public-shida-login.test.tsx`.
 
-Release: validated work prepared on an isolated branch from `origin/main` (`7bedb4e`), preserving all original worktrees and unfinished École work. Exact pushed SHA and Render deployment verification will be appended after release.
+## Verified release
+
+- Implementation commit: **`df1c43bc6969bd7c116bccac6b5a5785e9662e1c`**, pushed directly to `origin/main` and independently verified with `git ls-remote origin refs/heads/main`.
+- Render service: `srv-d9s8g1c9v7es73effevg`. [Deployment `dep-dbdlclcs728c73ccdt80`](https://dashboard.render.com/web/srv-d9s8g1c9v7es73effevg/deploys/dep-dbdlclcs728c73ccdt80) explicitly matches that full commit. Status: **Deploy succeeded | Live**. Log: **23 October 2026, 14:45:08 GMT+2 — Your service is live**.
+- Used the existing specific-commit deployment workflow; automatic deployment remains disabled as before. No settings, secrets, registration gates or production database operations were changed.
+- Live browser checks: homepage and all seven French marketplace entry pages loaded with their expected headings; homepage showed real public Jobs/Services; both genuine Wenze product photographs loaded; selling invitation routes and content were present. Existing signed-in account context remained intact. No orders, account registrations or WhatsApp messages were submitted.
+- Live proof: [homepage](evidence/visual-v2-20261023/live/home.png), [Wenze selling invitations](evidence/visual-v2-20261023/live/wenze.png). Local Render proof is also retained in the evidence directory.
+- GitHub's public check-runs endpoint returned **0 checks** for this commit. Local validation and the successful Render build are the available execution evidence; no additional GitHub CI success is claimed.
+- Work was based on `origin/main` (`7bedb4e`) in an isolated checkout. Original worktrees, unpublished ancestors and unfinished École work were preserved. The subsequent release-record commit changes documentation/screenshots only and does not require another application deployment.
 
 ## Limits
 
