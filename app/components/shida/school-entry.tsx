@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ButtonLink } from '../button-link';
+import type { SchoolListResult } from '@/app/services/shida/schools';
 import './school-entry.css';
 
 export type SchoolEntryLocale = 'en' | 'fr' | 'ln' | 'sw';
@@ -8,9 +9,10 @@ export type SchoolEntryLocale = 'en' | 'fr' | 'ln' | 'sw';
 const copy = {
   en: {
     title: 'SHIDA École for schools and families',
-    intro: 'A private school workspace is being prepared for the November pilot. Public school discovery will begin only after a school chooses to publish and its profile is reviewed.',
+    intro: 'A private school workspace is being piloted. Public discovery shows only Schools that opted in and whose exact page SHIDA reviewed.',
     status: 'No schools are publicly listed yet.',
     statusDetail: 'A school’s private records and draft page never appear here automatically.',
+    listTitle: 'Published schools', unavailable: 'School listings are temporarily unavailable. Please try again later.', view: 'View school page', next: 'Next page', previous: 'Previous page',
     management: 'Manage a school',
     managementDetail: 'School operators can sign in to SHIDA Business, choose their authorized Organization and set up École. A verified school WhatsApp contact does not grant staff access.',
     dashboard: 'Open SHIDA Business',
@@ -25,9 +27,10 @@ const copy = {
   },
   fr: {
     title: 'SHIDA École pour les écoles et les familles',
-    intro: 'Un espace privé pour les écoles est en préparation pour le pilote de novembre. La découverte publique commencera seulement lorsqu’une école choisira de publier sa page et que celle-ci aura été examinée.',
+    intro: 'Un espace privé pour les écoles est en phase pilote. La découverte publique présente seulement les écoles qui l’ont choisi et dont la page exacte a été examinée par SHIDA.',
     status: 'Aucune école n’est encore publiée.',
     statusDetail: 'Les dossiers privés et les brouillons des écoles n’apparaissent jamais ici automatiquement.',
+    listTitle: 'Écoles publiées', unavailable: 'Les écoles publiées sont temporairement indisponibles. Réessayez plus tard.', view: 'Voir la page', next: 'Page suivante', previous: 'Page précédente',
     management: 'Gérer une école',
     managementDetail: 'Les responsables peuvent se connecter à SHIDA Business, choisir leur organisation autorisée et configurer École. Un numéro WhatsApp scolaire vérifié ne donne aucun accès au personnel.',
     dashboard: 'Ouvrir SHIDA Business',
@@ -42,9 +45,10 @@ const copy = {
   },
   ln: {
     title: 'SHIDA École mpo na biteyelo mpe mabota',
-    intro: 'Esika ya mosala ya sekele mpo na biteyelo ezali kobongisama mpo na komeka na sanza ya zomi na moko. Bato bakomona eteyelo na polele kaka soki eteyelo eponi kobimisa lokasa na yango mpe lokasa yango etalami.',
+    intro: 'Esika ya mosala ya sekele mpo na biteyelo ezali na komeka. Awa bato bakomona kaka biteyelo oyo eponi kobimisa lokasa mpe SHIDA etali yango.',
     status: 'Eteyelo moko te ebimi na polele naino.',
     statusDetail: 'Makambo ya sekele mpe brouillon ya eteyelo ebimaka awa yango moko te.',
+    listTitle: 'Biteyelo oyo ebimi', unavailable: 'Biteyelo ezali te sikoyo. Meka lisusu na nsima.', view: 'Tala lokasa', next: 'Lokasa elandi', previous: 'Lokasa ya liboso',
     management: 'Kokamba eteyelo',
     managementDetail: 'Bakambi bakoki kokota na SHIDA Business, kopona organisation na bango oyo epesami ndingisa mpe kobongisa École. Nimero ya WhatsApp ya eteyelo oyo endimisami epesaka basali ndingisa te.',
     dashboard: 'Fungola SHIDA Business',
@@ -59,9 +63,10 @@ const copy = {
   },
   sw: {
     title: 'SHIDA École kwa shule na familia',
-    intro: 'Eneo la faragha la shule linaandaliwa kwa majaribio ya Novemba. Utafutaji wa shule kwa umma utaanza tu baada ya shule kuchagua kuchapisha ukurasa wake na ukurasa huo kukaguliwa.',
+    intro: 'Eneo la faragha la shule linafanyiwa majaribio. Umma unaona shule zilizochagua kuchapisha ukurasa na maudhui yake kukaguliwa na SHIDA pekee.',
     status: 'Hakuna shule zilizochapishwa kwa umma bado.',
     statusDetail: 'Taarifa za faragha na rasimu za shule hazionekani hapa moja kwa moja.',
+    listTitle: 'Shule zilizochapishwa', unavailable: 'Orodha ya shule haipatikani kwa sasa. Jaribu tena baadaye.', view: 'Angalia ukurasa', next: 'Ukurasa unaofuata', previous: 'Ukurasa uliotangulia',
     management: 'Simamia shule',
     managementDetail: 'Wasimamizi wanaweza kuingia SHIDA Business, kuchagua shirika lao lililoidhinishwa na kuandaa École. Nambari ya WhatsApp ya shule iliyothibitishwa haiwapi wafanyakazi ruhusa.',
     dashboard: 'Fungua SHIDA Business',
@@ -92,7 +97,7 @@ export function schoolEntryMetadata(locale: SchoolEntryLocale): Metadata {
   };
 }
 
-export function SchoolEntry({ locale }: { locale: SchoolEntryLocale }) {
+export function SchoolEntry({ locale, listing, page=1 }: { locale: SchoolEntryLocale; listing: SchoolListResult; page?:number }) {
   const t = copy[locale];
   const shidaPath = locale === 'en' ? '/shida' : `/${locale}/shida`;
   return <main className="school-entry">
@@ -105,7 +110,15 @@ export function SchoolEntry({ locale }: { locale: SchoolEntryLocale }) {
         <div className="school-entry-actions"><ButtonLink href="https://business.nihiloba.com" external>{t.dashboard}</ButtonLink><ButtonLink href={shidaPath} variant="secondary">{t.back}</ButtonLink></div>
       </header>
       <section className="school-entry-status" aria-labelledby="school-entry-status-title">
-        <h2 id="school-entry-status-title">{t.status}</h2><p>{t.statusDetail}</p>
+        <h2 id="school-entry-status-title">{listing.kind==='ready'&&listing.items.length?t.listTitle:listing.kind==='unavailable'?t.unavailable:t.status}</h2><p>{t.statusDetail}</p>
+        {listing.kind==='ready'&&listing.items.length>0&&<div className="school-entry-cards">{listing.items.map(school=><article key={school.school_ref}>
+          <h3>{school.name}</h3><p>{school.school_type_label} · {school.commune}, {school.city}</p>
+          <p>{school.verification_label}</p><Link href={`${path(locale)}/${school.school_ref}`}>{t.view}</Link>
+        </article>)}</div>}
+        {listing.kind==='ready'&&(page>1||listing.nextPage)&&<nav className="school-entry-actions" aria-label={t.listTitle}>
+          {page>1&&<Link href={`${path(locale)}?page=${page-1}`}>{t.previous}</Link>}
+          {listing.nextPage&&<Link href={`${path(locale)}?page=${listing.nextPage}`}>{t.next}</Link>}
+        </nav>}
       </section>
       <section aria-labelledby="school-entry-preparation-title" className="school-entry-preparation">
         <h2 id="school-entry-preparation-title">{t.preparation}</h2>
