@@ -111,8 +111,23 @@ Audited Alembic head: 0200. Deploy Backend compatibility first, then Website.
 
 Backend implementation pushed and remote-verified:
 `5b74d4c4d1fce1ebd874452ec980195578ed2682`, verified Live on Render deployment
-`dep-dbdjt2ivcj2c7381ccag` (service `srv-d811j4ugvqtc73e0fks0`). Website release
-will be recorded after verification. Existing npm advisories remain
+[`dep-dbdjt2ivcj2c7381ccag`](https://dashboard.render.com/web/srv-d811j4ugvqtc73e0fks0/deploys/dep-dbdjt2ivcj2c7381ccag).
+Website implementation `87bdb651570aeebf549ae1d63567c7ee4a86785b` was pushed,
+independently matched against remote main, and verified **Deploy succeeded | Live**
+on [`dep-dbdk01lg1s2s73bp2u30`](https://dashboard.render.com/web/srv-d9s8g1c9v7es73effevg/deploys/dep-dbdk01lg1s2s73bp2u30).
+Both releases were manual specific-commit deployments; auto-deploy settings remain
+unchanged. Website GitHub check-runs returned zero; Backend check-runs were
+inaccessible through the available API, so no separate CI success is claimed.
+
+Live French Wenze shows both selling cards after products. Live Personal and
+Business registration show all grouped fields and the WhatsApp contact input at
+step 2. The authenticated public header shows the account control instead of
+signup/login. No production account/draft, consent or WhatsApp message was
+submitted during live verification. Local live proof is saved in the evidence
+folder's `live/` directory. This final record is documentation only; the deployed
+application remains the implementation SHA above.
+
+Existing npm advisories remain
 (2 moderate, 9 high, 1 critical); no unrelated dependency changes.
 
 Screenshots: [mobile form](evidence/unified-registration-20261023/registration-mobile.png),
