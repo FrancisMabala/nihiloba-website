@@ -8,6 +8,8 @@ import { registrationCopy, registrationFlowCopy, privacyAcknowledgement, type Re
 import { onboardingText, catalogLabel } from "../../lib/registration/onboarding-copy";
 import "./registration.css";
 import { registrationReturnPath } from "../../lib/registration/return-path";
+import { FORM_DRAFT_KEY, FORM_DRAFT_TTL, parseLocalDraft, internationalPhone } from "../../lib/registration/local-draft";
+import { refinementCopy } from "../../lib/registration/refinement-copy";
 
 const subscribeHydration = () => () => {};
 type Kind = "personal" | "business";
@@ -28,6 +30,9 @@ export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationL
   const router = useRouter();
   const hydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
   const t = registrationCopy[locale], flow = registrationFlowCopy[locale], label = (key: string) => key === "area" ? t.area : onboardingText(locale, key);
+  const r = refinementCopy[locale];
+  const [phone,setPhone]=useState(""),[storageFailed,setStorageFailed]=useState(false),[localReady,setLocalReady]=useState(false);
+  const expiry=useRef(0);
   const base = locale === "en" ? "/shida" : `/${locale}/shida`;
   const [kind, setKind] = useState<Kind>("personal"), [step, setStep] = useState(1), [group, setGroup] = useState(0);
   const [draft, setDraft] = useState<Draft | null>(null), [values, setValues] = useState<Record<string,string>>({});
@@ -35,11 +40,12 @@ export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationL
   const [message, setMessage] = useState(""), [fields, setFields] = useState<string[]>([]), [confirmCancel, setConfirmCancel] = useState(false), [saved, setSaved] = useState(false);
   const lock = useRef(false), current = useRef<Draft | null>(null), heading = useRef<HTMLHeadingElement>(null);
   const autosave = useRef<Promise<void> | null>(null), actorEpoch = useRef(0), primaryIntent = useRef(false);
-  // Unverified input is memory-only. It is never an actor-owned/server draft.
+  // This form is untrusted content, never an actor-owned draft before verification.
   const unverified = useRef<Record<string,string> | null>(null);
   useEffect(() => () => { ++actorEpoch.current; }, []);
   const apply = (next: Draft) => { current.current = next; setDraft(next); setValues(Object.fromEntries(Object.entries(next.values ?? {}).map(([k,v]) => [k,v ?? ""]))); setDecisions({}); };
-  const groups = kind === "personal" ? [["personal_name"], ["city", "country_code", "area"]] : businessGroups;
+  const sections = kind === "personal" ? [["personal_name"], ["city", "country_code", "area"]] : businessGroups;
+  const groups = [sections.flat()];
   const legalStep = groups.length, reviewStep = groups.length + 1;
   const documents = draft?.legal ?? draft?.legal_documents ?? [];
   const terminal = ["cancelled", "expired"].includes(draft?.status ?? "");
@@ -93,23 +99,30 @@ export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationL
       }
       if (epoch !== actorEpoch.current) return;
       unverified.current = null;
+      try { sessionStorage.removeItem(FORM_DRAFT_KEY); } catch {}
       apply(next); setStep(3); setGroup(next.existing_account ? legalStep : 0);
       if (importLocal && !next.remaining_fields.length) setGroup(legalStep);
       else if (local && !next.existing_account) setMessage(flow.savedWins);
     } catch(error) { if (epoch === actorEpoch.current) recover(error); }
     finally { lock.current = false; setBusy(false); }
   }
-  // Only the account choice persists in browser storage. Unverified details stay in memory.
-  useEffect(() => { let alive=true;void Promise.resolve().then(()=>{try { const choice = sessionStorage.getItem("shida-registration-choice"); if (alive && choice === "business") setKind(choice); } catch {}});return()=>{alive=false;}; }, []);
+  useEffect(() => { let alive=true;queueMicrotask(()=>{if(!alive)return;expiry.current=Date.now()+FORM_DRAFT_TTL;try {
+    const restored=parseLocalDraft(sessionStorage.getItem(FORM_DRAFT_KEY));
+    if(restored){setKind(restored.kind);setValues(restored.values);setPhone(restored.phone);expiry.current=restored.expires;setStep(4);setMessage(r.restored);}
+    else sessionStorage.removeItem(FORM_DRAFT_KEY);
+  }catch{setStorageFailed(true);}setLocalReady(true);});return()=>{alive=false;}; }, [r.restored]);
+  useEffect(()=>{if(!localReady || ![2,4].includes(step) || draft)return;
+    try {sessionStorage.setItem(FORM_DRAFT_KEY,JSON.stringify({version:1,expires:expiry.current,kind,values,phone}));queueMicrotask(()=>setStorageFailed(false));}catch{queueMicrotask(()=>setStorageFailed(true));}
+  },[localReady,step,draft,kind,values,phone]);
   useEffect(()=>{
-    const clear=()=>{++actorEpoch.current;unverified.current=null;current.current=null;setDraft(null);setValues({});setDecisions({});setStep(2);setMessage(t.unauthorized);};
+    const clear=()=>{++actorEpoch.current;unverified.current=null;current.current=null;try{sessionStorage.removeItem(FORM_DRAFT_KEY);}catch{}setDraft(null);setValues({});setPhone("");setDecisions({});setStep(1);setMessage(t.unauthorized);};
     const local=()=>{if(!lock.current)clear();};
     const storage=(event:StorageEvent)=>{if(event.key===PERSONAL_SESSION_EVENT)clear();};
     window.addEventListener(PERSONAL_SESSION_EVENT,local);window.addEventListener("storage",storage);
     return()=>{window.removeEventListener(PERSONAL_SESSION_EVENT,local);window.removeEventListener("storage",storage);};
   },[step,t.unauthorized]);
-  useLayoutEffect(() => { heading.current?.focus(); }, [step, group, confirmCancel]);
-  const dirty = step === 4 || step === 2 && !draft ? Object.values(values).some(Boolean) : draft && Object.entries(values).some(([key,value]) => value !== (draft.values[key] ?? ""));
+  useLayoutEffect(() => { heading.current?.focus({preventScroll:true});heading.current?.scrollIntoView({behavior:"instant",block:"nearest"}); }, [step, group, confirmCancel]);
+  const dirty = step === 4 || step === 2 && !draft ? storageFailed && Object.values(values).some(Boolean) : draft && Object.entries(values).some(([key,value]) => value !== (draft.values[key] ?? ""));
   useEffect(() => {
     const prevent = (event: BeforeUnloadEvent) => { if (dirty) { event.preventDefault(); event.returnValue = ""; } };
     window.addEventListener("beforeunload",prevent); return () => window.removeEventListener("beforeunload",prevent);
@@ -198,18 +211,21 @@ export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationL
       <p className="registration-progress">{t.step} {step === 4 ? 2 : step === 2 ? 3 : step === 3 ? 4 : 1} {t.of} 4</p>
       <h1 ref={heading} tabIndex={-1}>{step === 1 ? t.title : step === 2 ? t.verify : step === 4 ? t.profile : group === reviewStep ? t.review : group === legalStep ? onboardingText(locale,"terms") : t.profile}</h1>
       {message && <div role="alert"><p>{message}</p>{message === t.changed && <button type="button" className="button button-secondary" disabled={busy} onClick={()=>void load()}>{t.reload}</button>}</div>}
-      {step === 1 && <><p>{t.choice}</p><fieldset className="registration-choices" disabled={!hydrated || busy}><legend className="sr-only">{t.choice}</legend>{(["personal","business"] as const).map(value => <label key={value} className={kind === value ? "selected" : ""}><input type="radio" name="account-kind" value={value} checked={kind === value} onChange={()=>{setKind(value);try{sessionStorage.setItem("shida-registration-choice",value);}catch{}}}/><span><strong>{t[value]}</strong><small>{value === "personal" ? t.personalHelp : t.businessHelp}</small></span></label>)}</fieldset><button className="button button-primary" disabled={!hydrated || busy} onClick={()=>{setValues({});setGroup(0);setMessage("");setStep(4);}}>{t.next}</button><button type="button" className="registration-text-button" onClick={()=>{unverified.current=null;setStep(2);void load();}}>{t.resume}</button><a href={`${base}/space/`} onClick={event=>{event.preventDefault();router.push(registrationReturnPath(new URLSearchParams(window.location.search).get("returnTo"),`${base}/space/`));}}>{t.signin}</a></>}
-      {step === 4 && <form onSubmit={event=>{event.preventDefault();if(group<groups.length-1){setGroup(group+1);return;}unverified.current={...values};setStep(2);void load();}}>
-        <p>{flow.localHelp}</p>
+      {step === 1 && <><p>{t.choice}</p><fieldset className="registration-choices" disabled={!hydrated || busy}><legend className="sr-only">{t.choice}</legend>{(["personal","business"] as const).map(value => <label key={value} className={kind === value ? "selected" : ""}><input type="radio" name="account-kind" value={value} checked={kind === value} onChange={()=>{setKind(value);setValues({});unverified.current=null;try{sessionStorage.setItem("shida-registration-choice",value);}catch{}}}/><span><strong>{t[value]}</strong><small>{value === "personal" ? t.personalHelp : t.businessHelp}</small></span></label>)}</fieldset><button className="button button-primary" disabled={!hydrated || busy} onClick={()=>{setGroup(0);setMessage("");setStep(4);}}>{t.next}</button><button type="button" className="registration-text-button" onClick={()=>{unverified.current=null;setPhone("");setStep(2);void load();}}>{t.resume}</button><a href={`${base}/space/`} onClick={event=>{event.preventDefault();router.push(registrationReturnPath(new URLSearchParams(window.location.search).get("returnTo"),`${base}/space/`));}}>{t.signin}</a></>}
+      {step === 4 && <form onSubmit={event=>{event.preventDefault();const normalized=internationalPhone(phone);if(!normalized){setMessage(r.invalidPhone);return;}setPhone(normalized);setMessage("");unverified.current={...values};setStep(2);}}>
+        <p role="status">{storageFailed?r.storageFailed:r.draft}</p>
         {kind === "business" && !catalogs ? <p role="alert">{flow.catalogError}</p> : <fieldset className="registration-fields">
-          {visible.map(key=>{const options=key==="organization_type"?catalogs?.organization_types:key==="sector"?catalogs?.sectors:null;
+          <legend>{t.profile}</legend>
+          {sections.map((section,index)=><fieldset className="registration-section" key={index}><legend>{kind==="business"?[r.business,r.personal,r.location][index]:r.sections[index]}</legend>{section.filter(key=>key!=="custom_organization_type"||values.organization_type==="other").map(key=>{const options=key==="organization_type"?catalogs?.organization_types:key==="sector"?catalogs?.sectors:null;
             const required=!["area","quartier_or_area","landmark"].includes(key);
-            return <div key={key}><label htmlFor={`registration-${key}`}>{label(key)}</label>{options?<select id={`registration-${key}`} name={key} required value={values[key]??""} onChange={event=>setValues({...values,[key]:event.target.value})}><option value="">{onboardingText(locale,"choose")}</option>{options.map(value=><option key={value} value={value}>{catalogLabel(locale,value)}</option>)}</select>:<input id={`registration-${key}`} name={key} required={required} maxLength={500} autoComplete={key==="personal_name"?"name":key==="city"?"address-level2":"off"} value={values[key]??""} onChange={event=>setValues({...values,[key]:event.target.value})}/>}</div>;
-          })}
+            return <div key={key}><label htmlFor={`registration-${key}`}>{label(key)} <small>{required?r.required:r.optional}</small></label>{options?<select id={`registration-${key}`} name={key} required value={values[key]??""} onChange={event=>setValues({...values,[key]:event.target.value})}><option value="">{onboardingText(locale,"choose")}</option>{options.map(value=><option key={value} value={value}>{catalogLabel(locale,value)}</option>)}</select>:<input id={`registration-${key}`} name={key} required={required} maxLength={500} autoComplete={key==="personal_name"?"name":key==="city"?"address-level2":"off"} value={values[key]??""} onChange={event=>setValues({...values,[key]:event.target.value})}/>}</div>;
+          })}</fieldset>)}
+          <fieldset className="registration-section"><legend>{r.contact}</legend><div><label htmlFor="registration-phone">{r.phone} <small>{r.required}</small></label><input id="registration-phone" type="tel" inputMode="tel" autoComplete="tel" maxLength={40} required value={phone} onChange={event=>setPhone(event.target.value)} aria-describedby="registration-phone-help"/><small id="registration-phone-help">{r.phoneHelp}</small></div></fieldset>
         </fieldset>}
-        <div className="registration-actions"><button type="button" className="button button-secondary" onClick={()=>group?setGroup(group-1):setStep(1)}>{t.back}</button><button type="submit" className="button button-primary" disabled={kind==="business"&&!catalogs}>{t.next}</button></div>
+        <div className="registration-actions"><button type="button" className="button button-secondary" onClick={()=>setStep(1)}>{t.back}</button><button type="submit" className="button button-primary" disabled={kind==="business"&&!catalogs}>{t.next}</button></div>
+        <button type="button" className="registration-text-button" onClick={()=>{try{sessionStorage.removeItem(FORM_DRAFT_KEY);}catch{}setValues({});setPhone("");unverified.current=null;expiry.current=Date.now()+FORM_DRAFT_TTL;setStep(1);setMessage("");}}>{r.discard}</button>
       </form>}
-      {step === 2 && <>{busy ? <p role="status">{t.loading}</p> : <PersonalWhatsAppLogin locale={locale} registration heading={t.verify} onAuthenticated={()=>void load()}/>}<button className="button button-secondary" disabled={busy} onClick={()=>{setStep(unverified.current?4:1);setMessage("");}}>{t.back}</button></>}
+      {step === 2 && <>{busy ? <p role="status">{t.loading}</p> : <PersonalWhatsAppLogin locale={locale} registration expectedPhone={internationalPhone(phone)??undefined} heading={t.verify} onAuthenticated={()=>void load()}/>}<button className="button button-secondary" disabled={busy} onClick={()=>{setStep(unverified.current?4:1);setMessage("");}}>{t.back}</button></>}
       {step === 3 && draft && (terminal ? <><p>{t.cancelled}</p><button className="button button-primary" disabled={busy} onClick={()=>void load(true)}>{t.restart}</button></> : confirmCancel ? <><p>{t.cancelQuestion}</p><button className="button button-secondary" disabled={busy} onClick={()=>setConfirmCancel(false)}>{t.back}</button><button className="button button-primary" disabled={busy} onClick={()=>void cancel()}>{t.cancel}</button></> : <>
         {existing && <p>{t.existing}</p>}
         {draft.status === "completed" && !existing ? <><p>{t.completed}</p><button className="button button-primary" disabled={busy} onClick={()=>void complete()}>{t.finish}</button></> : <form onSubmit={event=>{event.preventDefault();const submitted={...values,...Object.fromEntries(new FormData(event.currentTarget).entries())} as Record<string,string>;void(group === reviewStep ? complete() : save(true,submitted));}}>

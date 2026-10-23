@@ -2,6 +2,8 @@ import {test,expect,type Page} from '@playwright/test';
 import {registrationCopy,registrationEligibility,registrationFlowCopy} from '../../app/lib/registration/copy';
 import {personalLoginCopy} from '../../app/lib/personal-login-copy';
 import {PERSONAL_SESSION_EVENT} from '../../app/lib/personal-session-browser';
+import {refinementCopy} from '../../app/lib/registration/refinement-copy';
+import {FORM_DRAFT_KEY} from '../../app/lib/registration/local-draft';
 test.beforeEach(async({page,browserName})=>{
  if(browserName!=='webkit')return;
  // Only this HTTP fixture response differs; production retains HTTPS upgrades.
@@ -45,15 +47,15 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,768,1
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-choice-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:t.next,exact:true}).click();
- await page.locator('#registration-personal_name').fill('Synthetic Personal');await page.getByRole('button',{name:t.next,exact:true}).click();
+ await page.locator('#registration-personal_name').fill('Synthetic Personal');await page.locator('#registration-phone').fill('+243910004001');
  await page.locator('#registration-city').fill('Kinshasa');await page.locator('#registration-country_code').fill('CD');await page.locator('#registration-area').fill('Gombe');
  expect(state.values).toEqual({});expect(state.verified).toBe(false);
  if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-details-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:t.next,exact:true}).click();
  await expect(page.getByText(t.unauthorized,{exact:true})).toHaveCount(0);
- await expect(page.getByRole('button',{name:login.start,exact:true})).toBeDisabled();
+ await expect(page.getByRole('button',{name:login.open,exact:true})).toBeDisabled();
  await page.getByLabel(registrationEligibility[locale]).check();
- await page.getByRole('button',{name:login.start,exact:true}).click();
+ await page.getByRole('button',{name:login.open,exact:true}).click();
  await page.getByLabel(login.codeLabel).fill('610294');await page.getByRole('button',{name:t.verifyButton,exact:true}).click();
   await expect(page.locator('.registration-consent input')).toHaveCount(2);
  for(const checkbox of await page.locator('.registration-consent input').all())await checkbox.check();
@@ -66,12 +68,11 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`${locale}: Organization
  await page.route('https://business.nihiloba.com/handoff',async route=>{expect(route.request().method()).toBe('POST');expect(route.request().headers().origin).toBe('http://127.0.0.1:3044');expect(new URLSearchParams(route.request().postData()!).get('token')).toBe('x'.repeat(43));handedOff=true;await route.fulfill({contentType:'text/html',body:'<title>Business fixture</title><p>Business fixture</p>'});});
  await page.setViewportSize({width:390,height:900});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/register/`);
  await page.locator('input[value="business"]').check();await page.getByRole('button',{name:t.next,exact:true}).click();
- await page.locator('#registration-name').fill('Synthetic School');await page.locator('#registration-organization_type').selectOption('school');await page.locator('#registration-sector').selectOption('commerce_distribution');await page.getByRole('button',{name:t.next,exact:true}).click();
+ await page.locator('#registration-name').fill('Synthetic School');await page.locator('#registration-organization_type').selectOption('school');await page.locator('#registration-sector').selectOption('commerce_distribution');await page.locator('#registration-phone').fill('+243910004001');
  for(const [key,value] of Object.entries({personal_name:'Synthetic Creator',country_code:'CD',city:'Kinshasa'}))await page.locator(`#registration-${key}`).fill(value);
- await page.getByRole('button',{name:t.next,exact:true}).click();
  for(const [key,value] of Object.entries({commune_or_municipality:'Gombe',street_or_avenue:'Private street',building_or_parcel:'42'}))await page.locator(`#registration-${key}`).fill(value);
  await page.getByRole('button',{name:t.next,exact:true}).click();expect(state.values).toEqual({});
- await page.getByLabel(registrationEligibility[locale]).check();await page.getByRole('button',{name:personalLoginCopy[locale].start,exact:true}).click();
+ await page.getByLabel(registrationEligibility[locale]).check();await page.getByRole('button',{name:personalLoginCopy[locale].open,exact:true}).click();
  await page.getByLabel(personalLoginCopy[locale].codeLabel).fill('610294');await page.getByRole('button',{name:t.verifyButton,exact:true}).click();
  await expect(page.locator('.registration-consent input')).toHaveCount(3);
  for(const checkbox of await page.locator('.registration-consent input').all())await checkbox.check();
@@ -104,7 +105,7 @@ test('another tab changing account clears private draft values',async({page})=>{
  await page.locator('#registration-personal_name').fill('Private Draft');
  await page.evaluate(key=>window.dispatchEvent(new StorageEvent('storage',{key,newValue:'other-tab'})),PERSONAL_SESSION_EVENT);
  await expect(page.locator('#registration-personal_name')).toHaveCount(0);await expect(page.getByText('Private Draft',{exact:true})).toHaveCount(0);
- await expect(page.getByRole('heading',{name:registrationCopy.en.verify,exact:true}).first()).toBeVisible();
+ await expect(page.getByRole('heading',{name:registrationCopy.en.title,exact:true}).first()).toBeVisible();
 });
 
 test('account changes during a slow resume cannot reveal the old draft',async({page})=>{
@@ -116,7 +117,7 @@ test('account changes during a slow resume cannot reveal the old draft',async({p
  await page.goto('/shida/register/');await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();
  await expect.poll(()=>started).toBe(true);await expect(page.getByRole('button',{name:'Back',exact:true})).toBeDisabled();
  await page.evaluate(key=>window.dispatchEvent(new StorageEvent('storage',{key,newValue:'other-tab'})),PERSONAL_SESSION_EVENT);release();
- await expect(page.getByRole('button',{name:personalLoginCopy.en.start,exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:registrationCopy.en.title,exact:true})).toBeVisible();
  await expect(page.locator('#registration-personal_name')).toHaveCount(0);await expect(page.getByText('Previous Account',{exact:true})).toHaveCount(0);
 });
 
@@ -139,8 +140,9 @@ test('Personal settings edits canonical profile without exposing credentials',as
 test('local input never overwrites a saved cross-channel draft',async({page})=>{
  const state=await fixture(page,true);state.values={personal_name:'Saved Person',city:'Kinshasa',country_code:'CD'};
  await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
- await page.locator('#registration-personal_name').fill('Unverified Person');await page.getByRole('button',{name:'Next',exact:true}).click();
+ await page.locator('#registration-personal_name').fill('Unverified Person');await page.locator('#registration-phone').fill('+243910004001');
  await page.locator('#registration-city').fill('Goma');await page.locator('#registration-country_code').fill('CD');await page.getByRole('button',{name:'Next',exact:true}).click();
+ await page.getByLabel(registrationEligibility.en).check();await page.getByRole('button',{name:personalLoginCopy.en.open,exact:true}).click();await page.getByLabel(personalLoginCopy.en.codeLabel).fill('610294');await page.getByRole('button',{name:registrationCopy.en.verifyButton,exact:true}).click();
  await expect(page.getByText(registrationFlowCopy.en.savedWins,{exact:true})).toBeVisible();
  await expect(page.locator('#registration-personal_name')).toHaveValue('Saved Person');expect(state.values.city).toBe('Kinshasa');
 });
@@ -155,7 +157,63 @@ test('existing Personal identity does not repeat profile onboarding and returns 
 test('draft created in another channel between state and start is preserved',async({page})=>{
  const state=await fixture(page,true);state.status='not_started';state.race=true;
  await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
- await page.locator('#registration-personal_name').fill('Local Person');await page.getByRole('button',{name:'Next',exact:true}).click();
+ await page.locator('#registration-personal_name').fill('Local Person');await page.locator('#registration-phone').fill('+243910004001');
  await page.locator('#registration-city').fill('Goma');await page.locator('#registration-country_code').fill('CD');await page.getByRole('button',{name:'Next',exact:true}).click();
+ await page.getByLabel(registrationEligibility.en).check();await page.getByRole('button',{name:personalLoginCopy.en.open,exact:true}).click();await page.getByLabel(personalLoginCopy.en.codeLabel).fill('610294');await page.getByRole('button',{name:registrationCopy.en.verifyButton,exact:true}).click();
  await expect(page.getByText(registrationFlowCopy.en.savedWins,{exact:true})).toBeVisible();await expect(page.locator('#registration-personal_name')).toHaveValue('Concurrent Person');expect(state.revision).toBe(2);
+});
+
+test('unverified form survives refresh, backward navigation and interrupted verification',async({page})=>{
+ const state=await fixture(page);
+ await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
+ await page.locator('#registration-personal_name').fill('Recoverable Person');await page.locator('#registration-city').fill('Kinshasa');await page.locator('#registration-country_code').fill('CD');await page.locator('#registration-phone').fill('+243910004001');
+ await page.getByRole('button',{name:'Back',exact:true}).click();await page.getByRole('button',{name:'Next',exact:true}).click();await expect(page.locator('#registration-personal_name')).toHaveValue('Recoverable Person');
+ await page.reload();await expect(page.locator('#registration-phone')).toHaveValue('+243910004001');await expect(page.locator('#registration-personal_name')).toHaveValue('Recoverable Person');
+ expect(state.values).toEqual({});expect(state.verified).toBe(false);
+ await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByLabel(registrationEligibility.en).check();await page.getByRole('button',{name:personalLoginCopy.en.open,exact:true}).click();
+ await page.getByLabel(personalLoginCopy.en.codeLabel).fill('610294');
+ const stored=await page.evaluate(key=>sessionStorage.getItem(key),FORM_DRAFT_KEY);expect(stored).not.toContain('610294');expect(stored).not.toContain('DWC_');
+ await page.reload();await expect(page.locator('#registration-personal_name')).toHaveValue('Recoverable Person');
+ await page.getByRole('button',{name:refinementCopy.en.discard}).click();await expect.poll(()=>page.evaluate(key=>sessionStorage.getItem(key),FORM_DRAFT_KEY)).toBeNull();
+});
+
+test('mismatched verified contact never imports the form',async({page})=>{
+ const state=await fixture(page);
+ await page.route('**/auth/whatsapp/registration/DWC_fixture_test/session/',route=>{expect(route.request().postDataJSON().expected_phone).toBe('+243910004001');return route.fulfill({status:409,json:{error:{code:'phone_mismatch'}}});});
+ await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
+ for(const [key,value] of Object.entries({personal_name:'Mismatch Person',city:'Kinshasa',country_code:'CD',phone:'+243910004001'}))await page.locator(`#registration-${key}`).fill(value);
+ await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByLabel(registrationEligibility.en).check();await page.getByRole('button',{name:personalLoginCopy.en.open,exact:true}).click();await page.getByLabel(personalLoginCopy.en.codeLabel).fill('610294');await page.getByRole('button',{name:registrationCopy.en.verifyButton}).click();
+ await expect(page.getByText(refinementCopy.en.mismatch,{exact:true})).toBeVisible();expect(state.values).toEqual({});expect(state.completed).toBe(false);
+});
+
+test('expired local drafts are discarded without revealing their values',async({page})=>{
+ await fixture(page);await page.addInitScript(key=>sessionStorage.setItem(key,JSON.stringify({version:1,expires:Date.now()-1,kind:'personal',values:{personal_name:'Expired Secret'},phone:'+243910004001'})),FORM_DRAFT_KEY);
+ await page.goto('/shida/register/');await expect(page.getByRole('heading',{name:registrationCopy.en.title})).toBeVisible();await expect(page.getByText('Expired Secret')).toHaveCount(0);await expect.poll(()=>page.evaluate(key=>sessionStorage.getItem(key),FORM_DRAFT_KEY)).toBeNull();
+});
+
+test('unavailable browser storage offers canonical verified resumption',async({page})=>{
+ await fixture(page);await page.addInitScript(()=>{Storage.prototype.setItem=()=>{throw new Error('storage blocked');};});
+ await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
+ await expect(page.getByText(refinementCopy.en.storageFailed,{exact:true})).toBeVisible();await page.getByRole('button',{name:'Back',exact:true}).click();await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();await expect(page.getByRole('button',{name:personalLoginCopy.en.open,exact:true})).toBeVisible();
+});
+
+for(const shop of [false,true])test(`authenticated account menu and ${shop?'shop':'occasional'} entry preserve existing identity`,async({page})=>{
+ await fixture(page,true);await page.route('**/employment/session/',route=>route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Existing Seller'}}}));
+ await page.goto('/shida/wenze/');await expect(page.locator('.market-register')).toHaveCount(0);await expect(page.locator('.market-sign-in')).toHaveCount(0);
+ await page.getByRole('button',{name:/Existing Seller/}).click();await expect(page.locator('.market-menu a')).toHaveCount(3);await page.keyboard.press('Escape');
+ await page.getByRole('link',{name:shop?refinementCopy.en.shopAction:refinementCopy.en.itemAction,exact:true}).click();await expect(page).toHaveURL(shop?/\/seller\/wenze\//:/\/wenze\/sell\//);
+});
+
+for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,820,1440])test(`${locale} ${width}: direct account actions and selling invitations`,async({page},info)=>{
+ await fixture(page);await page.setViewportSize({width,height:1000});const base=locale==='en'?'/shida':`/${locale}/shida`,r=refinementCopy[locale];
+ await page.goto(`${base}/wenze/`);
+ await expect(page.getByRole('heading',{name:r.sellTitle})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ if(width===1440)await expect(page.locator('.market-register')).toBeVisible();else if(width===390)await expect(page.locator('.market-register')).toBeHidden();
+ await page.locator('.market-sign-in').click();const dialog=page.locator('.shida-account-dialog');
+ await expect(dialog.locator('.shida-account-actions')).toHaveCount(0);await expect(dialog.getByRole('link',{name:r.signup,exact:true})).toBeVisible();
+ await page.screenshot({path:`test-results/registration/${info.project.name}-login-${locale}-${width}.png`,fullPage:true});
+ await dialog.getByRole('button',{name:`${r.browse} →`,exact:true}).click();
+ await page.locator('.wzp-selling').scrollIntoViewIfNeeded();await page.screenshot({path:`test-results/registration/${info.project.name}-selling-${locale}-${width}.png`,fullPage:true});
+ await page.getByRole('link',{name:r.itemAction,exact:true}).click();await expect(page).toHaveURL(/\/register\/\?returnTo=/);await expect(page.getByRole('heading',{name:registrationCopy[locale].title})).toBeVisible();
 });

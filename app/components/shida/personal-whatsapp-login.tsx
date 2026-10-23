@@ -5,14 +5,16 @@ import { personalLoginCopy } from "../../lib/personal-login-copy";
 import { announceLoginAttempt, authMutation, LOGIN_EVENT, loginRequest, markLoginUnconfirmed } from "../../lib/personal-login-browser";
 import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib/personal-session-browser";
 import { registrationCopy, registrationEligibility, registrationFlowCopy } from "../../lib/registration/copy";
+import { refinementCopy } from "../../lib/registration/refinement-copy";
 
-type State = "idle" | "creating" | "pending" | "code" | "exchanging" | "expired" | "onboarding_required" | "cancelled" | "unavailable" | "rate_limited" | "uncertain";
+type State = "idle" | "creating" | "pending" | "code" | "exchanging" | "expired" | "onboarding_required" | "cancelled" | "unavailable" | "rate_limited" | "uncertain" | "phone_mismatch";
 type Challenge = { challenge_ref: string; whatsapp_url: string; expires_at: string };
 
 // In-place authentication deliberately leaves the complete local URL, filters and language intact.
-export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = false, heading }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void; registration?: boolean; heading?: string }) {
+export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = false, heading, expectedPhone }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void; registration?: boolean; heading?: string; expectedPhone?:string }) {
   const pathname = usePathname();
-  const t = { ...personalLoginCopy[locale], ...(registration ? { help: registrationCopy[locale].verificationHelp, verify: registrationCopy[locale].verifyButton } : {}), ...(heading ? { title: heading } : {}) };
+  const r=refinementCopy[locale];
+  const t = { ...personalLoginCopy[locale],phone_mismatch:r.mismatch, ...(registration ? { start:personalLoginCopy[locale].open, help: registrationCopy[locale].verificationHelp, verify: registrationCopy[locale].verifyButton } : {}), ...(heading ? { title: heading } : {}) };
   const [state, setState] = useState<State>("idle");
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [code, setCode] = useState("");
@@ -92,11 +94,11 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
         if (!alive.current || current !== epoch.current) return "obsolete";
         markLoginUnconfirmed(true);
         try {
-          await loginRequest(`${ref}/session`, "POST", undefined, enteredCode, registration);
+          await loginRequest(`${ref}/session`, "POST", undefined, enteredCode, registration, locale, false, expectedPhone);
           if (alive.current && current === epoch.current) { markLoginUnconfirmed(false); return "accepted"; }
         } catch (error) {
           // These definite rejections cannot have issued a session. A typo can be corrected.
-          if (error instanceof Error && ["invalid_code", "expired", "cancelled", "rate_limited"].includes(error.message)) {
+          if (error instanceof Error && ["invalid_code", "expired", "cancelled", "rate_limited", "phone_mismatch"].includes(error.message)) {
             markLoginUnconfirmed(false); return error.message;
           }
         }
@@ -108,7 +110,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
       if (!alive.current || current !== epoch.current) return;
       if (result === "accepted") { callback.current(); announcePersonalSessionChange(); }
       else if (result === "invalid_code") { setCodeError(true); setState("code"); }
-      else { setChallenge(null); setState(["expired", "cancelled", "rate_limited"].includes(result) ? result as State : "uncertain"); }
+      else { setChallenge(null); setState(["expired", "cancelled", "rate_limited", "phone_mismatch"].includes(result) ? result as State : "uncertain"); }
     } catch { if (alive.current && current === epoch.current) { setChallenge(null); setState("uncertain"); } }
     finally { submitting.current = false; }
   }
@@ -131,7 +133,6 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   const busy = state === "creating" || state === "exchanging";
   return <section className="candidate-login candidate-private-panel" lang={locale}>
     <h2>{t.title}</h2><p>{t.help}</p>{registration && <><label htmlFor={eligibilityId} className="registration-consent"><input id={eligibilityId} type="checkbox" checked={eligible} onChange={event => setEligible(event.target.checked)}/><span>{registrationEligibility[locale]}</span></label><p>{registrationFlowCopy[locale].scope}</p></>}
-    {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}>{registrationCopy[locale].title}</a>}
     {state !== "idle" && <p role="status" aria-live="polite">{t[state]}</p>}
     {state === "pending" && challenge && <><a className="button button-primary" href={challenge.whatsapp_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{t.open}</a><button className="button button-secondary" type="button" onClick={() => void cancel()}>{t.cancel}</button></>}
     {(state === "code" || state === "exchanging") && <form className="candidate-form" onSubmit={verify}>
@@ -142,5 +143,6 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
       <button className="button button-secondary" type="button" disabled={busy} onClick={() => void cancel()}>{t.restart}</button>
     </form>}
     {state === "uncertain" ? <button className="button button-secondary" type="button" onClick={() => void cancel(true)}>{t.reset}</button> : !["pending", "code", "exchanging"].includes(state) && <button className="button button-primary" type="button" disabled={busy || registration && !eligible} onClick={() => void start()}>{state === "idle" ? t.start : busy ? t[state] : t.retry}</button>}
+    {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <p className="login-register">{r.noAccount} <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}>{r.signup}</a></p>}
   </section>;
 }

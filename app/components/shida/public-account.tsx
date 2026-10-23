@@ -10,10 +10,12 @@ import {endEmploymentSession} from '../../services/shida/employment-browser-clie
 import {publicAccountCopy} from '../../lib/public-account-copy';
 import {leaveWork} from '../../lib/restaurant-work';
 import {accountSpaceCopy} from "../../lib/account-space-copy";
+import {refinementCopy} from "../../lib/registration/refinement-copy";
 import './public-account.css';
 
 export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCopy}) {
   const t=publicAccountCopy[locale],title=useId(),pathname=usePathname();
+  const r=refinementCopy[locale];
   const a=marketplaceAccountCopy[locale],prefix=locale==="en"?"":`/${locale}`,spaceHref=`${prefix}/shida/space`;
   const [open,setOpen]=useState(false),[session,setSession]=useState<PersonalSession|null>(null);
   const [checking,setChecking]=useState(true),[failed,setFailed]=useState(false);
@@ -68,6 +70,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
 
   return <div className="shida-public-account" lang={locale}>
     <MarketplaceControls key={session?.binding||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref} guestLabel={t.signIn}
+      registrationLink={!checking&&!session&&process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==="true"?{label:r.create,href:`${prefix}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}:undefined}
       links={[{label:a.space,href:spaceHref},{label:accountSpaceCopy[locale].manage,href:`${spaceHref}?view=management`},{label:accountSpaceCopy[locale].settings,href:`${spaceHref}?view=settings`}]}
       languages={/\/shida\/?$/.test(pathname)||/\/shida\/(restaurants|services|seller|space|service-requests|service-bills)(?:\/|$)/.test(pathname)?["fr","en","ln","sw"]:["fr","en"]}
       onLanguage={(lang:MarketplaceLocale)=>{if(leaveWork())window.location.assign(marketplaceLanguagePath(pathname,lang)+window.location.search);}}
@@ -75,16 +78,15 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
     <dialog className="shida-account-dialog" ref={dialog} aria-labelledby={title} onClose={()=>setOpen(false)}>
       {open&&<div className="shida-account-content">
         <div className="shida-account-heading"><span>SHIDA</span><button type="button" aria-label={t.close} onClick={()=>dialog.current?.close()}>×</button></div>
-        <h2 id={title}>{t.title}</h2><p className="shida-account-intro">{t.intro}</p>
-        <nav className="shida-account-actions" aria-label={a.account}><a href={spaceHref}>{a.space}</a><a href={`${spaceHref}?view=management`}>{accountSpaceCopy[locale].manage}</a><a href={`${spaceHref}?view=settings`}>{accountSpaceCopy[locale].settings}</a></nav>
+        <h2 id={title} className={!session?"sr-only":undefined}>{session?t.title:t.signIn}</h2>
+        {session&&<nav className="shida-account-actions" aria-label={a.account}><a href={spaceHref}>{a.space}</a><a href={`${spaceHref}?view=management`}>{accountSpaceCopy[locale].manage}</a><a href={`${spaceHref}?view=settings`}>{accountSpaceCopy[locale].settings}</a></nav>}
         {pending?<p role="status">{t.working}</p>:logoutFailed?<div role="alert"><p>{t.logoutFailed}</p><button className="button button-secondary" type="button" onClick={()=>void logout(true)}>{t.retry}</button></div>:session?<div className="shida-account-signed-in">
           <p>{t.signedIn}<strong>{session.user.display_name}</strong></p>
           <button className="button button-primary" type="button" onClick={()=>dialog.current?.close()}>{t.close}</button>
           <div className="shida-account-actions"><button type="button" onClick={()=>void logout(true)}>{t.change}</button><button type="button" onClick={()=>void logout()}>{t.signOut}</button></div>
         </div>:<>
           {checking?<p role="status">{t.checking}</p>:<>{failed&&<p role="status">{t.failed}</p>}<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>void check(true)}/></>}
-          <p className="shida-account-guest">{t.guest}</p>
-          <button type="button" className="shida-account-browse" onClick={()=>dialog.current?.close()}>{t.close} →</button>
+          <button type="button" className="shida-account-browse" onClick={()=>dialog.current?.close()}>{r.browse} →</button>
         </>}
       </div>}
     </dialog>

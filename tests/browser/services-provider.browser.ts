@@ -88,7 +88,7 @@ test('session replacement clears private drafts and expired sessions return to W
  const editor=page.locator('.svc-service-editor');await editor.getByRole('textbox').first().fill('Private draft');
  state.binding='b'.repeat(64);state.rows=[];await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));
  await expect(editor).toHaveCount(0);await expect(page.locator('input[value="Private draft"]')).toHaveCount(0);
- state.signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.locator('.svc-workspace')).toHaveCount(0);await expect(page.getByRole('button',{name:'Open WhatsApp and send the message',exact:true})).toBeVisible();
+ state.signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.locator('.svc-workspace')).toHaveCount(0);await expect(page.getByRole('button',{name:"Sign in with WhatsApp",exact:true})).toBeVisible();
 });
 
 for(const [locale,width] of [['en',1440],['en',320],['fr',390],['ln',820],['sw',360]] as const)test(`Services setup form ${locale} ${width}`,async({page})=>{

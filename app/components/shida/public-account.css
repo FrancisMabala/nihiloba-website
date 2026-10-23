@@ -29,3 +29,6 @@
 @media(max-width:700px){.shida-header .nav-shell{gap:10px}.shida-header .primary-nav{top:82px;padding-inline:16px}.shida-account-content{padding:20px}.shida-account-content>h2{font-size:1.75rem}}
 @media(max-width:400px){.shida-header .header-logo{width:90px;flex-basis:90px}.shida-account-trigger{padding:8px 10px;font-size:.76rem;max-width:132px;gap:5px}}
 @media print{.shida-account-dialog{display:none!important}}
+
+.market-register{font-size:.82rem;color:var(--forest);text-underline-offset:4px;min-height:44px;display:flex;align-items:center;white-space:nowrap}.shida-account-actions{display:grid;grid-template-columns:1fr;gap:4px}.shida-account-actions a{display:block;padding:12px;border-bottom:1px solid var(--line)}.shida-account-dialog .candidate-login{margin-top:8px;border-top:0;padding:12px 0}.shida-account-dialog .candidate-login h2{font:500 1.75rem/1.2 Georgia,serif}.login-register{margin-top:18px}
+@media(max-width:700px){.market-register{display:none}}

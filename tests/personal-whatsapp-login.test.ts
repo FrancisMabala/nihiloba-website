@@ -12,6 +12,14 @@ const codeReq = (value: unknown = { code: "610294" }) => new Request("https://ni
 function bound() { jar.set("nihiloba_personal_challenge", `${ref}.${Date.now() + 300000}.${verifier}`); }
 beforeEach(() => { jar.clear(); set.mockClear(); vi.unstubAllGlobals(); });
 describe("Personal WhatsApp restricted gateway", () => {
+  it("forwards an untrusted contact only for registration and preserves mismatch rejection",async()=>{
+    bound();const fetcher=vi.fn(async()=>Response.json({detail:"phone_mismatch"},{status:409}));vi.stubGlobal("fetch",fetcher);
+    const body={code:"610294",expected_phone:"+243910004001"};
+    expect((await POST(codeReq(body),ctx([ref,"session"]))).status).toBe(422);expect(fetcher).not.toHaveBeenCalled();
+    const response=await POST(codeReq(body),ctx(["registration",ref,"session"]));
+    expect(response.status).toBe(409);expect(await response.json()).toEqual({error:{code:"phone_mismatch"}});
+    expect(fetcher).toHaveBeenCalledWith(expect.any(String),expect.objectContaining({body:JSON.stringify(body)}));expect(jar.has(PERSONAL_SESSION_COOKIE)).toBe(false);
+  });
   it("registration exchanges only its purpose-bound challenge and never claims full sign-in", async () => {
     bound();
     const fetcher=vi.fn(async()=>Response.json({verified:true},{headers:{"set-cookie":`shida_dashboard_session=${token}; HttpOnly`}}));vi.stubGlobal("fetch",fetcher);

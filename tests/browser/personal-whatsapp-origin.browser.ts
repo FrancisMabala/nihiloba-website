@@ -9,7 +9,7 @@ for (const width of [390, 1366]) test(`actual Backend challenge remains pending 
   await page.addInitScript(() => { window.open = () => null; });
   await page.goto("/fr/shida/seller/restaurants/");
   const created = page.waitForResponse(r => r.url().endsWith("/api/shida/personal/auth/whatsapp/") && r.request().method() === "POST");
-  await page.getByRole("button", { name: "Ouvrir WhatsApp et envoyer le message", exact: true }).click();
+  await page.getByRole("button", { name: "Se connecter avec WhatsApp", exact: true }).click();
   expect((await created).status()).toBe(201);
   await expect(page.getByText("En attente de l’envoi du message…", { exact: true })).toBeVisible();
   const link = page.getByRole("link", { name: "Ouvrir WhatsApp et envoyer le message" });

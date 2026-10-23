@@ -2,9 +2,10 @@
 
 # SHIDA native registration — 22 October 2026
 
-The [23 October consolidated release](consolidated-program-2026-10-23.md) supersedes
-the original stage order below: new users enter memory-only details before
-WhatsApp verification, then use the same canonical saved draft and legal services.
+The [23 October unified refinement](unified-registration-2026-10-23.md) supersedes
+the original stage order below and the consolidated release's memory-only form:
+new users enter a complete grouped form, retained in expiring tab-scoped storage,
+before WhatsApp verification, then use the canonical saved draft and legal services.
 Explicit saved-draft recovery still verifies first. No authentication or legal
 versioning architecture is replaced.
 

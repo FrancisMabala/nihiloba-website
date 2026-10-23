@@ -35,7 +35,7 @@ for(const scenario of ["committed","unreceived","unavailable"] as const) test(`p
  await page.getByRole("button",{name:"Basket"}).click();
  await expect(page.getByRole("heading",{name:"Plate 1"})).toBeVisible();
  await page.getByRole("button",{name:"Continue",exact:true}).click();
- await page.getByRole("button",{name:"Open WhatsApp and send the message"}).click();
+ await page.getByRole("button",{name:"Sign in with WhatsApp"}).click();
  await expect(page.getByText("Fixture customer")).toHaveCount(0);
  await expect.poll(()=>signedIn).toBe(true);
  await page.getByRole("combobox",{name:"Choose a window"}).selectOption("RWI-CHECKOUT");

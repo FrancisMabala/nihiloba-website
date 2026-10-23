@@ -1,4 +1,4 @@
-import {quickSellCopy} from "../../lib/quick-sell-copy";
+import {WenzeSellingInvitations} from "./wenze-selling-invitations";
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
 import { MarketplaceDiscoveryHeader } from "./public-marketplace";
 import { MarketplaceSectionBreadcrumb } from "./marketplace-primitives";
@@ -55,6 +55,6 @@ export async function WenzeCatalog({locale,raw,landing=false}:{
       {search.cursor&&<Link href={`${root}?${wenzeDiscoveryQuery(search,null)}`}>{t.first}</Link>}
       {data?.next_cursor&&<Link className="button button-secondary" href={`${root}?${wenzeDiscoveryQuery(search,data.next_cursor)}`}>{t.next} →</Link>}
     </nav>
-    <aside className="wzp-sell-entry"><Link className="button button-secondary" href={marketplacePath(locale,"/shida/wenze/sell")}>{quickSellCopy[locale].title}</Link></aside>
+    <WenzeSellingInvitations locale={locale}/>
   </div></div></WenzeBuyerProvider>;
 }

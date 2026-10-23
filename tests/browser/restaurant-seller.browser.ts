@@ -85,7 +85,7 @@ test("failed logout still clears this tab and focus cannot restore private conte
  await expect(page.getByRole("heading", { name: "Sign in with SHIDA", exact: true })).toBeVisible();
  await expect(page.getByRole("heading", { name: "Isolated Malewa", exact: true })).toHaveCount(0);
  await page.route("**/api/shida/personal/auth/whatsapp/", route => route.fulfill({ status: 503, json: {} }));
- await page.getByRole("button", { name: "Open WhatsApp and send the message", exact: true }).click();
+ await page.getByRole("button", { name: "Sign in with WhatsApp", exact: true }).click();
  await expect(page.getByText("Sign-in is unavailable. Please try again.", { exact: true })).toBeVisible();
  await page.evaluate(() => window.dispatchEvent(new Event("focus"))); await expect(page.getByRole("heading", { name: "Isolated Malewa", exact: true })).toHaveCount(0);
 });
@@ -173,13 +173,13 @@ test("expired offering copy stays unconfirmed until a separate confirmation", as
  await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("I confirm these changes", { exact: true }).check(); await page.getByRole("button", { name: "Save changes", exact: true }).click(); expect(s.writes[1].body?.fields).toEqual({ confirm: true });
 });
 test("isolated WhatsApp challenge sign-in, shared session and logout", async ({ page }) => {
- const s = await fixture(page); s.session = false; await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Open WhatsApp and send the message", exact: true }).click(); await page.getByLabel("Six-digit code", { exact: true }).fill("610294"); await page.getByRole("button", { name: "Verify and sign in", exact: true }).click(); await expect(page.getByText("Isolated Malewa", { exact: true })).toBeVisible();
- await page.locator(".rst-account summary").click();await page.getByRole("button", { name: "Change account", exact: true }).click(); await expect(page.getByRole("button", { name: "Open WhatsApp and send the message", exact: true })).toBeVisible(); await expect(page.getByText("Isolated Malewa", { exact: true })).toHaveCount(0);
+ const s = await fixture(page); s.session = false; await page.goto("/shida/seller/restaurants"); await page.getByRole("button", { name: "Sign in with WhatsApp", exact: true }).click(); await page.getByLabel("Six-digit code", { exact: true }).fill("610294"); await page.getByRole("button", { name: "Verify and sign in", exact: true }).click(); await expect(page.getByText("Isolated Malewa", { exact: true })).toBeVisible();
+ await page.locator(".rst-account summary").click();await page.getByRole("button", { name: "Change account", exact: true }).click(); await expect(page.getByRole("button", { name: "Sign in with WhatsApp", exact: true })).toBeVisible(); await expect(page.getByText("Isolated Malewa", { exact: true })).toHaveCount(0);
 });
 test("lost access and account switching clear editor values", async ({ page }) => {
  const s = await fixture(page); await open(page); s.denied = true; await page.getByRole("button", { name: "Edit", exact: true }).click(); await expect(page.getByText("Synthetic fixture only", { exact: true })).toHaveCount(0);
  s.denied = false; await page.reload(); await page.getByRole("button", { name: "Edit", exact: true }).click(); await managementNavigation(page,'My profile'); await page.getByRole("button", { name: "Edit", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Private unsaved name");
- s.session = false; await page.evaluate(() => window.dispatchEvent(new Event("shida-personal-session-changed"))); await expect(page.getByRole("button", { name: "Open WhatsApp and send the message", exact: true })).toBeVisible(); await expect(page.locator('input[value="Private unsaved name"]')).toHaveCount(0);
+ s.session = false; await page.evaluate(() => window.dispatchEvent(new Event("shida-personal-session-changed"))); await expect(page.getByRole("button", { name: "Sign in with WhatsApp", exact: true })).toBeVisible(); await expect(page.locator('input[value="Private unsaved name"]')).toHaveCount(0);
 });
 for (const locale of ["en", "fr", "ln", "sw"]) test(`phone and desktop layout / ${locale}`, async ({ page }) => {
  await fixture(page); await page.setViewportSize({ width: 390, height: 844 }); await page.goto(`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`);
@@ -210,7 +210,7 @@ for (const width of [390, 768, 1440]) {
   network.on("Network.loadingFinished", event => { bytes += event.encodedDataLength; });
   await page.goto("/fr/shida/seller/restaurants/");
   await expect(page.getByRole("heading", { name: "Votre restaurant, votre espace." })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Ouvrir WhatsApp et envoyer le message", exact: true })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Se connecter avec WhatsApp", exact: true })).toBeInViewport();
   if (width < 900) expect(images).toEqual([]);
   else { await expect.poll(() => images.length).toBe(1); expect(images[0]).toContain(".webp"); await page.locator(".rst-signin-art img").evaluate(image => (image as HTMLImageElement).decode()); }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

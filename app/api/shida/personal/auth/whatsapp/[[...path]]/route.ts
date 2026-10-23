@@ -61,8 +61,9 @@ async function handle(request: Request, context: Context) {
       const raw = new Uint8Array(size); let offset = 0;
       for (const chunk of chunks) { raw.set(chunk, offset); offset += chunk.length; }
       const data = JSON.parse(new TextDecoder().decode(raw));
-      if (!data || Array.isArray(data) || Object.keys(data).join() !== "code" || typeof data.code !== "string" || !/^[0-9]{6}$/.test(data.code)) throw new Error();
-      codeBody = JSON.stringify({ code: data.code });
+      if (!data || Array.isArray(data) || Object.keys(data).some(key=>key!=="code" && !(registration && key==="expected_phone")) || typeof data.code !== "string" || !/^[0-9]{6}$/.test(data.code)) throw new Error();
+      if(data.expected_phone!==undefined && (typeof data.expected_phone!=="string" || !/^\+[1-9][0-9]{7,14}$/.test(data.expected_phone)))throw new Error();
+      codeBody = JSON.stringify({ code: data.code,...(data.expected_phone?{expected_phone:data.expected_phone}:{}) });
     } catch { return privateEmploymentJson({ error: { code: "invalid_code" } }, 422); }
   }
   try {
@@ -77,7 +78,10 @@ async function handle(request: Request, context: Context) {
         ...(exchange ? { "Content-Type": "application/json" } : {}),
         ...(!create ? { Cookie: `shida_dashboard_challenge=${verifier}` } : {}) },
     });
-    if (!response.ok) return privateEmploymentJson({ error: { code: exchange && response.status === 400 ? "invalid_code" : response.status === 429 ? "rate_limited" : response.status === 404 ? "expired" : response.status === 409 ? "cancelled" : "unavailable" } }, response.status >= 400 ? response.status : 502);
+    if (!response.ok) {
+      const error=await response.json().catch(()=>null);
+      return privateEmploymentJson({ error: { code: registration && exchange && error?.detail==="phone_mismatch" ? "phone_mismatch" : exchange && response.status === 400 ? "invalid_code" : response.status === 429 ? "rate_limited" : response.status === 404 ? "expired" : response.status === 409 ? "cancelled" : "unavailable" } }, response.status >= 400 ? response.status : 502);
+    }
     const data = await response.json();
     if (create) {
       const binding = upstreamCookie(response, "shida_dashboard_challenge");
