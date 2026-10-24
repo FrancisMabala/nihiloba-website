@@ -8,7 +8,10 @@ type Review={review_ref:string;rating:number;comment:string|null;seller_response
 export function RestaurantSellerReviews({path,binding,locale}:{path:string;binding:string;locale:RestaurantLocale}){
  const t=restaurantReviewCopy[locale];
  const [page,setPage]=useState(1),[items,setItems]=useState<Review[]>([]),[total,setTotal]=useState(0),[active,setActive]=useState<string|null>(null),[response,setResponse]=useState(""),[reason,setReason]=useState("inaccurate"),[busy,setBusy]=useState(false),[message,setMessage]=useState("");
- const load=useCallback(async(p:number)=>{try{const result=await request(`${path}/reviews?page=${p}&page_size=10`,{},binding) as {items:Review[];total:number};setItems(result.items);setTotal(result.total);setPage(p);}catch{setMessage(t.failed);}},[path,binding,t.failed]);
+ const load=useCallback((p:number)=>request(`${path}/reviews?page=${p}&page_size=10`,{},binding).then(value=>{
+  const result=value as {items:Review[];total:number};
+  setItems(result.items);setTotal(result.total);setPage(p);
+ }).catch(()=>{setMessage(t.failed);}),[path,binding,t.failed]);
  useEffect(()=>{void load(1);},[load]);
  async function mutate(item:Review,kind:"response"|"report") {if(busy)return;setBusy(true);setMessage("");try{
   await request(`${path}/reviews/${item.review_ref}/${kind}`,{method:kind==="response"?"PUT":"POST",body:JSON.stringify(kind==="response"?{response,expected_revision:item.revision}:{reason,message:null})},binding);

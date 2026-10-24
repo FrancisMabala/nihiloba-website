@@ -78,3 +78,15 @@ credential, AWS setting, repository visibility or protection was changed.
 The initial frontend run used a loopback environment that invalidated URL-contract
 mocks. That runner defect was corrected; only the final isolated test totals above
 are evidence. Earlier temporary logs are not the final result.
+
+## Follow-up validation, 24 October 2026
+
+Development branch: `chore/infrastructure-controls-20261024`.
+
+Current catalogue and checkout assertions; asynchronous review/order state updates; clear private order details when route or identity changes. Lint has nine existing warnings and no errors.
+
+The isolated frontend runner passed build, TypeScript, lint and all 638 tests.
+No dependencies, production settings or database state changed. This supersedes
+the earlier failing local frontend result, but remote CI must independently pass
+on the pushed commit before release. Main and production deployments remain out
+of scope.

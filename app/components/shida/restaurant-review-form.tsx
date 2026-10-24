@@ -12,10 +12,11 @@ export function RestaurantReviewForm({locale,establishmentRef,establishmentName}
  const t=restaurantReviewCopy[locale];
  const [binding,setBinding]=useState<string|null>(null),[eligibility,setEligibility]=useState<Eligibility|null>(null);
  const [rating,setRating]=useState(5),[comment,setComment]=useState(""),[editing,setEditing]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState("");
- const refresh=useCallback(async()=>{try{const session=await restorePersonalSession();setBinding(session.binding);
+ const refresh=useCallback(()=>restorePersonalSession().then(async session=>{
+  setBinding(session.binding);
   const value=await request(`personal/restaurant-orders/establishments/${establishmentRef}/review-eligibility`,{},session.binding) as Eligibility;
   setEligibility(value);setRating(value.existing_review?.rating??5);setComment(value.existing_review?.comment??"");
- }catch{setBinding(null);setEligibility(null);}},[establishmentRef]);
+ }).catch(()=>{setBinding(null);setEligibility(null);}),[establishmentRef]);
  useEffect(()=>{void refresh();const changed=()=>void refresh();window.addEventListener(PERSONAL_SESSION_EVENT,changed);return()=>window.removeEventListener(PERSONAL_SESSION_EVENT,changed);},[refresh]);
  if(!binding||!eligibility?.eligible||eligibility.existing_review?.status==="hidden")return null;
  const own=eligibility.existing_review;
