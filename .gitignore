@@ -44,3 +44,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Disposable validation output; historical tracked evidence is preserved.
+.pytest-*/
+.tmp-*/
+.infra-test/

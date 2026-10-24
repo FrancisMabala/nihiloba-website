@@ -1,0 +1,5 @@
+# Reviewed 24 October 2026: exact historical false positives only.
+# Fixture values are isolated-* constants; verification.json entries are source SHA-256 digests.
+# No directory, provider rule, or future commit is excluded.
+63817ae0bd9e123d5839c3eede954c68a1cea6ed:tests/integration/restaurant-guest-backend.py:generic-api-key:19
+63817ae0bd9e123d5839c3eede954c68a1cea6ed:tests/integration/restaurant-guest-backend.py:generic-api-key:20
