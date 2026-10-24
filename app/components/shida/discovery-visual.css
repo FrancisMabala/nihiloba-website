@@ -54,11 +54,20 @@ body .market-surface .marketplace-public {background:var(--discovery-cream)}
 .market-surface .discovery-categories small {color:var(--mp-muted);line-height:1.45;padding-right:24px}
 .market-surface .discovery-category-arrow {display:grid;place-items:center;position:absolute;right:8px;bottom:10px;width:26px;height:26px;border-radius:50%;color:var(--accent-ink);background:var(--mp-paper)}
 .market-surface .discovery-category-arrow svg {width:16px;height:16px}
-.market-surface .discovery-listings {padding:24px;border:1px solid var(--mp-line);border-radius:16px;background:var(--discovery-sage-surface)}
+.market-surface .discovery-listings {padding:0;border:0;border-radius:0;background:transparent}
 .market-surface .discovery-job {display:flex;align-items:stretch;background:var(--mp-paper);border-color:var(--mp-line);gap:7px}
 .market-surface .discovery-job-icon {align-self:flex-start;background:var(--accent-gold);color:var(--accent-gold-ink)}
-.market-surface .discovery-job h4 {font:600 1.05rem/1.35 Georgia,serif}
-.market-surface .discovery-detail {border-top:1px solid var(--mp-line);width:100%;margin-top:auto;padding-top:10px}
+.market-surface .discovery-job h4 {font:650 1rem/1.4 var(--font-sans)}
+.market-surface .discovery-group-heading h3 {font:700 clamp(1.3rem,2vw,1.65rem)/1.25 Georgia,serif}
+.market-surface .discovery-job-heading {display:flex;align-items:flex-start;gap:12px;min-width:0}
+.market-surface .discovery-job-icon {flex:none;display:flex;padding:9px}
+.market-surface .discovery-job-info {display:grid;gap:5px;min-width:0}
+.market-surface .discovery-job-footer {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0 12px;border-top:1px solid var(--mp-line);margin-top:auto}
+.market-surface .discovery-detail {width:auto;margin:0 0 0 auto;padding:0;min-height:44px}
+.market-surface .discovery .service-card .marketplace-card-body {gap:6px}
+.market-surface .discovery .service-card .marketplace-card-body>p,.market-surface .discovery .service-card h2 {margin:0}
+.market-surface .discovery .service-card .marketplace-card-facts {gap:4px 10px;margin:0}
+.market-surface .discovery .service-card .marketplace-card-body>.button {margin-top:auto;min-height:44px}
 .market-surface .discovery :is(.service-card,.discovery-job):hover {border-color:var(--accent-sage-ink)}
 .market-surface .discovery .service-card[data-has-image=false] {display:flex}
 .market-surface .discovery .service-card[data-has-image=false] .service-card-image {display:none}
@@ -114,7 +123,7 @@ body .market-surface .marketplace-public :is(.marketplace-state,.marketplace-emp
   .market-surface .discovery-entries article {grid-template-columns:minmax(0,1fr) 100px;padding:20px}
 }
 @media (max-width:700px) {
-  .market-surface .discovery-listings {padding:16px 12px;margin-top:22px}
+  .market-surface .discovery-listings {padding:0;margin-top:22px}
   .market-surface .discovery-results {grid-template-columns:minmax(0,1fr)}
   .market-surface .discovery-entries {grid-template-columns:minmax(0,1fr)}
   .market-surface .discovery-entries article {grid-template-columns:minmax(0,1fr) 88px;padding:18px;gap:8px}
