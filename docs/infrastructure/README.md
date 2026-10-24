@@ -103,7 +103,7 @@ domains, plan, environment-group names, database identity (no connection strings
 latest successful commit, and rollback candidate. Confirm existing staging/copy
 databases before proposing any new environment. Record variables by name only.
 
-Live audit found backend and website already Off. Proposed transition, pending owner approval: Settings > Build & Deploy > Auto-Deploy Off for Business, the Wenze photo worker and ten production application cron jobs listed in the live audit. Preserve existing Off settings on API, website and backup job. Keep existing
+Owner-approved transition completed on 24 October 2026: Auto-Deploy is Off for Business, the Wenze photo worker and all ten production application crons listed in the audit. Each saved setting was reopened and verified; cron schedules and commands were unchanged. Existing Off settings on API, website and backup were also verified. Keep existing
 commands/domains/branches/database attachments unchanged. Do not alter the separate
 backup job. If Blueprint-managed, separately approve matching autoDeployTrigger: off
 in render.yaml to avoid configuration drift. No production configuration source change is included yet. Staging also watches main and upgrades schema at startup; review its independence before using it as a release gate.
