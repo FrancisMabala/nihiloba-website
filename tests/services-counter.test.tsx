@@ -22,3 +22,21 @@ it('only forwards explicit Counter paths and rejects injected owner scopes',()=>
  expect(transactionQuery(['transactions','finance','counter'],new URLSearchParams('organization_ref=BUS_other'),'GET')).toBe(false);
  expect(transactionQuery(['transactions','finance','counter'],new URLSearchParams('offset=0&offset=1'),'GET')).toBe(false);
 });
+
+it('forwards only POST adjustments with valid sale references and no owner injection',()=>{
+ const path=['transactions','finance','counter','SCS_one','adjustments'];
+ expect(transactionPath(path,'POST')).toBe('services/finance/counter/SCS_one/adjustments');
+ expect(transactionPath(path,'GET')).toBeNull();
+ expect(transactionPath(['transactions','finance','counter','BUS_one','adjustments'],'POST')).toBeNull();
+ expect(transactionQuery(path,new URLSearchParams('organization_ref=BUS_other'),'POST')).toBe(false);
+});
+
+it.each(['en','fr','ln','sw'] as const)('keeps original payment snapshots separate from corrected bills and refund receipts in %s',locale=>{
+ const original={...sale,customer_name:'Original client'};
+ const corrected={...sale,total:'20.00',customer_name:'Corrected client',payments:[{...sale.payments[0],document:original}]};
+ const receipt=renderToStaticMarkup(<CounterDocument sale={corrected} payment={corrected.payments[0]} locale={locale}/>);
+ expect(receipt).toContain('Original client');expect(receipt).not.toContain('Corrected client');
+ const adjustment={adjustment_ref:'SCA_refund',kind:'refund' as const,reason_code:'customer_refund' as const,amount:'10.00',bill_delta:'0.00',method:'cash' as const,effective_date:'2026-10-02',receipt_ref:null,document:{...corrected,received:'20.00',outstanding:'0.00'}};
+ const refund=renderToStaticMarkup(<CounterDocument sale={corrected} adjustment={adjustment} locale={locale}/>);
+ expect(refund).toContain('SCA_refund');expect(refund).toContain('Corrected client');expect(refund).not.toContain('SCR_first');
+});

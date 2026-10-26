@@ -16,7 +16,7 @@ export function transactionPath(parts: string[], method: string): string | null 
   }
   if (parts[1] === 'finance') {
     if(parts[2]==='counter'&&parts.length===3&&['GET','POST'].includes(method))return 'services/finance/counter';
-    if(parts[2]==='counter'&&parts.length===5&&/^SCS_[A-Za-z0-9_-]+$/.test(parts[3])&&parts[4]==='payments'&&method==='POST')return `services/finance/counter/${parts[3]}/payments`;
+    if(parts[2]==='counter'&&parts.length===5&&/^SCS_[A-Za-z0-9_-]+$/.test(parts[3])&&['payments','adjustments'].includes(parts[4])&&method==='POST')return `services/finance/counter/${parts[3]}/${parts[4]}`;
     if (parts.length === 3 && parts[2] === 'totals' && method === 'GET') return 'services/finance/totals';
     if (parts.length === 5 && parts[2] === 'reservations' && /^RSV_[A-Za-z0-9_-]+$/.test(parts[3]) && parts[4] === 'totals' && method === 'GET') return `services/finance/reservations/${parts[3]}/totals`;
     if (parts.length === 3 && parts[2] === 'entries' && ['GET','POST'].includes(method)) return 'services/finance/entries';
