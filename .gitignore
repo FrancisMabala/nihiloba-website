@@ -44,3 +44,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Disposable integration databases and local diagnostic output.
+# Ignore rules do not authorize deleting persistent data or tracked evidence.
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*.tmp
+*.log
+/.pytest-*/
+/.restaurant-reservation-tests/
