@@ -24,7 +24,12 @@ copy, transaction path contract, document/gateway tests, and browser tests cover
 four languages, desktop/mobile sizes, original documents, compact printing and
 identical-key payment-reversal retry after an uncertain response.
 
-Validation results and exact live commits are recorded in the release closeout.
+Validation: 12 document/gateway tests and nine browser cases passed. The five
+adjustment browser cases were rerun after adding the reversed-receipt annotation.
+TypeScript, ESLint and production webpack build passed. Backend rehearsal passed
+28 PostgreSQL cases and the additive migration to 0205. Existing agreed catalogue
+prices/names survive later catalogue edits. Exact live commits and final CI results
+are recorded in the release closeout.
 Physical printer/customer acceptance remains manual. Refund-entry editing, partial
 reversal of one receipt, automatic money movement and tax certification are not
 implemented. Whole mistaken payments can be reversed, then re-recorded correctly.
