@@ -33,3 +33,19 @@ are recorded in the release closeout.
 Physical printer/customer acceptance remains manual. Refund-entry editing, partial
 reversal of one receipt, automatic money movement and tax certification are not
 implemented. Whole mistaken payments can be reversed, then re-recorded correctly.
+
+## Production closeout — 27 October 2026
+
+Backend `83de9eefd5e6666f1aeb965f02ff10ac2b0fc875` is Live in Render deployment
+`dep-dbftpuqfngtc73826rt0`; additive migration 0204 to 0205 completed successfully.
+Website `2230a3e8a7a44aa3779f83f761da1fc5cc8ca037` is Live in deployment
+`dep-dbfts5qvcj2c73ahtetg`. Both main pushes were verified against remote SHAs.
+Backend CI run 40412710745 passed all gates: 9,920 passed, 1,045 skipped, no failures,
+plus PostgreSQL migration/concurrency and secret checks. Skips are not PostgreSQL
+coverage; the separate focused PostgreSQL rehearsal passed 28 cases.
+
+The deployed Counter page returns 200 after its canonical trailing-slash redirect.
+Unauthenticated adjustment requests return 401 through both backend and website.
+No customer data was changed during live acceptance; physical printer acceptance
+remains manual. Auto-Deploy remains Off. Documentation-only closeout commits do
+not change the live application commits above.
