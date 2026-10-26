@@ -40,3 +40,9 @@ it.each(['en','fr','ln','sw'] as const)('keeps original payment snapshots separa
  const refund=renderToStaticMarkup(<CounterDocument sale={corrected} adjustment={adjustment} locale={locale}/>);
  expect(refund).toContain('SCA_refund');expect(refund).toContain('Corrected client');expect(refund).not.toContain('SCR_first');
 });
+
+it('marks a reversed receipt without replacing its original financial details',()=>{
+ const payment={...sale.payments[0],reversed:true,document:sale};
+ const html=renderToStaticMarkup(<CounterDocument sale={sale} payment={payment} locale="en"/>);
+ expect(html).toContain('Reversed');expect(html).toContain('SCR_first');expect(html).toContain('10.00 USD');
+});
