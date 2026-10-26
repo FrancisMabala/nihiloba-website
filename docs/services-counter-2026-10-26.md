@@ -1,8 +1,6 @@
 # Personal Services workspace and Counter — 26 October 2026
 
-Implemented locally; not pushed/deployed. Requires Backend migration 0203 and
-its Counter API before release. Production migration requires separate user
-authorization under the standing repository policy.
+Release authorized by the user on 26 October 2026. Requires Backend migration 0204 and its Counter API before website rollout. The backend release preserves its actual deployed baseline; its existing revision 0203 is retained unchanged.
 
 - One Share & QR code sidebar destination replaces repeated header, Today and
   Calendar share controls. Copy, native sharing, WhatsApp and QR download remain.
