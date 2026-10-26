@@ -2,7 +2,7 @@
 import type {CSSProperties} from "react";
 import "./service-bill-statement.css";
 
-export type BillStatementVersion={version_ref:string;bill_ref:string;revision:number;status:string;currency:string|null;total:string|null;issue_date:string|null;due_date:string|null;presentation?:{identity_name?:string;display_name:string;accent:string};lines:{ordinal:number;label:string;amount:string}[]};
+export type BillStatementVersion={version_ref:string;bill_ref:string;revision:number;status:string;currency:string|null;total:string|null;issue_date:string|null;due_date:string|null;presentation?:{identity_name?:string;display_name:string;accent:string;service_name?:string|null;package_name?:string|null};lines:{ordinal:number;label:string;amount:string}[]};
 type Locale="fr"|"en"|"ln"|"sw";
 const copy={
  en:{title:"Provider-issued Service bill",draft:"Draft presentation preview",void:"Voided",previous:"Replaced version — no current charge",current:"Issued version",ref:"Bill reference",version:"Version",date:"Issue date",due:"Due date",item:"Service",amount:"Amount",total:"Total",note:"Issued by the provider. This statement does not confirm payment, service delivery or customer acceptance."},
@@ -22,6 +22,7 @@ export function ServiceBillStatement({version,locale,draft=false,current=true}:{
  return <article className="service-bill-sheet" lang={locale} style={{"--bill-accent":color,overflowWrap:"anywhere"} as CSSProperties}>
   <header className="service-bill-header"><div className="service-bill-identity"><span className="service-bill-monogram" aria-hidden="true">{displayName.slice(0,1).toLocaleUpperCase()}</span><div><strong>{displayName}</strong>{version.presentation?.identity_name&&version.presentation.identity_name!==version.presentation.display_name&&<p>{issuer[locale]}: {version.presentation.identity_name}</p>}</div></div><span className={`service-bill-state ${version.status==="void"?"is-void":""}`}>{draft?t.draft:version.status==="void"?t.void:current?t.current:t.previous}</span></header>
   <h2 className="service-bill-title">{t.title}</h2>
+  {version.presentation?.service_name&&<p>{version.presentation.service_name}{version.presentation.package_name?` — ${version.presentation.package_name}`:""}</p>}
   <dl className="service-bill-meta"><div><dt>{t.ref}</dt><dd>{version.bill_ref}</dd></div><div><dt>{t.version}</dt><dd>{version.revision}</dd></div>{version.issue_date&&<div><dt>{t.date}</dt><dd>{version.issue_date}</dd></div>}{version.due_date&&<div><dt>{t.due}</dt><dd>{version.due_date}</dd></div>}</dl>
   <div className="service-bill-lines"><table><thead><tr><th scope="col">{t.item}</th><th scope="col">{t.amount}</th></tr></thead><tbody>{version.lines.map((line,index)=><tr key={line.ordinal??index}><td>{line.label==="Agreed service"?agreed[locale]:line.label}</td><td>{line.amount} {version.currency}</td></tr>)}</tbody><tfoot><tr><th scope="row">{t.total}</th><td>{version.total??"—"} <span>{version.currency}</span></td></tr></tfoot></table></div>
   {!draft&&<p className="service-bill-note">{version.status==="void"?voidNote[locale]:t.note}</p>}

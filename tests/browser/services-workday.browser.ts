@@ -3,7 +3,6 @@ import QRCode from "qrcode";
 import {servicesProviderOffering} from "./fixtures/services-provider";
 import {workdayCopy} from "../../app/lib/services-workday-copy";
 import {providerCopy} from "../../app/lib/services-provider-copy";
-import {scheduleCopy} from "../../app/lib/services-calendar-copy";
 for(const [locale,width] of [["en",1440],["en",390],["fr",390],["ln",820],["sw",320]] as const)test(`Workday mobile tools and direct sharing ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:950});
  const row={...servicesProviderOffering,name:"Studio Kin",service_name:"Studio Kin · Haircut",category:"beauty_wellness"};
@@ -30,11 +29,12 @@ for(const [locale,width] of [["en",1440],["en",390],["fr",390],["ln",820],["sw",
  if(width<=760){await expect(nav.getByRole("button",{name:navCopy.services,exact:true})).toBeHidden();await nav.locator(".svc-mobile-more").click();}
  await nav.getByRole("button",{name:navCopy.services,exact:true}).click();
  await expect(page.locator(".svc-service-editor h2")).toHaveText(row.service_name);
- await page.locator(".svc-view-heading").getByRole("button",{name:new RegExp(t.share)}).click();
+ if(width<=760)await nav.locator(".svc-mobile-more").click();
+ await nav.getByRole("button",{name:navCopy.share,exact:true}).click();
  await expect(page.locator(".svc-sharing img")).toBeVisible();
  await expect(page.locator(".svc-sharing input")).toHaveValue(url);
  await expect(page.getByRole("link",{name:t.whatsapp})).toHaveAttribute("href",`https://wa.me/?text=${encodeURIComponent(url)}`);
- await expect(page.locator(".svc-planner-tabs").getByRole("button",{name:scheduleCopy[locale].share,exact:true})).toHaveAttribute("aria-pressed","true");
+ await expect(page.locator(".svc-planner-tabs")).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`docs/evidence/shared-workspaces/services-share-${locale}-${width}.png`,fullPage:true});
 });

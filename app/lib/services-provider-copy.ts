@@ -1,9 +1,10 @@
 import {opportunityWords} from "./services-opportunity-copy";
 import {scheduleCopy} from "./services-calendar-copy";
 export type ProviderLocale = "en" | "fr" | "ln" | "sw";
-export type ProviderView = "overview" | "available" | "proposals" | "calendar" | "services" | "work" | "finance" | "reports" | "templates" | "settings";
+export type ProviderView = "overview" | "available" | "proposals" | "calendar" | "services" | "work" | "finance" | "reports" | "templates" | "settings" | "share" | "counter";
 export const providerCopy = {
  en: {
+  share:"Share & QR code",shareIntro:"Share your service link or download its QR code.",counter:"Counter",counterIntro:"Record walk-in services and print receipts.",
   available:opportunityWords("en").available, proposals:opportunityWords("en").mine, availableIntro:opportunityWords("en").matching, proposalsIntro:opportunityWords("en").mineIntro,
   calendar:scheduleCopy.en.calendar,calendarIntro:scheduleCopy.en.calendarIntro,
   preview:"View public service", title: "My Services", area: "Provider area", intro: "Your skills. Your customers. Your working day, in one place.", personal: "Your services, your working day.",
@@ -14,6 +15,7 @@ export const providerCopy = {
   tools: "More tools", toolsHint: "Everything you need to manage your services.", serviceHint: "Services, packages, prices and reviews", financeHint: "Receipts, expenses and totals", reportHint: "Activity, money records and CSV exports", templateHint: "Reusable quotes and bill drafts", settingsHint: "Your presentation on new bills", setup: "Your service activity", browse: "Explore services", refresh: "Refresh", loading: "Loading your workspace…", retry: "Try again", loadFailed: "Your workspace could not be loaded. Try again.", leave: "Leave this section? Unsaved changes will be lost.", saved: "Saved.", uncertain: "The save could not be confirmed. Retry the same save before changing the form.", reviewEmpty: "No customer reviews yet.", history: "Withdrawn from discovery", allServices: "All your services", newService: "New service", packageNew: "New package", language: "Language", account: "Account", signOut: "Sign out", changeAccount: "Change account", signedOut: "You are signed out.", signIn: "Sign in", offline: "Connection unavailable. Your workspace is paused until it reconnects."
  },
  fr: {
+  share:"Partager et code QR",shareIntro:"Partagez votre lien ou téléchargez son code QR.",counter:"Comptoir",counterIntro:"Enregistrez les prestations sans rendez-vous et imprimez les reçus.",
   available:opportunityWords("fr").available, proposals:opportunityWords("fr").mine, availableIntro:opportunityWords("fr").matching, proposalsIntro:opportunityWords("fr").mineIntro,
   calendar:scheduleCopy.fr.calendar,calendarIntro:scheduleCopy.fr.calendarIntro,
   preview:"Voir le service public", title: "Mes services", area: "Espace prestataire", intro: "Votre savoir-faire. Vos clients. Votre activité, au même endroit.", personal: "Vos services, votre journée de travail.",
@@ -24,6 +26,7 @@ export const providerCopy = {
   tools: "Autres outils", toolsHint: "Les outils pour gérer votre activité au quotidien.", serviceHint: "Services, forfaits, tarifs et avis", financeHint: "Recettes, dépenses et totaux", reportHint: "Activité, écritures et exports CSV", templateHint: "Modèles de devis et de factures", settingsHint: "Votre présentation sur les nouvelles factures", setup: "Votre activité de services", browse: "Explorer les services", refresh: "Actualiser", loading: "Chargement de votre espace…", retry: "Réessayer", loadFailed: "Votre espace n’a pas pu être chargé. Réessayez.", leave: "Quitter cette rubrique ? Les modifications non enregistrées seront perdues.", saved: "Enregistré.", uncertain: "L’enregistrement n’a pas pu être confirmé. Réessayez le même enregistrement avant de modifier le formulaire.", reviewEmpty: "Aucun avis client pour le moment.", history: "Retiré de la recherche", allServices: "Tous vos services", newService: "Nouveau service", packageNew: "Nouveau forfait", language: "Langue", account: "Compte", signOut: "Se déconnecter", changeAccount: "Changer de compte", signedOut: "Vous êtes déconnecté.", signIn: "Se connecter", offline: "Connexion indisponible. Votre espace est en pause jusqu’au rétablissement de la connexion."
  },
  ln: {
+  share:"Kabola mpe code QR",shareIntro:"Kabola lien ya mosala to zwa code QR.",counter:"Comptoir",counterIntro:"Koma misala ya bakiliya oyo bayei mpe bimisa reçu.",
   available:opportunityWords("ln").available, proposals:opportunityWords("ln").mine, availableIntro:opportunityWords("ln").matching, proposalsIntro:opportunityWords("ln").mineIntro,
   calendar:scheduleCopy.ln.calendar,calendarIntro:scheduleCopy.ln.calendarIntro,
   preview:"Tala mosala ebimi", title: "Misala na ngai", area: "Esika ya mopesi mosala", intro: "Makoki na yo. Bakiliya na yo. Misala na yo na esika moko.", personal: "Compte moko ya moto, misala na yo moko.",
@@ -34,6 +37,7 @@ export const providerCopy = {
   tools: "Bisaleli mosusu", toolsHint: "Bisaleli mpo na kotambwisa misala na yo.", serviceHint: "Misala, ba forfait, ntalo mpe makanisi", financeHint: "Mbongo ezwami, depanse mpe motango", reportHint: "Misala, mbongo mpe CSV", templateHint: "Ba modèle ya devis mpe facture", settingsHint: "Lolenge na yo na ba factures ya sika", setup: "Misala na yo", browse: "Tala misala", refresh: "Zongisa", loading: "Esika na yo ezali kofungwama…", retry: "Meka lisusu", loadFailed: "Esika na yo efungwami te. Meka lisusu.", leave: "Kobima awa? Makambo oyo ebombami te ekobunga.", saved: "Ebombami.", uncertain: "Kobomba endimami naino te. Meka kobomba yango kaka liboso ya kobongola formulaire.", reviewEmpty: "Makanisi ya bakiliya ezali naino te.", history: "Elongwe na boluki", allServices: "Misala na yo nyonso", newService: "Mosala ya sika", packageNew: "Forfait ya sika", language: "Monoko", account: "Compte", signOut: "Bima", changeAccount: "Bongola compte", signedOut: "Obimi.", signIn: "Kota", offline: "Connexion ezali te. Esika na yo etelemi kino connexion ekozonga."
  },
  sw: {
+  share:"Shiriki na QR",shareIntro:"Shiriki kiungo cha huduma au pakua QR.",counter:"Kaunta",counterIntro:"Rekodi huduma za wateja wanaofika na uchapishe risiti.",
   available:opportunityWords("sw").available, proposals:opportunityWords("sw").mine, availableIntro:opportunityWords("sw").matching, proposalsIntro:opportunityWords("sw").mineIntro,
   calendar:scheduleCopy.sw.calendar,calendarIntro:scheduleCopy.sw.calendarIntro,
   preview:"Tazama huduma ya umma", title: "Huduma zangu", area: "Eneo la mtoa huduma", intro: "Ujuzi wako. Wateja wako. Shughuli zako mahali pamoja.", personal: "Huduma zako, siku yako ya kazi.",

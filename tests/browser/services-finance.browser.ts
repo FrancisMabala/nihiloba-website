@@ -9,6 +9,7 @@ test('Personal provider records and corrects a partial receipt after offering wi
   if(path.endsWith('/employment/session/'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Solo'}}});
   if(path.endsWith('/services/capabilities'))return route.fulfill({json:{bundle:'personal_pro',access_policy:'pilot',purchase_required:false,capabilities:['profile','reservations','messages','manual_journal','basic_totals']}});
   if(path==='/api/shida/personal/services')return route.fulfill({json:{profiles:[offering]}});
+  if(path.endsWith('/transactions/finance/counter'))return route.fulfill({json:{sales:[],next_offset:null}});
   if(path.endsWith('/reviews'))return route.fulfill({json:{reviews:[]}});
   if(path.endsWith('/transactions/finance/entries')){
    if(request.method()==='GET')return route.fulfill({json:{entries:rows,next_offset:null}});
@@ -43,6 +44,9 @@ test('Personal provider records and corrects a partial receipt after offering wi
  expect(writes).toHaveLength(1);
  await journal.getByRole('button',{name:'Confirm correction'}).click();
  await expect(journal.getByText(/Cancelled record/)).toBeVisible();
+ await journal.getByRole('button',{name:'Expenses',exact:true}).click();
+ await expect(journal.getByRole('heading',{name:'Expenses',exact:true})).toBeVisible();
+ await expect(journal.getByRole('button',{name:'Correct',exact:true})).toHaveCount(0);
  expect(writes).toHaveLength(2);
  expect(writes[0]).toMatchObject({reservation_ref:'RSV_one',amount:'12.25',currency:'CDF'});
  expect(writes[1]).toMatchObject({expected_revision:0,replacement:{amount:'10.25'}});

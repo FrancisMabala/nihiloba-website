@@ -15,6 +15,8 @@ export function transactionPath(parts: string[], method: string): string | null 
     return null;
   }
   if (parts[1] === 'finance') {
+    if(parts[2]==='counter'&&parts.length===3&&['GET','POST'].includes(method))return 'services/finance/counter';
+    if(parts[2]==='counter'&&parts.length===5&&/^SCS_[A-Za-z0-9_-]+$/.test(parts[3])&&parts[4]==='payments'&&method==='POST')return `services/finance/counter/${parts[3]}/payments`;
     if (parts.length === 3 && parts[2] === 'totals' && method === 'GET') return 'services/finance/totals';
     if (parts.length === 5 && parts[2] === 'reservations' && /^RSV_[A-Za-z0-9_-]+$/.test(parts[3]) && parts[4] === 'totals' && method === 'GET') return `services/finance/reservations/${parts[3]}/totals`;
     if (parts.length === 3 && parts[2] === 'entries' && ['GET','POST'].includes(method)) return 'services/finance/entries';
@@ -74,6 +76,7 @@ export function transactionQuery(parts:string[], query:URLSearchParams, method:s
     return [...query].length===keys.length&&keys.every(key=>query.getAll(key).length===1&&(
       key==='as_of'?/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(query.get(key)??''):/^\d{4}-\d{2}-\d{2}$/.test(query.get(key)??'')));
   }
+  if(parts[1]==='finance'&&parts[2]==='counter'&&parts.length===3&&method==='GET')return [...query].every(([key,value])=>key==='offset'&&query.getAll(key).length===1&&/^\d{1,6}$/.test(value));
   if(parts[1]==='finance'&&parts[2]==='entries'&&parts.length===3&&method==='GET')
     return [...query].every(([key,value])=>query.getAll(key).length===1&&(key==='offset'?/^\d{1,6}$/.test(value):key==='reservation_ref'&&/^RSV_[A-Za-z0-9_-]+$/.test(value)));
   return [...query].every(([key,value]) => method === 'GET' && key === 'offset' && query.getAll(key).length === 1
