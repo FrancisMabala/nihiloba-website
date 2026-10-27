@@ -6,6 +6,10 @@ describe('Wenze financial presentation',()=>{
   expect(formatWenzeFact('2026-10-23','occurred_on','fr')).not.toContain('2026-10-23');
   expect(formatWenzeFact('invalid','completed_at','en')).toBe('—');
  });
+ it('uses shop time without UTC jargon when a local zone is selected',()=>{
+  const value=formatWenzeFact('2026-10-26T23:15:00Z','created_at','en','Africa/Kinshasa');
+  expect(value).not.toContain('UTC');expect(value).toContain('27');
+ });
  it('formats amounts without adding a currency or treating missing cost as zero',()=>{
   expect(formatWenzeFact('12345.50','amount','en')).toBe('12,345.5');
   expect(formatWenzeFact(null,'gross_profit','en')).toBe('—');

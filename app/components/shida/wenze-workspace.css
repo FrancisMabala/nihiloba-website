@@ -4,3 +4,7 @@
 
 .wz-priority-work{border:1px solid #ded7c2;border-radius:12px;padding:18px;background:#f5f0e4;margin:18px 0}.wz-priority-work h3{margin-top:0}.wz-priority-work .wz-attention{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.wz-community-details{margin:16px 0}.wz-community-details>summary{cursor:pointer;min-height:44px;padding:12px 0}.wz-today-columns{grid-template-columns:1fr}.wz-order-cards small{white-space:normal;overflow-wrap:anywhere}
 @media(max-width:850px){.wz-priority-work .wz-attention{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:380px){.wz-priority-work .wz-attention{grid-template-columns:1fr}}
+.wz-store-selector select{max-width:260px;background:#fffefa;color:#203e34;border:1px solid #dce2d4;border-radius:10px;padding:14px;font-weight:600}
+.wz-purchase-cost{grid-column:1/-1;border:1px solid #dce2d4;border-radius:12px;padding:18px;background:#f0f3e9}
+.wz-purchase-cost output{display:block;border-top:1px solid #dce2d4;margin-top:12px;padding-top:12px}
+@media(max-width:760px){.wz-store-selector,.wz-store-selector select{max-width:100%;width:100%}}
