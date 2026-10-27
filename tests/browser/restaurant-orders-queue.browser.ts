@@ -63,6 +63,10 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/');
  await managementNavigation(page,labels[locale]);
  await expect(page.locator('.rst-order-section')).toHaveCount(4);
+ await expect(page.locator('.rst-order-heading button')).toHaveCount(0);
+ await expect(page.locator('.rst-management-content > .seller-heading')).toHaveCount(0);
+ await expect(page.locator('.rst-focus-toolbar strong')).toHaveCount(1);
+ if(width>600) await expect(page.locator('.rst-order-columns').first()).toBeVisible();
  await expect(page.locator('.rst-compact-order')).toHaveCount(7);
  await expect(page.locator('.rst-compact-order').first()).toContainText('ORD_QR_7G3F9P2L');
  await expect(page.locator('.rst-compact-order').filter({hasText:'ORD_WEB_CANCEL_4V8H'})).toContainText('6000.00');

@@ -28,3 +28,10 @@
 .rst-intake .rst-row label { flex: 1 1 130px; min-width: 0; }
 .rst-intake input, .rst-intake select { max-width: 100%; min-width: 0; }
 @media(max-width: 480px) { .rst-intake dl > div { flex-wrap: wrap; } .rst-intake .rst-row label:first-child { flex-basis: 100%; } }
+
+.rst-intake-channels { align-items:start; }
+.rst-intake-channels details { margin-bottom:1rem; }
+.rst-intake dl > div { display:grid; grid-template-columns:minmax(6rem,1fr) minmax(0,2fr); }
+.rst-intake dt { overflow-wrap:normal; }
+.rst-intake dd { overflow-wrap:break-word; }
+@media(min-width:800px) { .rst-intake-channels { grid-template-columns:repeat(2,minmax(0,1fr)); } .rst-intake-channels > section:first-child { grid-column:1 / -1; } }

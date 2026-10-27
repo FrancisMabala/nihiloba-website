@@ -2,7 +2,7 @@ import {expect,type Page} from '@playwright/test';
 export async function managementNavigation(page:Page,name:string){
  await expect(page.locator('.rst-bottom-nav')).toBeAttached();
  if(await page.locator('.rst-bottom-nav').isVisible()){
-  const direct=page.locator('.rst-bottom-nav').getByRole('button',{name:name==='Maagizo'?'Oda':name,exact:true});
+  const direct=page.locator('.rst-bottom-nav').getByRole('button',{name,exact:true});
   if(await direct.count()){await direct.click();return;}
   await page.locator('.rst-bottom-nav button').last().click();
   await page.locator('.rst-more').getByRole('button',{name,exact:true}).click();return;

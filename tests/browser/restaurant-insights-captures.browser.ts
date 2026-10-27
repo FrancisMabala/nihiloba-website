@@ -2,6 +2,7 @@ import {test,expect} from '@playwright/test';
 import {fixture} from './restaurant-c1e-fixture';
 import {managementNavigation} from './restaurant-management-navigation';
 import {workflowText} from '../../app/lib/restaurant-workflow-copy';
+import {restaurantClarityCopy} from '../../app/lib/restaurant-clarity-copy';
 import {insightsCopy} from '../../app/lib/restaurant-insights-copy';
 const measured={state:'available',value:12},unavailable={state:'unavailable',value:null};
 const keys=['profile_opens','menu_opens','item_views','item_selections','menu_requests','orders_started'];
@@ -20,7 +21,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,820,1
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`docs/evidence/restaurant-insights-2026-10-15/${process.env.INSIGHTS_CAPTURE_PHASE??'after'}-${locale}-${width}.png`,fullPage:true});
  if(process.env.INSIGHTS_CAPTURE_PHASE!=='before'){
-  await page.locator('.rst-insights details summary').click();
+  await page.locator('.rst-insights summary').filter({hasText:insightsCopy[locale].sources}).click();
   await expect(page.locator('.rst-insights-sources')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:`docs/evidence/restaurant-insights-2026-10-15/sources-${locale}-${width}.png`,fullPage:true});
@@ -33,6 +34,9 @@ for(const scenario of ['empty','low','outage'] as const)test(`insights ${scenari
  await page.route('**/RST_fixture/order-summary/**',route=>route.fulfill({json:{as_of:report.as_of,coverage_from:report.period.from,coverage_to:report.as_of,measurement_status:'available',metrics:{submitted_orders:0,completed_in_period:0,completed_food_value:{},completed_delivery_fees:{},status_breakdown:{},by_method:{},by_channel:{}}}}));
  await page.goto('/shida/seller/restaurants');await page.locator('.rst-grid .rst-card button').first().click();await managementNavigation(page,insightsCopy.en.title);
  await expect(page.getByRole('heading',{name:insightsCopy.en.orders,exact:true})).toBeVisible();
+ await expect(page.locator('.rst-insights').getByText(restaurantClarityCopy.en.noTrends,{exact:true})).toHaveCount(scenario==='outage'?0:1);
  await expect(page.locator('.rst-insights-total')).toHaveText(scenario==='empty'?'0':scenario==='low'?'8':'Unavailable');
+ await expect(page.locator('.rst-insights .rst-details').first()).not.toContainText('Unavailable');
+ await page.locator('.rst-insights > article').last().locator('summary').last().click();
  await expect(page.locator('.rst-insights').getByText('Submitted: 0 · Handed over: 0').first()).toBeVisible();
 });

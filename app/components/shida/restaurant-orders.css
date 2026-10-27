@@ -53,3 +53,12 @@
 .rst-management-content .rst-orders-screen .rst-order-layout>div:first-child { border:0; padding:0; }
 @media(max-width:820px) { .rst-order-rows { grid-template-columns:minmax(0,1fr); } }
 @media(max-width:520px) { .rst-order-row-head,.rst-order-next { align-items:start; flex-direction:column; } .rst-order-next button { width:100%; } .rst-order-row { padding:13px; } }
+
+/* Keep column labels and clickable rows aligned at desktop and tablet widths. */
+.rst-order-queue .rst-order-columns,
+.rst-order-queue .rst-compact-order { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr); gap:16px; }
+.rst-order-queue .rst-order-columns { padding:12px 16px; color:#617367; font-size:.85rem; border-bottom:1px solid #dce2d9; }
+.rst-order-queue .rst-compact-order > span:nth-child(3) { text-align:right; font-variant-numeric:tabular-nums; }
+.rst-order-queue .rst-compact-order .rst-order-state { justify-self:end; max-width:100%; }
+.rst-order-columns > span:nth-child(n+3) { text-align:right; }
+@media(max-width:600px) { .rst-order-queue .rst-order-columns { display:none; } .rst-order-queue .rst-compact-order { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; } .rst-order-queue .rst-compact-order > span:nth-child(3) { text-align:left; } }
