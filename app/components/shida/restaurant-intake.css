@@ -35,3 +35,17 @@
 .rst-intake dt { overflow-wrap:normal; }
 .rst-intake dd { overflow-wrap:break-word; }
 @media(min-width:800px) { .rst-intake-channels { grid-template-columns:repeat(2,minmax(0,1fr)); } .rst-intake-channels > section:first-child { grid-column:1 / -1; } }
+
+.rst-intake-channels > .rst-intake-editing { grid-column:1 / -1; border:2px solid #28664a; }
+.rst-intake-editor { margin-top:1rem; padding:1rem; background:#f4f8f3; border-radius:8px; }
+.rst-intake-editor h3 { scroll-margin-top:1rem; }
+.rst-intake-editor h3:focus { outline:2px solid #28664a; outline-offset:5px; }
+.rst-intake-editor fieldset { min-width:0; }
+.rst-intake-editor label { min-width:0; }
+@media(max-width:600px) {
+ .rst-intake-channels > section { padding:.75rem; }
+ .rst-intake-channels > section > button, .rst-intake-editor button { width:100%; }
+ .rst-intake-editor { padding:.65rem; }
+ .rst-intake-editor .rst-actions { display:grid; grid-template-columns:minmax(0,1fr); }
+ .rst-intake-editor .rst-row { display:grid; grid-template-columns:minmax(0,1fr); }
+}

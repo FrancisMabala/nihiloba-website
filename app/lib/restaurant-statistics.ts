@@ -8,3 +8,11 @@ export function periodDates(days:1|7|30,timezone:string,now=new Date()) {
  day.setUTCDate(day.getUTCDate()-days+1);
  return {from:iso(day),to:iso(end)};
 }
+
+// Convert inclusive dates shown to owners to/from the API exclusive end boundary.
+export function shiftCalendarDate(value:string,days:number) {
+ if(!value)return value;
+ const date=new Date(value+'T12:00:00Z');
+ date.setUTCDate(date.getUTCDate()+days);
+ return date.toISOString().slice(0,10);
+}

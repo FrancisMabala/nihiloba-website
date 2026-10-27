@@ -4,27 +4,67 @@ export const restaurantClarityCopy = {
     "intake": "Choisissez si les clients peuvent commander à retirer ou à livrer. Utilisez Modifier pour régler les horaires et activer un service.",
     "reservations": "Acceptez ou refusez les demandes de réservation et consultez les visites à venir. Vérifiez les places avant de confirmer.",
     "noTrends": "Pas encore assez de données pour afficher les tendances. Cela ne signifie pas zéro visite.",
-    "statistics": "Suivez vos commandes et découvrez les plats qui intéressent vos clients."
+    "statistics": "Suivez vos commandes et découvrez les plats qui intéressent vos clients.",
+    "understand": "Comprendre les chiffres",
+    "statuses": "État des commandes",
+    "status": "État",
+    "count": "Nombre",
+    "sources": "Origine des commandes",
+    "period": "Période",
+    "orderIntro": "Voyez combien de commandes vous recevez et remettez aux clients.",
+    "startHelp": "Activez les statistiques pour suivre vos prochaines commandes. Les anciennes commandes ne seront pas ajoutées.",
+    "start": "Commencer le suivi",
+    "notPayment": "Les montants des commandes ne sont pas l’argent reçu. Consultez Finances pour les paiements."
   },
   "en": {
     "details": "Details",
     "intake": "Choose whether customers can order for pickup or delivery. Use Edit to set service times and enable a service.",
     "reservations": "Accept or decline reservation requests and view upcoming visits. Check available seats before confirming.",
     "noTrends": "There is not enough data to show trends yet. This does not mean zero visits.",
-    "statistics": "Track your orders and see which dishes interest your customers."
+    "statistics": "Track your orders and see which dishes interest your customers.",
+    "understand": "Understand the numbers",
+    "statuses": "Order status",
+    "status": "Status",
+    "count": "Count",
+    "sources": "Order sources",
+    "period": "Period",
+    "orderIntro": "See how many orders you receive and hand over to customers.",
+    "startHelp": "Enable statistics to track new orders. Earlier orders will not be added.",
+    "start": "Start tracking",
+    "notPayment": "Order amounts are not money received. Check Finances for payments."
   },
   "ln": {
     "details": "Makambo mosusu",
     "intake": "Pona soki bakiliya bakoki kosenga bilei mpo na kozwa to kotindela bango. Finá Kobongola mpo na kotya bangonga mpe kofungola service.",
     "reservations": "Ndima to boya bosengi ya réservation mpe tala boyei oyo ezali koya. Tala bisika liboso ya kondima.",
     "noTrends": "Makambo ekoki naino te mpo na kolakisa bosepeli. Elingi koloba te ete moto moko te atali.",
-    "statistics": "Landa bakomande mpe tala bilei oyo bakiliya basepelaka na yango."
+    "statistics": "Landa bakomande mpe tala bilei oyo bakiliya basepelaka na yango.",
+    "understand": "Koyeba mitango",
+    "statuses": "Etat ya bakomande",
+    "status": "Etat",
+    "count": "Motango",
+    "sources": "Esika bakomande eutá",
+    "period": "Eleko",
+    "orderIntro": "Tala bakomande oyo oyambi mpe opesi bakiliya.",
+    "startHelp": "Fungola mitango mpo na bakomande ya sika. Ya kala ekobakisama te.",
+    "start": "Banda kolanda",
+    "notPayment": "Ntalo ya bakomande ezali mbongo ezwami te. Tala Mbongo mpo na kofuta."
   },
   "sw": {
     "details": "Maelezo",
     "intake": "Chagua kama wateja wanaweza kuagiza kuchukua au kuletewa. Tumia Badilisha kuweka saa na kuwasha huduma.",
     "reservations": "Kubali au kataa maombi ya nafasi na uone ziara zijazo. Hakikisha kuna nafasi kabla ya kukubali.",
     "noTrends": "Bado hakuna data ya kutosha kuonyesha mwenendo. Hii haimaanishi hakuna aliyetazama.",
-    "statistics": "Fuatilia maagizo na uone vyakula vinavyovutia wateja."
+    "statistics": "Fuatilia maagizo na uone vyakula vinavyovutia wateja.",
+    "understand": "Elewa takwimu",
+    "statuses": "Hali ya maagizo",
+    "status": "Hali",
+    "count": "Idadi",
+    "sources": "Chanzo cha maagizo",
+    "period": "Kipindi",
+    "orderIntro": "Ona maagizo unayopokea na kukabidhi kwa wateja.",
+    "startHelp": "Washa takwimu kufuatilia maagizo mapya. Ya zamani hayataongezwa.",
+    "start": "Anza kufuatilia",
+    "notPayment": "Thamani ya maagizo si fedha zilizopokelewa. Angalia Fedha kwa malipo."
   }
 } as const;

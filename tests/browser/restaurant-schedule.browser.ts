@@ -16,7 +16,7 @@ async function seed(page:Page){
 async function open(page:Page,locale:keyof typeof r){await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants`);await page.locator('.rst-grid .rst-card button').first().click();await managementNavigation(page,workText(locale,'intake'));}
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,820,1440])test(`weekly schedule ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000});const state=await seed(page);await open(page,locale);const root=page.locator('.rst-intake');
- await expect(root.getByRole('heading',{name:r[locale].unavailable,exact:true})).toBeVisible();await expect(root.getByText(c[locale].saved,{exact:true})).toBeVisible();
+ await expect(root.getByRole('heading',{name:r[locale].unavailable,exact:true})).toBeVisible();await root.locator('[data-service=pickup] > details > summary').click();await expect(root.getByText(c[locale].saved,{exact:true})).toBeVisible();
  await page.screenshot({path:`docs/evidence/restaurant-return-2026-10-16/regression-schedules/saved-${locale}-${width}.png`,fullPage:true});
  await root.getByRole('button',{name:r[locale].editPickup,exact:true}).click();await root.locator('.rst-intake-advanced summary').click();await root.getByLabel(c[locale].lead,{exact:true}).fill('25');await root.getByLabel(c[locale].tomorrow,{exact:true}).check();
  await expect(root.getByText(r[locale].editing,{exact:true})).toBeVisible();expect(state.writes).toHaveLength(0);
@@ -29,4 +29,16 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,820,1
 test('weekly stale review and identical uncertain retry',async({page})=>{
  const state=await seed(page);await open(page,'en');const root=page.locator('.rst-intake');await root.getByRole('button',{name:r.en.editPickup,exact:true}).click();await root.locator('.rst-intake-advanced summary').click();await root.getByLabel(c.en.lead,{exact:true}).fill('35');await root.getByRole('button',{name:r.en.reviewPickup,exact:true}).click();state.stale=true;await root.getByRole('button',{name:r.en.confirm,exact:true}).click();await root.getByRole('button',{name:r.en.refresh,exact:true}).click();await expect(root.getByLabel(c.en.lead,{exact:true})).toHaveValue('35');await expect(root.locator('.rst-intake-confirm')).toHaveCount(0);
  await root.getByRole('button',{name:r.en.reviewPickup,exact:true}).click();state.uncertain=true;await root.getByRole('button',{name:r.en.confirm,exact:true}).click();await expect(root.getByRole('button',{name:workText('en','retry'),exact:true})).toBeEnabled();const original=state.writes.at(-1);await root.getByRole('button',{name:workText('en','retry'),exact:true}).click();await expect(root.locator('form')).toHaveCount(0);expect(state.writes.at(-1)).toBe(original);
+});
+
+for(const width of [320,390,820,1440])for(const kind of ['pickup','delivery'] as const)test(`inline service editor ${kind} ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:850});await seed(page);await open(page,'fr');
+ const card=page.locator(`[data-service=${kind}]`),button=card.getByRole('button',{name:kind==='pickup'?r.fr.editPickup:r.fr.editDelivery,exact:true});
+ await button.click();await expect(button).toHaveAttribute('aria-expanded','true');
+ await expect(card.locator('form')).toBeVisible();await expect(page.locator('#restaurant-intake-editor-title')).toBeFocused();
+ const rect=await page.locator('#restaurant-intake-editor-title').boundingBox();expect(rect!.y).toBeGreaterThanOrEqual(0);expect(rect!.y).toBeLessThan(300);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.addStyleTag({content:'nextjs-portal{display:none!important}'});
+ await page.screenshot({path:`docs/evidence/restaurant-mobile-2026-10-27/${kind}-fr-${width}.png`,fullPage:true});
+ await card.getByRole('button',{name:r.fr.cancel,exact:true}).click();await expect(card.locator('form')).toHaveCount(0);await expect(button).toBeFocused();
 });

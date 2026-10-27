@@ -1,3 +1,4 @@
+import {formatMoney} from '../../app/lib/restaurant-finance-display';
 import {test,expect,type Page} from '@playwright/test';
 import {managementNavigation} from './restaurant-management-navigation';
 
@@ -78,8 +79,8 @@ for(const width of [360,820,1440])test(`seller work and finances FR ${width}`,as
  await managementNavigation(page,'Préparation');await expect(page.getByText('ORD_KITCHEN_WAIT')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-preparation-kitchen-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:/Bar/}).first().click();await expect(page.getByText('ORD_BAR_READY')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-preparation-bar-${width}.png`,fullPage:true});
  await managementNavigation(page,'Vendre');await page.locator('.rst-selling-modes').getByRole('button',{name:'Service en salle'}).click();await page.getByRole('button',{name:/RSG_VISIT/}).click();await expect(page.locator('.rst-service-round').filter({hasText:'ORD_ROUND_2'})).toBeVisible();await expect(page.locator('.rst-money-totals')).toContainText('USD');await expect(page.getByText('PAY_USD')).toBeVisible();await page.screenshot({path:`docs/evidence/workflow-service-${width}.png`,fullPage:true});
- await managementNavigation(page,'Finances');await expect(page.locator('.rst-daily-summary')).toContainText('-300.00');await expect(page.locator('.rst-daily-summary')).toContainText('Mobile externe déclaré reçu');await expect(page.locator('.rst-daily-summary')).toContainText('2.50 USD');await page.screenshot({path:`docs/evidence/restaurant-finances-2026-10-15/after-fr-${width}.png`,fullPage:true});
- await page.getByRole('button',{name:'Voir les écritures'}).click();await expect(page.getByText('EXP_CDF')).toBeVisible();await page.getByText('Factures liées : tous les jours').click();await expect(page.locator('.rst-daily-bills')).toContainText('Valeur des commandes liées');
+ await managementNavigation(page,'Finances');await expect(page.locator('.rst-daily-summary')).toContainText('-300,00');await expect(page.locator('.rst-daily-summary')).toContainText('Reçu par mobile (déclaré)');await expect(page.locator('.rst-daily-summary')).toContainText('2,50 USD');await page.addStyleTag({content:'nextjs-portal{display:none!important}'});await page.screenshot({path:`docs/evidence/restaurant-finances-2026-10-15/after-fr-${width}.png`,fullPage:true});
+ await page.getByRole('button',{name:'Voir les opérations'}).click();await expect(page.getByText('EXP_CDF')).toBeVisible();await page.getByText('Factures liées : tous les jours').click();await expect(page.locator('.rst-daily-bills')).toContainText('Valeur des commandes liées');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 for(const width of [360,820,1440])test(`closed intake and empty states ${width}`,async({page})=>{
@@ -119,17 +120,21 @@ for(const width of [360,820,1440])test(`counter handover and canonical bill ${wi
 });
 
 const financeLabels={fr:'Finances',en:'Finances',ln:'Mbongo',sw:'Fedha'} as const;
-for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1440])test(`finance daily workspace ${locale} ${width}`,async({page})=>{
+for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,390,820,1440])test(`finance daily workspace ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900});await seed(page,true,false,true);
  await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/restaurants/');
  await managementNavigation(page,financeLabels[locale]);
  const workspace=page.locator('.rst-daily');await expect(workspace.locator('.rst-daily-summary')).toBeVisible();
  await workspace.locator('.rst-daily-date input').fill('2026-10-13');await workspace.locator('.rst-daily-date button').click();
- await expect(workspace.locator('.rst-daily-currency')).toHaveCount(2);
- await expect(workspace.locator('.rst-daily-currency').first()).toContainText('3000.00 CDF');
- await expect(workspace.locator('.rst-daily-currency').last()).toContainText('2.50 USD');
+ await expect(workspace.locator('.rst-finance-metric')).toHaveCount(4);
+ await expect(workspace.locator('[data-metric=received]')).toContainText(formatMoney('3000.00',locale));
+ await expect(workspace.locator('[data-metric=received]')).toContainText(formatMoney('2.50',locale));
+ await expect(workspace.locator('.rst-finance-table thead')).toContainText('CDF');
+ await expect(workspace.locator('.rst-finance-table thead')).toContainText('USD');
+ const controls=await workspace.locator('.rst-daily-date').evaluate(node=>{const input=node.querySelector('input')!.getBoundingClientRect(),button=node.querySelector('button')!.getBoundingClientRect(),zone=node.querySelector('span')!.getBoundingClientRect();return {inputBottom:input.bottom,buttonTop:button.top,buttonBottom:button.bottom,zoneTop:zone.top};});
+ if(width<600){expect(controls.buttonTop).toBeGreaterThanOrEqual(controls.inputBottom);expect(controls.zoneTop).toBeGreaterThanOrEqual(controls.buttonBottom);}
  await expect(workspace.locator('.rst-daily-actions button')).toHaveCount(5);
- await page.screenshot({path:`docs/evidence/restaurant-finances-2026-10-15/after-${locale}-${width}.png`,fullPage:true});
+ await page.addStyleTag({content:'nextjs-portal{display:none!important}'});await page.screenshot({path:`docs/evidence/restaurant-finances-2026-10-15/after-${locale}-${width}.png`,fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 test('missing opening stays incomplete after local midnight',async({page})=>{
@@ -137,7 +142,7 @@ test('missing opening stays incomplete after local midnight',async({page})=>{
  await page.setViewportSize({width:360,height:900});await seed(page,true,false,true,missing);await page.goto('/fr/shida/seller/restaurants/');
  await managementNavigation(page,'Finances');const workspace=page.locator('.rst-daily');
  await expect(workspace.locator('.rst-daily-summary')).toContainText('Jour incomplet');
- await expect(workspace.locator('.rst-daily-summary').getByText('Non attesté').first()).toBeVisible();
+ await expect(workspace.locator('.rst-daily-summary').getByText('Non renseigné').first()).toBeVisible();
  await workspace.getByRole('button',{name:'Voir ou clôturer un jour'}).click();
  await expect(workspace.getByRole('button',{name:'Clôturer le jour'})).toBeDisabled();
  await expect(workspace.getByRole('button',{name:'Enregistrer'}).first()).toBeDisabled();
@@ -147,7 +152,7 @@ test('partial collection and refund obligations stay separate from daily receipt
  const partial={...day,cash:{...day.cash,CDF:{...day.cash.CDF,cash_receipts_net:'1500.00',expected:'11300.00',discrepancy:'1200.00'}},outstanding:{CDF:{balance_due:'1500.00',refund_owed:'0.00'},USD:{balance_due:'0.00',refund_owed:'0.50'}}};
  await page.setViewportSize({width:820,height:900});await seed(page,true,false,true,partial);await page.goto('/en/shida/seller/restaurants/');
  await managementNavigation(page,'Finances');const summary=page.locator('.rst-daily-summary');
- await expect(summary).toContainText('1500.00 CDF');await expect(summary).toContainText('0.50 USD');
+ await expect(summary).toContainText(formatMoney('1500.00','en'));await expect(summary).toContainText('0.50 USD');
  await expect(summary).toContainText('2.50 USD');await expect(summary).toContainText('Linked bills: all dates');
  await page.locator('.rst-daily').getByRole('button',{name:'Find a bill by exact reference'}).click();
  await expect(page.locator('.rst-money')).toBeVisible();
@@ -198,7 +203,7 @@ test('finance loading error and empty entries are explicit',async({page})=>{
 for(const [name,food_business_type] of [['Restaurant du Port','restaurant'],['Snack Express','fast_food'],['Café Quartier','cafe']] as const)test(`finance workspace ${food_business_type}`,async({page})=>{
  await page.setViewportSize({width:820,height:900});await seed(page,true,false,true,{}, {name,food_business_type});await page.goto('/en/shida/seller/restaurants/');
  await managementNavigation(page,'Finances');await expect(page.getByRole('heading',{name})).toBeVisible();
- await expect(page.locator('.rst-daily-currency')).toHaveCount(2);
+ await expect(page.locator('.rst-finance-metric')).toHaveCount(4);
 });
 
 const sellingLabels={fr:'Vendre',en:'Selling',ln:'Koteka',sw:'Kuuza'} as const;
@@ -222,5 +227,15 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,820,1
  await expect(page.locator('.rst-selling-actions .button-primary')).toBeDisabled();
  await page.evaluate(()=>{(document.activeElement as HTMLElement|null)?.blur();window.scrollTo(0,0);});
  await page.screenshot({path:`docs/evidence/restaurant-selling-2026-10-14/basket-${locale}-${width}.png`,fullPage:width!==360});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('received summary adds corrected receipts within each currency only',async({page})=>{
+ const mixed={...day,methods:[...day.methods,{method_ref:'MOBILE_CDF',label:'Mobile CDF',kind:'external_mobile_money',currency:'CDF',recorded_net:'12.50',actual_refunds:'0.00',corrections:'2.25',paid_expenses:'0.00',actual_expense_recoveries:'0.00',provider_verified:false}]};
+ await page.setViewportSize({width:320,height:850});await seed(page,true,false,true,mixed);await page.goto('/fr/shida/seller/restaurants/');await managementNavigation(page,'Finances');
+ const received=page.locator('.rst-finance-metric[data-metric=received]');
+ await expect(received).toContainText(formatMoney('3010.25','fr'));await expect(received).toContainText('2,50 USD');
+ await expect(page.locator('.rst-finance-metric[data-metric=expenses]')).toContainText('200,00 CDF');
+ await expect(page.locator('.rst-finance-metric[data-metric=due]')).toContainText('0,00 CDF');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
