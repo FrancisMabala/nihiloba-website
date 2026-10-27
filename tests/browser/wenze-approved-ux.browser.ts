@@ -1,3 +1,4 @@
+import {inventoryText} from '../../app/lib/wenze-inventory';
 import {checkoutText} from '../../app/lib/wenze-checkout-copy';
 import editorCopy from '../../app/lib/wenze-editor-copy.json' with {type:'json'};
 import {test,expect} from '@playwright/test';
@@ -22,15 +23,15 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
   if(path.endsWith('/contexts'))return reply({contexts:[{type:'organization',public_ref:'BUS_fixture',name:'Marché du Fleuve',role:'owner',restricted:false,onboarding_status:'complete',operational_state:'operational'}]});
   if(path.endsWith('/stores'))return reply({stores:[shop],categories:[{code:'other',labels:{en:'Other products',fr:'Autres produits',ln:'Biloko mosusu',sw:'Bidhaa nyingine'}}],currencies:['CDF','USD']});
   if(path.endsWith('/WNZ_fixture'))return reply(shop);
-  if(path.endsWith('/products'))return reply({products:[product],total:1});
+  if(path.endsWith('/products'))return reply(new URL(req.url()).searchParams.get('search')==='missing'?{products:[],total:0}:{products:[product],total:1});
   if(path.endsWith('/WNP_fixture'))return reply(product);
   if(path.endsWith('/plan'))return reply({plan:'pro',source:'personal_pilot',active_products:1,active_product_limit:1000});
   if(path.endsWith('/today'))return reply({date:'2026-10-21',timezone:'Africa/Kinshasa',followers:24,new_followers:2,orders_today:4,reviews:{count:8,average:4.8},financial_access:true,currency_summaries:[{currency:'CDF',revenue:'45000',quantity:3,known_profit:'15000',profit_complete:true,expenses:'2000'}],sold_items:[{product_ref:product.public_ref,variant_ref:null,label:product.name,currency:'CDF',quantity:3,revenue:'45000',image_url:null}]});
   if(path.endsWith('/catalog-imports/options'))return reply({stores:[shop],categories:[],currencies:['CDF','USD'],issues:{}});
   if(path.endsWith('/orders'))return reply({orders:[],counts:{action_required:2,in_progress:3},stores:[shop],total:0});
   if(path.endsWith('/inventory/summary'))return reply({low_stock_items:1,untracked_items:0});
-  if(path.endsWith('/inventory/stock'))return reply({items:[stock]});
-  if(path.includes('/by-code/'))return reply({detail:'not found'},404);
+  if(path.endsWith('/inventory/stock'))return reply(new URL(req.url()).searchParams.has('cursor')?{items:[{...stock,item_ref:'INV_second',catalog_ref:'WNV_second',catalog_parent_ref:product.public_ref,catalog_label:'Marmite familiale - Grande',on_hand:4,reserved:2,available:2}]}:{items:[stock],next_cursor:'second'});
+  if(path.includes('/by-code/'))return path.endsWith('/INV-FOUND')?reply(stock):reply({detail:'not found'},404);
   if(path.endsWith('/movements'))return reply({movements:[]});
   if(path.endsWith('/reservations'))return reply({reservations:[]});
   if(path.endsWith('/pos/catalog'))return reply({items:[{...product,product_ref:product.public_ref,variant_ref:null,barcode:product.public_ref,variant:null,available:7,image_url:null}],total:1});
@@ -45,7 +46,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
  const url=business?'/wenze?context=BUS_fixture&store=WNZ_fixture':`${locale==='en'?'':'/'+locale}/shida/seller/wenze/?store=WNZ_fixture`;
  await page.setViewportSize({width:1440,height:1000});await page.goto(url);
  await expect(page.getByText('24',{exact:true})).toBeVisible();
- const evidence=`docs/evidence/wenze-mobile-chrome/regression-${locale}`;
+ const evidence=`test-results/wenze-inventory/regression-${locale}`;
  await expect(page.locator('.wz-mobile-navigation')).toBeHidden();
  await expect(page.locator('.seller-navigation button').nth(1)).toHaveCSS('color','rgb(64, 85, 71)');
  if(locale==='en')await page.screenshot({path:`${evidence}-today-desktop.png`,fullPage:true});
@@ -55,7 +56,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
  await page.screenshot({path:`${evidence}-today-mobile.png`,fullPage:true});
  const nav=page.locator('.wz-mobile-navigation');
  await nav.getByRole('button',{name:u('productsStock'),exact:true}).click();
- await page.getByRole('button',{name:w.manage,exact:true}).click();
+ await page.getByLabel(w.search,{exact:true}).fill('missing');await page.getByLabel(w.search,{exact:true}).press('Enter');await expect(page.getByText(p('noProducts'),{exact:true})).toBeVisible();await page.getByLabel(w.search,{exact:true}).fill('');await page.getByLabel(w.search,{exact:true}).press('Enter');await page.getByRole('button',{name:w.manage,exact:true}).click();await page.getByRole('button',{name:p('labels'),exact:true}).click();await expect(page.locator('.wz-pos-product')).toHaveCount(1);await page.getByRole('button',{name:u('details'),exact:true}).click();
  await expect(page.getByRole('button',{name:editorCopy[locale].stock,exact:true}).last()).toBeVisible();
  await page.getByRole('button',{name:u('details'),exact:true}).click();
  const name=page.getByLabel(w.name,{exact:true});await expect(name).toHaveValue(product.name);
@@ -63,10 +64,10 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`approved seller UX ${lo
  const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:u('keep')}).click();await expect(name).toHaveValue('Changed draft');
  await nav.getByRole('button',{name:t('orders'),exact:true}).click();await dialog.getByRole('button',{name:u('discard')}).click();await expect(page.getByRole('heading',{level:1})).toHaveText(t('orders'));
  await nav.getByRole('button',{name:u('productsStock'),exact:true}).click();await page.getByRole('button',{name:t('inventory'),exact:true}).click();
- await page.getByRole('button',{name:/Marmite familiale/}).click();await page.getByLabel(u('searchCode')).fill('abc123');await page.getByLabel(u('searchCode')).press('Enter');
- await expect(page.getByText(u('notFound'))).toBeVisible();await expect(page.getByRole('button',{name:/Marmite familiale/})).toBeVisible();
- await page.screenshot({path:`${evidence}-inventory-mobile.png`,fullPage:true});
- await page.getByRole('button',{name:u('movements'),exact:true}).click();await expect(page.getByRole('button',{name:u('movements'),exact:true})).toHaveAttribute('aria-current','page');
+ await expect(page.locator('.wz-inventory-table tbody tr')).toHaveCount(1);await expect(page.locator('.wz-inventory-table tbody tr')).toContainText('11');await page.locator('.wz-inventory-table button').last().click();await page.getByLabel(u('searchCode')).fill('abc123');await page.getByLabel(u('searchCode')).press('Enter');
+ await expect(page.getByText(inventoryText(locale).empty)).toBeVisible();await expect(page.locator('.wz-inventory-table').getByText('Marmite familiale',{exact:true})).toBeVisible();
+ await page.getByLabel(u('searchCode')).fill('found');await page.getByLabel(u('searchCode')).press('Enter');await expect(page.locator('.wz-code-result')).toContainText(inventoryText(locale).found);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`${evidence}-inventory-mobile.png`,fullPage:true});if(locale==='fr'){await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:`${evidence}-inventory-desktop.png`,fullPage:true});await page.setViewportSize({width:390,height:844});}
+ await page.locator('.wz-stock-toolbar summary').click();await page.getByRole('button',{name:u('movements'),exact:true}).click();await expect(page.getByRole('button',{name:u('movements'),exact:true})).toHaveAttribute('aria-current','page');
  await nav.getByRole('button',{name:checkoutText(locale,'counter'),exact:true}).click();
  await page.locator('.wz-pos-product-button').click();
  await page.screenshot({path:`${evidence}-basket-mobile.png`,fullPage:true});
