@@ -31,7 +31,7 @@ export function ShidaPage({ locale }: { locale: DiscoveryLocale }) {
     </section>
     <section className="discovery-entries" aria-label="SHIDA École & Business">
       <article id="school"><DiscoveryIllustration kind="school"/><div><h2>{t.school}</h2><p>{t.schoolBody}</p><Link href={discoveryPath(locale, "/shida/ecole")}>{t.schoolAction}<ArrowRightIcon/></Link></div></article>
-      <article id="business"><DiscoveryIllustration kind="business"/><div><h2>{t.business}</h2><p>{t.businessBody}</p><a href="https://business.nihiloba.com">{t.businessAction}<ArrowRightIcon/></a></div></article>
+      <article id="business"><DiscoveryIllustration kind="business"/><div><h2>{t.business}</h2><p>{t.businessBody}</p><a href={`https://business.nihiloba.com/?lang=${locale}`}>{t.businessAction}<ArrowRightIcon/></a></div></article>
     </section>
     <div className="discovery-account-note"><a href={process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" ? `${locale === "en" ? "" : `/${locale}`}/shida/register/` : OFFICIAL_CHANNELS.whatsapp}>{process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" ? registrationCopy[locale].title : t.join}<ArrowRightIcon/></a></div>
     <p className="discovery-story-link"><Link href={locale === "en" ? "/about/shida" : "/fr/about/shida"}>{t.story}<ArrowRightIcon/></Link></p>

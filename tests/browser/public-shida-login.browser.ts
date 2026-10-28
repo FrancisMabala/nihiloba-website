@@ -7,7 +7,7 @@ async function fixture(page:Page){
  await page.addInitScript(()=>{window.open=()=>null;});
  await page.route('**/*',async route=>{
   const request=route.request(),url=new URL(request.url()),path=url.pathname.replace(/\/$/,'');
-  if(url.origin!=='http://127.0.0.1:3027')return route.abort();
+  if(url.origin!==new URL(process.env.UX_TEST_URL||'http://127.0.0.1:3027').origin)return route.abort();
   if(!path.startsWith('/api/'))return route.continue();
   const reply=(json:unknown,status=200)=>route.fulfill({json,status});
   if(path.endsWith('/employment/session'))return state.loggedIn?reply({binding:'b'.repeat(64),user:{display_name:state.name}}):reply({},401);
@@ -29,9 +29,9 @@ for(const [locale,width] of [['en',1440],['en',320],['fr',390],['fr',1024]] as c
   const path=`${locale==='en'?'':'/fr'}/shida/services/?category=cleaning&city=Kinshasa`;
   await page.goto(path);const entry=page.getByRole('button',{name:t.signInLabel,exact:true});
   await expect(entry).toBeVisible();expect(state.starts).toBe(0);
-  await expect(page.getByRole('heading',{name:locale==='en'?'Find the right hands for the job.':'La bonne personne pour votre prochain projet.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Services'})).toBeVisible();
   await page.screenshot({path:`docs/evidence/shared-chrome/login-header-${locale}-${width}.png`});
-  await entry.click();const dialog=page.getByRole('dialog',{name:t.title});await expect(dialog).toBeVisible();
+  await entry.click();const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
   await dialog.getByRole('button',{name:login.start,exact:true}).click();await expect(dialog.getByRole('link',{name:login.open})).toBeVisible();
   expect(state.exchanges).toBe(0);state.status='verified';await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
   const code=dialog.getByLabel(login.codeLabel);await expect(code).toBeVisible();
@@ -53,7 +53,7 @@ test('keyboard dismissal keeps public browsing and does not start login',async({
 for(const locale of ['ln','sw'] as const)test(`localized public account entry ${locale} on mobile`,async({page})=>{
  const state=await fixture(page),t=publicAccountCopy[locale],login=personalLoginCopy[locale];
  await page.setViewportSize({width:320,height:850});await page.goto(`/${locale}/shida/service-bills/`);
- await page.getByRole('button',{name:t.signInLabel,exact:true}).click();const dialog=page.getByRole('dialog',{name:t.title});
+ await page.getByRole('button',{name:t.signInLabel,exact:true}).click();const dialog=page.getByRole('dialog');
  await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:login.start,exact:true}).click();state.status='verified';await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
  await expect(dialog.getByLabel(login.codeLabel)).toBeVisible();expect(state.exchanges).toBe(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

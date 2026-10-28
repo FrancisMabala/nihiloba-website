@@ -64,6 +64,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,820,1
  for(const kind of ['quick','detailed'] as const){
   await page.getByRole('button',{name:e[kind],exact:true}).click();
   const form=page.locator('.wz-editor');
+  await expect(form.locator('h2').first()).toBeFocused();await expect(form.locator('h2').first()).toBeInViewport();
   await form.getByLabel(w.name,{exact:true}).fill('New product');
   await form.getByLabel(w.price,{exact:true}).fill('12000');
   if(kind==='quick')await expect(page.getByRole('combobox',{name:e.choiceType,exact:true})).toHaveCount(0);

@@ -1,3 +1,5 @@
+import {apartmentSearchQuery} from "../../services/shida/public-client";
+import {ActiveSearchFilters} from "./active-search-filters";
 import Link from "next/link";
 import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 import type {
@@ -52,7 +54,7 @@ export function ApartmentFilters({ locale, search, propertyTypes }: {
 
       </div>
     </details>
-    {hasApartmentSearch(search)&&<Link className="mp-search-reset" href={action}>{t.resetFilters}</Link>}
+    <ActiveSearchFilters locale={locale} path={action} query={apartmentSearchQuery(search)} labels={{query:t.searchLabel,city:t.city,area:t.area,property_type:t.propertyType,bedrooms:t.bedrooms,min_price:t.minimumPrice,max_price:t.maximumPrice}} values={{property_type:Object.fromEntries(propertyTypes.map(type=>[type,propertyTypeLabel(type,locale)??t.any]))}}/>
   </form>;
 }
 

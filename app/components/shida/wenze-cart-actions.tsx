@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Locale } from "../../lib/i18n";
+import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 import { safePublicActionUrl } from "../../lib/safe-public-url";
 import { CartClientError } from "../../services/shida/cart-browser-client";
 import { useOptionalCart } from "./cart-provider";

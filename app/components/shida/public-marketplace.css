@@ -162,3 +162,9 @@ body .marketplace-public .mp-search .mp-food-search {grid-template-columns:2fr 1
 @media(max-width:700px){body .marketplace-public .mp-search .mp-food-search>button{grid-column:1/-1;margin:.3rem 0 0}body .marketplace-public .mp-discovery-header h1{font-size:1.8rem}}
 
 body .marketplace-public .service-card[data-has-image="false"]{display:flex}body .marketplace-public .service-card[data-has-image="false"] .service-card-image{display:none}
+/* Applied criteria stay visible even when the advanced panel is closed. */
+.marketplace-public .mp-active-filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px}
+.marketplace-public .mp-active-filters a{display:inline-flex;align-items:center;gap:6px;min-height:44px;max-width:100%;padding:8px 12px;border:1px solid var(--mp-line);border-radius:8px;color:var(--mp-ink);background:var(--mp-paper);font-size:.85rem;overflow-wrap:anywhere}
+.marketplace-public .mp-active-filters .mp-clear-filters{border-color:transparent;text-decoration:underline}
+.marketplace-public .mp-search-category{max-width:420px;margin-top:12px}
+.marketplace-public .mp-search details>.button{margin-top:12px}

@@ -32,3 +32,7 @@
 @media(max-width:520px){.market-header-inner{padding:12px}.market-header-actions{gap:9px}.market-header-actions>.shida-public-account{padding-left:9px}.market-header .market-cart{padding:8px;gap:5px;min-width:48px}.market-cart-label{display:none}.market-controls{gap:8px}.market-controls .market-language{min-width:42px;padding:8px}.market-controls .market-language>span{display:none}.market-controls .market-avatar{width:40px;min-width:40px;height:40px}.market-header .market-brand{font-size:24px}.market-header .market-sign-in{max-width:92px;white-space:normal;font-size:11px}.market-primary-nav{gap:22px}}
 .market-header-actions>.market-cart{order:0;margin-left:0}
 @media(max-width:700px){body:has(.account-space) footer{padding-bottom:calc(90px + env(safe-area-inset-bottom))}}
+
+/* Keep an empty Wenze cart reachable without emphasizing it in other markets. */
+.market-header .market-cart:not([data-contextual]){border-color:transparent;background:transparent;padding-inline:8px}
+.market-cart:not([data-contextual]) .market-cart-label{display:none}

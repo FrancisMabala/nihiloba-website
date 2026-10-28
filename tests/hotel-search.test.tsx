@@ -40,5 +40,5 @@ it("retains a search and reset action when no hotels match",async()=>{
   expect(html).toContain("No hotels match your search.");
   expect(html).toContain("0 hotels shown");
   expect(html).toContain('value="missing"');
-  expect(html).toContain('class="mp-search-reset" href="/shida/hotels"');
+  expect(html).toContain('class="mp-clear-filters" href="/shida/hotels"');
 });

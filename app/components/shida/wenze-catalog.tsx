@@ -1,4 +1,5 @@
 import {WenzeSellingInvitations} from "./wenze-selling-invitations";
+import {ActiveSearchFilters} from './active-search-filters';
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
 import { MarketplaceDiscoveryHeader } from "./public-marketplace";
 import { MarketplaceSectionBreadcrumb } from "./marketplace-primitives";
@@ -31,11 +32,11 @@ export async function WenzeCatalog({locale,raw,landing=false}:{
         <label><span>{t.city}</span><input name="city" defaultValue={search.city}/></label>
         <button className="button button-primary">{t.search}</button>
       </div>
-      <details open={Boolean(search.category||search.condition||search.currency||search.variant_type||search.area)||undefined}>
+      <div className="mp-search-category">{select("category",t.category,categories)}</div>
+      <details>
         <summary>{t.filters}</summary>
         <p>{t.priceHelp}</p>
         <div className="marketplace-filter-grid">
-        {select("category",t.category,categories)}
         {select("condition",t.condition,{new:t.new,like_new:t.like_new,used:t.used,other:t.other})}
 
           {select("currency",t.currency,{CDF:"CDF",USD:"USD"})}
@@ -46,9 +47,10 @@ export async function WenzeCatalog({locale,raw,landing=false}:{
           <label><span>{t.option}</span><input name="variant_option" maxLength={80} placeholder="M, 42, 128 GB…" defaultValue={search.variant_option}/></label>
           <label><span>{t.area}</span><input name="area" defaultValue={search.area}/></label>
         </div>
+        <button className="button button-secondary" type="submit">{t.search}</button>
       </details>
-      <div className="wzp-discovery-actions"><Link href={root+(search.store?`?store=${encodeURIComponent(search.store)}`:"")}>{t.clear}</Link></div>
     </form>
+    <ActiveSearchFilters locale={locale} path={root} query={wenzeDiscoveryQuery(search)} labels={{query:t.productSearch,city:t.city,category:t.category,condition:t.condition,currency:t.currency,min_price:t.min,max_price:t.max,availability:t.availability,variant_type:t.variant,variant_option:t.option,area:t.area}} values={{category:categories,condition:{new:t.new,like_new:t.like_new,used:t.used,other:t.other},availability:{available:t.available,in_stock:t.in_stock,sold_out:t.sold_out},variant_type:{size:t.size,shoe_size:t.shoe_size,storage:t.storage,volume:t.volume,option:t.other}}}/>
     <nav className="mp-chips" aria-label={t.category}>{["","fashion_clothing","phones_electronics","home_equipment","beauty_cosmetics","food_drinks"].map(category=><Link key={category} href={`${root}?${wenzeDiscoveryQuery({...search,category:category||undefined},null)}`} aria-current={(search.category||"")===category?"page":undefined}>{category?categories[category]:(t.all)}</Link>)}</nav>
     {!data?<p role="alert">{t.failed}</p>:data.items.length?<div className="marketplace-grid wenze-product-grid">{data.items.map(p=><ProductCard key={p.public_ref} p={p} l={locale}/>)}</div>:<p>{t.empty}</p>}
     <nav className="wzp-discovery-actions" aria-label={t.products}>

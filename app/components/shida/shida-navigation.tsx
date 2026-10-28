@@ -2,10 +2,11 @@
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {usePathname,useSearchParams} from 'next/navigation';
 import {SpaceIcon,type SpaceIconName} from './account-space-icon';
+import {wenzeCartPath} from './wenze-cart-copy';
 import {accountSpaceCopy} from '../../lib/account-space-copy';
 import {marketplaceAccountCopy,type MarketplaceLocale} from './marketplace-account-copy';
 
-const copy={en:['Home','Explore','Activities','Manage','Menu','Help','Cart','Business workspace'],fr:['Accueil','Explorer','Activités','Gérer','Menu','Aide','Panier','Espace Business'],ln:['Ebandeli','Luka','Misala','Kamba','Menu','Lisalisi','Kitunga','Esika Business'],sw:['Nyumbani','Gundua','Shughuli','Simamia','Menyu','Msaada','Kikapu','Eneo la Business']} as const;
+const copy={en:['Home','Markets','My activity','Manage','Menu','Help','Cart','Business workspace'],fr:['Accueil','Marchés','Mon activité','Gérer','Menu','Aide','Panier','Espace Business'],ln:['Ebandeli','Luka','Misala','Kamba','Menu','Lisalisi','Kitunga','Esika Business'],sw:['Nyumbani','Gundua','Shughuli','Simamia','Menyu','Msaada','Kikapu','Eneo la Business']} as const;
 const subscribeHash=(notify:()=>void)=>{window.addEventListener('hashchange',notify);return()=>window.removeEventListener('hashchange',notify);};
 export function ShidaNavigation(){
  const hash=useSyncExternalStore(subscribeHash,()=>window.location.hash,()=> '');
@@ -28,7 +29,7 @@ export function ShidaNavigation(){
  const active=path==='/shida/wenze/sell'?3:path==='/shida/register'?4:path==='/shida'?(hash==='#explore'?1:0):personal?(query.get('view')==='management'?3:query.get('view')==='settings'?4:2):1;
  const hrefs=[base,`${base}#explore`,`${base}/space`,`${base}/space?view=management`];
  const icons:SpaceIconName[]=['home','shop','requests','management'];
- const menuLinks=[[marketplaceAccountCopy[locale].account,`${base}/space?view=settings`],[a.orders,`${base}/space?view=orders`],[a.requests,`${base}/space?view=requests`],[a.messages,`${base}/space?view=messages`],[a.receipts,`${base}/space?view=receipts`],[a.settings,`${base}/space?view=settings`],[marketplaceAccountCopy[locale].language,`${base}/space?view=settings#space-language`],[t[6],`${locale==='en'?'':'/fr'}/shida/wenze/${locale==='en'?'cart':'panier'}`],[t[7],'https://business.nihiloba.com/'],[t[5],`${locale==='en'?'/en':'/fr'}/faq`]];
+ const menuLinks=[[a.orders,`${base}/space?view=orders`],[a.requests,`${base}/space?view=requests`],[a.messages,`${base}/space?view=messages`],[a.receipts,`${base}/space?view=receipts`],[a.settings,`${base}/space?view=settings`],[marketplaceAccountCopy[locale].language,`${base}/space?view=settings#space-language`],[t[6],wenzeCartPath(locale)],[t[7],`https://business.nihiloba.com/?lang=${locale}`],[t[5],`${locale==='en'?'/en':'/fr'}/faq`]];
  return <><nav className="shida-navigation" aria-label="SHIDA" data-keyboard={keyboard||undefined}>{hrefs.map((href,index)=><a key={href} href={href} aria-current={active===index?'page':undefined}><SpaceIcon name={icons[index]}/><span>{t[index]}</span></a>)}<button ref={trigger} type="button" aria-haspopup="dialog" aria-controls="shida-menu" aria-current={active===4?'page':undefined} onClick={()=>dialog.current?.showModal()}><SpaceIcon name="menu"/><span>{t[4]}</span></button></nav>
  <dialog id="shida-menu" className="shida-navigation-menu" ref={dialog} aria-labelledby="shida-menu-title" onClose={()=>trigger.current?.focus()}><header><h2 id="shida-menu-title">SHIDA · {t[4]}</h2><button type="button" onClick={()=>dialog.current?.close()}>{a.close}</button></header><nav aria-label={t[4]}>{menuLinks.map(([label,href])=><a href={href} key={label} onClick={()=>dialog.current?.close()}>{label}</a>)}</nav></dialog></>;
 }

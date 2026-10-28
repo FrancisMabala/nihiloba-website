@@ -1,3 +1,4 @@
+import {ActiveSearchFilters} from "./active-search-filters";
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
 import { MarketplaceDiscoveryHeader } from "./public-marketplace";
 import { propertyDiscoveryCopy } from "./property-discovery-copy";
@@ -77,8 +78,8 @@ export async function HotelCollectionPage({ locale, search = {} }: { locale: Loc
           <label>{t.area}<input name="area" defaultValue={search.area} maxLength={120}/></label>
           <label>{words.rooms}<input type="number" name="rooms" min="1" max="100" defaultValue={search.rooms}/></label>
           <label>{words.period}<select name="rental_period" defaultValue={search.rental_period||""}><option value="">{t.any}</option><option value="night">{words.night}</option><option value="day">{words.day}</option><option value="hourly">{words.hourly}</option></select></label>
-        </div></details><p className="mp-help">{words.inventory}</p>
-        {hotelSearchQuery(search)&&<Link className="mp-search-reset" href={path}>{t.resetFilters}</Link>}
+        </div><button className="button button-secondary" type="submit">{t.applyFilters}</button></details><p className="mp-help">{words.inventory}</p>
+        <ActiveSearchFilters locale={locale} path={path} query={hotelSearchQuery(search)} labels={{query:d.search,city:t.city,area:t.area,rooms:words.rooms,rental_period:words.period}} values={{rental_period:{night:words.night,day:words.day,hourly:words.hourly}}}/>
       </form>
 
       <div className="mp-results-heading"><h2 id="hotel-results-title">{d.results}</h2>{listings&&<p role="status">{items.length} {items.length===1?d.one:d.many}</p>}</div>

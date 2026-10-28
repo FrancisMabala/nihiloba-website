@@ -1,3 +1,4 @@
+import {ActiveSearchFilters} from "./active-search-filters";
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
 import type { Metadata } from "next";
 import { MarketplaceDiscoveryHeader } from "./public-marketplace";
@@ -78,7 +79,6 @@ function cleanStructuredLines(value:string){return value.replace(/\s*;{2,}\s*/g,
 function StructuredJobText({value}:{value:string}){const lines=cleanStructuredLines(value),isList=lines.length>1&&lines.every((line)=>/^(?:[-•*]|\d+[.)])\s+/.test(line)||line.length<=220);if(isList)return <ul className="job-structured-list">{lines.map((line,index)=><li key={`${index}-${line.slice(0,24)}`}>{line.replace(/^(?:[-•*]|\d+[.)])\s+/,"")}</li>)}</ul>;const paragraphs=value.replace(/\s*;{2,}\s*/g,"\n\n").replace(/\r\n?/g,"\n").split(/\n{2,}/).map((part)=>part.trim()).filter(Boolean);return <div className="job-structured-copy">{paragraphs.map((paragraph,index)=><p key={`${index}-${paragraph.slice(0,24)}`}>{paragraph}</p>)}</div>;}
 function StructuredJobSection({title,value}:{title:string;value:string|null}){return value?.trim()?<section><h2>{title}</h2><StructuredJobText value={value}/></section>:null;}
 function experienceText(item:PublicJob,locale:Locale){if(item.experience.text)return item.experience.text;if(item.experience.minimum_years!=null)return detailCopy[locale==="en"?"en":"fr"].years(item.experience.minimum_years);if(item.experience.requirement_kind==="not_required")return locale==="fr"?"Aucune expérience exigée":"No experience required";if(item.experience.requirement_kind==="preferred")return locale==="fr"?"Expérience souhaitée":"Experience preferred";return null;}
-function hasSearch(search:JobSearch){return Object.entries(search).some(([key,value])=>key!=="page_size"&&key!=="view"&&value!=null&&value!=="");}
 function pageHref(locale:Locale,search:JobSearch,page:number){return `${marketplacePath(locale,"/shida/emplois")}${jobSearchQuery({...search,page})}`;}
 function viewHref(locale:Locale,search:JobSearch,view:"professional"|"individual"){return `${marketplacePath(locale,"/shida/emplois")}${jobSearchQuery({...search,view,page:1})}`;}
 
@@ -88,7 +88,7 @@ function JobFacts({item,locale}:{item:PublicJobSummary;locale:Locale}){const t=c
 export function JobCard({item,locale}:{item:PublicJobSummary;locale:Locale}){const t=copy[locale],href=jobPath(locale,item),location=jobLocation(item),published=displayDate(item.published_at,locale),salary=cardCompensation(item,locale),summary=item.summary_preview||item.description_preview,category=item.professional_category||item.category,organization=organizationLabel(item,locale),identity=<><span className={item.origin==="external"?"job-origin-label job-origin-external":"job-origin-label"}>{originLabel(item,locale)}</span>{organization&&<span className="job-origin-label">{organization}</span>}</>;if(item.offer_type==="individual")return <article className="job-result job-result-individual"><div className="job-result-heading"><span className="job-type-label">{t.individualShort}</span>{identity}</div><h3><Link href={href}>{item.title}</Link></h3>{location&&<p className="job-result-location">{location}</p>}<JobFacts item={item} locale={locale}/>{summary&&<p className="job-result-summary">{summary}</p>}{salary&&<p className="job-result-salary">{salary}</p>}<div className="job-result-actions"><ButtonLink href={href} variant="text">{t.details}</ButtonLink></div></article>;return <article className="job-result job-result-professional"><div className="job-result-heading"><EmployerIdentity employer={item.employer} locale={locale}/>{identity}</div><h3><Link href={href}>{item.title}</Link></h3><p className="job-organisation">{item.employer.name}</p>{location&&<p className="job-result-location">{location}</p>}{category&&<p className="job-result-category">{humanize(category)}</p>}<JobFacts item={item} locale={locale}/>{summary&&<p className="job-result-summary">{summary}</p>}<div className="job-result-footer"><div>{salary&&<strong className="job-result-salary">{salary}</strong>}{published&&<span>{t.published} {published}</span>}{item.deadline_label&&<span className={!isOpen(item)?"job-deadline-expired":""}>{item.deadline_label}</span>}</div><div className="job-result-actions"><ButtonLink href={href} variant="text">{t.details}</ButtonLink></div></div></article>;}
 
 function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
-  const t=copy[locale],clearHref=`${marketplacePath(locale,"/shida/emplois")}${jobSearchQuery({view:search.view})}`;
+  const t=copy[locale];
   return <form className="jobs-public-filters mp-search" action={marketplacePath(locale,"/shida/emplois")} method="get" role="search" aria-label={t.search}>
     {search.view&&<input type="hidden" name="view" value={search.view}/>}
     <div className="jobs-search-primary mp-search-primary">
@@ -104,8 +104,9 @@ function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
           <label>{t.commune}<input name="commune" defaultValue={search.commune} maxLength={120}/></label>
         </div>
       </details>
-      {hasSearch(search)&&<Link className="job-clear-filters" href={clearHref}>{t.clear}</Link>}
+
     </div>
+  <ActiveSearchFilters locale={locale} path={marketplacePath(locale,"/shida/emplois")} query={jobSearchQuery(search)} labels={{query:t.search,city:t.city,area:t.area,commune:t.commune}}/>
   </form>;
 }
 function JobPagination({locale,search,collection}:{locale:Locale;search:JobSearch;collection:JobCollection}){const t=copy[locale],p=collection.pagination;if(p.total_pages<=1)return null;return <nav className="marketplace-pagination" aria-label={`${t.page} ${p.page} ${t.of} ${p.total_pages}`}><span>{p.page>1?<Link href={pageHref(locale,search,p.page-1)}>{t.previous}</Link>:t.previous}</span><span>{t.page} {p.page} {t.of} {p.total_pages}</span><span>{p.page<p.total_pages?<Link href={pageHref(locale,search,p.page+1)}>{t.next}</Link>:t.next}</span></nav>;}

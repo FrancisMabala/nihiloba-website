@@ -50,7 +50,7 @@ test('guest does not read private activity and identity changes remove prior con
  state.signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));await expect(page.locator('.space-recent')).toHaveCount(0);expect(state.writes).toBe(0);
 });
 for(const width of [390,820,1440])test(`restaurant direct selection and grouped tools ${width}`,async({page})=>{
- const state=await restaurantFixture(page);await page.setViewportSize({width,height:900});await page.goto('/fr/shida/seller/restaurants?establishment=RST_fixture');await expect(page.getByRole('heading',{name:'Isolated Malewa',exact:true})).toBeVisible();
+ const state=await restaurantFixture(page);await page.setViewportSize({width,height:900});await page.goto('/fr/shida/seller/restaurants?establishment=RST_fixture');await expect(page.getByRole('region',{name:'Restaurants & Malewa',exact:true}).getByText('Isolated Malewa',{exact:true})).toBeVisible();
  if(width===390){await page.locator('.rst-bottom-nav').getByRole('button',{name:'Plus',exact:true}).click();await expect(page.locator('.rst-more section')).toHaveCount(3);await page.screenshot({path:'docs/evidence/phase3/restaurant-tools-390.png'});await page.keyboard.press('Escape');await expect(page.locator('.rst-bottom-nav').getByRole('button',{name:'Plus',exact:true})).toBeFocused();}
  else await expect(page.locator('.rst-desktop-group')).toHaveCount(4);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(state.writes).toHaveLength(0);

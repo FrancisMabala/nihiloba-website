@@ -75,6 +75,13 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
   const canGovern = true;
   const [productDirty,setProductDirty]=useState(false);
   const [editorDirty,setEditorDirty]=useState(false);
+  const editorHeading=useRef<HTMLHeadingElement>(null);
+  const editorKind=editor?.kind,editingProduct=product?.public_ref;
+  useEffect(()=>{
+    if(!editorKind)return;
+    const frame=requestAnimationFrame(()=>{editorHeading.current?.focus({preventScroll:true});editorHeading.current?.scrollIntoView({block:"start",behavior:"auto"});});
+    return()=>cancelAnimationFrame(frame);
+  },[editorKind,editingProduct]);
   const editorFormId=useId();
   const [productTab,setProductTab]=useState("details");
   const u=(key:Parameters<typeof wenzeUX>[1])=>wenzeUX(locale,key);
@@ -290,7 +297,7 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
     {store&&shopTab==="settings"&&<WenzePaymentPreferences key={store.public_ref} path={storePath} locale={locale} request={request} onRevision={revision=>setStore(old=>old?{...old,revision}:null)}/>}
     {plan && <section className="wz-account-access"><h2>{d("accountAccess")}</h2>{plan.source==="personal_pilot"?<p>{d("testingAccess")}</p>:<p>{t(plan.plan)}{plan.expires_at&&` · ${t("expires")}: ${new Date(plan.expires_at).toLocaleDateString(locale)}`}</p>}<label>{t("products")} · {plan.active_products} / {plan.active_product_limit}<progress max={plan.active_product_limit} value={plan.active_products}/></label>{plan.plan==="free"&&<p>{t("allowance")}: {plan.free_import_used} / {plan.free_import_allowance}</p>}</section>}
     {preview&&<WenzeProductShare locale={locale} data={preview} visible={store?.status==="active"&&store?.visible==="true"&&(!product||(product.status==="active"&&product.visible==="true"))} onClose={()=>setPreview(null)}/>}
-    {editor && <section className="wz-editor"><h2>{editor.kind==="conversion"?e.choices:editor.kind==="product"?e.edit:t(editor.kind === "createStore" ? "create" : editor.kind === "store" || editor.kind === "product" ? "edit" : editor.kind)}</h2>{editor.latest && <aside><h3>{t("current")}</h3><p>{editor.latest.name} · {editor.latest.price} {editor.latest.currency}</p><p>{editor.latest.description}</p></aside>}{editor.stale && <label><input type="checkbox" onChange={event => setEditor(old => old ? { ...old, stale: !event.target.checked } : null)} />{t("confirmFresh")}</label>}<form id={editorFormId} onChange={()=>setEditorDirty(true)} onSubmit={save}><div className="wz-fields">
+    {editor && <section className="wz-editor"><h2 ref={editorHeading} tabIndex={-1} style={{scrollMarginTop:100}}>{editor.kind==="conversion"?e.choices:editor.kind==="product"?e.edit:t(editor.kind === "createStore" ? "create" : editor.kind === "store" || editor.kind === "product" ? "edit" : editor.kind)}</h2>{editor.latest && <aside><h3>{t("current")}</h3><p>{editor.latest.name} · {editor.latest.price} {editor.latest.currency}</p><p>{editor.latest.description}</p></aside>}{editor.stale && <label><input type="checkbox" onChange={event => setEditor(old => old ? { ...old, stale: !event.target.checked } : null)} />{t("confirmFresh")}</label>}<form id={editorFormId} onChange={()=>setEditorDirty(true)} onSubmit={save}><div className="wz-fields">
       {editor.kind === "createStore" && [input("name", undefined, true), input("category"), input("city", undefined, true), input("description")]}
       {editor.kind === "store" && shopFields.map(key => input(key, key === "store_type" ? ["online_only", "online_and_physical"] : undefined, ["name", "city"].includes(key)))}
       {["quick", "detailed", "product", "duplicate"].includes(editor.kind) && <>{input("name", undefined, true)}{input("price", undefined, true)}{input("currency", currencies, true)}</>}

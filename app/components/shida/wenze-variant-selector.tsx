@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { Locale } from "../../lib/i18n";
+import type { ServiceLocale as Locale } from "../../lib/services-i18n";
+import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
+import {wenzeCartCopy} from "./wenze-cart-copy";
 import { safePublicActionUrl } from "../../lib/safe-public-url";
 import type { WenzeProductVariant } from "../../types/shida-public";
 import { WenzeCartActions } from "./wenze-cart-actions";
 
 export const WENZE_VARIANT_CHIP_LIMIT = 8;
 
+const extraLabels=(locale:'ln'|'sw')=>{const d=marketplaceDiscoveryCopy[locale],c=wenzeCartCopy[locale];return {size:d.size,shoe_size:d.shoe_size,storage:d.storage,volume:d.volume,other:d.other,sold:c.soldOut,choose:c.chooseOption,unavailable:c.invalidVariant,buy:c.buyNow};};
 const labels = {
+  ln:extraLabels('ln'),sw:extraLabels('sw'),
   en: { size: "Size", shoe_size: "Shoe size", storage: "Storage", volume: "Volume", other: "Option", sold: "Sold out", choose: "Select an option first.", unavailable: "This option cannot be opened on SHIDA right now.", buy: "Buy on SHIDA" },
   fr: { size: "Taille", shoe_size: "Pointure", storage: "Capacité", volume: "Volume", other: "Option", sold: "Épuisé", choose: "Choisissez d’abord une option.", unavailable: "Cette option ne peut pas être ouverte sur SHIDA pour le moment.", buy: "Acheter sur SHIDA" },
 } as const;
