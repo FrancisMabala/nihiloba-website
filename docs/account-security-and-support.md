@@ -46,6 +46,10 @@ existing discovery/boutique/cart presentation assertions. Whole-repository lint
 also reports four existing React-effect errors in Restaurant components; changed
 files pass targeted lint. These are not represented as passing global checks.
 
-The dependency audit reports eight pre-existing findings (one critical, five high,
-two moderate), including Next.js and Sharp. Package manifests and lockfiles are
-unchanged in this candidate; this work does not claim to remediate those findings.
+The initial dependency audit reported eight findings, including critical Next.js
+remote-code-execution advisories. The release therefore updates Next.js and its
+ESLint configuration to 16.4.3, Sharp to 0.35.5, Vitest to 4.1.12, and compatible
+transitive fixes. A fresh npm ci succeeds and npm audit reports zero vulnerabilities.
+Linux SWC and Sharp optional binaries remain present in the reproducible lockfile.
+See the [Next.js advisory](https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw)
+and [Sharp advisory](https://github.com/lovell/sharp/security/advisories/GHSA-wq5f-xc86-pv6w).
