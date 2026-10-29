@@ -14,16 +14,23 @@ import {PersonalActivities} from './personal-activities';
 import {PersonalActivityOverview} from './personal-activity-overview';
 import {workspaceText} from '../../lib/personal-workspace-copy';
 import './account-space.css';
+import {AccountRecovery} from './account-recovery';
+import {securityText} from '../../lib/account-security-copy';
+import {AccountSecurity} from './account-security';
+import {AccountRecoveryReview} from './account-recovery-review';
+import {AccountSupport} from './account-support';
+import {accountSupportCopy} from '../../lib/account-support-copy';
 import {PersonalProfileSettings} from './personal-profile-settings';
 import {listingCopy} from '../../lib/wenze-listings-copy';
-type View='home'|'orders'|'requests'|'messages'|'receipts'|'settings'|'management';
+type View='home'|'orders'|'requests'|'messages'|'receipts'|'settings'|'management'|'support'|'recovery';
 export function AccountSpace({locale,initialView,inbox=false}:{locale:MarketplaceLocale;initialView?:string;inbox?:boolean}){
  const router=useRouter();
  const w=(key:Parameters<typeof workspaceText>[1])=>workspaceText(locale,key);
  const t=accountSpaceCopy[locale],a=marketplaceAccountCopy[locale],prefix=locale==='en'?'':`/${locale}`,bilingual=locale==='en'?'':'/fr',base=`${prefix}/shida/space`;
- const allowed:View[]=['home','orders','requests','messages','receipts','settings','management'];
+ const allowed:View[]=['home','orders','requests','messages','receipts','settings','management','support','recovery'];
  const view:View=inbox||initialView==='inbox'?'messages':allowed.includes(initialView as View)?initialView as View:'home';
  const [session,setSession]=useState<PersonalSession|null>(null),[checking,setChecking]=useState(true),[attempt,setAttempt]=useState(0);
+ const [securityResult,setSecurityResult]=useState<'deleted'|'logout'|null>(null);
  const access=useServicesProviderAccess(session?.binding??null);
  useEffect(()=>{
   let alive=true,generation=0,controller:AbortController|undefined;
@@ -46,6 +53,7 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
   {entries.map(item=><a key={item.key} href={href(item.key)} aria-current={view===item.key?'page':undefined}><SpaceIcon name={item.icon}/><span>{item.label}</span></a>)}
   <div className="space-nav-divider"/>
   {mobile?<a href={href('management')} aria-current={view==='management'?'page':undefined}><SpaceIcon name="management"/><span>{t.manage}</span></a>:<details className="space-management" open={view==='management'||undefined}><summary><SpaceIcon name="management"/><span>{t.manage}</span></summary><div><a href={href('management')} aria-current={view==='management'?'page':undefined}>{t.manage} →</a>{managementRows()}</div></details>}
+  <a href={href('support')} aria-current={view==='support'?'page':undefined}><SpaceIcon name="messages"/><span>{accountSupportCopy[locale].title}</span></a>
   <a href={href('settings')} aria-current={view==='settings'?'page':undefined}><SpaceIcon name="settings"/><span>{t.settings}</span></a>
  </nav>;
  const rows=(items:[string,string,SpaceIconName][])=> <div className="space-destinations">{items.map(([label,url,icon])=><a href={url} key={url}><SpaceIcon name={icon}/><span>{label}</span></a>)}</div>;
@@ -54,17 +62,23 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
  return <div className="account-space" lang={locale}>
   <aside className="space-sidebar"><h2>{a.space}</h2>{navigation()}</aside>
   <div className="space-content"><p className="space-eyebrow">SHIDA / {a.space}</p>
-   <h1>{view==='home'?<>{t.hello}{session?` ${session.user.display_name.split(/\s+/)[0]}`:''}</>:view==='management'?t.manage:t[view]}</h1>
+   <h1>{view==='home'?<>{t.hello}{session?` ${session.user.display_name.split(/\s+/)[0]}`:''}</>:view==='management'?t.manage:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
    {session&&<p className="space-context">{w('personal')} · {session.user.display_name}</p>}
    {view==='home'&&<p className="space-intro">{t.intro}</p>}
    {view==='home'&&(checking?<p role="status">{t.loading}</p>:session?<PersonalActivityOverview key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {view==='home'&&<section className="space-links-overview"><h2>{w('quick')}</h2>{rows([...orders,...requests,[t.messages,href('messages'),'messages'],[t.manage,href('management'),'management'],[t.settings,href('settings'),'settings']])}</section>}
+   {view==='recovery'&&<AccountRecovery locale={locale}/>}
+   {(view==='settings'||!session)&&view!=='recovery'&&<p><a href={href('recovery')}>{securityText(locale,'report')}</a></p>}
+   {view==='support'&&(checking?<p role="status">{t.loading}</p>:session?<AccountSupport key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
+   {view==='support'&&session&&<AccountRecoveryReview key={session.binding} binding={session.binding} locale={locale}/>}
    {view==='orders'&&<>{rows(orders)}{session&&<AccountSpaceOrders key={session.binding} binding={session.binding} locale={locale}/>}</>}
    {view==='requests'&&rows(requests)}
    {view==='messages'&&<><p className="space-intro">{w('messageScope')}</p>{rows([[t.serviceMessages,`${prefix}/shida/service-requests`,'messages'],[t.applications,locale==='fr'?'/fr/shida/mes-candidatures':`${prefix}/shida/my-applications`,'messages']])}</>}
    {view==='receipts'&&<><p className="space-intro">{t.receiptNote}</p>{rows([[t.bills,`${prefix}/shida/service-bills`,'receipts'],[t.foodReceipts,`${prefix}/shida/restaurant-orders`,'restaurant'],[t.shopReceipts,`${bilingual}/shida/wenze/orders`,'shop']])}</>}
    {view==='management'&&<><p className="space-intro">{t.managementNote}</p>{checking?<p role="status">{t.loading}</p>:session?<PersonalActivities key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>}</>}
    {view==='settings'&&<section className="space-settings"><h2>{t.account}</h2><p>{checking?t.loading:session?.user.display_name||t.login}</p><p>{t.accountNote}</p><label htmlFor="space-language">{t.language}</label><select id="space-language" value={locale} onChange={event=>router.push(`${event.target.value==='en'?'':`/${event.target.value}`}/shida/space?view=settings`)}>{(['fr','en','ln','sw'] as const).map(language=><option key={language} value={language}>{({fr:'Français',en:'English',ln:'Lingala',sw:'Swahili'})[language]}</option>)}</select></section>}
+   {!session&&securityResult&&<p role="status">{securityText(locale,securityResult)}</p>}
+   {view==='settings'&&session&&<AccountSecurity key={session.binding} binding={session.binding} locale={locale} onCompleted={setSecurityResult}/>}
    {view==='settings'&&session&&process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==='true'&&<PersonalProfileSettings locale={locale}/>}
   </div>
  </div>;

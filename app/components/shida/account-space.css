@@ -8,3 +8,17 @@
 
 .space-managed{margin-top:24px}.space-managed-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0 30px}.space-managed-grid article{padding:20px;background:#fffefb;border:1px solid #dedbd0;border-radius:12px;min-width:0;overflow-wrap:anywhere}.space-managed-grid h3{font:400 23px/1.3 Georgia,serif;margin:8px 0 12px}.space-managed-grid a,.space-organization a{display:inline-flex;align-items:center;min-height:44px;color:#203f34;font-weight:600}.space-managed-grid small{color:#647066}.space-organization{border-top:1px solid #dedbd0;padding-top:24px;margin-top:30px}.space-organization p{max-width:64ch;font-size:14px;color:#59665d}
 @media(max-width:850px){.space-managed-grid{grid-template-columns:1fr}}
+
+.space-security,.space-support{margin:28px 0;padding:24px;background:#fffefb;border:1px solid #dedbd0;border-radius:12px;overflow-wrap:anywhere;max-width:100%}
+.space-security h3,.space-support h3{margin:28px 0 12px;font:400 23px/1.3 Georgia,serif}
+.space-security fieldset,.space-support fieldset{border:0;padding:0;margin:0;min-width:0}
+.space-security label,.space-support label{display:grid;gap:8px;margin:16px 0;font-weight:600}
+.space-security :is(input,textarea),.space-support :is(input,textarea,select){width:100%;max-width:100%;min-height:44px;padding:10px 12px;border:1px solid #bcc7b9;border-radius:8px;background:#fff;color:#203f34;font:inherit}
+.space-security input[type=checkbox]{width:20px;min-height:20px}
+.space-security button,.space-support button{min-height:44px;padding:10px 16px;border:1px solid #203f34;border-radius:8px;background:#203f34;color:white;font:inherit;cursor:pointer;margin:6px 8px 6px 0;max-width:100%;white-space:normal}
+.space-security button:disabled,.space-support button:disabled{opacity:.55;cursor:not-allowed}
+.space-support article{border-left:3px solid #d7dfd1;padding:8px 16px;margin:16px 0}
+.space-security :is(input,textarea,button):focus-visible,.space-support :is(input,textarea,select,button):focus-visible{outline:3px solid #a98239;outline-offset:3px}
+#account-deletion{border-top:1px solid #dedbd0;margin-top:30px;padding-top:8px}
+#account-deletion button{background:#803c31;border-color:#803c31}
+@media(max-width:700px){.space-security,.space-support{padding:18px 14px}.space-security button,.space-support button{width:100%;margin-right:0}}
