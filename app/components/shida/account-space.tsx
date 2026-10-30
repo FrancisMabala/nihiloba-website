@@ -10,6 +10,7 @@ import {PERSONAL_SESSION_EVENT,restorePersonalSession,type PersonalSession} from
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {SpaceIcon,type SpaceIconName} from './account-space-icon';
 import {AccountSpaceOrders} from './account-space-orders';
+import {PersonalTransactions} from './personal-transactions';
 import {PersonalActivities} from './personal-activities';
 import {PersonalActivityOverview} from './personal-activity-overview';
 import {workspaceText} from '../../lib/personal-workspace-copy';
@@ -54,7 +55,7 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
  const rows=(items:[string,string,SpaceIconName][])=> <div className="space-destinations">{items.map(([label,url,icon])=><a href={url} key={url}><SpaceIcon name={icon}/><span>{label}</span></a>)}</div>;
  const orders:[string,string,SpaceIconName][]=[[t.wenzeOrders,`${bilingual}/shida/wenze/orders`,'shop'],[t.foodOrders,`${prefix}/shida/restaurant-orders`,'restaurant']];
  const requests:[string,string,SpaceIconName][]=[[t.serviceRequests,`${prefix}/shida/service-requests`,'requests'],[w('applications'),locale==='fr'?'/fr/shida/mes-candidatures':`${prefix}/shida/my-applications`,'requests'],[w('reservations'),`${prefix}/shida/restaurant-reservations`,'restaurant']];
- return <div className={`account-space${view==='settings'?' account-settings-page':view==='management'?' account-activities-page':''}`} lang={locale}>
+ return <div className={`account-space${view==='settings'?' account-settings-page':view==='management'?' account-activities-page':view==='transactions'?' account-transactions-page':''}`} lang={locale}>
   <SpaceSidebar locale={locale} view={view}/>
   <div className="space-content"><p className="space-eyebrow">SHIDA / {a.space}</p>
    <h1>{view==='home'?<>{t.hello}{session?` ${session.user.display_name.split(/\s+/)[0]}`:''}</>:view==='management'?n.activities:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
@@ -68,7 +69,7 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
    {!session&&view!=='recovery'&&<p><a href={href('recovery')}>{securityText(locale,'report')}</a></p>}
    {view==='support'&&(checking?<p role="status">{t.loading}</p>:session?<AccountSupport key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {view==='support'&&session&&<AccountRecoveryReview key={session.binding} binding={session.binding} locale={locale}/>}
-   {view==='transactions'&&<><h2>{t.orders}</h2>{rows(orders)}<h2>{t.requests}</h2>{rows(requests)}<h2>{t.receipts}</h2>{rows([[t.bills,`${prefix}/shida/service-bills`,'receipts']])}</>}
+   {view==='transactions'&&(checking?<p role="status">{t.loading}</p>:session?<PersonalTransactions key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {view==='orders'&&<>{rows(orders)}{session&&<AccountSpaceOrders key={session.binding} binding={session.binding} locale={locale}/>}</>}
    {view==='requests'&&rows(requests)}
    {view==='messages'&&!session&&!checking&&<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>}

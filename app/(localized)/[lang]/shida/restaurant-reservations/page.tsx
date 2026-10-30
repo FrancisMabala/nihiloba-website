@@ -4,8 +4,8 @@ import { reservationPageData } from '@/app/services/shida/restaurant-reservation
 import type { RestaurantLocale } from '@/app/services/shida/restaurants-client';
 export const dynamic='force-dynamic';
 export const metadata={title:'Restaurant reservations | SHIDA',robots:{index:false,follow:false,noarchive:true}};
-export default async function Page({params,searchParams}:{params:Promise<{lang:string}>;searchParams:Promise<{establishment?:string}>}){
+export default async function Page({params,searchParams}:{params:Promise<{lang:string}>;searchParams:Promise<{establishment?:string;reservation?:string}>}){
   const [{lang},query]=await Promise.all([params,searchParams]);
   if(!['fr','ln','sw'].includes(lang))notFound();
-  return <RestaurantCustomerReservations locale={lang as RestaurantLocale} {...await reservationPageData(lang as RestaurantLocale,query.establishment)}/>;
+  return <RestaurantCustomerReservations locale={lang as RestaurantLocale} reservationRef={query.reservation} {...await reservationPageData(lang as RestaurantLocale,query.establishment)}/>;
 }
