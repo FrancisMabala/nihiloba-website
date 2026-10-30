@@ -1,5 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
+import {readAccount,AccountLoadError} from '../../lib/account-load';
+import {mySpaceCopy} from '../../lib/my-space-refinement-copy';
 import {securityText} from '../../lib/account-security-copy';
 import {OptionalRecoveryMethods} from './optional-recovery-methods';
 import {passkeyCeremony} from '../../lib/account-passkeys';
@@ -13,11 +15,19 @@ export function AccountSecurity({locale,binding,onCompleted}:{locale:Locale;bind
  const [email,setEmail]=useState(''),[emailRef,setEmailRef]=useState(''),[emailCode,setEmailCode]=useState(''),[phone,setPhone]=useState(''),[phoneRef,setPhoneRef]=useState(''),[oldCode,setOldCode]=useState(''),[newCode,setNewCode]=useState('');
  const [deletion,setDeletion]=useState<{eligible:boolean}|null>(null),[confirmed,setConfirmed]=useState(false);
  const [preferEmail,setPreferEmail]=useState(false),[proofRequest,setProofRequest]=useState<{reference:string;action:string}|null>(null),[proofCode,setProofCode]=useState(''),[proofBusy,setProofBusy]=useState(false),[proofError,setProofError]=useState('');
+ const copy=mySpaceCopy[locale];
+ const [loadState,setLoadState]=useState<'loading'|'loaded'|'error'|'auth'>('loading');
  const proofResult=useRef<{resolve:(value:string)=>void;reject:(error:Error)=>void}|null>(null);
  useEffect(()=>()=>{proofResult.current?.reject(new Error('cancelled'));proofResult.current=null;},[]);
  async function api(path='',body?:object){const response=await fetch(`/api/shida/personal/security/${path}`,{method:body?'POST':'GET',cache:'no-store',headers:{'x-shida-session':binding,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const data=await response.json();if(!response.ok)throw new Error(data.detail);return data;}
- useEffect(()=>{const controller=new AbortController();void Promise.all(['','phone/'].map(path=>fetch(`/api/shida/personal/security/${path}`,{cache:'no-store',headers:{'x-shida-session':binding},signal:controller.signal}).then(async r=>{if(!r.ok)throw new Error();return r.json();}))).then(([value,list])=>{setOverview(value);setChanges(list.changes);}).catch(()=>{if(!controller.signal.aborted)setNotice(securityText(locale,'error'));});return()=>controller.abort();},[binding,revision,locale]);
- async function run(action:()=>Promise<void>){if(lock.current)return;lock.current=true;setBusy(true);setNotice('');try{await action();setRevision(v=>v+1);}catch(error){const code=error instanceof Error?error.message:'';const key=code==='security_fresh_login_required'?'fresh':code==='security_change_not_ready'?'changeWaiting':code==='security_method_not_ready'?'waiting':code==='security_verification_failed'?'failed':code==='security_email_delivery_unavailable'||code==='security_phone_delivery_unavailable'?'delivery':code==='security_recovery_review_required'?'review':code==='security_number_unavailable'?'unavailable':code==='security_change_pending'?'pending':code==='passkey_unavailable'?'unsupported':'error';setNotice(t(key));}finally{lock.current=false;setBusy(false);}}
+ useEffect(()=>{const controller=new AbortController();
+ void Promise.all(['','phone/'].map(path=>readAccount(path,binding,controller.signal))).then(([value,list])=>{
+  if(controller.signal.aborted)return;
+  if(!Array.isArray(value.passkeys)||!Array.isArray(list.changes))throw Error();
+  setOverview(value);setChanges(list.changes);setLoadState('loaded');
+ }).catch(error=>{if(!controller.signal.aborted)setLoadState(error instanceof AccountLoadError&&error.status===401?'auth':'error');});
+ return()=>controller.abort();},[binding,revision]);
+ async function run(action:()=>Promise<void>){if(lock.current)return;lock.current=true;setBusy(true);setNotice('');try{await action();setLoadState('loading');setRevision(v=>v+1);}catch(error){const code=error instanceof Error?error.message:'';const key=code==='security_fresh_login_required'?'fresh':code==='security_change_not_ready'?'changeWaiting':code==='security_method_not_ready'?'waiting':code==='security_verification_failed'?'failed':code==='security_email_delivery_unavailable'||code==='security_phone_delivery_unavailable'?'delivery':code==='security_recovery_review_required'?'review':code==='security_number_unavailable'?'unavailable':code==='security_change_pending'?'pending':code==='passkey_unavailable'?'unsupported':'error';setNotice(t(key));}finally{lock.current=false;setBusy(false);}}
  async function authorize(action:string,passkeyOnly=false){
   const matureKey=overview?.passkeys.some(key=>Date.parse(key.ready_at)<=Date.now());
   if(!passkeyOnly&&(preferEmail||!matureKey)&&overview?.email){const issued=await api('email/proof/start/',{action,language:locale});setProofCode('');setProofError('');setProofRequest({reference:issued.reference,action});return new Promise<string>((resolve,reject)=>{proofResult.current={resolve,reject};});}
@@ -25,9 +35,11 @@ export function AccountSecurity({locale,binding,onCompleted}:{locale:Locale;bind
  }
  async function setup(path:string,action:string,body:object={}){try{return await api(path,body);}catch(error){if(!(error instanceof Error)||error.message!=='security_verification_required')throw error;return api(path,{...body,authorization:await authorize(action)});}}
  async function register(){await run(async()=>{const issued=await setup('passkeys/register/options/','passkey');const credential=await passkeyCeremony(issued.options,true);await api('passkeys/register/verify/',{reference:issued.reference,credential});setNotice(t('saved'));});}
- return <section className="space-security"><h2>{t('title')}</h2><p>{t('intro')}</p>{notice&&<p role="status">{notice}</p>}<button disabled={busy} onClick={()=>setRevision(v=>v+1)}>{t('refresh')}</button>
+ return <section className="space-security"><h2>{t('title')}</h2><p>{t('intro')}</p>{notice&&<p role="status">{notice}</p>}{(loadState==='error'||loadState==='auth')&&<div role="alert"><p>{loadState==='auth'?copy.auth:copy.loadError}</p><button disabled={busy} onClick={()=>{setLoadState('loading');setRevision(v=>v+1);}}>{copy.retry}</button></div>}
  {proofRequest&&<section role="region" aria-label={t('emailProof')}><h3>{t('emailProof')}</h3><p>{t('emailProofHelp')}</p>{proofError&&<p role="alert">{proofError}</p>}<form onSubmit={e=>{e.preventDefault();if(proofBusy)return;setProofBusy(true);void api('email/proof/verify/',{reference:proofRequest.reference,code:proofCode}).then(result=>{proofResult.current?.resolve(result.authorization);proofResult.current=null;setProofRequest(null);setProofCode('');}).catch(()=>setProofError(t('failed'))).finally(()=>setProofBusy(false));}}><label>{t('code')}<input autoFocus inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{8}" maxLength={8} value={proofCode} onChange={e=>setProofCode(e.target.value)} required/></label><button disabled={proofBusy}>{t('verify')}</button><button type="button" disabled={proofBusy} onClick={()=>{proofResult.current?.reject(new Error('cancelled'));proofResult.current=null;setProofRequest(null);setProofCode('');}}>{t('cancel')}</button></form></section>}
- {!overview?<p>{t('loading')}</p>:<fieldset disabled={busy}>
+ {loadState==='loading'&&<p role="status">{t('loading')}</p>}
+ {loadState==='loaded'&&overview&&<fieldset disabled={busy}>
+ {!overview.email&&!overview.passkeys.length&&<p>{copy.emptyMethods}</p>}
  {overview.email&&<label><input type="checkbox" checked={preferEmail} onChange={e=>setPreferEmail(e.target.checked)}/>{t('preferEmail')}</label>}
  <h3>{t('passkey')}</h3><p>{t('passkeyHelp')}</p><ul>{overview.passkeys.map(key=><li key={key.reference}>{t('ready')}: {new Date(key.ready_at).toLocaleString(locale)}</li>)}</ul><button onClick={()=>void register()}>{t('passkey')}</button>
  <h3>{t('email')}</h3>{overview.email?<p>{overview.email} · {t('ready')}: {overview.email_ready_at&&new Date(overview.email_ready_at).toLocaleString(locale)}</p>:<form onSubmit={e=>{e.preventDefault();void run(async()=>{if(emailRef){await api('email/verify/',{reference:emailRef,code:emailCode});setEmailRef('');setEmailCode('');setNotice(t('saved'));}else{const result=await setup('email/start/','email',{email,language:locale});setEmailRef(result.reference);}});}}>{emailRef?<label>{t('code')}<input inputMode="numeric" autoComplete="one-time-code" value={emailCode} onChange={e=>setEmailCode(e.target.value)} pattern="[0-9]{8}" required/></label>:<label>{t('email')}<input type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} maxLength={320} required/></label>}<button type="submit">{t(emailRef?'verify':'send')}</button>{emailRef&&<button type="button" onClick={()=>{setEmailRef('');setEmailCode('');}}>{t('restart')}</button>}</form>}

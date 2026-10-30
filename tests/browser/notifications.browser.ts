@@ -16,9 +16,9 @@ for(const width of [390,1440])for(const locale of ['fr','en','ln','sw'])test(`no
  await page.locator('.notification-bell').click();const panel=page.locator('.notification-panel');await expect(panel.getByText('Test order')).toBeVisible();
  await expect.poll(()=>actions.includes('view')).toBe(true);expect(actions).not.toContain('read');expect(actions).not.toContain('acknowledge');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await panel.locator('article button').first().click();await expect.poll(()=>read).toBe(true);expect(ack).toBe(false);
+ await panel.locator(':scope > button').click();await expect.poll(()=>read).toBe(true);expect(ack).toBe(false);
  await panel.locator('article button').last().click();await expect(panel.locator('a[href^="https://wa.me/"]')).toBeVisible();expect(ack).toBe(false);
  if(locale==='fr')await page.screenshot({path:`docs/evidence/notifications/center-${width}.png`});
- await page.keyboard.press('Escape');await expect(panel).toHaveCount(0);await expect(page.locator('.notification-bell')).toBeFocused();
+ await panel.locator('article button').first().click();await expect.poll(()=>ack).toBe(true);await expect(page).toHaveURL(/view=messages/);
  signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));await expect(page.locator('.notification-center')).toHaveCount(0);
 });

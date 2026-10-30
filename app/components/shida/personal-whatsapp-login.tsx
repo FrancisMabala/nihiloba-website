@@ -1,4 +1,5 @@
 "use client";
+import {mySpaceCopy} from "../../lib/my-space-refinement-copy";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { usePathname } from "next/navigation";
 import { personalLoginCopy } from "../../lib/personal-login-copy";
@@ -144,5 +145,6 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
     </form>}
     {state === "uncertain" ? <button className="button button-secondary" type="button" onClick={() => void cancel(true)}>{t.reset}</button> : !["pending", "code", "exchanging"].includes(state) && <button className="button button-primary" type="button" disabled={busy || registration && !eligible} onClick={() => void start()}>{state === "idle" ? t.start : busy ? t[state] : t.retry}</button>}
     {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <p className="login-register">{r.noAccount} <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}>{r.signup}</a></p>}
+    {!registration&&<p><a href={`${locale==='en'?'':`/${locale}`}/shida/space?view=recovery`}>{mySpaceCopy[locale].lost}</a></p>}
   </section>;
 }

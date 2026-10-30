@@ -1,4 +1,5 @@
 "use client";
+import {TransactionEmpty} from "./transaction-empty";
 import {useEffect,useState,useRef} from "react";
 import Link from "next/link";
 type Locale = "en"|"fr"|"ln"|"sw";
@@ -18,7 +19,7 @@ export function WenzeBuyerOrdersPage({locale}:{locale:Locale}){
 }
 function OrdersBoundary({locale}:{locale:Locale}){
  const buyer=useWenzeBuyer(),t=copy[locale];
- return <main className={`container ${styles.page}`} style={{paddingBlock:"2rem",minHeight:"55vh"}}><h1>{t.title}</h1><Link href={`${locale==="en"?"":`/${locale}`}/shida/wenze/`}>{t.back}</Link>
+ return <main className={`container space-transactions ${styles.page}`} style={{paddingBlock:"2rem",minHeight:"55vh"}}><h1>{t.title}</h1><Link href={`${locale==="en"?"":`/${locale}`}/shida/wenze/`}>{t.back}</Link>
  {buyer.checking?<p role="status">{t.loading}</p>:!buyer.binding?<p><button className="btn" onClick={buyer.login}>{t.login}</button></p>:<Orders key={buyer.binding} binding={buyer.binding} locale={locale}/>}
  </main>;
 }
@@ -30,14 +31,14 @@ function Orders({binding,locale}:{binding:string;locale:Locale}){
   return()=>{active=false;controller.abort();};
  },[binding,page,refresh]);
  function load(next:number){setData(null);setError(false);setPage(next);setRefresh(value=>value+1);}
- return <><p>{t.note}</p><button onClick={()=>load(page)}>{t.refresh}</button>
- {error?<p role="alert">{t.failed}</p>:!data?<p role="status">{t.loading}</p>:!data.orders.length?<p>{t.empty}</p>:<div style={{display:"grid",gap:"1rem",marginBlock:"1.5rem"}}>{data.orders.map(order=><article id={order.reference} key={order.reference} style={{padding:"1.25rem",border:"1px solid #deded3",borderRadius:".75rem",minWidth:0,overflowWrap:"anywhere"}}>
+ return <><p>{t.note}</p>{(error||Boolean(data?.orders.length))&&<button onClick={()=>load(page)}>{t.refresh}</button>}
+ {error?<p role="alert">{t.failed}</p>:!data?<p role="status">{t.loading}</p>:!data.orders.length?<TransactionEmpty locale={locale} message={t.empty} market="wenze"/>:<div style={{display:"grid",gap:"1rem",marginBlock:"1.5rem"}}>{data.orders.map(order=><article id={order.reference} key={order.reference} style={{padding:"1.25rem",border:"1px solid #deded3",borderRadius:".75rem",minWidth:0,overflowWrap:"anywhere"}}>
  <h2>{order.store_name}</h2><small>{order.reference}</small><ul>{order.items.map((item,i)=><li key={i}>{item.name} {item.variant} × {item.quantity}</li>)}</ul>
  <p><strong>{order.total===null?t.unknown:`${t.amount}: ${new Intl.NumberFormat(locale).format(Number(order.total))} ${order.currency}`}</strong></p>
  <OrderDestination key={`${binding}:${order.reference}`} binding={binding} order={order} locale={locale}/><WenzeOrderTimeline locale={locale} timeline={order.timeline}/><WenzeOrderUpdates key={`${binding}:${order.reference}`} locale={locale} identity={`${binding}:${order.reference}`} load={()=>buyerRequest(`orders/${order.reference}/updates`,binding)} read={()=>buyerRequest(`orders/${order.reference}/updates/read`,binding,"POST",{})}/>
  {order.estimates?.preparation&&<p>{t.prepare}: {order.estimates.preparation}</p>}{order.estimates?.delivery&&<p>{t.delivery}: {order.estimates.delivery}</p>}
  </article>)}</div>}
- <nav style={{display:"flex",gap:"1rem"}}><button disabled={!data||page===0} onClick={()=>load(page-1)}>{t.previous}</button><button disabled={!data||(page+1)*20>=data.total} onClick={()=>load(page+1)}>{t.next}</button></nav></>;
+ {data&&(data.orders.length>0||page>0)&&<nav className="transaction-pagination"><button disabled={!data||page===0} onClick={()=>load(page-1)}>{t.previous}</button><button disabled={!data||(page+1)*20>=data.total} onClick={()=>load(page+1)}>{t.next}</button></nav>}</>;
 }
 
 function OrderDestination({binding,order,locale}:{binding:string;order:Order;locale:Locale}){

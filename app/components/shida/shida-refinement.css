@@ -6,7 +6,7 @@ body .market-surface #main-content{flex:1;min-height:0}
 .shida-footer-row nav{display:flex;flex-wrap:wrap;gap:8px 20px}
 .shida-footer-row nav a{display:inline-flex;align-items:center;min-height:44px;font-size:.8rem}
 .shida-footer-row small{color:var(--mp-muted);font-size:.75rem}
-.shida-navigation{display:flex;justify-content:center;gap:8px;padding:8px 16px;background:#fffefa;border-bottom:1px solid #d9ddce}
+.shida-navigation{display:none;justify-content:center;gap:8px;padding:8px 16px;background:#fffefa;border-bottom:1px solid #d9ddce}
 .wzp-sell-entry{border-top:1px solid #deddd1;margin-top:20px;padding-top:12px;display:flex;justify-content:flex-end}
 .shida-navigation :is(a,button){display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 14px;border:0;border-radius:8px;color:#173e32;background:transparent;font:600 .8rem/1.2 Arial,sans-serif;text-decoration:none;cursor:pointer}
 .shida-navigation svg{width:20px;height:20px;flex-shrink:0}

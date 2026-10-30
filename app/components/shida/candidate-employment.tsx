@@ -1,4 +1,5 @@
 "use client";
+import "./transactions.css";
 
 import Link from "next/link";
 import { PersonalWhatsAppLogin } from "./personal-whatsapp-login";
@@ -56,7 +57,7 @@ function displayDate(value: string | null, locale: Locale): string | null { if (
 export function CandidateApplicationsView({ locale, applications }: { locale: Locale; applications: CandidateApplication[] }) {
   const t = copy[locale];
   if (!applications.length) return <div className="candidate-empty"><p>{t.empty}</p><Link className="button button-primary" href={`${locale==="en"?"":`/${locale}`}/shida/emplois`}>{t.browse}</Link></div>;
-  return <div className="candidate-application-list">{applications.map((item) => <article className="candidate-application-card" key={item.reference}><div><span className={`candidate-status candidate-status-${item.status}`}>{candidateStatusLabel(locale, item.status)}</span><h2>{item.job_title}</h2><p>{item.employer_name}</p></div><dl><div><dt>{t.applied}</dt><dd>{displayDate(item.created_at, locale) ?? "—"}</dd></div><div><dt>{t.status}</dt><dd>{candidateStatusLabel(locale, item.status)}</dd></div></dl><Link className="button button-secondary" href={candidateApplicationPath(locale, item.reference)}>{t.open}</Link></article>)}</div>;
+  return <div className="candidate-application-list space-transactions">{applications.map((item) => <article className="candidate-application-card" key={item.reference}><div><span className={`candidate-status candidate-status-${item.status}`}>{candidateStatusLabel(locale, item.status)}</span><h2>{item.job_title}</h2><p>{item.employer_name}</p></div><dl><div><dt>{t.applied}</dt><dd>{displayDate(item.created_at, locale) ?? "—"}</dd></div><div><dt>{t.status}</dt><dd>{candidateStatusLabel(locale, item.status)}</dd></div></dl><Link className="button button-secondary" href={candidateApplicationPath(locale, item.reference)}>{t.open}</Link></article>)}</div>;
 }
 
 export function CandidateApplicationDetailView({ locale, application }: { locale: Locale; application: CandidateApplication }) {

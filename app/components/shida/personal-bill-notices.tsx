@@ -1,4 +1,5 @@
 "use client";
+import {TransactionEmpty} from "./transaction-empty";
 import Link from "next/link";
 import {useEffect,useState} from "react";
 import {restorePersonalSession,PERSONAL_SESSION_EVENT,type PersonalSession} from "@/app/lib/personal-session-browser";
@@ -9,11 +10,11 @@ type Notice={version_ref:string;kind:string;current:boolean;statement_path:strin
 export function PersonalBillNotices({locale}:{locale:Locale}){
  const [session,setSession]=useState<PersonalSession|null>(null),[ready,setReady]=useState(false);
  useEffect(()=>{let active=true;const check=()=>void restorePersonalSession().then(value=>{if(active)setSession(value);}).catch(()=>{if(active)setSession(null);}).finally(()=>{if(active)setReady(true);});check();window.addEventListener(PERSONAL_SESSION_EVENT,check);return()=>{active=false;window.removeEventListener(PERSONAL_SESSION_EVENT,check);};},[]);
- const t=copy[locale];return <main lang={locale} style={{maxWidth:900,margin:"auto",padding:"1rem"}}><h1>{t.title}</h1>{!ready?<p>…</p>:session?<NoticeList key={session.binding+locale} binding={session.binding} locale={locale}/>:<><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>void restorePersonalSession().then(setSession)}/></>}</main>;
+ const t=copy[locale];return <main className="space-transactions" lang={locale} style={{maxWidth:900,margin:"auto",padding:"1rem"}}><h1>{t.title}</h1>{!ready?<p>…</p>:session?<NoticeList key={session.binding+locale} binding={session.binding} locale={locale}/>:<><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>void restorePersonalSession().then(setSession)}/></>}</main>;
 }
 function NoticeList({binding,locale}:{binding:string;locale:Locale}){
  const [rows,setRows]=useState<Notice[]>([]),[offset,setOffset]=useState(0),[more,setMore]=useState(false),[failed,setFailed]=useState(false);
  useEffect(()=>{let active=true;const controller=new AbortController();void fetch(`/api/shida/personal/services/transactions/customer/bill-notices?offset=${offset}`,{credentials:"include",cache:"no-store",signal:controller.signal,headers:{"X-Shida-Session":binding}}).then(response=>{if(!response.ok)throw new Error();return response.json();}).then(value=>{if(active){setRows(value.notices);setMore(value.has_more);setFailed(false);}}).catch(()=>{if(active)setFailed(true);});return()=>{active=false;controller.abort();};},[binding,offset]);
  const t=copy[locale],prefix=locale==="en"?"":`/${locale}`;
- return <section>{failed?<p role="alert">{t.failed}</p>:rows.length===0?<p>{t.empty}</p>:<ul>{rows.map(row=><li key={row.version_ref+row.kind}>{row.kind==="reminder"?t.reminder:row.kind==="void"?t.void:t.issued}{!row.current&&` · ${t.old}`} · <Link href={prefix+row.statement_path}>{t.open}</Link></li>)}</ul>}<button disabled={offset===0} onClick={()=>setOffset(value=>Math.max(0,value-20))}>{t.back}</button><button disabled={!more} onClick={()=>setOffset(value=>value+20)}>{t.next}</button></section>;
+ return <section>{failed?<p role="alert">{t.failed}</p>:rows.length===0?<TransactionEmpty locale={locale} message={t.empty} market="services"/>:<ul className="transaction-list">{rows.map(row=><li key={row.version_ref+row.kind}>{row.kind==="reminder"?t.reminder:row.kind==="void"?t.void:t.issued}{!row.current&&` · ${t.old}`} · <Link href={prefix+row.statement_path}>{t.open}</Link></li>)}</ul>}{(rows.length>0||offset>0)&&<nav className="transaction-pagination"><button disabled={offset===0} onClick={()=>setOffset(value=>Math.max(0,value-20))}>{t.back}</button><button disabled={!more} onClick={()=>setOffset(value=>value+20)}>{t.next}</button></nav>}</section>;
 }

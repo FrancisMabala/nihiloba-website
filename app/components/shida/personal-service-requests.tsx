@@ -1,4 +1,5 @@
 "use client";
+import {TransactionEmpty} from "./transaction-empty";
 import Link from "next/link";
 import {workspaceText} from "../../lib/personal-workspace-copy";
 import {useEffect, useRef, useState} from "react";
@@ -131,9 +132,9 @@ function CustomerRequests({locale, binding, briefRef, newRequest, requestRef, bo
       onDenied={onDenied} onSaved={reference => {
         const url = new URL(window.location.href); url.search = `?brief=${reference}`; window.history.replaceState(null, "", url);
       }} onComplete={follow}/></>;
-  return <section className="svc-request"><header><h1>{t.requests}</h1><button className="button button-primary" onClick={() => choose("new")}>{t.newRequest}</button></header>
+  return <section className="svc-request space-transactions"><header><h1>{t.requests}</h1><button className="button button-primary" onClick={() => choose("new")}>{t.newRequest}</button></header>
     {loading ? <p role="status">{t.loading}</p> : error ? <><p role="alert">{t.unavailable}</p><button onClick={() => {setLoading(true); setReload(value => value + 1);}}>{t.retry}</button></> :
-      rows.length === 0 && posted.length === 0 ? <p>{t.empty}</p> : rows.filter(row => !row.posted_ref).map(row => <article className="svc-brief-card" key={row.brief_ref}>
+      rows.length === 0 && posted.length === 0 ? <TransactionEmpty locale={locale} message={t.empty} market="services"/> : rows.filter(row => !row.posted_ref).map(row => <article className="svc-brief-card" key={row.brief_ref}>
         <span className="svc-request-tag">{row.status === "PUBLISHED" ? t.published : row.status === "REVIEWED" ? t.reviewed : t.draft}</span>
         <h2>{serviceCategoryExperience(row.content.category, locale)?.service}</h2><p>{row.summary.description}</p>
         <p>{t.expires} {dateText(row.expires_at, locale, "Africa/Kinshasa")} · Kinshasa</p>

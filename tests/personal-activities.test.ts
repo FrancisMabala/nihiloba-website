@@ -5,3 +5,18 @@ it('fails closed without Services capability',()=>{expect(()=>managedActivities(
 it('preserves multiple shops and selects the exact store',()=>{const value=managedActivities('wenze',{stores:[{public_ref:'WNS_one',name:'First'},{public_ref:'WNS_two',name:'Second',catalog_ready:true}]});expect(value.items).toHaveLength(2);expect(value.items[1].query).toBe('store=WNS_two');expect(value.setup).toBe(false);});
 
 it('never mistakes catalog readiness for publication',()=>{const value=managedActivities('wenze',{stores:[{public_ref:'WNS_hidden',name:'Private shop',catalog_ready:true,status:'active',visible:'false'},{public_ref:'WNS_unknown',name:'Unknown',catalog_ready:true}]});expect(value.items[0].published).toBe(false);expect(value.items[1].published).toBeNull();});
+
+it('retains incomplete, inactive and individual activity records without inventing publication',()=>{
+ const value=managedActivities('wenze',{stores:[
+  {public_ref:'WNZ_old',name:null,category:null,city:null,catalog_ready:false,status:'inactive',visible:'true'},
+  {public_ref:'WNZ_sale',name:'Personal sales',selling_mode:'individual',status:'active',visible:'true',catalog_ready:true},
+ ]});
+ expect(value.items).toHaveLength(2);
+ expect(value.items[0]).toMatchObject({status:'needsUpdate',published:false,missing:['name','location','category'],query:'store=WNZ_old&view=shop'});
+ expect(value.items[1].individual).toBe(true);
+});
+
+it('a missing legacy title does not discard the other authorized activities',()=>{
+ const value=managedActivities('restaurants',{items:[{public_ref:'RST_old',profile:{},status:'inactive'},{public_ref:'RST_current',profile:{name:'Kitchen'},status:'active'}]});
+ expect(value.items).toHaveLength(2);expect(value.items[0].status).toBe('needsUpdate');expect(value.items[1].name).toBe('Kitchen');
+});
