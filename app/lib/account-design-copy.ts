@@ -11,7 +11,7 @@ const text={
  methodProof:['Adding, replacing or removing a method requires an established passkey or recovery email.','L’ajout, le remplacement ou le retrait d’une méthode nécessite une clé d’accès ou un e-mail de récupération déjà actif.','Kobakisa, kobongola to kolongola nzela esengi fungola to e-mail ya kozongisa konti oyo esi esalaka.','Kuongeza, kubadilisha au kuondoa njia kunahitaji ufunguo au barua pepe ya urejeshaji iliyo tayari kutumika.'],
  sessionsHelp:['Sign out your other browsers after verifying your identity.','Déconnectez vos autres navigateurs après avoir vérifié votre identité.','Bimisa bokoti ya banavigateur mosusu nsima ya kondimisa yo.','Ondoa vipindi vya vivinjari vingine baada ya kuthibitisha utambulisho wako.'],
  danger:['Danger zone','Zone sensible','Esika ya bokebi','Eneo la tahadhari'],
- dangerHelp:['Account deletion is permanent. For a lost or stolen phone, use the protection and recovery process.','La suppression du compte est définitive. En cas de téléphone perdu ou volé, utilisez la procédure de protection et de récupération.','Kolongola konti ekoki kozongisama te. Soki telefone ebungi to bayibi yango, salela nzela ya bobateli mpe kozongisa konti.','Kufuta akaunti ni kwa kudumu. Kwa simu iliyopotea au kuibwa, tumia utaratibu wa ulinzi na urejeshaji.'],
+ dangerHelp:['Account deletion is permanent and cannot be undone.','La suppression du compte est définitive et irréversible.','Kolongola konti ekoki kozongisama te.','Kufuta akaunti ni kwa kudumu na hakuwezi kutenduliwa.'],
 } as const;
 export function accountDesignText(locale:Locale,key:keyof typeof text){return text[key][{en:0,fr:1,ln:2,sw:3}[locale]];}
 export function countryName(locale:Locale,code:string|null|undefined){

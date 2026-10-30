@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
-for(const width of [390,1440])for(const locale of ['fr','en','ln','sw'])test(`notifications ${locale} ${width}`,async({page})=>{
+import {messagesText} from '../../app/lib/messages-design-copy';
+for(const width of [390,1440])for(const locale of ['fr','en','ln','sw'] as const)test(`notifications ${locale} ${width}`,async({page})=>{
  let signedIn=true,read=false,ack=false;const actions:string[]=[];
  await page.route('**/api/**',async route=>{
   const path=new URL(route.request().url()).pathname.replace(/\/$/,'');const reply=(json:unknown,status=200)=>route.fulfill({json,status});
@@ -8,7 +9,7 @@ for(const width of [390,1440])for(const locale of ['fr','en','ln','sw'])test(`no
    if(path.endsWith('/count'))return reply({unread_count:read?0:1});
    if(path.endsWith('/actions')){const action=route.request().postDataJSON().action;actions.push(action);if(action==='read')read=true;if(action==='acknowledge')ack=true;return reply({updated:1});}
    if(path.endsWith('/handoff'))return reply({url:'https://wa.me/243899000000?text=SHIDA%20NOTIFICATION%20test'});
-   return reply({items:[{reference:'NTF_test',marketplace:'wenze',title:'Test order',description:'A new order awaits your response.',created_at:'2026-10-30T10:00:00Z',read,acknowledged:ack,action_required:true,expired:false,can_handoff:true,action_url:'https://nihiloba.com/fr/shida/seller/wenze'}],next_cursor:null});
+   return reply({items:new URL(route.request().url()).searchParams.get('mode')==='unread'&&read?[]:[{reference:'NTF_test',marketplace:'wenze',title:'Test order',description:'A new order awaits your response.',created_at:'2026-10-30T10:00:00Z',read,acknowledged:ack,action_required:true,expired:false,can_handoff:true,action_url:'https://nihiloba.com/fr/shida/seller/wenze'}],next_cursor:null});
   }
   return reply({},404);
  });
@@ -16,9 +17,9 @@ for(const width of [390,1440])for(const locale of ['fr','en','ln','sw'])test(`no
  await page.locator('.notification-bell').click();const panel=page.locator('.notification-panel');await expect(panel.getByText('Test order')).toBeVisible();
  await expect.poll(()=>actions.includes('view')).toBe(true);expect(actions).not.toContain('read');expect(actions).not.toContain('acknowledge');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await panel.locator(':scope > button').click();await expect.poll(()=>read).toBe(true);expect(ack).toBe(false);
+ await panel.getByRole('button',{name:messagesText(locale,'allRead'),exact:true}).click();await expect.poll(()=>read).toBe(true);expect(ack).toBe(false);
  await panel.locator('article button').last().click();await expect(panel.locator('a[href^="https://wa.me/"]')).toBeVisible();expect(ack).toBe(false);
- if(locale==='fr')await page.screenshot({path:`docs/evidence/notifications/center-${width}.png`});
- await panel.locator('article button').first().click();await expect.poll(()=>ack).toBe(true);await expect(page).toHaveURL(/view=messages/);
+ if(locale==='fr')await page.screenshot({path:`test-results/messages-evidence/legacy-center-${width}.png`});
+ expect(actions).not.toContain('acknowledge');await expect(page).toHaveURL(/view=messages/);
  signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));await expect(page.locator('.notification-center')).toHaveCount(0);
 });

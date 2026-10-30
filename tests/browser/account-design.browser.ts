@@ -32,7 +32,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1440]
  await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:`${output}/account-${locale}-${width}-expanded.png`,fullPage:true});
  await rows.nth(7).locator('summary').click();await expect(page.locator('.space-security-setting[open]')).toHaveCount(1);expect(state.writes).toBe(0);
  await expect(page.locator('.space-danger')).toContainText(accountDesignText(locale,'dangerHelp'));
- await expect(page.locator('.space-danger .space-lost-phone')).toHaveAttribute('href','?view=recovery');
+ await expect(page.locator('.account-protection a')).toHaveAttribute('href','?view=recovery');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 test('profile edits save through existing revision API, cancel discards changes',async({page})=>{

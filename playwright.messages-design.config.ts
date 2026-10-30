@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:['messages-design.browser.ts','account-design.browser.ts','notifications.browser.ts'],workers:1,timeout:45000,use:{baseURL:'http://127.0.0.1:3050',channel:'chrome',headless:true,serviceWorkers:'block',screenshot:'only-on-failure'},webServer:{command:'node node_modules/next/dist/bin/next start --hostname 127.0.0.1 -p 3050',url:'http://127.0.0.1:3050/shida',reuseExistingServer:true},outputDir:'test-results/messages-design',reporter:'list'});
