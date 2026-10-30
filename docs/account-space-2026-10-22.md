@@ -1,5 +1,33 @@
 # Mon espace navigation — 22 October 2026
 
+## 30 October implementation candidate (supersedes navigation below)
+
+Main navigation is Home / Markets / My space, with Manage added only after the
+backend confirms durable Personal activity ownership or current Organization
+management capabilities. Draft/inactive ownership remains discoverable. Refresh
+occurs on account changes, focus, online, visibility and a 30-second visible-page
+poll; backend mutations always recheck permission. First-activity creation remains
+in My space. Desktop and mobile share the same destinations and branding.
+
+My space groups Activities, Transactions, Messages and My account. Existing
+orders, requests, receipts, support, cart, language and management routes remain.
+The account dropdown has My space, Messages, Account settings, Change account and
+Sign out, without a repeated name or Manage entry. Mobile menus stay within the
+viewport. Seller headers share those account destinations.
+
+Messages displays the existing Notification Center inline, including authorized
+marketplace filters, categories, timestamps, unread state, actions and secure
+WhatsApp handoff. Activity is not represented as incoming WhatsApp chat. Modules
+without a notification source do not get fabricated events. Jobs, properties,
+hotels and transport without complete web management retain their existing
+WhatsApp entry; no new web dashboard is implied. Organization messages remain
+inside their independently authorized Business context.
+
+Focused validation and release evidence accompany the candidate. No production
+deployment is authorized by this task; backend 0208/APIs must precede frontends.
+
+## Historical 22 October design
+
 Approved design: forest-green and cream marketplace header with outlined basket, language and account controls; basket only in SHIDA. Desktop personal sidebar has Home, Orders, Requests, Messages, Receipts, grouped Manage my activities, then Account settings. Phone uses Home / Messages / Manage / Menu bottom navigation, with a native modal containing every destination. Business management links are grouped, with existing Services capability discovery preserved. Existing links still perform independent authorization.
 
 Account dropdown contains Mon espace, Account settings, Change account and Sign out. Shared seller headers use the same compact personal-account destinations and preserve unsaved-work navigation checks. The organization dashboard remains a separate authenticated destination; no personal-to-organization authority is inferred.

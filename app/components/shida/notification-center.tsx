@@ -24,8 +24,8 @@ export function safeActivityUrl(value:string|null) {
 }
 
 // Mount with a key containing the authenticated session and active context.
-export default function NotificationCenter({binding,apiBase,locale}:{binding:string;apiBase:string;locale:Locale}) {
- const t=copy[locale], [open,setOpen]=useState(false),[count,setCount]=useState<number|null>(null),[items,setItems]=useState<Notice[]>([]),[cursor,setCursor]=useState<string|null>(null),[mode,setMode]=useState('all'),[market,setMarket]=useState(''),[error,setError]=useState(false),[busy,setBusy]=useState(false),[ticket,setTicket]=useState<string|null>(null),[badge,setBadge]=useState(true);
+export default function NotificationCenter({binding,apiBase,locale,inline=false}:{binding:string;apiBase:string;locale:Locale;inline?:boolean}) {
+ const t=copy[locale], [open,setOpen]=useState(inline),[count,setCount]=useState<number|null>(null),[items,setItems]=useState<Notice[]>([]),[cursor,setCursor]=useState<string|null>(null),[mode,setMode]=useState('all'),[market,setMarket]=useState(''),[error,setError]=useState(false),[busy,setBusy]=useState(false),[ticket,setTicket]=useState<string|null>(null),[badge,setBadge]=useState(true);
  const panel=useRef<HTMLDivElement>(null),bell=useRef<HTMLButtonElement>(null),generation=useRef(0),seen=useRef(new Set<string>());
  const call=useCallback(async(path:string,body?:object,method='POST')=>{
   const res=await fetch(apiBase+path,{method:body?method:'GET',credentials:'include',cache:'no-store',headers:{'X-Shida-Session':binding,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
@@ -39,7 +39,7 @@ export default function NotificationCenter({binding,apiBase,locale}:{binding:str
  },[call,locale,market,mode,refresh]);
  useEffect(()=>{const epoch=generation;let live=true;const tick=()=>{if(live&&document.visibilityState==='visible')void refresh();};tick();const timer=setInterval(tick,30000);window.addEventListener('focus',tick);window.addEventListener('online',tick);document.addEventListener('visibilitychange',tick);return()=>{live=false;epoch.current++;clearInterval(timer);window.removeEventListener('focus',tick);window.removeEventListener('online',tick);document.removeEventListener('visibilitychange',tick);};},[refresh]);
  useEffect(()=>{const epoch=generation;const timer=open?setTimeout(()=>void load(),0):undefined;return()=>{clearTimeout(timer);epoch.current++;};},[open,load]);
- useEffect(()=>{if(!open)return;const first=panel.current?.querySelector<HTMLButtonElement>('button');first?.focus();const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){setOpen(false);bell.current?.focus();}};document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);},[open]);
+ useEffect(()=>{if(!open||inline)return;const first=panel.current?.querySelector<HTMLButtonElement>('button');first?.focus();const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){setOpen(false);bell.current?.focus();}};document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);},[open,inline]);
  useEffect(()=>{if(!open||!market)return;let live=true;void call('/preferences').then(data=>{if(live)setBadge(data.preferences.find((p:{marketplace:string})=>p.marketplace===market)?.optional_badge??true);}).catch(()=>{if(live)setError(true);});return()=>{live=false;};},[call,open,market]);
  useEffect(()=>{
   if(!open||!panel.current||!('IntersectionObserver' in window))return;
@@ -48,10 +48,10 @@ export default function NotificationCenter({binding,apiBase,locale}:{binding:str
  },[call,items,open]);
  async function act(references:string[],action:string){const g=generation.current;setBusy(true);try{await call('/actions',{references,action});if(g===generation.current)await load();}catch{if(g===generation.current){setError(true);setBusy(false);}}}
  async function handoff(reference:string){const g=generation.current;setBusy(true);setTicket(null);try{const data=await call('/'+reference+'/handoff',{});const url=new URL(data.url);if(g!==generation.current)return;if(url.origin!=='https://wa.me'||url.username||url.password)throw new Error();setTicket(url.href);}catch{if(g===generation.current)setError(true);}finally{if(g===generation.current)setBusy(false);}}
- return <div className="notification-center">
-  <button ref={bell} type="button" aria-expanded={open} aria-label={t[0]+(count===null?'':` (${count})`)} onClick={()=>setOpen(v=>!v)} className="notification-bell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>{t[0]}</span>{count!==null&&count>0&&<strong>{count>99?'99+':count}</strong>}</button>
+ return <div className={inline?"notification-center notification-inline":"notification-center"}>
+  {!inline&&<button ref={bell} type="button" aria-expanded={open} aria-label={t[0]+(count===null?'':` (${count})`)} onClick={()=>setOpen(v=>!v)} className="notification-bell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>{t[0]}</span>{count!==null&&count>0&&<strong>{count>99?'99+':count}</strong>}</button>}
   {open&&<div ref={panel} className="notification-panel" role="region" aria-label={t[0]}>
-   <header><h2>{t[0]}</h2><button onClick={()=>{setOpen(false);bell.current?.focus();}}>{t[1]}</button></header>
+   <header><h2>{t[0]}</h2>{!inline&&<button onClick={()=>{setOpen(false);bell.current?.focus();}}>{t[1]}</button>}</header>
    <div className="notification-filters"><select disabled={busy} aria-label={t[2]} value={mode} onChange={e=>{setItems([]);setMode(e.target.value);}}>{['all','unread','action_required'].map((v,i)=><option key={v} value={v}>{t[i+2]}</option>)}</select><select disabled={busy} aria-label={t[5]} value={market} onChange={e=>{setItems([]);setMarket(e.target.value);}}><option value="">{t[5]}</option>{modules.map((m,i)=><option key={m} value={m}>{moduleNames[locale][i]}</option>)}</select></div>
    {market&&market!=='security'&&<label><input type="checkbox" checked={badge} disabled={busy} onChange={async e=>{const value=e.target.checked,g=generation.current;setBusy(true);try{await call('/preferences',{marketplace:market,optional_badge:value},'PUT');if(g===generation.current){setBadge(value);await refresh();}}catch{if(g===generation.current)setError(true);}finally{if(g===generation.current)setBusy(false);}}}/>{t[18]}<small>{t[19]}</small></label>}
    {error&&<p role="alert">{t[13]} <button disabled={busy} onClick={()=>void load()}>{t[20]}</button></p>}

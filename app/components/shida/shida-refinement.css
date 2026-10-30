@@ -6,7 +6,7 @@ body .market-surface #main-content{flex:1;min-height:0}
 .shida-footer-row nav{display:flex;flex-wrap:wrap;gap:8px 20px}
 .shida-footer-row nav a{display:inline-flex;align-items:center;min-height:44px;font-size:.8rem}
 .shida-footer-row small{color:var(--mp-muted);font-size:.75rem}
-.shida-navigation{display:none;background:#fffefa}
+.shida-navigation{display:flex;justify-content:center;gap:8px;padding:8px 16px;background:#fffefa;border-bottom:1px solid #d9ddce}
 .wzp-sell-entry{border-top:1px solid #deddd1;margin-top:20px;padding-top:12px;display:flex;justify-content:flex-end}
 .shida-navigation :is(a,button){display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 14px;border:0;border-radius:8px;color:#173e32;background:transparent;font:600 .8rem/1.2 Arial,sans-serif;text-decoration:none;cursor:pointer}
 .shida-navigation svg{width:20px;height:20px;flex-shrink:0}
@@ -40,7 +40,7 @@ body .market-surface .mp-search .mp-food-search>label{align-self:stretch;align-c
 @media(max-width:1000px){body .market-surface .marketplace-public .wenze-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}body .market-surface .mp-search .mp-food-search{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
 @media(max-width:700px){
  .market-surface{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
- .shida-navigation{position:fixed;z-index:50;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));border:0;border-top:1px solid #d9ddce;box-shadow:0 -3px 12px #173e3208}
+ .shida-navigation{position:fixed;z-index:50;bottom:0;left:0;right:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:2px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));border:0;border-top:1px solid #d9ddce;box-shadow:0 -3px 12px #173e3208}
  .shida-navigation :is(a,button){flex-direction:column;gap:4px;padding:6px 2px;min-height:58px;font-size:clamp(.62rem,2.6vw,.75rem);min-width:0;overflow-wrap:anywhere}
  .shida-navigation svg{width:22px;height:22px}
  .shida-navigation[data-keyboard=true]{display:none}

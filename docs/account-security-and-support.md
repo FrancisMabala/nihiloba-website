@@ -2,6 +2,26 @@
 
 29 October 2026 implementation candidate. This document is not deployment proof.
 
+30 October candidate: account settings now show masked verified primary-number
+information and canonical profile fields in view mode, with explicit edit/save/
+cancel. The private profile API uses the same session binding, exact origin,
+no-store transport, canonical backend validation and optimistic revision policy.
+It is available independently of the web-registration feature flag.
+
+Optional secondary phone, passphrase and generated code enrollment reuse the
+existing passkey/email proof UI. Adding, replacing and removing methods requires
+an established independent method; every new credential matures for 24 hours.
+The code is shown once in memory and must be stored outside the primary phone.
+Passphrases and OTP fields are cleared after use. No credentials enter browser
+storage, analytics or prepared WhatsApp messages. Recovery evidence is submitted
+through the existing HttpOnly browser-bound report, followed by independent
+review, new-number verification, waiting period and session revocation.
+
+Deploy backend migration 0208/APIs first, only after explicit approval. Existing
+WhatsApp authentication and urgent templates remain unchanged. Roll back UI code
+if needed without dropping enrolled backend credentials. No frontend dependency
+or environment variable is added by these account features.
+
 The account space now exposes Help & Support and Account security in EN/FR/LN/SW,
 including mobile navigation. Personal tickets use the existing backend support
 system for creation, history, replies and closing. No Organization authority is

@@ -6,7 +6,7 @@ const cookieName='__Host-shida-recovery';
 const fail=(status:number)=>Response.json({detail:'recovery_unavailable'},{status,headers:PRIVATE_HEADERS});
 export async function POST(request:Request,context:{params:Promise<{path?:string[]}>}){
  const path=((await context.params).path??[]).join('/');
- if(!['','verify','status','phone/start','phone/verify','complete'].includes(path)||new URL(request.url).search)return fail(404);
+ if(!['','verify','status','phone/start','phone/verify','complete','evidence/phone','evidence/verify'].includes(path)||new URL(request.url).search)return fail(404);
  const origin=personalRequestOrigin(request);if(!origin||request.headers.get('sec-fetch-site')==='cross-site')return fail(403);
  if(!request.headers.get('content-type')?.startsWith('application/json'))return fail(415);
  const reader=request.body?.getReader(),chunks:Uint8Array[]=[];let size=0;

@@ -1,5 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {accountSpaceCopy} from '../../app/lib/account-space-copy';
+import {accountNavigationCopy} from '../../app/lib/account-navigation-copy';
 import {marketplaceAccountCopy} from '../../app/components/shida/marketplace-account-copy';
 async function fixture(page:Page){
  const state={signedIn:true,name:'Francis Mabala',binding:'a'.repeat(64),foodStatus:200,provider:true,privateReads:0,writes:0};
@@ -8,6 +9,7 @@ async function fixture(page:Page){
   if(route.request().method()!=='GET')state.writes++;
   if(path.endsWith('/employment/session'))return state.signedIn?reply({binding:state.binding,user:{display_name:state.name}}):reply({},401);
   if(path.endsWith('/employment/logout')){state.signedIn=false;return reply({authenticated:false});}
+  if(path.endsWith('/security/navigation'))return reply({can_manage:state.provider,markets:state.provider?['services']:[],organization_management:false});
   if(path.endsWith('/personal/services'))return reply({profiles:state.provider?[{public_ref:'SVC_demo',service_name:'Repairs',visible_to_customers:true}]:[]});
   if(path.endsWith('/wenze/stores'))return reply({stores:[]});
   if(path.endsWith('/personal/restaurants'))return reply({items:[],total:0,actions:[]});
@@ -24,9 +26,10 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [390,820,1
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  if(locale==='fr')await page.screenshot({path:`docs/evidence/account-space/home-${width}.png`});
  await page.getByRole('button',{name:`${a.account} · Francis Mabala`,exact:true}).click();
- const account=page.locator('.market-menu');await expect(account.getByRole('link')).toHaveCount(3);await expect(account.getByRole('link',{name:t.manage,exact:true})).toHaveAttribute('href',`${prefix}/shida/space?view=management`);await expect(account.getByRole('link',{name:t.settings,exact:true})).toBeVisible();await expect(account.getByRole('button')).toHaveCount(2);await page.keyboard.press('Escape');
- if(width<=700){await page.locator('.shida-navigation').getByRole('button',{name:t.menu,exact:true}).click();const menu=page.locator('#shida-menu');await expect(menu).toBeVisible();await expect(menu.getByRole('link',{name:t.receipts,exact:true})).toBeVisible();await page.keyboard.press('Escape');await expect(menu).not.toBeVisible();await expect(page.locator('.shida-navigation').getByRole('button',{name:t.menu,exact:true})).toBeFocused();await page.locator('.shida-navigation').getByRole('link').nth(3).click();await expect(page.locator('.space-managed-grid')).toContainText('Repairs');}
- else{await expect(page.locator('.shida-navigation')).toBeHidden();await page.getByRole('button',{name:`${a.account} · Francis Mabala`,exact:true}).click();await account.getByRole('link',{name:t.manage,exact:true}).click();await expect(page.locator('.space-managed-grid')).toContainText('Repairs');}
+ const account=page.locator('.market-menu');await expect(account.getByRole('link')).toHaveCount(3);await expect(account.getByRole('link',{name:t.messages,exact:true})).toHaveAttribute('href',`${prefix}/shida/space?view=messages`);await expect(account.getByRole('link',{name:t.settings,exact:true})).toBeVisible();await expect(account.getByRole('button')).toHaveCount(2);await page.keyboard.press('Escape');
+ if(width<=700){await expect(page.locator('.shida-navigation').getByRole('link')).toHaveCount(4);await page.locator('.shida-navigation').getByRole('link').nth(3).click();}
+ else{await page.locator('.space-sidebar').getByRole('link',{name:accountNavigationCopy[locale].activities,exact:true}).click();}
+ await expect(page.locator('.space-managed-grid')).toContainText('Repairs');
  await page.screenshot({path:`docs/evidence/account-space/${locale}-${width}.png`,fullPage:true});expect(state.writes).toBe(0);
  await page.goto(`${prefix}/shida/space?view=receipts`);await expect(page.locator('.space-content').getByRole('link',{name:t.bills,exact:true})).toHaveAttribute('href',`${prefix}/shida/service-bills`);
  await page.goto(`${prefix}/shida/space?view=inbox`);await expect(page.locator('h1')).toHaveText(t.messages);

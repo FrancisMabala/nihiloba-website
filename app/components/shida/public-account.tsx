@@ -71,7 +71,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
   return <div className="shida-public-account" lang={locale}>
     <MarketplaceControls key={session?.binding||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref} guestLabel={t.signIn}
       registrationLink={!checking&&!session&&process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==="true"?{label:r.create,href:`${prefix}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}:undefined}
-      links={[{label:a.space,href:spaceHref},{label:accountSpaceCopy[locale].manage,href:`${spaceHref}?view=management`},{label:accountSpaceCopy[locale].settings,href:`${spaceHref}?view=settings`}]}
+      links={[{label:a.space,href:spaceHref},{label:accountSpaceCopy[locale].messages,href:`${spaceHref}?view=messages`},{label:accountSpaceCopy[locale].settings,href:`${spaceHref}?view=settings`}]}
       languages={/\/shida\/?$/.test(pathname)||/\/shida\/(restaurants|services|seller|space|service-requests|service-bills)(?:\/|$)/.test(pathname)?["fr","en","ln","sw"]:["fr","en"]}
       onLanguage={(lang:MarketplaceLocale)=>{if(leaveWork())window.location.assign(marketplaceLanguagePath(pathname,lang)+window.location.search);}}
       onLogin={()=>setOpen(true)} onAccount={()=>{setOpen(true);void logout(true);}} onLogout={()=>{setOpen(true);void logout();}} pending={pending} beforeNavigate={leaveWork}/>
@@ -79,7 +79,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
       {open&&<div className="shida-account-content">
         <div className="shida-account-heading"><span>SHIDA</span><button type="button" aria-label={t.close} onClick={()=>dialog.current?.close()}>×</button></div>
         <h2 id={title} className={!session?"sr-only":undefined}>{session?t.title:t.signIn}</h2>
-        {session&&<nav className="shida-account-actions" aria-label={a.account}><a href={spaceHref}>{a.space}</a><a href={`${spaceHref}?view=management`}>{accountSpaceCopy[locale].manage}</a><a href={`${spaceHref}?view=settings`}>{accountSpaceCopy[locale].settings}</a></nav>}
+        {session&&<nav className="shida-account-actions" aria-label={a.account}><a href={spaceHref}>{a.space}</a><a href={`${spaceHref}?view=messages`}>{accountSpaceCopy[locale].messages}</a><a href={`${spaceHref}?view=settings`}>{accountSpaceCopy[locale].settings}</a></nav>}
         {pending?<p role="status">{t.working}</p>:logoutFailed?<div role="alert"><p>{t.logoutFailed}</p><button className="button button-secondary" type="button" onClick={()=>void logout(true)}>{t.retry}</button></div>:session?<div className="shida-account-signed-in">
           <p>{t.signedIn}<strong>{session.user.display_name}</strong></p>
           <button className="button button-primary" type="button" onClick={()=>dialog.current?.close()}>{t.close}</button>
