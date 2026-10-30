@@ -1,6 +1,5 @@
 'use client';
 import {SpaceSidebar} from './space-sidebar';
-import {useRouter} from 'next/navigation';
 import {useEffect,useState} from 'react';
 import type {MarketplaceLocale} from './marketplace-account-copy';
 import {marketplaceAccountCopy} from './marketplace-account-copy';
@@ -15,6 +14,7 @@ import {PersonalActivities} from './personal-activities';
 import {PersonalActivityOverview} from './personal-activity-overview';
 import {workspaceText} from '../../lib/personal-workspace-copy';
 import './account-space.css';
+import './account-settings-design.css';
 import {AccountRecovery} from './account-recovery';
 import {securityText} from '../../lib/account-security-copy';
 import {AccountSecurity} from './account-security';
@@ -26,7 +26,6 @@ import {accountNavigationCopy} from '../../lib/account-navigation-copy';
 import {mySpaceCopy} from '../../lib/my-space-refinement-copy';
 type View='home'|'orders'|'requests'|'messages'|'receipts'|'settings'|'management'|'support'|'recovery'|'transactions';
 export function AccountSpace({locale,initialView,inbox=false}:{locale:MarketplaceLocale;initialView?:string;inbox?:boolean}){
- const router=useRouter();
  const w=(key:Parameters<typeof workspaceText>[1])=>workspaceText(locale,key);
  const t=accountSpaceCopy[locale],a=marketplaceAccountCopy[locale],prefix=locale==='en'?'':`/${locale}`,bilingual=locale==='en'?'':'/fr',base=`${prefix}/shida/space`;
  const allowed:View[]=['home','orders','requests','messages','receipts','settings','management','support','recovery','transactions'];
@@ -53,7 +52,7 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
  const rows=(items:[string,string,SpaceIconName][])=> <div className="space-destinations">{items.map(([label,url,icon])=><a href={url} key={url}><SpaceIcon name={icon}/><span>{label}</span></a>)}</div>;
  const orders:[string,string,SpaceIconName][]=[[t.wenzeOrders,`${bilingual}/shida/wenze/orders`,'shop'],[t.foodOrders,`${prefix}/shida/restaurant-orders`,'restaurant']];
  const requests:[string,string,SpaceIconName][]=[[t.serviceRequests,`${prefix}/shida/service-requests`,'requests'],[w('applications'),locale==='fr'?'/fr/shida/mes-candidatures':`${prefix}/shida/my-applications`,'requests'],[w('reservations'),`${prefix}/shida/restaurant-reservations`,'restaurant']];
- return <div className="account-space" lang={locale}>
+ return <div className={`account-space${view==='settings'?' account-settings-page':''}`} lang={locale}>
   <SpaceSidebar locale={locale} view={view}/>
   <div className="space-content"><p className="space-eyebrow">SHIDA / {a.space}</p>
    <h1>{view==='home'?<>{t.hello}{session?` ${session.user.display_name.split(/\s+/)[0]}`:''}</>:view==='management'?n.activities:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
@@ -73,10 +72,9 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
    {view==='messages'&&!session&&!checking&&<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>}
    {view==='receipts'&&<><p className="space-intro">{t.receiptNote}</p>{rows([[t.bills,`${prefix}/shida/service-bills`,'receipts']])}</>}
    {view==='management'&&<><p className="space-intro">{t.managementNote}</p>{checking?<p role="status">{t.loading}</p>:session?<PersonalActivities key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>}</>}
-   {view==='settings'&&<section className="space-settings"><label htmlFor="space-language">{t.language}</label><select id="space-language" value={locale} onChange={event=>router.push(`${event.target.value==='en'?'':`/${event.target.value}`}/shida/space?view=settings`)}>{(['fr','en','ln','sw'] as const).map(language=><option key={language} value={language}>{({fr:'Français',en:'English',ln:'Lingala',sw:'Swahili'})[language]}</option>)}</select></section>}
    {!session&&securityResult&&<p role="status">{securityText(locale,securityResult)}</p>}
-   {view==='settings'&&session&&<PersonalProfileSettings key={session.binding} binding={session.binding} locale={locale}/>}
-   {view==='settings'&&session&&<AccountSecurity key={session.binding} binding={session.binding} locale={locale} onCompleted={setSecurityResult}/>}
+   {view==='settings'&&session&&<PersonalProfileSettings key={'profile:'+session.binding} binding={session.binding} locale={locale}/>}
+   {view==='settings'&&session&&<AccountSecurity key={'security:'+session.binding} binding={session.binding} locale={locale} onCompleted={setSecurityResult}/>}
 
   </div>
  </div>;

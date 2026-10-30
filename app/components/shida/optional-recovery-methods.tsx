@@ -1,4 +1,6 @@
 'use client';
+import {accountDesignText} from '../../lib/account-design-copy';
+import {accountNavigationCopy} from '../../lib/account-navigation-copy';
 import {AccountSetting} from './account-setting';
 import {spaceSettingsCopy} from '../../lib/space-settings-copy';
 import {useEffect,useRef,useState} from 'react';
@@ -9,7 +11,8 @@ type Kind='phone'|'passphrase'|'code';
 type Method={kind:Kind;phone:string|null;ready_at:string|null;verified:boolean;consumed:boolean};
 export function OptionalRecoveryMethods({locale,binding,authorize,onBusy}:{locale:keyof typeof optionalRecoveryCopy;binding:string;authorize:(action:string)=>Promise<string>;onBusy:(value:boolean)=>void}){
  const [checkedAt,setCheckedAt]=useState(()=>Date.now());
- const copy=mySpaceCopy[locale];
+ const copy=mySpaceCopy[locale],cancel=accountNavigationCopy[locale].cancel;
+ const d=(key:Parameters<typeof accountDesignText>[1])=>accountDesignText(locale,key);
  const [loadState,setLoadState]=useState<'loading'|'loaded'|'error'|'auth'>('loading'),[attempt,setAttempt]=useState(0);
  const t=optionalRecoveryCopy[locale],lock=useRef(false),live=useRef(true);
  const [methods,setMethods]=useState<Method[]>([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[phrase,setPhrase]=useState(''),[phone,setPhone]=useState(''),[reference,setReference]=useState(''),[otp,setOtp]=useState(''),[secret,setSecret]=useState('');
@@ -21,10 +24,10 @@ export function OptionalRecoveryMethods({locale,binding,authorize,onBusy}:{local
  const status=(kind:Kind)=>{const method=methods.find(m=>m.kind===kind);return !method?spaceSettingsCopy[locale].unset:method.consumed?t.used:!method.verified?t.unverified:!method.ready_at||Date.parse(method.ready_at)>checkedAt?t.waiting:t.verified;};
  const existing=(kind:Kind)=>methods.filter(m=>m.kind===kind).map(method=><div key={method.kind}><p>{method.phone}{method.ready_at&&<> · {t.ready}: {new Date(method.ready_at).toLocaleString(locale)}</>}</p><button type="button" onClick={()=>void run(async()=>{await protectedCall('remove/',{kind:method.kind});setSecret('');})}>{t.remove} — {t[method.kind]}</button></div>);
  return <section id="optional-recovery">{notice&&<p role="status">{notice}</p>}{loadState==='loading'&&<p role="status">{({en:'Loading…',fr:'Chargement…',ln:'Kozela…',sw:'Inapakia…'})[locale]}</p>}{(loadState==='error'||loadState==='auth')&&<div role="alert"><p>{loadState==='auth'?copy.auth:copy.loadError}</p><button onClick={()=>{setLoadState('loading');setAttempt(v=>v+1);}}>{copy.retry}</button></div>}<fieldset disabled={busy||loadState!=='loaded'}>
- <AccountSetting title={t.phone} status={loadState==='loaded'?status('phone'):undefined}><p>{t.intro}</p>{existing('phone')}
+ <AccountSetting icon="phone" cancel={cancel} onCancel={()=>{setPhone('');setReference('');setOtp('');}} title={t.phone} status={loadState==='loaded'?status('phone'):undefined}><p>{d('phoneHelp')}</p>{existing('phone')}<p className="space-security-requirement">{d('methodProof')}</p>
  <form onSubmit={e=>{e.preventDefault();void run(async()=>{if(reference){await api('phone/verify/',{reference,code:otp});setReference('');setOtp('');setPhone('');setNotice(t.saved);}else{const result=await protectedCall('phone/start/',{phone,language:locale});setReference(result.reference);}});}}><label>{reference?t.proof:t.phone}<input type={reference?'text':'tel'} inputMode={reference?'numeric':'tel'} autoComplete={reference?'one-time-code':'off'} value={reference?otp:phone} onChange={e=>reference?setOtp(e.target.value):setPhone(e.target.value)} maxLength={reference?6:32} pattern={reference?'[0-9]{6}':undefined} required/></label>{reference&&<p>{t.unverified}</p>}<button>{reference?t.verify:t.send}</button>{reference&&<button type="button" onClick={()=>{setReference('');setOtp('');}}>{t.replace}</button>}</form>
- </AccountSetting><AccountSetting title={t.passphrase} status={loadState==='loaded'?status('passphrase'):undefined}><p>{t.intro}</p>{existing('passphrase')}
+ </AccountSetting><AccountSetting icon="lock" cancel={cancel} onCancel={()=>setPhrase('')} title={t.passphrase} status={loadState==='loaded'?status('passphrase'):undefined}><p>{d('passphraseHelp')}</p>{existing('passphrase')}<p className="space-security-requirement">{d('methodProof')}</p>
  <form onSubmit={e=>{e.preventDefault();const value=phrase;setPhrase('');void run(async()=>{await protectedCall('set/',{kind:'passphrase',value});setNotice(t.saved);});}}><label>{t.passphrase}<input type="password" autoComplete="new-password" value={phrase} onChange={e=>setPhrase(e.target.value)} minLength={20} maxLength={256} required/></label><p>{t.strength}</p><button>{t.save}</button></form>
- </AccountSetting><AccountSetting title={t.code} status={loadState==='loaded'?status('code'):undefined}><p>{t.intro}</p>{existing('code')}<p>{t.store}</p>{secret?<><output className="recovery-secret">{secret}</output><button type="button" onClick={()=>setSecret('')}>{t.hide}</button></>:<button type="button" onClick={()=>void run(async()=>{const value=await protectedCall('set/',{kind:'code'});if(live.current){setSecret(value.code);setNotice(t.saved);}})}>{t.generate}</button>}
+ </AccountSetting><AccountSetting icon="shield" cancel={cancel} onCancel={()=>setSecret('')} title={t.code} status={loadState==='loaded'?status('code'):undefined}><p>{d('codeHelp')}</p>{existing('code')}<p className="space-security-requirement">{d('methodProof')}</p><p>{t.store}</p>{secret?<><output className="recovery-secret">{secret}</output><button type="button" onClick={()=>setSecret('')}>{t.hide}</button></>:<button type="button" onClick={()=>void run(async()=>{const value=await protectedCall('set/',{kind:'code'});if(live.current){setSecret(value.code);setNotice(t.saved);}})}>{t.generate}</button>}
  </AccountSetting></fieldset></section>;
 }

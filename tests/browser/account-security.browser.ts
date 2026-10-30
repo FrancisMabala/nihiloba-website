@@ -42,7 +42,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
  await page.goto(`${prefix}/shida/space/?view=settings`);
  await expect(page.getByRole('heading',{name:securityText(locale,'title'),exact:true})).toBeVisible();
  await expect(page.locator('#account-deletion summary')).toBeVisible();
- await expect(page.getByRole('link',{name:mySpaceCopy[locale].lost+' →',exact:true})).toBeVisible();
+ await expect(page.getByRole('link',{name:mySpaceCopy[locale].lost,exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.goto(`${prefix}/shida/space/?view=recovery`);
  const t=recoveryCopy[locale];await page.getByLabel(t.phone,{exact:true}).fill('243800000000');await page.getByLabel(t.email,{exact:true}).fill('synthetic@example.test');await page.getByLabel(t.message,{exact:true}).fill('Synthetic lost phone for account review');await page.getByRole('button',{name:t.send,exact:true}).click();
@@ -56,7 +56,7 @@ test('support creates, replies and closes through the account space',async({page
 });
 test('real browser passkey enrollment and recovery-email step-up',async({page,context})=>{
  const state=await fixture(page);const cdp=await context.newCDPSession(page);await cdp.send('WebAuthn.enable');await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}});
- await page.goto('http://localhost:3044/shida/space/?view=settings');await page.locator('summary').filter({hasText:securityText('en','passkey')}).click();await page.getByRole('button',{name:securityText('en','passkey'),exact:true}).click();await expect.poll(()=>state.registered).toBe(true);
+ await page.goto('http://localhost:3044/shida/space/?view=settings');await page.locator('summary').filter({hasText:'Passkey'}).click();await page.getByRole('button',{name:securityText('en','passkey'),exact:true}).click();await expect.poll(()=>state.registered).toBe(true);
  await page.locator('summary').filter({hasText:securityText('en','email')}).click();await page.getByLabel(securityText('en','email'),{exact:true}).fill('synthetic@example.test');await page.getByRole('button',{name:securityText('en','send'),exact:true}).first().click();await page.getByLabel(securityText('en','code'),{exact:true}).fill('12345678');await page.getByRole('button',{name:securityText('en','verify'),exact:true}).click();await expect.poll(()=>state.email).toBe(true);
  await page.getByLabel(securityText('en','preferEmail'),{exact:true}).check();await page.locator('summary').filter({hasText:securityText('en','revoke')}).click();await page.getByRole('button',{name:securityText('en','revoke'),exact:true}).click();
  const region=page.getByRole('region',{name:securityText('en','emailProof'),exact:true});await region.getByLabel(securityText('en','code'),{exact:true}).fill('12345678');await region.getByRole('button',{name:securityText('en','verify'),exact:true}).click();await expect(region).toHaveCount(0);expect(state.proof).toBe(true);

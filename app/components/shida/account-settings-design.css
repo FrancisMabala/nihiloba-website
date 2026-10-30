@@ -1,0 +1,47 @@
+/* Approved My Account reference. Scope density changes to this page only. */
+.account-settings-page{grid-template-columns:230px minmax(0,1fr);max-width:1320px}
+.account-settings-page .space-content{padding:24px 30px 48px}
+.account-settings-page .space-eyebrow{display:none}
+.account-settings-page h1{font-size:36px;margin:0 0 18px}
+.account-settings-page .space-sidebar{padding-top:24px}
+.account-settings-page .space-sidebar h2{font-size:24px;margin-bottom:18px}
+.account-settings-page .space-sidebar nav>a{min-height:44px;padding:10px 12px;font-size:15px}
+.account-settings-page .space-profile,.account-settings-page .space-security{width:100%;margin:0 0 18px;padding:16px 18px;border-radius:9px;background:#fffefb;box-shadow:none}
+.account-settings-page .space-profile{display:block}
+.account-settings-page h2{font-size:26px;margin:0 0 8px}
+.account-settings-page .space-section-heading{margin:0 0 2px}
+.account-settings-page .space-section-heading h2{margin:0}
+.account-settings-page .space-section-heading button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;border-radius:6px;font-size:14px}
+.account-settings-page .space-section-heading svg{width:17px;height:17px}
+.account-settings-page .space-profile-details>div{grid-template-columns:minmax(150px,29%) minmax(0,1fr);padding:6px 0;gap:16px;font-size:15px}
+.account-settings-page .space-profile-details dt{font-weight:400;color:#40565a}
+.account-settings-page .space-profile-details dd{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.account-settings-page .space-verified{display:inline-flex;align-items:center;gap:5px;margin:0;padding:2px 8px;background:#e4f1e2;color:#287840;font-size:12px;border-radius:5px}
+.account-settings-page .space-verified svg{width:14px;height:14px;background:#36894d;color:white;border-radius:50%;padding:2px}
+.account-settings-page .space-security-intro,.account-settings-page .space-security-delay{margin:0 0 4px;color:#40565a;font-size:15px;line-height:1.5}
+.account-settings-page .space-security-delay{margin-bottom:12px;font-size:14px}
+.account-settings-page .space-security-setting{margin:5px 0;border-radius:6px}
+.account-settings-page .space-security-setting>summary{display:grid;grid-template-columns:26px minmax(0,1fr) minmax(0,1fr) 16px;gap:14px;min-height:44px;padding:7px 16px;font-size:15px;line-height:1.35}
+.account-settings-page .space-security-setting>summary>svg{width:22px;height:22px}
+.account-settings-page .space-security-setting>summary:after{content:none}
+.account-settings-page .space-security-setting small{justify-self:start;margin:0;padding:3px 8px;font-size:12px;border-radius:4px;max-width:100%}
+.account-settings-page .space-setting-chevron{grid-column:4;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);justify-self:center}
+.account-settings-page details[open]>.space-setting-chevron,.account-settings-page details[open]>summary>.space-setting-chevron{transform:rotate(225deg)}
+.account-settings-page .space-security-setting[open]{background:#f6f8f3;border-color:#cdd6cc}
+.account-settings-page .space-security-detail{border-top:0;padding:0 54px 12px}
+.account-settings-page .space-security-detail p{margin:10px 0;font-size:15px;line-height:1.5;color:#53605b}
+.account-settings-page .space-security-detail .space-security-requirement{font-size:14px}
+.account-settings-page .space-security-detail label{margin:10px 0;font-size:15px;font-weight:400;gap:6px}
+.account-settings-page .space-security-detail input{border-radius:6px;background:#fff}
+.account-settings-page .space-security-detail button{border-radius:6px;font-size:14px;margin-top:6px;margin-bottom:0}
+.account-settings-page .space-security-detail form{display:inline}
+.account-settings-page .space-security-detail button.space-setting-cancel{background:#fffefb;color:#203f34;border-color:#d8d3c4}
+.account-settings-page .space-danger{margin-top:-10px;padding-top:14px;padding-bottom:14px}
+.account-settings-page .space-danger>header{display:flex;align-items:center;gap:12px;color:#a52e24}
+.account-settings-page .space-danger h2{font-size:20px;margin:0}
+.account-settings-page .space-danger>p{font-size:14px;margin:4px 0 10px;color:#625e58}
+.account-settings-page .space-danger summary>svg,.account-settings-page .space-lost-phone>svg{color:#a52e24}
+.account-settings-page .space-lost-phone{display:flex;gap:14px;margin:5px 0 0;padding:9px 16px;min-height:46px;border:1px solid #dedbd0;border-radius:6px;font-size:15px;font-weight:600;text-decoration:none;color:#203f34}
+.account-settings-page .space-lost-phone>span:last-child{margin-left:auto;font-size:22px;line-height:1}
+@media(max-width:850px){.account-settings-page{grid-template-columns:200px minmax(0,1fr)}.account-settings-page .space-content{padding:24px 20px 40px}.account-settings-page .space-security-detail{padding-left:20px;padding-right:20px}}
+@media(max-width:700px){.account-settings-page{display:block}.account-settings-page .space-content{padding:22px 14px 32px}.account-settings-page h1{font-size:32px}.account-settings-page h2{font-size:25px}.account-settings-page .space-profile,.account-settings-page .space-security{padding:16px 14px}.account-settings-page .space-profile-details>div{grid-template-columns:1fr;gap:4px;padding:10px 0}.account-settings-page .space-security-setting>summary{grid-template-columns:22px minmax(0,1fr) 12px;gap:8px 12px;padding:10px;min-height:48px}.account-settings-page .space-security-setting small{grid-column:2;grid-row:2}.account-settings-page .space-setting-chevron{grid-column:3;grid-row:1}.account-settings-page .space-security-detail{padding:0 12px 14px}.account-settings-page .space-security-detail button{width:100%;margin:8px 0 0}.account-settings-page .space-lost-phone{padding:10px;gap:12px}.account-settings-page .space-section-heading button{min-height:44px}}

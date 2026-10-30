@@ -39,7 +39,7 @@ for(const status of [401,503])test(`account load ${status} ends loading and offe
  await session(page);
  await page.route('**/api/shida/personal/security/**',route=>route.fulfill({status,json:{detail:'security_unavailable'}}));
  await page.goto('/fr/shida/space?view=settings');
- await expect(page.locator('.space-security')).not.toContainText('Chargement…');
+ await expect(page.locator('.space-account-security')).not.toContainText('Chargement…');
  await expect(page.locator('.space-security [role="alert"]')).toContainText(status===401?'Reconnectez-vous':'temporairement indisponibles');
  await expect(page.locator('.registration-card [role="alert"]')).toHaveCount(1);
  await expect(page.locator('.registration-card')).not.toContainText('modification n’a pu');

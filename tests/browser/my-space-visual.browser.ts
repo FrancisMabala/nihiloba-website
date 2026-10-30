@@ -46,7 +46,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`preference persistence 
 test('profile cancel discards edits and security forms start collapsed',async({page})=>{
  await fixture(page);await page.goto('/shida/space?view=settings');const profile=page.locator('.space-profile');
  await profile.getByRole('button',{name:'Edit',exact:true}).click();await profile.locator('#profile-personal_name').fill('Unsaved');await profile.getByRole('button',{name:'Cancel',exact:true}).click();await expect(profile).toContainText('Demo Account');await profile.getByRole('button',{name:'Edit',exact:true}).click();await expect(profile.locator('#profile-personal_name')).toHaveValue('Demo Account');
- await expect(page.locator('.space-security-setting[open]')).toHaveCount(0);const setting=page.locator('.space-security-setting').first();await expect(setting.locator('summary')).toContainText('Not configured');await setting.locator('summary').focus();await page.keyboard.press('Enter');await expect(setting).toHaveAttribute('open');await expect(setting.getByRole('button')).toBeVisible();
+ await expect(page.locator('.space-security-setting[open]')).toHaveCount(0);const setting=page.locator('.space-security-setting').first();await expect(setting.locator('summary')).toContainText('Not configured');await setting.locator('summary').focus();await page.keyboard.press('Enter');await expect(setting).toHaveAttribute('open');await expect(setting.getByRole('button',{name:'Add a passkey',exact:true})).toBeVisible();
 });
 
 test('preference failure does not claim a default or save',async({page})=>{
