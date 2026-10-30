@@ -1,4 +1,6 @@
 "use client";
+import {SpaceSidebar} from './space-sidebar';
+import './account-space.css';
 import {TransactionEmpty} from "./transaction-empty";
 import Link from "next/link";
 import {workspaceText} from "../../lib/personal-workspace-copy";
@@ -52,7 +54,7 @@ export function PersonalServiceRequests(props: Props) {
       window.removeEventListener("focus", focus); window.removeEventListener("online", focus); window.removeEventListener("offline", disconnected);
       document.removeEventListener("visibilitychange", visible);};
   }, [attempt]);
-  return <main lang={locale}>
+  return <main lang={locale} className="account-space space-transaction-page"><SpaceSidebar locale={locale} view="transactions" onNavigate={event=>{if(!leaveWork())event.preventDefault();}}/><div className="space-content">
     <nav className="svc-request"><Link href={`${locale==="en"?"":`/${locale}`}/shida/space?view=requests`} onClick={event=>{if(!leaveWork())event.preventDefault();}}>← {workspaceText(locale,"back")}</Link><span aria-hidden="true"> · </span><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/services`} onClick={event => {if (!leaveWork()) event.preventDefault();}}>SHIDA · Services</Link></nav>
     {loading ? <p className="svc-request" role="status">{t.loading}</p> : session ?
       <fieldset disabled={offline} inert={offline} style={{border: 0, padding: 0, margin: 0, minWidth: 0}}>
@@ -62,7 +64,7 @@ export function PersonalServiceRequests(props: Props) {
         <PersonalWhatsAppLogin locale={locale} onAuthenticated={() => {setLoading(true); setAttempt(value => value + 1);}}/>
       </section>}
     {offline && <section className="svc-request"><p role="status">{t.offline}</p><button onClick={() => setAttempt(value => value + 1)}>{t.retry}</button></section>}
-  </main>;
+  </div></main>;
 }
 function CustomerRequests({locale, binding, briefRef, newRequest, requestRef, bookingRef, directRef, onDenied}: Props & {binding: string; onDenied: () => void}) {
   const t = requestWords(locale);

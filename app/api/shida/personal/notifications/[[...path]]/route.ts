@@ -8,8 +8,8 @@ const fail = (status: number) => Response.json({ detail: "notification_unavailab
 async function handle(request: Request, context: Context) {
   const path = ((await context.params).path ?? []).join("/");
   const reference = "NTF_[A-Za-z0-9_-]{1,36}";
-  const allowed = request.method === "GET" ? path === "" || ['count','preferences'].includes(path) || new RegExp(`^${reference}$`).test(path)
-    : request.method === "PUT" ? path === 'preferences' : request.method === "POST" && (path === 'actions' || new RegExp(`^${reference}/handoff$`).test(path));
+  const allowed = request.method === "GET" ? path === "" || ['count','preferences','delivery-preferences'].includes(path) || new RegExp(`^${reference}$`).test(path)
+    : request.method === "PUT" ? ['preferences','delivery-preferences'].includes(path) : request.method === "POST" && (path === 'actions' || new RegExp(`^${reference}/handoff$`).test(path));
   const query = new URL(request.url).searchParams;
   const keys = path === '' ? ['language','marketplace','mode','before','limit'] : ['language'];
   if (!allowed || [...query].some(([k,v])=>!keys.includes(k)||query.getAll(k).length!==1||v.length>64)) return fail(404);

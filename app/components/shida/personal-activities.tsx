@@ -1,4 +1,6 @@
 "use client";
+import {SpaceIcon} from './account-space-icon';
+import {spaceSettingsCopy} from '../../lib/space-settings-copy';
 import {useEffect,useState} from 'react';
 import type {MarketplaceLocale} from './marketplace-account-copy';
 import {accountSpaceCopy} from '../../lib/account-space-copy';
@@ -10,7 +12,7 @@ import {OFFICIAL_CHANNELS} from '../../lib/brand';
 import {restaurantText} from '../../lib/restaurant-seller-copy';
 import {mySpaceCopy} from '../../lib/my-space-refinement-copy';
 export function PersonalActivities({binding,locale}:{binding:string;locale:MarketplaceLocale}){
- const c=mySpaceCopy[locale];
+ const c=mySpaceCopy[locale],labels=spaceSettingsCopy[locale];
  const [restaurantPages,setRestaurantPages]=useState(1),[more,setMore]=useState(false);
  const overview=usePersonalManagement(),n=accountNavigationCopy[locale];
  const t=accountSpaceCopy[locale],w=(key:Parameters<typeof workspaceText>[1])=>workspaceText(locale,key),prefix=locale==='en'?'':`/${locale}`;
@@ -21,7 +23,7 @@ export function PersonalActivities({binding,locale}:{binding:string;locale:Marke
  return()=>{active=false;controller.abort();clearTimeout(timer);};},[binding,revision,restaurantPages]);
  const current=data?.binding===binding?data:null,label=(market:ManagedActivity['market'])=>market==='wenze'?t.shop:market==='services'?t.services:t.restaurant;
  const other=overview?.markets.filter(m=>['jobs','apartments','hotels','wewa'].includes(m))??[];
- const create=<div className="space-destinations">{current?.options.map(market=><a key={market} href={`${prefix}/shida/seller/${market}`}>{market==='wenze'?c.shop:market==='services'?c.service:c.restaurant} →</a>)}<a href={`${prefix}/shida/wenze/sell`}>{t.shop} →</a><a href={`${prefix}/shida/emplois`}>{c.jobSeeker} →</a></div>;
+ const create=<div className="space-destinations space-category-choices">{current?.options.map(market=><a key={market} href={`${prefix}/shida/seller/${market}`}><SpaceIcon name={market==='wenze'?'shop':market==='restaurants'?'restaurant':'requests'}/><span><strong>{market==='wenze'?c.shop:market==='services'?c.service:c.restaurant}</strong><small>{market==='wenze'?labels.shopHelp:market==='services'?labels.serviceHelp:labels.restaurantHelp}</small></span><span aria-hidden="true">›</span></a>)}<a href={`${prefix}/shida/wenze/sell`}><SpaceIcon name="shop"/><span><strong>{labels.sell}</strong><small>{labels.sellHelp}</small></span><span aria-hidden="true">›</span></a><a href={`${prefix}/shida/emplois`}><SpaceIcon name="management"/><span><strong>{c.jobSeeker}</strong><small>{labels.jobHelp}</small></span><span aria-hidden="true">›</span></a></div>;
  return <section className="space-managed">
  {!current?<p role="status">{t.loading}</p>:<>{current.failed&&<div role="alert"><p>{w('partial')}</p><button type="button" onClick={()=>setRevision(v=>v+1)}>{c.retry}</button></div>}
  {!current.items.length&&!current.failed&&!other.length&&<div className="space-empty"><h2>{c.activitiesEmpty}</h2><p>{c.choose}</p>{create}</div>}

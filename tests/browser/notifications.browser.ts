@@ -8,7 +8,7 @@ for(const width of [390,1440])for(const locale of ['fr','en','ln','sw'])test(`no
    if(path.endsWith('/count'))return reply({unread_count:read?0:1});
    if(path.endsWith('/actions')){const action=route.request().postDataJSON().action;actions.push(action);if(action==='read')read=true;if(action==='acknowledge')ack=true;return reply({updated:1});}
    if(path.endsWith('/handoff'))return reply({url:'https://wa.me/243899000000?text=SHIDA%20NOTIFICATION%20test'});
-   return reply({items:[{reference:'NTF_test',marketplace:'wenze',title:'Test order',description:'A new order awaits your response.',created_at:'2026-10-30T10:00:00Z',read,acknowledged:ack,action_required:true,expired:false,action_url:'https://nihiloba.com/fr/shida/seller/wenze'}],next_cursor:null});
+   return reply({items:[{reference:'NTF_test',marketplace:'wenze',title:'Test order',description:'A new order awaits your response.',created_at:'2026-10-30T10:00:00Z',read,acknowledged:ack,action_required:true,expired:false,can_handoff:true,action_url:'https://nihiloba.com/fr/shida/seller/wenze'}],next_cursor:null});
   }
   return reply({},404);
  });

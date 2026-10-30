@@ -1,0 +1,16 @@
+# My Space visual and notification preference refinement
+
+Implemented 30 October 2026; pending production approval.
+
+- Account information uses aligned responsive label/value rows, a header Edit action, verified masked WhatsApp details, and the existing revision-checked Save/Cancel behavior.
+- Security methods open independently with native keyboard-accessible disclosures. Backend configuration and activation dates determine status. Verification, delayed activation, passkey ceremonies, recovery evidence, session revocation and deletion restrictions are preserved. Forms remain open through their verification refresh.
+- Messages retains the shared Notification Center and now offers a clearly labeled notification preferences disclosure. All four optional WhatsApp frequencies use the existing bot preference record through the authenticated Personal gateway. Daily schedules are preserved on reads, validated on writes, and refreshed on focus when there are no unsaved edits. There is no localStorage preference copy, web chat, new engine or new delivery scheduler.
+- Meaningful security/Restaurant notification titles come from the backend. Handoff visibility follows the DTO conversation capability; old backends safely omit the action until deployed. Empty filters stay hidden.
+- Activity creation choices have icons and descriptions. The individual sale flow is accurately labeled separately from opening a shop. Exact existing ownership, archives, missing-data labels, creation permissions and secure legacy review remain intact. Job publishing remains in its existing authorized Organization flow; no unguarded employer shortcut was added.
+- Service Requests reuses the My Space sidebar, preserving route, request editor and unsaved-work navigation guard. Cards and heading width match My Space; shared transaction empty cards use available width. Other transaction-specific layouts and controls are retained.
+
+Validation: 45 focused Vitest checks; 17 new visual/interaction browser checks; 11 account-security browser checks; 8 populated notification checks; 12 account/activity/transaction regression checks. All pass. Build (including TypeScript), targeted ESLint and diff whitespace checks pass. Browser fixtures use synthetic data, not customer mutations. Before/after captures cover settings, messages, activities and Service Requests at 390/1440px. New preferences exercise FR/EN/LN/SW. Existing localized security, notification and transaction flows were also exercised.
+
+Initial test issues were corrected: the gateway mock reused a consumed Response, an unknown Organization correctly returns 404, and the timezone control needed an explicit label. No unresolved implementation regression is known. Security states remain unavailable rather than falsely configured on failed loads. Physical-device WhatsApp acceptance and human translation review remain outside automated checks.
+
+Affected repositories: nihiloba-website and shida-backend. No Business frontend, authentication policy, migration, environment variable, dependency or production resource change. Backend Alembic head remains 0208. Urgent templates and the 24-hour response target remain unchanged. Deploy backend before website only after explicit approval; this batch is committed to a non-production branch.
