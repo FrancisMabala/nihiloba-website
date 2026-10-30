@@ -5,7 +5,9 @@ const PUBLIC_ORIGIN = "https://nihiloba.com";
 export function personalRequestOrigin(request: Request, allowPrivateRead = false): string | null {
   if (request.headers.get("sec-fetch-site") === "cross-site") return null;
   const url = new URL(request.url);
-  const local = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
+  // A production reverse proxy may deliver requests through loopback. It is
+  // not a development browser origin and must never become backend authority.
+  const local = process.env.NODE_ENV !== 'production' && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
     && ["http:", "https:"].includes(url.protocol);
   const supplied = request.headers.get("origin");
   if (supplied === null) {

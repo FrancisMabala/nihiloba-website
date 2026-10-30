@@ -26,7 +26,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [390,820,1
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  if(locale==='fr')await page.screenshot({path:`docs/evidence/account-space/home-${width}.png`});
  await page.getByRole('button',{name:`${a.account} · Francis Mabala`,exact:true}).click();
- const account=page.locator('.market-menu');await expect(account.getByRole('link')).toHaveCount(4);await expect(account.getByRole('link',{name:t.messages,exact:true})).toHaveAttribute('href',`${prefix}/shida/space?view=messages`);await expect(account.getByRole('link',{name:t.settings,exact:true})).toBeVisible();await expect(account.getByRole('button')).toHaveCount(2);await page.keyboard.press('Escape');
+ const account=page.locator('.market-menu');await expect(account).not.toContainText('Francis Mabala');await expect(account.getByRole('link')).toHaveCount(4);await expect(account.getByRole('link',{name:t.messages,exact:true})).toHaveAttribute('href',`${prefix}/shida/space?view=messages`);await expect(account.getByRole('link',{name:t.settings,exact:true})).toBeVisible();await expect(account.getByRole('button')).toHaveCount(2);await page.keyboard.press('Escape');
  if(width<=700){await expect(page.locator('.shida-navigation').getByRole('link')).toHaveCount(4);await page.locator('.shida-navigation').getByRole('link').nth(3).click();}
  else{await page.locator('.space-sidebar').getByRole('link',{name:accountNavigationCopy[locale].activities,exact:true}).click();}
  await expect(page.locator('.space-managed-grid')).toContainText('Repairs');

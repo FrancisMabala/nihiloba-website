@@ -1,7 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { personalRequestOrigin } from "../app/lib/personal-request-origin";
 const request = (origin?: string, url = "http://internal-render:10000/api/test", extra = {}) => new Request(url, { method: "POST", headers: { ...(origin === undefined ? {} : { origin }), ...extra } });
 describe("explicit Personal origin policy", () => {
+  afterEach(()=>vi.unstubAllEnvs());
+  it('uses the canonical public origin for production loopback proxy reads',()=>{
+    vi.stubEnv('NODE_ENV','production');
+    for(const host of ['localhost','127.0.0.1','[::1]']){
+      const url=`http://${host}:10000/api/shida/personal/security/profile/`;
+      expect(personalRequestOrigin(new Request(url,{headers:{'sec-fetch-site':'same-origin'}}),true)).toBe('https://nihiloba.com');
+      expect(personalRequestOrigin(request(`http://${host}:10000`,url))).toBeNull();
+    }
+  });
   it("accepts canonical public HTTPS independently of internal hosting", () => {
     expect(personalRequestOrigin(request("https://nihiloba.com"))).toBe("https://nihiloba.com");
   });
