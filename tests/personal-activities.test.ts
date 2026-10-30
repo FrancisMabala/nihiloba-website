@@ -20,3 +20,13 @@ it('a missing legacy title does not discard the other authorized activities',()=
  const value=managedActivities('restaurants',{items:[{public_ref:'RST_old',profile:{},status:'inactive'},{public_ref:'RST_current',profile:{name:'Kitchen'},status:'active'}]});
  expect(value.items).toHaveLength(2);expect(value.items[0].status).toBe('needsUpdate');expect(value.items[1].name).toBe('Kitchen');
 });
+it('retains approved images only and handles pending moderation',()=>{
+ const image='https://res.cloudinary.com/dbrxpvmzp/image/upload/test-shop.jpg';
+ const rows=managedActivities('wenze',{stores:[{public_ref:'WNZ_a',name:'Pending',status:'pending_approval',profile_image_url:image},{public_ref:'WNZ_b',name:'Unsafe',profile_image_url:'https://unknown.invalid/private.jpg'}]}).items;
+ expect(rows[0]).toMatchObject({image,status:'pending'});expect(rows[1].image).toBeNull();
+});
+it('uses restaurant photo and broad service location without hiding legacy rows',()=>{
+ const image='https://res.cloudinary.com/dbrxpvmzp/image/upload/test-restaurant.jpg';
+ expect(managedActivities('restaurants',{items:[{public_ref:'RST_a',profile:{name:'Kitchen',city:'Kinshasa',establishment_photo_url:image}}]}).items[0]).toMatchObject({image,location:'Kinshasa'});
+ expect(managedActivities('services',{profiles:[{public_ref:'SVC_a',service_name:'Repair',commune:'Gombe',missing_fields:['category']}]},{capabilities:['profile']}).items[0]).toMatchObject({location:'Gombe',status:'needsUpdate'});
+});

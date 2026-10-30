@@ -58,11 +58,11 @@ test('archived and incomplete activities remain visible and link to exact manage
  await session(page);
  await page.route('**/api/shida/personal/wenze/stores/**',route=>route.fulfill({json:{stores:new URL(route.request().url()).searchParams.get('archived')==='true'?[{public_ref:'WNZ_old',name:null,city:null,category:null,catalog_ready:false,status:'inactive',visible:'true'}]:[{public_ref:'WNZ_new',name:'Current Shop',catalog_ready:true,status:'active',visible:'true',city:'Kinshasa'}]}}));
  await page.route('**/api/shida/personal/restaurants/**',route=>route.fulfill({json:{items:[],total:0,actions:['create']}}));
- await page.route('**/api/shida/personal/services',route=>route.fulfill({json:{profiles:[]}}));
- await page.route('**/api/shida/personal/services/capabilities',route=>route.fulfill({json:{capabilities:['profile']}}));
+ await page.route('**/api/shida/personal/services/',route=>route.fulfill({json:{profiles:[]}}));
+ await page.route('**/api/shida/personal/services/capabilities/',route=>route.fulfill({json:{capabilities:['profile']}}));
  await page.goto('/fr/shida/space?view=management');
- await expect(page.locator('.space-managed-grid article')).toHaveCount(2);
- const old=page.locator('.space-managed-grid article').filter({hasText:'À compléter'});
+ await expect(page.locator('.activity-cards article')).toHaveCount(2);
+ const old=page.locator('.activity-cards article').filter({hasText:'À compléter'});
  await expect(old).toContainText('Nom de l’activité');await expect(old).toContainText('Localisation');
  await expect(old.getByRole('link')).toHaveAttribute('href',/store=WNZ_old&view=shop/);
  await expect(page.locator('.space-managed')).not.toContainText('Vous n’avez pas encore');
