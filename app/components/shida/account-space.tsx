@@ -4,6 +4,7 @@ import {useEffect,useState} from 'react';
 import type {MarketplaceLocale} from './marketplace-account-copy';
 import {marketplaceAccountCopy} from './marketplace-account-copy';
 import {accountSpaceCopy} from '../../lib/account-space-copy';
+import NotificationCenter from './notification-center';
 import {PERSONAL_SESSION_EVENT,restorePersonalSession,type PersonalSession} from '../../lib/personal-session-browser';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {useServicesProviderAccess} from './use-services-provider-access';
@@ -63,6 +64,7 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
   <aside className="space-sidebar"><h2>{a.space}</h2>{navigation()}</aside>
   <div className="space-content"><p className="space-eyebrow">SHIDA / {a.space}</p>
    <h1>{view==='home'?<>{t.hello}{session?` ${session.user.display_name.split(/\s+/)[0]}`:''}</>:view==='management'?t.manage:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
+   {session&&<NotificationCenter key={"notifications:"+session.binding} binding={session.binding} apiBase="/api/shida/personal/notifications" locale={locale}/>}
    {session&&<p className="space-context">{w('personal')} · {session.user.display_name}</p>}
    {view==='home'&&<p className="space-intro">{t.intro}</p>}
    {view==='home'&&(checking?<p role="status">{t.loading}</p>:session?<PersonalActivityOverview key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
