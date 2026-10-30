@@ -13,7 +13,7 @@ import {accountSpaceCopy} from "../../lib/account-space-copy";
 import {refinementCopy} from "../../lib/registration/refinement-copy";
 import './public-account.css';
 import NotificationCenter from './notification-center';
-import {accountSupportCopy} from '../../lib/account-support-copy';
+
 
 export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCopy}) {
   const t=publicAccountCopy[locale],title=useId(),pathname=usePathname();
@@ -72,9 +72,9 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
 
   return <div className="shida-public-account" lang={locale}>
     {session&&<NotificationCenter key={'bell:'+session.binding} binding={session.binding} apiBase="/api/shida/personal/notifications" locale={locale} destination={`${spaceHref}?view=messages`}/>}
-    <MarketplaceControls key={session?.binding||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref} guestLabel={t.signIn}
+    <MarketplaceControls enhancedAccount key={session?.binding||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref} guestLabel={t.signIn}
       registrationLink={!checking&&!session&&process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==="true"?{label:r.create,href:`${prefix}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}:undefined}
-      links={[{label:a.space,href:spaceHref},{label:accountSpaceCopy[locale].messages,href:`${spaceHref}?view=messages`},{label:accountSpaceCopy[locale].settings,href:`${spaceHref}?view=settings`},{label:accountSupportCopy[locale].title,href:`${spaceHref}?view=support`}]}
+      links={[{label:a.space,href:spaceHref},{label:accountSpaceCopy[locale].messages,href:`${spaceHref}?view=messages`},{label:accountSpaceCopy[locale].settings,href:`${spaceHref}?view=settings`}]}
       languages={/\/shida\/?$/.test(pathname)||/\/shida\/(restaurants|services|seller|space|service-requests|service-bills)(?:\/|$)/.test(pathname)?["fr","en","ln","sw"]:["fr","en"]}
       onLanguage={(lang:MarketplaceLocale)=>{if(leaveWork())window.location.assign(marketplaceLanguagePath(pathname,lang)+window.location.search);}}
       onLogin={()=>setOpen(true)} onAccount={()=>{setOpen(true);void logout(true);}} onLogout={()=>{setOpen(true);void logout();}} pending={pending} beforeNavigate={leaveWork}/>
@@ -88,7 +88,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
           <button className="button button-primary" type="button" onClick={()=>dialog.current?.close()}>{t.close}</button>
           <div className="shida-account-actions"><button type="button" onClick={()=>void logout(true)}>{t.change}</button><button type="button" onClick={()=>void logout()}>{t.signOut}</button></div>
         </div>:<>
-          {checking?<p role="status">{t.checking}</p>:<>{failed&&<p role="status">{t.failed}</p>}<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>void check(true)}/></>}
+          {checking?<p role="status">{t.checking}</p>:<>{failed&&<p role="status">{t.failed}</p>}<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>{dialog.current?.close();void check(true);}}/></>}
           <button type="button" className="shida-account-browse" onClick={()=>dialog.current?.close()}>{r.browse} →</button>
         </>}
       </div>}

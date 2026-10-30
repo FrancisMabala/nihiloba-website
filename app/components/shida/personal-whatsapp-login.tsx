@@ -1,4 +1,9 @@
 "use client";
+import {authDesignCopy} from '../../lib/auth-design-copy';
+import {PasskeyLogin} from './passkey-login';
+import {VerificationCode} from './verification-code';
+import {SpaceIcon} from './account-space-icon';
+import './auth-design.css';
 import {mySpaceCopy} from "../../lib/my-space-refinement-copy";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { usePathname } from "next/navigation";
@@ -14,6 +19,7 @@ type Challenge = { challenge_ref: string; whatsapp_url: string; expires_at: stri
 // In-place authentication deliberately leaves the complete local URL, filters and language intact.
 export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = false, heading, expectedPhone }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void; registration?: boolean; heading?: string; expectedPhone?:string }) {
   const pathname = usePathname();
+  const design=authDesignCopy[locale];
   const r=refinementCopy[locale];
   const t = { ...personalLoginCopy[locale],phone_mismatch:r.mismatch, ...(registration ? { start:personalLoginCopy[locale].open, help: registrationCopy[locale].verificationHelp, verify: registrationCopy[locale].verifyButton } : {}), ...(heading ? { title: heading } : {}) };
   const [state, setState] = useState<State>("idle");
@@ -133,17 +139,17 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   }
   const busy = state === "creating" || state === "exchanging";
   return <section className="candidate-login candidate-private-panel" lang={locale}>
-    <h2>{t.title}</h2><p>{t.help}</p>{registration && <><label htmlFor={eligibilityId} className="registration-consent"><input id={eligibilityId} type="checkbox" checked={eligible} onChange={event => setEligible(event.target.checked)}/><span>{registrationEligibility[locale]}</span></label><p>{registrationFlowCopy[locale].scope}</p></>}
-    {state !== "idle" && <p role="status" aria-live="polite">{t[state]}</p>}
+    <h2>{registration?t.title:state==="code"||state==="exchanging"?design.verifyTitle:design.title}</h2><p>{registration?t.help:state==="code"||state==="exchanging"?design.verifyHelp:state==="idle"?design.intro:t.help}</p>{!registration&&!["pending","code","exchanging","creating","uncertain"].includes(state)&&<PasskeyLogin locale={locale} onAuthenticated={onAuthenticated}/>}{registration && <><label htmlFor={eligibilityId} className="registration-consent"><input id={eligibilityId} type="checkbox" checked={eligible} onChange={event => setEligible(event.target.checked)}/><span>{registrationEligibility[locale]}</span></label><p>{registrationFlowCopy[locale].scope}</p></>}
+    {state !== "idle" && (registration || state !== "code") && <p role="status" aria-live="polite">{t[state]}</p>}
     {state === "pending" && challenge && <><a className="button button-primary" href={challenge.whatsapp_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{t.open}</a><button className="button button-secondary" type="button" onClick={() => void cancel()}>{t.cancel}</button></>}
     {(state === "code" || state === "exchanging") && <form className="candidate-form" onSubmit={verify}>
       <label htmlFor={codeId}>{t.codeLabel}</label>
-      <input id={codeId} name="code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required autoFocus value={code} disabled={busy} onChange={event => { setCode(event.target.value.replace(/[^0-9]/g, "").slice(0, 6)); setCodeError(false); }} aria-invalid={codeError} aria-describedby={codeError ? `${codeId}-error` : undefined} />
+      <VerificationCode id={codeId} label={t.codeLabel} value={code} disabled={busy} invalid={codeError} onChange={value=>{setCode(value);setCodeError(false);}}/>{challenge&&<p className="auth-expiry">{design.expires} {new Date(challenge.expires_at).toLocaleTimeString(locale,{hour:"2-digit",minute:"2-digit"})}.</p>}
       {codeError && <p id={`${codeId}-error`} role="alert">{t.invalidCode}</p>}
-      <button className="button button-primary" type="submit" disabled={busy || !/^[0-9]{6}$/.test(code)}>{busy ? t.exchanging : t.verify}</button>
-      <button className="button button-secondary" type="button" disabled={busy} onClick={() => void cancel()}>{t.restart}</button>
+      <button className="button button-primary" type="submit" disabled={busy || !/^[0-9]{6}$/.test(code)}>{busy ? t.exchanging : registration?t.verify:design.verify}</button>
+      <button className="button button-secondary" type="button" disabled={busy} onClick={() => void cancel()}>{design.restart}</button>
     </form>}
-    {state === "uncertain" ? <button className="button button-secondary" type="button" onClick={() => void cancel(true)}>{t.reset}</button> : !["pending", "code", "exchanging"].includes(state) && <button className="button button-primary" type="button" disabled={busy || registration && !eligible} onClick={() => void start()}>{state === "idle" ? t.start : busy ? t[state] : t.retry}</button>}
+    {state === "uncertain" ? <button className="button button-secondary" type="button" onClick={() => void cancel(true)}>{t.reset}</button> : !["pending", "code", "exchanging"].includes(state) && <button className="button button-secondary auth-method" type="button" disabled={busy || registration && !eligible} onClick={() => void start()}>{state === "idle"&&!registration ? <><SpaceIcon name="whatsapp"/>{design.whatsapp}<span aria-hidden="true">›</span></> : state === "idle"?t.start:busy ? t[state] : t.retry}</button>}
     {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <p className="login-register">{r.noAccount} <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}>{r.signup}</a></p>}
     {!registration&&<p><a href={`${locale==='en'?'':`/${locale}`}/shida/space?view=recovery`}>{mySpaceCopy[locale].lost}</a></p>}
   </section>;
