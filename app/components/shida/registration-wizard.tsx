@@ -7,6 +7,7 @@ import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib
 import { registrationCopy, existingAccountContinue, registrationFlowCopy, privacyAcknowledgement, type RegistrationLocale } from "../../lib/registration/copy";
 import { onboardingText, catalogLabel } from "../../lib/registration/onboarding-copy";
 import "./registration.css";
+import {profileLabel} from "../../lib/registration/profile-copy";
 import { registrationReturnPath } from "../../lib/registration/return-path";
 import { FORM_DRAFT_KEY, FORM_DRAFT_TTL, parseLocalDraft, internationalPhone } from "../../lib/registration/local-draft";
 import { refinementCopy } from "../../lib/registration/refinement-copy";
@@ -29,7 +30,7 @@ const businessGroups = [["name", "organization_type", "custom_organization_type"
 export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationLocale; catalogs: {organization_types:string[];sectors:string[]} | null }) {
   const router = useRouter();
   const hydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
-  const t = registrationCopy[locale], flow = registrationFlowCopy[locale], label = (key: string) => key === "area" ? t.area : onboardingText(locale, key);
+  const t = registrationCopy[locale], flow = registrationFlowCopy[locale], label = (key: string) => profileLabel(locale,key) ?? (key === "area" ? t.area : onboardingText(locale, key));
   const r = refinementCopy[locale];
   const [phone,setPhone]=useState(""),[storageFailed,setStorageFailed]=useState(false),[localReady,setLocalReady]=useState(false);
   const expiry=useRef(0);
@@ -44,7 +45,7 @@ export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationL
   const unverified = useRef<Record<string,string> | null>(null);
   useEffect(() => () => { ++actorEpoch.current; }, []);
   const apply = (next: Draft) => { current.current = next; setDraft(next); setValues(Object.fromEntries(Object.entries(next.values ?? {}).map(([k,v]) => [k,v ?? ""]))); setDecisions({}); };
-  const sections = kind === "personal" ? [["personal_name"], ["city", "country_code", "area"]] : businessGroups;
+  const sections = kind === "personal" ? [draft?.values.personal_name && !draft.values.first_name ? ["personal_name"] : ["first_name","family_name","additional_name"], ["city", "country_code", "area"]] : businessGroups;
   const groups = [sections.flat()];
   const legalStep = groups.length, reviewStep = groups.length + 1;
   const documents = draft?.legal ?? draft?.legal_documents ?? [];
@@ -217,7 +218,7 @@ export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationL
         {kind === "business" && !catalogs ? <p role="alert">{flow.catalogError}</p> : <fieldset className="registration-fields">
           <legend>{t.profile}</legend>
           {sections.map((section,index)=><fieldset className="registration-section" key={index}><legend>{kind==="business"?[r.business,r.personal,r.location][index]:r.sections[index]}</legend>{section.filter(key=>key!=="custom_organization_type"||values.organization_type==="other").map(key=>{const options=key==="organization_type"?catalogs?.organization_types:key==="sector"?catalogs?.sectors:null;
-            const required=!["area","quartier_or_area","landmark"].includes(key);
+            const required=!["additional_name","area","quartier_or_area","landmark"].includes(key);
             return <div key={key}><label htmlFor={`registration-${key}`}>{label(key)} <small>{required?r.required:r.optional}</small></label>{options?<select id={`registration-${key}`} name={key} required value={values[key]??""} onChange={event=>setValues({...values,[key]:event.target.value})}><option value="">{onboardingText(locale,"choose")}</option>{options.map(value=><option key={value} value={value}>{catalogLabel(locale,value)}</option>)}</select>:<input id={`registration-${key}`} name={key} required={required} maxLength={500} autoComplete={key==="personal_name"?"name":key==="city"?"address-level2":"off"} value={values[key]??""} onChange={event=>setValues({...values,[key]:event.target.value})}/>}</div>;
           })}</fieldset>)}
           <fieldset className="registration-section"><legend>{r.contact}</legend><div><label htmlFor="registration-phone">{r.phone} <small>{r.required}</small></label><input id="registration-phone" type="tel" inputMode="tel" autoComplete="tel" maxLength={40} required value={phone} onChange={event=>setPhone(event.target.value)} aria-describedby="registration-phone-help"/><small id="registration-phone-help">{r.phoneHelp}</small></div></fieldset>
