@@ -25,7 +25,7 @@ const enc = encodeURIComponent;
 
 const bytes = (file: File) => new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onerror = reject; reader.onload = () => resolve(String(reader.result).split(",")[1]); reader.readAsDataURL(file); });
 
-export function WenzeR6Workspace({ context, locale, initialView, initialStore, ordersOnly=false }: { ordersOnly?:boolean; context: string; locale: WenzeLocale; initialView:string; initialStore?:string }) {
+export function WenzeR6Workspace({ context, locale, initialView, initialStore, initialOrder, ordersOnly=false }: { initialOrder?:string; ordersOnly?:boolean; context: string; locale: WenzeLocale; initialView:string; initialStore?:string }) {
  const {confirm,confirmation}=useWenzeConfirm(locale);
  const {request,download}=useWenzeApi();
  const [receipt,setReceipt]=useState<Receipt|null>(null);
@@ -78,7 +78,13 @@ export function WenzeR6Workspace({ context, locale, initialView, initialStore, o
       const data = await request(`${base}/catalog-imports/options?language=${locale}`) as typeof options & { stores: Shop[] };
       if (!alive.current) return;
       setShops(data.stores); setOptions({ ...data, currencies: data.currencies?.length ? data.currencies : ["CDF", "USD"] });
-      if (which === "orders") await loadOrders(0); else await loadJobs();
+      if (which === "orders") {
+        await loadOrders(0);
+        if(initialOrder){
+          const selected=await request(`${base}/orders/${enc(initialOrder)}?language=${locale}`) as Order;
+          if(alive.current&&selected.shop_reference===initialStore)setOrder(selected);
+        }
+      } else await loadJobs();
     });
   }
   async function openJob(ref: string) { const data = await request(`${base}/catalog-imports/${enc(ref)}`) as Job; if (!alive.current) return; setJob(data); setMapping(data.column_mapping); setItem(null); setDraft(null); setSelection([]); setReview(null); setPublication(data.publication_runs[0] ?? null); setStale(false); }
