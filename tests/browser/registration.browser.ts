@@ -134,7 +134,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`${locale}: Organization
  await page.setViewportSize({width:390,height:900});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/register/`);
  await page.locator('input[value="business"]').check();await page.getByRole('button',{name:t.next,exact:true}).click();
  await page.locator('#registration-name').fill('Synthetic School');await page.locator('#registration-organization_type').selectOption('school');await page.locator('#registration-sector').selectOption('commerce_distribution');await page.locator('#registration-phone').fill('+243910004001');
- for(const [key,value] of Object.entries({personal_name:'Synthetic Creator',country_code:'CD',city:'Kinshasa'}))await page.locator(`#registration-${key}`).fill(value);
+ await fillName(page,'Synthetic Creator');await fillCountry(page,'CD');await page.locator('#registration-city').fill('Kinshasa');
  for(const [key,value] of Object.entries({commune_or_municipality:'Gombe',street_or_avenue:'Private street',building_or_parcel:'42'}))await page.locator(`#registration-${key}`).fill(value);
  await page.getByRole('button',{name:t.next,exact:true}).click();expect(state.values).toEqual({});
  await page.getByLabel(registrationEligibility[locale]).check();await page.getByRole('button',{name:personalLoginCopy[locale].open,exact:true}).click();

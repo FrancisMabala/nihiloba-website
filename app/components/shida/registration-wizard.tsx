@@ -51,7 +51,7 @@ export function RegistrationWizard({ locale:initialLocale, catalogs }: { locale:
   const unverified = useRef<Record<string,string> | null>(null);
   useEffect(() => () => { ++actorEpoch.current; }, []);
   const apply = (next: Draft) => { if(next.language)setLocale(next.language); current.current = next; setDraft(next); setValues(Object.fromEntries(Object.entries(next.values ?? {}).map(([k,v]) => [k,v ?? ""]))); setDecisions({}); };
-  const sections = kind === "personal" ? [draft?.values.personal_name && !draft.values.first_name ? ["personal_name"] : ["first_name","family_name","additional_name"]] : businessGroups;
+  const sections = kind === "personal" ? [draft?.values.personal_name && !draft.values.first_name ? ["personal_name"] : ["first_name","family_name","additional_name"]] : businessGroups.map(section=>section.flatMap(key=>key==="personal_name"?(draft?.values.personal_name?["personal_name"]:["first_name","family_name","additional_name"]):[key]));
   const groups = [kind==="personal"?[...sections.flat(),...profileLocationFields]:sections.flat()];
   const legalStep = groups.length, reviewStep = groups.length + 1;
   const documents = draft?.legal ?? draft?.legal_documents ?? [];
@@ -91,13 +91,13 @@ export function RegistrationWizard({ locale:initialLocale, catalogs }: { locale:
       if (start || next.status === "not_started") next = await request(kind,"POST",{ language: locale });
       if (epoch !== actorEpoch.current) return;
       const local = unverified.current;
-      const importLocal = fresh && local && next.revision === 1 && !Object.entries(next.values ?? {}).some(([key,value]) => value && !(kind === "business" && key === "personal_name"));
+      const importLocal = fresh && local && next.revision === 1 && !Object.entries(next.values ?? {}).some(([key,value]) => value && !(kind === "business" && ["personal_name","first_name","family_name","additional_name"].includes(key)));
       // Never replace a saved cross-channel draft or an existing identity with local input.
       if (importLocal && !next.existing_account && next.onboarding_ref) {
         apply(next);
         setStep(3); setGroup(0);
         try {
-          const missingValues = Object.fromEntries(Object.entries(local).filter(([key]) => !next.values[key]));
+          const missingValues = Object.fromEntries(Object.entries(local).filter(([key]) => !next.values[key] && !(kind==="business" && next.values.personal_name && ["personal_name","first_name","family_name","additional_name"].includes(key))));
           next = await request(`${kind}/${next.onboarding_ref}`,"PATCH",{revision:next.revision,language:locale,values:missingValues});
         } catch (error) {
           if (epoch !== actorEpoch.current) return;
