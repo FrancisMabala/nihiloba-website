@@ -17,7 +17,7 @@ export const reportHelp = {
     current: "Where these bookings stand now", details: "How to read this report",
     counts: "Requests and bookings were created during your chosen dates. Their status and service visibility are checked when you run the report.",
     unavailable: "We cannot yet show how many quotes became bookings.",
-    finance: "Recorded money", received: "Receipts you recorded", surplus: "Recorded receipts minus expenses",
+    finance: "Recorded money", received: "Receipts you recorded", surplus: "Recorded receipts minus recorded expenses",
     financeHelp: "These are your records, not bank-confirmed payments or verified profit.",
     moneyDates: "Bills count from their first issue date. Receipts and expenses use the date you recorded for them. Amounts still due include later receipts linked to those bills.",
     loading: "Preparing your report…", offline: "You’re offline. Your dates are kept; reconnect and try again."},

@@ -67,7 +67,7 @@ export function transactionPath(parts: string[], method: string): string | null 
 export function transactionQuery(parts:string[], query:URLSearchParams, method:string): boolean {
   if(parts[1]==='competition')return proposalQuery(parts.slice(2),query,method);
   if(parts[1]==='customer'&&parts[2]==='bill-notices'&&parts.length===3&&method==='GET')return [...query].every(([key,value])=>key==='offset'&&query.getAll(key).length===1&&/^\d{1,6}$/.test(value));
-  if(parts[1]==='reports'&&parts.length===3&&method==='GET')return [...query].length===2&&['start_date','end_date'].every(key=>query.getAll(key).length===1&&/^\d{4}-\d{2}-\d{2}$/.test(query.get(key)??''));
+  if(parts[1]==='reports'&&parts.length===3&&method==='GET')return ['start_date','end_date'].every(key=>query.getAll(key).length===1&&/^\d{4}-\d{2}-\d{2}$/.test(query.get(key)??''))&&[...query].every(([key,value])=>query.getAll(key).length===1&&(['start_date','end_date'].includes(key)||key==='offering_ref'&&parts[2].startsWith('operational')&&/^SVC_[A-Za-z0-9_-]+$/.test(value)||key==='currency'&&parts[2].startsWith('financial')&&['CDF','USD'].includes(value)));
   if(parts[1]==='templates'&&parts.length===2&&method==='GET')
     return [...query].every(([key,value])=>key==='kind'&&['quote','bill'].includes(value)&&query.getAll(key).length===1);
   // Organization/provider scope cannot be injected through query parameters.

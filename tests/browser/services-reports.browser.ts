@@ -42,14 +42,15 @@ for(const {locale,money} of [...(["en","fr","ln","sw"] as const).map(locale=>({l
  await panel.locator("summary").first().click();
  await expect(panel.getByText(help.counts)).toBeVisible();
  const download=page.waitForEvent("download");
- await panel.getByRole("button").filter({hasNotText:new RegExp(`${help.week}|${help.month}|${show[locale]}`)}).first().click();
+ await panel.getByRole("button",{name:/CSV/}).click();
  await download;
  for(const query of queries){
   expect(new URLSearchParams(query).get("start_date")).toBe("2026-10-20");
   expect(new URLSearchParams(query).get("end_date")).toBe("2026-10-21");
  }
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await expect(panel.getByRole("heading",{name:help.finance,exact:true})).toHaveCount(money?1:0);
+ await expect(panel.getByRole("tab")).toHaveCount(money?2:1);
+ if(money){await panel.getByRole("tab").nth(1).click();await expect(panel.locator(".svc-currency-card")).toHaveCount(0);await expect(panel.getByText("50 CDF",{exact:true})).toBeVisible();}
  await page.evaluate(()=>window.scrollTo(0,0));
  await page.screenshot({path:`test-results/reports-${locale}.png`,fullPage:true});
 });
