@@ -15,8 +15,15 @@ test.beforeEach(async({page,browserName})=>{
  });
 });
 async function fillCountry(page:Page,code:string){
- await page.locator("#registration-country_code").fill(code);await expect(page.locator("#registration-country_code")).toHaveValue(code==="CD"?"Congo-Kinshasa":code==="SE"?"Sweden":code);if(await page.locator("#registration-commune").count())await page.locator("#registration-commune").selectOption("Gombe");
+ await page.locator("#registration-country_code").fill(code);await expect(page.locator("#registration-country_code")).toHaveValue(code==="CD"?"Congo-Kinshasa":code==="SE"?"Sweden":code==="DE"?"Germany":code);if(await page.locator("#registration-commune").count())await page.locator("#registration-commune").selectOption("Gombe");
 }
+
+for(const [country,city] of [['SE','Stockholm'],['DE','Berlin'],['CD','Lubumbashi']])test(`${country} ${city}: optional international location without Kinshasa commune`,async({page})=>{
+ await fixture(page);await page.setViewportSize({width:390,height:900});await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();await fillCountry(page,country);await page.locator('#registration-city').fill(city);
+ await expect(page.locator('#registration-commune')).toHaveCount(0);
+ for(const field of ['region','postal_code','parcel_number','avenue']){await expect(page.locator(`#registration-${field}`)).toBeVisible();await expect(page.locator(`#registration-${field}`)).not.toHaveAttribute('required','');}
+ await page.locator('#registration-postal_code').fill('123 45');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
 
 test('Kinshasa commune controls manual quartier and clears dependent location on country change',async({page})=>{
  await fixture(page);await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');
@@ -72,7 +79,7 @@ async function fixture(page:Page,existing=false,business=false){
   const url=new URL(route.request().url()),path=url.pathname.replace(/\/$/,''),method=route.request().method();
   const reply=(value:unknown,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(value)});
   if(path.endsWith('/registration-reference')){
-   if(url.searchParams.get('resource')==='locations')return reply({kinshasa_communes:['Gombe','Lemba',"N'djili"],quartiers:{}});
+   if(url.searchParams.get('resource')==='locations')return reply({kinshasa_communes:['Gombe','Lemba',"N'djili"],quartiers:{},address_config:{international_optional:['region','postal_code','parcel_number']}});
    const rows=[{code:'CD',name:'Congo-Kinshasa'},{code:'CG',name:'Congo-Brazzaville'},{code:'SE',name:'Sweden'},{code:'DE',name:'Germany'}];
    const q=url.searchParams.get('q')||'';
    return reply({items:rows,matched_code:rows.find(row=>row.code===q.toUpperCase()||row.name.toLowerCase()===q.toLowerCase())?.code||null,...(method==='POST'?{status:'pending_review'}:{})});
