@@ -1,0 +1,139 @@
+{
+  "receipts": [
+    {
+      "shop_name": "Priced sales",
+      "city": "Kinshasa",
+      "lines": [
+        {
+          "name": "Controlled basket second product",
+          "quantity": 1,
+          "unit_price": "3000.00",
+          "currency": "CDF",
+          "total": "3000.00",
+          "sale_ref": "WPS_VEYKTO5",
+          "reversed": false
+        },
+        {
+          "name": "Juice",
+          "quantity": 2,
+          "unit_price": "3000.00",
+          "currency": "CDF",
+          "total": "6000.00",
+          "sale_ref": "WPS_XSVJRMI",
+          "reversed": false
+        }
+      ],
+      "totals": [
+        {
+          "currency": "CDF",
+          "amount": "9000.00"
+        }
+      ],
+      "payment": "seller_recorded_card",
+      "sold_at": "2026-10-31T09:53:30.317533+00:00",
+      "payment_details": {
+        "reference": "CONTROLLED-EXTERNAL"
+      },
+      "store_ref": "WNZ_ALIFDC9L",
+      "receipt_ref": "WRC_4WGXSVAZ",
+      "source": "basket",
+      "created_at": "2026-10-31T09:53:30.317533+00:00",
+      "has_reversals": false,
+      "qr_value": "SHIDA RECEIPT WRC_4WGXSVAZ"
+    },
+    {
+      "shop_name": "Priced sales",
+      "city": "Kinshasa",
+      "lines": [
+        {
+          "name": "Controlled basket second product",
+          "quantity": 1,
+          "unit_price": "3000.00",
+          "currency": "CDF",
+          "total": "3000.00",
+          "sale_ref": "WPS_I7KMTC2",
+          "reversed": false
+        },
+        {
+          "name": "Juice",
+          "quantity": 2,
+          "unit_price": "3000.00",
+          "currency": "CDF",
+          "total": "6000.00",
+          "sale_ref": "WPS_0DR47LPQ",
+          "reversed": false
+        }
+      ],
+      "totals": [
+        {
+          "currency": "CDF",
+          "amount": "9000.00"
+        }
+      ],
+      "payment": "seller_recorded_mobile",
+      "sold_at": "2026-10-31T09:53:28.545418+00:00",
+      "payment_details": {
+        "reference": "CONTROLLED-EXTERNAL"
+      },
+      "store_ref": "WNZ_ALIFDC9L",
+      "receipt_ref": "WRC_SPPZHIZP",
+      "source": "basket",
+      "created_at": "2026-10-31T09:53:28.545418+00:00",
+      "has_reversals": false,
+      "qr_value": "SHIDA RECEIPT WRC_SPPZHIZP"
+    },
+    {
+      "shop_name": "Priced sales",
+      "city": "Kinshasa",
+      "lines": [
+        {
+          "name": "Controlled basket second product",
+          "quantity": 1,
+          "unit_price": "3000.00",
+          "currency": "CDF",
+          "total": "3000.00",
+          "sale_ref": "WPS_IJI9YXHV",
+          "reversed": false
+        },
+        {
+          "name": "Juice",
+          "quantity": 2,
+          "unit_price": "3000.00",
+          "currency": "CDF",
+          "total": "6000.00",
+          "sale_ref": "WPS_URNGYG4Y",
+          "reversed": false
+        }
+      ],
+      "totals": [
+        {
+          "currency": "CDF",
+          "amount": "9000.00"
+        }
+      ],
+      "payment": "seller_recorded_cash",
+      "sold_at": "2026-10-31T09:53:25.779586+00:00",
+      "payment_details": {
+        "received": {
+          "CDF": "10000.00"
+        },
+        "change": {
+          "CDF": "1000.00"
+        }
+      },
+      "store_ref": "WNZ_ALIFDC9L",
+      "receipt_ref": "WRC_J7UAXOBE",
+      "source": "basket",
+      "created_at": "2026-10-31T09:53:25.779586+00:00",
+      "has_reversals": false,
+      "qr_value": "SHIDA RECEIPT WRC_J7UAXOBE"
+    }
+  ],
+  "stock_after": [
+    4,
+    7
+  ],
+  "sale_lines": 6,
+  "committed_receipts": 3,
+  "truncated_response_replayed_once": true
+}
