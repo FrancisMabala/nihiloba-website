@@ -1,5 +1,7 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
+import {ProfileLocationPrefill} from "./profile-location-prefill";
+import {wenzeProfileDestination} from "../../lib/profile-delivery";
 type Locale = "en"|"fr"|"ln"|"sw";
 import type {CommerceCart,CommerceSellerGroup} from "../../types/shida-commerce";
 import {WenzeBuyerProvider,useWenzeBuyer} from "./wenze-buyer";
@@ -39,10 +41,12 @@ function Checkout({locale,cart,replace,onComplete,disabled,onBusy,onConflict}:{l
  </section>;
 }
 function Fulfillment({group,version,locale,replace,disabled,onEditing,onBusy}:{group:CommerceSellerGroup;version:number;locale:Locale;replace:(cart:CommerceCart)=>void;disabled:boolean;onEditing:(value:boolean)=>void;onBusy:(value:boolean)=>void}){
+ const buyer=useWenzeBuyer();
  const alive=useRef(true);useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  const t=copy[locale],[method,setMethod]=useState(group.fulfillment_method??""),[fields,setFields]=useState({city:"",commune:"",quartier:"",address:"",landmark:"",instructions:""}),[busy,setBusy]=useState(false),[error,setError]=useState(false),[saved,setSaved]=useState(false);
  async function save(){if(disabled||busy)return;onBusy(true);setBusy(true);setError(false);try{const result=await send("fulfillment","PUT",{store_reference:group.store_reference,method,expected_version:version,...(method==="delivery"?fields:{})});if(alive.current){replace(result.cart);setSaved(true);onEditing(false);}}catch{setError(true);}finally{setBusy(false);onBusy(false);}}
  return <form onSubmit={e=>{e.preventDefault();void save();}}><strong>{group.store_name}</strong><label>{t.choose}<select required value={method} disabled={disabled||busy} onChange={e=>{setMethod(e.target.value as typeof method);setSaved(false);onEditing(true);}}><option value="">—</option>{group.available_methods?.map(value=><option key={value} value={value}>{t[value]}</option>)}</select></label>
+ {method==="delivery"&&buyer.binding&&<ProfileLocationPrefill binding={buyer.binding} locale={locale} disabled={disabled||busy} onApply={values=>{const suggestion=wenzeProfileDestination(values);if(!suggestion)return false;setFields(previous=>({...previous,...suggestion}));setSaved(false);onEditing(true);return true;}}/>}
  {method==="delivery"&&(["city","commune","quartier","address","landmark","instructions"] as const).map(field=><label key={field}>{t[field]}<input required={["city","commune","address"].includes(field)} disabled={disabled||busy} maxLength={["address","landmark","instructions"].includes(field)?500:120} value={fields[field]} onChange={e=>{setFields({...fields,[field]:e.target.value});setSaved(false);onEditing(true);}}/></label>)}
  {method==="delivery"&&Boolean(group.delivery_areas?.length)&&<p>{group.delivery_areas!.join(" · ")}</p>}
  {saved&&method==="delivery"&&<p>{t.fee}: {group.delivery_fee_status==="pending"?t.pending:`${group.delivery_fee??"—"} ${group.currency}`}</p>}
