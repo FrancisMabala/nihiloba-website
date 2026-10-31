@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:'wenze-shop-design.browser.ts',outputDir:'test-results/shop-design-run',workers:1,timeout:45000,use:{baseURL:'http://127.0.0.1:3079',channel:'chrome',headless:true,serviceWorkers:'block'},webServer:{command:'node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3079',url:'http://127.0.0.1:3079',timeout:120000},reporter:'list'});
