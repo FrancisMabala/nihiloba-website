@@ -1,5 +1,6 @@
 import type {WenzeLocale} from './wenze-copy';
 const words:Record<string,readonly string[]>={
+ mainPhoto:['Main photo','Photo principale','Foto ya liboso','Picha kuu'],photoActions:['Photo actions','Actions photo','Misala ya foto','Vitendo vya picha'],
  add:['Add product','Ajouter un produit','Bakisa eloko','Ongeza bidhaa'],intro:['Manage your products and inventory.','Gérez vos produits et votre stock.','Tala biloko na yo mpe stock.','Simamia bidhaa na stock yako.'],
  empty:["You haven't added any products yet.",'Vous n’avez pas encore ajouté de produits.','Obakisi biloko naino te.','Bado hujaongeza bidhaa.'],emptyHelp:['Add your first product to start selling on SHIDA.','Ajoutez votre premier produit pour commencer à vendre sur SHIDA.','Bakisa eloko ya liboso mpo na koteka na SHIDA.','Ongeza bidhaa yako ya kwanza uanze kuuza kwenye SHIDA.'],
  noMatch:['No products match these filters.','Aucun produit ne correspond à ces filtres.','Biloko eyokani na boluki te.','Hakuna bidhaa zinazolingana na vichujio hivi.'],basic:['Basic information','Informations essentielles','Makambo ya ntina','Taarifa za msingi'],photos:['Photos','Photos','Bafoto','Picha'],variations:['Variations (optional)','Options (facultatif)','Baponi (soki olingi)','Chaguo (si lazima)'],review:['Review & create','Vérifier et créer','Tala mpe sala','Kagua na uunde'],
