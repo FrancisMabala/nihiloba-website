@@ -19,6 +19,17 @@ async function fillName(page:Page,name:string){
  const [first,...rest]=name.split(' ');await page.locator('#registration-first_name').fill(first);await page.locator('#registration-family_name').fill(rest.join(' ')||first);
 }
 
+for(const locale of ['fr','ln','en','sw'] as const)test(`preferred ${locale} language survives refresh and reaches verification`,async({page})=>{
+ await fixture(page);await page.goto('/shida/register/');await page.locator('#registration-language').selectOption(locale);
+ await expect(page.getByRole('heading',{name:registrationCopy[locale].title,exact:true})).toBeVisible();
+ await page.getByRole('button',{name:registrationCopy[locale].next,exact:true}).click();
+ await fillName(page,'Language Person');await page.locator('#registration-city').fill('Stockholm');await page.locator('#registration-country_code').fill('SE');await page.locator('#registration-phone').fill('+46910004001');
+ await page.reload();await expect(page.locator('.registration-shell')).toHaveAttribute('lang',locale);await expect(page.locator('#registration-first_name')).toHaveValue('Language');
+ await page.getByRole('button',{name:registrationCopy[locale].next,exact:true}).click();await page.getByLabel(registrationEligibility[locale]).check();
+ const sent=page.waitForRequest(request=>request.method()==='POST'&&request.url().endsWith('/auth/whatsapp/registration/'));
+ await page.getByRole('button',{name:personalLoginCopy[locale].open,exact:true}).click();expect((await sent).headers()['x-shida-language']).toBe(locale);
+});
+
 test('legacy account can confirm structured names without guessing the stored name',async({page})=>{
  await fixture(page,true);
  await page.route('**/api/shida/employment/session/',route=>route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Unsplit Legacy Name'}}}));

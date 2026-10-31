@@ -7,7 +7,7 @@ import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib
 import { registrationCopy, existingAccountContinue, registrationFlowCopy, privacyAcknowledgement, type RegistrationLocale } from "../../lib/registration/copy";
 import { onboardingText, catalogLabel } from "../../lib/registration/onboarding-copy";
 import "./registration.css";
-import {profileLabel} from "../../lib/registration/profile-copy";
+import {profileLabel,registrationLanguages} from "../../lib/registration/profile-copy";
 import { registrationReturnPath } from "../../lib/registration/return-path";
 import { FORM_DRAFT_KEY, FORM_DRAFT_TTL, parseLocalDraft, internationalPhone } from "../../lib/registration/local-draft";
 import { refinementCopy } from "../../lib/registration/refinement-copy";
@@ -15,7 +15,7 @@ import { refinementCopy } from "../../lib/registration/refinement-copy";
 const subscribeHydration = () => () => {};
 type Kind = "personal" | "business";
 type Document = { document_type: string; version: string; url: string | null; accepted: boolean };
-type Draft = { onboarding_ref: string | null; revision: number | null; status: string; existing_account?: boolean;
+type Draft = { onboarding_ref: string | null; revision: number | null; status: string; existing_account?: boolean; language?:RegistrationLocale;
   values: Record<string, string | null>; legal?: Document[]; legal_documents?: Document[]; remaining_fields: string[];
   required_fields?: string[]; organization_types?: string[]; sectors?: string[]; blockers?: string[]; can_complete?: boolean; completion_ready?: boolean };
 class RegistrationError extends Error { constructor(public code: string, public fields: string[] = []) { super(code); } }
@@ -27,8 +27,10 @@ async function request(path: string, method = "GET", body?: unknown): Promise<Dr
   return data;
 }
 const businessGroups = [["name", "organization_type", "custom_organization_type", "sector"], ["personal_name", "country_code", "city"], ["commune_or_municipality", "street_or_avenue", "building_or_parcel", "quartier_or_area", "landmark"]];
-export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationLocale; catalogs: {organization_types:string[];sectors:string[]} | null }) {
+export function RegistrationWizard({ locale:initialLocale, catalogs }: { locale: RegistrationLocale; catalogs: {organization_types:string[];sectors:string[]} | null }) {
   const router = useRouter();
+  const [locale,setLocale]=useState<RegistrationLocale>(initialLocale);
+  const restoredOnce=useRef(false);
   const hydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
   const t = registrationCopy[locale], flow = registrationFlowCopy[locale], label = (key: string) => profileLabel(locale,key) ?? (key === "area" ? t.area : onboardingText(locale, key));
   const r = refinementCopy[locale];
@@ -44,7 +46,7 @@ export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationL
   // This form is untrusted content, never an actor-owned draft before verification.
   const unverified = useRef<Record<string,string> | null>(null);
   useEffect(() => () => { ++actorEpoch.current; }, []);
-  const apply = (next: Draft) => { current.current = next; setDraft(next); setValues(Object.fromEntries(Object.entries(next.values ?? {}).map(([k,v]) => [k,v ?? ""]))); setDecisions({}); };
+  const apply = (next: Draft) => { if(next.language)setLocale(next.language); current.current = next; setDraft(next); setValues(Object.fromEntries(Object.entries(next.values ?? {}).map(([k,v]) => [k,v ?? ""]))); setDecisions({}); };
   const sections = kind === "personal" ? [draft?.values.personal_name && !draft.values.first_name ? ["personal_name"] : ["first_name","family_name","additional_name"], ["city", "country_code", "area"]] : businessGroups;
   const groups = [sections.flat()];
   const legalStep = groups.length, reviewStep = groups.length + 1;
@@ -107,14 +109,14 @@ export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationL
     } catch(error) { if (epoch === actorEpoch.current) recover(error); }
     finally { lock.current = false; setBusy(false); }
   }
-  useEffect(() => { let alive=true;queueMicrotask(()=>{if(!alive)return;expiry.current=Date.now()+FORM_DRAFT_TTL;try {
+  useEffect(() => { let alive=true;queueMicrotask(()=>{if(!alive||restoredOnce.current)return;restoredOnce.current=true;expiry.current=Date.now()+FORM_DRAFT_TTL;try {
     const restored=parseLocalDraft(sessionStorage.getItem(FORM_DRAFT_KEY));
-    if(restored){setKind(restored.kind);setValues(restored.values);setPhone(restored.phone);expiry.current=restored.expires;setStep(4);setMessage(r.restored);}
+    if(restored){if(restored.language)setLocale(restored.language);setKind(restored.kind);setValues(restored.values);setPhone(restored.phone);expiry.current=restored.expires;setStep(Object.keys(restored.values).length?4:1);setMessage(r.restored);}
     else sessionStorage.removeItem(FORM_DRAFT_KEY);
   }catch{setStorageFailed(true);}setLocalReady(true);});return()=>{alive=false;}; }, [r.restored]);
-  useEffect(()=>{if(!localReady || ![2,4].includes(step) || draft)return;
-    try {sessionStorage.setItem(FORM_DRAFT_KEY,JSON.stringify({version:1,expires:expiry.current,kind,values,phone}));queueMicrotask(()=>setStorageFailed(false));}catch{queueMicrotask(()=>setStorageFailed(true));}
-  },[localReady,step,draft,kind,values,phone]);
+  useEffect(()=>{if(!localReady || ![1,2,4].includes(step) || draft)return;
+    try {sessionStorage.setItem(FORM_DRAFT_KEY,JSON.stringify({version:1,expires:expiry.current,kind,values,phone,language:locale}));queueMicrotask(()=>setStorageFailed(false));}catch{queueMicrotask(()=>setStorageFailed(true));}
+  },[localReady,step,draft,kind,values,phone,locale]);
   useEffect(()=>{
     const clear=()=>{++actorEpoch.current;unverified.current=null;current.current=null;try{sessionStorage.removeItem(FORM_DRAFT_KEY);}catch{}setDraft(null);setValues({});setPhone("");setDecisions({});setStep(1);setMessage(t.unauthorized);};
     const local=()=>{if(!lock.current)clear();};
@@ -212,7 +214,7 @@ export function RegistrationWizard({ locale, catalogs }: { locale: RegistrationL
       <p className="registration-progress">{t.step} {step === 4 ? 2 : step === 2 ? 3 : step === 3 ? 4 : 1} {t.of} 4</p>
       <h1 ref={heading} tabIndex={-1}>{step === 1 ? t.title : step === 2 ? t.verify : step === 4 ? t.profile : group === reviewStep ? t.review : group === legalStep ? onboardingText(locale,"terms") : t.profile}</h1>
       {message && <div role="alert"><p>{message}</p>{message === t.changed && <button type="button" className="button button-secondary" disabled={busy} onClick={()=>void load()}>{t.reload}</button>}</div>}
-      {step === 1 && <><p>{t.choice}</p><fieldset className="registration-choices" disabled={!hydrated || busy}><legend className="sr-only">{t.choice}</legend>{(["personal","business"] as const).map(value => <label key={value} className={kind === value ? "selected" : ""}><input type="radio" name="account-kind" value={value} checked={kind === value} onChange={()=>{setKind(value);setValues({});unverified.current=null;try{sessionStorage.setItem("shida-registration-choice",value);}catch{}}}/><span><strong>{t[value]}</strong><small>{value === "personal" ? t.personalHelp : t.businessHelp}</small></span></label>)}</fieldset><button className="button button-primary" disabled={!hydrated || busy} onClick={()=>{setGroup(0);setMessage("");setStep(4);}}>{t.next}</button><button type="button" className="registration-text-button" onClick={()=>{unverified.current=null;setPhone("");setStep(2);void load();}}>{t.resume}</button><a href={`${base}/space/`} onClick={event=>{event.preventDefault();router.push(registrationReturnPath(new URLSearchParams(window.location.search).get("returnTo"),`${base}/space/`));}}>{t.signin}</a></>}
+      {step === 1 && <><label htmlFor="registration-language">{profileLabel(locale,"preferred_language")}</label><select id="registration-language" value={locale} onChange={event=>setLocale(event.target.value as RegistrationLocale)}>{registrationLanguages.map(language=><option key={language.code} value={language.code}>{language.name}</option>)}</select><p>{t.choice}</p><fieldset className="registration-choices" disabled={!hydrated || busy}><legend className="sr-only">{t.choice}</legend>{(["personal","business"] as const).map(value => <label key={value} className={kind === value ? "selected" : ""}><input type="radio" name="account-kind" value={value} checked={kind === value} onChange={()=>{setKind(value);setValues({});unverified.current=null;try{sessionStorage.setItem("shida-registration-choice",value);}catch{}}}/><span><strong>{t[value]}</strong><small>{value === "personal" ? t.personalHelp : t.businessHelp}</small></span></label>)}</fieldset><button className="button button-primary" disabled={!hydrated || busy} onClick={()=>{setGroup(0);setMessage("");setStep(4);}}>{t.next}</button><button type="button" className="registration-text-button" onClick={()=>{unverified.current=null;setPhone("");setStep(2);void load();}}>{t.resume}</button><a href={`${base}/space/`} onClick={event=>{event.preventDefault();router.push(registrationReturnPath(new URLSearchParams(window.location.search).get("returnTo"),`${base}/space/`));}}>{t.signin}</a></>}
       {step === 4 && <form onSubmit={event=>{event.preventDefault();const normalized=internationalPhone(phone);if(!normalized){setMessage(r.invalidPhone);return;}setPhone(normalized);setMessage("");unverified.current={...values};setStep(2);}}>
         <p role="status">{storageFailed?r.storageFailed:r.draft}</p>
         {kind === "business" && !catalogs ? <p role="alert">{flow.catalogError}</p> : <fieldset className="registration-fields">
