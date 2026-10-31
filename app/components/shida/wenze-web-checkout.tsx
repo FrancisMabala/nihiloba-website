@@ -1,4 +1,5 @@
 "use client";
+import {WenzeBuyerSafety} from "./wenze-shop-report";
 import {useEffect,useRef,useState} from "react";
 import {ProfileLocationPrefill} from "./profile-location-prefill";
 import {wenzeProfileDestination} from "../../lib/profile-delivery";
@@ -35,7 +36,7 @@ function Checkout({locale,cart,replace,onComplete,disabled,onBusy,onConflict}:{l
  }
  return <section className="wenze-web-checkout"><h3>{t.title}</h3>
  {cart.seller_groups.map(group=><Fulfillment key={group.store_reference} group={group} version={cart.version} locale={locale} replace={replace} onBusy={setBusy} disabled={disabled||busy||buyer.checking} onEditing={value=>setEditing(current=>value?[...new Set([...current,group.store_reference])]:current.filter(ref=>ref!==group.store_reference))}/>)}
- <p>{t.note}</p>{cart.seller_groups.some(g=>g.delivery_fee_status==="pending")&&<p>{t.pending}</p>}
+ <WenzeBuyerSafety locale={locale} shops={cart.seller_groups.map(g=>({reference:g.store_reference,name:g.store_name}))}/><p>{t.note}</p>{cart.seller_groups.some(g=>g.delivery_fee_status==="pending")&&<p>{t.pending}</p>}
  {error&&<p role="alert">{t.error}</p>}
  {!buyer.binding?<button className="button button-primary" disabled={buyer.checking||disabled||busy} onClick={buyer.login}>{t.login}</button>:<button className="button button-primary" disabled={!chosen||disabled||busy} onClick={()=>void confirm()}>{busy?t.busy:t.confirm}</button>}
  </section>;

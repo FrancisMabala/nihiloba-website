@@ -9,7 +9,7 @@ async function handle(request: Request, context: Context) {
   const path = ((await context.params).path ?? []).join("/");
   const reference = "SCT_[A-Za-z0-9_-]{1,100}";
   const allowed = request.method === "GET" ? path === "" || new RegExp(`^${reference}$`).test(path)
-    : request.method === "POST" && (path === "" || new RegExp(`^${reference}/(reply|close)$`).test(path));
+    : request.method === "POST" && (path === "" || path === "shop-report" || new RegExp(`^${reference}/(reply|close)$`).test(path));
   if (!allowed || new URL(request.url).search) return fail(404);
   if (request.headers.get("sec-fetch-site") === "cross-site") return fail(403);
   const origin = personalRequestOrigin(request);
