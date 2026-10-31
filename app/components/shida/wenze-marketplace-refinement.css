@@ -1,0 +1,41 @@
+/* Shared public presentation; category changes imagery, never purchasing rules. */
+.wzp-discovery .mp-discovery-header,.wzp-discovery .marketplace-discovery-header{background:linear-gradient(110deg,#f3efe2,#e9efdf);border-radius:12px;padding:24px}
+.wenze-public.wenze-public .wenze-product-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.wenze-public.wenze-public .wenze-product-card{min-width:0;border:1px solid #e3e1d6;border-radius:9px;overflow:hidden;background:#fffefa;box-shadow:none}
+.wenze-public.wenze-public .wenze-product-card .marketplace-card-image{aspect-ratio:1;min-height:0;background:#f2f0e9}
+.wenze-public.wenze-public .wenze-product-card.product-fashion_clothing .marketplace-card-image{aspect-ratio:4/5}
+.wenze-public.wenze-public .wenze-product-card .marketplace-card-image img{object-fit:contain}
+.wenze-public.wenze-public .wenze-product-card .marketplace-card-body{padding:12px;gap:8px}
+.wenze-public.wenze-public .wenze-product-card .marketplace-card-body h2{font:600 15px/1.4 var(--font-sans,Arial),sans-serif;min-height:2.8em;margin:0}
+.wenze-public.wenze-public .wenze-product-card .wenze-card-price{font-size:16px;font-variant-numeric:tabular-nums}
+.wenze-public.wenze-public .wenze-product-card .wzp-product-facts{font-size:12px;margin:0}
+.wenze-public.wenze-public .wenze-product-card .wzp-product-facts dt{display:none}
+.wenze-public.wenze-public .wenze-product-card .wzp-product-facts dd{margin:0}
+.wenze-public.wenze-public .wenze-product-card .wzp-product-seller{font-size:12px;text-decoration:underline;color:#596b60}
+.wenze-public.wenze-public .wenze-product-card .wenze-card-meta{font-size:12px;gap:6px;margin:0}
+.wenze-public.wenze-public .wenze-product-card .button{padding:10px 8px;min-height:44px;font-size:13px;width:100%}
+.wzp-discovery>nav.mp-chips{flex-wrap:nowrap;overflow-x:auto;padding-block:12px;max-width:100%}
+.wzp-discovery>nav.mp-chips a{flex-shrink:0;border:1px solid #dfdfd2;border-radius:24px;background:#f7f5ec}
+.wzp-discovery>nav.mp-chips a[aria-current=page]{background:#173f34;color:white}
+.wzp-store-heading{position:relative;isolation:isolate;background:linear-gradient(115deg,#f8f5e9,#e5edde);padding:32px!important;border:1px solid #e0e2d5;border-radius:12px;margin-top:20px;min-height:180px}
+.wzp-store-monogram{width:100px!important;height:100px!important;background:#fffdf4;border:1px solid #e1dcc9;border-radius:50%;overflow:hidden;display:grid;place-items:center;font:42px Georgia}
+.wzp-store-monogram img{width:100%;height:100%;object-fit:cover}
+.wzp-buyer-actions{flex-wrap:wrap;justify-content:flex-end}
+.wzp-buyer-actions .wzp-report-action{flex-basis:100%;justify-content:flex-end;font-size:13px}
+.wzp-shop-navigation{border-bottom:1px solid #dcded3;margin-bottom:24px}
+.wzp-about{gap:28px}.wzp-shop-info{background:#f4f3e9;border:1px solid #e3e0d2;border-radius:10px;padding:24px}
+.wzp-reviews{border-top:1px solid #dedfd4;padding-top:24px}.wzp-reviews article{padding:18px;border:1px solid #e1e1d6;border-radius:9px;background:#fffefa;margin:12px 0}
+.wzp-product{padding-top:24px}.wzp-product-layout{gap:40px;align-items:start}
+.wzp-product-gallery{background:#f5f3ee;border:1px solid #e3e0d6;border-radius:12px;overflow:hidden}
+.wzp-product-gallery img{object-fit:contain!important}
+.wzp-product.product-fashion_clothing .wzp-product-gallery{background:#f3eeea}
+.wzp-product-info h1{font:500 clamp(26px,3vw,38px)/1.2 Georgia,serif}
+.wzp-product-price{font-size:26px!important;font-weight:700}
+.wzp-product-info .wzp-product-facts{border-top:1px solid #e1e0d4;border-bottom:1px solid #e1e0d4;padding:12px 0;margin:16px 0}
+.wzp-product-info .wzp-product-facts>div{display:grid;grid-template-columns:1fr 2fr;gap:12px;padding:6px 0}
+.wzp-product-details details{border-bottom:1px solid #deded3;padding:16px 0}.wzp-product-details summary{font:18px Georgia;cursor:pointer}
+@media(max-width:1100px){.wenze-public.wenze-public .wenze-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.wenze-public.wenze-public .wenze-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.wenze-public.wenze-public .wenze-product-card .marketplace-card-body{padding:10px}.wenze-public.wenze-public .wenze-product-card .marketplace-card-body h2{font-size:14px}.wzp-store-heading{padding:20px!important;gap:16px}.wzp-store-monogram{width:72px!important;height:72px!important}.wzp-buyer-actions{justify-content:start}.wzp-buyer-actions .wzp-report-action{justify-content:start}.wzp-product-layout{gap:24px}.wzp-shop-navigation nav{overflow-x:auto;flex-wrap:nowrap}.wzp-shop-navigation nav a{white-space:nowrap}.wzp-product-info .wzp-product-facts>div{grid-template-columns:1fr 1.5fr}}
+
+.wzp-boutique.wenze-public .wzp-store-heading{grid-template-columns:100px minmax(0,1fr) auto;gap:24px}
+@media(max-width:760px){.wzp-boutique.wenze-public .wzp-store-heading{grid-template-columns:72px minmax(0,1fr);gap:16px}.wzp-boutique.wenze-public .wzp-buyer-actions{grid-column:1/-1}}

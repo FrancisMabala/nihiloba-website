@@ -44,7 +44,7 @@ export function WenzeCartActions({ locale, productReference, variantReference = 
   return <div className={compact ? "wenze-cart-actions wenze-cart-actions-compact" : "wenze-cart-actions"}>
     <div className="wenze-cart-action-buttons">
       <button className="button button-primary" type="button" disabled={disabled || loading || pending !== null} onClick={() => void submit("add")}>{pending === "add" ? t.adding : t.add}</button>
-      <button className="button button-secondary" type="button" disabled={disabled || loading || pending !== null} onClick={() => void submit("buy")}>{pending === "buy" ? t.adding : t.buyNow}</button>
+      {!compact && <button className="button button-secondary" type="button" disabled={disabled || loading || pending !== null} onClick={() => void submit("buy")}>{pending === "buy" ? t.adding : t.buyNow}</button>}
     </div>
     {added && <p className="wenze-cart-action-status" role="status">{t.added} · <Link href={cartPath}>{t.viewCart}</Link></p>}
     {error && <p className="wenze-cart-action-error" role="alert">{error}</p>}
