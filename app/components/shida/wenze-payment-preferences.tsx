@@ -30,7 +30,7 @@ export function WenzePaymentPreferences({path,locale,request,onRevision}:Props){
   }catch(e){if(e&&typeof e==="object"&&"status" in e&&[401,403,404].includes(Number(e.status))){setData(null);setSelected([]);}const conflict=!!e&&typeof e==="object"&&"status" in e&&e.status===409;setStale(conflict);setMessage(conflict?"conflict":"error");}
   finally{setBusy(false);}
  }
- return <section aria-label={t("title")}><h3>{t("title")}</h3><p>{t("help")}</p>
+ return <section className="wz-payment-preferences" aria-label={t("title")}><h3>{t("title")}</h3><p>{t("help")}</p>
   {message&&<p role={message==="saved"?"status":"alert"}>{t(message)}</p>}
   {!data&&!message&&<p role="status">{t("loading")}</p>}
   {data&&<form onSubmit={e=>{e.preventDefault();void save();}}><fieldset disabled={busy||stale} style={{border:0,padding:0}}>
