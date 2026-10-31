@@ -1,5 +1,6 @@
 "use client";
 import {SellerWorkspaceNavigation, SellerWorkspaceIcon, type SellerNavigationItem} from "./seller-workspace";
+import {moneyText} from "@/app/lib/wenze-money-copy";
 import {checkoutText} from "@/app/lib/wenze-checkout-copy";
 import {posText} from "@/app/lib/wenze-pos-copy";
 import {wenzeUX} from "@/app/lib/wenze-ux-copy";
@@ -15,5 +16,5 @@ export function WenzeNavigation({locale,view,onNavigate,physical=false}:{physica
 }
 export function WenzeSubnavigation({locale,view,onNavigate}:{locale:WenzeLocale;view:string;onNavigate:(view:string)=>void}){
  const group=wenzeGroup(view),tabs=group==="catalog"?["catalog","inventory","imports"]:group==="money"?["money","costs","expenses","reports","schedules","receipts"]:[];
- return tabs.length?<nav className="wz-section-tabs" aria-label={wenzeUX(locale,group==="catalog"?"productsStock":"money")}>{tabs.map(tab=><button key={tab} aria-current={view===tab?"page":undefined} onClick={()=>onNavigate(tab)}>{tab==="money"?wenzeUX(locale,"money"):tab==="catalog"?sellerText(locale,"products"):tab==="receipts"?posText(locale,"receipts"):sellerText(locale,tab)}</button>)}</nav>:null;
+ return tabs.length?<nav className="wz-section-tabs" aria-label={wenzeUX(locale,group==="catalog"?"productsStock":"money")}>{tabs.map(tab=><button key={tab} aria-current={view===tab?"page":undefined} onClick={()=>onNavigate(tab)}>{tab==="money"?moneyText(locale,"overview"):tab==="catalog"?sellerText(locale,"products"):tab==="receipts"?posText(locale,"receipts"):sellerText(locale,tab)}</button>)}</nav>:null;
 }
