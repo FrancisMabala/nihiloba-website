@@ -13,3 +13,25 @@
 @media(max-width:760px){.wo-orders.wo-orders.wo-orders .wo-mobile-actions{bottom:80px}.wo-orders.wo-orders.wo-orders .wo-tabs{max-width:100%}}
 .wo-orders.wo-orders.wo-orders .wo-action-buttons button.wo-primary{background:#173c34;border-color:#173c34;color:white}
 .wo-orders.wo-orders.wo-orders .wo-action-buttons button.wo-destructive{background:#fff;color:#b12a20;border-color:#d7837a}
+/* Online-order refinement; details and payment semantics retain their existing rules. */
+.wo-orders.wo-orders.wo-orders .wo-intro{margin-bottom:14px}
+.wo-orders.wo-orders.wo-orders .wo-info{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;margin:0 0 16px;background:#eef7fa;border:1px solid #d5e8ee;border-radius:7px;line-height:1.5}
+.wo-orders.wo-orders.wo-orders .wo-info>span{display:grid;place-items:center;flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#1686ac;color:white;font-weight:700}
+.wo-orders.wo-orders.wo-orders .wo-info p{margin:3px 0 0;font-size:13px}
+.wo-orders.wo-orders.wo-orders .wo-readiness{padding:12px 16px;border-left:3px solid #99aaa0;background:#f2f4ed;line-height:1.5}
+.wo-orders.wo-orders.wo-orders .wo-tabs button{display:flex;align-items:center;gap:7px;min-height:44px;padding:9px 12px}
+.wo-orders.wo-orders.wo-orders .wo-filter-icon{display:grid;place-items:center;width:21px;height:21px;border-radius:50%;background:#edf0e9;color:#315749;font-weight:700;font-size:16px}
+.wo-orders.wo-orders.wo-orders [data-status=action_required] .wo-filter-icon{background:#ffe4e2;color:#a52117}
+.wo-orders.wo-orders.wo-orders [data-status=in_progress] .wo-filter-icon{background:#fff0c9;color:#845a00}
+.wo-orders.wo-orders.wo-orders [data-status=completed] .wo-filter-icon{background:#ddf2e4;color:#17623a}
+.wo-orders.wo-orders.wo-orders [data-status=cancelled] .wo-filter-icon{background:#eee7e7;color:#8b4a4a}
+.wo-orders.wo-orders.wo-orders .wo-list-heading,.wo-orders.wo-orders.wo-orders button.wo-row{padding:12px;gap:10px}
+.wo-orders.wo-orders.wo-orders .wo-product-icon{padding:9px;border-radius:6px}
+.wo-orders.wo-orders.wo-orders .wo-order-item strong{overflow-wrap:anywhere}
+.wo-orders.wo-orders.wo-orders .wo-empty{padding:28px 20px}
+.wo-orders.wo-orders.wo-orders .wo-empty-icon{padding:16px}.wo-orders.wo-orders.wo-orders .wo-empty-icon svg{width:30px;height:30px}
+.wo-orders.wo-orders.wo-orders .wo-empty h3{font-size:22px;margin:16px 0 8px}
+.wo-orders.wo-orders.wo-orders .wo-settings-link{display:block;margin:18px auto 0;border:0;background:transparent;color:#173c34;text-decoration:underline;padding:8px}
+.wo-orders.wo-orders.wo-orders .wo-unavailable{max-width:640px;margin:0 auto;padding:36px 24px}
+@media(max-width:760px){.wo-orders.wo-orders.wo-orders .wo-info{padding:12px;gap:9px}.wo-orders.wo-orders.wo-orders .wo-info p{font-size:12px}.wo-orders.wo-orders.wo-orders .wo-empty{padding:24px 16px}.wo-orders.wo-orders.wo-orders .wo-empty h3{font-size:20px}.wo-orders.wo-orders.wo-orders button.wo-row{padding:13px 10px;gap:7px}.wo-orders.wo-orders.wo-orders .wo-order-item small{line-height:1.5}.wo-orders.wo-orders.wo-orders .wo-customer{display:block;grid-column:1;color:var(--wo-muted);font-size:12px}.wo-orders.wo-orders.wo-orders .wo-row-status{max-width:110px}}
+@media(max-width:760px){.wo-orders.wo-orders.wo-orders .wo-customer{grid-row:2;grid-column:1}.wo-orders.wo-orders.wo-orders .wo-amount{grid-row:2;grid-column:2;text-align:right}.wo-orders.wo-orders.wo-orders .wo-fulfillment{display:none}.wo-orders.wo-orders.wo-orders .wo-payment{grid-row:3;grid-column:1}.wo-orders.wo-orders.wo-orders .wo-date{grid-row:3;grid-column:2;text-align:right;font-size:11px}}

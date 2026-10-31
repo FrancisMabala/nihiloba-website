@@ -1,6 +1,16 @@
 import type {WenzeLocale} from './wenze-copy';
 const words:Record<string,readonly [string,string,string,string]>={
- intro:['Manage orders received by your shop.','Gérez les commandes reçues par votre boutique.','Tala bakomande oyo butiki na yo eyambi.','Simamia maagizo yaliyopokelewa dukani kwako.'],
+ title:['Online orders','Commandes en ligne','Bakomande na internet','Maagizo ya mtandaoni'],
+ intro:['Manage orders placed by customers through your SHIDA shop.','Gérez les commandes passées par vos clients sur SHIDA.','Tala bakomande oyo basombi batindi na butiki na yo ya SHIDA.','Simamia maagizo ya wateja kupitia duka lako la SHIDA.'],
+ onlineNotice:['These are online orders from the SHIDA marketplace.','Ce sont les commandes passées en ligne sur SHIDA.','Oyo ezali bakomande ya zando SHIDA na internet.','Haya ni maagizo ya mtandaoni kutoka soko la SHIDA.'],
+ salesNotice:['In-store sales are recorded in Checkout and can be reviewed in your sales history.','Les ventes en boutique sont enregistrées dans la caisse et consultables dans l’historique des ventes.','Boteki na butiki ekomamaka na caisse mpe emonanaka na lisolo ya boteki.','Mauzo ya dukani hurekodiwa kwenye malipo na yanaonekana katika historia ya mauzo.'],
+ notReady:['Online ordering is not configured for this shop.','Les commandes en ligne ne sont pas configurées pour cette boutique.','Bakomande na internet ebongisami te mpo na butiki oyo.','Maagizo ya mtandaoni hayajasanidiwa kwa duka hili.'],
+ notReadyHelp:['You are not currently accepting new orders through SHIDA.','Vous n’acceptez pas actuellement de nouvelles commandes sur SHIDA.','Ozali koyamba bakomande ya sika na SHIDA te sikoyo.','Kwa sasa hupokei maagizo mapya kupitia SHIDA.'],
+ historyNotice:['New online orders are unavailable. Existing orders remain accessible.','Les nouvelles commandes en ligne sont indisponibles. Les commandes existantes restent accessibles.','Bakomande ya sika na internet ezali te. Bakomande ya kala ezali kaka.','Maagizo mapya ya mtandaoni hayapatikani. Maagizo yaliyopo bado yanaweza kufikiwa.'],
+ shopSettings:['Review pickup and delivery in My shop','Consulter le retrait et la livraison dans Ma boutique','Tala kozwa mpe kotinda na Butiki na ngai','Kagua kuchukua na uwasilishaji katika Duka langu'],
+ checkout:['Go to Checkout','Aller à la caisse','Kende na caisse','Nenda kwenye malipo'],
+ upToDate:['Your online orders are up to date.','Vos commandes en ligne sont à jour.','Bakomande na yo ya internet ezali na molongo.','Maagizo yako ya mtandaoni yamesasishwa.'],
+
  order:['Order','Commande','Komande','Agizo'],customer:['Customer','Client','Mosombi','Mteja'],items:['Order items','Articles commandés','Biloko ya komande','Bidhaa zilizoagizwa'],total:['Total','Total','Nyonso','Jumla'],
  fulfillment:['Fulfillment','Remise de la commande','Kopesa komande','Uwasilishaji'],payment:['Payment information','Informations de paiement','Makambo ya lifuti','Taarifa za malipo'],status:['Status','Statut','Ezaleli','Hali'],date:['Date','Date','Mokolo','Tarehe'],actions:['Actions','Actions','Misala','Hatua'],view:['View order','Voir la commande','Tala komande','Ona agizo'],
  search:['Order reference, customer or product','Référence, client ou produit','Nimero, mosombi to eloko','Nambari ya agizo, mteja au bidhaa'],clear:['Clear search','Effacer la recherche','Longola boluki','Futa utafutaji'],
@@ -8,7 +18,7 @@ const words:Record<string,readonly [string,string,string,string]>={
  empty_in_progress:['No orders in progress.','Aucune commande en cours.','Komande ezali kosalema te.','Hakuna maagizo yanayoendelea.'],
  empty_completed:['No completed orders yet.','Aucune commande terminée pour le moment.','Komande esili naino te.','Hakuna maagizo yaliyokamilika bado.'],
  empty_cancelled:['No cancelled or expired orders.','Aucune commande annulée ou expirée.','Komande elongolami to esili ntango ezali te.','Hakuna maagizo yaliyoghairiwa au kuisha muda.'],
- empty_all:['No orders yet.','Aucune commande pour le moment.','Komande ezali naino te.','Hakuna maagizo bado.'],
+ empty_all:['No online orders yet.','Aucune commande en ligne pour le moment.','Komande na internet ezali naino te.','Hakuna maagizo ya mtandaoni bado.'],
  newOrders:['New customer orders will appear here.','Les nouvelles commandes apparaîtront ici.','Bakomande ya sika ekomonana awa.','Maagizo mapya ya wateja yataonekana hapa.'],
  noSearch:['No orders match your search.','Aucune commande ne correspond à votre recherche.','Komande moko te eyokani na boluki.','Hakuna maagizo yanayolingana na utafutaji wako.'],
  back:['Back to Orders','Retour aux commandes','Zonga na bakomande','Rudi kwenye maagizo'],

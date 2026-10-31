@@ -27,7 +27,7 @@ const enc = encodeURIComponent;
 
 const bytes = (file: File) => new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onerror = reject; reader.onload = () => resolve(String(reader.result).split(",")[1]); reader.readAsDataURL(file); });
 
-export function WenzeR6Workspace({ context, locale, initialView, initialStore, initialOrder, ordersOnly=false }: { initialOrder?:string; ordersOnly?:boolean; context: string; locale: WenzeLocale; initialView:string; initialStore?:string }) {
+export function WenzeR6Workspace({ context, locale, initialView, initialStore, initialOrder, ordersOnly=false, orderingUnavailable=false, noOrderHistory=false, onCheckout, onShop }: { orderingUnavailable?:boolean; noOrderHistory?:boolean; onCheckout?:()=>void; onShop?:()=>void; initialOrder?:string; ordersOnly?:boolean; context: string; locale: WenzeLocale; initialView:string; initialStore?:string }) {
  const {confirm,confirmation}=useWenzeConfirm(locale);
  const {request,download}=useWenzeApi();
  const [receipt,setReceipt]=useState<Receipt|null>(null);
@@ -121,7 +121,7 @@ export function WenzeR6Workspace({ context, locale, initialView, initialStore, i
   return <section className={`wz-r6 ${view==="imports"?"wp-import":""}`}>{confirmation}{!ordersOnly&&!initialStore&&<nav className="wz-actions">{button("orders", () => open("orders"))}{button("imports", () => open("imports"))}</nav>}
     {view && <>{view!=="orders"&&<>{!initialStore&&<h2>{t(view)}</h2>}{busy && <p role="status">{t("loading")}</p>}{error && <p role="alert">{t(error)}</p>}</>}
     <label hidden={ordersOnly||!!initialStore}>{t("allStores")}<select disabled={busy} value={shop} onChange={async e => { const value = e.target.value; if(!await leaveWork())return; setDraft(null);setMapping({}); setShop(value); setReceipt(null); setOrder(null); setJob(null); setItem(null); setReview(null); setPublication(null); void guarded(() => view === "orders" ? loadOrders(0, bucket, value) : loadJobs(0, value)); }}><option value="">{t("allStores")}</option>{shops.map(row => <option key={row.public_ref} value={row.public_ref}>{row.name}</option>)}</select></label>
-    {view === "orders" && <WenzeOrdersView locale={locale} orders={orders} order={order} counts={counts} bucket={bucket} search={search} searched={appliedSearch} busy={busy} error={error} action={action} receipt={receipt} pages={pages}
+    {view === "orders" && <WenzeOrdersView orderingUnavailable={orderingUnavailable} noOrderHistory={noOrderHistory} onCheckout={onCheckout} onShop={onShop} locale={locale} orders={orders} order={order} counts={counts} bucket={bucket} search={search} searched={appliedSearch} busy={busy} error={error} action={action} receipt={receipt} pages={pages}
       onSearchChange={setSearch} onSearch={()=>void guarded(()=>loadOrders(0))}
       onClear={()=>{setSearch("");void guarded(()=>loadOrders(0,bucket,shop,""));}}
       onFilter={key=>{setBucket(key);void guarded(()=>loadOrders(0,key));}}
