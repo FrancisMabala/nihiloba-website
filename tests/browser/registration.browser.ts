@@ -14,6 +14,18 @@ test.beforeEach(async({page,browserName})=>{
   await route.fulfill({response,headers});
  });
 });
+async function fillCountry(page:Page,code:string){
+ await page.locator("#registration-country_code").fill(code);await expect(page.locator("#registration-country_code")).toHaveValue(code==="CD"?"Congo-Kinshasa":code==="SE"?"Sweden":code);
+}
+
+test('country search selects canonical residence and keeps unknown suggestions provisional',async({page})=>{
+ await fixture(page);await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
+ const country=page.locator('.registration-country');await country.locator('input').fill('Swedn');await country.getByRole('button',{name:'Sweden',exact:true}).click();
+ await expect(country.locator('input')).toHaveValue('Sweden');
+ await country.locator('input').fill('Unknown land');await country.locator('summary').click();await country.getByRole('button',{name:'Submit country for review'}).click();
+ await expect(country.getByText('Submitted for review. Choose a listed country to continue.')).toBeVisible();
+ const draft=await page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)!),FORM_DRAFT_KEY);expect(draft.values.country_code).toBe('');
+});
 async function fillName(page:Page,name:string){
  if(await page.locator('#registration-personal_name').count())return page.locator('#registration-personal_name').fill(name);
  const [first,...rest]=name.split(' ');await page.locator('#registration-first_name').fill(first);await page.locator('#registration-family_name').fill(rest.join(' ')||first);
@@ -23,7 +35,7 @@ for(const locale of ['fr','ln','en','sw'] as const)test(`preferred ${locale} lan
  await fixture(page);await page.goto('/shida/register/');await page.locator('#registration-language').selectOption(locale);
  await expect(page.getByRole('heading',{name:registrationCopy[locale].title,exact:true})).toBeVisible();
  await page.getByRole('button',{name:registrationCopy[locale].next,exact:true}).click();
- await fillName(page,'Language Person');await page.locator('#registration-city').fill('Stockholm');await page.locator('#registration-country_code').fill('SE');await page.locator('#registration-phone').fill('+46910004001');
+ await fillName(page,'Language Person');await page.locator('#registration-city').fill('Stockholm');await fillCountry(page,'SE');await page.locator('#registration-phone').fill('+46910004001');
  await page.reload();await expect(page.locator('.registration-shell')).toHaveAttribute('lang',locale);await expect(page.locator('#registration-first_name')).toHaveValue('Language');
  await page.getByRole('button',{name:registrationCopy[locale].next,exact:true}).click();await page.getByLabel(registrationEligibility[locale]).check();
  const sent=page.waitForRequest(request=>request.method()==='POST'&&request.url().endsWith('/auth/whatsapp/registration/'));
@@ -52,6 +64,11 @@ async function fixture(page:Page,existing=false,business=false){
  await page.route('**/api/shida/**',async route=>{
   const url=new URL(route.request().url()),path=url.pathname.replace(/\/$/,''),method=route.request().method();
   const reply=(value:unknown,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(value)});
+  if(path.endsWith('/registration-reference')){
+   const rows=[{code:'CD',name:'Congo-Kinshasa'},{code:'CG',name:'Congo-Brazzaville'},{code:'SE',name:'Sweden'},{code:'DE',name:'Germany'}];
+   const q=url.searchParams.get('q')||'';
+   return reply({items:rows,matched_code:rows.find(row=>row.code===q.toUpperCase()||row.name.toLowerCase()===q.toLowerCase())?.code||null,...(method==='POST'?{status:'pending_review'}:{})});
+  }
   const projection=()=>({onboarding_ref:business?'ONB_fixture':'POD_fixture',revision:state.revision,status:state.status,values:state.values,existing_account:state.existingAccount,organization_types:['company','school'],sectors:['commerce_distribution'],remaining_fields:(business?['name','organization_type','sector','personal_name','city','country_code','commune_or_municipality','street_or_avenue','building_or_parcel']:['first_name','family_name','city','country_code']).filter(key=>!state.values[key]),legal:[{document_type:'SHIDA_TERMS_OF_USE',version:'1',url:'https://nihiloba.com/shida/terms/1.0/',accepted:state.accepted},{document_type:'SHIDA_PRIVACY_POLICY',version:'1',url:'https://nihiloba.com/shida/privacy/1.0/',accepted:state.accepted},...(business?[{document_type:'SHIDA_BUSINESS_TERMS',version:'1',url:'https://nihiloba.com/shida/business/terms/1.0/',accepted:state.accepted}]:[])]});
   if(path.endsWith('/auth/whatsapp/registration')){expect(route.request().headers()['x-shida-eligibility']).toBe('adult-drc-v1');return reply({challenge_ref:'DWC_fixture_test',expires_at:new Date(Date.now()+300000).toISOString(),whatsapp_url:'https://wa.me/243000000000?text=synthetic-not-sent'},201);}
   if(path.includes('/auth/whatsapp/registration/DWC_')){if(path.endsWith('/session')){state.verified=true;return reply({verified:true});}return reply({status:'verified'});}
@@ -81,7 +98,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,768,1
  if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-choice-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:t.next,exact:true}).click();
  await fillName(page,'Synthetic Personal');await page.locator('#registration-phone').fill('+243910004001');
- await page.locator('#registration-city').fill('Kinshasa');await page.locator('#registration-country_code').fill('CD');await page.locator('#registration-area').fill('Gombe');
+ await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');await page.locator('#registration-area').fill('Gombe');
  expect(state.values).toEqual({});expect(state.verified).toBe(false);
  if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-details-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:t.next,exact:true}).click();
@@ -174,7 +191,7 @@ test('local input never overwrites a saved cross-channel draft',async({page})=>{
  const state=await fixture(page,true);state.values={personal_name:'Saved Person',city:'Kinshasa',country_code:'CD'};
  await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
  await fillName(page,'Unverified Person');await page.locator('#registration-phone').fill('+243910004001');
- await page.locator('#registration-city').fill('Goma');await page.locator('#registration-country_code').fill('CD');await page.getByRole('button',{name:'Next',exact:true}).click();
+ await page.locator('#registration-city').fill('Goma');await fillCountry(page,'CD');await page.getByRole('button',{name:'Next',exact:true}).click();
  await page.getByLabel(registrationEligibility.en).check();await page.getByRole('button',{name:personalLoginCopy.en.open,exact:true}).click();await page.getByLabel(personalLoginCopy.en.codeLabel).fill('610294');await page.getByRole('button',{name:registrationCopy.en.verifyButton,exact:true}).click();
  await expect(page.getByText(registrationFlowCopy.en.savedWins,{exact:true})).toBeVisible();
  await expect(page.locator('#registration-personal_name')).toHaveValue('Saved Person');expect(state.values.city).toBe('Kinshasa');
@@ -192,7 +209,7 @@ test('verified existing account accepts updated terms without a second challenge
  let challenges=0;
  page.on('request',request=>{if(request.method()==='POST'&&request.url().endsWith('/auth/whatsapp/registration/'))challenges++;});
  await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
- await fillName(page,'Unconfirmed Name');await page.locator('#registration-city').fill('Kinshasa');await page.locator('#registration-country_code').fill('CD');await page.locator('#registration-phone').fill('+243910004001');
+ await fillName(page,'Unconfirmed Name');await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');await page.locator('#registration-phone').fill('+243910004001');
  await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByLabel(registrationEligibility.en).check();await page.getByRole('button',{name:personalLoginCopy.en.open,exact:true}).click();
  await page.getByLabel(personalLoginCopy.en.codeLabel).fill('610294');await page.getByRole('button',{name:registrationCopy.en.verifyButton,exact:true}).click();
  await expect(page.getByText(registrationCopy.en.existing,{exact:true})).toBeVisible();
@@ -206,7 +223,7 @@ test('draft created in another channel between state and start is preserved',asy
  const state=await fixture(page,true);state.status='not_started';state.race=true;
  await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
  await fillName(page,'Local Person');await page.locator('#registration-phone').fill('+243910004001');
- await page.locator('#registration-city').fill('Goma');await page.locator('#registration-country_code').fill('CD');await page.getByRole('button',{name:'Next',exact:true}).click();
+ await page.locator('#registration-city').fill('Goma');await fillCountry(page,'CD');await page.getByRole('button',{name:'Next',exact:true}).click();
  await page.getByLabel(registrationEligibility.en).check();await page.getByRole('button',{name:personalLoginCopy.en.open,exact:true}).click();await page.getByLabel(personalLoginCopy.en.codeLabel).fill('610294');await page.getByRole('button',{name:registrationCopy.en.verifyButton,exact:true}).click();
  await expect(page.getByText(registrationFlowCopy.en.savedWins,{exact:true})).toBeVisible();await expect(page.locator('#registration-personal_name')).toHaveValue('Concurrent Person');expect(state.revision).toBe(2);
 });
@@ -214,7 +231,7 @@ test('draft created in another channel between state and start is preserved',asy
 test('unverified form survives refresh, backward navigation and interrupted verification',async({page})=>{
  const state=await fixture(page);
  await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
- await fillName(page,'Recoverable Person');await page.locator('#registration-city').fill('Kinshasa');await page.locator('#registration-country_code').fill('CD');await page.locator('#registration-phone').fill('+243910004001');
+ await fillName(page,'Recoverable Person');await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');await page.locator('#registration-phone').fill('+243910004001');
  await page.getByRole('button',{name:'Back',exact:true}).click();await page.getByRole('button',{name:'Next',exact:true}).click();await expect(page.locator('#registration-personal_name')).toHaveValue('Recoverable Person');
  await page.reload();await expect(page.locator('#registration-phone')).toHaveValue('+243910004001');await expect(page.locator('#registration-personal_name')).toHaveValue('Recoverable Person');
  expect(state.values).toEqual({});expect(state.verified).toBe(false);
