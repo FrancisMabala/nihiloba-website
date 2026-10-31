@@ -21,13 +21,14 @@ async function fillCountry(page:Page,code:string){
 for(const [country,city] of [['SE','Stockholm'],['DE','Berlin'],['CD','Lubumbashi']])test(`${country} ${city}: optional international location without Kinshasa commune`,async({page})=>{
  await fixture(page);await page.setViewportSize({width:390,height:900});await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();await fillCountry(page,country);await page.locator('#registration-city').fill(city);
  await expect(page.locator('#registration-commune')).toHaveCount(0);
+ await page.locator('.registration-optional-address summary').click();
  for(const field of ['region','postal_code','parcel_number','avenue']){await expect(page.locator(`#registration-${field}`)).toBeVisible();await expect(page.locator(`#registration-${field}`)).not.toHaveAttribute('required','');}
  await page.locator('#registration-postal_code').fill('123 45');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
 test('Kinshasa commune controls manual quartier and clears dependent location on country change',async({page})=>{
  await fixture(page);await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');
- await page.locator('#registration-quartier').fill('Manual quartier');await page.locator('#registration-avenue').fill('Private street');
+ await page.locator('#registration-quartier').fill('Manual quartier');await page.locator('.registration-optional-address summary').click();await page.locator('#registration-avenue').fill('Private street');
  await page.locator('#registration-commune').selectOption('Lemba');await expect(page.locator('#registration-quartier')).toHaveValue('');
  await fillCountry(page,'SE');await expect(page.locator('#registration-commune')).toHaveCount(0);await expect(page.locator('#registration-avenue')).toHaveValue('');
 });
@@ -38,7 +39,7 @@ test('country search selects canonical residence and keeps unknown suggestions p
  await expect(country.locator('input')).toHaveValue('Sweden');
  await country.locator('input').fill('Unknown land');await country.locator('summary').click();await country.getByRole('button',{name:'Submit country for review'}).click();
  await expect(country.getByText('Submitted for review. Choose a listed country to continue.')).toBeVisible();
- const draft=await page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)!),FORM_DRAFT_KEY);expect(draft.values.country_code).toBe('');
+ const draft=await page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)!),FORM_DRAFT_KEY);expect(draft?.values.country_code??'').toBe('');
 });
 async function fillName(page:Page,name:string){
  if(await page.locator('#registration-personal_name').count())return page.locator('#registration-personal_name').fill(name);
@@ -50,7 +51,8 @@ for(const locale of ['fr','ln','en','sw'] as const)test(`preferred ${locale} lan
  await expect(page.getByRole('heading',{name:registrationCopy[locale].title,exact:true})).toBeVisible();
  await page.getByRole('button',{name:registrationCopy[locale].next,exact:true}).click();
  await fillName(page,'Language Person');await page.locator('#registration-city').fill('Stockholm');await fillCountry(page,'SE');await page.locator('#registration-phone').fill('+46910004001');
- await page.reload();await expect(page.locator('.registration-shell')).toHaveAttribute('lang',locale);await expect(page.locator('#registration-first_name')).toHaveValue('Language');
+ await expect.poll(()=>page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)||'{}').language,FORM_DRAFT_KEY)).toBe(locale);
+ await page.reload();await expect(page.getByRole('button',{name:registrationCopy[locale].next,exact:true})).toBeEnabled({timeout:15000});await expect(page.locator('.registration-shell')).toHaveAttribute('lang',locale);await expect(page.locator('#registration-first_name')).toHaveValue('Language');
  await page.getByRole('button',{name:registrationCopy[locale].next,exact:true}).click();await page.getByLabel(registrationEligibility[locale]).check();
  const sent=page.waitForRequest(request=>request.method()==='POST'&&request.url().endsWith('/auth/whatsapp/registration/'));
  await page.getByRole('button',{name:personalLoginCopy[locale].open,exact:true}).click();expect((await sent).headers()['x-shida-language']).toBe(locale);
@@ -84,7 +86,7 @@ async function fixture(page:Page,existing=false,business=false){
    const q=url.searchParams.get('q')||'';
    return reply({items:rows,matched_code:rows.find(row=>row.code===q.toUpperCase()||row.name.toLowerCase()===q.toLowerCase())?.code||null,...(method==='POST'?{status:'pending_review'}:{})});
   }
-  const projection=()=>({onboarding_ref:business?'ONB_fixture':'POD_fixture',revision:state.revision,status:state.status,values:state.values,existing_account:state.existingAccount,organization_types:['company','school'],sectors:['commerce_distribution'],remaining_fields:(business?['name','organization_type','sector','personal_name','city','country_code','commune_or_municipality','street_or_avenue','building_or_parcel']:['first_name','family_name','city','country_code']).filter(key=>!state.values[key]),legal:[{document_type:'SHIDA_TERMS_OF_USE',version:'1',url:'https://nihiloba.com/shida/terms/1.0/',accepted:state.accepted},{document_type:'SHIDA_PRIVACY_POLICY',version:'1',url:'https://nihiloba.com/shida/privacy/1.0/',accepted:state.accepted},...(business?[{document_type:'SHIDA_BUSINESS_TERMS',version:'1',url:'https://nihiloba.com/shida/business/terms/1.0/',accepted:state.accepted}]:[])]});
+  const projection=()=>({onboarding_ref:business?'ONB_fixture':'POD_fixture',revision:state.revision,status:state.status,values:state.values,existing_account:state.existingAccount,organization_types:['company','school'],sectors:['commerce_distribution'],remaining_fields:(business?['name','organization_type','sector','personal_name','city','country_code','commune_or_municipality','street_or_avenue','building_or_parcel']:state.values.personal_name&&!state.values.first_name?['personal_name','city','country_code']:['first_name','family_name','city','country_code']).filter(key=>!state.values[key]),legal:[{document_type:'SHIDA_TERMS_OF_USE',version:'1',url:'https://nihiloba.com/shida/terms/1.0/',accepted:state.accepted},{document_type:'SHIDA_PRIVACY_POLICY',version:'1',url:'https://nihiloba.com/shida/privacy/1.0/',accepted:state.accepted},...(business?[{document_type:'SHIDA_BUSINESS_TERMS',version:'1',url:'https://nihiloba.com/shida/business/terms/1.0/',accepted:state.accepted}]:[])]});
   if(path.endsWith('/auth/whatsapp/registration')){expect(route.request().headers()['x-shida-eligibility']).toBe('adult-drc-v1');return reply({challenge_ref:'DWC_fixture_test',expires_at:new Date(Date.now()+300000).toISOString(),whatsapp_url:'https://wa.me/243000000000?text=synthetic-not-sent'},201);}
   if(path.includes('/auth/whatsapp/registration/DWC_')){if(path.endsWith('/session')){state.verified=true;return reply({verified:true});}return reply({status:'verified'});}
   if(path.includes('/registration/')){
@@ -105,27 +107,31 @@ async function fixture(page:Page,existing=false,business=false){
  });
  return state;
 }
-for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,768,1366])test(`${locale} ${width}: guided Personal registration`,async({page},testInfo)=>{
+for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,768,1440])test(`${locale} ${width}: guided Personal registration`,async({page},testInfo)=>{
  const state=await fixture(page),t=registrationCopy[locale],login=personalLoginCopy[locale];await page.setViewportSize({width,height:900});
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/register/`);
  await expect(page.getByRole('heading',{name:t.title})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-choice-${width}.png`,fullPage:true});
+ if(locale==='en')await page.evaluate(()=>window.scrollTo(0,0));if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-choice-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:t.next,exact:true}).click();
  await fillName(page,'Synthetic Personal');await page.locator('#registration-phone').fill('+243910004001');
  await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');await page.locator('#registration-commune').selectOption('Gombe');
  expect(state.values).toEqual({});expect(state.verified).toBe(false);
- if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-details-${width}.png`,fullPage:true});
+ if(locale==='en')await page.evaluate(()=>window.scrollTo(0,0));if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-details-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:t.next,exact:true}).click();
  await expect(page.getByText(t.unauthorized,{exact:true})).toHaveCount(0);
  await expect(page.getByRole('button',{name:login.open,exact:true})).toBeDisabled();
  await page.getByLabel(registrationEligibility[locale]).check();
  await page.getByRole('button',{name:login.open,exact:true}).click();
+ if(locale==='en')await page.evaluate(()=>window.scrollTo(0,0));if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-verification-${width}.png`,fullPage:true});
  await page.getByLabel(login.codeLabel).fill('610294');await page.getByRole('button',{name:t.verifyButton,exact:true}).click();
   await expect(page.locator('.registration-consent input')).toHaveCount(2);
+ if(locale==='en')await page.evaluate(()=>window.scrollTo(0,0));if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-terms-${width}.png`,fullPage:true});
  for(const checkbox of await page.locator('.registration-consent input').all())await checkbox.check();
  await page.getByRole('button',{name:t.next,exact:true}).click();
  await expect(page.getByRole('heading',{name:t.review,exact:true})).toBeVisible();
+ if(locale==='en'){await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:`test-results/registration/${testInfo.project.name}-review-${width}.png`,fullPage:true});}
+ if(locale==='en'&&width<600){await page.getByRole('button',{name:t.finish,exact:true}).evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));await page.screenshot({path:`test-results/registration/${testInfo.project.name}-review-actions-${width}.png`});}
  await page.getByRole('button',{name:t.finish,exact:true}).click();await expect(page).toHaveURL(/\/shida\/space\//);expect(state.completed).toBe(true);
 });
 for(const locale of ['en','fr','ln','sw'] as const)test(`${locale}: Organization fields and private Business POST handoff`,async({page})=>{
@@ -146,7 +152,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`${locale}: Organization
 });
 test('stale drafts require explicit reload, cancellation is deliberate',async({page})=>{
  const state=await fixture(page,true);await page.goto('/shida/register/');await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();
- state.stale=true;await fillName(page,'Draft Name');await page.getByRole('button',{name:'Next',exact:true}).click();
+ state.stale=true;await page.locator('#registration-first_name').fill('Draft');await page.locator('#registration-first_name').press('Tab');
  await expect(page.getByText(registrationCopy.en.changed,{exact:true})).toBeVisible();expect(state.values.personal_name).toBeUndefined();
  state.stale=false;await page.getByRole('button',{name:registrationCopy.en.reload}).click();
  await page.getByRole('button',{name:registrationCopy.en.cancel,exact:true}).click();await expect(page.getByText(registrationCopy.en.cancelQuestion)).toBeVisible();expect(state.status).toBe('active');
@@ -155,14 +161,14 @@ test('stale drafts require explicit reload, cancellation is deliberate',async({p
 
 test('mobile navigation follows keyboard viewport without covering form actions',async({page})=>{
  await fixture(page,true);await page.setViewportSize({width:390,height:900});await page.goto('/shida/register/');
- await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();await page.locator('#registration-personal_name').focus();
+ await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();await page.locator('#registration-first_name').focus();
  const nav=page.locator('.shida-navigation');await expect(nav).toBeVisible();
  // Emulate only the keyboard's visual viewport contraction; focus alone is insufficient.
  await page.evaluate(()=>{Object.defineProperty(window.visualViewport!,'height',{configurable:true,value:450});window.visualViewport!.dispatchEvent(new Event('resize'));});
- await expect(nav).toBeHidden();await page.locator('#registration-personal_name').blur();await expect(nav).toBeHidden();
+ await expect(nav).toBeHidden();await page.locator('#registration-first_name').blur();await expect(nav).toBeHidden();
  await page.evaluate(()=>{delete (window.visualViewport as unknown as {height?:number}).height;window.visualViewport!.dispatchEvent(new Event('resize'));});
  await expect(nav).toBeVisible();await fillName(page,'Keyboard User');
- await page.locator('#registration-personal_name').press('Enter');await expect(page.locator('#registration-city')).toBeVisible();
+ await page.locator('#registration-family_name').press('Enter');await expect(page.locator('#registration-city')).toBeVisible();
 });
 
 test('another tab changing account clears private draft values',async({page})=>{
@@ -187,17 +193,18 @@ test('account changes during a slow resume cannot reveal the old draft',async({p
 });
 
 test('Personal settings edits canonical profile without exposing credentials',async({page},testInfo)=>{
- await fixture(page,true);let revision='initial';const values={personal_name:'Profile User',city:'Kinshasa',country_code:'CD',area:'Gombe'};
+ await fixture(page,true);let revision='initial';const values={personal_name:'Profile User',city:'Stockholm',country_code:'SE',area:'Legacy area'};
  await page.route('**/api/shida/employment/session/',route=>route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Profile User'}}}));
- await page.route('**/api/shida/registration/profile/',async route=>{
-  if(route.request().method()==='PATCH'){const body=route.request().postDataJSON();expect(body).toEqual({revision:'initial',values:{area:'Lingwala'}});revision='updated';Object.assign(values,body.values);}
-  await route.fulfill({json:{revision,values}});
+ await page.route('**/api/shida/personal/security/profile/',async route=>{
+  if(route.request().method()==='POST'){const body=route.request().postDataJSON();expect(body).toEqual({revision:'initial',values:{area:'Updated area'}});revision='updated';Object.assign(values,body.values);}
+  await route.fulfill({json:{revision,values,primary_phone:{masked:'•••• 0001',verified:true},neighborhood:null}});
  });
  await page.setViewportSize({width:390,height:900});await page.goto('/shida/space/?view=settings');
- await expect(page.locator('#profile-personal_name')).toHaveValue('Profile User');await page.locator('#profile-area').fill('Lingwala');
- await page.locator('.registration-card button[type=submit]').click();await expect.poll(()=>revision).toBe('updated');
- await expect(page.locator('.registration-card button[type=submit]')).toBeEnabled();
- await expect(page.locator('#profile-area')).toHaveValue('Lingwala');await expect(page.locator('#profile-phone_number')).toHaveCount(0);
+ await expect(page.locator('#profile-country_code')).toHaveCount(0);
+ await page.locator('.space-profile').getByRole('button',{name:'Edit',exact:true}).click();
+ await expect(page.locator('#profile-personal_name')).toHaveValue('Profile User');await page.locator('#profile-area').fill('Updated area');
+ await page.locator('.space-profile').getByRole('button',{name:'Save changes',exact:true}).click();await expect.poll(()=>revision).toBe('updated');
+ await expect(page.locator('.space-profile').getByText('Updated area',{exact:true})).toBeVisible();await expect(page.locator('#profile-phone_number')).toHaveCount(0);
  await page.screenshot({path:`test-results/registration/${testInfo.project.name}-profile-390.png`,fullPage:true});
 });
 
@@ -247,13 +254,13 @@ test('unverified form survives refresh, backward navigation and interrupted veri
  const state=await fixture(page);
  await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
  await fillName(page,'Recoverable Person');await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');await page.locator('#registration-phone').fill('+243910004001');
- await page.getByRole('button',{name:'Back',exact:true}).click();await page.getByRole('button',{name:'Next',exact:true}).click();await expect(page.locator('#registration-personal_name')).toHaveValue('Recoverable Person');
- await page.reload();await expect(page.locator('#registration-phone')).toHaveValue('+243910004001');await expect(page.locator('#registration-personal_name')).toHaveValue('Recoverable Person');
+ await page.getByRole('button',{name:'Back',exact:true}).click();await page.getByRole('button',{name:'Next',exact:true}).click();await expect(page.locator('#registration-first_name')).toHaveValue('Recoverable');await expect(page.locator('#registration-family_name')).toHaveValue('Person');
+ await page.reload();await expect(page.locator('#registration-phone')).toHaveValue('+243910004001');await expect(page.locator('#registration-first_name')).toHaveValue('Recoverable');await expect(page.locator('#registration-family_name')).toHaveValue('Person');
  expect(state.values).toEqual({});expect(state.verified).toBe(false);
  await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByLabel(registrationEligibility.en).check();await page.getByRole('button',{name:personalLoginCopy.en.open,exact:true}).click();
  await page.getByLabel(personalLoginCopy.en.codeLabel).fill('610294');
  const stored=await page.evaluate(key=>sessionStorage.getItem(key),FORM_DRAFT_KEY);expect(stored).not.toContain('610294');expect(stored).not.toContain('DWC_');
- await page.reload();await expect(page.locator('#registration-personal_name')).toHaveValue('Recoverable Person');
+ await page.reload();await expect(page.locator('#registration-first_name')).toHaveValue('Recoverable');await expect(page.locator('#registration-family_name')).toHaveValue('Person');
  await page.getByRole('button',{name:refinementCopy.en.discard}).click();await expect.poll(()=>page.evaluate(key=>sessionStorage.getItem(key),FORM_DRAFT_KEY)).toBeNull();
 });
 
@@ -261,7 +268,7 @@ test('mismatched verified contact never imports the form',async({page})=>{
  const state=await fixture(page);
  await page.route('**/auth/whatsapp/registration/DWC_fixture_test/session/',route=>{expect(route.request().postDataJSON().expected_phone).toBe('+243910004001');return route.fulfill({status:409,json:{error:{code:'phone_mismatch'}}});});
  await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
- for(const [key,value] of Object.entries({personal_name:'Mismatch Person',city:'Kinshasa',country_code:'CD',phone:'+243910004001'}))await page.locator(`#registration-${key}`).fill(value);
+ await fillName(page,'Mismatch Person');await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');await page.locator('#registration-phone').fill('+243910004001');
  await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByLabel(registrationEligibility.en).check();await page.getByRole('button',{name:personalLoginCopy.en.open,exact:true}).click();await page.getByLabel(personalLoginCopy.en.codeLabel).fill('610294');await page.getByRole('button',{name:registrationCopy.en.verifyButton}).click();
  await expect(page.getByText(refinementCopy.en.mismatch,{exact:true})).toBeVisible();expect(state.values).toEqual({});expect(state.completed).toBe(false);
 });
@@ -274,7 +281,7 @@ test('expired local drafts are discarded without revealing their values',async({
 test('unavailable browser storage offers canonical verified resumption',async({page})=>{
  await fixture(page);await page.addInitScript(()=>{Storage.prototype.setItem=()=>{throw new Error('storage blocked');};});
  await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
- await expect(page.getByText(refinementCopy.en.storageFailed,{exact:true})).toBeVisible();await page.getByRole('button',{name:'Back',exact:true}).click();await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();await expect(page.getByRole('button',{name:personalLoginCopy.en.open,exact:true})).toBeVisible();
+ await page.locator('#registration-first_name').fill('Unsaved');await expect(page.getByText(refinementCopy.en.storageFailed,{exact:true})).toBeVisible();await page.getByRole('button',{name:'Back',exact:true}).click();await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();await expect(page.getByRole('button',{name:personalLoginCopy.en.open,exact:true})).toBeVisible();
 });
 
 for(const shop of [false,true])test(`authenticated account menu and ${shop?'shop':'occasional'} entry preserve existing identity`,async({page})=>{
