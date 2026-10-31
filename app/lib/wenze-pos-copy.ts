@@ -1,5 +1,14 @@
 import type {WenzeLocale} from './wenze-copy';
 const words:Record<string,[string,string,string,string]>={
+ labelReady:["Labels are ready.","Les étiquettes sont prêtes.","Bilembeteli ebongami.","Lebo ziko tayari."],
+ labelError:["Could not load or export labels. Your product is saved.","Impossible de charger ou exporter les étiquettes. Le produit est enregistré.","Bilembeteli ezwami te. Eloko ebombami.","Lebo hazijapakiwa au kupakuliwa. Bidhaa imehifadhiwa."],
+ retryLabel:["Retry labels","Réessayer les étiquettes","Meka bilembeteli lisusu","Jaribu lebo tena"],
+ labelUnavailable:["No eligible labels. Check the product and available variants.","Aucune étiquette disponible. Vérifiez le produit et ses variantes disponibles.","Elembo ezali te. Tala eloko mpe mitindo na yango.","Hakuna lebo zinazopatikana. Kagua bidhaa na aina zake."],
+ labelLimit:["Choose up to 50 labels and 200 copies in total.","Choisissez au maximum 50 étiquettes et 200 exemplaires au total.","Pona bilembeteli 50 mpe kopi 200 na nyonso.","Chagua hadi lebo 50 na nakala 200 kwa jumla."],
+ productCreated:["Product created!","Produit créé !","Eloko esalemi!","Bidhaa imeundwa!"],
+ viewProduct:["View product","Voir le produit","Tala eloko","Tazama bidhaa"],
+ addAnother:["Add another product","Ajouter un autre produit","Bakisa eloko mosusu","Ongeza bidhaa nyingine"],
+ continueNoPrint:["Continue without printing","Continuer sans imprimer","Koba kozanga konyata","Endelea bila kuchapisha"],
  commercialReceipt:[
   'Commercial receipt. Not a DGI-authenticated fiscal invoice. This receipt alone does not verify payment.',
   'Reçu commercial. Ce document n’est pas une facture fiscale authentifiée par la DGI. Ce reçu seul ne prouve pas que le paiement a été vérifié.',
