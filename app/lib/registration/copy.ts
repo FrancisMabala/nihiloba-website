@@ -34,3 +34,5 @@ export const registrationFlowCopy = {
 };
 
 export const privacyAcknowledgement = {en:"I have read",fr:"J’ai pris connaissance de",ln:"Natangi",sw:"Nimesoma"};
+
+export const existingAccountContinue = {en:"Continue with my account",fr:"Continuer avec mon compte",ln:"Koba na compte na ngai",sw:"Endelea na akaunti yangu"};

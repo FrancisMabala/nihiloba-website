@@ -1,5 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
-import {registrationCopy,registrationEligibility,registrationFlowCopy} from '../../app/lib/registration/copy';
+import {registrationCopy,registrationEligibility,registrationFlowCopy,existingAccountContinue} from '../../app/lib/registration/copy';
 import {personalLoginCopy} from '../../app/lib/personal-login-copy';
 import {PERSONAL_SESSION_EVENT} from '../../app/lib/personal-session-browser';
 import {refinementCopy} from '../../app/lib/registration/refinement-copy';
@@ -27,6 +27,7 @@ async function fixture(page:Page,existing=false,business=false){
    if(!state.verified)return reply({error:{code:'unauthorized'}},401);
    if(method==='POST'&&/\/registration\/(personal|business)$/.test(path)){state.status='active';if(state.race){state.revision=2;state.values={personal_name:'Concurrent Person',city:'Kinshasa',country_code:'CD'};}}
    if(path.endsWith('/finish/session'))return reply({authenticated:true});
+   if(path.endsWith('/personal/consent'))state.accepted=true;
    if(path.endsWith('/business-handoff'))return reply({token:'x'.repeat(43)});
    if(path.endsWith('/complete')){state.completed=true;state.status='completed';return reply(projection());}
    if(path.endsWith('/cancel')){state.status='cancelled';return reply(projection());}
@@ -150,8 +151,23 @@ test('existing Personal identity does not repeat profile onboarding and returns 
  const state=await fixture(page,true);state.existingAccount=true;state.accepted=true;state.values={personal_name:'Existing Person'};
  await page.goto('/shida/register/?returnTo=%2Fshida%2Fwenze%2Fsell');await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();
  await expect(page.getByText(registrationCopy.en.existing,{exact:true})).toBeVisible();await expect(page.locator('#registration-personal_name')).toHaveCount(0);
- await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByRole('button',{name:registrationCopy.en.finish,exact:true}).click();
+ await expect(page.locator('.registration-consent input')).toHaveCount(0);await page.getByRole('button',{name:existingAccountContinue.en,exact:true}).click();
  await expect(page).toHaveURL(/\/shida\/wenze\/sell\/?$/);expect(state.completed).toBe(false);
+});
+
+test('verified existing account accepts updated terms without a second challenge or profile overwrite',async({page})=>{
+ const state=await fixture(page);state.existingAccount=true;state.status='completed';state.values={personal_name:'Canonical Person',city:'Stockholm',country_code:'SE'};
+ let challenges=0;
+ page.on('request',request=>{if(request.method()==='POST'&&request.url().endsWith('/auth/whatsapp/registration/'))challenges++;});
+ await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
+ await page.locator('#registration-personal_name').fill('Unconfirmed Name');await page.locator('#registration-city').fill('Kinshasa');await page.locator('#registration-country_code').fill('CD');await page.locator('#registration-phone').fill('+243910004001');
+ await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByLabel(registrationEligibility.en).check();await page.getByRole('button',{name:personalLoginCopy.en.open,exact:true}).click();
+ await page.getByLabel(personalLoginCopy.en.codeLabel).fill('610294');await page.getByRole('button',{name:registrationCopy.en.verifyButton,exact:true}).click();
+ await expect(page.getByText(registrationCopy.en.existing,{exact:true})).toBeVisible();
+ for(const checkbox of await page.locator('.registration-consent input').all())await checkbox.check();
+ await page.getByRole('button',{name:'Next',exact:true}).click();await page.getByRole('button',{name:existingAccountContinue.en,exact:true}).click();
+ await expect(page).toHaveURL(/\/shida\/space\//);
+ expect(challenges).toBe(1);expect(state.completed).toBe(false);expect(state.values).toEqual({personal_name:'Canonical Person',city:'Stockholm',country_code:'SE'});
 });
 
 test('draft created in another channel between state and start is preserved',async({page})=>{

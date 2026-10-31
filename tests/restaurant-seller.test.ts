@@ -104,6 +104,21 @@ describe("Personal Restaurant inventory gateway", () => {
 });
 
 describe("shared Employment session compatibility", () => {
+ it("preserves onboarding proof when the full-access header probe rejects it", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => Response.json({ detail: "Not authenticated" }, { status: 401 })));
+  expect((await session()).status).toBe(401);
+  expect(jar.get(PERSONAL_SESSION_COOKIE)).toBe(token);
+  expect(set).not.toHaveBeenCalled();
+ });
+ it("cannot clear a newly rotated cookie after a stale unauthorized probe", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => {
+   jar.set(PERSONAL_SESSION_COOKIE, "new-session-fixture");
+   return Response.json({ detail: "Not authenticated" }, { status: 401 });
+  }));
+  expect((await session()).status).toBe(401);
+  expect(jar.get(PERSONAL_SESSION_COOKIE)).toBe("new-session-fixture");
+  expect(set).not.toHaveBeenCalled();
+ });
  it("migrates only an authenticated legacy cookie to a distinct name/path", async () => {
   jar.clear(); jar.set(EMPLOYMENT_SESSION_COOKIE, token);
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ user: { display_name: "Fixture seller", account_type: "personal" } })));

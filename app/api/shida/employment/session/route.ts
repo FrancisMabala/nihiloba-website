@@ -1,5 +1,5 @@
 import { getEmploymentSession } from "../../../../services/shida/employment-client";
-import { clearEmploymentToken, employmentError, employmentToken, privateEmploymentJson, migrateEmploymentToken, personalSessionBinding } from "../route-utils";
+import { employmentError, employmentToken, privateEmploymentJson, migrateEmploymentToken, personalSessionBinding } from "../route-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,9 @@ export async function GET() {
     return privateEmploymentJson({ authenticated: true, user, binding: personalSessionBinding(token) });
   }
   catch (error) {
-    if (error instanceof Error && "status" in error && error.status === 401) await clearEmploymentToken();
+    // A limited registration session legitimately fails this full-access check.
+    // Reads must not delete it, or a newer session issued while this read ran.
+    // Explicit logout remains responsible for clearing browser credentials.
     return employmentError(error);
   }
 }
