@@ -19,7 +19,7 @@ export function choiceError(rows:ChoiceRow[],available?:number|null){
  if(available!=null&&(rows.some(r=>r.quantity==="")||rows.reduce((sum,r)=>sum+Number(r.quantity),0)!==available))return "mismatch";
  return "";
 }
-export function WenzeChoiceEditor({locale,category,rows,available,onChange}:{locale:Locale;category:string;rows:ChoiceRow[];available?:number|null;onChange:(rows:ChoiceRow[],kind?:string)=>void}){
+export function WenzeChoiceEditor({locale,category,rows,available,onChange,optional=false}:{locale:Locale;category:string;rows:ChoiceRow[];available?:number|null;onChange:(rows:ChoiceRow[],kind?:string)=>void;optional?:boolean}){
  const c=copy[locale], recommended=suggestions(category);
  const colours={en:["White","Black","Red","Blue","Green","Beige"],fr:["Blanc","Noir","Rouge","Bleu","Vert","Beige"],ln:["Mpembe","Moindo","Motane","Bleu","Vert","Beige"],sw:["Nyeupe","Nyeusi","Nyekundu","Bluu","Kijani","Beige"]};
  const options:Record<string,string[]>={...presets,colour:colours[locale]};
@@ -48,6 +48,6 @@ export function WenzeChoiceEditor({locale,category,rows,available,onChange}:{loc
    {available!=null&&<p className="wz-choice-balance" role="status">{c.total}: <strong>{available}</strong> · {c.assigned}: {assigned} · {c.remaining}: {available-assigned}</p>}
    {rows.map((row,index)=><div className="wz-inline wz-choice-row" key={index}><label>{c.choice}<input required value={row.label} onChange={event=>onChange(rows.map((r,i)=>i===index?{...r,label:event.target.value,attributes:undefined}:r))}/></label><label>{c.quantity}<input type="number" min="0" step="1" required={available!=null} value={row.quantity} onChange={event=>onChange(rows.map((r,i)=>i===index?{...r,quantity:event.target.value}:r))}/></label><button type="button" onClick={()=>onChange(rows.filter((_,i)=>i!==index))}>{c.remove}</button></div>)}
    <button type="button" disabled={rows.length>=20} onClick={()=>onChange([...rows,{label:"",quantity:""}],"option")}>{c.manual}</button>
-   {problem&&<p role="status">{c[problem]}</p>}<p>{c.saved}</p>
+   {problem&&(!optional||rows.length>0)&&<p role="status">{c[problem]}</p>}<p>{c.saved}</p>
  </fieldset>;
 }
