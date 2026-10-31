@@ -33,3 +33,5 @@ Product-specific reviews, secure report attachments, unsupported product specifi
 Three existing buyer browser tests also passed against read-only public shop data: private follows/favourites, eligible shop reviews and stale-cart/stock conflicts. All browser mutations were intercepted. Their screenshot reviews are test fixtures, not production ratings.
 
 Evidence: [desktop shop](evidence/wenze-public/1440-WNZ_FIXTURE.png), [mobile reporting](evidence/wenze-public/390-report.png), [desktop product](evidence/wenze-public/1440-WNP_PHONE.png), [mobile product](evidence/wenze-public/360-WNP_SHIRT.png).
+
+Final focused regressions: 9 gallery tests and 4 selected Wenze variant/currency/privacy cases passed (26 unrelated cases excluded by the test-name filter). Updated legacy card Buy Now expectations and a broad string-based privacy assertion to check an explicit sensitive fixture sentinel; the new notice legitimately says reports are private. GitHub returned no workflow runs or commit statuses for the feature releases; local validation must not be described as hosted CI success.
