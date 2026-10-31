@@ -21,12 +21,14 @@ export function WenzeApiProvider({binding,onUnauthorized,children}:{binding:stri
    let response:Response;
    try{response=await fetch(personalWenzePath(path),{...init,cache:'no-store',credentials:'same-origin',signal:AbortSignal.timeout(45000),headers:{Accept:'application/json','X-Shida-Session':binding,...(mutation?{'Content-Type':'application/json','Idempotency-Key':operation!.key}:{}),...init.headers},...(mutation?{body:operation!.body}:{})});}
    catch{throw new DashboardApiError('unavailable',503);}
-   if(response.status<500)pending.delete(slot);
+   // Keep the key until the successful body has also been consumed. A truncated
+   // 200 response can still represent a committed sale.
+   if(!response.ok&&response.status<500)pending.delete(slot);
    if(response.status===401)failed.current();
    if(!response.ok){const data=await response.json().catch(()=>null);throw new DashboardApiError(response.status===409?'conflict':response.status===422?'validation':'unavailable',response.status,typeof data?.detail==='string'?data.detail:undefined);}
-   return response;
+   return {response,complete:()=>pending.delete(slot)};
   }
-  return {file:async(path,init)=>{const response=await fetchPrivate(path,init);return new File([await response.blob()],response.headers.get('content-disposition')?.match(/filename="?([^";]+)/)?.[1]??'wenze.pdf',{type:response.headers.get('content-type')??'application/pdf'});},request:async(path,init)=>{const response=await fetchPrivate(path,init);return response.json();},download:async(path)=>{const response=await fetchPrivate(path);const blob=await response.blob();const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=response.headers.get('content-disposition')?.match(/filename="?([^";]+)/)?.[1]??'wenze-report';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}};
+  return {file:async(path,init)=>{const {response,complete}=await fetchPrivate(path,init);const blob=await response.blob();complete();return new File([blob],response.headers.get('content-disposition')?.match(/filename="?([^";]+)/)?.[1]??'wenze.pdf',{type:response.headers.get('content-type')??'application/pdf'});},request:async(path,init)=>{const {response,complete}=await fetchPrivate(path,init);const data=await response.json();complete();return data;},download:async(path)=>{const {response,complete}=await fetchPrivate(path);const blob=await response.blob();complete();const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=response.headers.get('content-disposition')?.match(/filename="?([^";]+)/)?.[1]??'wenze-report';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}};
  },[binding]);
  return <Context.Provider value={api}>{children}</Context.Provider>;
 }
