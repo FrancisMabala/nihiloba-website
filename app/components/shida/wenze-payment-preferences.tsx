@@ -1,4 +1,5 @@
 "use client";
+import {ShopIcon} from "./wenze-shop-icons";
 import {useEffect,useState} from "react";
 import {paymentText} from "@/app/lib/wenze-payment-copy";
 import {useWorkDraft} from "@/app/lib/wenze-work";
@@ -30,13 +31,13 @@ export function WenzePaymentPreferences({path,locale,request,onRevision}:Props){
   }catch(e){if(e&&typeof e==="object"&&"status" in e&&[401,403,404].includes(Number(e.status))){setData(null);setSelected([]);}const conflict=!!e&&typeof e==="object"&&"status" in e&&e.status===409;setStale(conflict);setMessage(conflict?"conflict":"error");}
   finally{setBusy(false);}
  }
- return <section className="wz-payment-preferences" aria-label={t("title")}><h3>{t("title")}</h3><p>{t("help")}</p>
+ return <section className="wz-payment-preferences" aria-label={t("title")}><h3><ShopIcon name="card"/>{t("title")}</h3><p>{t("help")}</p>
   {message&&<p role={message==="saved"?"status":"alert"}>{t(message)}</p>}
   {!data&&!message&&<p role="status">{t("loading")}</p>}
   {data&&<form onSubmit={e=>{e.preventDefault();void save();}}><fieldset disabled={busy||stale} style={{border:0,padding:0}}>
    <legend>{t("title")}</legend>
-   {data.available.map(method=><label key={method} style={{display:"flex",alignItems:"center",gap:12,minHeight:48}}><input type="checkbox" checked={selected.includes(method)} onChange={e=>setSelected(data.available.filter(m=>m===method?e.target.checked:selected.includes(m)))}/>{t(method)}</label>)}
-   {data.coming_soon.map(method=><label key={method} style={{display:"flex",alignItems:"center",gap:12,minHeight:48}}><input type="checkbox" disabled checked={false}/>{t(method)} · {t("soon")}</label>)}
+   {data.available.map(method=><label key={method} style={{display:"flex",alignItems:"center",gap:12,minHeight:48}}><input type="checkbox" checked={selected.includes(method)} onChange={e=>setSelected(data.available.filter(m=>m===method?e.target.checked:selected.includes(m)))}/><ShopIcon name={method==="cash"?"cash":method==="mobile_money"?"phone":"card"}/><span>{t(method)}</span></label>)}
+   {data.coming_soon.map(method=><label key={method} style={{display:"flex",alignItems:"center",gap:12,minHeight:48}}><input type="checkbox" disabled checked={false}/><ShopIcon name="card"/><span>{t(method)} · <small>{t("soon")}</small></span></label>)}
   </fieldset><button disabled={busy||stale||!dirty}>{t("save")}</button></form>}
   {(stale||message==="error")&&<button disabled={busy} onClick={()=>{setData(null);setMessage("");setRetry(n=>n+1);}}>{t("reload")}</button>}
  </section>;

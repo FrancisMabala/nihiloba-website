@@ -2,7 +2,7 @@ import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {describe,it,expect} from 'vitest';
 import {WenzeShopTrust} from '../app/components/shida/wenze-shop-trust';
-import {shopState,canChangeShopVisibility,shopText} from '../app/lib/wenze-shop-copy';
+import {shopState,canChangeShopVisibility,shopText,shopUsage} from '../app/lib/wenze-shop-copy';
 describe('shop trust and visibility',()=>{
  it('keeps voluntary visibility separate from suspension',()=>{
   expect(shopState('active','false')).toBe('hidden');expect(shopState('inactive','false')).toBe('archived');expect(shopState('suspended','true')).toBe('suspended');
@@ -18,3 +18,5 @@ describe('shop trust and visibility',()=>{
  });
  it('provides all four languages',()=>{for(const l of ['en','fr','ln','sw'] as const)for(const k of ['trust','commitment','policyHelp','suspended','restriction','visibility'])expect(shopText(l,k)).not.toBe('—');});
 });
+
+ describe('shop usage',()=>{it('keeps tiny usage accurate and clamps invalid bounds',()=>{expect(shopUsage(1,1000)).toBe(0.1);expect(shopUsage(0,1000)).toBe(0);expect(shopUsage(1100,1000)).toBe(100);expect(shopUsage(-1,1000)).toBe(0);expect(shopUsage(1,0)).toBeNull();expect(shopUsage(Number.NaN,1000)).toBeNull();});});
