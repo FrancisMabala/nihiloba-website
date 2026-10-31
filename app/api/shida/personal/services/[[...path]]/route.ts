@@ -13,7 +13,7 @@ function allowed(parts:string[],method:string){
  if(parts.length===1)return ["GET","PATCH","DELETE"].includes(method);
  if(parts.length===2&&parts[1]==="schedule")return ["GET","PATCH"].includes(method);
  if(parts.length===2&&parts[1]==="share")return method==="GET";
- if(parts.length===2)return parts[1]==="reactivate"&&method==="POST"||parts[1]==="details"&&method==="PATCH"||parts[1]==="pilot-review"&&["GET","PATCH"].includes(method)||parts[1]==="reviews"&&method==="GET"||parts[1]==="request-capability"&&method==="PATCH"||parts[1]==="packages"&&method==="POST";
+ if(parts.length===2)return parts[1]==="reactivate"&&method==="POST"||["details","professional-profile"].includes(parts[1])&&method==="PATCH"||parts[1]==="pilot-review"&&["GET","PATCH"].includes(method)||parts[1]==="reviews"&&method==="GET"||parts[1]==="request-capability"&&method==="PATCH"||parts[1]==="packages"&&method==="POST";
  if(parts[1]!=="packages"||!/^SPK_[A-Za-z0-9_-]+$/.test(parts[2]))return false;
  if(parts.length===3)return method==="PATCH";
  return parts.length===4&&parts[3]==="archive"&&method==="POST";

@@ -18,6 +18,11 @@ globalThis.fetch=async(input,init)=>{
   const selected=url.searchParams.get("query")==="empty"?[]:items.filter(row=>!url.searchParams.get("category")||row.category===url.searchParams.get("category"));
   return Response.json({items:selected,count:selected.length,total:selected.length,page:1,page_size:12});
  }
+ if(path.endsWith("/providers/professional-beauty")||path.endsWith("/providers/professional-legal")){
+  const beauty=path.endsWith("professional-beauty"),identity={...provider,name:beauty?"Studio Grace (test)":"Cabinet Horizon (test)",slug:beauty?"professional-beauty":"professional-legal"};
+  const offered=(beauty?["Haircut","Hair care","Nail care"]:["Legal consultation","Contract preparation","Business advice"]).map((name,index)=>({...service,public_ref:`SVC_professional_${index}`,slug:service.slug,provider:identity,service_name:name,short_description:beauty?"Care adapted to your needs.":"Discuss your needs and agree the scope before work begins.",category:beauty?"beauty_wellness":"professional_services",starting_price:index===1?null:service.starting_price}));
+  return Response.json({...identity,bio:beauty?"A calm place for personal care.":"Independent advice for individuals and small businesses.",social_link:null,location,categories:[beauty?"beauty_wellness":"professional_services"],service_count:offered.length,rating:service.rating,services:offered});
+ }
  if(path.startsWith("/api/public/shida/services/providers/"))return Response.json({...provider,location,categories:["repair_maintenance","cleaning","education_training"],service_count:3,rating:service.rating,services:items});
  if(path==="/api/public/shida/services/appointments/availability"){
   const day=new Date(Date.now()+7*86400000).toISOString().slice(0,10);

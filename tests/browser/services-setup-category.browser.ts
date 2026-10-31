@@ -1,4 +1,5 @@
 import {test,expect} from "@playwright/test";
+import {professionalCopy} from "../../app/lib/services-professional-copy";
 import {marketplaceEntryCopy} from "../../app/lib/marketplace-entry-copy";
 import {serviceCategoryExperience} from "../../app/lib/services-category-experience";
 for(const [locale,width] of [["en",1440],["fr",390],["ln",820],["sw",320]] as const)test(`Personal first-service examples and deliberate creation ${locale}`,async({page})=>{
@@ -16,7 +17,7 @@ for(const [locale,width] of [["en",1440],["fr",390],["ln",820],["sw",320]] as co
  await expect(page.locator("#svc-new-provider")).toHaveCount(0);
  await page.getByRole("button",{name:t.create,exact:true}).click();
  await expect(page.locator("#svc-new-provider")).toBeFocused();
- await expect(page.getByText(t.providerHint,{exact:true})).toBeVisible();
+ await expect(page.getByText(`${professionalCopy[locale].personal} ${professionalCopy[locale].notice}`,{exact:true})).toBeVisible();
  await expect(page.getByText(t.serviceHint,{exact:true})).toBeVisible();
  await expect(page.getByText(t.privateNote,{exact:true})).toBeVisible();
  const categories=["beauty_wellness","home_housing","repair_maintenance","education_training","photo_video","professional_services","cleaning"];

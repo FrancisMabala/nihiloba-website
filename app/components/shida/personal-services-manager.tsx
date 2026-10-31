@@ -80,6 +80,6 @@ export function PersonalServicesManager({ locale, offeringRef = null }: { locale
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
   </section>
-  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><ServicesManagement key={`${session.binding}:${locale}`} binding={session.binding} locale={locale} offeringRef={offeringRef} onUnauthorized={()=>setSession(null)}/></fieldset>}
+  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><ServicesManagement key={`${session.binding}:${locale}`} binding={session.binding} accountName={session.user.display_name} locale={locale} offeringRef={offeringRef} onUnauthorized={()=>setSession(null)}/></fieldset>}
  </div>;
 }

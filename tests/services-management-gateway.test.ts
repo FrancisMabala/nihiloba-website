@@ -199,3 +199,12 @@ it('edits a Personal social link without accepting context selectors',async()=>{
  expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/service-profiles/SVC_one');
  expect((await PATCH(request('SVC_one?organization_ref=BUS_other','PATCH',{}),context('SVC_one'))).status).toBe(404);
 });
+
+it('allows only the bound Personal professional-profile update',async()=>{
+ const body={expected_revision:3,name:'Cabinet Horizon',bio:'Advice',social_link:''};
+ expect((await PATCH(request('SVC_one/professional-profile','PATCH',body),context('SVC_one/professional-profile'))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/service-profiles/SVC_one/professional-profile');
+ expect((await PATCH(request('SVC_one/professional-profile?organization_ref=BUS_other','PATCH',body),context('SVC_one/professional-profile'))).status).toBe(404);
+ expect((await PATCH(request('SVC_one/professional-profile','PATCH',body,{'X-Shida-Session':'wrong'}),context('SVC_one/professional-profile'))).status).toBe(401);
+ expect(fetcher).toHaveBeenCalledTimes(1);
+});

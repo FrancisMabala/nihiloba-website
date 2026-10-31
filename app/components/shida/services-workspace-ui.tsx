@@ -8,9 +8,10 @@ export const workspaceCopy = {
  sw:{selectOption:"Chagua chaguo",bookingHelp:"Weka saa na uthibitisho katika Kalenda.",invalidDetails:"Baadhi ya taarifa za huduma si sahihi. Kagua sehemu ulizojaza na uhifadhi tena.",publication:"Uchapishaji sokoni",ready:"Tayari kuchapishwa",readyHelp:"Huduma iliyohifadhiwa ina taarifa zote zinazohitajika. Ichapishe ionekane sokoni.",draftHelp:"Huduma yako ni ya binafsi. Jaza na uhifadhi taarifa hizi ili kuichapisha.",liveHelp:"Huduma yako imechapishwa sokoni.",unsaved:"Hifadhi mabadiliko kabla ya kuchapisha au kubadili upokeaji wa maombi.",details:"Taarifa za huduma",detailsHelp:"Eleza huduma unayotoa na eneo unalofanyia kazi.",schedule:"Mahali na upatikanaji",scheduleHelp:"Eleza namna na wakati unaofanya kazi.",complete:"Taarifa za kujaza",saved:"Taarifa zinazohitajika zimehifadhiwa",newService:"Ongeza huduma nyingine",requestsHelp:"Chagua kama wateja wanaweza kutuma maombi mapya ya huduma hii.",archiveHelp:"Kuhifadhi kwenye kumbukumbu huondoa huduma kwenye utafutaji. Historia ya wateja inabaki.",linkHelp:"Wape wateja mahali pa kujifunza zaidi kuhusu kazi yako.",packagesHelp:"Toa vifurushi vyenye muda na bei iliyo wazi.",reviewHelp:"Maoni ya wateja yataonekana hapa.",genericField:"Kagua taarifa za huduma"}
 } as const;
 
-export function ServicesPublication({locale,missing,labels,dirty,published,canPublish=true,publishLabel,onPublish}:{locale:ProviderLocale;missing:string[];labels:Record<string,string>;dirty:boolean;published:boolean;canPublish?:boolean;publishLabel:string;onPublish:()=>void}){
+export function ServicesPublication({locale,missing,labels,dirty,published,canPublish=true,publishLabel,onPublish,onField}:{locale:ProviderLocale;missing:string[];labels:Record<string,string>;dirty:boolean;published:boolean;canPublish?:boolean;publishLabel:string;onPublish:()=>void;onField?:(key:string)=>void}){
  const t=workspaceCopy[locale];
  function focusField(key:string){
+  if(onField){onField(key);return;}
   const field=document.getElementById(`svc-field-${key}`)??document.getElementById("svc-details-save");
   field?.scrollIntoView({block:"center",behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?"instant":"smooth"});field?.focus({preventScroll:true});
  }

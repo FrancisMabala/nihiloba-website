@@ -29,11 +29,11 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  await expect(page.locator('.svc-pilot')).toHaveCount(0);
  await expect(page.getByText(new RegExp(labels[locale].pilot))).toHaveCount(0);
  await expect(page.getByRole('button',{name:'Personal Pro'})).toHaveCount(0);
- await page.getByRole('button',{name:labels[locale].publish}).click();
+ await page.locator('.svc-editor-steps button').nth(3).click();await page.locator('.svc-publication').getByRole('button',{name:labels[locale].publish,exact:true}).click();
  await expect.poll(()=>writes.length).toBe(1);
  expect(writes[0].body).toEqual({expected_revision:1});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?offering=SVC_missing`);
  await expect(page.getByRole('status').first()).toBeVisible();
- await expect(page.getByRole('button',{name:/Home repair/})).toHaveAttribute('aria-pressed','false');
+ await expect(page.locator('.svc-professional-service').filter({hasText:'Home repair'})).toBeVisible();await expect(page.locator('.svc-service-editor')).toHaveCount(0);
 });

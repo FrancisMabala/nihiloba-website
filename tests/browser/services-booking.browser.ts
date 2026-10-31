@@ -44,29 +44,29 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
   const state=await fixture(page),t=workspaceCopy[locale];
   await page.setViewportSize({width,height:1000});
   const url=`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=services`;
-  await page.goto(url);
+  await page.goto(url);await page.locator(".svc-professional-service button").first().click();await page.locator(".svc-editor-steps button").nth(1).click();
   const home=page.locator('#svc-field-home_service_available'),booking=page.locator('#svc-field-booking_mode');
   const panel=page.getByRole('region',{name:t.publication}),publish=panel.locator('.svc-primary');
   await expect(home).toHaveValue('');await expect(booking).toHaveValue('');
   await expect(booking.locator('option[value="time_slots"]')).toHaveCount(0);
   await expect(page.locator('#svc-booking-help')).toHaveText(t.bookingHelp);
-  await panel.locator('li button').last().click();await expect(booking).toBeFocused();
-  await page.locator('#svc-field-description').fill('Repairs and maintenance');
-  await page.locator('#svc-field-service_duration_minutes').fill('40');
+  await page.locator('.svc-editor-steps button').nth(3).click();await panel.locator('li button').last().click();await expect(booking).toBeFocused();
+  await page.locator('.svc-editor-steps button').nth(0).click();await page.locator('#svc-field-description').fill('Repairs and maintenance');
+  await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-field-service_duration_minutes').fill('40');
   await page.locator('#svc-field-commune').fill('Limete');
   await page.locator('#svc-field-availability').fill('Lundi à Vendredi');
-  await page.locator('#svc-details-save').click();
-  await expect(panel.locator('li')).toHaveCount(2);await expect(publish).toBeDisabled();
+  await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-details-save').click();
+  await page.locator('.svc-editor-steps button').nth(3).click();await expect(panel.locator('li')).toHaveCount(2);await expect(publish).toBeDisabled();
   expect(state.writes[0]).not.toHaveProperty('home_service_available');expect(state.writes[0]).not.toHaveProperty('booking_mode');
   expect(state.row.publication_origin).toBe('unclassified');
-  await booking.selectOption('flexible');await home.selectOption('yes');
-  await expect(publish).toBeDisabled();await page.locator('#svc-details-save').click();
-  await expect(publish).toBeEnabled();
+  await page.locator('.svc-editor-steps button').nth(1).click();await booking.selectOption('flexible');await home.selectOption('yes');
+  await page.locator('.svc-editor-steps button').nth(3).click();await expect(publish).toBeDisabled();await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-details-save').click();
+  await page.locator('.svc-editor-steps button').nth(3).click();await expect(publish).toBeEnabled();
   expect(state.writes[1]).toMatchObject({expected_revision:2,booking_mode:'flexible',home_service_available:'yes',service_duration_minutes:40});
   // A reload confirms the choices came back from the saved record, not UI defaults.
-  await page.reload();await expect(booking).toHaveValue('flexible');await expect(home).toHaveValue('yes');await expect(publish).toBeEnabled();
-  await booking.scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath(`booking-${locale}.png`)});
-  await publish.click();await expect(panel.getByRole('heading',{name:t.liveHelp})).toBeVisible();
+  await page.reload();await page.locator('.svc-professional-service button').first().click();await page.locator('.svc-editor-steps button').nth(1).click();await expect(booking).toHaveValue('flexible');await expect(home).toHaveValue('yes');await page.locator('.svc-editor-steps button').nth(3).click();await expect(publish).toBeEnabled();
+  await page.locator('.svc-editor-steps button').nth(1).click();await booking.scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath(`booking-${locale}.png`)});
+  await page.locator(".svc-editor-steps button").nth(3).click();await publish.click();await expect(panel.getByRole('heading',{name:t.liveHelp})).toBeVisible();
   expect(state.writes[2]).toEqual({expected_revision:3});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  });
@@ -74,30 +74,30 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
 
 test('existing time-slot selection is preserved when saving other details',async({page})=>{
  const state=await fixture(page);state.row.booking_mode='time_slots';state.row.home_service_available='no';
- await page.goto('/shida/seller/services?view=services');
+ await page.goto('/shida/seller/services?view=services');await page.locator('.svc-professional-service button').first().click();await page.locator('.svc-editor-steps button').nth(1).click();
  const booking=page.locator('#svc-field-booking_mode');await expect(booking).toHaveValue('time_slots');
- await page.locator('#svc-field-description').fill('Updated description');await page.locator('#svc-details-save').click();
+ await page.locator('.svc-editor-steps button').nth(0).click();await page.locator('#svc-field-description').fill('Updated description');await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-details-save').click();
  await expect(page.locator('.svc-notice')).toHaveText('Saved.');
  expect(state.writes[0]).toMatchObject({booking_mode:'time_slots',home_service_available:'no'});
 });
 
 test('empty and unsupported saved choices stay visibly unset and are omitted from a draft save',async({page})=>{
  const state=await fixture(page);state.row.booking_mode='unknown';state.row.home_service_available='';state.row.service_location_type='unknown';
- await page.goto('/shida/seller/services?view=services');
+ await page.goto('/shida/seller/services?view=services');await page.locator('.svc-professional-service button').first().click();await page.locator('.svc-editor-steps button').nth(1).click();
  for(const key of ['booking_mode','home_service_available','service_location_type'])await expect(page.locator(`#svc-field-${key}`)).toHaveValue('');
- await page.locator('#svc-field-description').fill('Private draft');await page.locator('#svc-details-save').click();
+ await page.locator('.svc-editor-steps button').nth(0).click();await page.locator('#svc-field-description').fill('Private draft');await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-details-save').click();
  await expect(page.locator('.svc-notice')).toHaveText('Saved.');
  for(const key of ['booking_mode','home_service_available','service_location_type'])expect(state.writes[0]).not.toHaveProperty(key);
 });
 
 test('a rejected details save keeps the editable draft and gives validation guidance',async({page})=>{
  const state=await fixture(page);state.rejectNext=true;
- await page.goto('/shida/seller/services?view=services');
+ await page.goto('/shida/seller/services?view=services');await page.locator('.svc-professional-service button').first().click();await page.locator('.svc-editor-steps button').nth(1).click();
  await page.locator('#svc-field-home_service_available').selectOption('no');
  await page.locator('#svc-field-booking_mode').selectOption('flexible');
- await page.locator('#svc-field-description').fill('Keep this draft');await page.locator('#svc-details-save').click();
+ await page.locator('.svc-editor-steps button').nth(0).click();await page.locator('#svc-field-description').fill('Keep this draft');await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-details-save').click();
  await expect(page.locator('.svc-notice')).toHaveText(workspaceCopy.en.invalidDetails);
  await expect(page.locator('#svc-field-description')).toHaveValue('Keep this draft');await expect(page.locator('#svc-field-booking_mode')).toBeEnabled();
- await page.locator('#svc-details-save').click();await expect(page.locator('.svc-notice')).toHaveText('Saved.');
+ await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-details-save').click();await expect(page.locator('.svc-notice')).toHaveText('Saved.');
  expect(state.writes).toHaveLength(2);expect(state.writes[1]).toEqual(state.writes[0]);
 });

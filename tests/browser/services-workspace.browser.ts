@@ -34,6 +34,7 @@ test('a published marker alone never claims public visibility',async({page})=>{
  const state=await fixture(page);
  state.row.publication_origin='pilot';state.row.missing_fields=[];state.row.visible_to_customers=false;
  await page.goto('/shida/seller/services?view=services');
+ await page.locator('.svc-professional-service button').first().click();await page.locator('.svc-editor-steps button').nth(3).click();
  const panel=page.getByRole('region',{name:workspaceCopy.en.publication});
  await expect(panel.getByRole('heading',{name:'Not visible to customers'})).toBeVisible();
  await expect(panel.getByRole('button',{name:publish.en})).toHaveCount(0);
@@ -47,8 +48,10 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
  test(`publication checklist completes saved service ${locale} ${width}`,async({page})=>{
   const state=await fixture(page),t=workspaceCopy[locale];
   await page.setViewportSize({width,height:1000});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=services`);
+  await page.locator('.svc-professional-service button').first().click();await page.locator('.svc-editor-steps button').nth(3).click();
   const panel=page.getByRole('region',{name:t.publication}),button=panel.getByRole('button',{name:publish[locale]});
   await expect(panel).toBeVisible();await expect(button).toBeDisabled();await expect(panel.locator('li')).toHaveCount(4);
+  await page.locator('.svc-editor-steps button').nth(0).click();
   for(const category of ["beauty_wellness","home_housing","repair_maintenance","education_training","photo_video","professional_services","cleaning"]){
    await page.locator('#svc-field-category').selectOption(category);
    await expect(page.locator('#svc-category-help')).toHaveText(serviceCategoryExperience(category,locale)!.description);
@@ -57,13 +60,13 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
   }
   await page.locator('#svc-field-category').selectOption('repair_maintenance');
   await page.screenshot({path:`docs/evidence/seller-workspace/services-publication-${locale}-${width}.png`,fullPage:true});
-  await panel.locator('li button').first().click();await expect(page.locator('#svc-field-description')).toBeFocused();
+  await page.locator('.svc-editor-steps button').nth(3).click();await panel.locator('li button').first().click();await expect(page.locator('#svc-field-description')).toBeFocused();
   await page.locator('#svc-field-description').fill('Repairs and maintenance with a careful finish.');
-  await page.locator('#svc-field-service_duration_minutes').fill('60');await page.locator('#svc-field-commune').fill('Gombe');await page.locator('#svc-field-availability').fill('Monday to Friday, 09:00–17:00');
-  await expect(button).toBeDisabled();await expect(panel.getByText(t.unsaved)).toBeVisible();expect(state.writes).toHaveLength(0);
-  await page.locator('#svc-details-save').click();await expect(button).toBeEnabled();expect(state.writes[0].path).toContain('/details');
+  await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-field-service_duration_minutes').fill('60');await page.locator('#svc-field-commune').fill('Gombe');await page.locator('#svc-field-availability').fill('Monday to Friday, 09:00–17:00');
+  await page.locator('.svc-editor-steps button').nth(3).click();await expect(button).toBeDisabled();await expect(panel.getByText(t.unsaved)).toBeVisible();expect(state.writes).toHaveLength(0);
+  await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-details-save').click();await page.locator('.svc-editor-steps button').nth(3).click();await expect(button).toBeEnabled();expect(state.writes[0].path).toContain('/details');
   // A ready saved service must not silently publish a different, unsaved edit.
-  await page.locator('#svc-field-commune').fill('Lingwala');await expect(button).toBeDisabled();await page.locator('#svc-field-commune').fill('Gombe');await expect(button).toBeEnabled();
+  await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-field-commune').fill('Lingwala');await page.locator('.svc-editor-steps button').nth(3).click();await expect(button).toBeDisabled();await page.locator('.svc-editor-steps button').nth(1).click();await page.locator('#svc-field-commune').fill('Gombe');await page.locator('.svc-editor-steps button').nth(3).click();await expect(button).toBeEnabled();
   await button.click();await expect(panel.getByRole('heading',{name:t.liveHelp})).toBeVisible();
   expect(state.writes).toHaveLength(2);expect(state.writes[1].body).toEqual({expected_revision:2});
   await expect(page.locator('.svc-public-link a')).toHaveAttribute('href',`${locale==='en'?'':`/${locale}`}/shida/services/SVC_one/`);

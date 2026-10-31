@@ -35,6 +35,7 @@ export type PublicService = PublicServiceSummary & {
   social_link: string | null; completion_mode: string | null; availability_endpoint: string;
 };
 export type PublicServiceProvider = {
+  bio?: string | null; social_link?: string | null;
   public_ref: string; slug: string; name: string; profile_image: PublicImage | null;
   location: ServiceLocation; categories: string[]; service_count: number; rating: ServiceRating;
   services: PublicServiceSummary[];
