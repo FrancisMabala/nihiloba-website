@@ -1,5 +1,7 @@
 import type {WenzeLocale} from './wenze-copy';
 const words:Record<string,[string,string,string,string]>={
+ historyHelp:['Review sales, record stock-only transactions or manage adjustments.','Consultez les ventes, enregistrez les sorties de stock ou gérez les corrections.','Tala boteki, koma bobimisi ya stock to bongisa makambo.','Kagua mauzo, rekodi shughuli za stock pekee au simamia marekebisho.'],
+ actions:['Actions','Actions','Misala','Vitendo'],
  method:['Payment method','Mode de paiement','Lolenge ya lifuti','Njia ya malipo'],
  clearBasket:['Clear basket','Vider le panier','Longola panier','Futa kikapu'],
  cashHelp:['Use the keypad to enter the amount received.','Utilisez le clavier pour saisir le montant reçu.','Salela clavier mpo na kokoma mbongo ezwami.','Tumia vitufe kuweka kiasi kilichopokelewa.'],

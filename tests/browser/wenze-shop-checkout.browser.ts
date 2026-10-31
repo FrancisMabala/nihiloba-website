@@ -3,7 +3,7 @@ import {checkoutText as copy} from '../../app/lib/wenze-checkout-copy';
 import {posText} from '../../app/lib/wenze-pos-copy';
 import {fixture,basket,addShirt} from './wenze-checkout-fixture';
 async function screenshot(page:Page,name:string){await page.screenshot({path:`test-results/checkout-review/${name}.png`,fullPage:!(await page.locator('dialog[open]').count())});}
-for(const width of [360,390,768,1440])test(`integrated cash sale and receipt ${width}`,async({page})=>{
+for(const width of [360,390,768,1024,1440])test(`integrated cash sale and receipt ${width}`,async({page})=>{
  const {writes,errors,url}=await fixture(page);await page.setViewportSize({width,height:960});await page.goto(url+'&view=sales');
  await expect(page.locator('.wz-pos-product')).toHaveCount(3);await screenshot(page,`${width}-catalog`);
  await addShirt(page,'fr');const cart=await basket(page);await cart.getByRole('button',{name:/Augmenter/}).click();
@@ -11,6 +11,8 @@ for(const width of [360,390,768,1440])test(`integrated cash sale and receipt ${w
  const submit=cart.getByRole('button',{name:copy('fr','confirm'),exact:true});await expect(submit).toBeDisabled();
  await cart.getByRole('button',{name:copy('fr','cash'),exact:true}).click();await expect(submit).toBeDisabled();
  await cart.getByLabel('Montant reçu · CDF').fill('20000');await expect(submit).toBeDisabled();
+ const amount=await cart.getByLabel('Montant reçu · CDF').boundingBox();const calculator=await cart.getByRole('button',{name:'Calculatrice · CDF',exact:true}).boundingBox();
+ expect(amount).not.toBeNull();expect(calculator).not.toBeNull();expect(calculator!.y).toBeGreaterThanOrEqual(amount!.y+amount!.height+6);
  await cart.getByRole('button',{name:'Calculatrice · CDF',exact:true}).click();const keypad=width<761?page.getByRole('dialog',{name:'Calculatrice'}):cart;
  await keypad.getByRole('button',{name:copy('fr','clear'),exact:true}).click();for(const digit of ['5','0','0','0','0'])await keypad.getByRole('button',{name:digit,exact:true}).click();
  await expect(keypad.getByLabel('Montant reçu · CDF')).toHaveValue('50000');await screenshot(page,`${width}-calculator`);
@@ -51,4 +53,27 @@ test('barcode, remove, clear, known rejection and preserved payment',async({page
  await cart.getByRole('button',{name:'Record payment received'}).click();await expect(page.locator('.wz-success-confirmation')).toBeVisible();expect(writes).toHaveLength(2);expect(writes[0].key).not.toEqual(writes[1].key);
  await page.emulateMedia({reducedMotion:'reduce'});await expect(page.locator('.wz-success-check')).toHaveCSS('animation-name','none');
  await page.locator('.wz-success-confirmation').getByRole('button').first().click();const popup=page.waitForEvent('popup');await page.getByRole('button',{name:'Print',exact:true}).click();await (await popup).close();
+});
+
+for(const width of [360,390,768,1024,1440])test(`large mixed currency amounts and calculator alignment ${width}`,async({page})=>{
+ const {url}=await fixture(page,{locale:'fr'});await page.setViewportSize({width,height:960});await page.goto(url+'&view=sales');
+ await addShirt(page,'fr');await page.locator('.wz-pos-product-button').filter({hasText:'Savon doux'}).click();const cart=await basket(page);
+ await cart.getByRole('button',{name:copy('fr','cash'),exact:true}).click();
+ for(const currency of ['CDF','USD']){
+  const input=cart.getByLabel('Montant reçu · '+currency);await input.fill('999999999.99');
+  const amount=await input.boundingBox(),calc=await cart.getByRole('button',{name:'Calculatrice · '+currency,exact:true}).boundingBox();
+  expect(calc!.y).toBeGreaterThanOrEqual(amount!.y+amount!.height+6);
+ }
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await screenshot(page,`${width}-large-mixed`);
+});
+for(const width of [390,1440])test(`history is secondary and reversal remains contextual ${width}`,async({page})=>{
+ const {url}=await fixture(page,{locale:'en'});await page.setViewportSize({width,height:960});
+ await page.route('**/api/**/physical-sales/priced/**',route=>route.fulfill({json:{sales:[{sale_ref:'SALE_one',target_label:'Controlled sale',quantity:2,total_revenue:'30000',currency:'CDF',gross_profit:'10000',status:'active',completed_at:'2026-10-31T09:00:00Z'},{sale_ref:'SALE_two',target_label:'Corrected sale',quantity:1,total_revenue:'15000',currency:'CDF',gross_profit:null,status:'reversed',completed_at:'2026-10-30T09:00:00Z',reversal_ref:'REV_two'}]}}));
+ await page.goto(url+'&view=sales');const history=page.locator('.wz-legacy-sales');await expect(history).not.toHaveAttribute('open','');
+ await screenshot(page,`${width}-history-collapsed`);await history.locator(':scope > summary').click();await expect(history.locator('input:visible')).toHaveCount(0);
+ await expect(history.locator('.wz-history-status')).toHaveText(['Active','Reversed']);await screenshot(page,`${width}-history-expanded`);
+ await history.locator('.wz-history-action summary').first().click();await expect(history.getByRole('combobox',{name:'Reason'})).toBeVisible();await expect(history.getByRole('textbox')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await screenshot(page,`${width}-history-action`);
+ await history.getByRole('button',{name:'Reverse entry',exact:true}).click();const confirm=page.getByRole('dialog',{name:'Confirm this operation?',exact:true});await expect(confirm).toBeVisible();await confirm.getByRole('button',{name:'Cancel',exact:true}).click();await expect(confirm).not.toBeVisible();
+ await history.locator('.wz-history-action summary').last().click();await history.getByRole('button',{name:'Replace reversed entry',exact:true}).click();await expect(history.locator('.wz-history-tools > details').last()).toHaveAttribute('open','');
 });
