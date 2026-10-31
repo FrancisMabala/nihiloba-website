@@ -36,4 +36,3 @@ export async function fixture(page:Page,{online=false,retry=false,truncated=fals
 }
 export async function basket(page:Page){if(await page.locator('.wz-checkout-basket-shortcut').isVisible())await page.locator('.wz-checkout-basket-shortcut').click();return page.locator('.wz-checkout-basket-content');}
 export async function addShirt(page:Page,locale:Locale){await page.locator('.wz-pos-product-button').filter({hasText:'Chemise blanche'}).click();await page.getByRole('dialog',{name:copy(locale,'chooseVariant')}).getByRole('button',{name:/Blanc \/ M/}).click();}
-
