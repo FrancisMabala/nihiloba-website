@@ -32,6 +32,7 @@ async function fixture(page:Page,{empty=false,bundle='personal_free'}={}){
   if(path.endsWith('/transactions/requests'))return reply({requests:[],has_more:false});
   if(path.endsWith('/transactions/messages'))return reply({threads:[]});
   if(path.endsWith('/transactions/templates'))return reply({templates:[]});
+  if(path.endsWith('/transactions/finance/counter'))return reply({sales:[],next_offset:null});
   if(path.endsWith('/transactions/finance/entries'))return reply({entries:[],next_offset:null});
   if(path.endsWith('/transactions/finance/totals')){const bucket={billed:'0.00',declared_received:'0.00',outstanding:'0.00',unbilled_receipts:'0.00',declared_excess:'0.00',job_expenses:'0.00',services_overhead:'0.00',recorded_expenses:'0.00',declared_surplus:'0.00'};return reply({currencies:{CDF:bucket,USD:bucket}});}
   if(path.endsWith('/transactions/bill-presentation'))return reply({display_name:null,accent:'green',revision:1,fallback_display_name:'Atelier Kin',preview:{display_name:'Atelier Kin',accent:'green'}});
@@ -88,7 +89,7 @@ test('session replacement clears private drafts and expired sessions return to W
  const editor=page.locator('.svc-service-editor');await editor.getByRole('textbox').first().fill('Private draft');
  state.binding='b'.repeat(64);state.rows=[];await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));
  await expect(editor).toHaveCount(0);await expect(page.locator('input[value="Private draft"]')).toHaveCount(0);
- state.signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.locator('.svc-workspace')).toHaveCount(0);await expect(page.getByRole('button',{name:"Sign in with WhatsApp",exact:true})).toBeVisible();
+ state.signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.locator('.svc-workspace')).toHaveCount(0);await expect(page.getByRole('button',{name:"Continue with WhatsApp",exact:true})).toBeVisible();
 });
 
 for(const [locale,width] of [['en',1440],['en',320],['fr',390],['ln',820],['sw',360]] as const)test(`Services setup form ${locale} ${width}`,async({page})=>{

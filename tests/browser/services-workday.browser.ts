@@ -15,14 +15,14 @@ for(const [locale,width] of [["en",1440],["en",390],["fr",390],["ln",820],["sw",
   if(path.endsWith("/services"))return reply({profiles:[row]});
   if(path.endsWith("/today"))return reply({date:"2026-10-21",timezone:"Africa/Kinshasa",requests:{items:[{request_ref:"SWR_one",offering:"Haircut request",requester:"Grâce L."}],has_more:false},pending:empty,upcoming:{items:[{reservation_ref:"RSV_one",offering:row.service_name,requester:"Junior M.",starts_at:"2026-10-21T09:30:00Z"}],has_more:false},messages:empty});
   if(path.endsWith("/reviews"))return reply({reviews:[]});
-  if(path.endsWith("/calendar"))return reply({items:[],has_more:false});
+  if(path.endsWith("/calendar"))return reply({items:[{reference:"RSV_one",title:row.service_name,startsAt:"2026-10-21T09:30:00Z",status:"confirmed"}],has_more:false});
   if(path.endsWith("/share"))return reply({name:row.service_name,url,qr_image:qr});
   return route.fulfill({status:404,json:{detail:"unavailable"}});
  });
  const t=workdayCopy[locale],navCopy=providerCopy[locale];
  await page.goto(`${locale==="en"?"":`/${locale}`}/shida/seller/services`);
  await expect(page.getByRole("heading",{name:t.headline})).toBeVisible();
- await expect(page.locator(".svc-today").getByText("Junior M.")).toBeVisible();
+ await expect(page.locator(".svc-today").getByText(row.service_name,{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`docs/evidence/shared-workspaces/services-today-${locale}-${width}.png`,fullPage:true});
  const nav=page.getByRole("navigation",{name:navCopy.navigation});
