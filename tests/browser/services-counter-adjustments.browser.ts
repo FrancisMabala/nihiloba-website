@@ -1,3 +1,4 @@
+import {workplaceCopy} from '../../app/lib/services-workplace-copy';
 import {test,expect} from '@playwright/test';
 import {servicesProviderOffering} from './fixtures/services-provider';
 import {counterCopy} from '../../app/lib/services-counter-copy';
@@ -31,6 +32,7 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
   return route.fulfill({status:404,json:{detail:'unavailable'}});
  });
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=counter`);
+ await page.getByRole('button',{name:workplaceCopy[locale].history,exact:true}).click();
  await page.getByRole('button',{name:/Original client · 2026/}).click();
  const panel=page.locator('.svc-counter-adjustments');
  await panel.getByLabel(a.amount,{exact:true}).fill('5');
@@ -82,7 +84,7 @@ test('payment reversal retries the identical request after an uncertain response
   }
   if(path.endsWith('/reviews'))return reply({reviews:[]});return route.fulfill({status:404,json:{detail:'unavailable'}});
  });
- await page.goto('/shida/seller/services?view=counter');await page.getByRole('button',{name:/Retry client · 2026/}).click();
+ await page.goto('/shida/seller/services?view=counter');await page.getByRole('button',{name:workplaceCopy.en.history,exact:true}).click();await page.getByRole('button',{name:/Retry client · 2026/}).click();
  const panel=page.locator('.svc-counter-adjustments');
  await panel.getByRole('combobox',{name:a.title,exact:true}).selectOption('payment_reversal');
  await panel.getByRole('combobox',{name:t.receiptChoice,exact:true}).selectOption('SCR_retry');

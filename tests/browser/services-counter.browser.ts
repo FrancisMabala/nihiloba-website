@@ -26,6 +26,7 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
  await form.getByRole("combobox",{name:t.package,exact:true}).selectOption('SPK_one');
  await form.getByRole('button',{name:t.add,exact:true}).click();
  await form.getByLabel(t.paid,{exact:true}).fill('10');
+ await page.screenshot({path:`test-results/counter-basket-${locale}-${width}.png`,fullPage:true});
  await form.getByRole('button',{name:t.save,exact:true}).click();
  await page.getByRole('button',{name:t.confirm,exact:true}).click();
  await expect(page.locator('.svc-counter-receipt')).toContainText('Belleza Salon');

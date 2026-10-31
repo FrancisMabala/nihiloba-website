@@ -208,3 +208,10 @@ it('allows only the bound Personal professional-profile update',async()=>{
  expect((await PATCH(request('SVC_one/professional-profile','PATCH',body,{'X-Shida-Session':'wrong'}),context('SVC_one/professional-profile'))).status).toBe(401);
  expect(fetcher).toHaveBeenCalledTimes(1);
 });
+
+it('preserves distinct public share targets and accepts only scoped work settings',async()=>{
+ expect((await GET(request('SVC_one/share?language=en&target=profile'),context('SVC_one/share'))).status).toBe(200);
+ expect(String(fetcher.mock.calls.at(-1)?.[0])).toContain('target=profile');
+ for(const query of ['target=private','target=profile&target=service','target=profile&organization_ref=BUS_other'])expect((await GET(request('SVC_one/share?'+query),context('SVC_one/share'))).status).toBe(404);
+ expect((await PATCH(request('SVC_one/professional-work','PATCH',{expected_revision:1,professional_settings:{modes:['customer'],counter_enabled:false}}),context('SVC_one/professional-work'))).status).toBe(200);
+});
