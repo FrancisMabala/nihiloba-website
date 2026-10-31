@@ -3,7 +3,8 @@ import {privateEmploymentJson} from '../employment/route-utils';
 export const dynamic='force-dynamic';
 async function handle(request:Request){
  const url=new URL(request.url),language=url.searchParams.get('language')||'en',q=url.searchParams.get('q')||'';
- if(!['en','fr','ln','sw'].includes(language)||q.length>150||[...url.searchParams.keys()].some(key=>!['language','q'].includes(key)))return privateEmploymentJson({error:{code:'invalid_fields'}},422);
+ const resource=url.searchParams.get('resource')||'countries';
+ if(!['countries','locations'].includes(resource)||!['en','fr','ln','sw'].includes(language)||q.length>150||[...url.searchParams.keys()].some(key=>!['language','q','resource'].includes(key)))return privateEmploymentJson({error:{code:'invalid_fields'}},422);
  const origin=personalRequestOrigin(request,true);
  if(!origin)return privateEmploymentJson({error:{code:'forbidden'}},403);
  let body:string|undefined;
@@ -18,7 +19,7 @@ async function handle(request:Request){
  }
  try{
   const upstream=new URL(process.env.SHIDA_API_BASE_URL??'https://api.nihiloba.com');if(upstream.protocol!=='https:'||upstream.username||upstream.password)throw Error();
-  const path=request.method==='POST'?'country-suggestions':`countries?${new URLSearchParams({language,q})}`;
+  const path=request.method==='POST'?'country-suggestions':resource==='locations'?'locations':`countries?${new URLSearchParams({language,q})}`;
   const response=await fetch(`${upstream.origin}/api/dashboard/registration/reference/${path}`,{method:request.method,body,cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(12000),headers:{Origin:origin,'Content-Type':'application/json'}});
   if(!response.ok)return privateEmploymentJson({error:{code:'unavailable'}},response.status);
   return privateEmploymentJson(await response.json());

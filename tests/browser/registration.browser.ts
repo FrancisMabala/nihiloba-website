@@ -15,8 +15,15 @@ test.beforeEach(async({page,browserName})=>{
  });
 });
 async function fillCountry(page:Page,code:string){
- await page.locator("#registration-country_code").fill(code);await expect(page.locator("#registration-country_code")).toHaveValue(code==="CD"?"Congo-Kinshasa":code==="SE"?"Sweden":code);
+ await page.locator("#registration-country_code").fill(code);await expect(page.locator("#registration-country_code")).toHaveValue(code==="CD"?"Congo-Kinshasa":code==="SE"?"Sweden":code);if(await page.locator("#registration-commune").count())await page.locator("#registration-commune").selectOption("Gombe");
 }
+
+test('Kinshasa commune controls manual quartier and clears dependent location on country change',async({page})=>{
+ await fixture(page);await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');
+ await page.locator('#registration-quartier').fill('Manual quartier');await page.locator('#registration-avenue').fill('Private street');
+ await page.locator('#registration-commune').selectOption('Lemba');await expect(page.locator('#registration-quartier')).toHaveValue('');
+ await fillCountry(page,'SE');await expect(page.locator('#registration-commune')).toHaveCount(0);await expect(page.locator('#registration-avenue')).toHaveValue('');
+});
 
 test('country search selects canonical residence and keeps unknown suggestions provisional',async({page})=>{
  await fixture(page);await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
@@ -65,6 +72,7 @@ async function fixture(page:Page,existing=false,business=false){
   const url=new URL(route.request().url()),path=url.pathname.replace(/\/$/,''),method=route.request().method();
   const reply=(value:unknown,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(value)});
   if(path.endsWith('/registration-reference')){
+   if(url.searchParams.get('resource')==='locations')return reply({kinshasa_communes:['Gombe','Lemba',"N'djili"],quartiers:{}});
    const rows=[{code:'CD',name:'Congo-Kinshasa'},{code:'CG',name:'Congo-Brazzaville'},{code:'SE',name:'Sweden'},{code:'DE',name:'Germany'}];
    const q=url.searchParams.get('q')||'';
    return reply({items:rows,matched_code:rows.find(row=>row.code===q.toUpperCase()||row.name.toLowerCase()===q.toLowerCase())?.code||null,...(method==='POST'?{status:'pending_review'}:{})});
@@ -98,7 +106,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,768,1
  if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-choice-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:t.next,exact:true}).click();
  await fillName(page,'Synthetic Personal');await page.locator('#registration-phone').fill('+243910004001');
- await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');await page.locator('#registration-area').fill('Gombe');
+ await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');await page.locator('#registration-commune').selectOption('Gombe');
  expect(state.values).toEqual({});expect(state.verified).toBe(false);
  if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-details-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:t.next,exact:true}).click();

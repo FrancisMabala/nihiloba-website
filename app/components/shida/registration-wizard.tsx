@@ -7,6 +7,8 @@ import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib
 import { registrationCopy, existingAccountContinue, registrationFlowCopy, privacyAcknowledgement, type RegistrationLocale } from "../../lib/registration/copy";
 import { onboardingText, catalogLabel } from "../../lib/registration/onboarding-copy";
 import "./registration.css";
+import {RegistrationLocation,profileLocationFields} from "./registration-location";
+import {addressCopy} from "../../lib/registration/address-copy";
 import {RegistrationCountry} from "./registration-country";
 import {locationCopy} from "../../lib/registration/location-copy";
 import {profileLabel,registrationLanguages} from "../../lib/registration/profile-copy";
@@ -34,7 +36,7 @@ export function RegistrationWizard({ locale:initialLocale, catalogs }: { locale:
   const [locale,setLocale]=useState<RegistrationLocale>(initialLocale);
   const restoredOnce=useRef(false);
   const hydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
-  const t = registrationCopy[locale], flow = registrationFlowCopy[locale], label = (key: string) => profileLabel(locale,key) ?? (key === "country_code" ? locationCopy[locale].country : key === "area" ? t.area : onboardingText(locale, key));
+  const t = registrationCopy[locale], flow = registrationFlowCopy[locale], label = (key: string) => profileLabel(locale,key) ?? (key in addressCopy[locale]?addressCopy[locale][key as keyof typeof addressCopy.en]:key === "country_code" ? locationCopy[locale].country : key === "area" ? t.area : onboardingText(locale, key));
   const r = refinementCopy[locale];
   const [phone,setPhone]=useState(""),[storageFailed,setStorageFailed]=useState(false),[localReady,setLocalReady]=useState(false);
   const expiry=useRef(0);
@@ -49,8 +51,8 @@ export function RegistrationWizard({ locale:initialLocale, catalogs }: { locale:
   const unverified = useRef<Record<string,string> | null>(null);
   useEffect(() => () => { ++actorEpoch.current; }, []);
   const apply = (next: Draft) => { if(next.language)setLocale(next.language); current.current = next; setDraft(next); setValues(Object.fromEntries(Object.entries(next.values ?? {}).map(([k,v]) => [k,v ?? ""]))); setDecisions({}); };
-  const sections = kind === "personal" ? [draft?.values.personal_name && !draft.values.first_name ? ["personal_name"] : ["first_name","family_name","additional_name"], ["city", "country_code", "area"]] : businessGroups;
-  const groups = [sections.flat()];
+  const sections = kind === "personal" ? [draft?.values.personal_name && !draft.values.first_name ? ["personal_name"] : ["first_name","family_name","additional_name"]] : businessGroups;
+  const groups = [kind==="personal"?[...sections.flat(),...profileLocationFields]:sections.flat()];
   const legalStep = groups.length, reviewStep = groups.length + 1;
   const documents = draft?.legal ?? draft?.legal_documents ?? [];
   const terminal = ["cancelled", "expired"].includes(draft?.status ?? "");
@@ -209,7 +211,7 @@ export function RegistrationWizard({ locale:initialLocale, catalogs }: { locale:
     catch(error) { recover(error); }
     finally { lock.current = false; setBusy(false); }
   }
-  const visible = (groups[group] ?? []).filter(key => key !== "custom_organization_type" || values.organization_type === "other");
+  const visible = (groups[group] ?? []).filter(key => !(kind==="personal"&&profileLocationFields.includes(key))).filter(key => key !== "custom_organization_type" || values.organization_type === "other");
   return <div className="registration-shell" lang={locale}>
     <section className="registration-card" aria-busy={busy}>
       <a href={`${base}/`} className="registration-brand"><small>NIHILOBA</small><strong>SHIDA</strong></a>
@@ -225,6 +227,7 @@ export function RegistrationWizard({ locale:initialLocale, catalogs }: { locale:
             const required=!["additional_name","area","quartier_or_area","landmark"].includes(key);
             return <div key={key}><label htmlFor={`registration-${key}`}>{label(key)} <small>{required?r.required:r.optional}</small></label>{key==="country_code"?<RegistrationCountry id={`registration-${key}`} value={values[key]??""} onChange={value=>setValues(previous=>({...previous,[key]:value}))} locale={locale} required={required}/>:options?<select id={`registration-${key}`} name={key} required value={values[key]??""} onChange={event=>setValues({...values,[key]:event.target.value})}><option value="">{onboardingText(locale,"choose")}</option>{options.map(value=><option key={value} value={value}>{catalogLabel(locale,value)}</option>)}</select>:<input id={`registration-${key}`} name={key} required={required} maxLength={500} autoComplete={key==="personal_name"?"name":key==="city"?"address-level2":"off"} value={values[key]??""} onChange={event=>setValues({...values,[key]:event.target.value})}/>}</div>;
           })}</fieldset>)}
+          {kind==="personal"&&<fieldset className="registration-section"><legend>{r.location}</legend><RegistrationLocation prefix="registration" values={values} onChange={setValues} locale={locale} required/></fieldset>}
           <fieldset className="registration-section"><legend>{r.contact}</legend><div><label htmlFor="registration-phone">{r.phone} <small>{r.required}</small></label><input id="registration-phone" type="tel" inputMode="tel" autoComplete="tel" maxLength={40} required value={phone} onChange={event=>setPhone(event.target.value)} aria-describedby="registration-phone-help"/><small id="registration-phone-help">{r.phoneHelp}</small></div></fieldset>
         </fieldset>}
         <div className="registration-actions"><button type="button" className="button button-secondary" onClick={()=>setStep(1)}>{t.back}</button><button type="submit" className="button button-primary" disabled={kind==="business"&&!catalogs}>{t.next}</button></div>
@@ -238,6 +241,7 @@ export function RegistrationWizard({ locale:initialLocale, catalogs }: { locale:
             {visible.map(key => { const options = key === "organization_type" ? draft.organization_types : key === "sector" ? draft.sectors : null;
               return <div key={key}><label htmlFor={`registration-${key}`}>{label(key)}</label>{key==="country_code"?<RegistrationCountry id={`registration-${key}`} value={values[key]??""} onChange={value=>{setValues(previous=>({...previous,[key]:value}));setSaved(false);}} locale={locale}/>:options ? <select id={`registration-${key}`} name={key} value={values[key] ?? ""} aria-invalid={fields.includes(key)} onBlur={e=>saveField(key,e.target.value)} onChange={e=>{setValues({...values,[key]:e.target.value});setSaved(false);}}><option value="">{onboardingText(locale,"choose")}</option>{options.map(value=><option value={value} key={value}>{catalogLabel(locale,value)}</option>)}</select> : <input id={`registration-${key}`} name={key} value={values[key] ?? ""} maxLength={500} autoComplete={key === "personal_name" ? "name" : key === "city" ? "address-level2" : "off"} aria-invalid={fields.includes(key)} onBlur={e=>saveField(key,e.target.value)} onChange={e=>{setValues({...values,[key]:e.target.value});setSaved(false);}}/>}{fields.includes(key) && <p className="form-error">{onboardingText(locale,"invalid")}</p>}</div>;
             })}
+            {kind==="personal"&&group===0&&!existing&&<RegistrationLocation prefix="registration" values={values} onChange={next=>{setValues(next);setSaved(false);}} locale={locale} required={Boolean(values.first_name)}/>}
             {group === legalStep && documents.filter(document=>!document.accepted).map(document=><label className="registration-consent" key={document.document_type}><input type="checkbox" checked={document.accepted || decisions[document.document_type] === document.version} disabled={document.accepted || !documentUrl(document)} onChange={e=>{const next={...decisions};if(e.target.checked)next[document.document_type]=document.version;else delete next[document.document_type];setDecisions(next);}}/><span>{document.document_type === "SHIDA_PRIVACY_POLICY" ? privacyAcknowledgement[locale] : t.consent} {documentUrl(document) ? <a href={documentUrl(document)!} target="_blank" rel="noopener noreferrer">{documentName(document.document_type)} · {document.version}{locale === "ln" || locale === "sw" ? " (FR)" : ""}</a> : <>{documentName(document.document_type)} · {document.version} — {onboardingText(locale,"unavailable")}</>}</span></label>)}
             {group === reviewStep && <dl className="registration-review">{Object.entries(draft.values).filter(([,v])=>v).map(([key,value])=><div key={key}><dt>{label(key)}</dt><dd>{key === "organization_type" || key === "sector" ? catalogLabel(locale,value!) : value}</dd></div>)}</dl>}
           </fieldset>
