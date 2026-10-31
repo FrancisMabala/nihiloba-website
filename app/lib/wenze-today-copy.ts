@@ -1,5 +1,11 @@
 import type {WenzeLocale} from './wenze-copy';
 const labels = {
+ knownProfit:['Known profit before expenses','Bénéfice connu avant dépenses','Litomba eyebani liboso ya kobimisa mbongo','Faida inayojulikana kabla ya gharama'],
+ totalToday:['Total today','Total du jour','Motango ya lelo','Jumla ya leo'],
+ noSold:['No products sold today','Aucun produit vendu aujourd’hui','Biloko etekami lelo te','Hakuna bidhaa zilizouzwa leo'],
+ financialToday:['Financial summary (today)','Résumé financier du jour','Bokuse ya mbongo ya lelo','Muhtasari wa fedha (leo)'],
+ fullReport:['View full report','Voir le rapport complet','Tala raporo mobimba','Ona ripoti kamili'],
+ noFinancial:['No sales or expenses recorded today.','Aucune vente ni dépense enregistrée aujourd’hui.','Boteki to mosolo ebimisami ekomami lelo te.','Hakuna mauzo wala gharama zilizorekodiwa leo.'],
  setup:['Set up your shop to start selling','Préparez votre boutique pour vendre','Bongisa boutique na yo mpo na koteka','Andaa duka lako ili uanze kuuza'],
  setupHelp:['Complete the missing shop details to welcome customers.','Complétez les informations manquantes pour accueillir vos clients.','Tondisa makambo ya boutique oyo ezangi mpo na koyamba bakiliya.','Kamilisha maelezo ya duka yanayokosekana ili kupokea wateja.'],
  complete:['Complete shop setup','Compléter ma boutique','Silisa kobongisa boutique','Kamilisha mipangilio ya duka'],
