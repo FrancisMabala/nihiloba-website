@@ -123,8 +123,11 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,7
  await expect(page.getByRole('button',{name:login.open,exact:true})).toBeDisabled();
  await page.getByLabel(registrationEligibility[locale]).check();
  await page.getByRole('button',{name:login.open,exact:true}).click();
+ await expect(page.getByLabel(login.codeLabel)).toBeVisible();
  if(locale==='en')await page.evaluate(()=>window.scrollTo(0,0));if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-verification-${width}.png`,fullPage:true});
- await page.getByLabel(login.codeLabel).fill('610294');await page.getByRole('button',{name:t.verifyButton,exact:true}).click();
+ await page.getByLabel(login.codeLabel).fill('610294');
+ if(locale==='en'&&width<600){await expect(page.getByRole('button',{name:t.verifyButton,exact:true})).toBeEnabled();await page.getByRole('button',{name:t.verifyButton,exact:true}).hover();await expect(page.getByRole('button',{name:t.verifyButton,exact:true})).toHaveCSS('background-color','rgb(23, 79, 61)');await page.getByRole('button',{name:t.verifyButton,exact:true}).evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));await page.screenshot({path:`test-results/registration/${testInfo.project.name}-verification-actions-${width}.png`});}
+ await page.getByRole('button',{name:t.verifyButton,exact:true}).click();
   await expect(page.locator('.registration-consent input')).toHaveCount(2);
  if(locale==='en')await page.evaluate(()=>window.scrollTo(0,0));if(locale==='en')await page.screenshot({path:`test-results/registration/${testInfo.project.name}-terms-${width}.png`,fullPage:true});
  for(const checkbox of await page.locator('.registration-consent input').all())await checkbox.check();
@@ -303,4 +306,32 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,820,1
  await dialog.getByRole('button',{name:`${r.browse} →`,exact:true}).click();
  await page.locator('.wzp-selling').scrollIntoViewIfNeeded();await page.screenshot({path:`test-results/registration/${info.project.name}-selling-${locale}-${width}.png`,fullPage:true});
  await page.getByRole('link',{name:r.itemAction,exact:true}).click();await expect(page).toHaveURL(/\/register\/\?returnTo=/);await expect(page.getByRole('heading',{name:registrationCopy[locale].title})).toBeVisible();
+});
+
+// Isolated fixture captures: no account writes or WhatsApp messages leave this test.
+for(const width of [390,1440])test(`visual reference states ${width}`,async({page},testInfo)=>{
+ await fixture(page);await page.setViewportSize({width,height:900});await page.goto('/shida/register/');
+ await page.getByRole('button',{name:'Next',exact:true}).click();
+ await page.locator('#registration-city').fill('Kinshasa');await fillCountry(page,'CD');
+ await page.locator('#registration-commune').selectOption('Lemba');await page.locator('#registration-quartier').fill('Fixture quartier');
+ await page.screenshot({path:`test-results/registration/${testInfo.project.name}-kinshasa-${width}.png`,fullPage:true});
+ await page.locator('#registration-country_code').fill('Congo');await expect(page.locator('.registration-country ul button')).toHaveCount(4);
+ await page.screenshot({path:`test-results/registration/${testInfo.project.name}-country-${width}.png`,fullPage:true});
+ if(width<600){await page.locator('.registration-country ul').evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));await page.screenshot({path:`test-results/registration/${testInfo.project.name}-country-focused-${width}.png`});}
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+for(const width of [390,1440])test(`visual existing account ${width}`,async({page},testInfo)=>{
+ const state=await fixture(page,true);state.existingAccount=true;state.accepted=true;state.values={personal_name:'Existing Fixture'};
+ await page.setViewportSize({width,height:900});await page.goto('/shida/register/');await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();
+ await expect(page.locator('.registration-existing')).toBeVisible();
+ await page.screenshot({path:`test-results/registration/${testInfo.project.name}-existing-${width}.png`,fullPage:true});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('country empty search explains recovery without changing selection rules',async({page})=>{
+ await fixture(page);await page.route('**/api/shida/registration-reference/?*',async route=>{
+  const url=new URL(route.request().url());if(url.searchParams.get('q')==='No matches')return route.fulfill({json:{items:[],matched_code:null}});return route.fallback();
+ });
+ await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();await page.locator('#registration-country_code').fill('No matches');
+ await expect(page.locator('.registration-country-empty')).toBeVisible();await expect(page.locator('.registration-country ul button')).toHaveCount(0);
 });

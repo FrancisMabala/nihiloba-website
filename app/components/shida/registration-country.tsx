@@ -23,7 +23,7 @@ export function RegistrationCountry({id,value,onChange,locale,required=false}:{i
   if(data.matched_code){changed.current(data.matched_code);selected.current=data.matched_code;setEditing(false);}else setPending(true);
  }catch{setFailed(true);}finally{setBusy(false);}}
  return <div className="registration-country"><input ref={input} id={id} autoComplete="country-name" maxLength={150} placeholder={t.search} value={query} required={required} aria-describedby={`${id}-help`} onChange={event=>{setQuery(event.target.value);setEditing(true);setPending(false);selected.current='';changed.current('');}}/>
- {editing&&!failed&&<ul aria-label={t.country}>{items.map(item=><li key={item.code}><button type="button" onClick={()=>{selected.current=item.code;changed.current(item.code);setQuery(item.name);setEditing(false);}}>{item.name}</button></li>)}</ul>}
+ {editing&&!failed&&<ul aria-label={t.country}>{items.length===0&&query.trim()&&<li className="registration-country-empty" role="status">{t.empty}</li>}{items.map(item=><li key={item.code}><button type="button" onClick={()=>{selected.current=item.code;changed.current(item.code);setQuery(item.name);setEditing(false);}}>{item.name}</button></li>)}</ul>}
  <small id={`${id}-help`}>{pending?t.pending:failed?t.failed:''}</small>{failed&&<button type="button" onClick={()=>setAttempt(attempt+1)}>{t.retry}</button>}
  {editing&&!value&&query.trim().length>=2&&<details><summary>{t.missing}</summary><button type="button" disabled={busy||pending} onClick={()=>void suggest()}>{t.suggest}</button></details>}
  </div>;
