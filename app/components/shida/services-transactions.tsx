@@ -1,4 +1,10 @@
 "use client";
+import {ServicesWorkSummary} from './services-work-summary';
+import {workText} from '../../lib/services-work-copy';
+import {uniqueWork,workMatches,requestStage,workTone,type WorkFilter} from '../../lib/services-work-model';
+import type {ProviderView} from '../../lib/services-provider-copy';
+import {SellerWorkspaceIcon} from './seller-workspace';
+import './services-work.css';
 import {financialRequest,useFinancialCommand} from "../../lib/services-financial-state";
 import "./services-financial.css";
 import {serviceTransactionLink} from "../../lib/service-transaction-link";
@@ -22,9 +28,11 @@ const branchLabel=(row:Row)=>{const branch=row.selected_branch as Row|undefined;
 const transactionRef=(row:Row)=>str(row,'thread_ref')||str(row,'request_ref')||str(row,'reservation_ref');
 const inputDate=serviceLocalInput;
 
-type Props={base:string;binding:string;locale:ServicesLocale;initialKind?:Kind;initialReservationRef?:string|null;offeringRef?:string|null;initialTask?:ServiceTaskLink|null;billAvailable:boolean;financeAvailable:boolean;onDenied:()=>void};
+type Props={base:string;binding:string;locale:ServicesLocale;initialKind?:Kind;initialReservationRef?:string|null;offeringRef?:string|null;initialTask?:ServiceTaskLink|null;billAvailable:boolean;financeAvailable:boolean;onDenied:()=>void;onNavigate?:(view:ProviderView)=>void;calendarAvailable?:boolean;quotesAvailable?:boolean;refreshToken?:number;onBusy?:(busy:boolean)=>void};
 export function ServicesTransactions(props:Props){return <BoundTransactions key={`${props.base}:${props.binding}`} {...props}/>;}
-function BoundTransactions({base,binding,locale,initialKind='requests',initialReservationRef=null,offeringRef,initialTask=null,billAvailable,financeAvailable,onDenied}:Props) {
+function BoundTransactions({base,binding,locale,initialKind='requests',initialReservationRef=null,offeringRef,initialTask=null,billAvailable,financeAvailable,onDenied,onNavigate,calendarAvailable=false,quotesAvailable=true,refreshToken=0,onBusy}:Props) {
+ const [filter,setFilter]=useState<WorkFilter>('all'),[summaryRevision,setSummaryRevision]=useState(0);
+ const wt=(key:string)=>workText(locale,key);
  const t=useCallback((key:string)=>servicesText(locale,key),[locale]);
  const [kind,setKind]=useState<Kind>(initialKind),[rows,setRows]=useState<Row[]>([]),[offset,setOffset]=useState(0),[more,setMore]=useState(false);
  const [detail,setDetail]=useState<Row|null>(null),[lifecycle,setLifecycle]=useState<Row|null>(null),[quotes,setQuotes]=useState<Row[]>([]),[quote,setQuote]=useState<Row|null>(null),[quoteOffset,setQuoteOffset]=useState(0),[quoteMore,setQuoteMore]=useState(false);
@@ -36,6 +44,7 @@ function BoundTransactions({base,binding,locale,initialKind='requests',initialRe
  useWorkDraft(form!==null||!!command.pending,t('leave_draft'));
  const activeDraft=useRef<{path:string;revision:unknown}|null>(null);
  useEffect(()=>{activeDraft.current=form&&detail?{path:quote?`quotes/${str(quote,'quote_ref')}`:`${kind}/${transactionRef(detail)}`,revision:quote?.revision??detail.revision}:null;},[form,detail,quote,kind]);
+ useEffect(()=>{onBusy?.(busy||command.busy||!!command.pending);},[busy,command.busy,command.pending,onBusy]);
  const pendingBooking=useRef<string|null>(initialReservationRef);
  const pendingLink=useRef<{kind:Kind;ref:string;quoteRef?:string}|null>(null);
  const generation=useRef(0),alive=useRef(false),denied=useRef(onDenied);
@@ -65,7 +74,7 @@ function BoundTransactions({base,binding,locale,initialKind='requests',initialRe
   catch(e){if(alive.current&&ticket===generation.current)error(e);}finally{if(alive.current&&ticket===generation.current)setBusy(false);}
  },[call,clear,error,kind,offset]);
  useEffect(()=>{const target=serviceTransactionLink(window.location.search);if(!target||initialTask)return;let active=true;queueMicrotask(()=>{if(active){pendingLink.current=target;if(kind===target.kind)void load();else setKind(target.kind);}});return()=>{active=false;};},[]); // eslint-disable-line react-hooks/exhaustive-deps
- useEffect(()=>{let mounted=true;alive.current=true;queueMicrotask(()=>{if(mounted)void load();});const focus=()=>{const draft=activeDraft.current;if(pendingCommand.current)return;if(!draft){void load();return;}const ticket=generation.current;void call(draft.path).then(value=>{if(alive.current&&ticket===generation.current&&value.revision!==draft.revision){setStale(true);setNotice(t('stale'));}}).catch(value=>{if(alive.current&&ticket===generation.current)error(value);});};window.addEventListener('focus',focus);return()=>{mounted=false;alive.current=false;invalidateReads();window.removeEventListener('focus',focus);};},[load,call,error,t,invalidateReads]);
+ useEffect(()=>{let mounted=true;alive.current=true;queueMicrotask(()=>{if(mounted)void load();});const focus=()=>{const draft=activeDraft.current;if(pendingCommand.current)return;if(!draft){setSummaryRevision(value=>value+1);void load();return;}const ticket=generation.current;void call(draft.path).then(value=>{if(alive.current&&ticket===generation.current&&value.revision!==draft.revision){setStale(true);setNotice(t('stale'));}}).catch(value=>{if(alive.current&&ticket===generation.current)error(value);});};window.addEventListener('focus',focus);return()=>{mounted=false;alive.current=false;invalidateReads();window.removeEventListener('focus',focus);};},[load,call,error,t,invalidateReads]);
  useEffect(()=>{let active=true;queueMicrotask(()=>{if(!active||!initialTask)return;if(pendingCommand.current||!leaveWork())return;pendingLink.current=initialTask.ref?initialTask:null;if(kind===initialTask.kind&&offset===0)void load();else{setKind(initialTask.kind);setOffset(0);}});return()=>{active=false;};},[initialTask]); // eslint-disable-line react-hooks/exhaustive-deps
  async function open(row:Row,afterSave=false){
   if(!afterSave&&(pendingCommand.current||!leaveWork()))return;
@@ -96,18 +105,20 @@ function BoundTransactions({base,binding,locale,initialKind='requests',initialRe
   else if(action==='reschedule_accept'||action==='reschedule_reject'){const scheduling=lifecycle?.rescheduling as Row;const proposal=scheduling.proposal as Row;path+=`/reschedule-proposals/${str(proposal,'proposal_ref')}/decision`;body={...body,revision:lifecycle!.revision,proposal_revision:proposal.revision,decision:action.replace('reschedule_','')};}
   else{path+=`/lifecycle/${action}`;body={...body,revision:lifecycle!.revision,reason_code:fields.reason||'',description:fields.description||''};}
   const result=await command.run<Row>({path:`${base}/transactions/${path}`,method,body:JSON.stringify(body)});
-  if(alive.current&&epoch===generation.current){if(result){await open(current,true);setNotice(t(action==='reply'?'reply_saved':'saved'));}setBusy(false);}
+  if(alive.current&&epoch===generation.current){if(result){await open(current,true);setSummaryRevision(value=>value+1);setNotice(t(action==='reply'?'reply_saved':'saved'));}setBusy(false);}
  }
  async function retry(){
   if(!detail||!command.pending||busy||command.busy)return;
   const current=detail,action=form,ticket=generation.current;
   const result=await command.run<Row>();
-  if(result&&alive.current&&ticket===generation.current){await open(current,true);setNotice(t(action==='reply'?'reply_saved':'saved'));}
+  if(result&&alive.current&&ticket===generation.current){await open(current,true);setSummaryRevision(value=>value+1);setNotice(t(action==='reply'?'reply_saved':'saved'));}
  }
- function refresh(){if(!pendingCommand.current&&leaveWork()){command.clear();void load();}}
+ function refresh(){if(!pendingCommand.current&&leaveWork()){command.clear();setSummaryRevision(value=>value+1);void load();}}
+ useEffect(()=>{if(refreshToken)refresh();},[refreshToken]); // eslint-disable-line react-hooks/exhaustive-deps
+ function choose(next:Kind,nextFilter:WorkFilter='all'){if(pendingCommand.current||!leaveWork())return;clear();setFilter(nextFilter);setOffset(0);setKind(next);setNotice('');if(next===kind&&offset===0)void load();}
 
  const pageSize=kind==='reservations'?100:20;
- const visibleRows=offeringRef? [...rows].sort((a,b)=>Number(b.offering_ref===offeringRef)-Number(a.offering_ref===offeringRef)):rows;
+ const visibleRows=uniqueWork(rows).filter(row=>workMatches(row,filter,kind)).sort((a,b)=>Number(b.offering_ref===offeringRef)-Number(a.offering_ref===offeringRef)||(kind==='requests'?(['new','quotes','sent','all','closed'].indexOf(requestStage(a))-['new','quotes','sent','all','closed'].indexOf(requestStage(b))):0));
  const scheduling=(lifecycle?.rescheduling??{}) as Row,proposal=scheduling.proposal as Row|undefined;
  const title=(row:Row)=>str(row,'offering')||str(row,'service_name')||str(row,'title');
  const stamp=(value:unknown)=>typeof value==='string'?serviceTimestamp(value,locale):'';
@@ -115,13 +126,17 @@ function BoundTransactions({base,binding,locale,initialKind='requests',initialRe
  const quoteForm=form==='edit'||form==='create_quote';
  const reasonChoices=form==='decline'?kind==='requests'?['NOT_AVAILABLE','OUTSIDE_SCOPE','CANNOT_SERVE_LOCATION','INSUFFICIENT_INFORMATION','OTHER']:['provider_unavailable','slot_unavailable','request_mismatch','area_too_far','insufficient_information','other']:form==='cancel'?['UNAVAILABLE','EMERGENCY','SCHEDULING_ISSUE','CANNOT_PERFORM_SERVICE','OTHER']:form==='dispute'?(lifecycle?.dispute_reasons as string[]??[]):[];
  if(command.status==='denied')return <p role="alert">{t('denied')}</p>;
- return <section className="services-transactions svc-financial-panel" aria-label={t('workspace')}>
-  <h2>{t('workspace')}</h2><fieldset disabled={busy||command.busy||!!command.pending}><div className="transaction-actions">{(['requests','reservations','messages'] as Kind[]).map(value=><button type="button" key={value} aria-pressed={kind===value} onClick={()=>{if(!leaveWork())return;clear();setOffset(0);setKind(value);setNotice('');}}>{t(value)}</button>)}<button type="button" onClick={refresh}>{t('refresh')}</button></div></fieldset>
+ return <section className="services-transactions svc-financial-panel svc-work" aria-label={t('workspace')}>
+  <ServicesWorkSummary base={base} binding={binding} locale={locale} revision={summaryRevision} onDenied={onDenied} disabled={busy||command.busy||!!command.pending} onSelect={choose} quotesAvailable={quotesAvailable} bookingAvailable={calendarAvailable}/>
+  <fieldset disabled={busy||command.busy||!!command.pending}><div className="svc-work-toolbar"><div className="svc-work-tabs" role="group" aria-label={t('workspace')}>{(['requests','reservations','messages'] as Kind[]).map(value=><button type="button" key={value} aria-pressed={kind===value} onClick={()=>choose(value)}>{t(value)}</button>)}</div>{kind!=='messages'&&<label><span className="sr-only">{wt('all')}</span><select value={filter} onChange={event=>setFilter(event.target.value as WorkFilter)}>{(kind==='requests'?['all','new','quotes','sent','closed']:['all','bookings','jobs','closed']).map(value=><option key={value} value={value}>{wt(value)}</option>)}</select></label>}{!onNavigate&&<button type="button" onClick={refresh}>{t('refresh')}</button>}</div></fieldset>
+  {kind==='messages'&&<p className="svc-work-context">{wt('messages')}</p>}
   {(busy||command.busy)&&<p role="status" aria-live="polite">{t('loading')}</p>}{notice&&<p role="status">{notice}</p>}
   {command.status&&command.status!=='saved'&&<p role="status">{t(command.status)}</p>}
   {command.pending&&<button type="button" disabled={busy||command.busy} onClick={()=>void retry()}>{t('retry')}</button>}
-  {!detail?<fieldset disabled={busy||command.busy||!!command.pending}>{visibleRows.length===0&&!busy&&!readFailed&&<p>{t('empty')}</p>}{visibleRows.map(row=><button className="transaction-row" type="button" key={transactionRef(row)} onClick={()=>void open(row)}><strong>{title(row)}</strong><span>{t(str(row,'status'))} · {str(row,'requester')||str(row,'requester_name')||str(row,'preview')}</span><span>{str(row,'requested_datetime')||stamp(row.created_at||row.last_message_at)}</span></button>)}<div className="transaction-actions">{offset>0&&<button onClick={()=>setOffset(Math.max(0,offset-pageSize))}>{t('previous')}</button>}{more&&<button onClick={()=>setOffset(offset+pageSize)}>{t('more')}</button>}</div></fieldset>:
-   <fieldset disabled={busy||command.busy||!!command.pending}><button type="button" onClick={refresh}>{t('back')}</button><h3>{title(detail)}</h3><p>{t(str(detail,'status'))}</p><p>{str(detail,'description')}</p><ServiceReviewedBrief value={detail.reviewed_brief} locale={locale}/>{branchLabel(detail)&&<p>📍 {branchLabel(detail)}</p>}
+  {!detail?<fieldset className="svc-work-list" disabled={busy||command.busy||!!command.pending}><h2>{t(kind)}</h2>{kind!=='messages'&&<p className="svc-work-scope">{wt('scope')}</p>}
+   {visibleRows.length===0&&!busy&&!readFailed&&(rows.length||filter!=='all'||offset>0?<p>{wt('noMatch')}</p>:<><div className="svc-work-empty"><SellerWorkspaceIcon name={kind==='reservations'?'calendar':'work'}/><h3>{wt(kind==='requests'?'empty':kind==='reservations'?'noBookings':'noMessages')}</h3>{kind==='requests'&&<p>{wt('emptyHelp')}</p>}{onNavigate&&<div className="transaction-actions">{calendarAvailable&&<button onClick={()=>onNavigate('share')}>{wt('share')}</button>}<button onClick={()=>onNavigate('services')}>{wt('services')}</button></div>}</div>{kind==='requests'&&onNavigate&&<><h3>{wt('tips')}</h3><div className="svc-work-guidance">{calendarAvailable&&<button onClick={()=>onNavigate('share')}>{wt('share')}<small>{wt('shareHelp')}</small></button>}<button onClick={()=>onNavigate('services')}>{wt('services')}<small>{wt('serviceHelp')}</small></button>{calendarAvailable&&<button onClick={()=>onNavigate('calendar')}>{wt('calendar')}<small>{wt('calendarHelp')}</small></button>}</div></>}</>)}
+   {visibleRows.map(row=>{const location=row.location&&typeof row.location==='object'?row.location as Row:{};const name=str(row,'requester')||str(row,'requester_name');return <button className="transaction-row svc-work-row" type="button" key={transactionRef(row)} onClick={()=>void open(row)}><span className={`svc-work-avatar ${workTone(row)}`} aria-hidden="true">{name.slice(0,1)||'•'}</span><div><strong>{title(row)}</strong>{name&&<p>{name}</p>}{[location.city,location.commune].filter(Boolean).length>0&&<p>{[location.city,location.commune].filter(Boolean).join(' · ')}</p>}<p className="svc-work-description">{str(row,'description').slice(0,160)}</p></div><div className="svc-work-meta"><time>{str(row,'requested_datetime')||stamp(row.created_at||row.last_message_at)}</time><span className={`svc-work-status ${workTone(row)}`}>{kind==='requests'&&['quotes','sent'].includes(requestStage(row))?wt(requestStage(row)):t(str(row,'status'))}</span></div><span className="svc-work-next">{wt('open')} →</span></button>;})}<div className="transaction-actions">{offset>0&&<button onClick={()=>setOffset(Math.max(0,offset-pageSize))}>{t('previous')}</button>}{more&&<button onClick={()=>setOffset(offset+pageSize)}>{t('more')}</button>}</div></fieldset>:
+   <fieldset className="svc-work-detail" disabled={busy||command.busy||!!command.pending}><button type="button" onClick={refresh}>{t('back')}</button><h3>{title(detail)}</h3><p>{t(str(detail,'status'))}</p><p>{str(detail,'description')}</p><ServiceReviewedBrief value={detail.reviewed_brief} locale={locale}/>{branchLabel(detail)&&<p>📍 {branchLabel(detail)}</p>}
     {kind==='requests'&&<><p>{str(detail,'requester')} · {str(detail,'preferred_date')} {str(detail,'preferred_start_time')}</p><div className="transaction-actions">{actions(detail).filter(a=>['review','decline'].includes(a)).map(a=><button key={a} onClick={()=>begin(a)}>{t(a)}</button>)}{!!detail.can_create_quote&&!detail.draft_quote_ref&&<button onClick={()=>begin('create_quote')}>{t('create_quote')}</button>}{!!detail.reservation_ref&&<button onClick={()=>{if(!leaveWork())return;pendingBooking.current=str(detail,'reservation_ref');setKind('reservations');setOffset(0);}}>{t('view_reservation')}</button>}</div>
      {!form&&(!!detail.can_create_quote&&!detail.draft_quote_ref||quote?.status==='DRAFT')&&<ServicesTemplatePicker key={`${transactionRef(detail)}:${quote?.quote_ref??'new'}`} base={base} binding={binding} locale={locale} kind="quote" targetRef={transactionRef(detail)} targetRevision={Number(quote?.status==='DRAFT'?quote.revision:detail.revision)} draftRef={quote?.status==='DRAFT'?str(quote,'quote_ref'):undefined} onApplied={value=>{void (async()=>{await open(detail);await openQuote({quote_ref:String(value.quote_ref)});})();}}/>}
      <h4>{t('history')}</h4>{quotes.length===0&&<p>{t('empty')}</p>}{quotes.map(row=><button className="transaction-row" key={str(row,'quote_ref')} onClick={()=>void openQuote(row)}>{t('quote')} · {t(str(row,'status'))} · {str(row,'amount')} {str(row,'currency')}<span>{stamp(row.sent_at||row.created_at)}</span></button>)}<div className="transaction-actions">{quoteOffset>0&&<button onClick={()=>void historyPage(quoteOffset-10)}>{t('previous')}</button>}{quoteMore&&<button onClick={()=>void historyPage(quoteOffset+10)}>{t('more')}</button>}</div>

@@ -1,4 +1,5 @@
 "use client";
+import {workText} from '../../lib/services-work-copy';
 import {serviceAmount} from "../../lib/service-time";
 import {visibilityCopy} from "../../lib/services-visibility-copy";
 import {ServicesOpportunities} from "./services-opportunities";
@@ -56,6 +57,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
  const [view,setView]=useState<ProviderView>(offeringRef?"services":"overview"),[visited,setVisited]=useState<Set<ProviderView>>(new Set(offeringRef?["services"]:["overview"]));
  const [calendarTab,setCalendarTab]=useState<"calendar"|"hours"|"share">("calendar");
  const [workVisit,setWorkVisit]=useState(0);
+ const [workRefresh,setWorkRefresh]=useState(0),[workBusy,setWorkBusy]=useState(false);
  const [opportunityEntry,setOpportunityEntry]=useState<{request:string;offering:string}|null>(null);
  const [todayVisit,setTodayVisit]=useState(0);
  const [todayTask,setTodayTask]=useState<ServiceTaskLink|null>(null);
@@ -163,7 +165,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
 
   </aside>
   <div className="svc-content">
-   <header className="svc-view-heading"><div><p className="eyebrow">{rows.find(row=>row.is_active==="yes")?.name||ui.area}</p><h1 id="services-view-title" tabIndex={-1}>{ui[selectedView]}</h1>{selectedView!=="overview"&&<p>{ui[`${selectedView}Intro`]}</p>}</div><div className="svc-heading-actions">{selectedView!=="overview"&&<button type="button" className="svc-refresh" disabled={busy||pending!==null} onClick={()=>{if(leaveWork())void refresh(true);}}>{ui.refresh}</button>}</div></header>
+   <header className="svc-view-heading"><div><p className="eyebrow">{rows.find(row=>row.is_active==="yes")?.name||ui.area}</p><h1 id="services-view-title" tabIndex={-1}>{ui[selectedView]}</h1>{selectedView!=="overview"&&<p>{selectedView==='work'?workText(lang,'intro'):ui[`${selectedView}Intro`]}</p>}</div><div className="svc-heading-actions">{selectedView!=="overview"&&<button type="button" className="svc-refresh" disabled={busy||pending!==null||(selectedView==="work"&&workBusy)} onClick={()=>{if(selectedView==="work")setWorkRefresh(value=>value+1);else if(leaveWork())void refresh(true);}}>{ui.refresh}</button>}</div></header>
 
    {catalogStale&&<p className="svc-notice" role="status">{t.stale}</p>}{message&&(!catalogStale||message!==t.stale)&&<p className="svc-notice" role="status">{message}</p>}{pending&&!busy&&<button type="button" onClick={()=>void runOperation(pending)}>{ui.retry}</button>}
    {(["available","proposals"] as const).filter(key=>visited.has(key)&&can("requests_quotes")).map(key=><div key={key} hidden={selectedView!==key}><ServicesOpportunities base={base} binding={binding} locale={lang} services={rows} key={key==="available"?`${opportunityEntry?.offering}:${opportunityEntry?.request}`:undefined} initialRequest={key==="available"?opportunityEntry?.request:undefined} initialOffering={key==="available"?opportunityEntry?.offering:undefined} mine={key==="proposals"} onDenied={()=>{setRows([]);setCapabilities([]);setBlocked(true);}}/></div>)}
@@ -182,7 +184,7 @@ export function ServicesManagement({binding,locale,offeringRef=null,onUnauthoriz
     {can("bill_templates")&&<ServicesTemplateLibrary base={base} binding={binding} locale={lang} kind="bill"/>}
    </div>}
    {visited.has("settings")&&can("bills")&&<div hidden={selectedView!=="settings"}><ServicesBillBranding base={base} binding={binding} locale={lang} onDenied={()=>{setRows([]);setSelected(null);setCapabilities([]);setBlocked(true);}}/></div>}
-   {visited.has("work")&&can("reservations")&&can("messages")&&<div className="svc-panel-stack" hidden={selectedView!=="work"}><ServicesTransactions key={workVisit} base={base} binding={binding} locale={lang} initialKind={initialKind} initialTask={todayTask} initialReservationRef={calendarBooking} offeringRef={offeringRef} billAvailable={can("bills")} financeAvailable={can("basic_totals")} onDenied={()=>{setRows([]);setSelected(null);setReviews([]);setCapabilities([]);setBlocked(true);}}/></div>}
+   {visited.has("work")&&can("reservations")&&can("messages")&&<div className="svc-panel-stack" hidden={selectedView!=="work"}><ServicesTransactions onNavigate={navigate} calendarAvailable={can("structured_availability")} quotesAvailable={rows.some(row=>row.requests_enabled)} refreshToken={workRefresh} onBusy={setWorkBusy} key={workVisit} base={base} binding={binding} locale={lang} initialKind={initialKind} initialTask={todayTask} initialReservationRef={calendarBooking} offeringRef={offeringRef} billAvailable={can("bills")} financeAvailable={can("basic_totals")} onDenied={()=>{setRows([]);setSelected(null);setReviews([]);setCapabilities([]);setBlocked(true);}}/></div>}
    <div hidden={selectedView!=="services"}>
   {can("profile")&&<fieldset disabled={busy||pending!==null||catalogStale} className="svc-catalog">
    <div className="svc-service-list"><h2>{ui.allServices}</h2><label>{ui.services}<select value={showArchived?"archived":"active"} onChange={event=>{if(!leaveWork())return;const archived=event.target.value==="archived";setShowArchived(archived);setSelected(rows.find(row=>archived?row.is_active!=="yes":row.is_active==="yes")?.public_ref??null);}}><option value="active">{lc.active}</option><option value="archived">{lc.archivedServices}</option></select></label>{visibleRows.length===0&&<p>{t.empty}</p>}{visibleRows.map(row=><button type="button" key={row.public_ref} onClick={()=>{if(leaveWork())setSelected(row.public_ref);}} aria-pressed={row.public_ref===selected} style={{display:"block",width:"100%",textAlign:"left",padding:12,marginBottom:6}}>{row.service_name}<small style={{display:"block"}}>{row.is_active!=="yes"?lc.archived:row.visible_to_customers===true?t.published:row.publication_origin==="pilot"?visibilityCopy[lang].hidden:row.publication_origin==="historical"?ui.history:t.private}</small>{row.rating.count>0&&<small>{t.reviews}: {row.rating.average??"—"}/5 · {row.rating.count}</small>}</button>)}

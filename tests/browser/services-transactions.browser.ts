@@ -48,7 +48,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`provider transaction jo
  await workspace.getByRole('button',{name:t('review'),exact:true}).click();
  await workspace.getByRole('button',{name:t('confirm'),exact:true}).click();
  await expect(workspace.getByText(t('in_review'),{exact:true})).toBeVisible();
- await workspace.getByRole('button',{name:new RegExp(t('quote'))}).click();
+ await workspace.locator('.svc-work-detail').getByRole('button',{name:new RegExp(t('quote'))}).click();
  await expect(workspace.getByText(t('private'))).toBeVisible();
  await workspace.getByRole('button',{name:t('edit'),exact:true}).click();
  await expect(workspace.getByLabel(t('scheduled'),{exact:true})).toHaveValue('2030-01-16T11:00');
@@ -56,12 +56,12 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`provider transaction jo
  await workspace.getByRole('button',{name:t('save'),exact:true}).click();
  await expect(workspace.getByText(t('uncertain'),{exact:true})).toBeVisible();
  await expect(workspace.getByLabel(t('amount'),{exact:true})).toBeDisabled();
- await expect(workspace.getByRole('button',{name:t('refresh'),exact:true})).toBeDisabled();
+ await expect(page.getByRole('button',{name:t('refresh'),exact:true})).toBeDisabled();
  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
  await expect(workspace.getByLabel(t('amount'),{exact:true})).toHaveValue('75,50');
  await workspace.getByRole('button',{name:t('retry'),exact:true}).click();
  await expect(workspace.getByText(t('saved'),{exact:true})).toBeVisible();
- await workspace.getByRole('button',{name:new RegExp(t('quote'))}).click();
+ await workspace.locator('.svc-work-detail').getByRole('button',{name:new RegExp(t('quote'))}).click();
  await workspace.getByRole('button',{name:t('send'),exact:true}).click();
  await workspace.getByRole('button',{name:t('confirm'),exact:true}).click();
  await expect(workspace.getByText(t('quoted'),{exact:true})).toBeVisible();
@@ -80,7 +80,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`provider transaction jo
  await expect(workspace.getByText('Materials included.',{exact:true})).toBeVisible();
  withdrawn=true;await workspace.getByRole('button',{name:t('requests'),exact:true}).click();
  await workspace.getByRole('button',{name:/Repairs A/}).click();
- await expect(workspace.getByRole('button',{name:new RegExp(t('quote'))})).toBeVisible();
+ await expect(workspace.locator('.svc-work-detail').getByRole('button',{name:new RegExp(t('quote'))})).toBeVisible();
  expect(writes).toHaveLength(6);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  denied=true;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
  await expect(page.getByRole('alert').first()).toBeVisible();
