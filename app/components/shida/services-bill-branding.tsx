@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
-import {useWorkDraft} from "@/app/lib/restaurant-work";
+import {leaveWork,useWorkDraft} from "@/app/lib/restaurant-work";
 import {providerCopy} from "@/app/lib/services-provider-copy";
 import {ServiceBillStatement,type BillStatementVersion} from "./service-bill-statement";
 
@@ -19,13 +19,14 @@ const previewCopy={
  ln:{identity:"Nkombo na yo na facture",look:"Lolenge na yo",example:"Ndakisa kaka · facture ebimi te",line:"Ndakisa ya mosala",sample:"NDAKISA",live:"Tala mbongwana",note:"Mitango ezali kaka mpo na kolakisa lolenge. Facture esalemi awa te.",loadFailed:"Lolenge ya facture efungwami te.",reset:"Longola mbongwana"},
  sw:{identity:"Utambulisho wako kwenye bili",look:"Mwonekano wako",example:"Mfano tu · si bili iliyotolewa",line:"Mfano wa huduma",sample:"MFANO",live:"Mwonekano wa moja kwa moja",note:"Kiasi kinaonyesha mpangilio tu. Hakuna bili inayoundwa hapa.",loadFailed:"Mipangilio ya bili haikuweza kupakiwa.",reset:"Ondoa mabadiliko"}
 } as const;
+const profileCopy={en:{profile:"Professional Profile",edit:"Edit profile",issuer:"Default issuer identity",supported:"Only supported bill appearance settings are shown. Contact details and logo controls are not available for issued statements."},fr:{profile:"Profil professionnel",edit:"Modifier le profil",issuer:"Identité de l’émetteur par défaut",supported:"Seuls les réglages de présentation pris en charge sont affichés. Les coordonnées et le logo ne sont pas disponibles pour les relevés émis."},ln:{profile:"Profil ya mosala",edit:"Bongisa profil",issuer:"Nkombo ya mopesi mokanda",supported:"Awa ezali kaka lolenge ya facture oyo esalaka. Coordonnées mpe logo ezali te na mikanda oyo ebimi."},sw:{profile:"Wasifu wa kitaaluma",edit:"Hariri wasifu",issuer:"Utambulisho chaguomsingi wa mtoaji",supported:"Mipangilio inayotumika ya mwonekano tu inaonyeshwa. Mawasiliano na nembo hazipatikani kwa taarifa zilizotolewa."}} as const;
 const accents={slate:"#334155",blue:"#1d4ed8",green:"#166534",plum:"#7e22ce"} as const;
 function validSettings(value:Settings):boolean{return !!value&&typeof value.fallback_display_name==="string"&&Number.isInteger(value.revision)&&value.revision>=0&&value.accent in accents&&(value.display_name===null||typeof value.display_name==="string");}
 
-export function ServicesBillBranding(props:{base:string;binding:string;locale:Locale;onDenied?:()=>void}){
+export function ServicesBillBranding(props:{base:string;binding:string;locale:Locale;onDenied?:()=>void;onProfile?:()=>void}){
  return <BillBranding key={`${props.base}:${props.binding}`} {...props}/>;
 }
-function BillBranding({base,binding,locale,onDenied}:{base:string;binding:string;locale:Locale;onDenied?:()=>void}){
+function BillBranding({base,binding,locale,onDenied,onProfile}:{base:string;binding:string;locale:Locale;onDenied?:()=>void;onProfile?:()=>void}){
  const t=words[locale],ui=providerCopy[locale],p=previewCopy[locale];
  const [settings,setSettings]=useState<Settings|null>(null),[name,setName]=useState(""),[accent,setAccent]=useState("slate"),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[reload,setReload]=useState(0),[pending,setPending]=useState<string|null>(null);
  const lock=useRef(false),alive=useRef(true),denied=useRef(onDenied);
@@ -63,9 +64,9 @@ function BillBranding({base,binding,locale,onDenied}:{base:string;binding:string
  const dirty=name!==(settings.display_name??"")||accent!==settings.accent;
  return <section className="svc-branding" aria-label={p.identity}>
   <form className="svc-branding-controls svc-editor-card" onSubmit={event=>void save(event)}>
-   <p className="svc-kicker">{p.look}</p><h3>{p.identity}</h3><p>{t.help}</p>
+   <p className="svc-kicker">{profileCopy[locale].issuer}</p><h3>{p.identity}</h3><div className="svc-branding-profile"><span aria-hidden="true">{settings.fallback_display_name.slice(0,1)}</span><div><strong>{settings.fallback_display_name}</strong><p>{profileCopy[locale].profile}</p></div>{onProfile&&<button type="button" disabled={busy||!!pending} onClick={()=>{if(leaveWork())onProfile();}}>{profileCopy[locale].edit} →</button>}</div><p>{t.help}</p>
    <fieldset disabled={busy||pending!==null}><label>{t.name}<input maxLength={120} placeholder={settings.fallback_display_name} value={name} onChange={event=>setName(event.target.value)}/></label>
-    <fieldset className="svc-accent-options"><legend>{t.accent}</legend>{(Object.keys(accents) as (keyof typeof accents)[]).map(color=><label key={color} className={accent===color?"is-selected":""}><input type="radio" name="bill-accent" value={color} checked={accent===color} onChange={()=>setAccent(color)}/><span aria-hidden="true" style={{background:accents[color]}}>{accent===color?"✓":""}</span><strong>{t[color]}</strong></label>)}</fieldset>
+    <h3>{p.look}</h3><fieldset className="svc-accent-options"><legend>{t.accent}</legend>{(Object.keys(accents) as (keyof typeof accents)[]).map(color=><label key={color} className={accent===color?"is-selected":""}><input type="radio" name="bill-accent" value={color} checked={accent===color} onChange={()=>setAccent(color)}/><span aria-hidden="true" style={{background:accents[color]}}>{accent===color?"✓":""}</span><strong>{t[color]}</strong></label>)}</fieldset>
    </fieldset>
    {notice&&<p className="svc-notice" role="status">{notice}</p>}
    <div className="svc-branding-actions"><button className="svc-primary" disabled={busy||(!dirty&&!pending)}>{pending?ui.retry:t.save}</button>{dirty&&!pending&&<button type="button" disabled={busy} onClick={()=>{setName(settings.display_name??"");setAccent(settings.accent);setNotice("");}}>{p.reset}</button>}</div>

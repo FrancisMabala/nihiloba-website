@@ -2,11 +2,14 @@
 import {useCallback,useEffect,useRef,useState} from "react";
 import {requestWords} from "../../lib/services-request-copy";
 import {serviceAmount} from "../../lib/service-time";
-import {useWorkDraft} from "../../lib/restaurant-work";
+import {templateDesign as design} from "../../lib/services-template-design";
+import {serviceCategoryExperience} from "../../lib/services-category-experience";
+import "./services-template-library.css";
+import {leaveWork,useWorkDraft} from "../../lib/restaurant-work";
 
 type Locale="fr"|"en"|"ln"|"sw";
 type Kind="quote"|"bill";
-type Template={template_ref:string;kind:Kind;name:string;content:Record<string,unknown>;revision:number;archived:boolean};
+type Template={template_ref:string;kind:Kind;name:string;content:Record<string,unknown>;revision:number;archived:boolean;updated_at?:string};
 type Line={label:string;amount:string;private_detail:string};
 const copy={
  en:{title:"Saved quotes and bills",quote:"Saved quotes",bill:"Saved bill layouts",new:"New template",name:"Template name",amount:"Amount",currency:"Currency",description:"What the price includes",duration:"Duration (minutes)",lines:"Bill items",label:"Line description",detail:"Private detail",add:"Add line",remove:"Remove line",save:"Save template",edit:"Edit",archive:"Archive",cancel:"Cancel",empty:"No saved templates yet.",apply:"Use this template",choose:"Choose a template",review:"Check the prices, dates and details before finalizing or sending.",saved:"Template saved.",applied:"Draft filled. Review it before continuing.",stale:"The template or draft changed. Reload and try again.",failed:"Could not complete this action.",archived:"Archived"},
@@ -43,20 +46,28 @@ function useTemplates(base:string,binding:string,kind:Kind){
  return {rows,error,loading,denied,call,reload};
 }
 
-type LibraryProps={base:string;binding:string;locale:Locale;kind:Kind};
+type Offering={public_ref:string;service_name:string;category:string;description:string|null;service_duration_minutes:number|null;is_active:string;packages:{public_ref:string;name:string;description:string|null;price:string|null;currency:string|null;duration_minutes:number}[]};
+type LibraryProps={base:string;binding:string;locale:Locale;kind:Kind;offerings?:Offering[];onUse?:()=>void};
+export function ServicesTemplates({quoteAllowed,billAllowed,...props}:Omit<LibraryProps,"kind">&{quoteAllowed:boolean;billAllowed:boolean}){
+ const [kind,setKind]=useState<Kind>(quoteAllowed?"quote":"bill");const d=design[props.locale];
+ return <div className="svc-templates"><nav className="svc-template-tabs" aria-label={d.title}>{(["quote","bill"] as const).filter(k=>k==="quote"?quoteAllowed:billAllowed).map(k=><button type="button" key={k} aria-pressed={kind===k} onClick={()=>{if(leaveWork())setKind(k);}}>{k==="quote"?d.quotes:d.bills}</button>)}</nav><ServicesTemplateLibrary {...props} kind={kind}/></div>;
+}
 type Pending={path:string;method:string;body:Record<string,unknown>;archive:boolean};
 export function ServicesTemplateLibrary(props:LibraryProps){
  return <TemplateLibrary key={`${props.base}:${props.binding}:${props.kind}`} {...props}/>;
 }
-function TemplateLibrary({base,binding,locale,kind}:LibraryProps){
+function TemplateLibrary({base,binding,locale,kind,offerings=[],onUse}:LibraryProps){
+ const d=design[locale];const [terms,setTerms]=useState("");const [step,setStep]=useState(0),[source,setSource]=useState("");const sourceService=offerings.find(row=>row.public_ref===source);const category=serviceCategoryExperience(sourceService?.category,locale);
  const t=copy[locale],common=requestWords(locale),{rows,error,loading,denied,call,reload}=useTemplates(base,binding,kind);
  const [selected,setSelected]=useState<Template|null>(null),[name,setName]=useState(""),[amount,setAmount]=useState(""),[currency,setCurrency]=useState("USD"),[description,setDescription]=useState(""),[duration,setDuration]=useState(""),[lines,setLines]=useState<Line[]>([emptyLine()]);
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(""),[pending,setPending]=useState<Pending|null>(null);
+ const form=useRef<HTMLFormElement>(null);
  const locked=useRef(false),alive=useRef(true);
+ useEffect(()=>{if(selected)form.current?.querySelector<HTMLElement>("h3")?.focus();},[step,selected]);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  useWorkDraft(!denied&&(!!selected||!!pending),common.leave);
- function begin(row?:Template){if(busy||pending)return;setSelected(row??{template_ref:"",kind,name:"",content:{},revision:0,archived:false});setName(row?.name??"");setAmount(String(row?.content.amount??""));setCurrency(String(row?.content.currency??"USD"));setDescription(String(row?.content.pricing_description??""));setDuration(String(row?.content.duration_minutes??""));setLines(row?asLines(row.content.lines):[emptyLine()]);setNotice("");}
- function content(){return kind==="quote"?{...(amount?{amount:serviceAmount(amount)}:{}),currency,...(description?{pricing_description:description}:{}),...(duration?{duration_minutes:Number(duration)}:{})}:{currency,lines:lines.map(line=>({label:line.label,amount:serviceAmount(line.amount),private_detail:line.private_detail||null}))};}
+ function begin(row?:Template){if(busy||pending)return;setSelected(row??{template_ref:"",kind,name:"",content:{},revision:0,archived:false});setName(row?.name??"");setAmount(String(row?.content.amount??""));setCurrency(String(row?.content.currency??"USD"));setDescription(String(row?.content.pricing_description??""));setDuration(String(row?.content.duration_minutes??""));setLines(row?asLines(row.content.lines):[emptyLine()]);setNotice("");setTerms(String(row?.content.terms??""));setStep(0);setSource("");}
+ function content(){return kind==="quote"?{...(amount?{amount:serviceAmount(amount)}:{}),currency,...(terms?{terms}:{}),...(description?{pricing_description:description}:{}),...(duration?{duration_minutes:Number(duration)}:{})}:{currency,lines:lines.map(line=>({label:line.label,amount:serviceAmount(line.amount),private_detail:line.private_detail||null}))};}
  async function run(command:Pending){
   if(locked.current||denied)return;
   if(!navigator.onLine){setNotice(common.offline);return;}
@@ -79,17 +90,26 @@ function TemplateLibrary({base,binding,locale,kind}:LibraryProps){
  }
  function archive(row:Template){if(!pending)void run({path:`/${row.template_ref}/archive`,method:"POST",archive:true,body:{revision:row.revision,idempotency_key:crypto.randomUUID()}});}
  if(denied)return <p role="alert">{recovery[locale].denied}</p>;
- return <section aria-label={kind==="quote"?t.quote:t.bill} style={{border:"1px solid #94a3b8",borderRadius:10,padding:"1rem",margin:"1rem 0"}}>
-  <h3>{kind==="quote"?t.quote:t.bill}</h3><p>{t.review}</p>
-  {loading&&<p role="status">{common.loading}</p>}{error&&<p role="status">{t.failed}</p>}{notice&&<p role="status">{notice}</p>}
-  {error&&<button disabled={busy||!!pending} onClick={()=>void reload()}>{common.retry}</button>}
-  {pending&&!busy&&<button onClick={()=>void run(pending)}>{common.retry}</button>}
-  {!selected&&<><button disabled={busy||!!pending||loading||!!error} type="button" onClick={()=>begin()}>{t.new}</button>{!loading&&!error&&rows.length===0&&<p>{t.empty}</p>}{rows.map(row=><div key={row.template_ref} style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:8,marginTop:8}}><strong>{row.name}</strong>{row.archived?<span>{t.archived}</span>:<><button disabled={busy||!!pending} type="button" onClick={()=>begin(row)}>{t.edit}</button><button type="button" disabled={busy||!!pending} onClick={()=>archive(row)}>{t.archive}</button></>}</div>)}</>}
-  {selected&&<form onSubmit={save}><fieldset disabled={busy||!!pending} style={{display:"grid",gap:8,marginTop:12,border:0,padding:0,minWidth:0}}><label>{t.name}<input required maxLength={100} value={name} onChange={event=>setName(event.target.value)}/></label>
-   <label>{t.currency}<select value={currency} onChange={event=>setCurrency(event.target.value)}><option>USD</option><option>CDF</option></select></label>
-   {kind==="quote"?<><label>{t.amount}<input inputMode="decimal" value={amount} onChange={event=>setAmount(event.target.value)}/></label><label>{t.description}<textarea maxLength={2000} value={description} onChange={event=>setDescription(event.target.value)}/></label><label>{t.duration}<input type="number" min={1} value={duration} onChange={event=>setDuration(event.target.value)}/></label></>:<><h4>{t.lines}</h4>{lines.map((line,index)=><div key={index} style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,180px),1fr))",gap:8}}><label>{t.label}<input required value={line.label} maxLength={120} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,label:event.target.value}:item))}/></label><label>{t.amount}<input required inputMode="decimal" value={line.amount} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,amount:event.target.value}:item))}/></label><label>{t.detail}<input value={line.private_detail} maxLength={500} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,private_detail:event.target.value}:item))}/></label><button type="button" onClick={()=>setLines(old=>old.filter((_,i)=>i!==index))}>{t.remove}</button></div>)}<button type="button" onClick={()=>setLines(old=>[...old,emptyLine()])}>{t.add}</button></>}
-   <div style={{display:"flex",flexWrap:"wrap",gap:8}}><button disabled={busy} type="submit">{t.save}</button><button type="button" onClick={()=>{if(window.confirm(common.leave))setSelected(null);}}>{t.cancel}</button></div></fieldset></form>}
-  <style>{`section[aria-label="${kind==="quote"?t.quote:t.bill}"] input,section[aria-label="${kind==="quote"?t.quote:t.bill}"] select,section[aria-label="${kind==="quote"?t.quote:t.bill}"] textarea{display:block;width:100%;box-sizing:border-box;padding:.65rem;min-width:0}section[aria-label="${kind==="quote"?t.quote:t.bill}"] button{padding:.6rem .8rem}`}</style>
+ function seed(ref:string){
+  setSource(ref);const service=offerings.find(row=>row.public_ref===ref);if(!service)return;
+  setName(service.service_name);setDescription((service.description??"").slice(0,2000));setDuration(service.service_duration_minutes?String(service.service_duration_minutes):"");
+ }
+ function seedPackage(ref:string){const item=sourceService?.packages.find(row=>row.public_ref===ref);if(!item)return;setAmount(item.price??"");if(item.currency)setCurrency(item.currency);setDuration(String(item.duration_minutes));setDescription((item.description||item.name).slice(0,2000));if(kind==="bill")setLines([{label:item.name.slice(0,120),amount:item.price??"",private_detail:""}]);}
+ const steps=[d.basics,kind==="bill"?t.lines:d.pricing,d.conditions,d.preview];
+ return <section className="svc-template-library" aria-label={kind==="quote"?t.quote:t.bill}>
+  <header className="svc-template-toolbar"><div><h2>{selected?(selected.template_ref?t.edit:t.new):(kind==="quote"?d.quotes:d.bills)}</h2><p>{d.reusable}</p></div>{!selected&&<button className="svc-primary" disabled={busy||!!pending||loading||!!error} type="button" onClick={()=>begin()}>＋ {t.new}</button>}</header>
+  {loading&&<p role="status">{common.loading}</p>}{error&&<p role="alert">{t.failed}</p>}{notice&&<p className="svc-notice" role="status">{notice}</p>}
+  {error&&<button disabled={busy||!!pending} onClick={()=>void reload()}>{common.retry}</button>}{pending&&!busy&&<button onClick={()=>void run(pending)}>{common.retry}</button>}
+  {!selected&&<>{!loading&&!error&&rows.length===0&&<div className="svc-template-empty"><span aria-hidden="true">▤</span><h3>{t.empty}</h3><p>{d.empty}</p></div>}<div className="svc-template-list">{rows.map(row=><article key={row.template_ref}><span className="svc-template-icon" aria-hidden="true">▤</span><div><h3>{row.name}</h3><p>{String(row.content.pricing_description??(kind==="bill"?d.itemized:d.pricing))}</p><span className="svc-template-chip">{String(row.content.currency??"—")}</span>{row.updated_at&&!Number.isNaN(Date.parse(row.updated_at))&&<time dateTime={row.updated_at} className="svc-template-date">{new Intl.DateTimeFormat(locale,{dateStyle:"medium"}).format(new Date(row.updated_at))}</time>}{row.archived&&<span className="svc-template-chip">{t.archived}</span>}</div>{!row.archived&&<div className="svc-template-row-actions"><button disabled={busy||!!pending} type="button" onClick={()=>begin(row)}>{t.edit}</button><details><summary aria-label={`${d.actions}: ${row.name}`}>⋮</summary><div><button disabled={busy||!!pending} type="button" onClick={()=>begin({...row,template_ref:"",revision:0})}>{d.duplicate}</button><button disabled={busy||!!pending} type="button" onClick={()=>{if(window.confirm(d.archiveConfirm))archive(row);}}>{t.archive}</button></div></details></div>}</article>)}</div><aside className="svc-template-info"><strong>{d.about}</strong><p>{d.snapshot}</p>{onUse&&<button type="button" onClick={onUse}>{d.useHelp} →</button>}</aside></>}
+  {selected&&<form ref={form} onSubmit={event=>{if(step<3){event.preventDefault();setStep(step+1);}else save(event);}}>
+   <ol className="svc-template-steps" aria-label={d.editor}>{steps.map((label,index)=><li key={label} aria-current={step===index?"step":undefined}><span>{index+1}</span>{label}</li>)}</ol>
+   <fieldset disabled={busy||!!pending} className="svc-template-fields">
+   {step===0&&<><h3 tabIndex={-1}>{d.basics}</h3><label>{t.name}<input autoFocus required maxLength={100} value={name} onChange={event=>setName(event.target.value)}/></label><label>{d.source}<select value={source} onChange={event=>seed(event.target.value)}><option value="">{d.general}</option>{offerings.filter(row=>row.is_active==="yes").map(row=><option key={row.public_ref} value={row.public_ref}>{row.service_name}</option>)}</select></label><p className="svc-template-hint">{d.sourceHelp}</p>{category&&<aside className="svc-template-category"><strong>{category.service}</strong><p>{category.description}</p></aside>}<label>{t.currency}<select value={currency} onChange={event=>setCurrency(event.target.value)}><option>USD</option><option>CDF</option></select></label></>}
+   {step===1&&<><h3 tabIndex={-1}>{steps[1]}</h3>{sourceService&&sourceService.packages.length>0&&<label>{d.package}<select defaultValue="" onChange={event=>seedPackage(event.target.value)}><option value="">{d.choosePackage}</option>{sourceService.packages.map(item=><option key={item.public_ref} value={item.public_ref}>{item.name}{item.price!==null?` · ${item.price} ${item.currency??""}`:""}</option>)}</select></label>}{kind==="quote"?<><p className="svc-template-hint">{d.quoteHelp}</p><label>{t.amount}<input autoFocus inputMode="decimal" value={amount} onChange={event=>setAmount(event.target.value)}/></label><label>{t.description}<textarea rows={4} maxLength={2000} value={description} onChange={event=>setDescription(event.target.value)}/></label><label>{t.duration}<input type="number" min={1} value={duration} onChange={event=>setDuration(event.target.value)}/></label></>:<>{lines.map((line,index)=><div className="svc-template-line" key={index}><label>{t.label}<input required value={line.label} maxLength={120} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,label:event.target.value}:item))}/></label><label>{t.amount}<input required inputMode="decimal" value={line.amount} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,amount:event.target.value}:item))}/></label><label>{t.detail}<input value={line.private_detail} maxLength={500} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,private_detail:event.target.value}:item))}/></label><button type="button" disabled={lines.length===1} onClick={()=>setLines(old=>old.filter((_,i)=>i!==index))}>{t.remove}</button></div>)}<button type="button" onClick={()=>setLines(old=>[...old,emptyLine()])}>＋ {t.add}</button></>}</>}
+   {step===2&&<><h3 tabIndex={-1}>{d.conditions}</h3>{kind==="quote"?<label>{d.conditions}<textarea autoFocus rows={8} maxLength={2000} value={terms} onChange={event=>setTerms(event.target.value)}/></label>:<p>{d.billConditions}</p>}<aside className="svc-template-info">{t.review}</aside></>}
+   {step===3&&<div className="svc-template-review"><span className="svc-template-chip">{d.previewOnly}</span><h3 tabIndex={-1}>{name}</h3><p>{currency}</p>{kind==="quote"?<><strong>{amount||"—"} {amount?currency:""}</strong><p>{description||"—"}</p>{terms&&<><h4>{d.conditions}</h4><p>{terms}</p></>}{duration&&<p>{t.duration}: {duration}</p>}</>:<ul>{lines.map((line,index)=><li key={index}><span>{line.label}</span><strong>{line.amount} {currency}</strong>{line.private_detail&&<small>{t.detail}: {line.private_detail}</small>}</li>)}</ul>}<p>{d.snapshot}</p></div>}
+   <footer className="svc-template-footer"><button type="button" onClick={()=>{if(step>0)setStep(step-1);else if(window.confirm(common.leave))setSelected(null);}}>{step>0?d.back:t.cancel}</button><button className="svc-primary" disabled={busy} type="submit">{step===3?t.save:d.next} {step<3?"→":""}</button></footer>
+   </fieldset></form>}
  </section>;
 }
 

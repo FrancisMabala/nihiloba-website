@@ -1,10 +1,11 @@
+import {templateDesign} from "../../app/lib/services-template-design";
 import {requestWords} from "../../app/lib/services-request-copy";
 import {providerCopy} from "../../app/lib/services-provider-copy";
 import {test,expect} from '@playwright/test';
 import {servicesText} from '../../app/components/shida/services-transaction-copy';
 
 const words={en:{quote:'Saved quotes',bill:'Saved bill layouts',new:'New template',name:'Template name',amount:'Amount',currency:'Currency',save:'Save template',choose:'Choose a template',apply:'Use this template',requests:'Requests and quotes',reservations:'Reservations'},fr:{quote:'Devis enregistrés',bill:'Modèles de facture',new:'Nouveau modèle',name:'Nom du modèle',amount:'Montant',currency:'Devise',save:'Enregistrer le modèle',choose:'Choisir un modèle',apply:'Utiliser ce modèle',requests:'Demandes et devis',reservations:'Réservations'},ln:{quote:'Ba devis ebombami',bill:'Ba modèle ya facture',new:'Modèle ya sika',name:'Nkombo ya modèle',amount:'Motango',currency:'Mbongo',save:'Bomba modèle',choose:'Pona modèle',apply:'Salela modèle oyo',requests:'Masengi mpe devis',reservations:'Ba réservation'},sw:{quote:'Makadirio yaliyohifadhiwa',bill:'Miundo ya bili',new:'Kiolezo kipya',name:'Jina la kiolezo',amount:'Kiasi',currency:'Sarafu',save:'Hifadhi kiolezo',choose:'Chagua kiolezo',apply:'Tumia kiolezo hiki',requests:'Maombi na makadirio',reservations:'Nafasi'}} as const;
-const brand={en:{title:'Bill presentation',name:'Name shown on new bills',save:'Save presentation'},fr:{title:'Présentation des factures',name:'Nom affiché sur les nouvelles factures',save:'Enregistrer'},ln:{title:'Lolenge ya mokanda',name:'Nkombo na mikanda ya sika',save:'Bomba'},sw:{title:'Mwonekano wa bili',name:'Jina kwenye bili mpya',save:'Hifadhi'}} as const;
+const brand={en:{title:'Bill presentation',name:'Business or professional name',save:'Save presentation'},fr:{title:'Présentation des factures',name:'Nom de l’entreprise ou nom professionnel',save:'Enregistrer'},ln:{title:'Lolenge ya mokanda',name:'Nkombo ya entreprise to ya mosala',save:'Bomba'},sw:{title:'Mwonekano wa bili',name:'Jina la biashara au la kitaaluma',save:'Hifadhi'}} as const;
 
 for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as const)test(`Personal template drafts ${locale}`,async({page})=>{
  const unexpectedDialogs:string[]=[];page.on('dialog',async dialog=>{unexpectedDialogs.push(dialog.message());await dialog.dismiss();});
@@ -46,13 +47,14 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  if(width<=760)await page.getByRole("navigation",{name:providerCopy[locale].navigation}).getByRole("button",{name:providerCopy[locale].tools,exact:true}).click();
  await page.getByRole("navigation",{name:providerCopy[locale].navigation}).getByRole("button",{name:providerCopy[locale].templates,exact:true}).click();
  const quotes=page.getByRole('region',{name:t.quote,exact:true});
+ const next=(panel:typeof quotes)=>panel.getByRole('button',{name:new RegExp(`^${templateDesign[locale].next}`)}).click();
  await quotes.getByRole('button',{name:common.retry,exact:true}).click();
- await quotes.getByRole('button',{name:t.new}).click();await quotes.getByLabel(t.name).fill('Standard repair');await quotes.getByLabel(t.amount).fill('80,00');await quotes.getByRole('button',{name:t.save}).click();await expect(quotes.getByText(common.uncertain,{exact:true})).toBeVisible();
- await expect(quotes.getByLabel(t.name)).toBeDisabled();
+ await quotes.getByRole('button',{name:t.new}).click();await quotes.getByLabel(t.name).fill('Standard repair');await next(quotes);await quotes.getByLabel(t.amount).fill('80,00');await next(quotes);await next(quotes);await quotes.getByRole('button',{name:t.save}).click();await expect(quotes.getByText(common.uncertain,{exact:true})).toBeVisible();
+ await expect(quotes.getByRole('button',{name:t.save,exact:true})).toBeDisabled();
  await quotes.getByRole('button',{name:common.retry,exact:true}).click();
  await expect(quotes.getByText('Standard repair')).toBeVisible();
  expect(attempts).toHaveLength(2);expect(attempts[0]).toBe(attempts[1]);
- const bills=page.getByRole('region',{name:t.bill});await bills.getByRole('button',{name:t.new}).click();await bills.getByLabel(t.name).fill('Standard bill');await bills.getByRole('textbox').nth(1).fill('Agreed work');await bills.getByLabel(t.amount).fill('80.00');await bills.getByRole('button',{name:t.save}).click();await expect(bills.getByText('Standard bill')).toBeVisible();
+ await page.getByRole('button',{name:templateDesign[locale].bills,exact:true}).click();const bills=page.getByRole('region',{name:t.bill});await bills.getByRole('button',{name:t.new}).click();await bills.getByLabel(t.name).fill('Standard bill');await next(bills);await bills.getByRole('textbox').nth(0).fill('Agreed work');await bills.getByLabel(t.amount).fill('80.00');await next(bills);await next(bills);await bills.getByRole('button',{name:t.save}).click();await expect(bills.getByText('Standard bill')).toBeVisible();
  await page.getByRole("navigation",{name:providerCopy[locale].navigation}).getByRole("button",{name:providerCopy[locale].work,exact:true}).click();
  const workspace=page.getByRole('region',{name:servicesText(locale,'workspace')});await workspace.getByRole('button',{name:/Repairs/}).click();const quotePicker=workspace.getByLabel(t.choose).first();await quotePicker.selectOption('SDT_1');await workspace.getByRole('button',{name:t.apply}).first().click();await expect(workspace.getByText('80.00 USD').first()).toBeVisible();
  await workspace.getByRole('button',{name:servicesText(locale,'reservations'),exact:true}).click();await workspace.getByRole('button',{name:/Repairs/}).click();const billPicker=workspace.getByLabel(t.choose).last();await billPicker.selectOption('SDT_2');await workspace.getByRole('button',{name:t.apply}).last().click();await workspace.locator("summary").filter({hasText:({en:"Bill history",fr:"Historique des factures",ln:"Lisolo ya ba facture",sw:"Historia ya bili"} as const)[locale]}).click();await expect(workspace.getByText(/80.00 USD/).last()).toBeVisible();

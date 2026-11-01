@@ -20,7 +20,7 @@ import {ServicesTransactions} from "./services-transactions";
 import {ServicesFinancePanel} from "./services-finance-panel";
 import {ServicesTotalsPanel} from "./services-totals-panel";
 import {ServicesReportsPanel} from "./services-reports-panel";
-import {ServicesTemplateLibrary} from "./services-template-library";
+import {ServicesTemplates} from "./services-template-library";
 import {ServicesBillBranding} from "./services-bill-branding";
 import {useEffect, useRef, useState} from "react";
 import {leaveWork, useWorkDraft} from "@/app/lib/restaurant-work";
@@ -197,10 +197,9 @@ export function ServicesManagement({binding,locale,accountName="",offeringRef=nu
    </div>}
    {visited.has("reports")&&can("operational_reports")&&<div className="svc-panel-stack" hidden={selectedView!=="reports"}><ServicesReportsPanel base={base} binding={binding} locale={lang} financialAllowed={can("financial_reports")}/></div>}
    {visited.has("templates")&&<div className="svc-panel-stack" hidden={selectedView!=="templates"}>
-    {can("quote_templates")&&<ServicesTemplateLibrary base={base} binding={binding} locale={lang} kind="quote"/>}
-    {can("bill_templates")&&<ServicesTemplateLibrary base={base} binding={binding} locale={lang} kind="bill"/>}
+    {<ServicesTemplates base={base} binding={binding} locale={lang} offerings={rows} quoteAllowed={can("quote_templates")} billAllowed={can("bill_templates")} onUse={()=>{if(leaveWork())navigate("work");}}/>}
    </div>}
-   {visited.has("settings")&&can("bills")&&<div hidden={selectedView!=="settings"}><ServicesBillBranding base={base} binding={binding} locale={lang} onDenied={()=>{setRows([]);setSelected(null);setCapabilities([]);setBlocked(true);}}/></div>}
+   {visited.has("settings")&&can("bills")&&<div hidden={selectedView!=="settings"}><ServicesBillBranding base={base} binding={binding} locale={lang} onProfile={()=>navigate("services")} onDenied={()=>{setRows([]);setSelected(null);setCapabilities([]);setBlocked(true);}}/></div>}
    {visited.has("work")&&can("reservations")&&can("messages")&&<div className="svc-panel-stack" hidden={selectedView!=="work"}><ServicesTransactions onNavigate={navigate} calendarAvailable={can("structured_availability")} quotesAvailable={rows.some(row=>row.requests_enabled)} refreshToken={workRefresh} onBusy={setWorkBusy} key={workVisit} base={base} binding={binding} locale={lang} initialKind={initialKind} initialTask={todayTask} initialReservationRef={calendarBooking} offeringRef={offeringRef} billAvailable={can("bills")} financeAvailable={can("basic_totals")} onDenied={()=>{setRows([]);setSelected(null);setReviews([]);setCapabilities([]);setBlocked(true);}}/></div>}
    <div hidden={selectedView!=="services"}>
   {can("profile")&&<fieldset disabled={busy||pending!==null||catalogStale} className="svc-catalog">
