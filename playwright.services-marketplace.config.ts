@@ -5,7 +5,7 @@ import {defineConfig} from '@playwright/test';
 const fixtureOrigin = `https://services-${randomUUID()}.fixture.invalid`;
 
 export default defineConfig({
- testDir:'./tests/browser', testMatch:'services-marketplace-refinement.browser.ts', workers:1, timeout:60000,
+ testDir:'./tests/browser', testMatch:['services-marketplace-refinement.browser.ts','services-discovery-final.browser.ts'], workers:1, timeout:60000,
  use:{baseURL:'http://127.0.0.1:3027',channel:'chrome',headless:true,serviceWorkers:'block',screenshot:'only-on-failure'},
  webServer:{
   command:'node --import ./scripts/services-fixture-fetch.mjs node_modules/next/dist/bin/next start --hostname 127.0.0.1 -p 3027',

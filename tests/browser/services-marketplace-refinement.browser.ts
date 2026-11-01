@@ -3,11 +3,11 @@ import {resolve} from 'node:path';
 test.beforeEach(async({page})=>{await page.route('**/_next/image**',route=>route.fulfill({path:resolve('public/shida/shida-services-braiding.png'),contentType:'image/png'}));});
 for(const width of [360,390,768,1024,1440])test(`discovery and shared storefront at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:960});await page.goto('/shida/services');
- await expect(page.getByRole('heading',{name:'Find professional services',exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Services',exact:true})).toBeVisible();
  await expect(page.locator('.service-card')).toHaveCount(3);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:`test-results/marketplace-discovery-${width}.png`,fullPage:true});
- await page.getByRole('link',{name:'Professionals',exact:true}).click();await expect(page.locator('.svc-professional-card')).toHaveCount(1);
+ await page.getByRole('link',{name:'View all professionals →',exact:true}).click();await expect(page.locator('.svc-professional-card')).toHaveCount(1);
  await page.getByRole('link',{name:'View professional profile',exact:true}).click();await expect(page.locator('#professional-services .service-card')).toHaveCount(3);
  await page.getByRole('link',{name:'About',exact:true}).click();await expect(page.locator('#professional-about')).toBeVisible();
  await page.screenshot({path:`test-results/marketplace-professional-${width}.png`,fullPage:true});
@@ -16,7 +16,7 @@ for(const width of [360,390,768,1024,1440])test(`discovery and shared storefront
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:`test-results/marketplace-detail-${width}.png`,fullPage:true});
 });
-for(const lang of ['fr','ln','sw'])test(`localized discovery ${lang}`,async({page})=>{await page.goto(`/${lang}/shida/services?mode=professionals`);await expect(page.locator('.svc-professional-card')).toHaveCount(1);await expect(page.locator('.svc-directory-modes [aria-current="page"]')).toHaveAttribute('href',new RegExp(`/${lang}/shida/services`));});
+for(const lang of ['fr','ln','sw'])test(`localized discovery ${lang}`,async({page})=>{await page.goto(`/${lang}/shida/services?mode=professionals`);await expect(page.locator('.svc-professional-card')).toHaveCount(1);await expect(page.locator('.svc-discovery-hero .svc-brand-slogan:visible')).toHaveText('Mosala na yo, na maboko ya bato ya mayele!');});
 test('empty and error are distinct',async({page})=>{await page.goto('/shida/services?mode=professionals&query=empty');await expect(page.getByText('No professionals match your search.')).toBeVisible();await page.goto('/shida/services?query=failure');await expect(page.getByText('Services are temporarily unavailable. Please try again shortly.')).toBeVisible();});
 
 test('public appointment selection creates one WhatsApp handoff and handles a stale time',async({page})=>{

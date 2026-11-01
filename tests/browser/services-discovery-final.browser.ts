@@ -1,0 +1,30 @@
+import {test,expect} from '@playwright/test';
+for(const locale of ['en','fr','ln','sw'])for(const width of [360,390,768,1024,1440])test(`combined discovery ${locale} ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:920});
+ await page.goto(`${locale==='en'?'':`/${locale}`}/shida/services/`);
+ await expect(page.locator('.svc-brand-slogan:visible')).toHaveText('Mosala na yo, na maboko ya bato ya mayele!');
+ await expect(page.locator('.svc-brand-slogan:visible')).toHaveAttribute('lang','ln');
+ await expect(page.locator('.service-card:visible')).toHaveCount(3);
+ await expect(page.locator('.svc-professional-card:visible')).toHaveCount(1);
+ await expect(page.locator('.svc-directory-modes')).toHaveCount(0);
+ await expect(page.locator('.svc-discovery-hero a')).toHaveCount(0);
+ await expect(page.locator('.svc-discovery-invitations a:visible')).toHaveCount(2);
+ await expect(page.locator('.service-card:visible').first()).not.toContainText('Verified');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`test-results/services-final/${locale}-${width}.png`,fullPage:true});
+});
+test('combined filters preserve location and partial failure preserves services',async({page})=>{
+ await page.goto('/fr/shida/services/?city=Kinshasa');
+ await page.locator('.svc-public-categories:visible').getByRole('link',{name:'Nettoyage',exact:true}).click();
+ await expect(page).toHaveURL(/city=Kinshasa.*category=cleaning/);
+ await expect(page.locator('.service-card:visible')).toHaveCount(1);
+ await expect(page.locator('.svc-professional-card:visible')).toHaveCount(1);
+ await page.goto('/shida/services/?query=partial');
+ await expect(page.locator('.service-card:visible')).toHaveCount(3);
+ await expect(page.locator('#discover-professionals:visible')).toContainText('Professionals are temporarily unavailable');
+ await page.goto('/shida/services/?query=empty');
+ await expect(page.locator('.service-card:visible')).toHaveCount(0);
+ await expect(page.locator('.svc-professional-card:visible')).toHaveCount(0);
+ await expect(page.locator('.svc-discovery-invitations a:visible').first()).toHaveAttribute('href',/service-requests\/?\?new=1/);
+ await expect(page.locator('.svc-discovery-invitations a:visible').last()).toHaveAttribute('href',/seller\/services/);
+});

@@ -15,6 +15,7 @@ globalThis.fetch=async(input,init)=>{
  }
  const path=url.pathname.replace(/\/$/,"");
  if(path==="/api/public/shida/services"){
+  if(url.searchParams.get("query")==="partial"&&url.searchParams.get("mode")==="professionals")return Response.json({detail:"unavailable"},{status:503});
   if(url.searchParams.get("query")==="failure")return Response.json({detail:"unavailable"},{status:503});
   const selected=url.searchParams.get("query")==="empty"?[]:items.filter(row=>!url.searchParams.get("category")||row.category===url.searchParams.get("category"));
   if(url.searchParams.get("mode")==="professionals"){const profiles=selected.length?[{...provider,location,categories:[...new Set(selected.map(row=>row.category))],service_count:items.length,rating:service.rating,services:[]}]:[];return Response.json({items:profiles,count:profiles.length,total:profiles.length,page:1,page_size:12});}

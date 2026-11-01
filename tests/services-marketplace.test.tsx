@@ -80,7 +80,21 @@ it('connects discovery to the Personal provider area and preserves filters acros
 
  it.each(["en","fr","ln","sw"] as const)("renders distinct professional discovery in %s without invented ratings",async locale=>{
  const profile={...summary.provider,location,categories:["professional_services"],service_count:3,rating:{average_rating:null,rating_count:0},services:[]};
- const fetcher=vi.fn().mockResolvedValue(new Response(JSON.stringify({items:[profile],count:1,total:1,page:1,page_size:12})));vi.stubGlobal("fetch",fetcher);
+ const fetcher=vi.fn(async(input)=>new Response(JSON.stringify({items:String(input).includes("mode=professionals")?[profile]:[],count:1,total:1,page:1,page_size:12})));vi.stubGlobal("fetch",fetcher);
  const html=renderToStaticMarkup(await ServiceCollectionPage({locale,search:{mode:"professionals"}}));
- expect(String(fetcher.mock.calls[0][0])).toContain("mode=professionals");expect(html).toContain("svc-professional-card");expect(html).toContain("/services/providers/patrick");expect(html).not.toContain("4.8");expect(html).not.toContain("service-card-image");expect(html).toContain('name="mode"');
+ expect(String(fetcher.mock.calls[1][0])).toContain("mode=professionals");expect(html).toContain("svc-professional-card");expect(html).toContain("/services/providers/patrick");expect(html).not.toContain("4.8");expect(html).not.toContain("service-card-image");expect(html).toContain('name="mode"');
+ });
+
+ it('shows five separate services and one canonical professional, preserving independent failures',async()=>{
+ const items=Array.from({length:5},(_,i)=>({...summary,public_ref:`SVC-${i}`,slug:`consultation-${i}`,rating:{average_rating:null,rating_count:0}}));
+ const profile={...summary.provider,location,categories:["professional_services","education_training"],service_count:5,rating:{average_rating:null,rating_count:0},services:[]};
+ const collection=(items:unknown[])=>({items,count:items.length,total:items.length,page:1,page_size:8});
+ vi.stubGlobal('fetch',vi.fn(async(input)=>new Response(JSON.stringify(collection(String(input).includes('mode=professionals')?[profile]:items)))));
+ const html=renderToStaticMarkup(await ServiceCollectionPage({locale:'fr',search:{query:'consultation',city:'Kinshasa'}}));
+ expect(html.match(/class="marketplace-card service-card"/g)).toHaveLength(5);
+ expect(html.match(/class="svc-professional-card"/g)).toHaveLength(1);
+ expect(html).toContain('Mosala na yo, na maboko ya bato ya mayele!');expect(html).toContain('lang="ln"');
+ expect(html).not.toContain('svc-directory-modes');expect(html).not.toContain('Avenue Publique');expect(html).not.toContain('Verified');expect(html).not.toContain('★');
+ vi.stubGlobal('fetch',vi.fn(async(input)=>String(input).includes('mode=professionals')?new Response('{}',{status:503}):new Response(JSON.stringify(collection(items)))));
+ const partial=renderToStaticMarkup(await ServiceCollectionPage({locale:'en',search:{}}));expect(partial).toContain('Professionals are temporarily unavailable');expect(partial.match(/class="marketplace-card service-card"/g)).toHaveLength(5);
  });
