@@ -1,3 +1,4 @@
+import {assertSearchLayout} from './shared-search-layout';
 import {test,expect} from '@playwright/test';
 for(const locale of ['en','fr','ln','sw'])for(const width of [360,390,768,1024,1440])test(`combined discovery ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:920});
@@ -7,10 +8,10 @@ for(const locale of ['en','fr','ln','sw'])for(const width of [360,390,768,1024,1
  await expect(page.locator('.service-card:visible')).toHaveCount(3);
  await expect(page.locator('.svc-professional-card:visible')).toHaveCount(1);
  await expect(page.locator('.svc-directory-modes')).toHaveCount(0);
- await expect(page.locator('.svc-discovery-hero a')).toHaveCount(0);
+ await expect(page.locator('.illustrated-services a')).toHaveCount(0);
  await expect(page.locator('.svc-discovery-invitations a:visible')).toHaveCount(2);
  await expect(page.locator('.service-card:visible').first()).not.toContainText('Verified');
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await assertSearchLayout(page,width); expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`test-results/services-final/${locale}-${width}.png`,fullPage:true});
 });
 test('combined filters preserve location and partial failure preserves services',async({page})=>{

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import {WENZE_SLOGAN} from '../../lib/brand';
 import {marketplaceDiscoveryCopy} from '../../lib/marketplace-discovery-copy';
 import {marketplacePath} from './marketplace';
-import {SpaceIcon} from './account-space-icon';
+import {IllustratedMarketplaceHero,StorefrontIllustration} from './illustrated-marketplace-hero';
 import type {ServiceLocale} from '../../lib/services-i18n';
 export const wenzeRefinementCopy={
  en:{intro:'Sell, buy and discuss prices. Clothes, phones and home essentials — find them on SHIDA.',discover:'Discover products',categories:'Categories',all:'View all categories'},
@@ -12,7 +12,7 @@ export const wenzeRefinementCopy={
 };
 export function WenzeDiscoveryHero({locale}:{locale:ServiceLocale}){
  const t=wenzeRefinementCopy[locale];
- return <header className="wz-discovery-hero"><div><h1>Wenze</h1><h2 lang="ln">{WENZE_SLOGAN}</h2><p>{t.intro}</p></div><span className="wz-hero-accent" aria-hidden="true"><SpaceIcon name="shop"/></span></header>;
+ return <IllustratedMarketplaceHero title="Wenze" slogan={WENZE_SLOGAN} intro={t.intro} tone="shop" art={<StorefrontIllustration/>}/>;
 }
 export function WenzePublicTabs({locale,shops=false}:{locale:ServiceLocale;shops?:boolean}){
  const t=marketplaceDiscoveryCopy[locale],root=marketplacePath(locale,'/shida/wenze');

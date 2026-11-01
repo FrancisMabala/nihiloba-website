@@ -1,0 +1,7 @@
+.illustrated-marketplace-hero{--hero-ink:#123f32;--hero-tint:#edf6ee;display:grid;grid-template-columns:minmax(0,1fr) 220px;align-items:center;gap:20px;padding:24px 28px;margin:0 0 18px;border:1px solid #e3e8df;border-radius:16px;background:linear-gradient(110deg,#fafaf5,var(--hero-tint));min-height:180px}
+.illustrated-marketplace-hero.illustrated-food{--hero-ink:#773718;--hero-tint:#fff1dc}.illustrated-marketplace-hero.illustrated-services{--hero-ink:#124958;--hero-tint:#e8f5fc}
+body .market-surface .illustrated-marketplace-hero h1{font:500 clamp(30px,3vw,44px)/1.1 Georgia,serif;color:var(--hero-ink);margin:0 0 8px}
+body .market-surface .illustrated-marketplace-hero .marketplace-permanent-slogan{font:600 clamp(19px,2vw,25px)/1.3 Georgia,serif;color:var(--hero-ink);margin:0 0 10px}
+body .market-surface .illustrated-marketplace-hero .marketplace-hero-description{font-size:14px;line-height:1.5;color:#52666b;margin:0;max-width:780px}
+.marketplace-hero-art{min-width:0}.marketplace-hero-art svg{display:block;width:100%;height:auto;max-height:150px;position:static}
+@media(max-width:700px){.illustrated-marketplace-hero{grid-template-columns:minmax(0,1fr) 88px;padding:16px;gap:8px;min-height:155px}.marketplace-hero-art{align-self:start;margin-top:14px}body .market-surface .illustrated-marketplace-hero h1{font-size:28px}body .market-surface .illustrated-marketplace-hero .marketplace-permanent-slogan{font-size:18px}body .market-surface .illustrated-marketplace-hero .marketplace-hero-description{font-size:12px}}

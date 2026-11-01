@@ -16,7 +16,7 @@ for(const width of [360,390,768,1024,1440])test(`discovery and shared storefront
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:`test-results/marketplace-detail-${width}.png`,fullPage:true});
 });
-for(const lang of ['fr','ln','sw'])test(`localized discovery ${lang}`,async({page})=>{await page.goto(`/${lang}/shida/services?mode=professionals`);await expect(page.locator('.svc-professional-card')).toHaveCount(1);await expect(page.locator('.svc-discovery-hero .svc-brand-slogan:visible')).toHaveText('Mosala na yo, na maboko ya bato ya mayele!');});
+for(const lang of ['fr','ln','sw'])test(`localized discovery ${lang}`,async({page})=>{await page.goto(`/${lang}/shida/services?mode=professionals`);await expect(page.locator('.svc-professional-card')).toHaveCount(1);await expect(page.locator('.illustrated-services .svc-brand-slogan:visible')).toHaveText('Mosala na yo, na maboko ya bato ya mayele!');});
 test('empty and error are distinct',async({page})=>{await page.goto('/shida/services?mode=professionals&query=empty');await expect(page.getByText('No professionals match your search.')).toBeVisible();await page.goto('/shida/services?query=failure');await expect(page.getByText('Services are temporarily unavailable. Please try again shortly.')).toBeVisible();});
 
 test('public appointment selection creates one WhatsApp handoff and handles a stale time',async({page})=>{

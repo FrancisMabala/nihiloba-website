@@ -9,13 +9,13 @@
  .market-surface .marketplace-public .mp-art span{border-radius:6px}
  .market-surface :is(.marketplace-card,.service-card,.rd-card,.job-result){border-color:var(--mp-line);border-radius:10px;box-shadow:none;background:var(--mp-paper)}
  .market-surface .marketplace-public .mp-search,.market-surface .wzp-discovery .mp-search{display:block;padding:0;background:transparent;border:0;box-shadow:none}
- .market-surface .mp-search .mp-search-primary{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto;gap:0;align-items:center;background:var(--mp-paper);border:1px solid var(--mp-line);border-radius:10px;padding:6px;margin:0}
- .market-surface .mp-search .mp-search-primary>label{position:relative;display:grid;gap:2px;min-width:0;padding:6px 16px 6px 42px;color:var(--mp-muted);font-size:12px;font-weight:400}
- .market-surface .mp-search .mp-search-primary>label+label{border-left:1px solid var(--mp-line)}
- .market-surface .mp-search .mp-search-primary>label:before{content:"";position:absolute;left:12px;top:50%;transform:translateY(-50%);width:20px;height:20px;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23647169' stroke-width='1.5'%3E%3Ccircle cx='10' cy='10' r='7'/%3E%3Cpath d='m15 15 6 6'/%3E%3C/svg%3E")}
- .market-surface .mp-search .mp-search-primary>label:has([name=city]):before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23647169' stroke-width='1.5'%3E%3Cpath d='M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z'/%3E%3Ccircle cx='12' cy='10' r='2.5'/%3E%3C/svg%3E")}
-.market-surface .mp-search .mp-search-primary :is(input:not([type=checkbox]):not([type=radio]),select){min-height:28px;width:100%;border:0;border-radius:3px;background:transparent;padding:2px 0;color:var(--mp-ink);font-size:14px}
- .market-surface .mp-search .mp-search-primary>button{min-height:46px;margin:0 0 0 8px;padding:10px 22px;border:1px solid var(--mp-ink);border-radius:7px;background:var(--mp-ink);color:white;font-size:14px}
+ body .market-surface .mp-search .mp-search-primary{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(130px,auto);gap:8px;align-items:stretch;background:var(--mp-paper);border:1px solid var(--mp-line);border-radius:10px;padding:6px;margin:0}
+ body .market-surface .mp-search .mp-search-primary>label{position:relative;display:grid;gap:2px;align-content:center;min-height:58px;box-sizing:border-box;min-width:0;padding:6px 16px 6px 42px;color:var(--mp-muted);font-size:12px;font-weight:400}
+ body .market-surface .mp-search .mp-search-primary>label+label{border-left:1px solid var(--mp-line)}
+ body .market-surface .mp-search .mp-search-primary>label:before{content:"";position:absolute;left:12px;top:50%;transform:translateY(-50%);width:20px;height:20px;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23647169' stroke-width='1.5'%3E%3Ccircle cx='10' cy='10' r='7'/%3E%3Cpath d='m15 15 6 6'/%3E%3C/svg%3E")}
+ body .market-surface .mp-search .mp-search-primary>label:has([name=city]):before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23647169' stroke-width='1.5'%3E%3Cpath d='M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z'/%3E%3Ccircle cx='12' cy='10' r='2.5'/%3E%3C/svg%3E")}
+body .market-surface .mp-search .mp-search-primary :is(input:not([type=checkbox]):not([type=radio]),select){min-height:28px;width:100%;border:0;border-radius:3px;background:transparent;padding:2px 0;color:var(--mp-ink);font-size:14px}
+ body .market-surface .mp-search .mp-search-primary>button{display:flex;align-items:center;justify-content:center;align-self:stretch;min-height:58px;height:100%;box-sizing:border-box;margin:0;padding:10px 22px;border:1px solid var(--mp-ink);border-radius:7px;background:var(--mp-ink);color:white;font-size:14px}
  .market-surface .mp-search details{padding:8px 14px;margin:6px 0 0;border:0}
  .market-surface .mp-search details[open]{background:var(--mp-paper);border:1px solid var(--mp-line);border-radius:10px}
  .market-surface .marketplace-public .mp-chips>a{background:var(--mp-paper);border-color:var(--mp-line);font-size:13px}
@@ -30,11 +30,25 @@
  .market-surface .market-footer .footer-column a{min-height:32px;display:inline-flex;align-items:center;font-size:13px}
  .market-surface :is(button,a,input,select,summary):focus-visible{outline:2px solid #ad8545;outline-offset:3px}
  @media(max-width:700px){
-  .market-surface .mp-search .mp-search-primary{grid-template-columns:minmax(0,1fr) auto}
-  .market-surface .mp-search .mp-search-primary>label:first-child{grid-column:1/-1;border-bottom:1px solid var(--mp-line);margin-bottom:6px}
-  .market-surface .mp-search .mp-search-primary>label+label{border-left:0}
-  .market-surface .mp-search .mp-search-primary>button{padding-inline:16px;font-size:13px}
+  body .market-surface .mp-search .mp-search-primary{grid-template-columns:minmax(0,1fr)}
+  body .market-surface .mp-search .mp-search-primary>label:first-child{grid-column:auto;border-bottom:1px solid var(--mp-line);margin-bottom:0}
+  body .market-surface .mp-search .mp-search-primary>label+label{border-left:0;grid-column:auto}
+  body .market-surface .mp-search .mp-search-primary>button{grid-column:1;width:100%;padding-inline:16px;font-size:13px}
   .market-surface .marketplace-public .mp-hero h1{font-size:clamp(2rem,8vw,2.6rem)}
   .market-surface .marketplace-public .mp-art{height:220px;border-radius:12px}
  }
 }
+
+/* Compact invitations retain their original account-aware actions. */
+body .market-surface :is(.wzp-selling article,.rd-owner-invite,.svc-discovery-invitations article){padding:16px;gap:12px;border-radius:12px}
+body .market-surface .wzp-selling article{display:grid;grid-template-columns:38px minmax(0,1fr);align-content:start}
+body .market-surface .wzp-selling article :is(h3,p,.button){grid-column:2;margin:0}
+body .market-surface .wzp-selling article h3{grid-row:1;font-size:1.15rem}
+body .market-surface .wzp-selling .compact-invitation-icon{grid-column:1;grid-row:1/4;background:#e1f0e3;border-radius:10px;padding:7px;align-self:start}
+.compact-invitation-icon svg{width:24px;height:24px}
+body .market-surface .wzp-selling p,body .market-surface .svc-discovery-invitations p,body .market-surface .rd-owner-invite p{font-size:13px;line-height:1.45;margin:0 0 8px}
+body .market-surface :is(.svc-discovery-invitations,.rd-owner-invite) h2{font:500 1.2rem/1.25 Georgia,serif;margin:0 0 6px}
+body .market-surface :is(.svc-discovery-invitations article>svg,.rd-owner-invite>svg){width:32px;height:32px;flex-basis:32px;flex-shrink:0}
+body .market-surface .wzp-selling article .button{margin-top:0;justify-self:start;font-size:13px;min-height:44px;padding:9px 14px}
+body .market-surface .svc-discovery-invitations .button{min-height:44px;padding:9px 14px}
+body .market-surface .rd-owner-invite nav{gap:8px}

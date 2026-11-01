@@ -1,3 +1,4 @@
+import {assertSearchLayout} from './shared-search-layout';
 import {test,expect} from '@playwright/test';
 for(const locale of ['en','fr','ln','sw'])for(const width of [360,390,768,1024,1440])test(`stay/travel discovery ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000});
@@ -6,6 +7,7 @@ for(const locale of ['en','fr','ln','sw'])for(const width of [360,390,768,1024,1
   const main=page.locator('#main-content');await expect(main.locator('.st-hero')).toBeVisible();await expect(main.locator('.st-slogan')).toHaveAttribute('lang','ln');await expect(main.locator('.st-invitation')).toBeVisible();
   await expect(main.locator('.st-art')).toBeVisible();expect(await main.locator('.st-art').evaluate((el:HTMLImageElement)=>el.complete&&el.naturalWidth>0)).toBe(true);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
+  if(path!=='transport')await assertSearchLayout(page,width);
   if(path==='hotels')await expect(main.locator('.st-empty')).toBeVisible();
   if(path==='appartements')await expect(main.locator('.marketplace-card')).toHaveCount(1);
   if(path==='transport'){await expect(main.locator('a[href*="text=wewa"]')).toHaveCount(locale==='en'?2:1);expect(await main.locator('.transport-request a').getAttribute('href')).toContain('text=wewa');}

@@ -1,15 +1,16 @@
+import {assertSearchLayout} from './shared-search-layout';
 import {test,expect} from '@playwright/test';
-import {wenzeRefinementCopy} from '../../app/components/shida/wenze-discovery-hero';
+
 const slogan='Teka, somba, solola prix, nyonso na Wenze!';
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,768,1024,1440])test(`shared Wenze ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:950});const root=`${locale==='en'?'':'/'+locale}/shida/wenze/`;let heroHeight=0;
  for(const shops of [false,true]){
- await page.goto(root+(shops?'?view=shops':''));const hero=page.locator('.wz-discovery-hero:visible');await expect(hero).toContainText(slogan);await expect(hero.locator('h2')).toHaveAttribute('lang','ln');await expect(hero).toContainText(wenzeRefinementCopy[locale].intro);
+ await page.goto(root+(shops?'?view=shops':''));const hero=page.locator('.illustrated-shop:visible');await expect(hero).toContainText(slogan);await expect(hero.locator('.marketplace-permanent-slogan')).toHaveAttribute('lang','ln');
  await expect(page.locator('.wz-public-tabs a')).toHaveCount(2);await expect(page.locator('.wz-public-tabs a[aria-current=page]')).toHaveCount(1);
  await expect(page.locator(shops?'.wenze-store-card':'.wenze-product-card')).toHaveCount(shops?2:4);
  const height=(await hero.boundingBox())!.height;if(!shops)heroHeight=height;else expect(height).toBe(heroHeight);
  expect((await page.locator('.wz-category-browser .mp-chips:visible').first().boundingBox())!.height).toBeLessThan(80);
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await assertSearchLayout(page,width); expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`test-results/wenze-final/${locale}-${width}-${shops?'shops':'products'}.png`,fullPage:true});
  }
 });
