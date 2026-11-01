@@ -20,3 +20,6 @@ export const SOCIAL_LINKS = [
   { label: "Facebook", href: "https://www.facebook.com/profile.php?id=61590029634729" },
   { label: "LinkedIn", href: "https://www.linkedin.com/company/nihiloba" },
 ] as const;
+
+// Permanent Lingala brand expression, independent of interface locale.
+export const SHIDA_SLOGAN = "Oza koluka nini? Tala na SHIDA!";

@@ -4,7 +4,7 @@ export const discoveryPath = (locale: DiscoveryLocale, path: string) => `${local
 export const discoveryMarkets = ["emplois", "services", "wenze", "appartements", "hotels", "restaurants", "transport"] as const;
 export const discoveryCopy = {
   en: {
-    eyebrow: "Everyday life, connected", title: "Find what you need, near you.", intro: "Jobs, services, shops and more. Discover opportunities across the DRC.",
+    eyebrow: "Everyday life, connected", title: "Find what you need, near you.", intro: "Buy, sell, find a job, offer your services, and discover restaurants, accommodation and transport options. All in one place.",
     explore: "Explore the marketplaces", labels: ["Jobs", "Services", "Wenze", "Apartments", "Hotels", "Restaurants / Malewa", "Wewa / Transport"],
     hints: ["Find work", "Find a professional", "Shop local", "Find a home", "Book a stay", "Find a meal", "Explore the offering"],
     market: "Marketplace", query: "What are you looking for?", city: "City", anywhere: "All cities", search: "Search", searchNote: "Choose a marketplace to search its listings.",
@@ -14,7 +14,7 @@ export const discoveryCopy = {
     accountNote: "Schools use the same Business Dashboard. Accounts start through SHIDA on WhatsApp: Personal or Business.", join: "Create an account on WhatsApp", story: "Discover the story of SHIDA on NIHILOBA", language: "Language",
   },
   fr: {
-    eyebrow: "Le quotidien, connecté", title: "Trouvez ce qu’il vous faut, près de vous.", intro: "Emplois, services, boutiques et plus encore. Découvrez les opportunités en RDC.",
+    eyebrow: "Le quotidien, connecté", title: "Trouvez ce qu’il vous faut, près de vous.", intro: "Achetez, vendez, trouvez un emploi, proposez vos services, découvrez des restaurants, des logements et des solutions de transport. Tout au même endroit.",
     explore: "Explorez les marchés", labels: ["Emplois", "Services", "Wenze", "Appartements", "Hôtels", "Restaurants / Malewa", "Wewa / Transport"],
     hints: ["Trouver un emploi", "Trouver un professionnel", "Acheter local", "Trouver un logement", "Réserver un séjour", "Trouver un repas", "Découvrir l’offre"],
     market: "Marché", query: "Que recherchez-vous ?", city: "Ville", anywhere: "Toutes les villes", search: "Rechercher", searchNote: "Choisissez un marché pour rechercher ses annonces.",
@@ -24,7 +24,7 @@ export const discoveryCopy = {
     accountNote: "Les écoles utilisent le même tableau de bord Business. Les comptes sont créés sur WhatsApp avec SHIDA : Personnel ou Business.", join: "Créer un compte sur WhatsApp", story: "Découvrir l’histoire de SHIDA sur NIHILOBA", language: "Langue",
   },
   ln: {
-    eyebrow: "Bomoi ya mokolo na mokolo, esangani", title: "Zwá oyo ozali koluka, pene na yo.", intro: "Misala, ba services, bamagazini mpe mosusu. Luká mabaku na RDC.",
+    eyebrow: "Bomoi ya mokolo na mokolo, esangani", title: "Zwá oyo ozali koluka, pene na yo.", intro: "Sombá, teká, luká mosala, pesá ba services na yo, mpe moná restaurants, bandako ya kofanda mpe transport. Nyonso na esika moko.",
     explore: "Talá bazando", labels: ["Misala", "Ba services", "Wenze", "Bandako", "Ba hôtels", "Restaurants / Malewa", "Wewa / Transport"],
     hints: ["Luká mosala", "Luká mosali ya mayele", "Sombá biloko", "Luká ndako", "Bómbá esika", "Luká bilei", "Talá makambo ezali"],
     market: "Zando", query: "Ozali koluka nini ?", city: "Engumba", anywhere: "Bingumba nyonso", search: "Luká", searchNote: "Poná zando mpo na koluka bapiblisite na yango. Misala, bandako mpe ba hôtels efungwami na Lifalanse.",
@@ -34,7 +34,7 @@ export const discoveryCopy = {
     accountNote: "Biteyelo esalelaka tableau de bord Business moko. Fungolá konti na SHIDA na WhatsApp : Personnel to Business.", join: "Fungolá konti na WhatsApp", story: "Yebá lisolo ya SHIDA na NIHILOBA", language: "Lokota",
   },
   sw: {
-    eyebrow: "Maisha ya kila siku, yameunganishwa", title: "Pata unachohitaji, karibu nawe.", intro: "Kazi, huduma, maduka na zaidi. Gundua fursa kote DRC.",
+    eyebrow: "Maisha ya kila siku, yameunganishwa", title: "Pata unachohitaji, karibu nawe.", intro: "Nunua, uza, tafuta kazi, toa huduma zako, na gundua migahawa, malazi na usafiri. Vyote mahali pamoja.",
     explore: "Gundua masoko", labels: ["Kazi", "Huduma", "Wenze", "Nyumba", "Hoteli", "Restaurants / Malewa", "Wewa / Usafiri"],
     hints: ["Tafuta kazi", "Tafuta mtaalamu", "Nunua karibu", "Tafuta nyumba", "Weka nafasi", "Tafuta chakula", "Gundua huduma"],
     market: "Soko", query: "Unatafuta nini?", city: "Mji", anywhere: "Miji yote", search: "Tafuta", searchNote: "Chagua soko ili kutafuta matangazo yake. Kurasa za kazi, nyumba na hoteli hufunguka kwa Kifaransa.",

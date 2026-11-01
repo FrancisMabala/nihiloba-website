@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:'brand-refinement.browser.ts',workers:2,timeout:60000,use:{baseURL:'http://127.0.0.1:3053',channel:'chrome',headless:true},webServer:{command:'node node_modules/next/dist/bin/next start --hostname 127.0.0.1 -p 3053',url:'http://127.0.0.1:3053/shida',reuseExistingServer:false},reporter:'list'});

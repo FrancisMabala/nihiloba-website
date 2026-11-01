@@ -20,9 +20,10 @@ describe('SHIDA discovery', () => {
   });
   it.each(discoveryLocales)('keeps search, seven markets and separate SVG entries in %s', locale => {
     const html = renderToStaticMarkup(<ShidaPage locale={locale}/>);
-    expect(html).toContain(discoveryCopy[locale].title);
+    expect(html).toContain('Oza koluka nini? Tala na SHIDA!');
+    expect(html).toContain('lang="ln"');
     expect(html).toContain('action="/shida/find/"');
-    expect(html.match(/class="discovery-icon discovery-icon-/g)).toHaveLength(7);
+    expect(html.match(/class="discovery-icon"/g)).toHaveLength(7);
     expect(html.match(/class="discovery-illustration"/g)).toHaveLength(2);
     expect(html).toContain('https://business.nihiloba.com');
     expect(html).toContain('/shida/ecole');

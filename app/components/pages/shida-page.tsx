@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { OFFICIAL_CHANNELS } from "../../lib/brand";
+import { OFFICIAL_CHANNELS, SHIDA_SLOGAN } from "../../lib/brand";
 import { discoveryCopy, discoveryMarkets, discoveryPath, type DiscoveryLocale } from "../../lib/discovery-copy";
 import { ArrowRightIcon, BookIcon, BriefcaseIcon, CarIcon, HomeIcon, StoreIcon, ToolsIcon } from "../icons";
 import { DiscoveryIllustration } from "./discovery-illustration";
@@ -13,7 +13,7 @@ export function ShidaPage({ locale }: { locale: DiscoveryLocale }) {
   const t = discoveryCopy[locale];
   return <div className="discovery container" lang={locale}>
     <section className="discovery-hero" aria-labelledby="discovery-title">
-      <p className="discovery-eyebrow">{t.eyebrow}</p><h1 id="discovery-title">{t.title}</h1><p>{t.intro}</p>
+      <p className="discovery-eyebrow">{t.eyebrow}</p><h1 id="discovery-title" lang="ln">{SHIDA_SLOGAN}</h1><p>{t.intro}</p>
       <form className="discovery-search" action="/shida/find/" method="get" role="search" aria-describedby="discovery-search-note">
         <input type="hidden" name="locale" value={locale}/>
         <label><span>{t.market}</span><select name="market" defaultValue="emplois">{discoveryMarkets.slice(0, 6).map((market, i) => <option value={market} key={market}>{t.labels[i]}</option>)}</select></label>
