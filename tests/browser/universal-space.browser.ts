@@ -31,3 +31,31 @@ for(const locale of ['en','fr','ln','sw'])for(const width of [360,390,768,1024,1
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`test-results/universal-${locale}-${width}.png`,fullPage:true});
 });
+
+for(const width of [390,1440])test(`canonical activity totals ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:950});
+ await page.route('**/api/**',route=>{
+  const url=new URL(route.request().url()),path=url.pathname.replace(/\/$/,'');
+  const reply=(json:unknown)=>route.fulfill({json});
+  if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Test account'}});
+  if(path.endsWith('/security/navigation'))return reply({markets:['wenze','services','apartments','jobs','hotels','wewa'],organization_management:false,activity_counts:{wenze:2,listings:3,services:1,restaurants:0,apartments:4,jobs:2,hotels:1,wewa:1}});
+  if(path.endsWith('/wenze/stores'))return reply({stores:[]});
+  if(path.endsWith('/restaurants'))return reply({items:[],total:0,actions:['create']});
+  if(path.endsWith('/services'))return reply({profiles:[]});
+  if(path.endsWith('/services/capabilities'))return reply({capabilities:['profile']});
+  return reply({unread_count:0});
+ });
+ await page.goto('/shida/space?view=overview');
+ const summary=page.locator('.activities-summary');
+ await expect(summary.locator('a')).toHaveCount(7);
+ await expect(summary.locator('a[href$="view=listings"] strong')).toHaveText('3');
+ await expect(summary.locator('.summary-services strong')).toHaveText('1');
+ await expect(summary.locator('.summary-apartments strong')).toHaveText('4');
+ await expect(summary.locator('.summary-jobs strong')).toHaveText('2');
+ await expect(summary.locator('.summary-restaurants')).toHaveCount(0);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.route('**/security/navigation',route=>route.fulfill({json:{markets:['services'],organization_management:false,activity_counts:{services:1}}}));
+ await page.reload();
+ await expect(summary.locator('.summary-services')).toHaveAttribute('href','/shida/seller/services');
+ await expect(page.locator('.activities-welcome')).toHaveCount(0);
+});

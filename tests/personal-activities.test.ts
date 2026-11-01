@@ -1,5 +1,9 @@
 import {it,expect} from 'vitest';
-import {managedActivities,dashboardActivities,individualOnlyActivities} from '../app/lib/personal-activities';
+import {managedActivities,dashboardActivities,individualOnlyActivities,activityCounts} from '../app/lib/personal-activities';
+it('accepts only known nonnegative integer management counts without inventing missing totals',()=>{
+ expect(activityCounts({listings:3,apartments:2,jobs:0,hotels:-1,wewa:1.5,wenze:'2',secret:4})).toEqual({listings:3,jobs:0,apartments:2});
+ expect(activityCounts(null)).toEqual({});
+});
 it('keeps creation capability separate from existing activities',()=>{const value=managedActivities('restaurants',{items:[{public_ref:'RST_1',profile:{name:'Kitchen'},status:'inactive'}],actions:[],total:30});expect(value.setup).toBe(false);expect(value.items[0].query).toBe('establishment=RST_1');expect(value.items[0].published).toBe(false);expect(value.more).toBe(true);});
 it('fails closed without Services capability',()=>{expect(()=>managedActivities('services',{profiles:[]},{capabilities:[]})).toThrow();expect(managedActivities('services',{profiles:[]},{capabilities:['profile']}).setup).toBe(true);});
 it('preserves multiple shops and selects the exact store',()=>{const value=managedActivities('wenze',{stores:[{public_ref:'WNS_one',name:'First'},{public_ref:'WNS_two',name:'Second',catalog_ready:true}]});expect(value.items).toHaveLength(2);expect(value.items[1].query).toBe('store=WNS_two');expect(value.setup).toBe(false);});

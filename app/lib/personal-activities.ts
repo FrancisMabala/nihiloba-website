@@ -1,5 +1,15 @@
 import {safePublicImageUrl} from './safe-public-url';
 import {servicesProviderAccess} from './services-account-navigation';
+export type ActivityCountKey='wenze'|'restaurants'|'services'|'listings'|'jobs'|'apartments'|'hotels'|'wewa';
+export function activityCounts(value:unknown):Partial<Record<ActivityCountKey,number>>{
+ const result:Partial<Record<ActivityCountKey,number>>={};
+ if(!value||typeof value!=='object')return result;
+ for(const key of ['wenze','restaurants','services','listings','jobs','apartments','hotels','wewa'] as const){
+  const count=(value as Record<string,unknown>)[key];
+  if(typeof count==='number'&&Number.isSafeInteger(count)&&count>=0)result[key]=count;
+ }
+ return result;
+}
 export type ManagedActivity={ref:string;name:string;market:'wenze'|'restaurants'|'services';published:boolean|null;query:string;status:string;location:string;missing:string[];individual:boolean;image:string|null;providerRef?:string;professionalName?:string;professionalImage?:string|null;offeringCount?:number};
 export function managedActivities(market:ManagedActivity['market'],value:unknown,policy?:unknown):{items:ManagedActivity[];setup:boolean;more:boolean}{
  const data=value as Record<string,unknown>;

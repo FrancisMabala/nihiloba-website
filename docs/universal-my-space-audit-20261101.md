@@ -45,8 +45,9 @@ needed for the navigation/visual phase. Urgent WhatsApp templates remain enabled
 
 ## Remaining dependencies
 
-Exact cross-market counts require an authorized aggregate projection or dedicated
-existing count responses; security navigation currently supplies presence only.
+Exact cross-market counts now use the authenticated `activity_counts` projection
+from security navigation. Missing or invalid values remain unknown. Older backend
+responses retain the previous known-card fallback, without invented counts.
 The product-first four-step selling wizard, per-listing payment preferences/private
 handoff and shared WhatsApp creation remain separate unfinished work. This audit
 does not claim those features are implemented.
@@ -77,3 +78,20 @@ screenshots inspected. No production test records or schema changes.
 
 This is the frontend phase, not completion of the outstanding aggregate API or
 individual-selling wizard. Previous known-live rollback baseline: 5400f77.
+
+## Canonical totals phase
+
+Backend 7ff35b66 adds exact Personal management totals. Individual products are
+separate from boutique containers; saved workflow drafts are excluded from the
+product total. Canonical Professional Profiles count once regardless of offering
+count. Jobs count actual offer records, never candidate profiles or applications.
+Retained/inactive records remain manageable, and organization records are excluded.
+The overview hides zero categories and sends categories without loaded cards
+directly to their authorized management entry. No financial totals are inferred.
+
+Validation: 22 focused backend checks and 27 browser scenarios passed. Browser
+coverage includes exact totals at 390/1440 pixels, older-response fallback in four
+languages at five widths, and individual/mixed/property/organization navigation.
+Production webpack build passed against the isolated acceptance backend after
+public API timeouts prevented the first build. Render will build using its normal
+production configuration. No database migration or urgent-template change.
