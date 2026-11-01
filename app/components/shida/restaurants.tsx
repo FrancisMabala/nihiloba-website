@@ -19,6 +19,7 @@ import { restaurantDetailCopy, restaurantLanguageNames } from "../../lib/restaur
 import { restaurantReviewCopy } from "../../lib/restaurant-review-copy";
 import { RestaurantReviewForm, RestaurantReviewReport } from "./restaurant-review-form";
 import "./restaurant-detail.css";
+import "./restaurant-storefront-refinement.css";
 
 // Native document navigation deliberately re-reads eligibility rather than prefetching public projections.
 function Internal({ href, children }: { href: string; children: React.ReactNode }) { return <a className="restaurant-link" href={href}>{children}</a>; }
@@ -92,8 +93,9 @@ function RestaurantHeader({ locale, establishment, hours }: { locale: Restaurant
   const t = restaurantCopy[locale];
   const photo = establishment.establishment_photo?.url ?? establishment.images[0]?.url;
   return <header className={`restaurant-detail-header${photo ? " has-photo" : ""}`}>
-    <div><h1>{establishment.name || t.title}</h1><p>{[establishment.type_label, establishment.location].filter(Boolean).join(" · ")}</p><span className={`restaurant-current-status status-${hours.status}`}>{t[hours.status]}</span>{establishment.review_summary&&<p>{establishment.review_summary.count ? `${establishment.review_summary.average} ★ · ${establishment.review_summary.count} ${restaurantReviewCopy[locale].reviews}` : restaurantReviewCopy[locale].noReviews}</p>}<details className="restaurant-hours-disclosure"><summary>{t.hours}</summary><RestaurantHours locale={locale} hours={hours}/></details></div>
+    <div className="restaurant-header-identity"><p className="eyebrow">{establishment.type_label}</p><h1>{establishment.name || t.title}</h1><p>{[establishment.type_label, establishment.location].filter(Boolean).join(" · ")}</p><span className={`restaurant-current-status status-${hours.status}`}>{t[hours.status]}</span>{establishment.review_summary&&<p>{establishment.review_summary.count ? `${establishment.review_summary.average} ★ · ${establishment.review_summary.count} ${restaurantReviewCopy[locale].reviews}` : restaurantReviewCopy[locale].noReviews}</p>}<details className="restaurant-hours-disclosure"><summary>{t.hours}</summary><RestaurantHours locale={locale} hours={hours}/></details></div>
     {photo && <div className="restaurant-header-art restaurant-establishment-photo"><RestaurantPhoto src={photo} alt={establishment.establishment_photo?.alt || establishment.images[0]?.alt || establishment.name || t.title} establishment/></div>}
+    <div className="restaurant-approved-art" aria-hidden="true"/>
   </header>;
 }
 export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly = false }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch; menuOnly?: boolean }) {
@@ -106,7 +108,6 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
   const reviewPage = rawReviewPage && /^[1-9]\d{0,3}$/.test(rawReviewPage) ? rawReviewPage : "1";
   let establishment;
   try { establishment = await getRestaurant(locale, id); } catch (error) { if (error instanceof ShidaApiError && error.kind === "not-found") notFound(); return <Shell locale={locale} title={t.title}><Failure locale={locale}/></Shell>; }
-  const suffix = `/${encodeURIComponent(establishment.public_ref)}${menuOnly ? "/menu" : ""}`;
   const [menuResult, actionsResult, reviewsResult, reservationResult] = await Promise.allSettled([getRestaurantMenu(locale, establishment.public_ref, menuPage), getRestaurantActions(locale, establishment.public_ref), menuOnly ? Promise.resolve(null) : getRestaurantReviews(establishment.public_ref, reviewPage),reservationAvailability(establishment.public_ref)]);
   // A newly withdrawn parent must not leave a stale detail visible after a menu eligibility check fails.
   if (menuResult.status === "rejected" && menuResult.reason instanceof ShidaApiError && menuResult.reason.kind === "not-found") notFound();
@@ -122,13 +123,13 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
   const currentHours = menuResult.status === "fulfilled" ? menuResult.value.hours : establishment.hours;
   return <section className="restaurant-public restaurant-detail" lang={locale}><div className="container">
     <RestaurantRevalidation/>
-    <div className="restaurant-detail-top"><Internal href={`${restaurantPath(locale)}${back ? `?${back}` : ""}#restaurant-${establishment.public_ref}`}>← {t.back}</Internal><Languages locale={locale} suffix={suffix} search={routeContext}/></div>
+    <div className="restaurant-detail-top"><Internal href={`${restaurantPath(locale)}${back ? `?${back}` : ""}#restaurant-${establishment.public_ref}`}>← {t.back}</Internal></div>
     <RestaurantHeader locale={locale} establishment={establishment} hours={currentHours}/>
     <RestaurantInterest establishmentRef={establishment.public_ref} locale={locale} menuOnly={menuOnly} menuAvailable={menuResult.status === "fulfilled"}/>
     {(actions?.share || actions?.save || actions?.follow) && <nav className="restaurant-top-actions" aria-label={t.services}>{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}</nav>}
     <nav className="restaurant-detail-tabs" aria-label={t.title}><a href={`${detailPath}/menu?${routeContext}`} aria-current={menuOnly ? "page" : undefined}>{t.menu}</a><a href={`${detailPath}?${routeContext}#restaurant-info`} aria-current={!menuOnly ? "page" : undefined}>{copy.establishment}</a><a href={`${detailPath}?${routeContext}#reviews`}>{restaurantReviewCopy[locale].reviews}</a>{reservationResult.status==='fulfilled'&&reservationResult.value.available&&<a href={`${locale==='en'?'':`/${locale}`}/shida/restaurant-reservations?establishment=${encodeURIComponent(establishment.public_ref)}`}>{reservationCopy[locale].reserve}</a>}</nav>
     <div className="restaurant-detail-columns"><div className="restaurant-detail-content">
-    <p className="restaurant-note">{soloCopy[locale].publicHelp}</p><RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} tableLocator={tableLocator} menu={initialMenu} selectedItemRef={selectedItem?.public_ref}/>
+    <RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} tableLocator={tableLocator} menu={initialMenu} selectedItemRef={selectedItem?.public_ref}/>
     {!menuOnly && <section id="restaurant-info" className="restaurant-establishment"><h2>{copy.establishment}</h2>
 
       {establishment.description && <p>{establishment.description}</p>}

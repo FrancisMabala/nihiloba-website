@@ -52,7 +52,7 @@ describe("Restaurant released public contract", () => {
     const html = renderToStaticMarkup(await RestaurantDetailPage({ locale, id: "RST-TEST1", menuOnly: true }));
     expect(html).not.toContain("restaurant-header-art"); expect(html).toContain("restaurant-hours");
     expect(html).toContain("restaurant-menu-empty"); expect(html).not.toContain("restaurant-pagination");
-    expect(html).not.toContain(restaurantCopy[locale].noBusiness); expect(html).not.toContain("Lingála"); expect(html).toContain("Lingala");
+    expect(html).not.toContain(restaurantCopy[locale].noBusiness); expect(html).not.toContain("Lingála"); expect(html).not.toContain("restaurant-languages");
   });
   it("discovery separates collection and dish search failures and distinguishes unavailable menus", async () => {
     const fetcher = mockApi({ "/api/public/shida/restaurants": { ...collection([
