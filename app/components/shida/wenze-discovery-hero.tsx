@@ -1,0 +1,12 @@
+import {SpaceIcon} from './account-space-icon';
+import type {ServiceLocale} from '../../lib/services-i18n';
+export const wenzeRefinementCopy={
+ en:{slogan:'Sell, buy and discuss prices — everyone is welcome at Wenze!',intro:'Clothes, phones and things for your home. Discover what sellers offer on SHIDA.',variety:'A varied selection',used:'New and second-hand',negotiable:'Discuss prices',direct:'On negotiable listings',local:'Find sellers',nearby:'Search by location',discover:'Discover products',categories:'Categories',all:'View all categories'},
+ fr:{slogan:'Teka, somba, solola prix, nyonso na Wenze!',intro:'Vends, achète et discute les prix. Bilamba, téléphones, biloko ya ndako… tout se retrouve sur SHIDA.',variety:'Produits variés',used:'Neufs et d’occasion',negotiable:'Prix négociables',direct:'Sur les annonces concernées',local:'Trouvez des vendeurs',nearby:'Recherchez par ville',discover:'Découvrir les produits',categories:'Catégories',all:'Voir toutes les catégories'},
+ ln:{slogan:'Teka, somba, solola prix, nyonso na Wenze!',intro:'Bilamba, batelefone mpe biloko ya ndako. Luka biloko ya bateki na SHIDA.',variety:'Biloko ndenge na ndenge',used:'Ya sika mpe oyo basaleli',negotiable:'Solola ntalo',direct:'Soki moteki apesi nzela',local:'Luka bateki',nearby:'Luka na engumba',discover:'Tala biloko',categories:'Mitindo',all:'Tala mitindo nyonso'},
+ sw:{slogan:'Uza, nunua na jadili bei, wote Wenze!',intro:'Nguo, simu na vifaa vya nyumbani. Gundua bidhaa za wauzaji kwenye SHIDA.',variety:'Bidhaa mbalimbali',used:'Mpya na zilizotumika',negotiable:'Jadili bei',direct:'Kwa bidhaa zinazojadilika',local:'Tafuta wauzaji',nearby:'Tafuta kwa eneo',discover:'Gundua bidhaa',categories:'Aina',all:'Tazama aina zote'}
+};
+export function WenzeDiscoveryHero({locale}:{locale:ServiceLocale}){
+ const t=wenzeRefinementCopy[locale];
+ return <header className="wz-discovery-hero"><div><h1>Wenze</h1><h2>{t.slogan}</h2><p>{t.intro}</p><ul className="wz-benefits"><li><SpaceIcon name="orders"/><span><strong>{t.variety}</strong><small>{t.used}</small></span></li><li><SpaceIcon name="messages"/><span><strong>{t.negotiable}</strong><small>{t.direct}</small></span></li><li><SpaceIcon name="shop"/><span><strong>{t.local}</strong><small>{t.nearby}</small></span></li></ul></div><div className="wz-hero-art" aria-hidden="true"><span><SpaceIcon name="orders"/></span><span><SpaceIcon name="phone"/></span><span><SpaceIcon name="home"/></span><span><SpaceIcon name="shop"/></span></div></header>;
+}

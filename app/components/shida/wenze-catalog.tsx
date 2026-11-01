@@ -1,8 +1,8 @@
 import {WenzeSellingInvitations} from "./wenze-selling-invitations";
 import {ActiveSearchFilters} from './active-search-filters';
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
-import { MarketplaceDiscoveryHeader } from "./public-marketplace";
-import { MarketplaceSectionBreadcrumb } from "./marketplace-primitives";
+import {WenzeDiscoveryHero,wenzeRefinementCopy} from "./wenze-discovery-hero";
+import {SpaceIcon} from "./account-space-icon";
 import productCategories from "../../lib/wenze-product-categories.json";
 import Link from "next/link";
 import type { ServiceLocale as Locale } from "../../lib/services-i18n";
@@ -16,14 +16,17 @@ import { WenzeBuyerProvider } from "./wenze-buyer";
 export async function WenzeCatalog({locale,raw,landing=false}:{
   locale:Locale;raw:Record<string,string|string[]|undefined>;landing?:boolean;
 }) {
-  const t=marketplaceDiscoveryCopy[locale],search=parseWenzeDiscovery(raw);
+  const t=marketplaceDiscoveryCopy[locale],r=wenzeRefinementCopy[locale],search=parseWenzeDiscovery(raw);
+  const selected=productCategories.find(row=>row.code===search.category);
+  const parent=selected?.parent||selected?.code;
+  const roots=productCategories.filter(row=>!row.parent),children=productCategories.filter(row=>row.parent===parent);
   const categories=Object.fromEntries(productCategories.map(row=>[row.code,row.labels[locale]]));
   const root=marketplacePath(locale,landing?"/shida/wenze":"/shida/wenze/catalog");
   let data;try{data=await getWenzeProducts(search);}catch{}
   const select=(name:keyof typeof search,title:string,options:Record<string,string>)=><label><span>{title}</span><select name={name} defaultValue={search[name]||""}><option value="">{name==="availability"?t.available:t.all}</option>{Object.entries(options).map(([key,value])=><option key={key} value={key}>{value}</option>)}</select></label>;
   return <WenzeBuyerProvider locale={locale}><div className="marketplace-public"><div className="wenze-public container wzp-discovery">
-    <MarketplaceSectionBreadcrumb locale={locale} current="Wenze"/>
-    <MarketplaceDiscoveryHeader title="Wenze" intro={t.productIntro}/>
+
+    <WenzeDiscoveryHero locale={locale}/>
     <nav className="mp-chips" aria-label="Wenze"><Link href={root} aria-current="page">{t.products}</Link><Link href={marketplacePath(locale,"/shida/wenze")+"?view=shops"}>{t.shops}</Link><Link href={marketplacePath(locale,"/shida/wenze/orders")}>{t.orders}</Link></nav>
     <form className="marketplace-filters wzp-filters mp-search">
       {search.store&&<input type="hidden" name="store" value={search.store}/>}
@@ -51,7 +54,8 @@ export async function WenzeCatalog({locale,raw,landing=false}:{
       </details>
     </form>
     <ActiveSearchFilters locale={locale} path={root} query={wenzeDiscoveryQuery(search)} labels={{query:t.productSearch,city:t.city,category:t.category,condition:t.condition,currency:t.currency,min_price:t.min,max_price:t.max,availability:t.availability,variant_type:t.variant,variant_option:t.option,area:t.area}} values={{category:categories,condition:{new:t.new,like_new:t.like_new,used:t.used,other:t.other},availability:{available:t.available,in_stock:t.in_stock,sold_out:t.sold_out},variant_type:{size:t.size,shoe_size:t.shoe_size,storage:t.storage,volume:t.volume,option:t.other}}}/>
-    <nav className="mp-chips" aria-label={t.category}>{["",...productCategories.map(row=>row.code)].map(category=><Link key={category} href={`${root}?${wenzeDiscoveryQuery({...search,category:category||undefined},null)}`} aria-current={(search.category||"")===category?"page":undefined}>{category?categories[category]:(t.all)}</Link>)}</nav>
+    <section className="wz-category-browser" aria-label={t.category}><h2>{r.categories}</h2><nav className="mp-chips" aria-label={t.category}><Link href={`${root}?${wenzeDiscoveryQuery({...search,category:undefined},null)}`} aria-current={!search.category?'page':undefined}>{t.all}</Link>{roots.slice(0,7).map(row=><Link key={row.code} href={`${root}?${wenzeDiscoveryQuery({...search,category:row.code},null)}`} aria-current={parent===row.code?'page':undefined}><SpaceIcon name={row.code==='phones_electronics'?'phone':row.code==='food_drinks'?'restaurant':row.code==='home_equipment'?'home':'orders'}/>{row.labels[locale]}</Link>)}</nav><details><summary>{r.all}</summary><div className="wz-all-categories">{roots.map(row=><div key={row.code}><Link href={`${root}?${wenzeDiscoveryQuery({...search,category:row.code},null)}`}>{row.labels[locale]}</Link>{productCategories.filter(child=>child.parent===row.code).map(child=><Link key={child.code} href={`${root}?${wenzeDiscoveryQuery({...search,category:child.code},null)}`}>{child.labels[locale]}</Link>)}</div>)}</div></details>{children.length>0&&<nav className="mp-chips wz-subcategories" aria-label={selected?.labels[locale]}>{children.map(row=><Link key={row.code} href={`${root}?${wenzeDiscoveryQuery({...search,category:row.code},null)}`} aria-current={search.category===row.code?'page':undefined}>{row.labels[locale]}</Link>)}</nav>}</section>
+    <h2 className="wz-products-heading">{r.discover}</h2>
     {!data?<p role="alert">{t.failed}</p>:data.items.length?<div className="marketplace-grid wenze-product-grid">{data.items.map(p=><ProductCard key={p.public_ref} p={p} l={locale}/>)}</div>:<p>{t.empty}</p>}
     <nav className="wzp-discovery-actions" aria-label={t.products}>
       {search.cursor&&<Link href={`${root}?${wenzeDiscoveryQuery(search,null)}`}>{t.first}</Link>}
