@@ -1,7 +1,7 @@
 import {test,expect,type BrowserContext} from '@playwright/test';
 const output=process.env.TRANSACTIONS_EVIDENCE_DIR||'test-results/transactions-evidence';
 async function signIn(context:BrowserContext,kind:string){await context.addCookies([{name:'nihiloba_personal_session',value:`transactions-acceptance-${kind}-session`,domain:'127.0.0.1',path:'/'}]);}
-for(const kind of ['empty','one','many'])for(const width of [360,390,768,1440])test(`normal authorized APIs ${kind} ${width}`,async({page,context})=>{
+for(const kind of ['empty','one','many'])for(const width of [360,390,768,1024,1440])test(`normal authorized APIs ${kind} ${width}`,async({page,context})=>{
  await signIn(context,kind);await page.setViewportSize({width,height:950});
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/shida/space/?view=transactions');
@@ -22,6 +22,12 @@ for(const kind of ['empty','one','many'])for(const width of [360,390,768,1440])t
  }
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  expect(errors).toEqual([]);
+ await expect(page.locator('.space-content > .space-eyebrow')).toHaveCount(0);
+ if(width<=768){
+  const cards=await page.locator('.tx-summary button').evaluateAll(nodes=>nodes.map(node=>({top:node.getBoundingClientRect().top,bottom:node.getBoundingClientRect().bottom})));
+  expect(cards[1].top).toBeGreaterThan(cards[0].bottom);
+  expect(cards[2].top).toBeGreaterThan(cards[1].bottom);
+ }
  await page.screenshot({path:`${output}/transactions-${kind}-${width}.png`,fullPage:true});
 });
 test('filters, dates, documents, keyboard and account switching',async({page,context})=>{
@@ -62,4 +68,26 @@ test('existing service bill and reservation detail routes resolve through normal
  await expect(page.locator('#main-content')).toContainText('42.00');
  await page.goto('/shida/space/?view=transactions');await page.locator('.tx-row[data-kind="reservation"] a').click();
  await expect(page.locator('.transaction-card')).toHaveCount(1);await expect(page.locator('.transaction-card')).toContainText('Acceptance Garden Kitchen');
+});
+
+for(const width of [390,1440])test(`summary navigation and state evidence ${width}`,async({page,context})=>{
+ await signIn(context,'many');await page.setViewportSize({width,height:950});
+ let release!:()=>void;const pending=new Promise<void>(resolve=>{release=resolve;});
+ await page.route('**/api/shida/personal/transactions/**',async route=>{await pending;await route.continue();});
+ await page.goto('/shida/space/?view=transactions');
+ await expect(page.locator('.tx-overview [role="status"]')).toContainText('Loading');
+ await expect(page.locator('.tx-summary strong')).toHaveText(['—','—','—']);
+ await page.screenshot({path:`${output}/transactions-loading-${width}.png`,fullPage:true});
+ release();await expect(page.locator('.tx-row')).toHaveCount(8);
+ for(const [category,count] of [['orders',2],['requests',4],['documents',2]] as const){
+  await page.locator(`.tx-summary-${category}`).click();
+  await expect(page.locator(`.tx-summary-${category}`)).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.tx-row')).toHaveCount(count);
+  await page.screenshot({path:`${output}/transactions-${category}-${width}.png`,fullPage:true});
+ }
+ await page.unroute('**/api/shida/personal/transactions/**');
+ await page.route('**/api/shida/personal/transactions/**',route=>route.fulfill({status:503,json:{detail:'unavailable'}}));
+ await page.reload();await expect(page.locator('.tx-overview [role="alert"]')).toBeVisible();
+ await expect(page.getByRole('heading',{name:'No transactions yet'})).toHaveCount(0);
+ await page.screenshot({path:`${output}/transactions-error-${width}.png`,fullPage:true});
 });

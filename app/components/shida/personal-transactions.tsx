@@ -18,7 +18,7 @@ export function PersonalTransactions({binding,locale}:{binding:string;locale:Mar
   return()=>{active=false;clearTimeout(timer);controller.abort();};
  },[binding,locale,category,sort,page,attempt,key]);
  const recentItems=data?.items.filter(row=>category!=='all'||row.category!=='documents')??[];
- const documents=data?[...data.items.filter(row=>row.category==='documents'),...data.documents]:[];
+ const documents=data?Array.from(new Map([...data.items.filter(row=>row.category==='documents'),...data.documents].map(item=>[item.id,item])).values()):[];
  function filter(value:TransactionCategory){setCategory(value);setPage(1);}
  function row(item:Transaction){
   const action=item.category==='documents'?'openDocument':item.category==='orders'?'viewOrder':item.kind==='application'?'viewApplication':['booking','reservation'].includes(item.kind)?'viewReservation':'viewRequest';
@@ -28,7 +28,7 @@ export function PersonalTransactions({binding,locale}:{binding:string;locale:Mar
  }
  return <div className="tx-overview" aria-busy={!data&&!failed}>
   <p className="space-intro">{t('intro')}</p>
-  <div className="tx-summary">{(['orders','requests','documents'] as const).map((name,index)=><button key={name} type="button" onClick={()=>filter(name)} disabled={!data} aria-pressed={category===name}><span className="tx-icon"><SpaceIcon name={(['orders','requests','receipts'] as const)[index]}/></span><span className="tx-summary-label">{t(name)}</span><strong>{data?data.counts[name]:'—'}</strong><small>{t(({orders:'ordersHint',requests:'requestsHint',documents:'documentsHint'} as const)[name])}</small></button>)}</div>
+  <TransactionSummary locale={locale} counts={data?.counts} category={category} onSelect={filter}/>
   {failed?<section className="tx-message" role="alert"><p>{t('failed')}</p><button onClick={()=>setAttempt(n=>n+1)}>{t('retry')}</button></section>:!data?<p className="tx-message" role="status">{t('loading')}</p>:data.counts.all===0?<section className="tx-empty"><Image unoptimized src="/images/shida/transactions-empty.svg" alt="" width="420" height="205"/><h2>{t('empty')}</h2><p>{t('emptyBody')}</p><a className="tx-explore" href={`${prefix}/shida`}><SpaceIcon name="search"/>{t('explore')}</a><a className="tx-activities" href={`${prefix}/shida/space/?view=management`}>{t('activities')} <span aria-hidden="true">→</span></a></section>:<>
    <nav className="tx-filters" aria-label={t('intro')}>{(['all','orders','requests','documents'] as const).map(name=><button key={name} type="button" aria-pressed={category===name} onClick={()=>filter(name)}>{t(name==='documents'?'documentFilter':name)} ({data.counts[name]})</button>)}</nav>
    <section aria-label={t('recent')}><div className="tx-heading"><h2>{category==='documents'?t('documents'):t('recent')}</h2><label>{t('sort')}<select value={sort} onChange={e=>{setSort(e.target.value);setPage(1);}}><option value="recent">{t('newest')}</option><option value="oldest">{t('oldest')}</option></select></label></div>{recentItems.length?<div className="tx-list">{recentItems.map(row)}</div>:<p className="tx-message">{t('noResults')}</p>}
@@ -37,4 +37,15 @@ export function PersonalTransactions({binding,locale}:{binding:string;locale:Mar
    {category==='documents'&&<p className="tx-note">{t('documentNote')}</p>}
   </>}
  </div>;
+}
+
+/** Counts belong to the authenticated overview, never the currently rendered page. */
+export function TransactionSummary({locale,counts,category,onSelect}:{locale:MarketplaceLocale;counts?:TransactionOverview['counts'];category:TransactionCategory;onSelect:(value:TransactionCategory)=>void}){
+ const t=(key:Parameters<typeof transactionText>[1])=>transactionText(locale,key);
+ return <div className="tx-summary">{(['orders','requests','documents'] as const).map((name,index)=><button className={`tx-summary-card tx-summary-${name}`} key={name} type="button" onClick={()=>onSelect(name)} disabled={!counts} aria-pressed={category===name}>
+  <span className="tx-icon"><SpaceIcon name={(['orders','requests','receipts'] as const)[index]}/></span>
+  <span className="tx-summary-label">{t(name)}</span><strong>{counts?counts[name]:'—'}</strong>
+  <small>{t(({orders:'ordersHint',requests:'requestsHint',documents:'documentsHint'} as const)[name])}</small>
+  <svg className="tx-summary-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+ </button>)}</div>;
 }
