@@ -1,5 +1,5 @@
 import {it,expect} from 'vitest';
-import {managedActivities} from '../app/lib/personal-activities';
+import {managedActivities,dashboardActivities} from '../app/lib/personal-activities';
 it('keeps creation capability separate from existing activities',()=>{const value=managedActivities('restaurants',{items:[{public_ref:'RST_1',profile:{name:'Kitchen'},status:'inactive'}],actions:[],total:30});expect(value.setup).toBe(false);expect(value.items[0].query).toBe('establishment=RST_1');expect(value.items[0].published).toBe(false);expect(value.more).toBe(true);});
 it('fails closed without Services capability',()=>{expect(()=>managedActivities('services',{profiles:[]},{capabilities:[]})).toThrow();expect(managedActivities('services',{profiles:[]},{capabilities:['profile']}).setup).toBe(true);});
 it('preserves multiple shops and selects the exact store',()=>{const value=managedActivities('wenze',{stores:[{public_ref:'WNS_one',name:'First'},{public_ref:'WNS_two',name:'Second',catalog_ready:true}]});expect(value.items).toHaveLength(2);expect(value.items[1].query).toBe('store=WNS_two');expect(value.setup).toBe(false);});
@@ -29,4 +29,21 @@ it('uses restaurant photo and broad service location without hiding legacy rows'
  const image='https://res.cloudinary.com/dbrxpvmzp/image/upload/test-restaurant.jpg';
  expect(managedActivities('restaurants',{items:[{public_ref:'RST_a',profile:{name:'Kitchen',city:'Kinshasa',establishment_photo_url:image}}]}).items[0]).toMatchObject({image,location:'Kinshasa'});
  expect(managedActivities('services',{profiles:[{public_ref:'SVC_a',service_name:'Repair',commune:'Gombe',missing_fields:['category']}]},{capabilities:['profile']}).items[0]).toMatchObject({location:'Gombe',status:'needsUpdate'});
+});
+
+it('groups service offerings by explicit professional identity without merging unrelated providers',()=>{
+ const items=managedActivities('services',{profiles:[
+  {public_ref:'SVC_a',provider_ref:'PRO_one',service_name:'Legal advice',professional_profile:{name:'Horizon'},visible_to_customers:true},
+  {public_ref:'SVC_b',provider_ref:'PRO_one',service_name:'Business advice',professional_profile:{name:'Horizon'},is_active:'no'},
+  {public_ref:'SVC_c',provider_ref:'PRO_two',service_name:'Haircut',professional_profile:{name:'Salon'}},
+  {public_ref:'SVC_legacy',service_name:'Legacy service'},
+ ]},{capabilities:['profile']}).items;
+ const result=dashboardActivities(items);
+ expect(result).toHaveLength(3);
+ expect(result[0]).toMatchObject({name:'Horizon',providerRef:'PRO_one',offeringCount:2,status:'mixed',published:true,query:'view=services'});
+ expect(result[1].providerRef).toBe('PRO_two');expect(result[2].ref).toBe('SVC_legacy');
+});
+it('deduplicates the same store reference without turning a quick-sale identity into a shop',()=>{
+ const items=managedActivities('wenze',{stores:[{public_ref:'WNS_shop',name:'Shop'},{public_ref:'WNS_shop',name:'Shop'},{public_ref:'WNS_quick',selling_mode:'individual',name:'Quick sale'}]}).items;
+ expect(dashboardActivities(items)).toHaveLength(2);expect(dashboardActivities(items).filter(row=>!row.individual)).toHaveLength(1);
 });

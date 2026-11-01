@@ -1,6 +1,6 @@
 import {safePublicImageUrl} from './safe-public-url';
 import {servicesProviderAccess} from './services-account-navigation';
-export type ManagedActivity={ref:string;name:string;market:'wenze'|'restaurants'|'services';published:boolean|null;query:string;status:string;location:string;missing:string[];individual:boolean;image:string|null};
+export type ManagedActivity={ref:string;name:string;market:'wenze'|'restaurants'|'services';published:boolean|null;query:string;status:string;location:string;missing:string[];individual:boolean;image:string|null;providerRef?:string;professionalName?:string;professionalImage?:string|null;offeringCount?:number};
 export function managedActivities(market:ManagedActivity['market'],value:unknown,policy?:unknown):{items:ManagedActivity[];setup:boolean;more:boolean}{
  const data=value as Record<string,unknown>;
  if(!data||typeof data!=='object')throw Error('Unavailable activities');
@@ -20,10 +20,26 @@ export function managedActivities(market:ManagedActivity['market'],value:unknown
   if(market==='wenze'&&row.catalog_ready===false){if(!row.city)missing.push('location');if(!row.category)missing.push('category');if(!missing.length)missing.push('setup');}
   const published=market==='services'?row.visible_to_customers===true:market==='restaurants'?row.status==='active':typeof row.catalog_ready==='boolean'&&typeof row.status==='string'&&typeof row.visible==='string'?row.catalog_ready&&row.status==='active'&&row.visible==='true':null;
   return {ref:row.public_ref,name,market,published:missing.length?false:published,
+   ...(market==='services'&&typeof row.provider_ref==='string'&&row.provider_ref?{providerRef:row.provider_ref,professionalName:typeof row.professional_profile?.name==='string'?row.professional_profile.name:undefined,professionalImage:safePublicImageUrl(row.professional_profile?.photo)}:{}),
    image,status:missing.length?'needsUpdate':row.status==='inactive'||market==='services'&&row.is_active==='no'?'inactive':row.status==='draft'?'draft':['pending','pending_approval'].includes(row.status)?'pending':published?'active':'hidden',
    location:typeof location==='string'?location:'',missing,individual:row.selling_mode==='individual',
    query:`${market==='wenze'?'store':market==='services'?'offering':'establishment'}=${encodeURIComponent(row.public_ref)}${market==='services'?'&view=services':market==='wenze'&&(missing.length>0||row.status==='inactive')?'&view=shop':''}`
   } satisfies ManagedActivity;
  });
  return {items,setup:market==='services'?true:market==='restaurants'?Array.isArray(data.actions)&&data.actions.includes('create'):false,more:typeof data.total==='number'&&data.total>items.length};
+}
+/** Group only identities explicitly linked by the server; legacy rows remain individually reachable. */
+export function dashboardActivities(items:ManagedActivity[]):ManagedActivity[]{
+ const result:ManagedActivity[]=[],seen=new Set<string>();
+ for(const item of items){
+  const key=`${item.market}:${item.market==='services'&&item.providerRef?item.providerRef:item.ref}`;
+  if(seen.has(key))continue;seen.add(key);
+  if(item.market!=='services'||!item.providerRef){result.push(item);continue;}
+  const siblings=items.filter(other=>other.market==='services'&&other.providerRef===item.providerRef);
+  result.push({...item,name:item.professionalName||item.name,image:item.professionalImage||item.image,
+   query:'view=services',offeringCount:siblings.length,published:siblings.some(row=>row.published===true),
+   status:new Set(siblings.map(row=>row.status)).size===1?item.status:'mixed',
+   missing:[...new Set(siblings.flatMap(row=>row.missing))],location:[...new Set(siblings.map(row=>row.location).filter(Boolean))].join(' · ')});
+ }
+ return result;
 }

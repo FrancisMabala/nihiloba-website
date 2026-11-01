@@ -51,8 +51,8 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
  const requests:[string,string,SpaceIconName][]=[[t.serviceRequests,`${prefix}/shida/service-requests`,'requests'],[w('applications'),locale==='fr'?'/fr/shida/mes-candidatures':`${prefix}/shida/my-applications`,'requests'],[w('reservations'),`${prefix}/shida/restaurant-reservations`,'restaurant']];
  return <div className={`account-space${view==='settings'?' account-settings-page':view==='management'?' account-activities-page':view==='transactions'?' account-transactions-page':''}`} lang={locale}>
   <SpaceSidebar locale={locale} view={view}/>
-  <div className="space-content"><p className="space-eyebrow">SHIDA / {a.space}</p>
-   <h1>{view==='management'?n.activities:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
+  <div className="space-content">
+   <h1>{view==='management'?a.space:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
    {view==='messages'&&(checking?<p role="status">{t.loading}</p>:session?<MessagesSpace key={session.binding} binding={session.binding} locale={locale}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='recovery'&&<AccountRecovery locale={locale}/>}
    {!session&&view!=='recovery'&&<p><a href={href('recovery')}>{securityText(locale,'report')}</a></p>}

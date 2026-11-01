@@ -5,14 +5,15 @@ import type {MarketplaceLocale} from './marketplace-account-copy';
 import {accountSpaceCopy} from '../../lib/account-space-copy';
 import {spaceSettingsCopy} from '../../lib/space-settings-copy';
 import {workspaceText} from '../../lib/personal-workspace-copy';
-import {managedActivities,type ManagedActivity} from '../../lib/personal-activities';
+import {managedActivities,dashboardActivities,type ManagedActivity} from '../../lib/personal-activities';
 import {accountNavigationCopy} from '../../lib/account-navigation-copy';
 import {OFFICIAL_CHANNELS} from '../../lib/brand';
 import {restaurantText} from '../../lib/restaurant-seller-copy';
 import {mySpaceCopy} from '../../lib/my-space-refinement-copy';
+import {quickSellCopy} from '../../lib/quick-sell-copy';
 import {activitiesDesignCopy} from '../../lib/activities-design-copy';
 
-type ActivityData={binding:string;items:ManagedActivity[];options:ManagedActivity['market'][];failed:boolean;more:boolean;markets:string[];business:boolean};
+type ActivityData={binding:string;items:ManagedActivity[];options:ManagedActivity['market'][];failed:boolean;loaded:ManagedActivity['market'][];more:boolean;markets:string[];business:boolean};
 const marketIcon=(market:ManagedActivity['market']):SpaceIconName=>market==='wenze'?'shop':market==='restaurants'?'restaurant':'tool';
 function ActivityImage({item}:{item:ManagedActivity}){
  const [failed,setFailed]=useState(false);
@@ -38,7 +39,7 @@ export function PersonalActivities({binding,locale}:{binding:string;locale:Marke
   void Promise.allSettled([lists,navigation]).then(([results,overview])=>{
    if(!active||results.status!=='fulfilled')return;
    const values=results.value;
-   setData({binding,items:values.flatMap(r=>r.status==='fulfilled'?r.value.items:[]),options:values.flatMap((r,i)=>r.status==='fulfilled'&&(r.value.setup||i===0)?[(['wenze','restaurants','services'] as const)[i]]:[]),failed:values.some(r=>r.status==='rejected')||overview.status==='rejected',more:values.some(r=>r.status==='fulfilled'&&r.value.more),markets:overview.status==='fulfilled'?overview.value.markets:[],business:overview.status==='fulfilled'&&overview.value.organization_management});
+   setData({binding,items:dashboardActivities(values.flatMap(r=>r.status==='fulfilled'?r.value.items:[])),loaded:values.flatMap((r,i)=>r.status==='fulfilled'?[(['wenze','restaurants','services'] as const)[i]]:[]),options:values.flatMap((r,i)=>r.status==='fulfilled'&&(r.value.setup||i===0)?[(['wenze','restaurants','services'] as const)[i]]:[]),failed:values.some(r=>r.status==='rejected')||overview.status==='rejected',more:values.some(r=>r.status==='fulfilled'&&r.value.more),markets:overview.status==='fulfilled'?overview.value.markets:[],business:overview.status==='fulfilled'&&overview.value.organization_management});
   }).finally(()=>clearTimeout(timer));
   return()=>{active=false;controller.abort();clearTimeout(timer);};
  },[binding,revision,restaurantPages]);
@@ -50,21 +51,29 @@ export function PersonalActivities({binding,locale}:{binding:string;locale:Marke
  const creation=<div className="activity-options">{current?.options.map(market=>card(market==='wenze'?c.shop:market==='restaurants'?c.restaurant:c.service,market==='wenze'?d.shopHelp:market==='restaurants'?d.restaurantHelp:d.serviceHelp,`${prefix}/shida/seller/${market}`,marketIcon(market)))}{card(labels.sell,labels.sellHelp,`${prefix}/shida/wenze/sell`,'orders')}</div>;
  const opportunities=<div className="activity-options">{card(d.seeker,d.seekerHelp,whatsapp(({en:'create candidate profile',fr:'créer profil candidat',ln:'sala profil ya mosala',sw:'unda wasifu wa kazi'})[locale]),'management',true)}{card(d.offer,d.employmentHelp,whatsapp(({en:'employment menu',fr:'menu emploi',ln:'menu mosala',sw:'menyu ajira'})[locale]),'people',true)}{card(d.explore,d.exploreHelp,`${prefix}/shida`,'search')}{current?.business&&card('SHIDA Business',d.businessHelp,'https://business.nihiloba.com/','business')}</div>;
  const label=(market:ManagedActivity['market'])=>market==='wenze'?t.shop:market==='services'?t.services:t.restaurant;
+ const extra=({en:{profiles:'Professional profiles',offerings:'services',mixed:'Different service statuses',more:'Do more with SHIDA'},fr:{profiles:'Profils professionnels',offerings:'services',mixed:'Statuts des services différents',more:'Faites plus avec SHIDA'},ln:{profiles:'Baprofili ya mosala',offerings:'misala',mixed:'Misala ezali na bizaleli ekeseni',more:'Sala mingi na SHIDA'},sw:{profiles:'Wasifu wa kitaalamu',offerings:'huduma',mixed:'Hali tofauti za huduma',more:'Fanya zaidi na SHIDA'}})[locale];
+ const groups=current?[
+  {id:'shops',market:'wenze' as const,title:t.shop,items:current.items.filter(i=>i.market==='wenze'&&!i.individual)},
+  {id:'quick-sales',market:'wenze' as const,title:quickSellCopy[locale].individual,items:current.items.filter(i=>i.market==='wenze'&&i.individual)},
+  {id:'restaurants',market:'restaurants' as const,title:t.restaurant,items:current.items.filter(i=>i.market==='restaurants')},
+  {id:'services',market:'services' as const,title:extra.profiles,items:current.items.filter(i=>i.market==='services')}
+ ]:[];
  return <section className="space-managed activities-dashboard">
  {!current?<p role="status">{t.loading}</p>:<>
  {current.failed&&<div className="activities-error" role="alert"><p>{w('partial')}</p><button type="button" onClick={()=>setRevision(v=>v+1)}>{c.retry}</button></div>}
- {populated&&<div className="activities-toolbar"><button type="button" aria-expanded={creating} aria-controls="new-activity-options" onClick={()=>setCreating(v=>!v)}>{creating?d.close:`+ ${d.newActivity}`}</button></div>}
+ <div className="activities-hero"><p className="activities-slogan">Misala na yo nyonso, na esika moko!</p><div className="activities-toolbar"><button type="button" aria-expanded={creating} aria-controls="new-activity-options" onClick={()=>setCreating(v=>!v)}>{creating?d.close:`+ ${d.newActivity}`}</button></div></div>
+ <nav className="activities-summary" aria-label={d.yours}>{groups.filter(group=>group.id!=='quick-sales'||group.items.length).map(group=><a key={group.id} className={`summary-${group.market}`} href={group.items.length?`#activities-${group.id}`:'#new-activity-options'} onClick={()=>{if(!group.items.length)setCreating(true);}}><SpaceIcon name={marketIcon(group.market)}/><span><strong>{!current.loaded.includes(group.market)?'—':`${group.items.length}${group.market==='restaurants'&&current.more?'+':''}`}</strong><small>{group.title}</small></span></a>)}</nav>
  {!populated&&!current.failed&&<div className="activities-welcome"><div><h2>{d.start}</h2><p>{d.empty}</p></div><MarketplaceIllustration/></div>}
  {populated&&<section aria-labelledby="your-activities-heading"><header className="activities-section-heading"><h2 id="your-activities-heading">{d.yours}</h2>{current.items.length>0&&<p>{(current.failed||current.more||other.length?d.showing:current.items.length===1?d.one:d.count).replace('{count}',String(current.items.length))}</p>}</header>
- <div className="activity-cards">{current.items.map(item=><article key={`${item.market}:${item.ref}`}>
- <ActivityImage item={item}/><div className="activity-card-content"><h3>{item.name||c.unnamed}</h3><span className="activity-category">{label(item.market)}</span><div className="activity-meta">{item.location&&<p className="activity-location">{item.location}</p>}<p className={`activity-state activity-state-${item.status}`}>{item.status==='pending'?d.pending:c[item.status as 'active'|'inactive'|'draft'|'hidden'|'needsUpdate']}</p></div>
- <div className="activity-actions"><a className="activity-manage" href={item.individual?`${prefix}/shida/wenze/sell`:`${prefix}/shida/seller/${item.market}?${item.query}`}>{item.missing.length?d.complete:d.manage}<span className="sr-only"> · {item.name||c.unnamed}</span><span aria-hidden="true"> →</span></a>{item.published&&!item.individual&&<a href={`${prefix}/shida/${item.market}/${encodeURIComponent(item.ref)}`}>{item.market==='wenze'?d.viewShop:d.view}<span className="sr-only"> · {item.name||c.unnamed}</span></a>}</div>
- {item.missing.length>0&&<details className="activity-completion"><summary>{c.missing}</summary><p>{item.missing.filter(k=>k!=='setup').map(k=>k.startsWith('restaurant:')?restaurantText(locale,k.slice(11)):k==='name'?c.missingName:k==='location'?c.missingLocation:c.missingCategory).join(', ')}</p><p>{c.missingSetup}</p></details>}</div></article>)}</div>
+ <div className="activity-groups">{groups.filter(group=>group.items.length).map(group=><section id={`activities-${group.id}`} className={`activity-group group-${group.market}`} key={group.id}><h3><SpaceIcon name={marketIcon(group.market)}/>{group.title} ({group.items.length}{group.market==='restaurants'&&current.more?'+':''})</h3><div className="activity-cards">{group.items.map(item=><article key={`${item.market}:${item.ref}`}>
+ <ActivityImage item={item}/><div className="activity-card-content"><h3>{item.name||c.unnamed}</h3><span className="activity-category">{item.individual?quickSellCopy[locale].individual:item.providerRef?extra.profiles:label(item.market)}</span>{item.offeringCount&&<p className="activity-offering-count">{item.offeringCount} {extra.offerings}</p>}<div className="activity-meta">{item.location&&<p className="activity-location">{item.location}</p>}<p className={`activity-state activity-state-${item.status}`}>{item.status==='mixed'?extra.mixed:item.status==='pending'?d.pending:c[item.status as 'active'|'inactive'|'draft'|'hidden'|'needsUpdate']}</p></div>
+ <div className="activity-actions"><a className="activity-manage" href={item.individual?`${prefix}/shida/wenze/sell`:`${prefix}/shida/seller/${item.market}?${item.query}`}>{item.missing.length?d.complete:d.manage}<span className="sr-only"> · {item.name||c.unnamed}</span><span aria-hidden="true"> →</span></a>{item.published&&!item.individual&&<a href={`${prefix}/shida/${item.market}/${item.providerRef?'providers/':''}${encodeURIComponent(item.providerRef||item.ref)}`}>{item.market==='wenze'?d.viewShop:d.view}<span className="sr-only"> · {item.name||c.unnamed}</span></a>}</div>
+ {item.missing.length>0&&<details className="activity-completion"><summary>{c.missing}</summary><p>{item.missing.filter(k=>k!=='setup').map(k=>k.startsWith('restaurant:')?restaurantText(locale,k.slice(11)):k==='name'?c.missingName:k==='location'?c.missingLocation:c.missingCategory).join(', ')}</p><p>{c.missingSetup}</p></details>}</div></article>)}</div></section>)}</div>
  {current.more&&<button className="activities-more" onClick={()=>setRestaurantPages(v=>v+1)}>{c.more}</button>}
  {other.length>0&&<div className="activity-options activity-existing-markets">{other.map(m=>card(n[m as 'jobs'|'apartments'|'hotels'|'wewa'],n.whatsapp,OFFICIAL_CHANNELS.whatsapp,'management'))}</div>}
  </section>}
  {(!populated||creating)&&<section id="new-activity-options" className={populated?'activities-new':''}>{populated&&<h2>{d.newActivity}</h2>}{creation}</section>}
- <section className={populated?'activities-other':'activities-discover'}>{populated&&<><h2>{d.other}</h2><p>{d.otherHelp}</p></>}{opportunities}</section>
+ <section className={populated?'activities-other':'activities-discover'}>{populated&&<><h2>{extra.more}</h2><p>{d.otherHelp}</p></>}{opportunities}</section>
  </>}
  <details className="space-legacy-help"><summary>{c.legacy}</summary><p>{c.legacyHelp}</p><a href={`${prefix}/shida/space?view=support`}>{c.support}</a></details>
  </section>;
