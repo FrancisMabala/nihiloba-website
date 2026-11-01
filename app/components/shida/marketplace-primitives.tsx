@@ -21,7 +21,8 @@ export function AvailabilityBadge({ state, locale }: { state: string | null; loc
 
 export type BreadcrumbItem = { label: string; href?: string };
 
-export function MarketplaceBreadcrumb({ label, items }: { label: string; items: BreadcrumbItem[] }) {
+export function MarketplaceBreadcrumb({ label, items, context='detail' }: { label: string; items: BreadcrumbItem[]; context?:'landing'|'detail' }) {
+  if(context==='landing')return null;
   return <nav className="marketplace-breadcrumb" aria-label={label}>
     <ol>{items.map((item, index) => <li key={`${item.label}-${index}`}>
       {item.href ? <Link href={item.href}>{item.label}</Link> : <span aria-current="page">{item.label}</span>}
@@ -31,6 +32,7 @@ export function MarketplaceBreadcrumb({ label, items }: { label: string; items: 
 
 export function MarketplaceSectionBreadcrumb({ locale, current }: { locale: Locale; current: string }) {
   return <MarketplaceBreadcrumb
+    context="landing"
     label={({en:"Breadcrumb",fr:"Fil d’Ariane",ln:"Nzela ya lokasa",sw:"Njia ya ukurasa"})[locale]}
     items={[{ label: "SHIDA", href: locale === "en" ? "/shida" : `/${locale}/shida` }, { label: current }]}
   />;
