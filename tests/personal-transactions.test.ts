@@ -23,3 +23,21 @@ describe('transaction projection',()=>{
   expect(transactionStatus({...row,kind:'bill',status:'unknown_future_status'},locale)).not.toContain('unknown_future_status');
  });
 });
+
+const overview={counts:{all:1,orders:1,requests:0,documents:0},items:[row],documents:[],page:1,page_size:10,has_more:false};
+it('accepts server totals larger than a page without replacing them with row counts',()=>{
+ expect(isOverview({...overview,counts:{all:25,orders:25,requests:0,documents:0},has_more:true})).toBe(true);
+});
+it('rejects inconsistent empty claims, invalid categories and incomplete pagination',()=>{
+ expect(isOverview(overview)).toBe(true);
+ expect(isOverview({...overview,counts:{all:0,orders:0,requests:0,documents:0}})).toBe(false);
+ expect(isOverview({...overview,page:undefined})).toBe(false);
+ expect(isOverview({...overview,items:[{...row,category:'documents'}]})).toBe(false);
+ expect(isOverview({...overview,documents:[row]})).toBe(false);
+ expect(isOverview({...overview,items:[row,row]})).toBe(false);
+});
+it('rejects unexpected private detail fields and malformed dates without rendering them',()=>{
+ expect(isOverview({...overview,items:[{...row,details:{private_address:'private'}}]})).toBe(false);
+ expect(isOverview({...overview,items:[{...row,date:'not a date'}]})).toBe(false);
+ expect(isOverview({...overview,items:[{...row,details:{guests:2}}]})).toBe(true);
+});

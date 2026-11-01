@@ -35,8 +35,21 @@ export function transactionDetail(name:string,value:string|number,locale:Marketp
  }
  return String(value);
 }
+const categories:Record<TransactionKind,Transaction['category']>={wenze:'orders',negotiated:'orders',food:'orders',food_receipt:'documents',reservation:'requests',application:'requests',posted:'requests',service:'requests',booking:'requests',bill:'documents',hotel:'requests',transport:'requests',housing:'requests',visit:'requests'};
+const reference=(value:unknown)=>value===null||(typeof value==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(value));
+function isTransaction(value:unknown):value is Transaction{
+ if(!value||typeof value!=='object')return false;
+ const r=value as Transaction;
+ return typeof r.id==='string'&&r.id.length>0&&Object.hasOwn(categories,r.kind)&&categories[r.kind]===r.category&&typeof r.title==='string'&&typeof r.status==='string'&&reference(r.reference)&&reference(r.related_reference)&&(r.date===null||(typeof r.date==='string'&&Number.isFinite(Date.parse(r.date))))&&(r.amount===null||(typeof r.amount==='string'&&/^\d+(\.\d+)?$/.test(r.amount)))&&(r.currency===null||(typeof r.currency==='string'&&/^[A-Z]{3}$/.test(r.currency)))&&(r.details===undefined||!!r.details&&typeof r.details==='object'&&!Array.isArray(r.details)&&Object.entries(r.details).every(([key,value])=>['check_in','check_out','guests','rooms','visit_date','visit_time'].includes(key)&&(typeof value==='string'||typeof value==='number'&&Number.isFinite(value))));
+}
 export function isOverview(value:unknown):value is TransactionOverview{
  if(!value||typeof value!=='object')return false;
  const v=value as TransactionOverview;
- return !!v.counts&&['all','orders','requests','documents'].every(k=>Number.isInteger(v.counts[k as TransactionCategory])&&v.counts[k as TransactionCategory]>=0)&&v.counts.all===v.counts.orders+v.counts.requests+v.counts.documents&&Array.isArray(v.items)&&Array.isArray(v.documents)&&[...v.items,...v.documents].every(r=>r&&typeof r.id==='string'&&['wenze','negotiated','food','food_receipt','reservation','application','posted','service','booking','bill','hotel','transport','housing','visit'].includes(r.kind)&&typeof r.title==='string'&&typeof r.status==='string'&&(r.reference===null||/^[A-Za-z0-9_-]{1,100}$/.test(r.reference))&&(r.related_reference===null||/^[A-Za-z0-9_-]{1,100}$/.test(r.related_reference)))&&typeof v.has_more==='boolean';
+ if(!v.counts||!(['all','orders','requests','documents'] as const).every(k=>Number.isSafeInteger(v.counts[k])&&v.counts[k]>=0)||v.counts.all!==v.counts.orders+v.counts.requests+v.counts.documents)return false;
+ if(!Number.isInteger(v.page)||v.page<1||!Number.isInteger(v.page_size)||v.page_size<1||v.page_size>20||typeof v.has_more!=='boolean')return false;
+ if(!Array.isArray(v.items)||!Array.isArray(v.documents)||v.items.length>v.page_size||!v.items.every(isTransaction)||!v.documents.every(row=>isTransaction(row)&&row.category==='documents'))return false;
+ // A duplicate preview can be rendered once; duplicates within a page indicate a bad response.
+ if(new Set(v.items.map(row=>row.id)).size!==v.items.length)return false;
+ const rows=Array.from(new Map([...v.items,...v.documents].map(row=>[row.id,row])).values());
+ return (['orders','requests','documents'] as const).every(category=>rows.filter(row=>row.category===category).length<=v.counts[category])&&!(v.counts.all===0&&v.has_more);
 }
