@@ -41,3 +41,5 @@ it('rejects unexpected private detail fields and malformed dates without renderi
  expect(isOverview({...overview,items:[{...row,date:'not a date'}]})).toBe(false);
  expect(isOverview({...overview,items:[{...row,details:{guests:2}}]})).toBe(true);
 });
+
+it("keeps Wenze customer purchases in Orders with direct authorized history links",()=>{const purchase={...row,id:"wenze:SHO_TEST",kind:"wenze" as const,reference:"SHO_TEST"};expect(isOverview({...overview,items:[purchase]})).toBe(true);expect(transactionLink(purchase,"en")).toBe("/shida/wenze/orders#SHO_TEST");expect(isOverview({...overview,items:[{...purchase,category:"requests"}]})).toBe(false);});

@@ -24,4 +24,5 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1280]
  await expect(page.getByRole('heading',{name:labels.placed})).toBeVisible();
  expect(keys[0]).toBe(keys[1]);
  await expect(page.getByRole('link',{name:labels.track})).toBeVisible();
+ await expect(page.getByRole('link',{name:labels.track})).toHaveAttribute('href', /\/orders\/#WNO_fixture$/);
 });

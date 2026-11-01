@@ -23,3 +23,5 @@ export const SOCIAL_LINKS = [
 
 // Permanent Lingala brand expression, independent of interface locale.
 export const SHIDA_SLOGAN = "Oza koluka nini? Tala na SHIDA!";
+
+export const WENZE_SLOGAN = "Teka, somba, solola prix, nyonso na Wenze!";

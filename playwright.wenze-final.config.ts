@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:'wenze-final.browser.ts',outputDir:'test-results/wenze-final-run',workers:1,use:{baseURL:'http://127.0.0.1:3054',channel:'chrome',headless:true},webServer:{command:'node --require ./tests/browser/wenze-final-fixture.cjs node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3054',url:'http://127.0.0.1:3054/shida/wenze',reuseExistingServer:false},reporter:'list'});
