@@ -1,0 +1,31 @@
+import {test,expect} from '@playwright/test';
+for(const width of [360,390,768,1024,1440])test(`plate grouping and responsive dialog ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:900});
+ await page.goto('/shida/restaurants/RST-CHECKOUT/menu');
+ await expect(page.locator('.rst-menu-card')).toHaveCount(2);
+ await expect(page.locator('.rst-menu-card select')).toHaveCount(0);
+ const add=async(existing=false)=>{
+  await page.locator('#item-RMI-PONDU').getByRole('button',{name:'Add',exact:true}).click();
+  const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
+  if(existing)await dialog.locator('select').first().selectOption({index:1});
+  expect(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
+  await page.screenshot({path:`test-results/restaurants-dialog-${width}.png`});
+  await dialog.getByRole('button',{name:'Add',exact:true}).click();
+ };
+ await add();await add(true);await add();
+ await expect(page.locator('.rst-basket-review>section')).toHaveCount(2);
+ await expect(page.locator('.rst-basket-review>section').first().locator('li')).toHaveCount(2);
+ await page.locator('#item-RMI-FIXED').getByRole('button',{name:'Add',exact:true}).click();
+ await page.getByRole('dialog').getByRole('button',{name:'Increase quantity'}).click();
+ await page.getByRole('dialog').getByRole('button',{name:'Add',exact:true}).click();
+ await expect(page.locator('.rst-sticky-basket')).toContainText('5');
+ await page.locator('.rst-basket-quantity input').fill('3');
+ await expect(page.locator('.rst-sticky-basket')).toContainText('6');
+ await page.locator('.rst-basket-review>section').first().getByRole('button',{name:'Remove'}).first().click();
+ await expect(page.locator('.rst-basket-review>section')).toHaveCount(2);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`test-results/restaurants-basket-${width}.png`,fullPage:true});
+ await page.locator('#item-RMI-FIXED').getByRole('button',{name:'Add',exact:true}).click();
+ await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
+ await expect(page.locator('#item-RMI-FIXED').getByRole('button',{name:'Add',exact:true})).toBeFocused();
+});

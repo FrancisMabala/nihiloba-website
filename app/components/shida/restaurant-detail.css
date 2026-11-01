@@ -118,3 +118,6 @@
  .restaurant-top-actions a{justify-content:center;text-align:center}
  .restaurant-top-actions .restaurant-whatsapp{grid-column:1/-1}
 }
+/* Compact browsing with a separate preparation basket; the quote remains authoritative. */
+@media(min-width:1101px){.restaurant-detail-columns{grid-template-columns:minmax(0,1fr)}.restaurant-detail .restaurant-practical{position:static}.restaurant-detail .rst-public-menu:has(>.rst-basket-review){display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:24px;align-items:start}.restaurant-detail .rst-public-menu>.rst-basket-review{position:sticky;top:16px;margin:0;padding:18px;border:1px solid #e1daca;border-radius:12px;background:#fffdf8}.restaurant-detail .rst-menu-browser{min-width:0}.restaurant-detail .rst-menu-pages{grid-column:1}}
+.rst-basket-lines{list-style:none;padding:0}.rst-basket-lines li{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid #e3dfd5;padding:12px 0}.rst-basket-lines li>span{flex:1 1 100%;font-weight:600}.rst-basket-quantity{display:flex;gap:8px;align-items:center;font-size:.85rem}.rst-basket-quantity input{width:70px!important;min-height:44px}.rst-basket-review>section{border:1px solid #e3dfd5;border-radius:10px;padding:12px;margin:12px 0}.rst-basket-review h4{margin:0;font-family:Georgia,serif;font-size:1.1rem}

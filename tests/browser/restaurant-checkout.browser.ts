@@ -30,8 +30,10 @@ for(const scenario of ["committed","unreceived","unavailable"] as const) test(`p
  await sessionChecked;
  await expect(page.getByRole("heading",{name:"Checkout Malewa · Order food"})).toBeVisible();
  await page.getByRole("article").filter({hasText:"Fufu"}).getByRole("button",{name:"Add"}).click();
+ await page.getByRole("dialog").getByRole("button",{name:"Add",exact:true}).click();
  await expect(page.getByRole("button",{name:"Basket"})).toBeEnabled();
  await page.getByRole("article").filter({hasText:"Pondu"}).getByRole("button",{name:"Add"}).click();
+ await page.getByRole("dialog").getByRole("button",{name:"Add",exact:true}).click();
  await page.getByRole("button",{name:"Basket"}).click();
  await expect(page.getByRole("heading",{name:"Plate 1"})).toBeVisible();
  await page.getByRole("button",{name:"Continue",exact:true}).click();

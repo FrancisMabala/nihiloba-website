@@ -12,7 +12,7 @@ export function RestaurantInterest({establishmentRef,locale,menuOnly,menuAvailab
   const visible=(element:Element|null)=>{if(document.visibilityState!=='visible'||!element)return false;const r=element.getBoundingClientRect();return r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight;};
   const send=(kind:InterestKind,element:Element|null,item?:string)=>{
    const key=receipt(kind,item);if(sent.has(key)||timers.has(key)||!visible(element))return;
-   timers.set(key,setTimeout(()=>{timers.delete(key);if(!alive||!visible(element)||kind==='item_views'&&!element?.hasAttribute('open'))return;
+   timers.set(key,setTimeout(()=>{timers.delete(key);if(!alive||(kind!=='item_selections'&&!visible(element))||kind==='item_views'&&!element?.hasAttribute('open'))return;
     sent.add(key);void restorePersonalSession().then(session=>{if(!alive)return;return request(`personal/restaurant-orders/establishments/${establishmentRef}/interest`,{method:'POST',body:JSON.stringify({kind,operation_key:key,...(item?{item_ref:item}:{})})},session.binding);}).catch(()=>{sent.delete(key);});
    },1000));
   };
@@ -23,6 +23,8 @@ export function RestaurantInterest({establishmentRef,locale,menuOnly,menuAvailab
    if(event.type!=='click'||!(event.target instanceof Element))return;
    const details=event.target.closest('summary')?.parentElement;
    if(details?.dataset.restaurantItemView)queueMicrotask(()=>send('item_views',details,details.dataset.restaurantItemView));
+   const opener=event.target.closest<HTMLButtonElement>('button[data-restaurant-item-open]');
+   if(opener&&!opener.disabled)requestAnimationFrame(()=>{const modal=document.querySelector<HTMLDialogElement>('dialog[open][data-restaurant-item-view]');if(modal)send('item_views',modal,modal.dataset.restaurantItemView);});
    const selection=event.target.closest<HTMLButtonElement>('button[data-restaurant-item-selection]');
    if(selection&&!selection.disabled)send('item_selections',selection,selection.dataset.restaurantItemSelection);
   };

@@ -116,3 +116,5 @@ body:has(.restaurant-discovery) .site-header .language-switcher { display:none; 
 .rd-photo .restaurant-photo-illustration{background:linear-gradient(135deg,#f3f0e9,#e8e4da)}
 .rd-card:has(.restaurant-photo-illustration) .rd-photo{display:none}
 @media(max-width:767px){.rd-card:has(.restaurant-photo-illustration){display:block}}
+.rd-types .rd-chip span{display:flex;align-items:center;gap:8px}.rd-types .rd-chip svg{width:22px;height:22px;color:#b15c27}.rd-types .rd-chip:has(input:checked) svg{color:inherit}.rd-search .mp-food-search{grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto}.rd-card .rd-photo{position:relative;aspect-ratio:1.45}.rd-card .rd-card-body{gap:8px}.rd-card .rd-menu{margin-top:auto}.rd-card h3{font-family:Georgia,serif}.rd-status-open{color:#246b3a}.rd-status-closed{color:#9a421e}
+@media(max-width:650px){.rd-search .mp-food-search{grid-template-columns:1fr}.rd-types{flex-wrap:nowrap;overflow-x:auto;padding-bottom:10px}.rd-types .rd-chip{flex-shrink:0}}

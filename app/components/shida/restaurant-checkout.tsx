@@ -9,6 +9,7 @@ import type { Terms } from "../../lib/restaurant-work";
 import type { Restaurant, RestaurantLocale, RestaurantMenuItem, RestaurantWebOptions } from "../../services/shida/restaurants-client";
 import {ProfileLocationPrefill} from "./profile-location-prefill";
 import {restaurantProfileDestination} from "../../lib/profile-delivery";
+import {RestaurantBasketEstimate} from "./restaurant-basket-estimate";
 import { MenuChoice } from "./restaurant-menu-choice";
 import "./restaurant-checkout.css";
 
@@ -135,7 +136,7 @@ export function RestaurantCheckout({locale,establishment,options:initialOptions,
   {message&&<p role="status" className="rst-checkout-message">{message}</p>}
   {pending&&<button type="button" disabled={busy||!session} onClick={()=>void recoverSubmission(pending)}>{t.submitRecover}</button>}
   {step==="menu"&&<><h2>{t.order}</h2>{menu?.items.length? <div className="rst-checkout-items">{menu.items.map(item=><MenuChoice key={item.public_ref} item={item} locale={locale} selections={selections} busy={busy} onAdd={(plate,quantity,amount)=>add(item,plate,quantity,amount)}/>)}</div>:<p role="status">{t.failed}</p>}{menu&&menu.total>menu.page*menu.page_size&&<a href={`${base}/order?page=${menu.page+1}`}>{t.continue}</a>}{menu&&menu.page>1&&<a href={`${base}/order?page=${menu.page-1}`}>{t.back}</a>}<button type="button" disabled={!hasFood(selections)||busy} onClick={()=>setStep("basket")}>{t.basket}</button></>}
-  {(step==="basket"||step==="fulfillment")&&<section><h2>{t.basket}</h2>{!hasFood(selections)&&<p>{t.empty}</p>}{selections.standalone.length>0&&<ul>{selections.standalone.map(displayLine)}</ul>}{selections.plates.map((plate,i)=><section key={plate.key}><h3>{t.plate} {i+1}</h3><ul>{plate.components.map(displayLine)}</ul></section>)}<button type="button" onClick={()=>setStep("menu")}>{t.add}</button></section>}
+  {(step==="basket"||step==="fulfillment")&&<section><h2>{t.basket}</h2>{!hasFood(selections)&&<p>{t.empty}</p>}{selections.standalone.length>0&&<ul>{selections.standalone.map(displayLine)}</ul>}{selections.plates.map((plate,i)=><section key={plate.key}><h3>{t.plate} {i+1}</h3><ul>{plate.components.map(displayLine)}</ul><RestaurantBasketEstimate lines={plate.components} items={menu?.items??[]} locale={locale}/></section>)}<RestaurantBasketEstimate lines={[...selections.standalone,...selections.plates.flatMap(p=>p.components)]} items={menu?.items??[]} locale={locale}/><button type="button" onClick={()=>setStep("menu")}>{t.add}</button></section>}
   {step==="basket"&&<button type="button" disabled={!hasFood(selections)} onClick={()=>setStep("fulfillment")}>{t.continue}</button>}
   {step==="fulfillment"&&<section><h2>{t.review}</h2>{!checked?<p>{t.loading}</p>:!session?<><p>{t.signIn}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>void loadSession()}/></>:<>
     <fieldset disabled={busy}><legend>{t.choose}</legend>{options.pickup&&<label><input type="radio" name="fulfillment" checked={method==="pickup"} onChange={()=>{setMethod("pickup");setWindowRef("");}}/>{t.pickup}</label>}{options.delivery&&<label><input type="radio" name="fulfillment" checked={method==="delivery"} onChange={()=>{setMethod("delivery");setWindowRef("");}}/>{t.delivery}</label>}</fieldset>

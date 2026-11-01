@@ -7,6 +7,7 @@ for (const width of [390, 768, 1440]) test(`detail layout and states ${width}`, 
  for (const [state, target] of [["populated", "RST-HOURS/menu"], ["empty", "RST-EMPTY/menu"], ["information", "RST-HOURS"]]) {
   await page.goto(`/fr/shida/restaurants/${target}?back=city%3DKinshasa%26page%3D2&page=1`);
   await expect(page.locator(".restaurant-header-art")).toHaveCount(0);
+  await page.locator(".restaurant-hours-disclosure summary").click();
   await expect(page.locator(".restaurant-detail-header .restaurant-hours:visible")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   if (state === "empty") { await expect(page.getByRole("heading", { name: "Menu non publié" })).toBeVisible(); await expect(page.locator(".restaurant-pagination")).toHaveCount(0); }
@@ -31,6 +32,7 @@ test("food can be selected while ordering is closed without submitting it", asyn
  await page.setViewportSize({ width: 390, height: 900 });
  await page.goto("/fr/shida/restaurants/RST-HOURS/menu");
  await page.locator("#item-ITM-UNIT").getByRole("button", { name: "Ajouter" }).click();
+ await page.getByRole("dialog").getByRole("button",{name:"Ajouter",exact:true}).click();
  await expect(page.locator(".rst-sticky-basket")).toContainText("1");
  await expect(page.locator(".rst-basket-review")).toContainText("Poulet");
  await expect(page.locator(".rst-basket-review").getByRole("button", { name: "Retirer" })).toBeEnabled();
