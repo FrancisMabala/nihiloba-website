@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Locale } from "../../lib/i18n";
+import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 import type { PublicJobExternalAction } from "../../types/shida-public";
 
 const copy = {
   en: { save:"Save in SHIDA", follow:"Follow on SHIDA", share:"Share", shared:"Link copied", report:"Report offer", redirect:"Apply on employer website", instructions:"See how to apply", opening:"Opening employer website…", unavailable:"This offer is no longer open for applications.", failed:"The application link is temporarily unavailable." },
   fr: { save:"Enregistrer dans SHIDA", follow:"Suivre sur SHIDA", share:"Partager", shared:"Lien copié", report:"Signaler l’offre", redirect:"Postuler sur le site de l’employeur", instructions:"Voir comment postuler", opening:"Ouverture du site de l’employeur…", unavailable:"Cette offre n’est plus ouverte aux candidatures.", failed:"Le lien de candidature n’est pas disponible pour le moment." },
+  ln: {save:"Bomba na SHIDA",follow:"Landa na SHIDA",share:"Kabola",shared:"Lien ekopiami",report:"Yebisa mokakatano na email",redirect:"Senga na site ya mopesi mosala",instructions:"Tala ndenge ya kosenga",opening:"Site ezali kofungwama…",unavailable:"Bosengi ekangami mpo na mosala oyo.",failed:"Lien ya bosengi ezali kosala te."},
+  sw: {save:"Hifadhi kwenye SHIDA",follow:"Fuata kwenye SHIDA",share:"Shiriki",shared:"Kiungo kimenakiliwa",report:"Ripoti kazi kwa barua pepe",redirect:"Omba kwenye tovuti ya mwajiri",instructions:"Ona jinsi ya kuomba",opening:"Inafungua tovuti ya mwajiri…",unavailable:"Kazi hii haipokei maombi tena.",failed:"Kiungo cha ombi hakipatikani kwa sasa."},
 } as const;
 
 async function recordEvent(jobReference:string,event:"view"|"share") {

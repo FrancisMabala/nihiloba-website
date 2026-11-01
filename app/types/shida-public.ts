@@ -55,6 +55,7 @@ export type PublicServiceReview = { rating: number; comment: string; reviewer_di
 export type ServiceReviewCollection = PublicCollection<PublicServiceReview> & { total: number; page: number; page_size: number };
 
 export type JobSearch = {
+  category?: string;
   query?: string;
   city?: string;
   area?: string;
