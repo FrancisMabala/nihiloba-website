@@ -8,7 +8,7 @@ for(const width of [360,390,768,1024,1440])test(`discovery and shared storefront
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:`test-results/marketplace-discovery-${width}.png`,fullPage:true});
  await page.getByRole('link',{name:'View all professionals →',exact:true}).click();await expect(page.locator('.svc-professional-card')).toHaveCount(1);
- await page.getByRole('link',{name:'View professional profile',exact:true}).click();await expect(page.locator('#professional-services .service-card')).toHaveCount(3);
+ await page.getByRole('link',{name:'View professional profile',exact:true}).click();await expect(page.locator('#professional-services .professional-service-row')).toHaveCount(3);
  await page.getByRole('link',{name:'About',exact:true}).click();await expect(page.locator('#professional-about')).toBeVisible();
  await page.screenshot({path:`test-results/marketplace-professional-${width}.png`,fullPage:true});
  await page.goto('/shida/services/home-repair');await expect(page.locator('#booking')).toBeVisible();
@@ -31,6 +31,6 @@ test('public appointment selection creates one WhatsApp handoff and handles a st
  await expect(panel).toContainText('confirmed when you finish booking');
 });
 
-for(const kind of ['beauty','legal'])test(`category storefront ${kind}`,async({page})=>{await page.goto(`/shida/services/providers/professional-${kind}`);await expect(page.locator('.service-card')).toHaveCount(3);await expect(page.locator('.service-provider-header')).not.toContainText('Verified');await page.screenshot({path:`test-results/marketplace-${kind}.png`,fullPage:true});});
+for(const kind of ['beauty','legal'])test(`category storefront ${kind}`,async({page})=>{await page.goto(`/shida/services/providers/professional-${kind}`);await expect(page.locator('.professional-service-row')).toHaveCount(3);await expect(page.locator('.service-provider-header')).not.toContainText('Verified');await page.screenshot({path:`test-results/marketplace-${kind}.png`,fullPage:true});});
 
 for(const width of [390,1440])test(`real package references and photo layout ${width}`,async({page})=>{await page.setViewportSize({width,height:960});await page.goto('/shida/services/beauty-packages');await expect(page.locator('.service-option')).toHaveCount(2);await page.getByRole('button',{name:/Hair treatment/}).click();await expect(page).toHaveURL(/option=SPK_care/);await expect(page.locator('.service-selection-summary')).toContainText('35 USD');await expect(page.locator('.service-selection-summary')).toContainText('1 h');await expect(page.locator('.service-gallery-section img').first()).toBeVisible();await expect.poll(()=>page.locator('.service-gallery-section img').first().evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);await page.screenshot({path:`test-results/marketplace-packages-${width}.png`,fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);});

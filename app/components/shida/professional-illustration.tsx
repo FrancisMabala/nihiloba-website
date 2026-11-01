@@ -1,0 +1,17 @@
+/** Decorative category compositions, never provider photographs or credentials. */
+export function ProfessionalCategoryArt({category}:{category:string}){
+ const beauty=category==='beauty_wellness',legal=category==='professional_services',repair=['repair_maintenance','home_housing'].includes(category),education=category==='education_training',cleaning=category==='cleaning',photo=category==='photo_video';
+ return <svg className="professional-art" data-category={category} viewBox="0 0 240 170" fill="none" aria-hidden="true">
+  <ellipse cx="126" cy="91" rx="89" ry="70" fill="currentColor" opacity=".09"/><path d="M18 153h211" stroke="currentColor" opacity=".4"/>
+  <g stroke="#477563" strokeWidth="2"><path d="M205 150V99m0 29 14-19m-14 7-12-15"/><path d="M205 113q-18-2-15-24 16 4 15 24Zm4 12q-1-21 17-24 3 19-17 24" fill="#87ad91" stroke="none"/></g>
+  <g stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+  {beauty?<><rect x="53" y="77" width="31" height="70" rx="7" fill="#eeb0ca"/><path d="M60 77V61h17v16m-8-16V50h20"/><rect x="98" y="65" width="32" height="82" rx="6" fill="#aa789a"/><path d="M105 65V49h18v16"/><rect x="140" y="109" width="39" height="36" rx="5" fill="#edc9d8"/><path d="M138 109h43v-8h-43Z"/><ellipse cx="159" cy="142" rx="27" ry="8" fill="#f7e4ec"/><path d="M38 125q-18-9-16-30 19 8 16 30" fill="#92b99a" stroke="none"/></>:
+  legal?<><rect x="48" y="132" width="130" height="14" rx="3" fill="#ceb68b"/><rect x="67" y="115" width="119" height="14" rx="3" fill="#dbe6ee"/><path d="M124 112V35m-40 18 40-8 42 8M84 55 69 88h30L84 55Zm82 0-15 33h30l-15-33Z"/><path d="M69 88q15 22 30 0m52 0q15 22 30 0" fill="#cfa45b"/><circle cx="124" cy="39" r="5" fill="#465d87"/><rect x="43" y="83" width="17" height="43" rx="3" fill="#7692ab"/><path d="M46 83V72h11v11m-3-11V60"/></>:
+  repair?<><path d="m60 139 28-67q-17-27 6-40l-2 24 15 5 14-19q6 28-15 34l-24 71Z" fill="#78a88c"/><rect x="44" y="106" width="16" height="40" rx="4" fill="#e8ad61"/><path d="M52 105V66m-5 0h10"/><path d="M127 61h50v24h-23v28h-18V85h-9Z" fill="#548d77"/><path d="M177 69h17m-56 44h17v10h-17"/><rect x="102" y="130" width="91" height="16" rx="5" fill="#e9c385"/><path d="M114 130v-9h40v9"/></>:
+  education?<><rect x="50" y="127" width="138" height="17" rx="3" fill="#c7b7e1"/><rect x="65" y="108" width="108" height="16" rx="3" fill="#efe0ba"/><path d="m48 62 71-28 71 28-71 27-71-27Z" fill="#9381b6"/><path d="M77 75v25q42 22 84 0V75m29-13v39"/><circle cx="190" cy="105" r="5" fill="#e2b569"/></>:
+  cleaning?<><path d="M66 76h31l8 65H57l9-65Z" fill="#97c6ba"/><path d="M74 76V56h26v9H84v11"/><rect x="117" y="92" width="40" height="52" rx="8" fill="#d2dfae"/><path d="M121 92V76h32v16m22 65V54m-12 83h25v10h-25"/><path d="m47 47 4-10 4 10 10 4-10 4-4 10-4-10-10-4Z" fill="#dfc487"/></>:
+  photo?<><path d="M57 78h30l8-16h44l8 16h34v62H57Z" fill="#b1c4d4"/><circle cx="119" cy="109" r="24" fill="#e8eff4"/><circle cx="119" cy="109" r="14" fill="#668494"/><path d="M66 88h16m78 0h11M119 140v14m0-2-28 13m28-13 28 13"/></>:
+  <><rect x="56" y="78" width="126" height="67" rx="9" fill="#a9c4b2"/><path d="M91 78V58h55v20M56 99q63 26 126 0"/><rect x="109" y="106" width="21" height="15" rx="3" fill="#f1dfb5"/><path d="M78 52V36h79v16" stroke="#c1a66e"/></>}
+  </g><g fill="currentColor" opacity=".25"><circle cx="38" cy="69" r="4"/><path d="m199 48 4-7 4 7-4 7Z"/><circle cx="186" cy="28" r="3"/></g>
+ </svg>;
+}
