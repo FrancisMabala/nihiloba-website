@@ -31,3 +31,7 @@ export const RESTAURANTS_SLOGAN = "Oza na nzala? Luka bilei ya elengi na SHIDA!"
 export const SERVICES_SLOGAN = "Mosala na yo, na maboko ya bato ya mayele!";
 
 export const JOBS_SLOGAN = "Luka mosala, pesa mosala, nyonso na SHIDA!";
+
+export const APARTMENTS_SLOGAN = "Esika oyo ebongi na yo, luka na SHIDA!";
+export const HOTELS_SLOGAN = "Oza na mobembo? Luka esika ya kopema na SHIDA!";
+export const TRANSPORT_SLOGAN = "Mobembo na yo ebandi na SHIDA!";

@@ -1,6 +1,6 @@
 import {ActiveSearchFilters} from "./active-search-filters";
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
-import { MarketplaceDiscoveryHeader } from "./public-marketplace";
+import { StayTravelHero, StayTravelInvitation, stayTravelCopy } from "./stay-travel-discovery";
 import { propertyDiscoveryCopy } from "./property-discovery-copy";
 import { hotelSearchQuery, type HotelSearch } from "../../lib/hotel-search";
 import type { Metadata } from "next";
@@ -14,7 +14,6 @@ import { apartmentPropertyTypes } from "../../types/shida-public";
 import { ApartmentFilters, ApartmentOwnerProfile, ApartmentPagination, hasApartmentSearch } from "./apartment-marketplace";
 import { ApartmentCard, ApartmentDetail, HotelCard, HotelDetail, marketplacePath, MarketplaceState, propertyTypeLabel, publicLocation } from "./marketplace";
 import { marketplaceCopy } from "./marketplace-copy";
-import { MarketplaceSectionBreadcrumb } from "./marketplace-primitives";
 import { firstHotelRoomImage } from "./hotel-room-images";
 
 function marketplaceMetadata(locale: Locale, kind: "apartments" | "hotels"): Metadata {
@@ -45,8 +44,7 @@ export async function ApartmentCollectionPage({ locale, search = {} }: { locale:
   catch (error) { if (!unavailable(error)) throw error; }
   const types = listings?.filters.property_types ?? [...apartmentPropertyTypes];
   return <div className="marketplace-public apartment-public"><div className="container">
-    <div className="mp-topline"><MarketplaceSectionBreadcrumb locale={locale} current={t.apartments}/><Link href={marketplacePath(locale,"/shida/hotels")}>{d.related} <span aria-hidden="true">↗</span></Link></div>
-    <MarketplaceDiscoveryHeader title={t.apartments} intro={t.apartmentIntro}/>
+    <StayTravelHero kind="apartments" title={t.apartments} locale={locale}/>
     <section id="apartment-discovery" aria-labelledby="apartment-results-title">
       <ApartmentFilters locale={locale} search={search} propertyTypes={types}/>
       <nav className="mp-chips" aria-label={t.propertyType}><Link href={`${path}${apartmentSearchQuery({...search,property_type:undefined,page:1})}`} aria-current={!search.property_type?"page":undefined}>{d.all}</Link>{types.map(type=><Link key={type} href={`${path}${apartmentSearchQuery({...search,property_type:type,page:1})}`} aria-current={search.property_type===type?"page":undefined}>{propertyTypeLabel(type,locale)}</Link>)}</nav>
@@ -56,8 +54,9 @@ export async function ApartmentCollectionPage({ locale, search = {} }: { locale:
           ? <div className="marketplace-grid">{listings.items.map(listing=><ApartmentCard key={listing.public_ref} listing={listing} locale={locale}/>)}</div>
           : <div className="marketplace-empty-results"><MarketplaceState>{hasApartmentSearch(search)?t.noSearchResults:t.emptyApartments}</MarketplaceState>{hasApartmentSearch(search)&&<Link className="button button-secondary" href={path}>{t.resetFilters}</Link>}</div>}
         <ApartmentPagination locale={locale} search={search} collection={listings}/>
-      </> : <MarketplaceState>{t.unavailable}</MarketplaceState>}
+      </> : <><MarketplaceState>{t.unavailable}</MarketplaceState><div className="st-retry"><Link className="button button-secondary" href={`${path}${apartmentSearchQuery(search)}`}>{stayTravelCopy[locale].retry}</Link></div></>}
     </section>
+    <StayTravelInvitation kind="apartments" locale={locale}/>
   </div></div>;
 }
 
@@ -69,8 +68,7 @@ export async function HotelCollectionPage({ locale, search = {} }: { locale: Loc
   catch (error) { if (!unavailable(error)) throw error; }
   const items = listings?.items ?? [];
   return <div className="marketplace-public hotel-public"><div className="container">
-    <div className="mp-topline"><MarketplaceSectionBreadcrumb locale={locale} current={t.hotels}/><Link href={marketplacePath(locale,"/shida/appartements")}>{d.related} <span aria-hidden="true">↗</span></Link></div>
-    <MarketplaceDiscoveryHeader title={t.hotels} intro={t.hotelIntro}/>
+    <StayTravelHero kind="hotels" title={t.hotels} locale={locale}/>
     <section id="hotel-discovery" aria-labelledby="hotel-results-title">
       <form className="mp-search" action={path} method="get" role="search" aria-label={d.search}>
         <div className="mp-search-primary"><label>{d.search}<input type="search" name="query" defaultValue={search.query} placeholder={d.placeholder} maxLength={120}/></label><label>{t.city}<input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label><button className="button button-primary" type="submit">{t.search}</button></div>
@@ -84,9 +82,10 @@ export async function HotelCollectionPage({ locale, search = {} }: { locale: Loc
 
       <div className="mp-results-heading"><h2 id="hotel-results-title">{d.results}</h2>{listings&&<p role="status">{items.length} {items.length===1?d.one:d.many}</p>}</div>
       {listings ? items.length>0 ? <div className="marketplace-grid">{items.map(listing=><HotelCard key={listing.public_ref} listing={listing} locale={locale}/>)}</div>
-        : <MarketplaceState>{hotelSearchQuery(search)?d.empty:t.emptyHotels}</MarketplaceState>
-        : <MarketplaceState>{t.unavailable}</MarketplaceState>}
+        : hotelSearchQuery(search) ? <MarketplaceState>{d.empty}</MarketplaceState> : <div className="st-empty" role="status"><h3>{stayTravelCopy[locale].emptyHotel}</h3><p>{stayTravelCopy[locale].emptyHotelText}</p></div>
+        : <><MarketplaceState>{t.unavailable}</MarketplaceState><div className="st-retry"><Link className="button button-secondary" href={`${path}?${hotelSearchQuery(search)}`}>{stayTravelCopy[locale].retry}</Link></div></>}
     </section>
+    <StayTravelInvitation kind="hotels" locale={locale}/>
   </div></div>;
 }
 

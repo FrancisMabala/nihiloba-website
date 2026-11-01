@@ -155,12 +155,12 @@ function hotelImage(listing: HotelListing): string | null {
 function rentalPeriodLabel(period: string | null, locale: Locale): string | null {
   if (!period) return null;
   const labels: Record<Locale, Record<string, string>> = {
-    en: { night: "night", day: "day", week: "week", month: "month" },
-    ln: {night:"butu",day:"mokolo",week:"poso",month:"sanza"},
-    sw: {night:"usiku",day:"siku",week:"wiki",month:"mwezi"},
-    fr: { night: "nuit", day: "jour", week: "semaine", month: "mois" },
+    en: { hourly: "hour", hour: "hour", night: "night", day: "day", week: "week", month: "month" },
+    ln: {hourly:"ngonga",hour:"ngonga",night:"butu",day:"mokolo",week:"poso",month:"sanza"},
+    sw: {hourly:"saa",hour:"saa",night:"usiku",day:"siku",week:"wiki",month:"mwezi"},
+    fr: { hourly: "heure", hour: "heure", night: "nuit", day: "jour", week: "semaine", month: "mois" },
   };
-  return labels[locale][period.trim().toLowerCase()] ?? null;
+  return labels[locale][period.trim().toLowerCase()] ?? period;
 }
 
 export function HotelRoomCard({ room, hotelName, locale, bookingUrl = null }: { room: HotelRoomType; hotelName: string; locale: Locale; bookingUrl?: string | null }) {
