@@ -46,6 +46,7 @@ export function parseRestaurant(value: unknown) {
     ...identity(data), description: text(data.description), type_label: text(data.type_label),
     // Deliberately exclude all non-public fields, raw addresses, contact details and restriction reasons.
     location: [text(location.city), text(location.commune), text(location.quartier), ...(location.address_visibility === "public" ? [text(location.address), text(location.landmark)] : [])].filter((part): part is string => !!part).filter((part, index, all) => all.indexOf(part) === index).join(", "),
+    general_location: [text(location.commune), text(location.city)].filter(Boolean).join(", "),
     hours: hours(data.hours), opening_information: text(data.opening_information),
     service_modes: array(data.service_modes ?? []).map(required),
     images: array(data.images ?? []).map((value) => { const row = object(value); return { url: safePublicImageUrl(text(row.url)), alt: text(row.alt) }; }).filter((image) => image.url),
@@ -96,8 +97,10 @@ export function restaurantQuery(raw: RestaurantSearch): URLSearchParams {
   return result;
 }
 function query(locale: RestaurantLocale, params = new URLSearchParams()) { const result = new URLSearchParams(params); result.set("language", locale); return `?${result}`; }
-export async function getRestaurants(locale: RestaurantLocale, raw: RestaurantSearch) {
-  const data = object(await request(`${root}/restaurants${query(locale, restaurantQuery(raw))}`, false));
+export async function getRestaurants(locale: RestaurantLocale, raw: RestaurantSearch, pageSize?: number) {
+  const params = restaurantQuery(raw);
+  if (pageSize !== undefined) params.set('page_size', String(Math.max(1, Math.min(50, pageSize))));
+  const data = object(await request(`${root}/restaurants${query(locale, params)}`, false));
   return { ...envelope(data, parseRestaurant), service_mode_options: array(data.service_mode_options ?? []).map(required) };
 }
 export async function getRestaurant(locale: RestaurantLocale, id: string) { return parseRestaurant(await request(`${root}/restaurants/${encodeURIComponent(id)}${query(locale)}`, false)); }
@@ -113,12 +116,31 @@ export async function getRestaurantReviews(id: string, page = "1") {
       created_at: required(row.created_at)};
   });
 }
-export async function getRestaurantMenu(locale: RestaurantLocale, id: string, page = "1") {
-  const data = object(await request(`${root}/restaurants/${encodeURIComponent(id)}/menu${query(locale, restaurantQuery({ page }))}`, false));
+export async function getRestaurantMenu(locale: RestaurantLocale, id: string, page = "1", pageSize?: number) {
+  const params = restaurantQuery({page});
+  if (pageSize !== undefined) params.set('page_size', String(Math.max(1, Math.min(50, pageSize))));
+  const data = object(await request(`${root}/restaurants/${encodeURIComponent(id)}/menu${query(locale, params)}`, false));
   if (data.establishment_ref !== id) throw new ShidaApiError("malformed");
   const result = envelope(data, parseMenuItem);
   if (result.items.some((item) => item.establishment_ref !== id)) throw new ShidaApiError("malformed");
   return { ...result, hours: hours(data.hours) };
+}
+export async function getRestaurantMenuItem(locale: RestaurantLocale, id: string, itemRef: string) {
+  const item = parseMenuItem(await request(`${root}/restaurants/${encodeURIComponent(id)}/menu/${encodeURIComponent(itemRef)}${query(locale)}`, false));
+  if (item.establishment_ref !== id || item.public_ref !== itemRef) throw new ShidaApiError('malformed');
+  return item;
+}
+
+/** Existing SQL-paginated dish search returns up to three privacy-checked snippets per parent. */
+export async function getRestaurantDishMatches(locale: RestaurantLocale, raw: RestaurantSearch) {
+  const params = restaurantQuery(raw); params.set('page_size','4');
+  const data = object(await request(`${root}/restaurants${query(locale,params)}`,false));
+  return envelope(data,value=>{
+    const row=object(value), establishment=parseRestaurant(row), matches=object(row.dish_matches);
+    const items=array(matches.items).map(parseMenuItem);
+    if(items.length>3 || items.some(item=>item.establishment_ref!==establishment.public_ref)) throw new ShidaApiError('malformed');
+    return {establishment,items};
+  });
 }
 export async function getRestaurantWebOptions(id: string) {
   const data = object(await request(`${root}/restaurants/${encodeURIComponent(id)}/ordering-options`, false));

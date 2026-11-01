@@ -25,3 +25,5 @@ export const SOCIAL_LINKS = [
 export const SHIDA_SLOGAN = "Oza koluka nini? Tala na SHIDA!";
 
 export const WENZE_SLOGAN = "Teka, somba, solola prix, nyonso na Wenze!";
+
+export const RESTAURANTS_SLOGAN = "Oza na nzala? Luka bilei ya elengi na SHIDA!";

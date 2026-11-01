@@ -13,8 +13,8 @@ import type {RestaurantLocale,RestaurantMenuItem} from '../../services/shida/res
 import './restaurant-public-refinement.css';
 const copy={en:{estimate:'Estimated subtotal',close:'Close',less:'Decrease quantity',more:'Increase quantity'},fr:{estimate:'Sous-total estimé',close:'Fermer',less:'Réduire la quantité',more:'Augmenter la quantité'},ln:{estimate:'Motango ya mbongo mpo na sikoyo',close:'Kanga',less:'Kitisa motango',more:'Bakisa motango'},sw:{estimate:'Jumla ya makadirio',close:'Funga',less:'Punguza idadi',more:'Ongeza idadi'}};
 type Props={item:RestaurantMenuItem;locale:RestaurantLocale;selections:Selections;busy:boolean;onAdd:(plate:number|null,quantity:number,amount:string)=>void};
-export function MenuChoice({item,locale,selections,busy,onAdd}:Props){
- const t=checkoutCopy[locale],r=restaurantCopy[locale],[open,setOpen]=useState(false);
+export function MenuChoice({item,locale,selections,busy,onAdd,initiallySelected=false}:Props&{initiallySelected?:boolean}){
+ const t=checkoutCopy[locale],r=restaurantCopy[locale],[open,setOpen]=useState(initiallySelected&&item.availability==='available'&&item.pricing_model!=='UNKNOWN');
  const available=item.availability==='available'&&item.pricing_model!=='UNKNOWN';
  return <article id={`item-${item.public_ref}`} className="rst-menu-card">
   <div className="rst-choice-photo">{item.image_url?<RestaurantPhoto src={item.image_url} alt={item.name||r.menu}/>:<span className="rst-food-placeholder" aria-hidden="true"><SpaceIcon name="restaurant"/></span>}</div>

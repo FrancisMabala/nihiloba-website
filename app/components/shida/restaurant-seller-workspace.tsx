@@ -112,7 +112,10 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     if (!Array.isArray(value.items) || !Number.isSafeInteger(value.total) || value.total < value.items.length || !Array.isArray(value.actions)) throw new Error("Invalid restaurant access");
     if (alive.current) { setList(value); setPage(nextPage); setFilter(status); }
     if (enter) {
-      const ref=new URLSearchParams(window.location.search).get('establishment');
+      const entryParams=new URLSearchParams(window.location.search);
+      const createType=entryParams.get('create');
+      if(['restaurant','malewa'].includes(createType??'')&&value.actions.includes('create')){await open('create');return;}
+      const ref=entryParams.get('establishment');
       if(ref) await select(ref);
       else if(value.total===1&&value.items.length===1)await select(value.items[0].public_ref);
     }
@@ -188,7 +191,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     let values: Fields = {}, revision = "", readPath = path, editPath = path, method = "PATCH";
     let currentCurrency = selected?.menu_currency;
     let windows: Window[] = [], closures: Closure[] = [];
-    if (kind === "create") { editPath = root; readPath = root; method = "POST"; values = { name: "", food_business_type: "restaurant" }; }
+    if (kind === "create") { editPath = root; readPath = root; method = "POST"; values = { name: "", food_business_type: new URLSearchParams(window.location.search).get("create")==="malewa"?"malewa":"restaurant" }; }
     else if (kind === "profile" || kind === "publish" || kind === "unpublish") {
       const current = await readRestaurant<Establishment>(path, locale); revision = current.revision; values = current.profile;
       if (kind !== "profile") { editPath = `${path}/lifecycle/${kind}`; method = "POST"; }

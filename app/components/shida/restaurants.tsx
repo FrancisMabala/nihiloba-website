@@ -2,7 +2,7 @@ import {soloCopy} from '../../lib/restaurant-solo-copy';
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ShidaApiError } from "../../services/shida/public-client";
-import { getRestaurant, getRestaurantActions, getRestaurantBusiness, getRestaurantMenu, getRestaurantReviews, restaurantQuery, type Restaurant, type RestaurantLocale, type RestaurantMenuItem, type RestaurantSearch } from "../../services/shida/restaurants-client";
+import { getRestaurantMenuItem, getRestaurant, getRestaurantActions, getRestaurantBusiness, getRestaurantMenu, getRestaurantReviews, restaurantQuery, type Restaurant, type RestaurantLocale, type RestaurantMenuItem, type RestaurantSearch } from "../../services/shida/restaurants-client";
 import { checkoutCopy } from "../../lib/restaurant-checkout-copy";
 import { reservationCopy } from "../../lib/restaurant-reservation-copy";
 import { reservationAvailability } from "../../services/shida/restaurant-reservations";
@@ -114,6 +114,11 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
   const actions = actionsResult.status === "fulfilled" ? actionsResult.value : null;
   const detailPath = restaurantPath(locale, `/${encodeURIComponent(establishment.public_ref)}`);
   const copy = restaurantDetailCopy[locale], routeContext = `${context}&page=${menuPage}`;
+  // Resolve a selected public item independently of menu pagination and recheck its parent.
+  const itemRef=typeof search.item==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(search.item)?search.item:null;
+  const selectedItem=itemRef?await getRestaurantMenuItem(locale,establishment.public_ref,itemRef).catch(()=>null):null;
+  const resolvedMenu=menuResult.status==='fulfilled'?menuResult.value:null;
+  const initialMenu=resolvedMenu&&selectedItem&&!resolvedMenu.items.some(item=>item.public_ref===selectedItem.public_ref)?{...resolvedMenu,items:[selectedItem,...resolvedMenu.items]}:resolvedMenu;
   const currentHours = menuResult.status === "fulfilled" ? menuResult.value.hours : establishment.hours;
   return <section className="restaurant-public restaurant-detail" lang={locale}><div className="container">
     <RestaurantRevalidation/>
@@ -123,7 +128,7 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
     {(actions?.share || actions?.save || actions?.follow) && <nav className="restaurant-top-actions" aria-label={t.services}>{actions?.share && <a className="restaurant-link restaurant-whatsapp" href={actions.share} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a>}{actions?.save && <a className="restaurant-link" href={actions.save} target="_blank" rel="noopener noreferrer">{t.save}</a>}{actions?.follow && <a className="restaurant-link" href={actions.follow} target="_blank" rel="noopener noreferrer">{t.follow}</a>}</nav>}
     <nav className="restaurant-detail-tabs" aria-label={t.title}><a href={`${detailPath}/menu?${routeContext}`} aria-current={menuOnly ? "page" : undefined}>{t.menu}</a><a href={`${detailPath}?${routeContext}#restaurant-info`} aria-current={!menuOnly ? "page" : undefined}>{copy.establishment}</a><a href={`${detailPath}?${routeContext}#reviews`}>{restaurantReviewCopy[locale].reviews}</a>{reservationResult.status==='fulfilled'&&reservationResult.value.available&&<a href={`${locale==='en'?'':`/${locale}`}/shida/restaurant-reservations?establishment=${encodeURIComponent(establishment.public_ref)}`}>{reservationCopy[locale].reserve}</a>}</nav>
     <div className="restaurant-detail-columns"><div className="restaurant-detail-content">
-    <p className="restaurant-note">{soloCopy[locale].publicHelp}</p><RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} tableLocator={tableLocator} menu={menuResult.status === "fulfilled" ? menuResult.value : null}/>
+    <p className="restaurant-note">{soloCopy[locale].publicHelp}</p><RestaurantGuest locale={locale} establishmentRef={establishment.public_ref} tableLocator={tableLocator} menu={initialMenu} selectedItemRef={selectedItem?.public_ref}/>
     {!menuOnly && <section id="restaurant-info" className="restaurant-establishment"><h2>{copy.establishment}</h2>
 
       {establishment.description && <p>{establishment.description}</p>}

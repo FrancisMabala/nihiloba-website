@@ -54,13 +54,13 @@ describe("Restaurant released public contract", () => {
     expect(html).toContain("restaurant-menu-empty"); expect(html).not.toContain("restaurant-pagination");
     expect(html).not.toContain(restaurantCopy[locale].noBusiness); expect(html).not.toContain("Lingála"); expect(html).toContain("Lingala");
   });
-  it("discovery uses only collection data and distinguishes zero and unavailable menus", async () => {
+  it("discovery separates collection and dish search failures and distinguishes unavailable menus", async () => {
     const fetcher = mockApi({ "/api/public/shida/restaurants": { ...collection([
       { ...restaurant, menu_summary: { available_count: 0, sold_out_count: 0, temporarily_unavailable_count: 0 } },
       { ...restaurant, public_ref: "RST-SECOND", menu_summary: { available_count: 0, sold_out_count: 2, temporarily_unavailable_count: 0 } },
     ]), service_mode_options: [] } });
     const html = renderToStaticMarkup(await RestaurantListPage({ locale: "fr", search: { name: "Exact", dish: "pondu", area: "Gombe", food_type: "catering", service_mode: "Sur place" } }));
-    expect(fetcher).toHaveBeenCalledTimes(1); expect(html).toContain("Pas encore de menu publié"); expect(html).toContain("Éléments du menu indisponibles actuellement");
+    expect(fetcher).toHaveBeenCalledTimes(2); expect(html).toContain("Pas encore de menu publié"); expect(html).toContain("Éléments du menu indisponibles actuellement");
     expect(html).toContain("Horaires à confirmer"); expect(html).toContain('name="dish" value="pondu"'); expect(html).toContain('value="catering"'); expect(html).not.toContain("PRIVATE_");
   });
   it("retries the current document without dropping menu page or exposing a legacy slug", async () => {
