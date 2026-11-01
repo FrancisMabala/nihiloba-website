@@ -1,5 +1,5 @@
-export type SpaceView='orders'|'requests'|'messages'|'receipts'|'settings'|'management'|'support'|'recovery'|'transactions'|'listings';
+export type SpaceView='overview'|'orders'|'requests'|'messages'|'receipts'|'settings'|'management'|'support'|'recovery'|'transactions'|'listings';
 export function resolveSpaceView(value?:string,inbox=false):SpaceView{
  if(inbox||value==='inbox')return 'messages';
- return ['orders','requests','messages','receipts','settings','management','support','recovery','transactions','listings'].includes(value??'')?value as SpaceView:'management';
+ return ['overview','orders','requests','messages','receipts','settings','management','support','recovery','transactions','listings'].includes(value??'')?value as SpaceView:'overview';
 }

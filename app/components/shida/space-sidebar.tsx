@@ -1,3 +1,4 @@
+import {universalSpaceCopy} from '../../lib/universal-space-copy';
 import type {MouseEventHandler} from 'react';
 import {SpaceIcon,type SpaceIconName} from './account-space-icon';
 import {accountNavigationCopy} from '../../lib/account-navigation-copy';
@@ -10,5 +11,6 @@ export function SpaceSidebar({locale,view,onNavigate,individualOnly=false,hasLis
  const entries:[string,string,SpaceIconName][]=[['management',n.activities,'management'],['transactions',n.transactions,'orders'],['messages',t.messages,'messages'],['settings',n.account,'settings']];
  if(individualOnly)entries[0]=['listings',listingCopy[locale].title,'orders'];
  else if(hasListings||view==='listings')entries.splice(1,0,['listings',listingCopy[locale].title,'orders']);
+ entries.unshift(['overview',universalSpaceCopy[locale].overview,'home']);
  return <aside className="space-sidebar"><h2>{a.space}</h2><nav aria-label={a.space}>{entries.map(([key,label,icon])=><a key={key} onClick={onNavigate} href={`${base}?view=${key}`} aria-current={(key===view||key==='transactions'&&['orders','requests','receipts'].includes(view))?'page':undefined}><SpaceIcon name={icon}/><span>{label}</span></a>)}</nav></aside>;
 }

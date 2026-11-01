@@ -1,3 +1,4 @@
+import {stayTravelOnboarding} from "../../lib/stay-travel-onboarding";
 import Image from "next/image";
 import { SpaceIcon } from "./account-space-icon";
 import type { ServiceLocale } from "../../lib/services-i18n";
@@ -39,13 +40,7 @@ export function StayTravelHero({kind,title,locale}:{kind:Kind;title:string;local
   </header>;
 }
 export function stayTravelCommand(command:string) {const url=new URL(OFFICIAL_CHANNELS.whatsapp);url.searchParams.set("text",command);return url.toString();}
-// These commands enter the existing onboarding conversations; opening a link does not publish or activate anything.
-const onboarding = {
-  apartments:{en:"i offer an apartment",fr:"je propose un appartement",ln:"nazali kopesa ndako",sw:"nina nyumba"},
-  hotels:{en:"publish hotel",fr:"publier hôtel",ln:"publish hotel",sw:"publish hotel"},
-  transport:{en:"wewa on",fr:"chauffeur wewa",ln:"naza wewa",sw:"mimi ni boda"},
-};
 export function StayTravelInvitation({kind,locale}:{kind:Kind;locale:ServiceLocale}) {
   const t=stayTravelCopy[locale],c=t[kind];
-  return <aside className={`st-invitation st-${kind}`}><span className="st-invitation-icon" aria-hidden="true"><SpaceIcon name={kind==="apartments"?"home":kind==="hotels"?"business":"people"}/></span><div><h2>{c.invitation}</h2><p>{c.description}</p></div><a className="button button-primary" href={stayTravelCommand(onboarding[kind][locale])} target="_blank" rel="noopener noreferrer">{c.action} <span aria-hidden="true">→</span><small>{t.whatsapp}</small></a></aside>;
+  return <aside className={`st-invitation st-${kind}`}><span className="st-invitation-icon" aria-hidden="true"><SpaceIcon name={kind==="apartments"?"home":kind==="hotels"?"business":"people"}/></span><div><h2>{c.invitation}</h2><p>{c.description}</p></div><a className="button button-primary" href={stayTravelCommand(stayTravelOnboarding[kind][locale])} target="_blank" rel="noopener noreferrer">{c.action} <span aria-hidden="true">→</span><small>{t.whatsapp}</small></a></aside>;
 }

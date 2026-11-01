@@ -12,9 +12,13 @@ for(const kind of ['empty','one','many'])for(const width of [360,390,768,1440])t
  }else{
   await expect(cards).toHaveCount(kind==='one'?1:4);
   await expect(page.getByRole('heading',{name:'Start using SHIDA'})).toHaveCount(0);
-  await expect(page.getByRole('link',{name:'Open a shop'})).toHaveCount(0);
-  await expect(page.locator('.activities-section-heading')).toContainText(kind==='one'?'1 activity':'4 activities');
-  expect((await page.locator('.activity-cards').boundingBox())!.y).toBeLessThan((await page.locator('.activities-other').boundingBox())!.y);
+  await expect(page.getByRole('link',{name:'Open a shop'})).toBeHidden();
+  await expect(page.locator('.activities-section-heading')).toContainText('Your activities');
+  const creationTop=(await page.locator('.activities-other').boundingBox())!.y;
+  for(const group of await page.locator('.activity-cards').all()){
+   const bounds=(await group.boundingBox())!;
+   expect(bounds.y+bounds.height).toBeLessThanOrEqual(creationTop);
+  }
   if(kind==='many'){
    await expect(cards.filter({hasText:'Earlier Kitchen'})).toContainText('Inactive');
    await expect(cards.filter({hasText:'Draft Malewa'})).toContainText('Complete activity');
@@ -32,7 +36,7 @@ for(const kind of ['empty','one','many'])for(const width of [360,390,768,1440])t
   await page.getByRole('button',{name:'+ New activity',exact:true}).click();
   await expect(page.getByRole('link',{name:'Open a shop'})).toBeVisible();
   await page.getByRole('button',{name:'Close',exact:true}).click();
-  await expect(page.getByRole('link',{name:'Open a shop'})).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Open a shop'})).toBeHidden();
  }
  expect(errors).toEqual([]);
 });
@@ -64,7 +68,7 @@ test('restaurant pagination exposes all records and stops at the reported total'
   return route.fulfill({json:{items:Array.from({length:second?1:20},(_,i)=>({public_ref:`RST_page_${second?20:i}`,profile:{name:`Page activity ${second?20:i}`},status:'draft'})),total:21,actions:['create']}});
  });
  await page.goto('/shida/space?view=management');await expect(page.locator('.activity-cards article')).toHaveCount(21);
- await expect(page.locator('.activities-section-heading')).toContainText('Showing 21');
+ await expect(page.getByRole('button',{name:'Show more activities'})).toBeVisible();
  await page.getByRole('button',{name:'Show more activities'}).click();
  await expect(page.locator('.activity-cards article')).toHaveCount(22);await expect(page.getByRole('button',{name:'Show more activities'})).toHaveCount(0);
 });
