@@ -43,3 +43,10 @@ export function dashboardActivities(items:ManagedActivity[]):ManagedActivity[]{
  }
  return result;
 }
+
+/** Unknown or partial activity data must never hide legitimate management access. */
+export function individualOnlyActivities(data:{items:ManagedActivity[];failed:boolean;more:boolean;markets:string[];business:boolean}|null):boolean{
+ return !!data&&!data.failed&&!data.more&&!data.business&&data.items.length>0
+  &&data.items.every(item=>item.market==='wenze'&&item.individual)
+  &&data.markets.every(market=>market==='wenze');
+}

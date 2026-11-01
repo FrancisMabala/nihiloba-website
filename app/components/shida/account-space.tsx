@@ -24,14 +24,25 @@ import {accountSupportCopy} from '../../lib/account-support-copy';
 import {PersonalProfileSettings} from './personal-profile-settings';
 import {accountNavigationCopy} from '../../lib/account-navigation-copy';
 import {MessagesSpace} from './messages-space';
+import {QuickSell} from './quick-sell';
+import {WenzeApiProvider} from '../../lib/wenze-seller-api';
+import {usePersonalActivityData} from '../../lib/use-personal-activity-data';
+import {individualOnlyActivities} from '../../lib/personal-activities';
+import {leaveWork} from '../../lib/wenze-work';
+import {listingCopy} from '../../lib/wenze-listings-copy';
 import {resolveSpaceView,type SpaceView as View} from '../../lib/space-view';
 export function AccountSpace({locale,initialView,inbox=false}:{locale:MarketplaceLocale;initialView?:string;inbox?:boolean}){
  const w=(key:Parameters<typeof workspaceText>[1])=>workspaceText(locale,key);
  const t=accountSpaceCopy[locale],a=marketplaceAccountCopy[locale],prefix=locale==='en'?'':`/${locale}`,bilingual=locale==='en'?'':'/fr',base=`${prefix}/shida/space`;
- const view=resolveSpaceView(initialView,inbox);
+ const requestedView=resolveSpaceView(initialView,inbox);
  const [session,setSession]=useState<PersonalSession|null>(null),[checking,setChecking]=useState(true),[attempt,setAttempt]=useState(0);
  const [securityResult,setSecurityResult]=useState<'deleted'|'logout'|null>(null);
  const n=accountNavigationCopy[locale];
+ const [activityPages,setActivityPages]=useState(1),[activityRevision,setActivityRevision]=useState(0);
+ const activityData=usePersonalActivityData(session?.binding??null,activityPages,activityRevision);
+ const individualOnly=individualOnlyActivities(activityData);
+ const hasListings=!!activityData?.items.some(item=>item.individual);
+ const view=requestedView==='management'&&individualOnly?'listings':requestedView;
  useEffect(()=>{
   let alive=true,generation=0,controller:AbortController|undefined;
   const load=async(clear=false)=>{
@@ -50,9 +61,10 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
  const orders:[string,string,SpaceIconName][]=[[t.wenzeOrders,`${bilingual}/shida/wenze/orders`,'shop'],[t.foodOrders,`${prefix}/shida/restaurant-orders`,'restaurant']];
  const requests:[string,string,SpaceIconName][]=[[t.serviceRequests,`${prefix}/shida/service-requests`,'requests'],[w('applications'),locale==='fr'?'/fr/shida/mes-candidatures':`${prefix}/shida/my-applications`,'requests'],[w('reservations'),`${prefix}/shida/restaurant-reservations`,'restaurant']];
  return <div className={`account-space${view==='settings'?' account-settings-page':view==='management'?' account-activities-page':view==='transactions'?' account-transactions-page':''}`} lang={locale}>
-  <SpaceSidebar locale={locale} view={view}/>
+  <SpaceSidebar locale={locale} view={view} individualOnly={individualOnly} hasListings={hasListings} onNavigate={async event=>{event.preventDefault();const destination=event.currentTarget.href;if(await leaveWork())window.location.assign(destination);}}/>
   <div className="space-content">
-   <h1>{view==='management'?a.space:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
+   <h1>{view==='listings'?listingCopy[locale].title:view==='management'?a.space:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
+   {view==='listings'&&(checking?<p role="status">{t.loading}</p>:session?<WenzeApiProvider key={session.binding} binding={session.binding} onUnauthorized={()=>setSession(null)}><QuickSell locale={locale} embedded/></WenzeApiProvider>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {view==='messages'&&(checking?<p role="status">{t.loading}</p>:session?<MessagesSpace key={session.binding} binding={session.binding} locale={locale}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='recovery'&&<AccountRecovery locale={locale}/>}
    {!session&&view!=='recovery'&&<p><a href={href('recovery')}>{securityText(locale,'report')}</a></p>}
@@ -62,7 +74,7 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
    {view==='orders'&&<>{rows(orders)}{session&&<AccountSpaceOrders key={session.binding} binding={session.binding} locale={locale}/>}</>}
    {view==='requests'&&rows(requests)}
    {view==='receipts'&&<><p className="space-intro">{t.receiptNote}</p>{rows([[t.bills,`${prefix}/shida/service-bills`,'receipts']])}</>}
-   {view==='management'&&<><p className="space-intro">{activitiesDesignCopy[locale].intro}</p>{checking?<p role="status">{t.loading}</p>:session?<PersonalActivities key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>}</>}
+   {view==='management'&&<><p className="space-intro">{activitiesDesignCopy[locale].intro}</p>{checking?<p role="status">{t.loading}</p>:session?<PersonalActivities key={session.binding} locale={locale} current={activityData} onMore={()=>setActivityPages(v=>v+1)} onRetry={()=>setActivityRevision(v=>v+1)}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>}</>}
    {!session&&securityResult&&<p role="status">{securityText(locale,securityResult)}</p>}
    {view==='settings'&&session&&<PersonalProfileSettings key={'profile:'+session.binding} binding={session.binding} locale={locale}/>}
    {view==='settings'&&session&&<AccountSecurity key={'security:'+session.binding} binding={session.binding} locale={locale} onCompleted={setSecurityResult}/>}

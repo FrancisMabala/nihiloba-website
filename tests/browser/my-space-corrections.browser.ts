@@ -72,7 +72,7 @@ test('empty Messages stays simple and the header links to the unified center',as
  await page.goto('/fr/shida/space?view=messages');
  await expect(page.locator('.notification-inline')).toContainText('Aucune notification pour le moment.');
  await expect(page.locator('.notification-filters')).toHaveCount(0);
- await expect(page.locator('.space-content')).toContainText('utilisez WhatsApp');
+ await expect(page.locator('.space-content')).toContainText('Les conversations et les réponses se font sur WhatsApp.');
  await expect(page.locator('.notification-header-link')).toHaveAttribute('href','/fr/shida/space?view=messages');
  await expect(page.locator('.space-content footer')).toHaveCount(0);
 });
@@ -87,7 +87,10 @@ test('an archived unnamed shop opens its owner restoration controls without acti
   return route.fulfill({status:403,json:{detail:'inactive'}});
  });
  await page.goto('/shida/seller/wenze?store=WNZ_old&view=shop');
- await expect(page.getByRole('button',{name:'Restore',exact:true})).toBeVisible();
+ // Restoration now selects Hidden; restoring must not publish the shop.
+ await expect(page.getByRole('button',{name:'Hidden Temporarily hide your shop.',exact:true})).toBeEnabled();
+ await expect(page.getByRole('button',{name:'Active Visible when your shop is ready.',exact:true})).toBeDisabled();
+ await expect(page.getByText('Restore this item. It stays hidden until you choose to show it.')).toBeVisible();
  expect(products).toBe(0);expect(errors).toEqual([]);
 });
 test('sign-in exposes unauthenticated lost-phone recovery without changing login',async({page})=>{

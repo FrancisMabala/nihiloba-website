@@ -1,5 +1,5 @@
 import {it,expect} from 'vitest';
-import {managedActivities,dashboardActivities} from '../app/lib/personal-activities';
+import {managedActivities,dashboardActivities,individualOnlyActivities} from '../app/lib/personal-activities';
 it('keeps creation capability separate from existing activities',()=>{const value=managedActivities('restaurants',{items:[{public_ref:'RST_1',profile:{name:'Kitchen'},status:'inactive'}],actions:[],total:30});expect(value.setup).toBe(false);expect(value.items[0].query).toBe('establishment=RST_1');expect(value.items[0].published).toBe(false);expect(value.more).toBe(true);});
 it('fails closed without Services capability',()=>{expect(()=>managedActivities('services',{profiles:[]},{capabilities:[]})).toThrow();expect(managedActivities('services',{profiles:[]},{capabilities:['profile']}).setup).toBe(true);});
 it('preserves multiple shops and selects the exact store',()=>{const value=managedActivities('wenze',{stores:[{public_ref:'WNS_one',name:'First'},{public_ref:'WNS_two',name:'Second',catalog_ready:true}]});expect(value.items).toHaveLength(2);expect(value.items[1].query).toBe('store=WNS_two');expect(value.setup).toBe(false);});
@@ -46,4 +46,12 @@ it('groups service offerings by explicit professional identity without merging u
 it('deduplicates the same store reference without turning a quick-sale identity into a shop',()=>{
  const items=managedActivities('wenze',{stores:[{public_ref:'WNS_shop',name:'Shop'},{public_ref:'WNS_shop',name:'Shop'},{public_ref:'WNS_quick',selling_mode:'individual',name:'Quick sale'}]}).items;
  expect(dashboardActivities(items)).toHaveLength(2);expect(dashboardActivities(items).filter(row=>!row.individual)).toHaveLength(1);
+});
+
+it('only makes listings primary after a complete occasional-only activity read',()=>{
+ const item=managedActivities('wenze',{stores:[{public_ref:'WNS_individual',selling_mode:'individual',name:'Items'}]}).items[0];
+ const data={items:[item],failed:false,more:false,markets:['wenze'],business:false};
+ expect(individualOnlyActivities(data)).toBe(true);
+ for(const patch of [{failed:true},{more:true},{business:true},{items:[]},{markets:['wenze','apartments']},{items:[item,{...item,individual:false,ref:'WNS_shop'}]},{items:[item,{...item,individual:false,market:'services' as const}]}])expect(individualOnlyActivities({...data,...patch})).toBe(false);
+ expect(individualOnlyActivities(null)).toBe(false);
 });
