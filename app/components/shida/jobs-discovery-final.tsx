@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import {JOBS_SLOGAN, OFFICIAL_CHANNELS} from '../../lib/brand';
 import type {ServiceLocale} from '../../lib/services-i18n';
 import {SpaceIcon} from './account-space-icon';
@@ -13,7 +14,7 @@ export const jobsFinalCopy = {
 
 export function JobsDiscoveryHero({locale}:{locale:ServiceLocale}) {
  const t=jobsFinalCopy[locale];
- return <header className="jobs-final-hero"><div><h1>{t.title}</h1><p className="jobs-brand-slogan" lang="ln">{JOBS_SLOGAN}</p><p className="jobs-hero-description">{t.intro}</p></div><div className="jobs-hero-icons" aria-hidden="true"><span><SpaceIcon name="management"/></span><span><SpaceIcon name="people"/></span><span><SpaceIcon name="requests"/></span></div></header>;
+ return <header className="jobs-final-hero"><div><h1>{t.title}</h1><p className="jobs-brand-slogan" lang="ln">{JOBS_SLOGAN}</p><p className="jobs-hero-description">{t.intro}</p></div><Image className="jobs-hero-illustration" src="/images/marketplace-heroes/jobs.svg" width={360} height={190} alt="" aria-hidden="true"/></header>;
 }
 
 export function JobsInvitations({locale}:{locale:ServiceLocale}) {
