@@ -10,6 +10,7 @@ export const serviceCategories = [
 
 export type ServiceCategory = (typeof serviceCategories)[number];
 export type ServiceSearch = {
+  mode?: string;
   query?: string; city?: string; area?: string; commune?: string; category?: string;
   location_type?: string; min_rating?: number; page?: number; page_size?: number;
 };
@@ -23,6 +24,7 @@ export type ServiceProviderSummary = { public_ref: string; slug: string; name: s
 export type ServiceOffering = { public_ref: string; name: string; duration_minutes: number | null; price: string | null; currency: string | null; description: string | null; booking_url: string | null };
 export type CustomerBranch = {branch_ref:string;name:string;broad_area:string;booking_url:string|null};
 export type PublicServiceSummary = {
+  requests_enabled?: boolean;
   customer_branches?:CustomerBranch[]; branch_coverage_specified?:boolean;
   public_ref: string; slug: string; provider: ServiceProviderSummary; service_name: string;
   category: string; short_description: string | null; duration_minutes: number | null;
