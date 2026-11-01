@@ -72,7 +72,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
 
   return <div className="shida-public-account" lang={locale}>
     {session&&<NotificationCenter key={'bell:'+session.binding} binding={session.binding} apiBase="/api/shida/personal/notifications" locale={locale} destination={`${spaceHref}?view=messages`}/>}
-    <MarketplaceControls enhancedAccount key={session?.binding||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref} guestLabel={t.signIn}
+    <MarketplaceControls key={session?.binding||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref} guestLabel={t.signIn}
       registrationLink={!checking&&!session&&process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==="true"?{label:r.create,href:`${prefix}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}:undefined}
       links={[{label:a.space,href:spaceHref},{label:accountSpaceCopy[locale].messages,href:`${spaceHref}?view=messages`},{label:accountSpaceCopy[locale].settings,href:`${spaceHref}?view=settings`}]}
       languages={/\/shida\/?$/.test(pathname)||/\/shida\/(restaurants|services|seller|space|service-requests|service-bills)(?:\/|$)/.test(pathname)?["fr","en","ln","sw"]:["fr","en"]}

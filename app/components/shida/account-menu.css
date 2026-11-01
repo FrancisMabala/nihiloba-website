@@ -1,0 +1,16 @@
+/* Canonical account dropdown: keep this contract aligned across SHIDA frontends. */
+.market-controls .market-avatar{background:#ede7d9;color:#173e32;border:1px solid transparent}
+.market-controls .market-language{background:#082d25;color:#fff;border-radius:10px;min-width:44px}
+.market-controls .market-menu.auth-account-menu{position:absolute;top:calc(100% + 10px);right:0;bottom:auto;left:auto;z-index:120;width:310px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 100px);overflow:auto;padding:16px;background:#fcfaf4;border:1px solid #dfdcd2;border-radius:14px;box-shadow:0 18px 60px #082d2530;box-sizing:border-box}
+.auth-account-identity{display:flex;gap:12px;align-items:center;padding:4px 0 16px;border-bottom:1px solid #dfdcd2;margin-bottom:8px}
+.auth-account-identity>span{border-radius:50%;width:44px;height:44px;display:grid;place-items:center;background:#eae4d6;flex-shrink:0;font-size:14px}
+.auth-account-identity>div{min-width:0;flex:1;overflow-wrap:anywhere}
+.auth-account-identity strong{display:block;font-size:14px;line-height:1.4}
+.auth-account-identity small{display:block;font-size:12px;line-height:1.5;margin-top:3px;font-weight:400}
+.market-controls .auth-account-identity button{justify-content:center;width:44px;min-width:44px;height:44px;padding:0;border:1px solid #ac8b58;border-radius:7px;margin-left:auto;font-size:20px}
+.market-controls .auth-account-menu>a,.market-controls .auth-account-menu>button{display:flex;align-items:center;justify-content:flex-start;gap:12px;min-height:48px;padding:12px 8px;font-size:14px;line-height:1.5}
+.auth-account-menu svg{width:22px;height:22px;flex-shrink:0}
+.auth-account-menu a>span:last-child{margin-left:auto}
+.market-controls .auth-account-menu :focus-visible{outline:2px solid #997344;outline-offset:2px}
+.market-controls .auth-account-menu:before{display:none}
+@media(max-width:520px){.market-controls .market-menu.auth-account-menu{position:fixed;top:76px;right:12px;width:310px;max-height:calc(100dvh - 100px)}}

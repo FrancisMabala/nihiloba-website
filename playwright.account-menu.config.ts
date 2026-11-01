@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:['account-menu.browser.ts','auth-design.browser.ts'],workers:2,timeout:45000,use:{baseURL:'http://localhost:3051',channel:'chrome',headless:true,serviceWorkers:'block'},webServer:{command:'node node_modules/next/dist/bin/next start --hostname 127.0.0.1 -p 3051',url:'http://127.0.0.1:3051/shida',reuseExistingServer:true},outputDir:'test-results/account-menu',reporter:'list'});
