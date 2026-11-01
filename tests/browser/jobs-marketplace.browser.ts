@@ -1,7 +1,20 @@
 import {test,expect} from '@playwright/test';
+import {JOBS_SLOGAN} from '../../app/lib/brand';
+for(const locale of ['en','fr','ln','sw'])for(const width of [390,1440])test(`final Jobs branding and invitations ${locale} ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:960});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/emplois`);
+ await expect(page.locator('#main-content .jobs-brand-slogan')).toHaveCount(1);await expect(page.locator('#main-content .jobs-brand-slogan')).toHaveText(JOBS_SLOGAN);await expect(page.locator('#main-content .jobs-brand-slogan')).toHaveAttribute('lang','ln');
+ await expect(page.locator('#main-content .jobs-public-topline,.jobs-header-row')).toHaveCount(0);
+ await expect(page.locator('#main-content .jobs-invitation')).toHaveCount(3);
+ await expect(page.locator('#main-content .jobs-invitation-candidate .button')).toHaveAttribute('href',/^https:\/\/wa.me\//);
+ await expect(page.locator('#main-content .jobs-invitation-personal .button')).toHaveAttribute('href',/^https:\/\/wa.me\//);
+ await expect(page.locator('#main-content .jobs-invitation-business .button')).toHaveAttribute('href','https://business.nihiloba.com/');
+ await expect(page.locator('#main-content .jobs-invitation-candidate a').last()).toHaveAttribute('href',/\/(my-applications|mes-candidatures)\/?$/);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`test-results/jobs-final-${locale}-${width}.png`,fullPage:true});
+});
 for(const width of [360,390,768,1024,1440])test(`employment discovery and detail at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:960});await page.goto('/shida/emplois');
- await expect(page.getByRole('heading',{name:'Find work with SHIDA'})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Jobs',exact:true})).toBeVisible();
  await expect(page.locator('.job-result')).toHaveCount(5);
  for(const amount of ['180 USD / month','25 USD / day','20 USD / intervention'])await expect(page.getByText(amount,{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -28,4 +41,4 @@ test('search, empty, failure, pagination and expired states',async({page})=>{
  await page.goto('/shida/emplois?view=professional&page_size=1');await expect(page.locator('.job-result')).toHaveCount(1);await page.getByRole('link',{name:'Next',exact:true}).click();await expect(page).toHaveURL(/page=2/);
  await page.goto('/shida/emplois/expired');await expect(page.getByText('Expired offer',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Apply on employer website'})).toHaveCount(0);await page.screenshot({path:'test-results/jobs-expired.png',fullPage:true});
 });
-for(const locale of ['fr','ln','sw'])test(`localized Jobs ${locale}`,async({page})=>{await page.goto(`/${locale}/shida/emplois`);await expect(page.locator('.job-result')).toHaveCount(5);await expect(page.locator('.jobs-public')).toHaveAttribute('lang',locale);await page.screenshot({path:`test-results/jobs-${locale}.png`,fullPage:true});});
+for(const locale of ['fr','ln','sw'])test(`localized Jobs ${locale}`,async({page})=>{await page.goto(`/${locale}/shida/emplois`);await expect(page.locator('.job-result')).toHaveCount(5);await expect(page.locator('#main-content .jobs-public')).toHaveAttribute('lang',locale);await page.screenshot({path:`test-results/jobs-${locale}.png`,fullPage:true});});

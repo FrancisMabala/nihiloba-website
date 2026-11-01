@@ -18,6 +18,14 @@ afterEach(()=>vi.unstubAllGlobals());
 function collection(items:unknown[]){return {items,pagination:{page:1,page_size:12,total_items:items.length,total_pages:items.length?1:0}};}
 
 describe("Employment Batch 5B structured public frontend",()=>{
+  it('does not invent missing compensation currency, period or amounts',()=>{
+    const bare=renderToStaticMarkup(<JobCard locale="en" item={{...individual,salary:{minimum:'180',maximum:null,currency:null,period:null},compensation:null}}/>);
+    expect(bare).toContain('>180</p>');expect(bare).not.toContain('USD');expect(bare).not.toContain('/ month');
+    const text=renderToStaticMarkup(<JobCard locale="en" item={{...individual,salary:null,compensation:'To discuss after interview'}}/>);
+    expect(text).toContain('To discuss after interview');expect(text).not.toContain('USD');
+    const missing=renderToStaticMarkup(<JobCard locale="en" item={{...individual,salary:null,compensation:null}}/>);
+    expect(missing).not.toContain('job-result-salary');
+  });
   it("renders compact professional and individual offers with distinct public fields",()=>{const company=renderToStaticMarkup(<JobCard item={professional} locale="en"/>),person=renderToStaticMarkup(<JobCard item={individual} locale="en"/>);expect(company).not.toContain("Published on SHIDA");expect(company).toContain("Company offer");expect(company).toContain("RAWBANK");expect(company).toContain("Hybrid");expect(company).toContain("Full time");expect(company).toContain("Preferred structured card summary.");expect(company).not.toContain("Legacy card summary.");expect(company).toContain("500–700 USD / month");expect(company).not.toContain("Apply on SHIDA");expect(person).toContain("Individual");expect(person).toContain("Saturday mornings");expect(person).toContain("Salongo, Lemba, Kinshasa");expect(person).not.toContain("rawbank.png");});
 
   it("uses the public job reference when an external job has no slug",()=>{const html=renderToStaticMarkup(<JobCard item={{...professional,public_ref:"JOB_EXTERNAL",slug:null,origin:"external",apply_url:null}} locale="en"/>);expect(html).toContain('href="/shida/emplois/JOB_EXTERNAL"');});

@@ -2,7 +2,17 @@ import {afterEach,expect,it,vi} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {compensationPeriod,JobCategories,JobPostingEntry} from '../app/components/shida/job-discovery-ui';
 import {getJobs,parseJobSearchParams} from '../app/services/shida/public-client';
+import {JobsDiscoveryHero,JobsInvitations,jobsFinalCopy} from '../app/components/shida/jobs-discovery-final';
+import {JOBS_SLOGAN} from '../app/lib/brand';
 afterEach(()=>vi.unstubAllGlobals());
+it('keeps the brand in Lingala and uses distinct existing invitation destinations in every locale',()=>{
+ for(const locale of ['en','fr','ln','sw'] as const){
+  const hero=renderToStaticMarkup(<JobsDiscoveryHero locale={locale}/>),invites=renderToStaticMarkup(<JobsInvitations locale={locale}/>);
+  expect(hero).toContain(`lang="ln">${JOBS_SLOGAN}`);expect(hero).toContain(jobsFinalCopy[locale].intro);expect(hero).not.toContain('<a');
+  expect(invites).toContain(encodeURIComponent(jobsFinalCopy[locale].candidateCommand).replace(/%20/g,'+'));expect(invites).toContain(encodeURIComponent(jobsFinalCopy[locale].personalCommand).replace(/%20/g,'+'));
+  expect(invites).toContain('https://business.nihiloba.com/');expect(invites).toContain(locale==='fr'?'/fr/shida/mes-candidatures':'/shida/my-applications');expect(invites).not.toContain('/register');
+ }
+});
 it('preserves exact compensation units, including unknown historical units',()=>{
  expect(compensationPeriod('month','fr')).toBe('mois');expect(compensationPeriod('day','fr')).toBe('jour');expect(compensationPeriod('intervention','fr')).toBe('intervention');
  expect(compensationPeriod('per completed assignment','sw')).toBe('per completed assignment');

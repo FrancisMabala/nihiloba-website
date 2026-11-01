@@ -1,8 +1,8 @@
-import {JobCategories, JobCategoryIcon, JobPostingEntry, jobDiscoveryCopy, compensationPeriod, type JobCategory} from "./job-discovery-ui";
+import {JobCategories, JobCategoryIcon, jobDiscoveryCopy, compensationPeriod, type JobCategory} from "./job-discovery-ui";
 import {ActiveSearchFilters} from "./active-search-filters";
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
 import type { Metadata } from "next";
-import { MarketplaceDiscoveryHeader } from "./public-marketplace";
+import {JobsDiscoveryHero, JobsInvitations, jobsFinalCopy} from "./jobs-discovery-final";
 import Link from "next/link";
 import "./jobs-public.css";
 import type { ServiceLocale as Locale } from "../../lib/services-i18n";
@@ -13,7 +13,7 @@ import type { JobCollection, JobSearch, PublicJob, PublicJobEmployer, PublicJobE
 import { ButtonLink } from "../button-link";
 import { ExternalJobAction, JobPublicActions, JobViewTracker } from "./job-public-actions";
 import { MarketplaceImage } from "./marketplace-image";
-import { MarketplaceBreadcrumb, MarketplaceSectionBreadcrumb } from "./marketplace-primitives";
+import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import { marketplacePath, MarketplaceState, publicLocation } from "./marketplace";
 
 const baseCopy = {
@@ -110,7 +110,7 @@ function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
   return <form className="jobs-public-filters mp-search" action={marketplacePath(locale,"/shida/emplois")} method="get" role="search" aria-label={t.search}>
     {search.category&&<input type="hidden" name="category" value={search.category}/>}{search.view&&<input type="hidden" name="view" value={search.view}/>}
     <div className="jobs-search-primary mp-search-primary">
-      <label>{t.search}<input type="search" name="query" defaultValue={search.query} placeholder={t.placeholder} maxLength={120}/></label>
+      <label>{t.search}<input type="search" name="query" defaultValue={search.query} placeholder={jobsFinalCopy[locale].placeholder} maxLength={120}/></label>
       <label>{t.city}<input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label>
       <button className="button button-primary" type="submit">{marketplaceDiscoveryCopy[locale].search}<span aria-hidden="true">→</span></button>
     </div>
@@ -130,7 +130,6 @@ function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
 function JobPagination({locale,search,collection}:{locale:Locale;search:JobSearch;collection:JobCollection}){const t=copy[locale],p=collection.pagination;if(p.total_pages<=1)return null;return <nav className="marketplace-pagination" aria-label={`${t.page} ${p.page} ${t.of} ${p.total_pages}`}><span>{p.page>1?<Link href={pageHref(locale,search,p.page-1)}>{t.previous}</Link>:t.previous}</span><span>{t.page} {p.page} {t.of} {p.total_pages}</span><span>{p.page<p.total_pages?<Link href={pageHref(locale,search,p.page+1)}>{t.next}</Link>:t.next}</span></nav>;}
 export async function JobCollectionPage({locale,search}:{locale:Locale;search:JobSearch}) {
   const t=copy[locale],d=discoveryCopy[locale],u=jobDiscoveryCopy[locale];
-  const applicationsHref=marketplacePath(locale,locale==="fr"?"/shida/mes-candidatures":"/shida/my-applications");
   let collection:JobCollection|undefined;
   try { collection=await getJobs({...search,page:search.page??1,page_size:search.page_size??12},locale); }
   catch(error){if(!(error instanceof ShidaApiError)||error.kind==="not-found")throw error;}
@@ -141,8 +140,7 @@ export async function JobCollectionPage({locale,search}:{locale:Locale;search:Jo
   const emptyMessage=filtered?u.filtered:u.empty;
   return <div className="jobs-public marketplace-public" lang={locale}>
     <div className="container">
-      <div className="jobs-public-topline mp-topline"><MarketplaceSectionBreadcrumb locale={locale} current={t.jobs}/><Link href={applicationsHref}>{d.applications}<span aria-hidden="true"> ↗</span></Link></div>
-      <div className="jobs-header-row"><MarketplaceDiscoveryHeader className="jobs-public-hero" title={t.title} intro={u.intro}/><JobPostingEntry locale={locale}/></div>
+      <JobsDiscoveryHero locale={locale}/>
     <section id="job-discovery" className="jobs-public-discovery" aria-labelledby="job-discovery-title">
       <JobFilters locale={locale} search={search}/>
       <JobCategories locale={locale} search={search} categories={categories}/><nav className="job-offer-tabs mp-chips" aria-label={t.jobs}>
@@ -158,6 +156,7 @@ export async function JobCollectionPage({locale,search}:{locale:Locale;search:Jo
         </>:<div className="job-api-error" role="alert"><MarketplaceState>{t.unavailable}</MarketplaceState><ButtonLink href={pageHref(locale,search,search.page??1)} variant="secondary">{t.retry}</ButtonLink></div>}
       </div>
     </section>
+    <JobsInvitations locale={locale}/>
     </div>
   </div>;
 }
