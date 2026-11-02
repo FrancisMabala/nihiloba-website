@@ -1,3 +1,4 @@
+import {Suspense} from "react";
 import {RestaurantDiscoveryHero} from "./restaurant-discovery-hero";
 import {restaurantDiscoveryFinalCopy} from "../../lib/restaurant-discovery-final-copy";
 import {discoverRestaurantDishes} from "../../lib/restaurant-dish-discovery";
@@ -20,10 +21,9 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
  const c = restaurantDiscoveryFinalCopy[locale], t = restaurantCopy[locale], d = discoveryCopy[locale], params = restaurantQuery(search), path = restaurantPath(locale);
  const dishPage=Array.isArray(search.dish_page)?search.dish_page[0]:search.dish_page;
  if(dishPage&&/^\d+$/.test(dishPage)&&Number.isSafeInteger(Number(dishPage))&&Number(dishPage)>0)params.set('dish_page',String(Number(dishPage)));
- let result: Awaited<ReturnType<typeof getRestaurants>> | null = null;
- const [placesResult,dishesResult]=await Promise.allSettled([getRestaurants(locale,search,6),discoverRestaurantDishes(locale,search)]);
- if(placesResult.status==="fulfilled")result=placesResult.value;
- const dishes=dishesResult.status==="fulfilled"?dishesResult.value:null;
+ // Start both requests now; a failed or slow preview never delays places.
+ const dishesPromise = discoverRestaurantDishes(locale, search).catch(() => null);
+ const result = await getRestaurants(locale, search, 6).catch(() => null);
  const link=(extra:Record<string,string>,anchor="")=>`${path}?${new URLSearchParams({...Object.fromEntries(params),...extra})}${anchor}`;
  const modes = [...new Set([...(params.get("service_mode") ? [params.get("service_mode")!] : []), ...(result?.service_mode_options ?? [])])];
  const advanced = ["name", "area", "dish", "service_mode"].filter(key => params.get(key)).length + (["fast_food", "catering"].includes(params.get("food_type") ?? "") ? 1 : 0);
@@ -40,15 +40,9 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
    <ActiveSearchFilters locale={locale} path={path} query={params.toString()} labels={{query:t.search,city:t.city,dish:d.dish,name:t.name,area:t.area,food_type:t.type,open_now:t.openOnly.split(" — ")[0],service_mode:t.mode}} values={{food_type:{malewa:t.malewa,restaurant:t.restaurant,cafe:t.cafe,fast_food:t.fast_food,catering:t.catering},open_now:{true:t.openOnly.split(" — ")[0]}}}/>
   </form>
   <p className="rd-filter-explanation">{c.filterHelp}</p>
-  <section id="dishes" aria-labelledby="rd-dish-title"><div className="rd-results-heading"><h2 id="rd-dish-title">{c.dishes}</h2><a href={link({dish_page:"1"},"#dishes")}>{c.allDishes} →</a></div><p className="rd-selection-note">{c.selection}</p>
-  {(!dishes||dishes.failed)&&<div className="rd-empty" role="status"><p>{c.dishError}</p><RestaurantRetry label={t.retry}/></div>}
-  {dishes&&!dishes.failed&&!dishes.items.length&&<div className="rd-empty"><p>{c.noDishes}</p><a href={path}>{t.reset}</a></div>}
-  <div className="rd-dish-grid">{dishes?.items.map(({item,establishment})=>{
-   const href=`${path}/${encodeURIComponent(establishment.public_ref)}/menu?${new URLSearchParams({item:item.public_ref,back:params.toString()})}#item-${encodeURIComponent(item.public_ref)}`;
-   return <article className="rd-dish-card" key={`${establishment.public_ref}:${item.public_ref}`}><a className="rd-dish-photo" href={href} aria-label={`${c.choose}: ${item.name}`}><span className="rd-food-fallback" aria-hidden="true"><SpaceIcon name="restaurant"/></span><RestaurantPhoto src={item.image_url} alt={item.name||t.menu} sizes="(max-width:650px) 45vw, 280px"/></a><div className="rd-dish-body"><h3><a href={href}>{item.name}</a></h3><a className="rd-dish-parent" href={`${path}/${encodeURIComponent(establishment.public_ref)}/menu`}>{establishment.name}</a><p className="rd-dish-location">{establishment.general_location}</p><RestaurantPrice item={item} locale={locale}/>{item.availability!=="available"&&<p className="rd-status-closed">{t[item.availability]}</p>}<a className="rd-dish-choose" href={href}>{item.availability==="available"?c.choose:d.menu} →</a></div></article>;
-  })}</div>
-  {dishes&&dishes.total>dishes.page_size&&<nav className="restaurant-pagination" aria-label={c.dishes}>{dishes.page>1&&<a href={link({dish_page:String(dishes.page-1)},"#dishes")}>{t.previous}</a>}<span>{t.page} {dishes.page}</span>{dishes.page*dishes.page_size<dishes.total&&<a href={link({dish_page:String(dishes.page+1)},"#dishes")}>{t.next}</a>}</nav>}
-  </section>
+  <Suspense fallback={<section id="dishes" aria-busy="true" aria-label={c.dishes}><h2>{c.dishes}</h2><div className="rd-dish-loading" aria-hidden="true"/></section>}>
+   <DiscoveryDishes locale={locale} params={params} dishesPromise={dishesPromise}/>
+  </Suspense>
   <div id="establishments" className="rd-results-heading mp-results-heading"><h2>{c.places}{params.get("city") ? ` · ${params.get("city")}` : ""}</h2>{result && <p role="status">{result.total} {t.results}</p>}<a href={link({page:"1"},"#establishments")}>{c.allPlaces} →</a></div>
   {!result ? <div className="rd-empty" role="status"><p>{t.error}</p><RestaurantRetry label={t.retry}/></div> : <>
    {!result.items.length && <div className="rd-empty"><p>{t.empty}</p><a href={path}>{t.reset}</a></div>}
@@ -65,4 +59,25 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
   </>}
   <section className="rd-owner-invite"><SpaceIcon name="shop"/><div><h2>{c.invite}</h2><p>{c.inviteText}</p></div><nav aria-label={c.invite}><a href={`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants?create=restaurant`}>{c.restaurant} →</a><a href={`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants?create=malewa`}>{c.malewa} →</a></nav></section>
  </div></section>;
+}
+
+async function DiscoveryDishes({locale, params, dishesPromise}: {
+ locale: RestaurantLocale;
+ params: URLSearchParams;
+ dishesPromise: Promise<Awaited<ReturnType<typeof discoverRestaurantDishes>> | null>;
+}) {
+ const dishes = await dishesPromise;
+ const c = restaurantDiscoveryFinalCopy[locale], t = restaurantCopy[locale], d = discoveryCopy[locale], path = restaurantPath(locale);
+ const link = (extra: Record<string,string>, anchor = "") => `${path}?${new URLSearchParams({...Object.fromEntries(params), ...extra})}${anchor}`;
+ return (
+  <section id="dishes" aria-labelledby="rd-dish-title"><div className="rd-results-heading"><h2 id="rd-dish-title">{c.dishes}</h2><a href={link({dish_page:"1"},"#dishes")}>{c.allDishes} →</a></div><p className="rd-selection-note">{c.selection}</p>
+  {(!dishes||dishes.failed)&&<div className="rd-empty" role="status"><p>{c.dishError}</p><RestaurantRetry label={t.retry}/></div>}
+  {dishes&&!dishes.failed&&!dishes.items.length&&<div className="rd-empty"><p>{c.noDishes}</p><a href={path}>{t.reset}</a></div>}
+  <div className="rd-dish-grid">{dishes?.items.map(({item,establishment})=>{
+   const href=`${path}/${encodeURIComponent(establishment.public_ref)}/menu?${new URLSearchParams({item:item.public_ref,back:params.toString()})}#item-${encodeURIComponent(item.public_ref)}`;
+   return <article className="rd-dish-card" key={`${establishment.public_ref}:${item.public_ref}`}><a className="rd-dish-photo" href={href} aria-label={`${c.choose}: ${item.name}`}><span className="rd-food-fallback" aria-hidden="true"><SpaceIcon name="restaurant"/></span><RestaurantPhoto src={item.image_url} alt={item.name||t.menu} sizes="(max-width:650px) 45vw, 280px"/></a><div className="rd-dish-body"><h3><a href={href}>{item.name}</a></h3><a className="rd-dish-parent" href={`${path}/${encodeURIComponent(establishment.public_ref)}/menu`}>{establishment.name}</a><p className="rd-dish-location">{establishment.general_location}</p><RestaurantPrice item={item} locale={locale}/>{item.availability!=="available"&&<p className="rd-status-closed">{t[item.availability]}</p>}<a className="rd-dish-choose" href={href}>{item.availability==="available"?c.choose:d.menu} →</a></div></article>;
+  })}</div>
+  {dishes&&dishes.total>dishes.page_size&&<nav className="restaurant-pagination" aria-label={c.dishes}>{dishes.page>1&&<a href={link({dish_page:String(dishes.page-1)},"#dishes")}>{t.previous}</a>}<span>{t.page} {dishes.page}</span>{dishes.page*dishes.page_size<dishes.total&&<a href={link({dish_page:String(dishes.page+1)},"#dishes")}>{t.next}</a>}</nav>}
+  </section>
+ );
 }

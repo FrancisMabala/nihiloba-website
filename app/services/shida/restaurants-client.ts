@@ -142,6 +142,18 @@ export async function getRestaurantDishMatches(locale: RestaurantLocale, raw: Re
     return {establishment,items};
   });
 }
+/** One independently paginated request; never fetch full menus for discovery. */
+export async function getRestaurantDishes(locale: RestaurantLocale, raw: RestaurantSearch) {
+  const params = restaurantQuery({...raw, page: raw.dish_page ?? '1'});
+  params.set('page_size', '6');
+  const data = object(await request(`${root}/restaurant-dishes${query(locale, params)}`, false));
+  return envelope(data, value => {
+    const row = object(value), parent = object(row.establishment), item = parseMenuItem(row.item);
+    const establishment = {public_ref: reference(parent.public_ref), name: required(parent.name), general_location: text(parent.general_location)};
+    if (item.establishment_ref !== establishment.public_ref) throw new ShidaApiError('malformed');
+    return {establishment, item};
+  });
+}
 export async function getRestaurantWebOptions(id: string) {
   const data = object(await request(`${root}/restaurants/${encodeURIComponent(id)}/ordering-options`, false));
   const methods = object(data.methods);
