@@ -75,6 +75,6 @@ export function WenzeSeller({ locale, quickSell = false }: { locale: RestaurantL
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
   </section>}
-  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><WenzeApiProvider key={`${session.binding}:${locale}`} binding={session.binding} onUnauthorized={()=>setSession(null)}>{quickSell?<QuickSell locale={locale}/>:<WenzeWorkspace locale={locale}/>}</WenzeApiProvider></fieldset>}
+  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><WenzeApiProvider key={`${session.binding}:${locale}`} binding={session.binding} onUnauthorized={()=>setSession(null)}>{quickSell?<QuickSell locale={locale}/>:<WenzeWorkspace locale={locale} binding={session.binding}/>}</WenzeApiProvider></fieldset>}
  </div>;
 }

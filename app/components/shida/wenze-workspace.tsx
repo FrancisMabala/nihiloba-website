@@ -1,4 +1,6 @@
 "use client";
+import {WenzeBoutiqueWizard} from "./wenze-boutique-wizard";
+import {boutiquePayload,boutiqueText} from "@/app/lib/wenze-boutique-copy";
 import {ShopIcon} from "./wenze-shop-icons";
 import {WenzeProductLabels} from "./wenze-product-labels";
 import {ordersText} from '@/app/lib/wenze-orders-copy';
@@ -53,7 +55,8 @@ type Allocation = ChoiceRow;
 type Editor = { allocations?: Allocation[]; kind: string; fields: Fields; revision: number; draft_ref?: string; uploads?: string[]; review?: Review; stale?: boolean; latest?: Item };
 const enc = encodeURIComponent;
 
-export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
+export function WenzeWorkspace({locale,binding}:{locale:WenzeLocale;binding:string}) {
+  const boutiqueDraftKey=`shida-boutique-draft:${binding}`;
   const router=useRouter();
   const {request} = useWenzeApi();
   const {confirm,confirmation}=useWenzeConfirm(locale);
@@ -76,6 +79,7 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
   const [shopTab,setShopTab]=useState("products"),[notice,setNotice]=useState("");
   const [checkingSeller,setCheckingSeller]=useState(true),[sellerCheckFailed,setSellerCheckFailed]=useState(false),[checkAttempt,setCheckAttempt]=useState(0);
   const [view,setView]=useState("today");
+  const [boutiqueCreated,setBoutiqueCreated]=useState(false);
   const [dashboardOrder,setDashboardOrder]=useState<string|undefined>();
   const st=(key:string)=>sellerText(locale,key);
   const t = (key: string) => key==="options"?wenzeUX(locale,"options"):key==="quick"?e.quick:key==="detailed"?e.detailed:wenzeCopy[locale][key as WenzeKey] ?? "—";
@@ -102,6 +106,8 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
   const [productTab,setProductTab]=useState("details");
   const u=(key:Parameters<typeof wenzeUX>[1])=>wenzeUX(locale,key);
   useEffect(()=>{if(!editor)setEditorDirty(false);},[editor]);
+  useEffect(()=>{if(editor?.kind!=="createStore")return;try{sessionStorage.setItem(boutiqueDraftKey,JSON.stringify({fields:editor.fields,expires:Date.now()+86400000}));}catch{/* The in-memory draft remains available if browser storage is disabled. */}},[editor,boutiqueDraftKey]);
+
   useEffect(()=>setProductDirty(false),[product?.public_ref,product?.revision]);
   useEffect(()=>{if(product&&!editorDirty)setEditor(old=>old?.kind==="product"&&old.revision!==product.revision?{...old,revision:product.revision}:old);},[product,editorDirty]);
   useWorkDraft(editorDirty||productDirty||!!pendingCost, st("leave"));
@@ -143,6 +149,8 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
       if(caught instanceof DashboardApiError && ["wenze_active_customer_activity","wenze_active_stock_obligation","wenze_active_stock_count","wenze_shared_inventory_reconciliation_required","wenze_allocation_mismatch"].includes(caught.detail??"")){
         const key=caught.detail==="wenze_active_stock_count"?"count":caught.detail==="wenze_shared_inventory_reconciliation_required"?"reconcile":caught.detail==="wenze_allocation_mismatch"?"mismatch":"active";
         setError("choices:"+key);
+      } else if (caught instanceof DashboardApiError && caught.kind === "conflict" && editor?.kind === "createStore") {
+        setError("conflict");
       } else if (caught instanceof DashboardApiError && caught.kind === "conflict") {
         setError("conflict");
         try {
@@ -178,7 +186,7 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
   async function openEditor(kind: string) {
     if((editorDirty||productDirty)&&!await leaveWork())return;
     setPreview(null); setPlan(null); setError("");setNotice("");
-    if (kind === "createStore") { setEditor({ kind, revision: 1, fields: { name: "", category: categories[0]?.code ?? "", city: "", description: "", publication_ref: crypto.randomUUID() } }); return; }
+    if (kind === "createStore") { try{const saved=JSON.parse(sessionStorage.getItem(boutiqueDraftKey)||'null');if(saved?.expires>Date.now()&&saved.fields?.publication_ref&&Object.values(saved.fields).every(v=>typeof v==='string')){setEditor({kind,revision:1,fields:saved.fields});return;}}catch{} setEditor({ kind, revision: 1, fields: { name: "", category: "", city: "", description: "", configure:"no", store_type:"online_only", delivery_currency:"CDF", publication_ref: crypto.randomUUID() } }); return; }
     if (kind === "quick" || kind === "detailed") {
       setUploadPreviews({});setCostAllowed(false);const access=await request(`${storePath}/plan`) as Plan;setCostAllowed(access.plan==="pro");
       const draft = await send(`${storePath}/drafts`, "POST", {}) as { draft_ref: string; revision: number };
@@ -212,7 +220,7 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
     if((editor.kind==="conversion"&&editor.fields.mode==="variants"||editor.kind==="detailed"&&editor.fields.variant_type)&&choiceError(editor.allocations??[],editor.kind==="conversion"?editor.review?.available_stock:undefined))return;
     await run(async () => {
       const f = editor.fields, rev = { expected_revision: editor.revision };
-      if (editor.kind === "createStore") { await send(root, "POST", f); await reloadStores(); }
+      if (editor.kind === "createStore") { const created=await send(root, "POST", boutiquePayload(f)) as Item; try{sessionStorage.removeItem(boutiqueDraftKey);}catch{} setStore(created); await reloadStores(); setBoutiqueCreated(true); }
       else if (editor.kind === "store") { setStore(await send(storePath, "PATCH", { ...rev, fields: Object.fromEntries(Object.entries(f).filter(([key, value]) => key !== "store_type" || value)) }) as Item); await reloadStores(); }
       else if (editor.kind === "fulfillment") {
         const { consent, ...fields } = f;
@@ -282,7 +290,9 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
   function variantAction(action: string, variant?: Option, label?: string) { return run(async () => { const updated=await send(`${productPath}/variants`, "POST", { expected_revision: product?.revision, action, variant_ref: variant?.public_ref, label, available_quantity: null }) as Item;setProduct(updated);setEditor(old=>old?.kind==="product"?{...old,revision:updated.revision}:old); setNotice(d("savedNotice")); }); }
   const button = (label: string, action: () => void) => <button type="button" className={["quick","create"].includes(label)?"seller-primary":undefined} disabled={busy} onClick={action}>{t(label)}</button>;
   if(checkingSeller||sellerCheckFailed)return <main className="rst container wz-seller-setup seller-setup"><p role={sellerCheckFailed?"alert":"status"}>{sellerCheckFailed?st("sellerCheckFailed"):st("checkingSeller")}</p>{sellerCheckFailed&&<button onClick={()=>setCheckAttempt(value=>value+1)}>{st("refresh")}</button>}</main>;
-  if(!stores.length&&!store)return <main className="rst container wz-seller-setup seller-setup"><WenzeLeaveDialog locale={locale}/><p className="eyebrow">SHIDA / WENZE</p><h1>{st("setupTitle")}</h1><p>{st("setupNote")}</p>{error&&<p role="alert">{error.startsWith("choices:")?choiceCopy[locale][error.slice(8) as keyof typeof choiceCopy.en]:t(error)}</p>}{editor?.kind==="createStore"?<form onSubmit={save}><h2>{t("create")}</h2><div className="wz-fields">{[input("name",undefined,true),input("category"),input("city",undefined,true),input("description")]}</div><button className="button button-primary" disabled={busy}>{t("save")}</button><button disabled={busy} onClick={()=>setEditor(null)} type="button">{t("cancel")}</button></form>:<button className="button button-primary" onClick={()=>void openEditor("createStore")}>{t("create")}</button>}<label className="wz-archived-choice"><input type="checkbox" checked={archived} onChange={event=>setArchived(event.target.checked)}/>{t("archived")}</label></main>;
+  if(editor?.kind==="createStore")return <main className="container"><WenzeLeaveDialog locale={locale}/>{error&&<p role="alert">{t(error)}</p>}<WenzeBoutiqueWizard locale={locale} fields={editor.fields} change={change} categories={categories} busy={busy} onSave={save} onCancel={()=>void leaveWork().then(ok=>{if(ok){try{sessionStorage.removeItem(boutiqueDraftKey);}catch{}setEditor(null);setEditorDirty(false);}})} label={t}/></main>;
+  if(boutiqueCreated&&store)return <main className="container"><section className="wb-content" style={{margin:"32px 0"}}><h1>{boutiqueText(locale,"created")}</h1><h2>{store.name}</h2><p>{boutiqueText(locale,"createdHelp")}</p><div className="wz-actions"><button className="button button-primary" onClick={()=>{setBoutiqueCreated(false);void navigate("shop");}}>{boutiqueText(locale,"manage")}</button><button className="button" onClick={()=>{setBoutiqueCreated(false);void navigate("catalog").then(()=>run(()=>openEditor("detailed")));}}>{boutiqueText(locale,"addProduct")}</button></div></section></main>;
+  if(!stores.length&&!store)return <main className="rst container wz-seller-setup seller-setup"><WenzeLeaveDialog locale={locale}/><p className="eyebrow">SHIDA / WENZE</p><h1>{st("setupTitle")}</h1><p>{st("setupNote")}</p>{error&&<p role="alert">{error.startsWith("choices:")?choiceCopy[locale][error.slice(8) as keyof typeof choiceCopy.en]:t(error)}</p>}<button className="button button-primary" onClick={()=>void openEditor("createStore")}>{t("create")}</button><label className="wz-archived-choice"><input type="checkbox" checked={archived} onChange={event=>setArchived(event.target.checked)}/>{t("archived")}</label></main>;
   const displayView=view==="sales"&&!hasPhysicalStore(store)?"orders":view;
   async function navigate(tab:string){
     if(tab==="sales"&&!hasPhysicalStore(store))tab="orders";
@@ -329,7 +339,6 @@ export function WenzeWorkspace({locale}:{locale:WenzeLocale}) {
       variations={<><h3>{pc("variations")}</h3>{!editor.fields.variant_type&&<><p>{pc("simpleHelp")}</p>{input("available_quantity")}</>}<WenzeChoiceEditor optional locale={locale} category={editor.fields.category??""} rows={editor.allocations??[]} onChange={(rows,kind)=>{setEditorDirty(true);setEditor(old=>old?{...old,kind:"detailed",allocations:rows,fields:{...old.fields,variant_type:rows.length?(kind??old.fields.variant_type??"option"):""}}:old);}}/></>}
       review={<><h3>{pc("review")}</h3><p>{pc("reviewHelp")}</p>{editor.uploads?.[0]&&uploadPreviews[editor.uploads[0]]&&<Image unoptimized src={uploadPreviews[editor.uploads[0]]} alt={editor.fields.name} width={150} height={150}/>}<dl className="wp-facts">{["name","price","currency","category","condition","price_negotiable","description"].map(key=><div key={key}><dt>{t(key)}</dt><dd>{key==="category"?(productCategories.find(c=>c.code===editor.fields.category)?.labels[locale]??editor.fields.category):["condition","price_negotiable"].includes(key)?t(editor.fields[key]):editor.fields[key]||"—"}</dd></div>)}<div><dt>{t("available")}</dt><dd>{editor.fields.variant_type?e.multiple:editor.fields.available_quantity||t("untracked")}</dd></div></dl>{editor.allocations?.map((row,index)=><p key={index}>{row.label} · {row.quantity===""?t("untracked"):row.quantity}</p>)}</>}/>}
     {editor && !["quick","detailed"].includes(editor.kind) && <section className="wz-editor"><h2 ref={editorHeading} tabIndex={-1} style={{scrollMarginTop:100}}>{editor.kind==="conversion"?e.choices:editor.kind==="product"?e.edit:t(editor.kind === "createStore" ? "create" : editor.kind === "store" || editor.kind === "product" ? "edit" : editor.kind)}</h2>{editor.latest && <aside><h3>{t("current")}</h3><p>{editor.latest.name} · {editor.latest.price} {editor.latest.currency}</p><p>{editor.latest.description}</p></aside>}{editor.stale && <label><input type="checkbox" onChange={event => setEditor(old => old ? { ...old, stale: !event.target.checked } : null)} />{t("confirmFresh")}</label>}<form id={editorFormId} onChange={()=>setEditorDirty(true)} onSubmit={save}><div className="wz-fields">
-      {editor.kind === "createStore" && [input("name", undefined, true), input("category"), input("city", undefined, true), input("description")]}
       {editor.kind === "store" && shopFields.map(key => input(key, key === "store_type" ? ["online_only", "online_and_physical"] : undefined, ["name", "city"].includes(key)))}
       {["product", "duplicate"].includes(editor.kind) && <>{input("name", undefined, true)}{input("price", undefined, true)}{input("currency", currencies, true)}</>}
       {editor.kind==="product"&&categoryFields()}
