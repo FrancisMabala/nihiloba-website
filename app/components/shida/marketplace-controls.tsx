@@ -32,7 +32,11 @@ export function MarketplaceControls({locale,name,spaceHref,links,onLanguage,onAc
   if(beforeNavigate){event.preventDefault();if(await beforeNavigate())window.location.assign(href);}
  }
  const destinations=[{label:t.space,href:spaceHref},...links.filter(link=>link.href!==spaceHref)];
- return <div className="market-controls" onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node))setOpen(null);}}>
+ // Safari can blur to the document when tapping a button without focusing it.
+ // A null destination must not unmount the menu before that button's click.
+ // Outside pointer presses and Escape already dismiss it; keyboard focus moving
+ // to another control still closes it here.
+ return <div className="market-controls" onBlur={event=>{if(event.relatedTarget&&!event.currentTarget.contains(event.relatedTarget as Node))setOpen(null);}}>
   <div className="market-disclosure"><button ref={language} className="market-language" type="button" disabled={pending} aria-label={t.language} aria-expanded={open==="language"} aria-controls={`${id}-languages`} onClick={()=>setOpen(open==="language"?null:"language")}>{locale.toUpperCase()}</button>
    {open==="language"&&<nav id={`${id}-languages`} className="market-menu" aria-label={t.language}>{languages.map(lang=><button type="button" key={lang} aria-current={lang===locale?"true":undefined} onClick={()=>{setOpen(null);onLanguage(lang);}}>{({fr:"Français",en:"English",ln:"Lingala",sw:"Swahili"})[lang]}</button>)}</nav>}
   </div>
