@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:'restaurant-onboarding.browser.ts',outputDir:'test-results/restaurant-onboarding',workers:1,timeout:45000,use:{baseURL:'http://127.0.0.1:3088',channel:'chrome',headless:true,serviceWorkers:'block'},webServer:{command:'node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3088',url:'http://127.0.0.1:3088',timeout:120000},reporter:'list'});

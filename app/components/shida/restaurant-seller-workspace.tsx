@@ -1,4 +1,6 @@
 "use client";
+import {RestaurantCreationWizard} from './restaurant-creation-wizard';
+import {restaurantOnboardingCopy} from '@/app/lib/restaurant-onboarding-copy';
 import {restaurantWorkspaceGroups} from '../../lib/restaurant-workspace-navigation';
 import {RestaurantFocus,restaurantStart} from "./restaurant-focus";
 import {RestaurantCounterOptions} from "./restaurant-counter-options";
@@ -80,12 +82,12 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const [publicAvailability, setPublicAvailability] = useState<Record<string,string>|null>(null);
   const [hours, setHours] = useState<Hours | null>(null), [preview, setPreview] = useState<Fields | null>(null);
   const [choices, setChoices] = useState<Row[]>([]), [editor, setEditor] = useState<Editor | null>(null);
-  useWorkDraft(Boolean(editor), wt('discard'));
+  useWorkDraft(Boolean(editor && editor.kind !== 'create'), wt('discard'));
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(""), [denied, setDenied] = useState(false);
   const alive = useRef(true), gate = useRef(false);
   const path = selected ? `${root}/${encodeURIComponent(selected.public_ref)}` : root;
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
-  useEffect(() => { if (!editor) return; const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); }; window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn); }, [editor]);
+  useEffect(() => { if (!editor || editor.kind === 'create') return; const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); }; window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn); }, [editor]);
   useEffect(() => { const stale = () => { if (document.visibilityState === 'hidden' || !navigator.onLine) setMenuFresh(false); }; document.addEventListener('visibilitychange', stale); window.addEventListener('offline', stale); return () => { document.removeEventListener('visibilitychange', stale); window.removeEventListener('offline', stale); }; }, []);
 
   function error(caught: unknown, mutation = false) {
@@ -336,15 +338,11 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const button = (label: string, action: () => void, disabled = false) => <button type="button" className="button button-secondary" disabled={busy || disabled} onClick={action}>{t(label)}</button>;
   if (denied) return <section className="rst container section"><p role="alert">{t(message)}</p><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{t("review")}</Link></section>;
   if (!list && !selected) return <section className="rst container section"><p role={message ? "alert" : "status"}>{t(message || "loading")}</p>{message && <button disabled={busy} onClick={()=>void run(()=>loadList(1,"",true))}>{t("reload")}</button>}</section>;
+  if (editor?.kind === 'create') return <RestaurantCreationWizard key={`${binding}:${editor.operationKey}`} binding={binding} locale={locale} operationKey={editor.operationKey} onClose={()=>{setEditor(null);setMessage('');}} onCreated={async ref=>{await select(ref,'profile');await loadList(1,'');setEditor(null);setMessage('saved');}}/>;
   if (list?.total === 0 && !filter && !selected) return <section className="rst container section rst-seller-setup seller-setup">
     <h1>{setup.title}</h1><p>{setup.note}</p><p>{entry.separate}</p>
     {(busy || message) && <p role={message && message !== "saved" ? "alert" : "status"}>{t(busy ? "loading" : message)}</p>}
-    {editor?.kind === "create" ? <form onSubmit={submit} className="rst-card rst-editor" aria-label={t("create")}>
-      <fieldset disabled={busy || Boolean(editor.operation) || editor.blocked} className="rst-fields">{input("name",true)}{input("food_business_type",true)}{["city","commune","quartier"].map(key=>input(key))}</fieldset>
-      <div className="rst-editor-actions"><button className="button button-primary" disabled={busy || editor.blocked}>{t(editor.operation ? "retry" : "create")}</button>
-      {(editor.operation || editor.blocked) && button("reload",()=>void run(reloadCurrent))}
-      {button(editor.operation || editor.blocked ? "discard" : "cancel",()=>{setEditor(null);setMessage("");})}</div>
-    </form> : list.actions?.includes("create") ? <button className="button button-primary" disabled={busy} onClick={()=>void open("create")}>{setup.create}</button> : <p role="alert">{t("denied")}</p>}
+    {list.actions?.includes("create") ? <button className="button button-primary" disabled={busy} onClick={()=>void open("create")}>{setup.create}</button> : <p role="alert">{t("denied")}</p>}
     <p><Link href={restaurantPath(locale)} onClick={event=>{if(!leaveWork())event.preventDefault();}}>{entry.browse}</Link></p>
   </section>;
   const groups: {label:string; entries:[string,string][]}[] = [
@@ -363,6 +361,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     <div className={selected ? 'rst-management-layout seller-layout' : ''}>
     {selected && <aside className="rst-management-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="R" title={t("restaurants")} subtitle={management.workspace}/><div id="restaurant-navigation" className="rst-desktop-groups">{restaurantWorkspaceGroups(locale).map((group,i)=><details className="rst-desktop-group" key={group.label} open={i===0||group.keys.includes(tab)}><summary>{group.label}</summary><SellerWorkspaceNavigation className="rst-management-nav" label={group.label} items={navigation.filter(item=>group.keys.includes(item.key))} current={tab} disabled={busy||Boolean(editor)} onNavigate={key=>void run(()=>loadTab(key))}/></details>)}</div></aside>}
     <div className="rst-management-content seller-content">
+    {selected?.status==='draft'&&!editor&&<section className="rst-card rst-setup-checklist"><h2>{restaurantOnboardingCopy[locale].setup}</h2><p>{restaurantOnboardingCopy[locale].private}</p><ol>{restaurantOnboardingCopy[locale].checklist.map((label,index)=><li key={label}><button type="button" disabled={busy} onClick={()=>void run(()=>loadTab(['profile','items','hours','settings','settings','profile'][index]))}>{label} →</button></li>)}</ol></section>}
     {selected&&!editor&&<RestaurantFocus key={path} path={path} tab={tab} locale={locale} name={selected.profile.name??t("restaurants")}/>}
     {selected&&!editor&&<RestaurantBottomNavigation locale={locale} tab={tab} sell={posAvailable?"pos":"counter"} disabled={busy} items={navigation} onOpen={key=>void run(()=>loadTab(key))}/>}
     {!selected && <SellerWorkspaceHeading eyebrow={management.workspace} title={management.choose}/>}
@@ -377,7 +376,6 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
       {editor.kind === "copy" && <p>{t("copyHelp")}</p>}
       {editor.kind === "offerings" && editor.target && <p>{t("dateConfirmation")}</p>}
       <fieldset disabled={busy || Boolean(editor.operation) || editor.blocked} className="rst-fields">
-        {editor.kind === "create" && <>{input("name", true)}{input("food_business_type", true)}{["city", "commune", "quartier"].map(key => input(key))}</>}
         {editor.kind === "profile" && <>{profileKeys.map(key => input(key, ["name", "description", "city", "commune", "quartier"].includes(key) && editor.changed.includes(key)))}{input("confirm_location", editor.changed.some(key => ["public_address", "landmark", "address_visibility"].includes(key)))}</>}
         {editor.kind === "categories" && <>{input("name", true)}{input("visible")}</>}
         {editor.kind === "items" && <><div className="rst-wide">{input("name", true)}</div><fieldset className="rst-pricing-model rst-wide"><legend>{design.sell}</legend>{[["UNIT_PRICED", design.unit], ["AMOUNT_PRICED", design.amount], ["UNKNOWN", design.unknown]].map(([value, label]) => <label key={value}><input type="radio" name="pricing_model" checked={editor.fields.pricing_model === value} onChange={() => change("pricing_model", value)}/>{label}</label>)}</fieldset>{editor.fields.pricing_model !== "UNKNOWN" && input("currency", true)}{editor.fields.pricing_model === "UNIT_PRICED" && <>{input("sale_unit_label", true)}{input("unit_price", true)}</>}{editor.fields.pricing_model === "AMOUNT_PRICED" && <>{input("amount_mode",true)}{editor.fields.amount_mode === "flexible" ? <>{input("minimum_amount",true)}{input("amount_step")}</> : <div className="rst-amounts"><p>{t("allowed_amounts")}</p>{(editor.fields.allowed_amounts || "").split(/;\s*/).map((amount, index, amounts) => <div className="rst-amount-row" key={index}><label><span className="sr-only">{t("allowed_amounts")} {index + 1}</span><input required inputMode="decimal" value={amount} onChange={event => change("allowed_amounts", amounts.map((item, i) => i === index ? event.target.value : item).join(";"))}/></label><span>{editor.fields.currency}</span><button type="button" aria-label={`${t("remove")} ${index + 1}`} disabled={amounts.length === 1} onClick={() => change("allowed_amounts", amounts.filter((_, i) => i !== index).join(";"))}>×</button></div>)}<button type="button" className="rst-text-button" onClick={() => change("allowed_amounts", `${editor.fields.allowed_amounts || ""};`)}>+ {design.amounts}</button><p className="rst-field-help">{design.portionHelp}</p>{input("minimum_amount")}</div>}</>}{editor.target ? input("availability", true) : <p className="rst-wide">{menuCopy.unavailable}: {t("temporarily_unavailable")}</p>}{input("visible")}<details className="rst-wide rst-extra-fields" open={editor.method === "POST" || !editor.fields.category_ref}><summary>{design.extras}</summary><div className="rst-fields">{input("category_ref", true)}{input("presentation", true)}{input("description")}{input("permanent")}<p className="rst-wide">{menuCopy.photoHelp}</p></div></details></>}
@@ -387,12 +385,11 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
       </fieldset>
       {editor.latest && <aside className="rst-current"><h3>{t("latest")}</h3>{details(editor.latest.value, [...profileKeys, ...itemKeys.filter(k => !profileKeys.includes(k)), "starts_at", "ends_at", "state", "schedule", "exceptional_closures"])}</aside>}
       <div className="rst-actions">
-        <button className="button button-primary" disabled={busy || editor.blocked}>{t(editor.operation ? "retry" : editor.kind === "create" ? "create" : "save")}</button>
+        <button className="button button-primary" disabled={busy || editor.blocked}>{t(editor.operation ? "retry" : "save")}</button>
         {(editor.blocked || editor.operation) && button("reload", () => void run(reloadCurrent))}
         {editor.latest && button("reconcile", reconcile)}
         {button(editor.operation || editor.blocked ? "discard" : "cancel", () => { setEditor(null); setMessage(""); })}
       </div>
-      {editor.kind === "create" && editor.blocked && list && <div>{list.items.map(row => <p key={row.public_ref}>{row.profile.name} · {t(row.status)}</p>)}</div>}
       </div>{editor.kind === "items" && <aside className="rst-portion-help">{editor.target&&editor.fields.pricing_model==="UNIT_PRICED"&&<fieldset disabled={editor.changed.length>0||Boolean(editor.operation)}><RestaurantCounterOptions key={editor.target} path={path} itemRef={editor.target} binding={binding} locale={locale} onSaved={()=>{setEditor(null);void run(()=>loadTab("items"));}}/></fieldset>}<h3>{menuCopy.preparation}</h3>{editor.target ? <><fieldset className="rst-routing-fieldset" disabled={editor.changed.length>0 || Boolean(editor.operation)}><RestaurantItemRouting key={editor.target} path={path} binding={binding} locale={locale} itemRef={editor.target} page={Math.floor(Math.max(0,routingPage?.items.findIndex(item=>item.item_ref===editor.target)??0)/20)+1} route={routingPage?.items.find(item=>item.item_ref===editor.target)?.station} revision={routingPage?.revision??null} onSaved={async()=>{await loadTab('items');await open('items',{public_ref:editor.target!});}}/></fieldset>{editor.changed.length>0&&<p>{menuCopy.saveDetailsFirst}</p>}<p>{menuCopy.stockHelp}</p><p>{menuCopy.stock}: {stockBindings?.find(value=>value.menu_item_ref===editor.target)?.item_ref??menuCopy.noStock}</p><p>{menuCopy.datedHelp}</p><p>{menuCopy.dated}: {datedOfferings ? datedOfferings.filter(value=>value.item?.public_ref===editor.target&&value.state!=='expired').length||menuCopy.noDated : menuCopy.datedUnknown}</p><div className="rst-menu-editor-links"><button type="button" onClick={()=>itemDestination('offerings')}>{menuCopy.dated}</button>{capabilities.includes('restaurant.inventory')&&<button type="button" onClick={()=>itemDestination('inventory')}>{menuCopy.stock}</button>}<button type="button" onClick={()=>itemDestination('photos')}>{management.photo}</button></div></> : <p>{menuCopy.createHelp}</p>}</aside>}
     </form> : <>
       {!selected ? <><div className="rst-actions"><label>{t("establishments")}<select value={filter} disabled={busy} onChange={event => void run(() => loadList(1, event.target.value))}><option value="">{t("all")}</option>{["draft", "active", "inactive"].map(status => <option key={status} value={status}>{t(status)}</option>)}</select></label>{list?.actions?.includes("create") && button("add", () => void run(() => open("create")))}{button("reload", () => void run(() => loadList()))}</div><div className="rst-grid">{list?.items.map(row => <article className="rst-card" key={row.public_ref}><h2>{row.profile.name}</h2><p>{t(row.status)}</p>{button("edit", () => void run(() => select(row.public_ref)))}</article>)}</div>{list && !list.items.length && <p>{t("empty")}</p>}<div className="rst-actions">{button("previous", () => void run(() => loadList(page - 1)), page <= 1)}{button("next", () => void run(() => loadList(page + 1)), !list || page * 20 >= list.total)}</div></> : <>

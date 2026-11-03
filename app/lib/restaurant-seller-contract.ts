@@ -1,9 +1,14 @@
 import { photoRoutes, isPhotoPath, validPhotoQuery, validPhotoAttachment } from './restaurant-photo-contract';
+import { onboardingBody } from './restaurant-onboarding-contract';
 import { isOrderPath, orderRoutes, validOrderBody, validOrderQuery } from './restaurant-orders-contract';
 import {serviceRoutes,isServicePath,validServiceBody,validServiceQuery} from './restaurant-service-contract';
 import {dailyRoutes,isDailyPath,validDailyBody,validDailyQuery} from './restaurant-daily-contract';
 // Exact Personal seller surface, not a general Dashboard proxy.
 export const sellerRoutes: [RegExp, readonly string[]][] = [
+  [/^onboarding\/current$/, ['GET']],
+  [/^onboarding$/, ['POST']],
+  [/^onboarding\/RON_[a-f0-9]+$/, ['GET','PATCH']],
+  [/^onboarding\/RON_[a-f0-9]+\/confirm$/, ['POST']],
   [/^RST_[A-Za-z0-9_-]+\/insights$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/(calendar|pending)$/, ["GET"]],
@@ -103,6 +108,7 @@ export function validSellerQuery(path: string, method: string, query: URLSearchP
 }
 function object(value: unknown): value is Record<string, unknown> { return !!value && typeof value === "object" && !Array.isArray(value); }
 export function validSellerBody(path: string, method: string, value: unknown): boolean {
+  if (path === 'onboarding' || path.startsWith('onboarding/')) return onboardingBody(path, method, value);
   if (isPhotoPath(path)) return method === "POST" && path.endsWith("/attach") && validPhotoAttachment(value);
   if (path.includes('/reservations')) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
