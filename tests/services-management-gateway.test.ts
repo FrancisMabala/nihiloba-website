@@ -215,3 +215,19 @@ it('preserves distinct public share targets and accepts only scoped work setting
  for(const query of ['target=private','target=profile&target=service','target=profile&organization_ref=BUS_other'])expect((await GET(request('SVC_one/share?'+query),context('SVC_one/share'))).status).toBe(404);
  expect((await PATCH(request('SVC_one/professional-work','PATCH',{expected_revision:1,professional_settings:{modes:['customer'],counter_enabled:false}}),context('SVC_one/professional-work'))).status).toBe(200);
 });
+
+
+it('keeps onboarding private and rejects unsupported methods and scope selectors',async()=>{
+ expect((await GET(request('onboarding'),context('onboarding'))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/service-profiles/onboarding');
+ const body={action:'finalize',public_ref:'SON_test',revision:4,confirmed:true};
+ const response=await POST(request('onboarding','POST',body),context('onboarding'));
+ expect(response.status).toBe(200);
+ expect(response.headers.get('Cache-Control')).toContain('private, no-store');
+ expect(JSON.parse(fetcher.mock.calls.at(-1)?.[1]?.body as string)).toEqual(body);
+ fetcher.mockClear();
+ expect((await PATCH(request('onboarding','PATCH',body),context('onboarding'))).status).toBe(404);
+ expect((await GET(request('onboarding?organization_ref=BUS_other'),context('onboarding'))).status).toBe(404);
+ expect((await POST(request('onboarding','POST',body,{'X-Shida-Session':'stale'}),context('onboarding'))).status).toBe(401);
+ expect(fetcher).not.toHaveBeenCalled();
+});

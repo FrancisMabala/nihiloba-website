@@ -7,6 +7,7 @@ export const dynamic="force-dynamic";
 type Context={params:Promise<{path?:string[]}>};
 const fail=(status:number,detail="service_unavailable")=>Response.json({detail},{status,headers:PRIVATE_HEADERS});
 function allowed(parts:string[],method:string){
+ if(parts.length===1&&parts[0]==="onboarding")return method==="GET"||method==="POST";
  if(parts.length===0)return method==="GET"||method==="POST";
  if(parts.length===1&&["capabilities","calendar","today"].includes(parts[0]))return method==="GET";
  if(!/^SVC_[A-Za-z0-9_-]+$/.test(parts[0]))return false;
