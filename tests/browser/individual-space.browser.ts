@@ -39,3 +39,40 @@ for(const kind of ['individual','mixed','partial','property','organization'])tes
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`test-results/individual-space-${kind}.png`,fullPage:true});
 });
+
+
+for(const width of [390,1440])test(`personal sales preserve role and canonical order ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:950});
+ const seen:string[]=[];
+ const store={public_ref:'WNZ_personal',name:'Personal listings'};
+ const order={reference:'SH-ORDER-fixture',shop_reference:store.public_ref,shop_name:store.name,source:'fixed',buyer_name:'Controlled buyer',bucket:'completed',status_label:'Completed',total:'120',currency:'USD',fulfillment_method:'pickup',payment_verified:false,created_at:'2026-11-01T12:00:00Z',updated_at:'2026-11-01T12:00:00Z',delivery_details:null,items:[{name:'Controlled sold item',variant:'',quantity:1,unit_price:'120'}],allowed_actions:[],action_revision:'review-fixture'};
+ await page.route('**/api/**',route=>{
+  const url=new URL(route.request().url()),path=url.pathname.replace(/\/$/,'');seen.push(path+'?'+url.searchParams.toString());
+  const reply=(json:unknown,status=200)=>route.fulfill({json,status});
+  if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Test seller'}});
+  if(path.endsWith('/security/navigation'))return reply({markets:['wenze'],organization_management:false});
+  if(path.endsWith('/notifications/count'))return reply({unread_count:0});
+  if(path.endsWith('/transactions')){
+   const seller=url.searchParams.get('role')==='seller';
+   return reply({counts:{all:seller?1:0,orders:seller?1:0,requests:0,documents:0},items:seller?[{id:'seller-fixture',role:'seller',store_reference:store.public_ref,kind:'wenze',category:'orders',reference:order.reference,related_reference:null,title:'Controlled personal sale',status:'completed',date:order.created_at,amount:'120',currency:'USD'}]:[],documents:[],page:1,page_size:10,has_more:false});
+  }
+  if(path.endsWith('/catalog-imports/options'))return reply({stores:[store],categories:[],currencies:['USD'],issues:{},support_url:null});
+  if(path.endsWith('/orders/'+order.reference))return reply(order);
+  if(path.endsWith('/orders'))return reply({orders:[order],counts:{all:1,completed:1},total:1});
+  if(path.endsWith('/updates'))return reply({items:[]});
+  return reply({},404);
+ });
+ await page.goto('/shida/space/?view=transactions&role=seller');
+ await expect(page.locator('.tx-row')).toContainText('Controlled personal sale');
+ await page.locator('.tx-row button').click();
+ await expect(page.locator('.wo-orders')).toContainText(order.reference);
+ await expect(page.locator('.wo-payment-detail')).toContainText(/not verified/i);
+ expect(seen.some(url=>url.includes('/orders?')&&url.includes('store_ref=WNZ_personal'))).toBe(true);
+ await page.locator('.tx-roles button').first().click();
+ await expect(page.getByRole('heading',{name:'No transactions yet'})).toBeVisible();
+ await expect(page.locator('.wo-orders')).toHaveCount(0);
+ await expect(page.locator('.tx-summary strong')).toHaveText(['0','0','0']);
+ await page.locator('.tx-roles button').last().click();
+ await expect(page.locator('.tx-row')).toHaveCount(1);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

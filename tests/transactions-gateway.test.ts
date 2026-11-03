@@ -13,7 +13,7 @@ it('forwards only the bound Personal session and keeps responses private',async(
  expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/personal/transactions?category=orders&page=2');
  expect(fetcher.mock.calls[0][1]).toMatchObject({redirect:'manual',cache:'no-store',headers:{Cookie:`shida_dashboard_session=${token}`}});
 });
-it.each(['?actor_account_id=1','?business_id=1','?page=0','?page_size=100','?sort=price','?category=orders&category=requests'])('rejects unsupported scope/query %s',async query=>{expect((await GET(request(query))).status).toBe(422);expect(fetcher).not.toHaveBeenCalled();});
+it.each(['?role=administrator','?role=seller&role=customer','?actor_account_id=1','?business_id=1','?page=0','?page_size=100','?sort=price','?category=orders&category=requests'])('rejects unsupported scope/query %s',async query=>{expect((await GET(request(query))).status).toBe(422);expect(fetcher).not.toHaveBeenCalled();});
 it('rejects signed out, stale-tab and cross-site calls',async()=>{
  expect((await GET(request('',{'x-shida-session':'old'}))).status).toBe(401);
  expect((await GET(request('',{'sec-fetch-site':'cross-site'}))).status).toBe(403);
@@ -23,4 +23,9 @@ it('does not expose backend diagnostics or follow redirects',async()=>{
  fetcher.mockResolvedValueOnce(Response.json({detail:'private diagnostic'},{status:500}));
  expect(await (await GET(request())).json()).toEqual({detail:'transactions_unavailable'});
  fetcher.mockResolvedValueOnce(new Response(null,{status:307,headers:{Location:'https://other.test'}}));expect((await GET(request())).status).toBe(502);
+});
+
+it('forwards an explicit seller view without granting organization scope',async()=>{
+ expect((await GET(request('?role=seller'))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/personal/transactions?role=seller');
 });

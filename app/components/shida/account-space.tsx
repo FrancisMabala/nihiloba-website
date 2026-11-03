@@ -31,7 +31,7 @@ import {individualOnlyActivities} from '../../lib/personal-activities';
 import {leaveWork} from '../../lib/wenze-work';
 import {listingCopy} from '../../lib/wenze-listings-copy';
 import {resolveSpaceView,type SpaceView as View} from '../../lib/space-view';
-export function AccountSpace({locale,initialView,inbox=false}:{locale:MarketplaceLocale;initialView?:string;inbox?:boolean}){
+export function AccountSpace({locale,initialView,transactionRole,inbox=false}:{locale:MarketplaceLocale;initialView?:string;transactionRole?:string;inbox?:boolean}){
  const w=(key:Parameters<typeof workspaceText>[1])=>workspaceText(locale,key);
  const t=accountSpaceCopy[locale],a=marketplaceAccountCopy[locale],prefix=locale==='en'?'':`/${locale}`,bilingual=locale==='en'?'':'/fr',base=`${prefix}/shida/space`;
  const requestedView=resolveSpaceView(initialView,inbox);
@@ -70,7 +70,7 @@ export function AccountSpace({locale,initialView,inbox=false}:{locale:Marketplac
    {!session&&view!=='recovery'&&<p><a href={href('recovery')}>{securityText(locale,'report')}</a></p>}
    {view==='support'&&(checking?<p role="status">{t.loading}</p>:session?<AccountSupport key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {view==='support'&&session&&<AccountRecoveryReview key={session.binding} binding={session.binding} locale={locale}/>}
-   {view==='transactions'&&(checking?<p role="status">{t.loading}</p>:session?<PersonalTransactions key={session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
+   {view==='transactions'&&(checking?<p role="status">{t.loading}</p>:session?<WenzeApiProvider key={session.binding} binding={session.binding} onUnauthorized={()=>setSession(null)}><PersonalTransactions binding={session.binding} locale={locale} initialRole={transactionRole==='seller'?'seller':'customer'}/></WenzeApiProvider>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {view==='orders'&&<>{rows(orders)}{session&&<AccountSpaceOrders key={session.binding} binding={session.binding} locale={locale}/>}</>}
    {view==='requests'&&rows(requests)}
    {view==='receipts'&&<><p className="space-intro">{t.receiptNote}</p>{rows([[t.bills,`${prefix}/shida/service-bills`,'receipts']])}</>}

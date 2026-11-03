@@ -6,7 +6,7 @@ import {progressText} from '../components/shida/wenze-order-timeline';
 import {reservationCopy} from './restaurant-reservation-copy';
 export type TransactionCategory='all'|'orders'|'requests'|'documents';
 export type TransactionKind='wenze'|'negotiated'|'food'|'food_receipt'|'reservation'|'application'|'posted'|'service'|'booking'|'bill'|'hotel'|'transport'|'housing'|'visit';
-export type Transaction={id:string;details?:Record<string,string|number>;kind:TransactionKind;category:Exclude<TransactionCategory,'all'>;reference:string|null;related_reference:string|null;title:string;status:string;date:string|null;amount:string|null;currency:string|null};
+export type Transaction={id:string;role?:'customer'|'seller';store_reference?:string|null;details?:Record<string,string|number>;kind:TransactionKind;category:Exclude<TransactionCategory,'all'>;reference:string|null;related_reference:string|null;title:string;status:string;date:string|null;amount:string|null;currency:string|null};
 export type TransactionOverview={counts:Record<TransactionCategory,number>;items:Transaction[];documents:Transaction[];page:number;page_size:number;has_more:boolean};
 export function transactionLink(row:Transaction,locale:MarketplaceLocale){
  const prefix=locale==='en'?'':`/${locale}`,ref=encodeURIComponent(row.reference??'');
@@ -40,6 +40,9 @@ const reference=(value:unknown)=>value===null||(typeof value==='string'&&/^[A-Za
 function isTransaction(value:unknown):value is Transaction{
  if(!value||typeof value!=='object')return false;
  const r=value as Transaction;
+ if(r.role!==undefined&&!['customer','seller'].includes(r.role))return false;
+ if(r.store_reference!==undefined&&!reference(r.store_reference))return false;
+ if(r.role==='seller'&&(!r.store_reference||!['wenze','negotiated'].includes(r.kind)))return false;
  return typeof r.id==='string'&&r.id.length>0&&Object.hasOwn(categories,r.kind)&&categories[r.kind]===r.category&&typeof r.title==='string'&&typeof r.status==='string'&&reference(r.reference)&&reference(r.related_reference)&&(r.date===null||(typeof r.date==='string'&&Number.isFinite(Date.parse(r.date))))&&(r.amount===null||(typeof r.amount==='string'&&/^\d+(\.\d+)?$/.test(r.amount)))&&(r.currency===null||(typeof r.currency==='string'&&/^[A-Z]{3}$/.test(r.currency)))&&(r.details===undefined||!!r.details&&typeof r.details==='object'&&!Array.isArray(r.details)&&Object.entries(r.details).every(([key,value])=>['check_in','check_out','guests','rooms','visit_date','visit_time'].includes(key)&&(typeof value==='string'||typeof value==='number'&&Number.isFinite(value))));
 }
 export function isOverview(value:unknown):value is TransactionOverview{

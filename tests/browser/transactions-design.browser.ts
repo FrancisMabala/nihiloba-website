@@ -8,7 +8,7 @@ for(const kind of ['empty','one','many'])for(const width of [360,390,768,1024,14
  if(kind==='empty'){
   await expect(page.getByRole('heading',{name:'No transactions yet'})).toBeVisible();
   await expect(page.locator('.tx-summary strong')).toHaveText(['0','0','0']);
-  await expect(page.locator('.tx-filters,.tx-pagination')).toHaveCount(0);
+  await expect(page.locator('.tx-filters:not(.tx-roles),.tx-pagination')).toHaveCount(0);
   await expect(page.getByRole('link',{name:'Go to my activities'})).toHaveAttribute('href','/shida/space/?view=management');
  }else{
   await expect(page.locator('.tx-row')).toHaveCount(kind==='one'?1:8);

@@ -5,7 +5,7 @@ export const dynamic='force-dynamic';
 const fail=(status:number)=>Response.json({detail:'transactions_unavailable'},{status,headers:PRIVATE_HEADERS});
 export async function GET(request:Request){
  const query=new URL(request.url).searchParams;
- const rules:Record<string,RegExp>={category:/^(all|orders|requests|documents)$/,page:/^[1-9]\d{0,3}$/,page_size:/^([1-9]|1\d|20)$/,sort:/^(recent|oldest)$/,language:/^(en|fr|ln|sw)$/};
+ const rules:Record<string,RegExp>={role:/^(customer|seller)$/,category:/^(all|orders|requests|documents)$/,page:/^[1-9]\d{0,3}$/,page_size:/^([1-9]|1\d|20)$/,sort:/^(recent|oldest)$/,language:/^(en|fr|ln|sw)$/};
  if([...query].some(([key,value])=>!rules[key]?.test(value)||query.getAll(key).length!==1))return fail(422);
  if(request.headers.get('sec-fetch-site')==='cross-site')return fail(403);
  const origin=personalRequestOrigin(request);
