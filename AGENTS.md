@@ -80,3 +80,14 @@ This is standing user authorization for agreed NIHILOBA/SHIDA development tasks,
 - Never force-push, rewrite shared history, delete production resources/data, run destructive production operations, or change production secrets or access controls under this standing authorization. Production database access and migrations retain their existing explicit-authorization requirements. Do not open, print, log, or commit secrets, .env contents, credentials, tokens, or production connection strings. Preserve read-only synced project sources.
 - Prefer a concise final implementation report over routine progress interruptions or approval questions. Report the implemented result, relevant validation, commit SHA(s), verified push, deployment status/limitations, and material remaining risks or blockers. Include repository-required report topics compactly where applicable. Ask only for an unresolved material product decision, missing essential information, or an actual external permission requirement; continue independent authorized work where possible.
 - AGENTS.md expresses authorization and workflow; it cannot override system/developer instructions, sandbox limits, approval review, administrator policy, GitHub protections, or connector permissions. Respect these controls and report an actual restriction precisely. Do not claim this file disables platform prompts.
+
+## Disk usage and dependency hygiene
+
+- Reuse existing compatible Python environments and Node.js dependencies. Inspect manifests and lockfiles before installing; do not repeat setup when the environment already works.
+- Avoid unnecessary global installations and new dependencies when existing tools suffice. Keep dependency and lockfile changes limited to the approved task.
+- Check free disk space before substantial installations or builds. Do not rebuild unchanged projects; use checks appropriate to the actual changes.
+- Inspect existing worktrees, their Git status, unpublished commits and active tasks/processes before creating another checkout. Never reuse a dirty or active worktree by discarding or overwriting its work.
+- Track task-created temporary files, downloads and environments, including their paths and purpose. After validation, remove only artifacts proven disposable, regenerable and unused by active work.
+- Preserve unique acceptance screenshots, logs, reports, unfinished source, databases, backups, uploads and protected project mirrors. Preserve Git metadata and unpublished commits.
+- Never indiscriminately delete shared caches or dependencies. Check junction/symlink targets and consumers before cleanup; measure and record the exact paths and space reclaimed.
+- Report retained temporary artifacts and why they remain. Prefer compatible environment reuse and focused validation over repeated setup, duplicate installations and unnecessary full builds.
