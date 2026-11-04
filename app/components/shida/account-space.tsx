@@ -1,4 +1,6 @@
 'use client';
+import {CandidateProfileSpace} from './candidate-profile-space';
+import {candidateCopy} from '../../lib/candidate-profile-copy';
 import {SpaceSidebar} from './space-sidebar';
 import {useEffect,useState} from 'react';
 import type {MarketplaceLocale} from './marketplace-account-copy';
@@ -63,8 +65,9 @@ export function AccountSpace({locale,initialView,transactionRole,inbox=false}:{l
  return <div className={`account-space${view==='settings'?' account-settings-page':(view==='management'||view==='overview')?' account-activities-page':view==='transactions'?' account-transactions-page':''}`} lang={locale}>
   <SpaceSidebar locale={locale} view={view} individualOnly={individualOnly} hasListings={hasListings} onNavigate={async event=>{event.preventDefault();const destination=event.currentTarget.href;if(await leaveWork())window.location.assign(destination);}}/>
   <div className="space-content">
-   <h1>{view==='listings'?listingCopy[locale].title:(view==='management'||view==='overview')?a.space:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
+   <h1>{view==='candidate'?candidateCopy[locale].title:view==='listings'?listingCopy[locale].title:(view==='management'||view==='overview')?a.space:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
    {view==='listings'&&(checking?<p role="status">{t.loading}</p>:session?<WenzeApiProvider key={session.binding} binding={session.binding} onUnauthorized={()=>setSession(null)}><QuickSell locale={locale} embedded/></WenzeApiProvider>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
+   {view==='candidate'&&(checking?<p role="status">{t.loading}</p>:session?<CandidateProfileSpace key={session.binding} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='messages'&&(checking?<p role="status">{t.loading}</p>:session?<MessagesSpace key={session.binding} binding={session.binding} locale={locale}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='recovery'&&<AccountRecovery locale={locale}/>}
    {!session&&view!=='recovery'&&<p><a href={href('recovery')}>{securityText(locale,'report')}</a></p>}

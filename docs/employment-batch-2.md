@@ -34,7 +34,7 @@ Only a backend-provided verified recruiter email is retained after the backend r
 
 ## Verified backend gaps and deferred UI
 
-The audited backend currently has no candidate-owned endpoint to read or edit professional/occasional profile details. It exposes only the visibility mutation, which cannot safely power profile view/edit or renewal without an authoritative profile read DTO. The website therefore describes the two-profile limit and keeps profile management in SHIDA WhatsApp; it does not fabricate profile state, CV links, expiry or renewal controls.
+Superseded on 4 November 2026: candidate-owned read/edit, private creation, saved progress, PDF upload and explicit visibility controls are now implemented in the shared My Space candidate workspace. See [candidate profile web completion](candidate-profile-web-2026-11-04.md). Existing WhatsApp interactions use the same canonical profiles and onboarding progress.
 
 There is no authenticated saved-jobs endpoint, so saved jobs are not presented as account data. Batch 1 device-local saves remain separate and are not described as synchronized.
 
