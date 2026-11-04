@@ -83,6 +83,8 @@ This is standing user authorization for agreed NIHILOBA/SHIDA development tasks,
 
 ## Disk usage and dependency hygiene
 
+- Create worktrees only when needed; first reuse a clean, inactive checkout when safe. Reuse compatible environments where practical.
+- Remove finished worktrees with Git only after verifying their work is preserved on the intended remote, there are no unique changes or evidence, and no active task or shared dependency depends on them. Never force removal to bypass those checks.
 - Reuse existing compatible Python environments and Node.js dependencies. Inspect manifests and lockfiles before installing; do not repeat setup when the environment already works.
 - Avoid unnecessary global installations and new dependencies when existing tools suffice. Keep dependency and lockfile changes limited to the approved task.
 - Check free disk space before substantial installations or builds. Do not rebuild unchanged projects; use checks appropriate to the actual changes.
