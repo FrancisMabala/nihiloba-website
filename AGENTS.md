@@ -91,3 +91,12 @@ This is standing user authorization for agreed NIHILOBA/SHIDA development tasks,
 - Preserve unique acceptance screenshots, logs, reports, unfinished source, databases, backups, uploads and protected project mirrors. Preserve Git metadata and unpublished commits.
 - Never indiscriminately delete shared caches or dependencies. Check junction/symlink targets and consumers before cleanup; measure and record the exact paths and space reclaimed.
 - Report retained temporary artifacts and why they remain. Prefer compatible environment reuse and focused validation over repeated setup, duplicate installations and unnecessary full builds.
+
+## Docker-first service testing
+
+- Prefer the backend's `compose.local.yaml` test profile for database/service integration tests; share approved Docker services across repositories, never development or production data. Follow `docs/docker-testing.md`.
+- Reuse compatible existing Python/Node dependencies for unit, lint and type checks. Do not automatically install a database, runtime, virtual environment, browser, Docker image or fallback test infrastructure. Ask before new host tooling or an additional testing environment.
+- Check Docker availability, local context, installed images, free disk and port ownership first. If unavailable or broken, diagnose and report the blocker; complete compatible checks and identify unverified coverage.
+- Use explicit test-only loopback targets, synthetic credentials and isolated disposable data. Never load production dotenv files or run tests against deployed endpoints. PostgreSQL concurrency checks cannot be replaced by SQLite evidence.
+- Record the exact task-owned Compose project, containers and test data. Serialize suites sharing a database. Clean up only those temporary resources after success or failure; never use broad prune, remove unrelated volumes/images/caches, or run project-wide teardown against a shared development stack.
+- Preserve CI coverage. Run focused affected tests locally and required release gates; report commands, results, skipped checks and retained artifacts. Avoid duplicate application images and unnecessary builds/downloads.
