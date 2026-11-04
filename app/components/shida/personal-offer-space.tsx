@@ -1,0 +1,43 @@
+'use client';
+import {useCallback,useEffect,useRef,useState} from 'react';
+import Image from 'next/image';
+import {personalOfferCopy} from '../../lib/personal-offer-copy';
+import {useWorkDraft,WenzeLeaveDialog} from '../../lib/wenze-work';
+import './candidate-profile-space.css';
+type Locale=keyof typeof personalOfferCopy;
+type Field=keyof typeof personalOfferCopy.en.fields;
+type Values=Partial<Record<Field,string|null>>;
+type Draft={public_ref:string;revision:number;state:string;values:Values;result_job_ref:string|null};
+type Data={progress:Draft[];capacity:{used:number;limit:number};identity:{name:string;city?:string|null;commune?:string|null}};
+const optional=new Set<Field>(['budget','optional_experience','start_date']);
+const groups:Field[][]=[['job','work_city','commune','quartier','short_summary'],['duration_frequency','work_schedule','budget','optional_experience','start_date']];
+export function PersonalOfferSpace({locale,binding,onUnauthorized}:{locale:Locale;binding:string;onUnauthorized:()=>void}){
+ const t=personalOfferCopy[locale],prefix=locale==='en'?'':`/${locale}`;
+ const [data,setData]=useState<Data|null>(null),[draft,setDraft]=useState<Draft|null>(null),[values,setValues]=useState<Values>({}),[step,setStep]=useState(0),[busy,setBusy]=useState(false),[dirty,setDirty]=useState(false),[confirmed,setConfirmed]=useState(false),[conflict,setConflict]=useState(false),[message,setMessage]=useState(''),[result,setResult]=useState<string|null>(null),[pending,setPending]=useState(false);
+ const alive=useRef(true),lock=useRef(false),key=useRef<string|null>(null),intent=useRef<{action:'finalize';public_ref:string;revision:number;confirmed:true}|null>(null),unauthorized=useRef(onUnauthorized);
+ useEffect(()=>{unauthorized.current=onUnauthorized;},[onUnauthorized]);
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
+ useWorkDraft(dirty,t.error);
+ const api=useCallback(async(body?:unknown)=>{const response=await fetch('/api/shida/personal/job-offer',{method:body===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000),headers:{'X-Shida-Session':binding,...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify({...body as object,language:locale})});if(response.status===401)unauthorized.current();if(!response.ok)throw new Error(String(response.status));return response.json();},[binding,locale]);
+ const load=useCallback(async()=>{const next=await api() as Data;if(alive.current)setData(next);return next;},[api]);
+ useEffect(()=>{void load().catch(()=>{if(alive.current)setMessage(t.error);});},[load,t.error]);
+ async function run(action:()=>Promise<void>){if(lock.current)return;lock.current=true;setBusy(true);setMessage('');try{await action();}catch(error){if(alive.current){const stale=error instanceof Error&&error.message==='409';setConflict(stale);setMessage(stale?t.conflict:t.error);}}finally{lock.current=false;if(alive.current)setBusy(false);}}
+ function begin(next:Draft,suggestLocation=false){if(!alive.current)return;if(next.state==='completed'){setResult(next.result_job_ref);setDraft(null);setDirty(false);key.current=null;return;}if(next.state!=='active')throw new Error('409');intent.current=null;setPending(false);setDraft(next);setValues(suggestLocation&&next.revision===1&&!Object.keys(next.values).length?{work_city:data?.identity.city??null,commune:data?.identity.commune??null}:next.values);setStep(0);setDirty(false);setConfirmed(false);setConflict(false);setResult(null);}
+ async function save(){if(!draft)throw new Error('missing');const partial=Object.fromEntries(Object.entries(values).filter(([field,value])=>optional.has(field as Field)||!!value?.trim()));const next=await api({action:'save',public_ref:draft.public_ref,revision:draft.revision,values:partial}) as Draft;if(alive.current){setDraft(next);setDirty(false);}return next;}
+ async function reload(){const next=await load();if(!alive.current)return;const current=next.progress.find(row=>row.public_ref===draft?.public_ref);if(current?.state==='completed'){setResult(current.result_job_ref);setDraft(null);setDirty(false);setPending(false);intent.current=null;}else if(current?.state==='active')begin(current);else{setDraft(null);setDirty(false);setPending(false);intent.current=null;}setConflict(false);}
+ function change(field:Field,value:string){setValues(old=>({...old,[field]:value||null}));setDirty(true);setConfirmed(false);}
+ return <section className="candidate-workspace" aria-busy={busy}>
+  <WenzeLeaveDialog locale={locale}/><p>{t.intro}</p>
+  {message&&<div role="alert" className="candidate-notice">{message}<button disabled={busy} onClick={()=>void run(reload)}>{t.reload}</button></div>}
+  {!data&&!message&&<p role="status">{t.loading}</p>}
+  {result&&<p role="status" className="candidate-notice">{t.success} <a href={`${prefix}/shida/emplois/${encodeURIComponent(result)}`}>{t.view} →</a></p>}
+  {data&&<p>{t.capacity}: {data.capacity.used} / {data.capacity.limit}</p>}
+  {data&&draft?<div className="candidate-wizard-layout"><aside className="candidate-wizard-art"><Image src="/images/marketplace-heroes/jobs.svg" width={360} height={190} alt=""/><h2>{t.title}</h2><p>{t.privacy}</p></aside><div>
+   <ol className="candidate-steps">{t.steps.map((label,index)=><li key={label} aria-current={step===index?'step':undefined}><span>{index+1}</span>{label}</li>)}</ol>
+   <form className="candidate-form" onSubmit={event=>{event.preventDefault();void run(async()=>{if(step<2){await save();if(alive.current)setStep(step+1);return;}if(!confirmed)return;if(!intent.current){const saved=await save();intent.current={action:'finalize',public_ref:saved.public_ref,revision:saved.revision,confirmed:true};}setPending(true);const completed=await api(intent.current) as Draft;if(alive.current){setResult(completed.result_job_ref);setDraft(null);setDirty(false);setPending(false);intent.current=null;key.current=null;}await load();});}}>
+    <h2>{t.steps[step]}</h2>{step===0&&<p>{data.identity.name} · {t.prefill}</p>}
+    {step<2?<div className="candidate-fields">{groups[step].map(field=><label key={field}>{t.fields[field]} <small>{optional.has(field)?t.optional:t.required}</small>{['short_summary','work_schedule'].includes(field)?<textarea disabled={busy||pending} required={!optional.has(field)} maxLength={2000} value={values[field]??''} onChange={e=>change(field,e.target.value)}/>:<input disabled={busy||pending} required={!optional.has(field)} type={field==='start_date'?'date':'text'} maxLength={2000} value={values[field]??''} onChange={e=>change(field,e.target.value)}/>} {field==='budget'&&<small>{t.budgetHint}</small>}{field==='work_schedule'&&<small>{t.scheduleHint}</small>}</label>)}</div>:<><p>{data.identity.name}</p><dl className="candidate-review">{groups.flat().map(field=><div key={field}><dt>{t.fields[field]}</dt><dd>{values[field]||'—'}</dd></div>)}</dl><label className="candidate-checkbox"><input disabled={busy||pending} type="checkbox" required checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>{t.confirm}</label></>}
+    <div className="candidate-actions">{step>0&&<button type="button" disabled={busy||pending} onClick={()=>setStep(step-1)}>{t.back}</button>}<button type="button" disabled={busy||pending||conflict} onClick={()=>void run(async()=>{await save();if(alive.current)setDraft(null);await load();})}>{t.save}</button><button className="button-primary" disabled={busy||conflict||step===2&&!confirmed}>{step<2?t.next:t.publish}</button></div>
+   </form></div></div>:data&&<div className="candidate-profile-panel"><p>{t.privacy}</p>{data.progress.filter(row=>['active','expired'].includes(row.state)).map(row=><article key={row.public_ref}><h2>{row.values.job||t.title}</h2>{row.state==='expired'&&<p>{t.expired}</p>}<button disabled={busy} onClick={()=>void run(async()=>begin(row.state==='expired'?await api({action:'recover',public_ref:row.public_ref,revision:row.revision}):row))}>{row.state==='expired'?t.recover:t.resume}</button><button disabled={busy} onClick={()=>{if(window.confirm(t.cancelConfirm))void run(async()=>{await api({action:'cancel',public_ref:row.public_ref,revision:row.revision});key.current=null;await load();});}}>{t.cancel}</button></article>)}<button disabled={busy||data.capacity.used>=data.capacity.limit} className="button-primary" onClick={()=>void run(async()=>{key.current??=crypto.randomUUID();begin(await api({action:'start',operation_key:key.current}),true);})}>{t.start}</button></div>}
+ </section>;
+}
