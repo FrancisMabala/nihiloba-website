@@ -4,14 +4,16 @@ import {securityText} from '../../app/lib/account-security-copy';
 import {accountSupportCopy} from '../../app/lib/account-support-copy';
 import {recoveryCopy} from '../../app/lib/account-recovery-copy';
 
-async function fixture(page:Page,signedIn=true){
- const state={registered:false,email:false,closed:false,message:'',replies:[] as string[],proof:false};
+async function fixture(page:Page,signedIn=true,configured=false){
+ const state={registered:configured,email:configured,closed:false,message:'',replies:[] as string[],proof:false,removed:0};
  await page.route('**/api/shida/**',async route=>{
   const path=new URL(route.request().url()).pathname.replace(/\/$/,''),body=route.request().method()==='POST'?route.request().postDataJSON():{};
   const reply=(data:unknown,status=200)=>route.fulfill({status,json:data});
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Synthetic user'}},signedIn?200:401);
   if(path.includes('/personal/security')){
    const base='/api/shida/personal/security',part=path.slice(base.length);
+   if(part==='/profile')return reply({revision:'fixture-revision',values:{personal_name:'Synthetic user',city:'Kinshasa',country_code:'CD',preferred_language:'fr'},primary_phone:{masked:'•••• 0000',verified:true},neighborhood:null});
+   if(part==='/recovery')return reply({methods:[]});
    if(part==='')return reply({email:state.email?'s***@example.test':null,email_ready_at:'2026-01-01T00:00:00Z',protected:false,passkeys:state.registered?[{reference:'KEY_fixture',ready_at:'2026-01-01T00:00:00Z'}]:[]});
    if(part==='/phone')return reply({changes:[]});
    if(part==='/passkeys/register/options')return reply({reference:'SEC_fixture',options:{challenge:Buffer.alloc(32,7).toString('base64url'),rp:{id:'localhost',name:'SHIDA'},user:{id:Buffer.from('USR_fixture').toString('base64url'),name:'Synthetic user',displayName:'Synthetic user'},pubKeyCredParams:[{type:'public-key',alg:-7}],authenticatorSelection:{residentKey:'required',userVerification:'required'},timeout:30000}});
@@ -20,6 +22,7 @@ async function fixture(page:Page,signedIn=true){
    if(part==='/email/verify'){expect(body.code).toBe('12345678');state.email=true;return reply({verified:true});}
    if(part==='/email/proof/start')return reply({reference:'SEC_proof'});
    if(part==='/email/proof/verify'){state.proof=true;return reply({authorization:'SEC_authorized'});}
+   if(part==='/passkeys/revoke'){expect(state.proof).toBe(true);expect(body).toEqual({reference:'KEY_fixture',authorization:'SEC_authorized',confirmed:true});state.registered=false;state.removed++;return reply({revoked:true});}
    if(part==='/sessions/revoke'){expect(state.proof).toBe(true);expect(body.authorization).toBe('SEC_authorized');return reply({revoked:true});}
    if(part==='/delete')return reply({eligible:false});
   }
@@ -37,6 +40,25 @@ async function fixture(page:Page,signedIn=true){
  });
  return state;
 }
+for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,768,1024,1440])test(`passkey removal ${locale} ${width}: confirmation and fresh proof`,async({page})=>{
+ const state=await fixture(page,true,true),t=(key:Parameters<typeof securityText>[1])=>securityText(locale,key);
+ await page.setViewportSize({width,height:900});
+ await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);
+ await page.locator('.space-security-setting').filter({has:page.getByRole('button',{name:t('passkey'),exact:true,includeHidden:true})}).locator('summary').click();
+ await page.getByLabel(t('preferEmail'),{exact:true}).check();
+ await page.getByRole('button',{name:t('removePasskey'),exact:true}).click();
+ await expect(page.getByText(t('removePasskeyHelp'),{exact:true})).toBeVisible();expect(state.removed).toBe(0);
+ await page.screenshot({path:`test-results/account-security/confirmation-${locale}-${width}.png`,fullPage:true});
+ const confirmation=page.locator('li').filter({has:page.getByRole('button',{name:t('removePasskey'),exact:true})});
+ await confirmation.getByRole('button',{name:t('cancel'),exact:true}).click();expect(state.removed).toBe(0);
+ await page.getByRole('button',{name:t('removePasskey'),exact:true}).click();
+ await confirmation.getByRole('button',{name:t('confirmRemovePasskey'),exact:true}).click();
+ const proof=page.getByRole('region',{name:t('emailProof'),exact:true});await expect(proof).toBeVisible();expect(state.removed).toBe(0);
+ await proof.getByLabel(t('code'),{exact:true}).fill('12345678');await proof.getByRole('button',{name:t('verify'),exact:true}).click();
+ await expect.poll(()=>state.removed).toBe(1);await expect(page.getByRole('button',{name:t('removePasskey'),exact:true})).toHaveCount(0);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`test-results/account-security/removal-${locale}-${width}.png`,fullPage:true});
+});
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366])test(`${locale} ${width}: security and signed-out reporting are usable`,async({page})=>{
  await fixture(page);await page.setViewportSize({width,height:900});const prefix=locale==='en'?'':`/${locale}`;
  await page.goto(`${prefix}/shida/space/?view=settings`);

@@ -1,5 +1,6 @@
 const text={
  removePasskey:['Remove this passkey','Supprimer cette clé d’accès','Longola fungola oyo','Ondoa ufunguo huu'],
+ confirmRemovePasskey:['Confirm passkey removal','Confirmer la suppression de la clé','Ndimisa kolongola fungola','Thibitisha kuondoa ufunguo'],
  removePasskeyHelp:['This key will no longer sign you in. Other login methods and existing sessions remain available.','Cette clé ne permettra plus de vous connecter. Les autres méthodes et les sessions existantes restent disponibles.','Fungola oyo ekokotisa yo lisusu te. Ndenge mosusu ya kokota mpe ba sessions etikali.','Ufunguo huu hautakuingiza tena. Njia nyingine za kuingia na vipindi vilivyopo vinabaki.'],
 
  restart:['Start again','Recommencer','Banda lisusu','Anza tena'],
