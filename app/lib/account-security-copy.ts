@@ -1,4 +1,7 @@
 const text={
+ removePasskey:['Remove this passkey','Supprimer cette clé d’accès','Longola fungola oyo','Ondoa ufunguo huu'],
+ removePasskeyHelp:['This key will no longer sign you in. Other login methods and existing sessions remain available.','Cette clé ne permettra plus de vous connecter. Les autres méthodes et les sessions existantes restent disponibles.','Fungola oyo ekokotisa yo lisusu te. Ndenge mosusu ya kokota mpe ba sessions etikali.','Ufunguo huu hautakuingiza tena. Njia nyingine za kuingia na vipindi vilivyopo vinabaki.'],
+
  restart:['Start again','Recommencer','Banda lisusu','Anza tena'],
  changeWaiting:['The number-change request is not ready or has expired. Refresh to check its waiting period.','La demande de changement n’est pas encore disponible ou a expiré. Actualisez pour vérifier le délai.','Lisengi ya kobongola nimero ebongi naino te to esili. Zongela mpo na kotala ntango.','Ombi la kubadilisha nambari haliko tayari au limeisha. Sasisha kuangalia muda wa kusubiri.'],
  emailProof:['Verify with your recovery email','Vérifier avec votre e-mail de récupération','Ndimisa na e-mail ya kozongisa konti','Thibitisha kwa barua pepe ya kurejesha akaunti'],

@@ -16,7 +16,7 @@ it.each(['','profile','phone','recovery','navigation'])('forwards canonical brow
  expect((await GET(request,context(path))).status).toBe(200);
  expect((fetcher.mock.calls[0][1]?.headers as Record<string,string>).Origin).toBe('https://nihiloba.com');
 });
-it.each(['passkeys/register/options','passkeys/register/verify','passkeys/verify/options','passkeys/verify/finish','email/start','email/verify','email/proof/start','email/proof/verify','phone/start','phone/verify','phone/cancel','phone/complete','delete','sessions/revoke','profile','recovery/set','recovery/remove','recovery/phone/start','recovery/phone/verify'])('proxies only allowed security actions with private server-side identity: %s',async path=>{
+it.each(['passkeys/revoke','passkeys/register/options','passkeys/register/verify','passkeys/verify/options','passkeys/verify/finish','email/start','email/verify','email/proof/start','email/proof/verify','phone/start','phone/verify','phone/cancel','phone/complete','delete','sessions/revoke','profile','recovery/set','recovery/remove','recovery/phone/start','recovery/phone/verify'])('proxies only allowed security actions with private server-side identity: %s',async path=>{
  const result=await POST(req('personal/security/'+path),context(path));expect(result.status).toBe(200);expect(result.headers.get('cache-control')).toContain('no-store');expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/personal/security/'+path);expect((fetcher.mock.calls[0][1]?.headers as Record<string,string>).Cookie).toBe('shida_dashboard_session='+token);
 });
 it('rejects cross-origin, missing-origin and stale browser requests before forwarding',async()=>{
