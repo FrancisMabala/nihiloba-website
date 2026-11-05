@@ -1,7 +1,7 @@
 import { guestSetCookie } from "../../../../lib/restaurant-guest-cookie";
 import { personalRequestOrigin } from "../../../../lib/personal-request-origin";
 import { sellerErrorCodes } from "../../../../lib/restaurant-seller-contract";
-import { GUEST_BACKEND, GUEST_COOKIE, GUEST_PROXY, guestBody, guestReference, guestRoute } from "../../../../lib/restaurant-guest-contract";
+import { GUEST_BACKEND, GUEST_COOKIE, guestBody, guestReference, guestRoute } from "../../../../lib/restaurant-guest-contract";
 import { GUEST_PROXY_HEADER, guestProxyIdentity } from "../../../../lib/restaurant-guest-proxy-identity";
 
 export const dynamic = "force-dynamic";
