@@ -4,9 +4,11 @@ import {securityText} from '../../app/lib/account-security-copy';
 import {accountSupportCopy} from '../../app/lib/account-support-copy';
 import {recoveryCopy} from '../../app/lib/account-recovery-copy';
 import {emailLoginCopy} from '../../app/lib/email-login-copy';
+import {accountDesignText} from '../../app/lib/account-design-copy';
+import {deletionReviewText} from '../../app/lib/deletion-review-copy';
 
 async function fixture(page:Page,signedIn=true,configured=false){
- const state={registered:configured,email:configured,loginEmail:false,closed:false,message:'',replies:[] as string[],proof:false,removed:0};
+ const state={registered:configured,email:configured,loginEmail:false,closed:false,message:'',replies:[] as string[],proof:false,removed:0,review:''};
  await page.route('**/api/shida/**',async route=>{
   const path=new URL(route.request().url()).pathname.replace(/\/$/,''),body=route.request().method()==='POST'?route.request().postDataJSON():{};
   const reply=(data:unknown,status=200)=>route.fulfill({status,json:data});
@@ -28,6 +30,11 @@ async function fixture(page:Page,signedIn=true,configured=false){
    if(part==='/passkeys/revoke'){expect(state.proof).toBe(true);expect(body).toEqual({reference:'KEY_fixture',authorization:'SEC_authorized',confirmed:true});state.registered=false;state.removed++;return reply({revoked:true});}
    if(part==='/sessions/revoke'){expect(state.proof).toBe(true);expect(body.authorization).toBe('SEC_authorized');return reply({revoked:true});}
    if(part==='/delete')return reply({eligible:false});
+   if(part==='/delete/reviews/cancel'){expect(body.reference).toBe('SCT_fixture');state.review='deletion_cancelled';return reply({state:state.review});}
+   if(part==='/delete/reviews'){
+    if(route.request().method()==='POST'){expect(state.proof).toBe(true);expect(body.confirmed).toBe(true);expect(body.authorization).toBe('SEC_authorized');state.review='deletion_requested';return reply({reference:'SCT_fixture'});}
+    return reply({requests:state.review?[{reference:'SCT_fixture',state:state.review,created_at:'2026-01-01',updated_at:'2026-01-01'}]:[]});
+   }
   }
   if(path.includes('/personal/support')){
    if(route.request().method()==='POST'&&path.endsWith('/support'))state.message=body.message;
@@ -43,6 +50,24 @@ async function fixture(page:Page,signedIn=true,configured=false){
  });
  return state;
 }
+for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366])test(`deletion review consent and withdrawal ${locale} ${width}`,async({page})=>{
+ const state=await fixture(page,true,true),t=(key:Parameters<typeof deletionReviewText>[1])=>deletionReviewText(locale,key);
+ await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);
+ await page.getByLabel(securityText(locale,'preferEmail'),{exact:true}).check();
+ const review=page.locator('.account-deletion-review');
+ await review.getByLabel(t('message')).fill('Please review my unresolved obligations.');
+ await expect(review.getByRole('button',{name:t('title'),exact:true})).toBeDisabled();
+ await review.getByLabel(t('consent')).check();await review.getByRole('button',{name:t('title'),exact:true}).click();
+ const proof=page.getByRole('region',{name:securityText(locale,'emailProof'),exact:true});
+ await proof.getByLabel(securityText(locale,'code'),{exact:true}).fill('12345678');
+ await proof.getByRole('button',{name:securityText(locale,'verify'),exact:true}).click();
+ await expect(review.getByText(t('sent'),{exact:true})).toBeVisible();
+ await review.getByRole('button',{name:t('withdraw'),exact:true}).click();
+ await expect.poll(()=>state.review).toBe('deletion_cancelled');
+ await expect(review.getByRole('button',{name:t('withdraw'),exact:true})).toHaveCount(0);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`test-results/account-security/review-${locale}-${width}.png`,fullPage:true});
+});
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,768,1024,1440])test(`login email enrollment ${locale} ${width}`,async({page})=>{
  const state=await fixture(page,true,true),t=emailLoginCopy[locale];
  await page.setViewportSize({width,height:900});
@@ -80,7 +105,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,7
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366])test(`${locale} ${width}: security and signed-out reporting are usable`,async({page})=>{
  await fixture(page);await page.setViewportSize({width,height:900});const prefix=locale==='en'?'':`/${locale}`;
  await page.goto(`${prefix}/shida/space/?view=settings`);
- await expect(page.getByRole('heading',{name:securityText(locale,'title'),exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:accountDesignText(locale,'securityTitle'),exact:true})).toBeVisible();
  await expect(page.locator('#account-deletion summary')).toBeVisible();
  await expect(page.getByRole('heading',{name:mySpaceCopy[locale].lost,exact:true})).toBeVisible();
  await expect(page.locator('.account-protection a')).toHaveAttribute('href','?view=recovery');
@@ -94,6 +119,42 @@ test('support creates, replies and closes through the account space',async({page
  await page.getByLabel(t.message,{exact:true}).fill('Synthetic support ticket');await page.getByRole('button',{name:t.send,exact:true}).click();await expect(page.getByText('Synthetic support ticket',{exact:true})).toBeVisible();
  await page.getByLabel(t.message,{exact:true}).fill('Synthetic follow-up');await page.getByRole('button',{name:t.reply,exact:true}).click();await expect(page.getByText('Synthetic follow-up',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:t.close,exact:true}).click();await expect(page.getByLabel(t.message,{exact:true})).toHaveCount(0);expect(state.closed).toBe(true);
+});
+
+for(const width of [390,1366])test(`administrator deletion review ${width}: proof, revision and failed execution`,async({page})=>{
+ await fixture(page);
+ const decisions:string[]=[];
+ let proofs=0;
+ await page.addInitScript(()=>{
+  Object.defineProperty(navigator.credentials,'get',{value:async()=>({id:'synthetic-key',rawId:new Uint8Array([1]).buffer,type:'public-key',response:{clientDataJSON:new Uint8Array([2]).buffer,authenticatorData:new Uint8Array([3]).buffer,signature:new Uint8Array([4]).buffer,userHandle:null},getClientExtensionResults:()=>({})})});
+ });
+ await page.route('**/api/shida/personal/**',async route=>{
+  const path=new URL(route.request().url()).pathname.replace(/\/$/,'');
+  if(path.endsWith('/passkeys/verify/options')){
+   expect(route.request().postDataJSON()).toEqual({action:'review'});
+   return route.fulfill({json:{reference:'SEC_review',options:{challenge:Buffer.alloc(32,8).toString('base64url')}}});
+  }
+  if(path.endsWith('/passkeys/verify/finish')){proofs++;return route.fulfill({json:{authorization:'SEC_review_proof'}});}
+  if(path.endsWith('/deletion-review'))return route.fulfill({json:{requests:[{reference:'SCT_review',account_reference:'USR_synthetic',message:'Please review this synthetic account.',state:'deletion_requested',updated_at:'revision-1'}]}});
+  if(path.endsWith('/deletion-review/SCT_review')){
+   const body=route.request().postDataJSON();
+   expect(body.authorization).toBe('SEC_review_proof');expect(body.revision).toBe('revision-1');expect(body.note.length).toBeGreaterThanOrEqual(40);
+   decisions.push(body.decision);
+   return route.fulfill({status:409,json:{error:'security_deletion_review_required'}});
+  }
+  return route.fallback();
+ });
+ await page.setViewportSize({width,height:900});await page.goto('/shida/space/?view=support');
+ const review=page.locator('section').filter({has:page.getByRole('heading',{name:'Restricted deletion review',exact:true})});
+ const execute=review.getByRole('button',{name:'Execute eligible deletion',exact:true});
+ await expect(execute).toBeDisabled();
+ await review.getByLabel('Review record',{exact:true}).fill('Independently reviewed the synthetic account obligations.');
+ await expect(execute).toBeDisabled();
+ await review.getByRole('checkbox').check();await execute.click();
+ await expect(review.getByRole('alert')).toBeVisible();
+ expect(decisions).toEqual(['execute']);expect(proofs).toBe(1);
+ await expect(review.getByText('SCT_review',{exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 test('real browser passkey enrollment and recovery-email step-up',async({page,context})=>{
  const state=await fixture(page);const cdp=await context.newCDPSession(page);await cdp.send('WebAuthn.enable');await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}});

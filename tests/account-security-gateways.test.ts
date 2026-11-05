@@ -2,6 +2,7 @@ import {beforeEach,afterEach,it,expect,vi} from 'vitest';
 const jar=new Map<string,string>(), saved=vi.fn();
 vi.mock('next/headers',()=>({cookies:async()=>({get:(key:string)=>jar.has(key)?{value:jar.get(key)}:undefined,set:(key:string,value:string,options:object)=>{saved(key,value,options);if(value)jar.set(key,value);else jar.delete(key);}})}));
 import {GET,POST} from '../app/api/shida/personal/security/[[...path]]/route';
+import {GET as reviewGet, POST as reviewPost} from '../app/api/shida/personal/deletion-review/[[...path]]/route';
 import {POST as recovery} from '../app/api/shida/recovery/[[...path]]/route';
 import {GET as supportGet,POST as supportPost} from '../app/api/shida/personal/support/[[...path]]/route';
 import {PERSONAL_SESSION_COOKIE,personalSessionBinding} from '../app/api/shida/employment/route-utils';
@@ -45,4 +46,23 @@ it('support shares the authenticated account session and rejects arbitrary ticke
  expect((await supportPost(req('personal/support','POST',{category:'other',message:'Synthetic ticket'}),context(''))).status).toBe(200);
  expect((await supportGet(req('personal/support/admin','GET'),context('admin'))).status).toBe(404);
  jar.clear();expect((await supportGet(req('personal/support','GET'),context(''))).status).toBe(401);
+});
+it('keeps deletion requests and withdrawal within the bound personal security API',async()=>{
+ for(const path of ['delete/reviews','delete/reviews/cancel']) {
+  fetcher.mockResolvedValueOnce(Response.json({saved:true}));
+  expect((await POST(req('personal/security/'+path),context(path))).status).toBe(200);
+ }
+ fetcher.mockResolvedValueOnce(Response.json({requests:[]}));
+ expect((await GET(req('personal/security/delete/reviews','GET'),context('delete/reviews'))).status).toBe(200);
+});
+it('restricts administrator deletion review routes and hides backend diagnostics',async()=>{
+ expect((await reviewGet(req('personal/deletion-review','GET'),context(''))).status).toBe(200);
+ expect((await reviewGet(req('personal/deletion-review/SCT_fixture','GET'),context('SCT_fixture'))).status).toBe(404);
+ expect((await reviewPost(req('personal/deletion-review/SCT_fixture','POST',{}, {Origin:'https://other.test'}),context('SCT_fixture'))).status).toBe(403);
+ expect((await reviewPost(req('personal/deletion-review/admin'),context('../admin'))).status).toBe(404);
+ fetcher.mockResolvedValueOnce(Response.json({detail:'private database diagnostic'},{status:403}));
+ const response=await reviewPost(req('personal/deletion-review/SCT_fixture'),context('SCT_fixture'));
+ expect(response.status).toBe(403);expect(response.headers.get('cache-control')).toContain('no-store');
+ expect(await response.json()).toEqual({detail:'support_unavailable'});
+ jar.clear();expect((await reviewGet(req('personal/deletion-review','GET'),context(''))).status).toBe(401);
 });

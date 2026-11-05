@@ -1,4 +1,19 @@
 /* Approved My Account reference. Scope density changes to this page only. */
+.account-settings-cards{display:grid;gap:18px;align-items:start;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"profile recovery" "security deletion" "protection protection"}
+.account-settings-cards>.account-security-panels{display:contents}
+.account-settings-cards>.space-profile{grid-area:profile}
+.account-settings-cards .space-account-security{grid-area:security}
+.account-settings-cards .account-recovery-settings{grid-area:recovery}
+.account-settings-cards .space-danger{grid-area:deletion}
+.account-settings-cards .account-protection{grid-area:protection}
+.account-settings-page .account-settings-cards .space-profile,.account-settings-page .account-settings-cards .space-security{min-width:0;margin:0;border:1px solid #dedbd0;box-shadow:0 3px 12px #203f3408;border-radius:14px}
+.account-settings-page .account-settings-cards .space-security-setting>summary{grid-template-columns:24px minmax(0,1fr) auto 12px;gap:10px}
+.account-settings-page .account-settings-cards .space-security-detail{padding:0 14px 14px}
+.account-deletion-review{margin-top:20px;padding-top:16px;border-top:1px solid #dedbd0}
+.account-deletion-review label{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.account-deletion-review textarea{width:100%;min-height:100px;border:1px solid #cdd6cc;border-radius:6px;padding:10px}
+.account-deletion-review li{overflow-wrap:anywhere;margin:12px 0}
+@media(max-width:1100px){.account-settings-cards{grid-template-columns:minmax(0,1fr);grid-template-areas:"profile" "security" "recovery" "deletion" "protection"}}
 .account-settings-page{grid-template-columns:230px minmax(0,1fr);max-width:1320px}
 .account-settings-page .space-content{padding:24px 30px 48px}
 .account-settings-page .space-eyebrow{display:none}

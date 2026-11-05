@@ -1,5 +1,8 @@
 type Locale='en'|'fr'|'ln'|'sw';
 const text={
+ securityTitle:['Sign-in and security','Connexion et sécurité','Bokoti mpe bobateli','Kuingia na usalama'],
+ recoveryTitle:['Account recovery','Récupération du compte','Kozongisa konti','Kurejesha akaunti'],
+ recoveryHelp:['Configure ways to regain access if you lose your phone.','Configurez des moyens de retrouver votre compte en cas de perte du téléphone.','Bongisa banzela ya kozongisa konti soki telefone ebungi.','Weka njia za kurejesha akaunti ukipoteza simu.'],
  intro:['Protect your account and manage your recovery options.','Protégez votre compte et gérez vos options de récupération.','Batela konti na yo mpe bongisa banzela ya kozongisa yango.','Linda akaunti yako na udhibiti njia za kuirejesha.'],
  delay:['New recovery methods become usable after 24 hours.','Les nouvelles méthodes de récupération sont utilisables après 24 heures.','Banzela ya sika ya kozongisa konti esalaka nsima ya ngonga 24.','Njia mpya za kurejesha akaunti hutumika baada ya saa 24.'],
  passkey:['Passkey','Clé d’accès','Fungola ya bokoti','Ufunguo wa kuingia'],
