@@ -9,6 +9,8 @@ import { marketplaceCopy } from "./marketplace-copy";
 import { MarketplaceImage } from "./marketplace-image";
 import { AvailabilityBadge, availabilityLabel, MarketplaceBreadcrumb, MarketplaceFacts } from "./marketplace-primitives";
 import type { MarketplaceFact } from "./marketplace-primitives";
+import { ApartmentReport } from './apartment-report';
+import { apartmentSafetyCopy } from '../../lib/apartment-safety-copy';
 
 export function marketplacePath(locale: Locale, path: string): string {
   return locale === "en" ? path : `/${locale}${path}`;
@@ -128,6 +130,11 @@ export function ApartmentDetail({ listing, locale }: { listing: ApartmentListing
           {listing.description && <section><h2>{t.descriptionTitle}</h2><p className="lead-copy">{listing.description}</p></section>}
           {locationDetails.length > 0 && <section><h2>{t.detailsTitle}</h2><dl className="marketplace-property-details">{locationDetails.map((detail) => <div key={detail.label}><dt>{detail.label}</dt><dd>{detail.value}</dd></div>)}</dl></section>}
           {listing.owner && <section><ApartmentOwnerSummary owner={listing.owner} locale={locale} extended/></section>}
+          <section><h2>{apartmentSafetyCopy[locale].title}</h2><p>{apartmentSafetyCopy[locale].notice}</p>
+            {listing.advertiser_role && <p>{apartmentSafetyCopy[locale].roles[listing.advertiser_role]}</p>}
+            <ul><li>{apartmentSafetyCopy[locale].identity}</li><li>{apartmentSafetyCopy[locale].property}</li><li>{apartmentSafetyCopy[locale].independent}</li></ul>
+            <ApartmentReport locale={locale} reference={listing.public_ref}/>
+          </section>
         </div>
       </div>
     </div></section>

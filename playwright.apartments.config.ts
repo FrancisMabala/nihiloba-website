@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:'apartments.browser.ts',outputDir:'test-results/apartments-run',workers:1,use:{baseURL:'http://127.0.0.1:3056',channel:'msedge',headless:true,serviceWorkers:'block'},webServer:{command:'node --require ./tests/browser/apartments-fixture.cjs node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3056',url:'http://127.0.0.1:3056/fr/shida/appartements/limete-fixture',reuseExistingServer:false,timeout:120000},reporter:'list'});

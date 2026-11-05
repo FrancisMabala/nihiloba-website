@@ -108,6 +108,7 @@ function apartment(value: unknown): ApartmentListing {
   const item = record(value);
   if (!Array.isArray(item.images)) throw new ShidaApiError("malformed");
   return {
+    advertiser_role: ['owner', 'representative', 'agent'].includes(String(item.advertiser_role)) ? item.advertiser_role as ApartmentListing['advertiser_role'] : null,
     public_ref: text(item.public_ref, true)!, slug: text(item.slug, true)!, title: text(item.title, true)!,
     city: text(item.city), area: text(item.area), commune: text(item.commune), quartier: text(item.quartier),
     rent: number(item.rent), currency: text(item.currency), number_of_rooms: number(item.number_of_rooms),

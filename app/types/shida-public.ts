@@ -249,6 +249,7 @@ export type PublicImage = {
 };
 
 export type ApartmentListing = {
+  advertiser_role?: 'owner' | 'representative' | 'agent' | null;
   public_ref: string;
   slug: string;
   title: string;
