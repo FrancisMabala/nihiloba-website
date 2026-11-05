@@ -37,6 +37,14 @@ async function handle(request: Request, context: Context) {
       headers: { Accept: "application/json", "Content-Type": "application/json", Cookie: `shida_dashboard_session=${token}`, ...(origin ? {Origin: origin} : {}) },
     });
     if (!response.ok) {
+      if (response.status === 429) {
+        const raw = response.headers.get('retry-after');
+        const seconds = raw && /^\d{1,6}$/.test(raw) ? Number(raw) : null;
+        const retryAfter = seconds !== null && seconds > 0 && seconds <= 86400 ? seconds : null;
+        return Response.json({detail:'security_rate_limited', retry_after:retryAfter}, {
+          status:429, headers:{...PRIVATE_HEADERS, ...(retryAfter ? {'Retry-After':String(retryAfter)} : {})},
+        });
+      }
       const data=await response.json().catch(()=>null);
       const codes=new Set(['security_verification_required','security_fresh_login_required','security_method_not_ready','security_verification_failed','security_email_delivery_unavailable','security_recovery_review_required','security_change_not_ready','security_number_unavailable','security_phone_delivery_unavailable','security_change_pending']);
       return Response.json({detail:codes.has(data?.detail)?data.detail:'security_unavailable'},{status:response.status>=400&&response.status<600?response.status:502,headers:PRIVATE_HEADERS});

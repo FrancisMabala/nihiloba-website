@@ -66,3 +66,23 @@ it('restricts administrator deletion review routes and hides backend diagnostics
  expect(await response.json()).toEqual({detail:'support_unavailable'});
  jar.clear();expect((await reviewGet(req('personal/deletion-review','GET'),context(''))).status).toBe(401);
 });
+
+it.each(['passkeys/verify/finish','login-email/start','login-email/verify'])('preserves safe retry timing for %s',async path=>{
+ fetcher.mockResolvedValueOnce(Response.json({detail:'private rate diagnostic'},{status:429,headers:{'Retry-After':'61'}}));
+ const response=await POST(req('personal/security/'+path),context(path));
+ expect(response.status).toBe(429);expect(response.headers.get('Retry-After')).toBe('61');
+ expect(response.headers.get('cache-control')).toContain('no-store');
+ expect(await response.json()).toEqual({detail:'security_rate_limited',retry_after:61});
+});
+it.each(['0','-1','invalid','999999999'])('does not invent a deadline from invalid retry timing %s',async timing=>{
+ fetcher.mockResolvedValueOnce(Response.json({detail:'private diagnostic'},{status:429,headers:{'Retry-After':timing}}));
+ const response=await POST(req('personal/security/login-email/start'),context('login-email/start'));
+ expect(response.headers.get('Retry-After')).toBeNull();
+ expect(await response.json()).toEqual({detail:'security_rate_limited',retry_after:null});
+});
+it('distinguishes email delivery failure from retry limits',async()=>{
+ fetcher.mockResolvedValueOnce(Response.json({detail:'security_email_delivery_unavailable'},{status:503}));
+ const response=await POST(req('personal/security/login-email/start'),context('login-email/start'));
+ expect(response.status).toBe(503);expect(response.headers.get('Retry-After')).toBeNull();
+ expect(await response.json()).toEqual({detail:'security_email_delivery_unavailable'});
+});
