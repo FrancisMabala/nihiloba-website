@@ -3,9 +3,10 @@ import {mySpaceCopy} from '../../app/lib/my-space-refinement-copy';
 import {securityText} from '../../app/lib/account-security-copy';
 import {accountSupportCopy} from '../../app/lib/account-support-copy';
 import {recoveryCopy} from '../../app/lib/account-recovery-copy';
+import {emailLoginCopy} from '../../app/lib/email-login-copy';
 
 async function fixture(page:Page,signedIn=true,configured=false){
- const state={registered:configured,email:configured,closed:false,message:'',replies:[] as string[],proof:false,removed:0};
+ const state={registered:configured,email:configured,loginEmail:false,closed:false,message:'',replies:[] as string[],proof:false,removed:0};
  await page.route('**/api/shida/**',async route=>{
   const path=new URL(route.request().url()).pathname.replace(/\/$/,''),body=route.request().method()==='POST'?route.request().postDataJSON():{};
   const reply=(data:unknown,status=200)=>route.fulfill({status,json:data});
@@ -14,7 +15,9 @@ async function fixture(page:Page,signedIn=true,configured=false){
    const base='/api/shida/personal/security',part=path.slice(base.length);
    if(part==='/profile')return reply({revision:'fixture-revision',values:{personal_name:'Synthetic user',city:'Kinshasa',country_code:'CD',preferred_language:'fr'},primary_phone:{masked:'•••• 0000',verified:true},neighborhood:null});
    if(part==='/recovery')return reply({methods:[]});
-   if(part==='')return reply({email:state.email?'s***@example.test':null,email_ready_at:'2026-01-01T00:00:00Z',protected:false,passkeys:state.registered?[{reference:'KEY_fixture',ready_at:'2026-01-01T00:00:00Z'}]:[]});
+   if(part==='')return reply({login_email:state.loginEmail?'l***@example.test':null,login_email_verified:state.loginEmail,email:state.email?'s***@example.test':null,email_ready_at:'2026-01-01T00:00:00Z',protected:false,passkeys:state.registered?[{reference:'KEY_fixture',ready_at:'2026-01-01T00:00:00Z'}]:[]});
+   if(part==='/login-email/start'){expect(body.email).toBe('login@example.test');return reply({reference:'SEC_login_email'});}
+   if(part==='/login-email/verify'){expect(body).toEqual({reference:'SEC_login_email',code:'12345678'});state.loginEmail=true;return reply({verified:true});}
    if(part==='/phone')return reply({changes:[]});
    if(part==='/passkeys/register/options')return reply({reference:'SEC_fixture',options:{challenge:Buffer.alloc(32,7).toString('base64url'),rp:{id:'localhost',name:'SHIDA'},user:{id:Buffer.from('USR_fixture').toString('base64url'),name:'Synthetic user',displayName:'Synthetic user'},pubKeyCredParams:[{type:'public-key',alg:-7}],authenticatorSelection:{residentKey:'required',userVerification:'required'},timeout:30000}});
    if(part==='/passkeys/register/verify'){expect(body.credential.response.attestationObject).toBeTruthy();state.registered=true;return reply({registered:true});}
@@ -40,6 +43,21 @@ async function fixture(page:Page,signedIn=true,configured=false){
  });
  return state;
 }
+for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,768,1024,1440])test(`login email enrollment ${locale} ${width}`,async({page})=>{
+ const state=await fixture(page,true,true),t=emailLoginCopy[locale];
+ await page.setViewportSize({width,height:900});
+ await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);
+ const setting=page.locator('.space-security-setting').filter({has:page.locator('summary').filter({hasText:t.email})});
+ await setting.locator('summary').click();
+ await setting.getByLabel(t.email,{exact:true}).fill('login@example.test');
+ await setting.getByRole('button',{name:securityText(locale,'send'),exact:true}).click();
+ await setting.getByLabel(t.code,{exact:true}).fill('12345678');
+ await setting.getByRole('button',{name:securityText(locale,'verify'),exact:true}).click();
+ await expect.poll(()=>state.loginEmail).toBe(true);
+ await expect(setting.getByText('l***@example.test',{exact:true})).toBeVisible();
+ expect(state.email).toBe(true);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,768,1024,1440])test(`passkey removal ${locale} ${width}: confirmation and fresh proof`,async({page})=>{
  const state=await fixture(page,true,true),t=(key:Parameters<typeof securityText>[1])=>securityText(locale,key);
  await page.setViewportSize({width,height:900});
@@ -64,7 +82,8 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
  await page.goto(`${prefix}/shida/space/?view=settings`);
  await expect(page.getByRole('heading',{name:securityText(locale,'title'),exact:true})).toBeVisible();
  await expect(page.locator('#account-deletion summary')).toBeVisible();
- await expect(page.getByRole('link',{name:mySpaceCopy[locale].lost,exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:mySpaceCopy[locale].lost,exact:true})).toBeVisible();
+ await expect(page.locator('.account-protection a')).toHaveAttribute('href','?view=recovery');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.goto(`${prefix}/shida/space/?view=recovery`);
  const t=recoveryCopy[locale];await page.getByLabel(t.phone,{exact:true}).fill('243800000000');await page.getByLabel(t.email,{exact:true}).fill('synthetic@example.test');await page.getByLabel(t.message,{exact:true}).fill('Synthetic lost phone for account review');await page.getByRole('button',{name:t.send,exact:true}).click();
@@ -86,4 +105,37 @@ test('real browser passkey enrollment and recovery-email step-up',async({page,co
 });
 test('lost phone reporting requires no signed-in session',async({page})=>{
  await fixture(page,false);await page.goto('/shida/space/?view=recovery');await expect(page.getByLabel(recoveryCopy.en.phone,{exact:true})).toBeVisible();
+});
+
+for(const locale of ['en','fr','ln','sw'] as const)test(`independent email login ${locale}: restart and canonical session`,async({page})=>{
+ await fixture(page,false);
+ let signedIn=false,starts=0,cancels=0,verifications=0,whatsapp=0;
+ await page.route('**/api/shida/**',async route=>{
+  const path=new URL(route.request().url()).pathname.replace(/\/$/,'');
+  if(path.endsWith('/employment/session'))return route.fulfill({status:signedIn?200:401,json:signedIn?{binding:'a'.repeat(64),user:{display_name:'Synthetic user'}}:{}});
+  if(path.includes('/personal/auth/email/')){
+   const action=path.split('/').pop();
+   if(action==='capabilities')return route.fulfill({json:{enabled:true}});
+   if(action==='start'){expect(route.request().postDataJSON()).toEqual({email:'login@example.test',language:locale});starts++;return route.fulfill({json:{reference:`EML_fixture_${starts}`,expires_in:600}});}
+   if(action==='cancel'){cancels++;return route.fulfill({json:{cancelled:true}});}
+   if(action==='verify'){expect(route.request().postDataJSON()).toEqual({reference:'EML_fixture_2',code:'12345678'});verifications++;signedIn=true;return route.fulfill({json:{authenticated:true}});}
+  }
+  if(route.request().method()==='POST'&&path.includes('/employment/login'))whatsapp++;
+  return route.fallback();
+ });
+ const t=emailLoginCopy[locale];
+ await page.setViewportSize({width:390,height:900});
+ await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=support`);
+ await page.getByRole('button',{name:t.method,exact:true}).click();
+ const form=page.locator('.auth-email form');
+ await form.getByLabel(t.email,{exact:true}).fill('login@example.test');
+ await form.getByRole('button',{name:t.send,exact:true}).click();
+ await form.getByRole('button',{name:t.restart,exact:true}).click();
+ await expect(form.getByLabel(t.email,{exact:true})).toBeVisible();
+ expect(cancels).toBe(1);
+ await form.getByRole('button',{name:t.send,exact:true}).click();
+ await form.getByLabel(t.code,{exact:true}).fill('12345678');
+ await form.getByRole('button',{name:t.verify,exact:true}).click();
+ await expect(page.locator('.auth-email')).toHaveCount(0);
+ expect(verifications).toBe(1);expect(starts).toBe(2);expect(whatsapp).toBe(0);
 });

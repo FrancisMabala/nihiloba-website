@@ -1,4 +1,5 @@
 "use client";
+import {EmailLogin} from './email-login';
 import {authDesignCopy} from '../../lib/auth-design-copy';
 import {PasskeyLogin} from './passkey-login';
 import {VerificationCode} from './verification-code';
@@ -139,7 +140,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   }
   const busy = state === "creating" || state === "exchanging";
   return <section className="candidate-login candidate-private-panel" lang={locale}>
-    <h2>{registration?t.title:state==="code"||state==="exchanging"?design.verifyTitle:design.title}</h2><p>{registration?t.help:state==="code"||state==="exchanging"?design.verifyHelp:state==="idle"?design.intro:t.help}</p>{!registration&&!["pending","code","exchanging","creating","uncertain"].includes(state)&&<PasskeyLogin locale={locale} onAuthenticated={onAuthenticated}/>}{registration && <><label htmlFor={eligibilityId} className="registration-consent"><input id={eligibilityId} type="checkbox" checked={eligible} onChange={event => setEligible(event.target.checked)}/><span>{registrationEligibility[locale]}</span></label><p>{registrationFlowCopy[locale].scope}</p></>}
+    <h2>{registration?t.title:state==="code"||state==="exchanging"?design.verifyTitle:design.title}</h2><p>{registration?t.help:state==="code"||state==="exchanging"?design.verifyHelp:state==="idle"?design.intro:t.help}</p>{!registration&&!["pending","code","exchanging","creating","uncertain"].includes(state)&&<><PasskeyLogin locale={locale} onAuthenticated={onAuthenticated}/><EmailLogin locale={locale} onAuthenticated={onAuthenticated}/></>}{registration && <><label htmlFor={eligibilityId} className="registration-consent"><input id={eligibilityId} type="checkbox" checked={eligible} onChange={event => setEligible(event.target.checked)}/><span>{registrationEligibility[locale]}</span></label><p>{registrationFlowCopy[locale].scope}</p></>}
     {state !== "idle" && (registration || state !== "code") && <p role="status" aria-live="polite">{t[state]}</p>}
     {state === "pending" && challenge && <><a className="button button-primary" href={challenge.whatsapp_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{t.open}</a><button className="button button-secondary" type="button" onClick={() => void cancel()}>{t.cancel}</button></>}
     {(state === "code" || state === "exchanging") && <form className="candidate-form" onSubmit={verify}>

@@ -73,3 +73,11 @@ transitive fixes. A fresh npm ci succeeds and npm audit reports zero vulnerabili
 Linux SWC and Sharp optional binaries remain present in the reproducible lockfile.
 See the [Next.js advisory](https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw)
 and [Sharp advisory](https://github.com/lovell/sharp/security/advisories/GHSA-wq5f-xc86-pv6w).
+
+## Email login and sessions — 5 November 2026 checkpoint
+
+Added explicit sign-in email enrollment separately from recovery email, browser-bound email sign-in, and individual active-session revocation. Email sign-in uses the existing canonical Personal session and does not require WhatsApp after successful verification. Backend `EMAIL_LOGIN_ENABLED` and website `SHIDA_EMAIL_LOGIN_ENABLED` default off; SMTP availability also gates login. Deploy backend migration 0220 and compatible routes before enabling the website capability. No production enablement or inbox delivery is claimed by this checkpoint.
+
+Browser credentials stay in HttpOnly cookies. Restart clears the pending email attempt; cross-tab session changes invalidate local progress. Session management shows actual last-active times without guessed device names. Revocation requires existing action-specific proof. Support and recovery-review panels now have distinct React keys, preventing duplicate support forms during session refresh.
+
+Validation: 55 focused gateway/session unit tests; production webpack build and TypeScript; affected ESLint; 55 account-security browser tests across EN/FR/LN/SW, including five-width email enrollment/passkey-removal coverage and independent email login/restart. Browser fixtures are synthetic, not proof of real SMTP delivery. Full backend release validation, deletion review and live rollout remain outstanding.
