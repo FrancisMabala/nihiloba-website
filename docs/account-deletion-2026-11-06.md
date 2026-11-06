@@ -48,3 +48,10 @@ The deliberate reload clears stale authenticated UI after scheduling. Node
 24.22.1 and compatible existing dependencies were reused. No live provider or
 production endpoint was exercised. Screenshots and synthetic reports remain in
 ignored `test-results` as acceptance evidence.
+
+Final storage-availability refinement: the tab-local receipt is optional. Blocked
+sessionStorage cannot interrupt confirmed scheduling, restricted authenticated
+status, cancellation or sign-out. Without that local receipt, a freshly verified
+login retrieves the authoritative date. Rebuilt successfully; focused English
+(storage disabled) and French (normal storage) mobile lifecycle checks both passed,
+and changed-file lint remained at zero errors.

@@ -74,6 +74,8 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
 });
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366])test(`deletion schedule and explicit restoration ${locale} ${width}`,async({page})=>{
  const state=await fixture(page,true,true),t=(key:Parameters<typeof deletionText>[1])=>deletionText(locale,key);
+ const blockedStorage=locale==='en'&&width===390;
+ if(blockedStorage)await page.addInitScript(()=>Object.defineProperty(window,'sessionStorage',{get(){throw new DOMException('Storage disabled','SecurityError');}}));
  const prefix=locale==='en'?'':'/'+locale;
  let confirmations=0,cancellations=0,freshLogin=false;
  const receipt={reference:'DEL_fixture',status:'scheduled',scheduled_at:'2026-12-06T15:00:00Z',can_cancel:true};
@@ -98,7 +100,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
  const proof=page.getByRole('region',{name:securityText(locale,'emailProof'),exact:true});
  await proof.getByLabel(securityText(locale,'code'),{exact:true}).fill('12345678');await proof.getByRole('button',{name:securityText(locale,'verify'),exact:true}).click();
  await expect(page).toHaveURL(new RegExp(`${prefix}/shida/deletion/?$`));
- await expect(page.getByText(t('pending'),{exact:true})).toBeVisible();
+ await expect(page.getByText(t(blockedStorage?'signin':'pending'),{exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:t('cancel'),exact:true})).toHaveCount(0);
  expect(confirmations).toBe(1);expect(cancellations).toBe(0);
  // A new successful login permits the status screen; it is not cancellation.

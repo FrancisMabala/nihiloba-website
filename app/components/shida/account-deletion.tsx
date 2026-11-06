@@ -28,7 +28,7 @@ export function AccountDeletion({locale,api,authorize}:Props){
    }else throw error;
   }
   if(!result.reference||!Number.isFinite(Date.parse(result.scheduled_at)))throw Error();
-  sessionStorage.setItem('shida-deletion-receipt',JSON.stringify(result));
+  try{sessionStorage.setItem('shida-deletion-receipt',JSON.stringify(result));}catch{/* The server receipt remains authoritative when browser storage is disabled. */}
   window.location.assign(`${locale==='en'?'':'/'+locale}/shida/deletion/`);
  });}
  return <section id="account-deletion" className="account-deletion"><h3>{t('title')}</h3><p>{t('consequences')}</p><button type="button" disabled={busy} onClick={()=>void check()}>{busy?t('checking'):t('check')}</button>
