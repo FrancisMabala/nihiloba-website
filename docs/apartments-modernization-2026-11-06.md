@@ -164,3 +164,23 @@ remain on hold. Actual non-production storage-provider acceptance and an approve
 photo-retention/reconciliation procedure remain release gates. SDK mocks and
 browser fixtures do not establish live-provider acceptance. Backend final-suite
 results are recorded separately in its modernization report and task outputs.
+
+
+## Facts-only contract preview — 6 November 2026
+The owner authorized a draft preview while reviewed legal materials remain absent.
+My properties and requests now offers a preview for shortlisted applicants.
+It is labelled in EN/FR/LN/SW as draft, pending legal review, not for signature.
+It contains canonical listing facts and advertised rent, with no invented clauses
+or assertion of agreed terms. Request/visit acceptance remains separate from
+signing; OTPs, passkeys and an agreement click are not rental signatures.
+The private gateway allowlists only GET contract-draft; signing/acceptance/execution
+paths remain rejected. Backend authorization checks current exact ownership,
+listing eligibility and applicant state. No signed/executed state or provider call
+exists. Facts-only-v1 is replaceable and generated on demand, not a stored lease
+archive, PDF or applicant-sharing workflow.
+
+Pending signing requirements: lawyer-reviewed DRC template and terms, validated
+provider, identity and document-version consent checks, signed provider callbacks,
+immutable evidence/hash binding, retention/access/deletion policy, and legal and
+technical acceptance. No dependency was added. Backend migration/Cloudinary rollout
+and production deployment evidence are recorded separately.

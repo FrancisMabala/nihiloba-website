@@ -1,3 +1,4 @@
+import {apartmentContractCopy} from '../../app/lib/apartment-contract-copy';
 import {apartmentOwnerCopy} from '../../app/lib/apartment-owner-copy';
 import {apartmentInterestCopy} from '../../app/lib/apartment-interest-copy';
 import {test, expect} from '@playwright/test';
@@ -142,6 +143,7 @@ for(const locale of ['en','fr','ln','sw'] as const) for(const width of [390,1440
    if(path.endsWith('/manage/'))return route.fulfill({json:{page:1,has_more:false,items:[{reference:'APT_fixture',commune:'Limete',status:'AVAILABLE',visible:true,requests:1,web_draft:false}]}});
    if(path.endsWith('/requests/'))return route.fulfill({json:{page:1,has_more:false,items:[{token,name:'Applicant Example',message:'Saturday afternoon',people_count:2,status:'pending_owner_review',visit:{status:'visit_requested',date:'2026-12-01',time:'14:00'}}]}});
    if(path.endsWith('/shortlist/')){writes++;return route.fulfill({json:{status:'shortlisted'}});}
+   if(path.endsWith('/contract-draft/'))return route.fulfill({json:{status:'draft_pending_legal_review',signing_enabled:false,legal_reviewed:false,clauses:[],facts:{property_reference:'APT_fixture',city:'Kinshasa',commune:'Limete',applicant_display_name:'Applicant Example',advertised_monthly_rent:250,currency:'USD'}}});
    return route.fulfill({status:404,json:{}});
   });
   await page.goto(`${locale==='en'?'':'/'+locale}/shida/appartements/mes-logements/`);
@@ -150,6 +152,16 @@ for(const locale of ['en','fr','ln','sw'] as const) for(const width of [390,1440
   expect(writes).toBe(0);await page.getByRole('button',{name:t.shortlist,exact:true}).click();
   await expect(page.getByText(t.shortlisted,{exact:true})).toBeVisible();expect(writes).toBe(1);
   await expect(page.getByRole('link',{name:t.schedule,exact:true})).toHaveAttribute('href',/apartment\+interests/);
+  const contract=apartmentContractCopy[locale];
+  await page.getByRole('button',{name:contract.open,exact:true}).click();
+  await expect(page.getByText(contract.warning,{exact:true})).toBeVisible();
+  await expect(page.getByText(contract.separate,{exact:true})).toBeVisible();
+  await expect(page.getByText(contract.pending,{exact:true})).toBeVisible();
+  expect(writes).toBe(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  if(locale==='fr')await page.screenshot({path:`test-results/apartments-contract-draft-${width}.png`,fullPage:true});
+  await page.getByRole('button',{name:contract.close,exact:true}).click();
+  await expect(page.getByRole('button',{name:contract.open,exact:true})).toBeFocused();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   if(locale==='fr')await page.screenshot({path:`test-results/apartments-owner-${width}.png`,fullPage:true});
  });

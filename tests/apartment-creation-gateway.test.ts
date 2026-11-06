@@ -16,3 +16,11 @@ it('only returns bounded JPEG previews and masks upstream diagnostics',async()=>
 it('forwards only the exact private interest endpoint and preserves session binding',async()=>{const path=['APT_test','interest'];expect((await POST(req(path.join('/'),{},JSON.stringify({confirmed:true,message:'Saturday'})),context(path))).status).toBe(200);expect(String(fetcher.mock.calls[0][0])).toBe('https://api.nihiloba.com/api/dashboard/personal/apartments/APT_test/interest');expect((await POST(req('APT_test/interest/owner'),context([...path,'owner']))).status).toBe(404);});
 
 it('allowlists paged owner reviews and exact shortlist commands',async()=>{const read=new Request('https://nihiloba.com/api/shida/personal/apartments/manage?page=2',{headers:{'x-shida-session':personalSessionBinding(token)}});expect((await GET(read,context(['manage']))).status).toBe(200);expect(String(fetcher.mock.calls[0][0])).toContain('/manage?page=2');const path=['APT_test','requests','a'.repeat(64),'shortlist'];expect((await POST(req(path.join('/')),context(path))).status).toBe(200);expect((await POST(req('manage'),context(['manage']))).status).toBe(404);});
+
+it('allows only private draft reads and rejects signing actions',async()=>{
+ const path=['APT_test','requests','a'.repeat(64),'contract-draft'];
+ const request=new Request('https://nihiloba.com/api/shida/personal/apartments/'+path.join('/'),{headers:{'x-shida-session':personalSessionBinding(token)}});
+ expect((await GET(request,context(path))).status).toBe(200);
+ expect((await POST(req(path.join('/')),context(path))).status).toBe(404);
+ for(const action of ['sign','accept','execute','provider-callback'])expect((await POST(req([...path,action].join('/')),context([...path,action]))).status).toBe(404);
+});

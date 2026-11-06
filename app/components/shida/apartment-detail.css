@@ -37,3 +37,10 @@
  .apt-detail .marketplace-gallery-portfolio .marketplace-thumbnail { width: 64px; min-width: 64px; }
  .apt-publish { align-items: start; flex-direction: column; }
 }
+.apt-panels:has(.apt-contract-draft section) { grid-template-columns: 1fr; }
+.apt-contract-draft { margin-top: 1rem; }
+.apt-contract-draft section { margin-top: 1rem; max-width: 48rem; scroll-margin: 2rem; }
+.apt-contract-draft h3 { font-size: 1.4rem; }
+.apt-contract-draft p { margin-bottom: 1rem; }
+.apt-contract-draft dt { margin-top: .8rem; font-weight: 600; }
+.apt-contract-draft dd { margin-left: 0; }
