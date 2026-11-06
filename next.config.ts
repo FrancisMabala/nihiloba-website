@@ -47,6 +47,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/shida/space/:path*", headers: privatePageHeaders },
       { source: "/shida/appartements/publier/:path*", headers: privatePageHeaders },
+      { source: "/shida/appartements/mes-logements/:path*", headers: privatePageHeaders },
+      { source: "/:lang(en|fr|ln|sw)/shida/appartements/mes-logements/:path*", headers: privatePageHeaders },
       { source: "/:lang(en|fr|ln|sw)/shida/appartements/publier/:path*", headers: privatePageHeaders },
       { source: "/:lang(en|fr|ln|sw)/shida/space/:path*", headers: privatePageHeaders },
       { source: "/shida/my-applications/:path*", headers: privatePageHeaders },

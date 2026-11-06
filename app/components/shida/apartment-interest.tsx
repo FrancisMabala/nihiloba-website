@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {WenzeBuyerProvider,useWenzeBuyer} from './wenze-buyer';
 import {apartmentInterestCopy} from '../../lib/apartment-interest-copy';
+import {apartmentOwnerCopy} from '../../lib/apartment-owner-copy';
 import './wenze-safety.css';
 type Props={locale:keyof typeof apartmentInterestCopy;reference:string;title:string};
 export function ApartmentInterest(props:Props) {
@@ -26,7 +27,7 @@ function Interest({locale,reference,title,actor}:Props&{actor:ReturnType<typeof 
  }
  return <><button type="button" className="button button-primary marketplace-visit-button" disabled={actor.checking} onClick={()=>void open()}>{t.title}</button>
  <dialog ref={dialog} className="wzp-report-dialog" aria-label={t.title}><header><h2>{t.title}</h2><button type="button" onClick={()=>dialog.current?.close()} aria-label={t.close}>×</button></header><p>{title}</p>
- {busy?<p role="status">{t.loading}</p>:status?<div role="status"><h3>{t.saved}</h3><p>{status==='pending_owner_review'?t.pending:t.status}</p><a href={`${locale==='en'?'':'/'+locale}/shida/space?view=transactions`}>{t.follow}</a></div>:<form onSubmit={event=>{event.preventDefault();if(review)void submit();else setReview(true);}}>
+ {busy?<p role="status">{t.loading}</p>:status?<div role="status"><h3>{t.saved}</h3><p>{status==='pending_owner_review'?t.pending:Object.hasOwn(apartmentOwnerCopy[locale],status)?apartmentOwnerCopy[locale][status as keyof typeof apartmentOwnerCopy.en]:t.status}</p><a href={`${locale==='en'?'':'/'+locale}/shida/space?view=transactions`}>{t.follow}</a></div>:<form onSubmit={event=>{event.preventDefault();if(review)void submit();else setReview(true);}}>
  <p>{t.privacy}</p>{review?<dl><dt>{t.people}</dt><dd>{people||'—'}</dd><dt>{t.message}</dt><dd style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{message||'—'}</dd></dl>:<fieldset><label>{t.people}<input type="number" min="1" max="100" step="1" value={people} onChange={event=>setPeople(event.target.value)}/></label><label>{t.message}<textarea rows={4} maxLength={500} value={message} onChange={event=>setMessage(event.target.value)}/></label></fieldset>}
  {review&&<button type="button" onClick={()=>setReview(false)}>{t.edit}</button>}<button className="button button-primary">{review?t.send:t.review}</button></form>}
  {error&&<p role="alert">{t.error}</p>}<button type="button" onClick={()=>dialog.current?.close()}>{t.close}</button></dialog></>;

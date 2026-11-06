@@ -74,3 +74,15 @@ No occupation, family status, financial documents or personal photos collected.
 52 focused tests plus the five-test gateway recheck passed; lint, TypeScript and
 webpack build passed. Eight browser cases passed (four languages, two widths).
 French mobile review screenshot inspected; desktop/mobile evidence retained.
+
+## Batch 6 — My Activities owner entry
+My Activities now opens a private, no-index owner view with paginated properties,
+interested people, shortlisting and recorded visit statuses. Scheduling links to
+the existing SHIDA WhatsApp selection flow with clear instructions; it does not
+claim web scheduling or expose personal phone numbers/addresses. Actual latest
+visit status is also shown when an applicant reopens a request.
+18 focused navigation/gateway tests, lint and TypeScript passed. The first gateway
+fixture reused an already-consumed Response; corrected it to return fresh bodies.
+Webpack build and eight owner browser cases passed. French mobile/desktop owner
+screenshots inspected. The final applicant status wording change is typechecked;
+final combined browser/build validation follows.

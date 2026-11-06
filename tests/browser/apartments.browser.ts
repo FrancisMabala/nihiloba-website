@@ -1,3 +1,4 @@
+import {apartmentOwnerCopy} from '../../app/lib/apartment-owner-copy';
 import {apartmentInterestCopy} from '../../app/lib/apartment-interest-copy';
 import {test, expect} from '@playwright/test';
 import {apartmentSafetyCopy} from '../../app/lib/apartment-safety-copy';
@@ -121,5 +122,27 @@ for(const locale of ['en','fr','ln','sw'] as const) for(const width of [390,1440
   await expect(dialog.getByText(t.pending,{exact:true})).toBeVisible();
   await expect(dialog.getByRole('button',{name:t.send,exact:true})).toHaveCount(0);
   expect(writes).toHaveLength(1);
+ });
+}
+
+for(const locale of ['en','fr','ln','sw'] as const) for(const width of [390,1440]) {
+ test(`private owner review ${locale} ${width}`,async({page})=>{
+  await page.setViewportSize({width,height:900});const t=apartmentOwnerCopy[locale],token='c'.repeat(64);let writes=0;
+  await page.route('**/api/shida/**',route=>{
+   const path=new URL(route.request().url()).pathname;
+   if(path.includes('/employment/session'))return route.fulfill({json:{binding:'b'.repeat(64),user:{display_name:'Owner'}}});
+   if(path.endsWith('/manage/'))return route.fulfill({json:{page:1,has_more:false,items:[{reference:'APT_fixture',commune:'Limete',status:'AVAILABLE',visible:true,requests:1,web_draft:false}]}});
+   if(path.endsWith('/requests/'))return route.fulfill({json:{page:1,has_more:false,items:[{token,name:'Applicant Example',message:'Saturday afternoon',people_count:2,status:'pending_owner_review',visit:{status:'visit_requested',date:'2026-12-01',time:'14:00'}}]}});
+   if(path.endsWith('/shortlist/')){writes++;return route.fulfill({json:{status:'shortlisted'}});}
+   return route.fulfill({status:404,json:{}});
+  });
+  await page.goto(`${locale==='en'?'':'/'+locale}/shida/appartements/mes-logements/`);
+  await page.getByRole('button',{name:t.requests,exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Applicant Example',exact:true})).toBeVisible();
+  expect(writes).toBe(0);await page.getByRole('button',{name:t.shortlist,exact:true}).click();
+  await expect(page.getByText(t.shortlisted,{exact:true})).toBeVisible();expect(writes).toBe(1);
+  await expect(page.getByRole('link',{name:t.schedule,exact:true})).toHaveAttribute('href',/apartment\+interests/);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  if(locale==='fr')await page.screenshot({path:`test-results/apartments-owner-${width}.png`,fullPage:true});
  });
 }
