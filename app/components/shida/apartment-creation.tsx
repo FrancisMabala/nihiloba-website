@@ -9,7 +9,7 @@ import {apartmentPropertyTypes} from '../../types/shida-public';
 import './apartment-creation.css';
 type Locale = keyof typeof apartmentCreationCopy;
 type Values = {public_name:string|null; property_type:string|null; city:string|null; commune:string|null; quartier:string|null; number_of_rooms:number|null; bedroom_count:number|null; size_sqm:number|null; description:string|null; price:number|null; currency:string; advertiser_role:string|null; amenities:Record<string,boolean>|null};
-type Draft = {reference:string; revision:number; status:string; values:Values; photos:{reference:string|null;url:string}[]};
+type Draft = {reference:string; revision:number; status:string; values:Values; photos:{reference:string|null;url:string}[];pending_uploads?:string[]};
 type Progress = {items:Draft[];identity:{public_name:string;existing_profile:boolean};kinshasa_communes:string[]};
 function decodeDraft(value:unknown):Draft {
  const draft = value as Draft;
@@ -111,7 +111,8 @@ function Wizard({locale,actor}:{locale:Locale;actor:ReturnType<typeof useWenzeBu
  </div>;
 }
 function PhotoList({draft,binding,locale,onRemove}:{draft:Draft;binding:string;locale:Locale;onRemove?:(reference:string)=>void}) {
- return <div className="apt-create-photos">{draft.photos.map((photo,index) => <div key={photo.reference ?? index}><PrivatePhoto listing={draft.reference} reference={photo.reference} binding={binding} label={`${apartmentCreationCopy[locale].photos} ${index+1}`}/>{onRemove && photo.reference && <button type="button" onClick={() => onRemove(photo.reference!)}>{apartmentCreationCopy[locale].remove}</button>}</div>)}</div>;
+ const pending={en:'Unfinished upload. Retry the same file or cancel this upload.',fr:'Envoi inachevé. Réessayez le même fichier ou annulez cet envoi.',ln:'Foto etindami naino te. Meka fichier wana lisusu to longola botindi.',sw:'Upakiaji haujakamilika. Jaribu faili ileile au ghairi upakiaji.'}[locale];
+ return <div className="apt-create-photos">{draft.photos.map((photo,index) => <div key={photo.reference ?? index}><PrivatePhoto listing={draft.reference} reference={photo.reference} binding={binding} label={`${apartmentCreationCopy[locale].photos} ${index+1}`}/>{onRemove && photo.reference && <button type="button" onClick={() => onRemove(photo.reference!)}>{apartmentCreationCopy[locale].remove}</button>}</div>)}{onRemove&&draft.pending_uploads?.filter(reference=>/^APF_[a-f0-9]{32}$/.test(reference)).map(reference=><div key={reference}><p>{pending}</p><button type="button" onClick={()=>onRemove(reference)}>{apartmentCreationCopy[locale].remove}</button></div>)}</div>;
 }
 function PrivatePhoto({listing,reference,binding,label}:{listing:string;reference:string|null;binding:string;label:string}) {
  const [url,setUrl] = useState<string|null>(null);

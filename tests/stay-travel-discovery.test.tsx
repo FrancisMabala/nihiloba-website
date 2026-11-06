@@ -18,7 +18,7 @@ it('distinguishes an unpublished hotel collection from a failed request',async()
 });
 it('retains property filters, errors and publishing without creating synthetic records',async()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(Response.json({items:[],count:0,total:0,page:1,page_size:12,filters:{property_types:['apartment','house']}})));
- const html=renderToStaticMarkup(await ApartmentCollectionPage({locale:'en',search:{city:'Goma',property_type:'house'}}));expect(html).toContain('value="Goma"');expect(html).toContain('Publish a property');expect(html).toContain('i+offer+an+apartment');expect(html).not.toContain('Browse hotels');expect(html).not.toContain('marketplace-card-image');
+ const html=renderToStaticMarkup(await ApartmentCollectionPage({locale:'en',search:{city:'Goma',property_type:'house'}}));expect(html).toContain('value="Goma"');expect(html).toContain('Publish a property');expect(html).toContain('href="/shida/appartements/publier"');expect(html).not.toContain('Browse hotels');expect(html).not.toContain('marketplace-card-image');
 });
 it('keeps Wewa request and driver onboarding distinct and promises no live vehicles',()=>{
  for(const locale of ['en','fr','ln','sw'] as const){const html=renderToStaticMarkup(<TransportDiscovery locale={locale}/>);expect(html).toContain('text=wewa');expect(html).toContain('st-invitation');expect(html).not.toContain('Minibus');expect(html).not.toContain('mp-topline');}

@@ -86,3 +86,40 @@ fixture reused an already-consumed Response; corrected it to return fresh bodies
 Webpack build and eight owner browser cases passed. French mobile/desktop owner
 screenshots inspected. The final applicant status wording change is typechecked;
 final combined browser/build validation follows.
+
+## Final website validation and recovery
+
+Resuming a draft exposes unfinished photo uploads with a cancellation action.
+Cancellation uses the existing private revision-checked removal route; it does
+not publish the listing or delete the storage responsibility ledger. A browser
+regression verifies resume, cancellation and the remaining minimum-photo gate.
+
+Final production Webpack build and TypeScript passed. The combined browser run
+passed 34 scenarios, followed by one new abandoned-upload recovery scenario.
+Coverage includes four locales, 390/1440 widths, explicit publication, private
+reports/interests/owner review and keyboard gallery open/navigation/close/focus.
+The initial final run had three test-harness failures (two incomplete accessible
+labels and a screenshot racing the wizard's focus frame); corrected and rerun.
+French detail, creation review, interest review and owner screenshots were
+inspected on desktop and mobile. Illustrative test fixtures are not real listings.
+
+Full website suite: 879 passed, five failed, plus one collection error (116 files).
+The five phase2-discovery assertions and services-account-navigation alias error
+reproduce on the untouched starting commit 94ba2ac40937b8fbe7446046755c48dada04ee48.
+They are recorded as pre-existing; this task does not claim a green full suite.
+The task-owned old WhatsApp-publication-link assertion was updated for the web
+creation entry and passes. Full logs and the isolated baseline comparison remain
+in the task outputs. Changed-file lint and diff checks are required at commit.
+
+Local production-build measurements with mocked API/images: one detail API fetch
+per request shared by metadata and rendering; HTML 35,385 bytes; latest focused
+rerun: 390px TTFB 26ms, DCL 342.6ms, FCP 528ms; 1440px TTFB 19.7ms, DCL 168.1ms,
+FCP 192ms. Both gallery cases passed again after the preload lint correction. These are local
+smoke measurements, not production or mobile-network benchmarks. No measured
+pre-change timing baseline exists, so no latency improvement percentage is claimed.
+The pre-existing React request cache is retained. Primary image preload, bounded
+thumbnails and lazy secondary images are used; revocable private-photo delivery
+bypasses optimizer caching. Real provider latency remains a release check.
+
+No production migration, push or deployment. Tenant documents, reviewed leases,
+electronic signing, general messaging and full Apartment Management remain absent.
