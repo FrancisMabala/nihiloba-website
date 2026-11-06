@@ -123,3 +123,44 @@ bypasses optimizer caching. Real provider latency remains a release check.
 
 No production migration, push or deployment. Tenant documents, reviewed leases,
 electronic signing, general messaging and full Apartment Management remain absent.
+
+
+## Deployment-readiness followup — 6 November 2026
+
+This supersedes the earlier website test-failure status. All 889 Vitest tests
+across 116 files pass. The default test config now resolves the same @ alias as
+TypeScript; discovery assertions cover the current approved illustrated headers
+and still verify localized public browsing and the Wewa handoff boundary.
+
+Full lint has zero errors and ten pre-existing warnings (image optimization,
+ref cleanup and unused test variables). Restaurant review loads update state in
+resolved/rejected request callbacks; the CommonJS fixture uses the Node module
+loader explicitly. No review authorization, ownership or payment rule changed.
+Type checking and the production webpack build pass using the already-installed
+Node 24.22.1. Node 22.12.0 is below this repository's declared >=22.13.0 engine;
+no runtime or dependencies were installed. Webpack is required locally because
+the reused node_modules directory is a junction outside the checkout.
+
+The final Apartments production-build browser run passed all 35 cases, covering
+EN/FR/LN/SW at 390/1440 px, private reports, explicit publication, minimal interest,
+owner review, interrupted photo recovery and keyboard gallery interaction.
+An earlier run stalled and was stopped; a retry exposed a capture-only scroll
+race. The screenshot helper now waits for fonts/focus layout and disables scroll
+anchoring before positioning the capture; behavioral assertions remain intact.
+Final French mobile detail and desktop publication-review screenshots were
+visually inspected. Images are controlled illustrative fixtures, not real listings.
+One backend detail fetch serves metadata/rendering; measured local fixture HTML
+is 35,385 bytes, TTFB 14/11.6 ms and FCP 232/200 ms (390/1440 px). These are not
+production performance or before/after measurements.
+
+Gitleaks 8.30.1 scanned all 350 existing commits. Two known fixed test credentials
+in the historical isolated restaurant harness have exact commit/file/rule/line
+exceptions in .gitleaksignore; no directories or general secret rules are ignored.
+The resulting scan has zero findings. The harness disables dotenv and external
+network access and creates disposable local data.
+
+Production migrations, pushes/deployment, legal contracts and electronic signatures
+remain on hold. Actual non-production storage-provider acceptance and an approved
+photo-retention/reconciliation procedure remain release gates. SDK mocks and
+browser fixtures do not establish live-provider acceptance. Backend final-suite
+results are recorded separately in its modernization report and task outputs.

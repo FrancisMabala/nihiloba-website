@@ -1,0 +1,5 @@
+# Fixed local-only credentials in the historical restaurant guest test harness.
+# The harness creates disposable SQLite data, disables dotenv and external I/O.
+# Scope exceptions to these exact commit/file/rule/line fingerprints only.
+63817ae0bd9e123d5839c3eede954c68a1cea6ed:tests/integration/restaurant-guest-backend.py:generic-api-key:19
+63817ae0bd9e123d5839c3eede954c68a1cea6ed:tests/integration/restaurant-guest-backend.py:generic-api-key:20

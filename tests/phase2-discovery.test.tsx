@@ -10,10 +10,15 @@ import {HotelCard} from "../app/components/shida/marketplace";
 import type {HotelListing} from "../app/types/shida-public";
 vi.mock("next/navigation",()=>({useRouter:()=>({push:vi.fn()}),usePathname:()=>"/shida/wenze"}));
 afterEach(()=>vi.unstubAllGlobals());
-it.each(["en","fr","ln","sw"] as const)("keeps %s discovery public, localized and without promotional art",async locale=>{
+it.each(["en","fr","ln","sw"] as const)("keeps %s discovery public and localized with its current marketplace headers",async locale=>{
  const fetcher=vi.fn(async(input:RequestInfo|URL)=>{const url=String(input);return Response.json(url.includes('/jobs?')?{items:[],pagination:{page:1,page_size:12,total_items:0,total_pages:1}}:url.includes('/apartments')?{items:[],count:0,total:0,page:1,page_size:12,filters:{property_types:["house"]}}:{items:[],count:0,has_more:false,next_cursor:null});});vi.stubGlobal("fetch",fetcher);
  const pages=[await WenzeCollection({l:locale,search:{}}),await WenzeCollection({l:locale,search:{view:"shops"}}),await ApartmentCollectionPage({locale}),await HotelCollectionPage({locale}),await JobCollectionPage({locale,search:{}}),<TransportDiscovery key="transport" locale={locale}/>];
- for(const page of pages){const html=renderToStaticMarkup(page);expect(html).toContain('mp-discovery-header');expect(html).not.toContain('class="mp-art');expect(html).not.toContain('/home/employment.png');expect(html).toContain(`${locale==="en"?"":`/${locale}`}/shida`);}
+ for(const [index,page] of pages.entries()){const html=renderToStaticMarkup(page);expect(html).toContain('<h1');if(index<5)expect(html).toContain(`${locale==="en"?"":`/${locale}`}/shida`);else expect(html).toContain(`lang="${locale}"`);}
+ expect(renderToStaticMarkup(pages[0])).toContain('illustrated-marketplace-hero');
+ expect(renderToStaticMarkup(pages[1])).toContain('illustrated-marketplace-hero');
+ expect(renderToStaticMarkup(pages[2])).toContain('st-apartments');
+ expect(renderToStaticMarkup(pages[3])).toContain('st-hotels');
+ expect(renderToStaticMarkup(pages[5])).toContain('st-transport');
  const text=renderToStaticMarkup(pages[0]);expect(text).toContain(({en:"Search products",fr:"Rechercher un produit",ln:"Luka eloko",sw:"Tafuta bidhaa"})[locale]);
  expect(fetcher.mock.calls.some(([url])=>String(url).includes('/wenze/products?'))).toBe(true);
 });
@@ -30,5 +35,5 @@ it("keeps hotel price currencies and periods separate",()=>{
  const html=renderToStaticMarkup(<HotelCard listing={hotel} locale="en"/>);expect(html).toContain("80.00");expect(html).toContain("20,000");expect(html).toContain("30.00");expect(html).toContain("night");expect(html).toContain("day");
 });
 it("hands Wewa requests to the implemented command without claiming a booking",()=>{
- const html=renderToStaticMarkup(<TransportDiscovery locale="en"/>);expect(html).toContain("text=wewa");expect(html).toContain("Send the prepared message");expect(html).not.toContain('<form');expect(html).not.toContain('<img');
+ const html=renderToStaticMarkup(<TransportDiscovery locale="en"/>);expect(html).toContain("text=wewa");expect(html).toContain("Send the prepared message");expect(html).not.toContain('<form');expect(html).toContain('/images/marketplace-heroes/transport.webp');expect(html).toContain('does not show live vehicles, fares or confirmed bookings');
 });

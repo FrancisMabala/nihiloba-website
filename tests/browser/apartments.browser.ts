@@ -80,7 +80,14 @@ for (const width of [390,1440]) for (const locale of ['en','fr','ln','sw'] as co
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   if(locale==='fr') {
    await expect(page.getByRole('region',{name:t.steps[2],exact:true})).toBeFocused();
-   await page.evaluate(()=>{document.documentElement.style.setProperty('scroll-behavior','auto','important');window.scrollTo({top:0,behavior:'instant'});});
+   await page.evaluate(async()=>{
+    await document.fonts.ready;
+    document.documentElement.style.setProperty('scroll-behavior','auto','important');
+    document.documentElement.style.setProperty('overflow-anchor','none');
+    // Complete the focus/layout frame before positioning the acceptance capture.
+    await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
+    window.scrollTo({top:0,behavior:'instant'});
+   });
    await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBe(0);
    expect(await page.locator('.skip-link').evaluate(element=>element.getBoundingClientRect().bottom)).toBeLessThanOrEqual(0);
    await page.screenshot({path:`test-results/apartments-creation-review-${width}.png`,fullPage:true});
