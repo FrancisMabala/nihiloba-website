@@ -8,7 +8,7 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "frame-src 'none'",
-  "img-src 'self' data: blob: https://res.cloudinary.com https://api.nihiloba.com/api/restaurants/photos/",
+  "img-src 'self' data: blob: https://res.cloudinary.com https://api.nihiloba.com/api/restaurants/photos/ https://api.nihiloba.com/api/apartments/photos/",
   "manifest-src 'self'",
   "media-src 'self'",
   "object-src 'none'",
@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/shida/space/:path*", headers: privatePageHeaders },
+      { source: "/shida/appartements/publier/:path*", headers: privatePageHeaders },
+      { source: "/:lang(en|fr|ln|sw)/shida/appartements/publier/:path*", headers: privatePageHeaders },
       { source: "/:lang(en|fr|ln|sw)/shida/space/:path*", headers: privatePageHeaders },
       { source: "/shida/my-applications/:path*", headers: privatePageHeaders },
       { source: "/shida/seller/:path*", headers: privatePageHeaders },

@@ -9,5 +9,6 @@ export function MarketplaceImage({ src, fallbackSrc = null, alt, fallback, sizes
   const usePrimary = Boolean(src && !primaryFailed);
   const activeSrc = usePrimary ? src : fallbackSrc && !secondaryFailed ? fallbackSrc : null;
   if (!activeSrc) return <div className="marketplace-image-fallback" role="img" aria-label={fallback}>{fallback}</div>;
-  return <Image src={activeSrc} alt={alt} fill sizes={sizes} preload={preload} onError={() => usePrimary ? setPrimaryFailed(true) : setSecondaryFailed(true)} />;
+  const protectedPhoto = activeSrc.startsWith('https://api.nihiloba.com/api/apartments/photos/');
+  return <Image src={activeSrc} alt={alt} fill sizes={sizes} preload={preload} unoptimized={protectedPhoto} onError={() => usePrimary ? setPrimaryFailed(true) : setSecondaryFailed(true)} />;
 }

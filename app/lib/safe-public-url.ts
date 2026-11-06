@@ -24,6 +24,7 @@ export function safePublicImageUrl(value: string | null | undefined): string | n
   if (!value) return null;
   try {
     const url = new URL(value);
+    if(url.origin === 'https://api.nihiloba.com' && !url.username && !url.password && !url.search && !url.hash && /^\/api\/apartments\/photos\/APF_[a-f0-9]{32}$/.test(url.pathname)) return value;
     return url.protocol === "https:" &&
       !url.username &&
       !url.password &&
