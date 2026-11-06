@@ -9,7 +9,8 @@ async function handle(request:Request, context:Context) {
  const upload = /^APT_[A-Za-z0-9_-]{1,80}\/photos$/.test(path) && request.method === 'POST';
  const preview = /^APT_[A-Za-z0-9_-]{1,80}\/photos\/APF_[a-f0-9]{32}$/.test(path) && request.method === 'GET';
  const removal = /^APT_[A-Za-z0-9_-]{1,80}\/photos\/APF_[a-f0-9]{32}\/remove$/.test(path) && request.method === 'POST';
- if(path !== '' && !upload && !preview && !removal) return fail(404);
+ const interest = /^APT_[A-Za-z0-9_-]{1,80}\/interest$/.test(path);
+ if(path !== '' && !upload && !preview && !removal && !interest) return fail(404);
  if(upload || removal ? [...url.searchParams.keys()].some(key => !(removal ? ['revision'] : ['revision','operation_key']).includes(key)) || !/^\d+$/.test(url.searchParams.get('revision') ?? '') || upload && !/^[A-Za-z0-9_-]{8,100}$/.test(url.searchParams.get('operation_key') ?? '') : Boolean(url.search)) return fail(404);
  const origin = personalRequestOrigin(request);
  if(request.headers.get('sec-fetch-site') === 'cross-site' || request.method !== 'GET' && !origin) return fail(403);

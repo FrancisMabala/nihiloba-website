@@ -1,3 +1,4 @@
+import {apartmentInterestCopy} from '../../app/lib/apartment-interest-copy';
 import {test, expect} from '@playwright/test';
 import {apartmentSafetyCopy} from '../../app/lib/apartment-safety-copy';
 import {apartmentCreationCopy} from '../../app/lib/apartment-creation-copy';
@@ -87,5 +88,38 @@ for (const width of [390,1440]) for (const locale of ['en','fr','ln','sw'] as co
   await expect(page.getByRole('heading',{name:t.published,exact:true})).toBeVisible();
   expect(writes.filter(value=>value==='publish')).toHaveLength(1);
   expect(draft.values.city).toBe('Kinshasa');expect(draft.values.price).toBe(250);
+ });
+}
+
+for(const locale of ['en','fr','ln','sw'] as const) for(const width of [390,1440]) {
+ test(`minimal private interest ${locale} ${width}`,async({page})=>{
+  await page.setViewportSize({width,height:900});const t=apartmentInterestCopy[locale];
+  const writes:unknown[]=[];let saved=false;
+  await page.route('https://api.nihiloba.com/api/apartments/photos/**',route=>route.fulfill({contentType:'image/webp',body:readFileSync('public/images/apartment-discovery.webp')}));
+  await page.route('**/api/shida/**',route=>{
+   const path=new URL(route.request().url()).pathname;
+   if(path.includes('/employment/session'))return route.fulfill({json:{binding:'b'.repeat(64),user:{display_name:'Applicant'}}});
+   if(path.includes('/APT_fixture/interest')){
+    const request={listing_ref:'APT_fixture',status:'pending_owner_review'};
+    if(route.request().method()==='GET')return route.fulfill({json:{request:saved?request:null}});
+    writes.push(route.request().postDataJSON());saved=true;return route.fulfill({json:request});
+   }
+   return route.fulfill({status:404,json:{}});
+  });
+  await page.goto(`${locale==='en'?'':'/'+locale}/shida/appartements/limete-fixture/`);
+  await page.getByRole('button',{name:t.title,exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:t.title,exact:true});
+  await dialog.getByLabel(t.message,{exact:true}).fill('Saturday afternoon');
+  await dialog.getByRole('button',{name:t.review,exact:true}).click();
+  expect(writes).toEqual([]);await expect(dialog.getByText('Saturday afternoon',{exact:true})).toBeVisible();
+  if(locale==='fr')await page.screenshot({path:`test-results/apartments-interest-${width}.png`});
+  await dialog.getByRole('button',{name:t.send,exact:true}).click();
+  await expect(dialog.getByText(t.pending,{exact:true})).toBeVisible();
+  expect(writes).toEqual([{message:'Saturday afternoon',people_count:null,confirmed:true}]);
+  await dialog.getByRole('button',{name:t.close,exact:true}).last().click();
+  await page.getByRole('button',{name:t.title,exact:true}).click();
+  await expect(dialog.getByText(t.pending,{exact:true})).toBeVisible();
+  await expect(dialog.getByRole('button',{name:t.send,exact:true})).toHaveCount(0);
+  expect(writes).toHaveLength(1);
  });
 }

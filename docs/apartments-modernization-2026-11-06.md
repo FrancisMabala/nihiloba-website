@@ -65,3 +65,12 @@ published to SHIDA. Real backend tests independently reject duplicate images.
 - French desktop/mobile screenshots inspected. Test imagery is an explicitly
   controlled illustration fixture, never an actual listing or production photo.
 - Final small breadcrumb spacing adjustment included; final visual pass follows.
+
+## Batch 5 — short private visit-interest form
+Uses the existing Personal login, a bounded optional message/preferred timing and
+optional occupants. Review precedes explicit submission. Reopening checks the
+canonical request; retries cannot create duplicates. WhatsApp remains available.
+No occupation, family status, financial documents or personal photos collected.
+52 focused tests plus the five-test gateway recheck passed; lint, TypeScript and
+webpack build passed. Eight browser cases passed (four languages, two widths).
+French mobile review screenshot inspected; desktop/mobile evidence retained.

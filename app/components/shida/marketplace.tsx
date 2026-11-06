@@ -12,6 +12,8 @@ import { apartmentDetailCopy } from "../../lib/apartment-detail-copy";
 import "./apartment-detail.css";
 import { ApartmentReport } from './apartment-report';
 import { apartmentSafetyCopy } from '../../lib/apartment-safety-copy';
+import { ApartmentInterest } from './apartment-interest';
+import { apartmentInterestCopy } from '../../lib/apartment-interest-copy';
 
 export function marketplacePath(locale: Locale, path: string): string {
   return locale === "en" ? path : `/${locale}${path}`;
@@ -122,7 +124,8 @@ export function ApartmentDetail({ listing, locale }: { listing: ApartmentListing
           {listing.size_sqm != null && <li>{d.size} : {listing.size_sqm} m²</li>}
           {equipment.filter(key=>key==='water'||key==='electricity'||key==='parking').map(key=><li key={key}>{d[key]} <small>· {d.declared}</small></li>)}
         </ul>
-        {action ? <ButtonLink href={action} external className="marketplace-visit-button">{d.visit} →</ButtonLink> : <p>{t.actionUnavailable}</p>}
+        {listing.availability_state?.toLowerCase()==='available' && <ApartmentInterest locale={locale} reference={listing.public_ref} title={title}/>}
+        {action && <a href={action} target="_blank" rel="noopener noreferrer">{apartmentInterestCopy[locale].whatsapp}<span className="sr-only"> · {d.visit}</span></a>}
         <p className="apt-privacy">{d.privacy}</p>
       </aside>
     </div>
