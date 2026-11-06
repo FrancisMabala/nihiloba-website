@@ -184,3 +184,9 @@ provider, identity and document-version consent checks, signed provider callback
 immutable evidence/hash binding, retention/access/deletion policy, and legal and
 technical acceptance. No dependency was added. Backend migration/Cloudinary rollout
 and production deployment evidence are recorded separately.
+
+Release-check recovery: the approved infrastructure workflow/isolated runner and
+network-blocking test setup were present only on the earlier infrastructure
+branch eacd8cf. Reused those specific files, preserving the current alias and
+using Node 24 as validated locally. No unrelated branch history was imported.
+GitHub CI has no production secrets or deployment job.
