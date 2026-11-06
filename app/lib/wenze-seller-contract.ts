@@ -2,6 +2,7 @@
 const routes=[
 ["GET","stores/{store_ref}/quick-sell-drafts"],
 ["PUT","stores/{store_ref}/quick-sell-drafts/{draft_ref}"],
+["DELETE","stores/{store_ref}/quick-sell-drafts/{draft_ref}"],
 ["GET","quick-sell"],
 ["POST","quick-sell"],
 ["POST","stores/{store_ref}/products/{product_ref}/sold"],

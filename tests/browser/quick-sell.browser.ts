@@ -1,16 +1,17 @@
 import {test,expect} from '@playwright/test';
 import {listingCopy} from '../../app/lib/wenze-listings-copy';
 import {individualSellingCopy} from '../../app/lib/individual-selling-copy';
+import {draftUX} from '../../app/lib/draft-ux-copy';
 import {quickSellCopy} from '../../app/lib/quick-sell-copy';
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,768,1024,1440])test(`Quick Sell ${locale} ${width}`,async({page})=>{
- const t=quickSellCopy[locale],c=individualSellingCopy[locale];let signedIn=true;let store:Record<string,unknown>|null=null;let product:Record<string,unknown>|null=null;let publications=0;let firstPayload:unknown;let failedUpload=false;let saved:Record<string,unknown>|null=null;
+ const t=quickSellCopy[locale],c=individualSellingCopy[locale],d=draftUX[locale];let signedIn=true;let store:Record<string,unknown>|null=null;let product:Record<string,unknown>|null=null;let publications=0;let firstPayload:unknown;let failedUpload=false;let saved:Record<string,unknown>|null=null;
  await page.setViewportSize({width,height:900});
  await page.route('**/api/shida/**',async route=>{
   const req=route.request(),path=new URL(req.url()).pathname.replace(/\/$/,'');const respond=(json:unknown,status=200)=>route.fulfill({json,status});
   if(path.endsWith('/employment/session'))return respond(signedIn?{binding:'a'.repeat(64),user:{display_name:'Synthetic seller'}}:{},signedIn?200:401);
   if(path.endsWith('/quick-sell')){if(req.method()==='GET')return respond({store});store={public_ref:'WNZ_QUICK',selling_mode:'individual',revision:1,name:'Vente rapide',city:req.postDataJSON().city??'',delivery_areas:[],order_ready:false};return respond(store);}
   if(path.endsWith('/stores'))return respond({stores:[...(store?[store]:[]),{public_ref:'WNZ_BOUTIQUE',name:'Synthetic existing boutique',selling_mode:'store'}],product_categories:[{code:'shoes_accessories',labels:{en:'Shoes',fr:'Chaussures',ln:'Sapato',sw:'Viatu'}}],categories:[],currencies:['CDF','USD']});
-  if(path.endsWith('/quick-sell-drafts/WFW_QUICK')){saved={...req.postDataJSON(),draft_ref:'WFW_QUICK',revision:Number(req.postDataJSON().expected_revision)+1,photos:[{ref:'WCU_QUICK',url:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a9h0AAAAASUVORK5CYII='}]};return respond(saved);}
+  if(path.endsWith('/quick-sell-drafts/WFW_QUICK')){if(req.method()==='DELETE'){saved=null;return respond({status:'cancelled'});}saved={...req.postDataJSON(),draft_ref:'WFW_QUICK',revision:Number(req.postDataJSON().expected_revision)+1,photos:[{ref:'WCU_QUICK',url:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a9h0AAAAASUVORK5CYII='}]};return respond(saved);}
   if(path.endsWith('/quick-sell-drafts'))return respond({drafts:saved?[saved]:[]});
   if(path.endsWith('/plan'))return respond({active_products:product?1:0,active_product_limit:100});
   if(path.endsWith('/drafts'))return respond({draft_ref:'WFW_QUICK',revision:1});
@@ -28,17 +29,43 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,7
  const photo={name:'shoes.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=','base64')};
  await page.locator('input[type=file]').setInputFiles(photo);await expect(page.getByRole('status').filter({hasText:t.failed})).toBeVisible();await page.locator('input[type=file]').setInputFiles(photo);await expect(page.getByRole('button',{name:t.remove,exact:true})).toBeVisible();
  await page.getByRole('button',{name:listingCopy[locale].saveDraft,exact:true}).click();
+ await page.getByRole('button',{name:listingCopy[locale].resume,exact:true}).click();
+ await page.locator('input[name=name]').fill('Unsaved change');await page.getByRole('button',{name:t.cancel,exact:true}).click();
+ await page.getByRole('dialog').getByRole('radio').last().check();await page.getByRole('dialog').getByRole('button',{name:d.continue,exact:true}).click();
+ await expect(page.locator('.qs-draft-card')).not.toContainText('Unsaved change');
  await page.reload();await page.getByRole('button',{name:listingCopy[locale].drafts,exact:true}).click();await page.getByRole('button',{name:listingCopy[locale].resume,exact:true}).click();
  await expect(page.getByLabel(t.name,{exact:true})).not.toHaveValue('');
  await page.getByRole('button',{name:t.next,exact:true}).click();
  await page.locator('input[name=price]').fill('25000');await page.getByLabel(c.cash,{exact:true}).check();await page.getByRole('button',{name:t.next,exact:true}).click();
  await page.getByLabel(t.city,{exact:true}).fill('Kinshasa');await page.getByLabel(t.commune,{exact:true}).fill('Gombe');await page.getByLabel(t.point,{exact:true}).fill('Point de retrait public — exemple');await page.getByLabel(t.publicPoint,{exact:true}).check();await page.getByRole('button',{name:`${t.save} · ${t.next}`,exact:true}).click();
  await expect(page.getByRole('heading',{name:t.review,exact:true})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:`docs/evidence/wenze-program/${locale}-${width}.png`,fullPage:true});
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:`test-results/wenze-program/${locale}-${width}.png`,fullPage:true});
  await expect(page.getByRole('button',{name:t.publish,exact:true})).toBeDisabled();await page.getByLabel(c.confirm,{exact:true}).check();await page.getByRole('button',{name:t.publish,exact:true}).click();await expect(page.getByRole('status').filter({hasText:t.failed})).toBeVisible();await expect(page.getByRole('button',{name:t.back,exact:true})).toBeDisabled();
  await page.getByRole('button',{name:t.publish,exact:true}).click();await expect(page.getByRole('heading',{name:listingCopy[locale].title,exact:true}).first()).toBeVisible();expect(publications).toBe(2);
  await page.getByRole('button',{name:t.orders,exact:true}).first().click();await expect(page.getByRole('heading',{name:listingCopy[locale].title,exact:true}).first()).toBeVisible();
  signedIn=false;await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));await expect(page.getByRole('button',{name:listingCopy[locale].title,exact:true})).toHaveCount(0);await expect(page.getByRole('heading',{name:t.title,exact:true})).toBeVisible();
  await expect(page.locator('.ssl-browse')).toHaveAttribute('href',`${locale==='en'?'':'/'+locale}/shida/wenze/`);
  signedIn=true;await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));await expect(page.getByRole('heading',{name:listingCopy[locale].title,exact:true}).first()).toBeVisible();expect(publications).toBe(2);
+});
+import {mkdirSync} from 'node:fs';
+const evidence='C:/Users/mabal/Documents/Codex/2026-10-30/one-important-architectural-point-i-would-2/outputs/individual-selling-refinement';
+for(const width of [390,1440])test(`Draft dialogs ${width}`,async({page})=>{
+ const t=quickSellCopy.fr,d=draftUX.fr;let saved:Record<string,unknown>|null=null,failSave=true,failDelete=true;
+ await page.setViewportSize({width,height:900});
+ await page.route('**/api/shida/**',async route=>{const req=route.request(),path=new URL(req.url()).pathname.replace(/\/$/,'');const reply=(json:unknown,status=200)=>route.fulfill({json,status});
+ if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Synthetic seller'}});
+ const store={public_ref:'WNZ_DIALOG',selling_mode:'individual',revision:1,name:'Vente rapide'};
+ if(path.endsWith('/quick-sell'))return reply({store});
+ if(path.endsWith('/stores'))return reply({stores:[store],product_categories:[],categories:[],currencies:['CDF']});
+ if(path.endsWith('/drafts'))return reply({draft_ref:'WFW_DIALOG',revision:1});
+ if(path.endsWith('/quick-sell-drafts/WFW_DIALOG')){if(req.method()==='DELETE'){if(failDelete){failDelete=false;return reply({detail:'service_unavailable'},503);}saved=null;return reply({status:'cancelled'});}if(failSave){failSave=false;return reply({detail:'service_unavailable'},503);}saved={...req.postDataJSON(),draft_ref:'WFW_DIALOG',revision:2,photos:[],updated_at:'2026-11-06T10:00:00Z'};return reply(saved);}
+ if(path.endsWith('/quick-sell-drafts'))return reply({drafts:saved?[saved]:[]});
+ if(path.endsWith('/products'))return reply({products:[],total:0});
+ return reply({});});
+ await page.goto('/fr/shida/wenze/sell/');await page.getByRole('button',{name:t.title,exact:true}).click();
+ await page.locator('input[name=name]').fill('Article de test privé');mkdirSync(evidence,{recursive:true});await page.screenshot({path:`${evidence}/form-${width}.png`,fullPage:true});
+ await page.getByRole('button',{name:t.cancel,exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog.getByRole('radio').first()).toBeChecked();await dialog.getByRole('radio').nth(1).check();await dialog.getByRole('button',{name:d.continue,exact:true}).click();await expect(dialog.getByRole('alert')).toBeVisible();await expect(page.locator('input[name=name]')).toHaveValue('Article de test privé');await page.screenshot({path:`${evidence}/leave-${width}.png`,fullPage:true});
+ await dialog.getByRole('button',{name:d.continue,exact:true}).click();await expect(dialog).not.toBeVisible();await expect(page.locator('.qs-draft-card')).toContainText('Article de test privé');
+ await page.locator('.qs-draft-card').getByRole('button',{name:t.remove,exact:true}).click();await page.screenshot({path:`${evidence}/delete-${width}.png`,fullPage:true});await dialog.getByRole('button').last().click();await expect(page.locator('.qs-draft-card')).toBeVisible();
+ await page.locator('.qs-draft-card').getByRole('button',{name:t.remove,exact:true}).click();await dialog.getByRole('button').last().click();await expect(page.locator('.qs-draft-card')).toHaveCount(0);
 });
