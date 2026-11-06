@@ -1,0 +1,29 @@
+.personal-offer-workspace .candidate-wizard-layout{grid-template-columns:minmax(170px,.65fr) minmax(0,2fr);align-items:stretch;gap:28px}
+.personal-offer-workspace .candidate-wizard-art{padding:22px 16px;background:linear-gradient(145deg,#f6f5eb,#edf3e6);border-radius:14px}
+.personal-offer-workspace .candidate-wizard-art img{width:100%;height:auto}
+.personal-offer-workspace .candidate-steps{margin:0 0 24px;padding:0;gap:14px;font-size:.85rem}
+.personal-offer-workspace .offer-step-complete span{background:#e5f0df;color:#14543b}
+.personal-offer-workspace .candidate-form{padding:28px;border:1px solid #e8e4da;border-radius:20px;box-shadow:0 3px 5px #173b2d08}
+.personal-offer-workspace .candidate-fields{gap:22px}
+.personal-offer-workspace .candidate-fields>div>span{display:block;margin-bottom:8px;font-weight:600}
+.personal-offer-workspace .offer-wide,.personal-offer-workspace .offer-control{grid-column:1/-1}
+.personal-offer-workspace .offer-required{color:#ba2424}
+.personal-offer-workspace .offer-required-note{font-size:.9rem;color:#52615a;margin-bottom:24px}
+.personal-offer-workspace .offer-counter{text-align:right;font-variant-numeric:tabular-nums}
+.personal-offer-workspace .offer-control{border:0;padding:0;margin:0;min-width:0;position:relative}
+.personal-offer-workspace .offer-control legend{font-weight:600;margin-bottom:12px}
+.personal-offer-workspace .offer-check,.personal-offer-workspace .offer-week label{display:flex;flex-direction:row;align-items:center;gap:8px;min-height:44px;font-weight:400}
+.personal-offer-workspace input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:#075338}
+.personal-offer-workspace .offer-week{display:flex;flex-wrap:wrap;gap:4px 14px}
+.personal-offer-workspace .offer-week label:has(:checked){background:#eef5e7;border-radius:7px}
+.personal-offer-workspace .offer-times,.personal-offer-workspace .offer-salary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end}
+.personal-offer-workspace .offer-choice{display:grid;gap:8px}
+.personal-offer-workspace select,.personal-offer-workspace input,.personal-offer-workspace textarea{max-width:100%;min-width:0}
+.personal-offer-workspace .offer-validation{position:absolute;width:1px;height:1px;opacity:0;padding:0;border:0;bottom:0}
+.personal-offer-workspace .candidate-review{display:block;border:1px solid #e6e4dc;border-radius:12px;padding:12px 18px}
+.personal-offer-workspace .candidate-review>div{display:grid;grid-template-columns:1fr 1.4fr;gap:18px;padding:13px 0;border-bottom:1px solid #ece9e0;overflow-wrap:anywhere}
+.personal-offer-workspace .candidate-review>div:last-child{border-bottom:0}
+.personal-offer-workspace .candidate-review dd{margin:0;white-space:pre-wrap}
+.personal-offer-workspace .candidate-actions{margin-top:26px;justify-content:flex-end}
+@media(max-width:800px){.personal-offer-workspace .candidate-wizard-layout{grid-template-columns:1fr}.personal-offer-workspace .candidate-wizard-art{display:flex;align-items:center;gap:15px;padding:12px}.personal-offer-workspace .candidate-wizard-art img{width:110px}.personal-offer-workspace .candidate-wizard-art h2{font-size:1.1rem}.personal-offer-workspace .candidate-wizard-art p{display:none}}
+@media(max-width:540px){.personal-offer-workspace .candidate-form{padding:18px}.personal-offer-workspace .candidate-steps{display:flex;gap:8px;font-size:.72rem}.personal-offer-workspace .candidate-steps li{flex:1;flex-direction:column;align-items:flex-start}.personal-offer-workspace .offer-times{grid-template-columns:1fr 1fr}.personal-offer-workspace .offer-times>.offer-check{grid-column:1/-1}.personal-offer-workspace .offer-salary{grid-template-columns:1fr 1fr}.personal-offer-workspace .offer-salary>label:last-child{grid-column:1/-1}.personal-offer-workspace .candidate-review>div{grid-template-columns:1fr;gap:5px}}
