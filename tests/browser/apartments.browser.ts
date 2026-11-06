@@ -159,7 +159,7 @@ for(const locale of ['en','fr','ln','sw'] as const) for(const width of [390,1440
   await expect(page.getByText(contract.pending,{exact:true})).toBeVisible();
   expect(writes).toBe(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  if(locale==='fr')await page.screenshot({path:`test-results/apartments-contract-draft-${width}.png`,fullPage:true});
+  if(locale==='fr'){await page.evaluate(async()=>{await document.fonts.ready;document.documentElement.style.setProperty('scroll-behavior','auto','important');window.scrollTo({top:0,behavior:'instant'});});await page.screenshot({path:`test-results/apartments-contract-draft-${width}.png`,fullPage:true});}
   await page.getByRole('button',{name:contract.close,exact:true}).click();
   await expect(page.getByRole('button',{name:contract.open,exact:true})).toBeFocused();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -206,3 +206,23 @@ for(const width of [390,1440])test(`gallery accessibility and local fetch measur
  await page.evaluate(()=>{document.documentElement.style.setProperty('scroll-behavior','auto','important');window.scrollTo({top:0,behavior:'instant'});});
  await page.screenshot({path:`test-results/apartments-final-detail-${width}.png`,fullPage:true});
 });
+
+for(const width of [390,1440]) for(const locale of ['en','fr'] as const) {
+ test(`retention warning resumes older draft ${locale} ${width}`,async({page})=>{
+  await page.setViewportSize({width,height:900});
+  const writes:string[]=[];
+  await page.route('**/api/shida/**',route=>{
+   const request=route.request(),path=new URL(request.url()).pathname.replace(/\/$/,'');
+   if(request.method()!=='GET')writes.push(path);
+   if(path==='/api/shida/employment/session')return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Owner Example'}}});
+   if(path==='/api/shida/personal/apartments')return route.fulfill({json:{items:[],identity:{public_name:'Owner Example',existing_profile:false},kinshasa_communes:['Limete']}});
+   if(path==='/api/shida/personal/apartments/APT_older/draft')return route.fulfill({json:{reference:'APT_older',revision:8,status:'DRAFT',values:{public_name:'Owner Example',property_type:'apartment',city:'Kinshasa',commune:'Limete',description:'Preserved older draft',currency:'USD',advertiser_role:'owner'},photos:[]}});
+   return route.fulfill({status:404,json:{}});
+  });
+  await page.goto(`${locale==='en'?'':'/'+locale}/shida/appartements/publier/?draft=APT_older`);
+  await expect(page.getByRole('textbox',{name:apartmentCreationCopy[locale].description,exact:true})).toHaveValue('Preserved older draft');
+  expect(writes).toEqual([]);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  if(locale==='fr')await page.screenshot({path:`test-results/apartments-retention-resume-${width}.png`,fullPage:true});
+ });
+}

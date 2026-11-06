@@ -190,3 +190,8 @@ network-blocking test setup were present only on the earlier infrastructure
 branch eacd8cf. Reused those specific files, preserving the current alias and
 using Node 24 as validated locally. No unrelated branch history was imported.
 GitHub CI has no production secrets or deployment job.
+
+Photo-expiry notices and the owner workspace now link to the exact draft. The
+creation page resumes it through an authenticated, no-store read even when it is
+older than the latest 30 properties. Opening the link neither saves changes nor
+extends retention; only a successful explicit save/upload/removal does so.

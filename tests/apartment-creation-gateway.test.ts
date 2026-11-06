@@ -24,3 +24,15 @@ it('allows only private draft reads and rejects signing actions',async()=>{
  expect((await POST(req(path.join('/')),context(path))).status).toBe(404);
  for(const action of ['sign','accept','execute','provider-callback'])expect((await POST(req([...path,action].join('/')),context([...path,action]))).status).toBe(404);
 });
+
+it('resumes only exact authenticated draft reads without query or mutation forwarding',async()=>{
+ const path=['APT_older','draft'],url='https://nihiloba.com/api/shida/personal/apartments/'+path.join('/');
+ const headers={'x-shida-session':personalSessionBinding(token)};
+ expect((await GET(new Request(url,{headers}),context(path))).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://api.nihiloba.com/api/dashboard/personal/apartments/APT_older/draft');
+ fetcher.mockClear();
+ expect((await GET(new Request(url+'?owner=other',{headers}),context(path))).status).toBe(404);
+ expect((await GET(new Request(url),context(path))).status).toBe(401);
+ expect((await POST(req(path.join('/')),context(path))).status).toBe(404);
+ expect(fetcher).not.toHaveBeenCalled();
+});

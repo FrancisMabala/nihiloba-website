@@ -11,9 +11,10 @@ async function handle(request:Request, context:Context) {
  const removal = /^APT_[A-Za-z0-9_-]{1,80}\/photos\/APF_[a-f0-9]{32}\/remove$/.test(path) && request.method === 'POST';
  const interest = /^APT_[A-Za-z0-9_-]{1,80}\/interest$/.test(path);
  const review = request.method==='GET' && (path==='manage'||/^APT_[A-Za-z0-9_-]{1,80}\/requests$/.test(path));
+ const resumeDraft = request.method==='GET' && /^APT_[A-Za-z0-9_-]{1,80}\/draft$/.test(path);
  const contractDraft = request.method==='GET' && /^APT_[A-Za-z0-9_-]{1,80}\/requests\/[a-f0-9]{64}\/contract-draft$/.test(path);
  const shortlist = request.method==='POST' && /^APT_[A-Za-z0-9_-]{1,80}\/requests\/[a-f0-9]{64}\/shortlist$/.test(path);
- if(path !== '' && !upload && !preview && !removal && !interest && !review && !shortlist && !contractDraft) return fail(404);
+ if(path !== '' && !upload && !preview && !removal && !interest && !review && !shortlist && !contractDraft && !resumeDraft) return fail(404);
  if(review ? [...url.searchParams.keys()].some(key=>key!=='page') || url.searchParams.has('page')&&!/^[1-9]\d{0,3}$/.test(url.searchParams.get('page')??'') : upload || removal ? [...url.searchParams.keys()].some(key => !(removal ? ['revision'] : ['revision','operation_key']).includes(key)) || !/^\d+$/.test(url.searchParams.get('revision') ?? '') || upload && !/^[A-Za-z0-9_-]{8,100}$/.test(url.searchParams.get('operation_key') ?? '') : Boolean(url.search)) return fail(404);
  const origin = personalRequestOrigin(request);
  if(request.headers.get('sec-fetch-site') === 'cross-site' || request.method !== 'GET' && !origin) return fail(403);

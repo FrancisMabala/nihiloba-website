@@ -40,9 +40,18 @@ function Wizard({locale,actor}:{locale:Locale;actor:ReturnType<typeof useWenzeBu
    const value = await request();
    if(!Array.isArray(value.items) || !value.identity || !Array.isArray(value.kinshasa_communes)) throw Error();
    value.items.forEach(decodeDraft);
+   const reference = new URLSearchParams(window.location.search).get('draft');
+   if(reference) {
+    if(!/^APT_[A-Za-z0-9_-]{1,80}$/.test(reference)) throw Error();
+    const response = await fetch(`/api/shida/personal/apartments/${reference}/draft/`,{cache:'no-store',signal:AbortSignal.timeout(20000),headers:{'x-shida-session':actor.binding!}});
+    if(!response.ok) throw Error();
+    const selected = decodeDraft(await response.json());
+    if(selected.reference !== reference || selected.status !== 'DRAFT') throw Error();
+    if(alive.current) {setDraft(selected);setStep(0);setConfirmed(false);}
+   }
    if(alive.current) {setProgress(value); setError('');}
   } catch {if(alive.current) setError(t.error);}
- },[request,t.error]);
+ },[request,t.error,actor.binding]);
  useEffect(() => {alive.current = true; if(actor.binding) void load(); return () => {alive.current = false;};},[actor.binding,load]);
  function move(next:number) {setStep(next); setConfirmed(false); requestAnimationFrame(() => panel.current?.focus());}
  async function action(kind:'start'|'save'|'publish',next?:number) {
