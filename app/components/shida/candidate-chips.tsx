@@ -1,0 +1,8 @@
+'use client';
+import {useId,useState} from 'react';
+export function CandidateChips({label,value,onChange,required,max=20,add,remove,suggestions=[]}:{label:string;value:string;onChange:(value:string)=>void;required:boolean;max?:number;add:string;remove:string;suggestions?:string[]}){
+ const id=useId(),[pending,setPending]=useState('');
+ const items=value.split(',').map(v=>v.trim()).filter(Boolean);
+ function commit(input:HTMLInputElement){const next=[...new Set([...items,...pending.split(',').map(v=>v.trim()).filter(Boolean)])];if(next.length>max){input.setCustomValidity(`${label}: ${max}`);input.reportValidity();return;}input.setCustomValidity('');onChange(next.join(', '));setPending('');}
+ return <div className="candidate-chip-field"><label htmlFor={id}>{label}{required&&<span className="candidate-required"> *</span>}</label><div className="candidate-chips">{items.map((item,index)=><span key={`${item}-${index}`}>{item}<button type="button" aria-label={`${remove} ${item}`} onClick={()=>onChange(items.filter((_,i)=>i!==index).join(', '))}>×</button></span>)}</div><div className="candidate-chip-add"><input id={id} aria-label={label} required={required&&!items.length} maxLength={2000} list={`${id}-options`} value={pending} onChange={e=>{setPending(e.target.value);e.target.setCustomValidity('');}} onBlur={e=>commit(e.currentTarget)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();commit(e.currentTarget);}}}/><button type="button" onClick={()=>{const input=document.getElementById(id) as HTMLInputElement;commit(input);input.focus();}}>{add}</button></div><datalist id={`${id}-options`}>{suggestions.map(v=><option key={v} value={v}/>)}</datalist></div>;
+}
