@@ -108,6 +108,8 @@ function apartment(value: unknown): ApartmentListing {
   const item = record(value);
   if (!Array.isArray(item.images)) throw new ShidaApiError("malformed");
   return {
+    bedroom_count: number(item.bedroom_count), size_sqm: number(item.size_sqm),
+    amenities: Object.fromEntries(Object.entries(item.amenities && typeof item.amenities === 'object' ? item.amenities : {}).filter(([key, value]) => ['water','electricity','bathroom','toilet','kitchen','parking'].includes(key) && typeof value === 'boolean')),
     advertiser_role: ['owner', 'representative', 'agent'].includes(String(item.advertiser_role)) ? item.advertiser_role as ApartmentListing['advertiser_role'] : null,
     public_ref: text(item.public_ref, true)!, slug: text(item.slug, true)!, title: text(item.title, true)!,
     city: text(item.city), area: text(item.area), commune: text(item.commune), quartier: text(item.quartier),

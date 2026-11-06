@@ -31,6 +31,18 @@ const owner = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("marketplace presentation", () => {
+  it("keeps bedroom counts distinct, omits invented amenities and suppresses unavailable visits",()=>{
+    const actual={...apartment,bedroom_count:1,number_of_rooms:2,amenities:{water:true,electricity:false},size_sqm:65};
+    const html=renderToStaticMarkup(<ApartmentDetail listing={actual} locale="en"/>);
+    expect(html).toContain('1 bedroom');expect(html).toContain('Total rooms : 2');
+    expect(html).toContain('Water available');expect(html).not.toContain('Electricity');
+    expect(html).toContain('to be confirmed');expect(html).not.toContain('verified owner');
+    const unavailable=renderToStaticMarkup(<ApartmentDetail listing={{...actual,availability_state:'rented'}} locale="en"/>);
+    expect(unavailable).not.toContain(apartment.visit_url!);
+    const card=renderToStaticMarkup(<ApartmentCard listing={actual} locale="en"/>);
+    expect(card).not.toContain(actual.description!);expect(card).toContain('1 bedroom');
+  });
+
   it("omits redundant landing breadcrumbs in every locale",()=>{for(const locale of ["en","fr","ln","sw"] as const)expect(renderToStaticMarkup(<MarketplaceSectionBreadcrumb locale={locale} current="Wenze"/>)).toBe("");});
   it("normalizes embedded Wenze currency without duplicating it",()=>{expect(wenzePrice("150USD","USD")).toBe("150 USD");expect(wenzePrice("25","USD")).toBe("25 USD");expect(wenzePrice("30 USD","CDF")).toBe("30 USD")});
   it("localizes Wenze pickup, delivery fees, and served areas",()=>{const fulfillment:WenzeFulfillment={methods:["pickup","delivery"],delivery:{fee_type:"fixed",fee:"5000",currency:"CDF",areas:["Gombe","Lingwala"]}};const fr=renderToStaticMarkup(<WenzeFulfillmentInfo fulfillment={fulfillment} locale="fr" city="Kinshasa"/>),free=renderToStaticMarkup(<WenzeFulfillmentInfo fulfillment={{methods:["delivery"],delivery:{fee_type:"free",fee:"0",currency:"USD",areas:[]}}} locale="en" city="Goma"/>);expect(fr).toContain("Retrait en boutique");expect(fr).toContain("Livraison :");expect(fr).toContain("5");expect(fr).toContain("000 CDF");expect(fr).toContain("Communes desservies");expect(fr).toContain("Gombe");expect(free).toContain("Free delivery");expect(free).not.toContain("0 USD")});

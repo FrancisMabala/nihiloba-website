@@ -50,3 +50,18 @@ rent preservation and an unchecked final confirmation. A label-selector timeout
 was corrected to use the select's accessible role. French review screenshots were
 inspected; their repeated illustrative image is a browser fixture, not a listing
 published to SHIDA. Real backend tests independently reject duplicate images.
+
+## Batch 4 — compact public detail and cards
+- Gallery and rent/visit panel now share the first desktop row; mobile stacks them.
+- Reused keyboard/swipe/lightbox gallery, responsive sizes, primary preload and
+  lazy secondary photos. Protected photos retain no-store delivery.
+- Separate factual bedrooms, total rooms, floor area and declared amenities.
+  Legacy unknowns remain unknown; no invented deposit, availability date or badge.
+- Cards omit long descriptions; public advertiser navigation remains available.
+- Existing React request cache keeps metadata and detail on one detail endpoint;
+  no collection fetch, private documents, polling or owner-fetch waterfall added.
+- 50 focused tests, lint, TypeScript, webpack build and 8 four-language browser
+  cases passed. Initial two navigation regressions fixed before commit.
+- French desktop/mobile screenshots inspected. Test imagery is an explicitly
+  controlled illustration fixture, never an actual listing or production photo.
+- Final small breadcrumb spacing adjustment included; final visual pass follows.

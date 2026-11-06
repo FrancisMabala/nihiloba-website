@@ -7,6 +7,7 @@ for (const width of [390,1440]) for (const locale of ['en','fr','ln','sw'] as co
  test(`private apartment report ${locale} ${width}`, async({page}) => {
   await page.setViewportSize({width,height:900});
   const writes:unknown[] = [];
+  await page.route('https://api.nihiloba.com/api/apartments/photos/**', route=>route.fulfill({contentType:'image/webp',body:readFileSync('public/images/apartment-discovery.webp')}));
   await page.route('**/api/shida/**', route => {
    const path = new URL(route.request().url()).pathname;
    if(path.includes('/employment/session')) return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Test visitor'}}});
@@ -25,7 +26,7 @@ for (const width of [390,1440]) for (const locale of ['en','fr','ln','sw'] as co
   await expect(page.getByRole('status').filter({hasText:t.saved})).toBeVisible();
   expect(writes).toEqual([{listing_ref:'APT_fixture',reason:'false_property',message:'Controlled misleading listing report',language:locale}]);
   await page.getByRole('dialog').getByRole('button',{name:t.close,exact:true}).last().click();
-  if(locale === 'fr') {await page.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';window.scrollTo(0,0);});await page.screenshot({path:`test-results/apartments-batch2-${width}.png`,fullPage:true});}
+  if(locale === 'fr') {await page.evaluate(()=>{document.documentElement.style.setProperty('scroll-behavior','auto','important');window.scrollTo({top:0,behavior:'instant'});});await page.screenshot({path:`test-results/apartments-batch4-${width}.png`,fullPage:true});}
  });
 }
 

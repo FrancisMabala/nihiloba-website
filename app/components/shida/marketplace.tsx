@@ -7,8 +7,9 @@ import { firstHotelRoomImage, resolveHotelRoomImages } from "./hotel-room-images
 import { ImageGallery } from "./image-gallery";
 import { marketplaceCopy } from "./marketplace-copy";
 import { MarketplaceImage } from "./marketplace-image";
-import { AvailabilityBadge, availabilityLabel, MarketplaceBreadcrumb, MarketplaceFacts } from "./marketplace-primitives";
-import type { MarketplaceFact } from "./marketplace-primitives";
+import { AvailabilityBadge, MarketplaceBreadcrumb } from "./marketplace-primitives";
+import { apartmentDetailCopy } from "../../lib/apartment-detail-copy";
+import "./apartment-detail.css";
 import { ApartmentReport } from './apartment-report';
 import { apartmentSafetyCopy } from '../../lib/apartment-safety-copy';
 
@@ -58,87 +59,88 @@ export function MarketplaceState({ children }: { children: string }) {
   return <div className="container marketplace-state" role="status"><p>{children}</p></div>;
 }
 
+function apartmentTitle(listing: ApartmentListing, locale: Locale): string {
+  const type = propertyTypeLabel(listing.property_type, locale);
+  if (!type || listing.bedroom_count == null) return listing.title;
+  const t = apartmentDetailCopy[locale];
+  return `${type} · ${listing.bedroom_count} ${listing.bedroom_count === 1 ? t.bedroom : t.bedrooms}${listing.commune ? ` — ${listing.commune}` : ''}`;
+}
+
 export function ApartmentCard({ listing, locale }: { listing: ApartmentListing; locale: Locale }) {
   const t = marketplaceCopy[locale];
+  const title = apartmentTitle(listing, locale);
   const location = publicLocation(listing.quartier, listing.commune, listing.area, listing.city);
   const price = formatPrice(listing.rent, listing.currency, locale);
   const type = propertyTypeLabel(listing.property_type, locale);
   const image = listing.images.map((item) => ({ ...item, safeUrl: safePublicImageUrl(item.url) })).find((item) => item.safeUrl);
-  return <article className="marketplace-card">
-    <Link className="marketplace-card-image" href={marketplacePath(locale, `/shida/appartements/${listing.slug}`)}>
-      <MarketplaceImage src={image?.safeUrl ?? null} alt={image?.alt || listing.title} fallback={t.imageUnavailable} />
+  const href = marketplacePath(locale, `/shida/appartements/${encodeURIComponent(listing.slug)}`);
+  return <article className="marketplace-card apt-card">
+    <Link className="marketplace-card-image" href={href}>
+      <MarketplaceImage src={image?.safeUrl ?? null} alt={image?.alt || title} fallback={t.imageUnavailable} />
     </Link>
     <div className="marketplace-card-body">
       <AvailabilityBadge state={listing.availability_state} locale={locale}/>
-      <h2><Link href={marketplacePath(locale, `/shida/appartements/${listing.slug}`)}>{listing.title}</Link></h2>
+      <h2><Link href={href}>{title}</Link></h2>
       {location && <p className="marketplace-location">{location}</p>}
       <div className="marketplace-card-facts">
         {price && <strong>{price} <small>/ {t.perMonth}</small></strong>}
         {type && <span>{type}</span>}
-        {listing.number_of_rooms != null && <span>{listing.number_of_rooms} {t.rooms}</span>}
+        {listing.bedroom_count == null && listing.number_of_rooms != null && <span>{listing.number_of_rooms} {t.rooms}</span>}
       </div>
-      {listing.description && <p className="marketplace-description">{listing.description}</p>}
+      <ButtonLink href={href} variant="text">{t.details}</ButtonLink>
       {listing.owner && <ApartmentOwnerSummary owner={listing.owner} locale={locale}/>}
-      <ButtonLink href={marketplacePath(locale, `/shida/appartements/${listing.slug}`)} variant="text">{t.details}</ButtonLink>
     </div>
   </article>;
 }
 
 export function ApartmentDetail({ listing, locale }: { listing: ApartmentListing; locale: Locale }) {
-  const t = marketplaceCopy[locale];
+  const t = marketplaceCopy[locale], d = apartmentDetailCopy[locale], safety = apartmentSafetyCopy[locale];
+  const title = apartmentTitle(listing, locale);
   const location = publicLocation(listing.quartier, listing.commune, listing.area, listing.city);
   const price = formatPrice(listing.rent, listing.currency, locale);
-  const status = availabilityLabel(listing.availability_state, locale);
-  const action = safePublicActionUrl(listing.visit_url);
+  const action = listing.availability_state?.toLowerCase() === 'available' ? safePublicActionUrl(listing.visit_url) : null;
   const images = listing.images.flatMap((item) => {
     const url = safePublicImageUrl(item.url);
     return url ? [{ url, alt: item.alt }] : [];
   });
-  const facts: MarketplaceFact[] = [];
-  if (price) facts.push({ label: t.price, value: `${price} / ${t.perMonth}` });
-  if (listing.number_of_rooms != null) facts.push({ label: t.rooms, value: `${listing.number_of_rooms} ${t.rooms}` });
-  if (location) facts.push({ label: t.location, value: location });
-  if (status) facts.push({ label: t.availability, value: status });
-  const locationDetails = [
-    listing.quartier ? { label: "Quartier", value: listing.quartier } : null,
-    listing.commune ? { label: "Commune", value: listing.commune } : null,
-    listing.area && listing.area !== listing.commune ? { label: locale === "fr" ? "Zone" : "Area", value: listing.area } : null,
-    listing.city ? { label: locale === "fr" ? "Ville" : "City", value: listing.city } : null,
-  ].filter((fact): fact is { label: string; value: string } => fact !== null);
-  return <>
-    <section className="marketplace-detail-hero"><div className="container">
-      <MarketplaceBreadcrumb label={t.breadcrumb} items={[
-        { label: t.home, href: locale === "en" ? "/" : `/${locale}` },
-        { label: "SHIDA", href: marketplacePath(locale, "/shida") },
-        { label: t.apartments, href: marketplacePath(locale, "/shida/appartements") },
-        { label: listing.title },
-      ]}/>
-      <h1>{listing.title}</h1>{location && <p className="marketplace-detail-location">{location}</p>}
-    </div></section>
-    <section className="marketplace-gallery-section"><div className="container"><ImageGallery images={images} title={listing.title} fallback={t.imageUnavailable} photosLabel={t.photos} preload/></div></section>
-    <section className="section marketplace-property-section"><div className="container">
-      <MarketplaceFacts facts={facts}/>
-      <div className="marketplace-detail">
-        <aside className="marketplace-action-card">
-          <AvailabilityBadge state={listing.availability_state} locale={locale}/>
-          {price && <p className="marketplace-price">{price}<small>/ {t.perMonth}</small></p>}
-          {listing.number_of_rooms != null && <p>{listing.number_of_rooms} {t.rooms}</p>}
-          <h2>{t.visitTitle}</h2><p>{t.visitText}</p>
-          {action ? <ButtonLink href={action} external className="marketplace-visit-button">{t.visit}</ButtonLink> : <p className="marketplace-action-unavailable">{t.actionUnavailable}</p>}
-        </aside>
-        <div className="marketplace-property-content">
-          {listing.description && <section><h2>{t.descriptionTitle}</h2><p className="lead-copy">{listing.description}</p></section>}
-          {locationDetails.length > 0 && <section><h2>{t.detailsTitle}</h2><dl className="marketplace-property-details">{locationDetails.map((detail) => <div key={detail.label}><dt>{detail.label}</dt><dd>{detail.value}</dd></div>)}</dl></section>}
-          {listing.owner && <section><ApartmentOwnerSummary owner={listing.owner} locale={locale} extended/></section>}
-          <section><h2>{apartmentSafetyCopy[locale].title}</h2><p>{apartmentSafetyCopy[locale].notice}</p>
-            {listing.advertiser_role && <p>{apartmentSafetyCopy[locale].roles[listing.advertiser_role]}</p>}
-            <ul><li>{apartmentSafetyCopy[locale].identity}</li><li>{apartmentSafetyCopy[locale].property}</li><li>{apartmentSafetyCopy[locale].independent}</li></ul>
-            <ApartmentReport locale={locale} reference={listing.public_ref}/>
-          </section>
-        </div>
-      </div>
-    </div></section>
-  </>;
+  const equipment = (['water','electricity','bathroom','toilet','kitchen','parking'] as const).filter(key => listing.amenities?.[key] === true);
+  return <article className="apt-detail"><div className="container">
+    <MarketplaceBreadcrumb label={t.breadcrumb} items={[
+      {label:t.home,href:locale==='en'?'/':`/${locale}`},
+      {label:'SHIDA',href:marketplacePath(locale,'/shida')},
+      {label:t.apartments,href:marketplacePath(locale,'/shida/appartements')}, {label:title},
+    ]}/>
+    <Link className="apt-back" href={marketplacePath(locale,'/shida/appartements')}>← {d.back}</Link>
+    <header className="apt-heading"><div><h1>{title}</h1>{location && <p>{location}</p>}</div><AvailabilityBadge state={listing.availability_state} locale={locale}/></header>
+    <div className="apt-hero">
+      <ImageGallery images={images} title={title} fallback={t.imageUnavailable} photosLabel={t.photos} preload variant="portfolio" locale={locale} thumbnailLimit={5} sizes="(max-width: 760px) calc(100vw - 32px), (max-width: 1240px) 60vw, 740px"/>
+      <aside className="apt-summary" aria-label={d.monthly}>
+        <p>{d.monthly}</p>{price && <strong className="apt-rent">{price} <small>/ {t.perMonth}</small></strong>}
+        <ul className="apt-facts">
+          {listing.bedroom_count != null && <li>{listing.bedroom_count} {listing.bedroom_count === 1 ? d.bedroom : d.bedrooms}</li>}
+          {listing.number_of_rooms != null && <li>{d.rooms} : {listing.number_of_rooms}</li>}
+          {listing.size_sqm != null && <li>{d.size} : {listing.size_sqm} m²</li>}
+          {equipment.filter(key=>key==='water'||key==='electricity'||key==='parking').map(key=><li key={key}>{d[key]} <small>· {d.declared}</small></li>)}
+        </ul>
+        {action ? <ButtonLink href={action} external className="marketplace-visit-button">{d.visit} →</ButtonLink> : <p>{t.actionUnavailable}</p>}
+        <p className="apt-privacy">{d.privacy}</p>
+      </aside>
+    </div>
+    <div className="apt-panels">
+      <section className="apt-panel"><h2>{d.home}</h2>
+        {listing.description && <p className="apt-description">{listing.description}</p>}
+        {equipment.length>0 && <><p>{d.declared}</p><ul className="apt-equipment">{equipment.map(key=><li key={key}>{d[key]}</li>)}</ul></>}
+      </section>
+      <section className="apt-panel"><h2>{d.terms}</h2>{price && <p>{d.monthly} : <strong>{price}</strong></p>}<p>{d.unknown}</p></section>
+      <section className="apt-panel"><h2>{safety.title}</h2>
+        {listing.advertiser_role && <p>{safety.roles[listing.advertiser_role]}</p>}
+        <ul><li>{safety.identity}</li><li>{safety.property}</li><li>{safety.independent}</li></ul>
+        <p className="apt-safety-notice">{safety.notice}</p><ApartmentReport locale={locale} reference={listing.public_ref}/>
+      </section>
+    </div>
+    {listing.owner && <div className="apt-owner"><ApartmentOwnerSummary owner={listing.owner} locale={locale} extended/></div>}
+    <section className="apt-publish"><h2>{d.publish}</h2><ButtonLink href={marketplacePath(locale,'/shida/appartements/publier')}>{d.publishAction} →</ButtonLink></section>
+  </div></article>;
 }
 
 export function ApartmentOwnerSummary({ locale, owner, extended = false }: {

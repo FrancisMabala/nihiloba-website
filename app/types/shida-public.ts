@@ -249,6 +249,9 @@ export type PublicImage = {
 };
 
 export type ApartmentListing = {
+  bedroom_count?: number | null;
+  size_sqm?: number | null;
+  amenities?: Partial<Record<'water'|'electricity'|'bathroom'|'toilet'|'kitchen'|'parking', boolean>>;
   advertiser_role?: 'owner' | 'representative' | 'agent' | null;
   public_ref: string;
   slug: string;
