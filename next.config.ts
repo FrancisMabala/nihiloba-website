@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/shida/space/:path*", headers: privatePageHeaders },
+      { source: "/shida/deletion/:path*", headers: privatePageHeaders },
+      { source: "/:lang(en|fr|ln|sw)/shida/deletion/:path*", headers: privatePageHeaders },
       { source: "/shida/appartements/publier/:path*", headers: privatePageHeaders },
       { source: "/shida/appartements/mes-logements/:path*", headers: privatePageHeaders },
       { source: "/:lang(en|fr|ln|sw)/shida/appartements/mes-logements/:path*", headers: privatePageHeaders },

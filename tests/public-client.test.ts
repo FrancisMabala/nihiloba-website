@@ -46,6 +46,7 @@ describe("SHIDA public client", () => {
     vi.stubGlobal("fetch", fetchMock);
     expect((await getApartments()).items[0].title).toBe("Bright flat");
     expect((await getHotels()).items[0].room_types[0].name).toBe("Standard");
+    expect(fetchMock.mock.calls.every(call=>call[1]?.cache==='no-store')).toBe(true);
   });
 
   it("serializes every supported apartment filter safely", async () => {

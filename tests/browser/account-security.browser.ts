@@ -6,6 +6,7 @@ import {recoveryCopy} from '../../app/lib/account-recovery-copy';
 import {emailLoginCopy} from '../../app/lib/email-login-copy';
 import {accountDesignText} from '../../app/lib/account-design-copy';
 import {deletionReviewText} from '../../app/lib/deletion-review-copy';
+import {deletionText} from '../../app/lib/account-deletion-copy';
 
 async function fixture(page:Page,signedIn=true,configured=false){
  const state={registered:configured,email:configured,loginEmail:false,closed:false,message:'',replies:[] as string[],proof:false,removed:0,review:''};
@@ -29,10 +30,10 @@ async function fixture(page:Page,signedIn=true,configured=false){
    if(part==='/email/proof/verify'){state.proof=true;return reply({authorization:'SEC_authorized'});}
    if(part==='/passkeys/revoke'){expect(state.proof).toBe(true);expect(body).toEqual({reference:'KEY_fixture',authorization:'SEC_authorized',confirmed:true});state.registered=false;state.removed++;return reply({revoked:true});}
    if(part==='/sessions/revoke'){expect(state.proof).toBe(true);expect(body.authorization).toBe('SEC_authorized');return reply({revoked:true});}
-   if(part==='/delete')return reply({eligible:false});
+   if(part==='/delete')return reply({eligible:false,obligations:[{reference:'WEW_fixture',kind:'wewa',action_path:'/shida/space/?view=support'}],retained_records:false});
    if(part==='/delete/reviews/cancel'){expect(body.reference).toBe('SCT_fixture');state.review='deletion_cancelled';return reply({state:state.review});}
    if(part==='/delete/reviews'){
-    if(route.request().method()==='POST'){expect(state.proof).toBe(true);expect(body.confirmed).toBe(true);expect(body.authorization).toBe('SEC_authorized');state.review='deletion_requested';return reply({reference:'SCT_fixture'});}
+    if(route.request().method()==='POST'){expect(state.proof).toBe(true);expect(body.confirmed).toBe(true);expect(body.authorization).toBe('SEC_authorized');expect(body.obligations).toEqual(['WEW_fixture']);state.review='deletion_requested';return reply({reference:'SCT_fixture'});}
     return reply({requests:state.review?[{reference:'SCT_fixture',state:state.review,created_at:'2026-01-01',updated_at:'2026-01-01'}]:[]});
    }
   }
@@ -54,10 +55,13 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
  const state=await fixture(page,true,true),t=(key:Parameters<typeof deletionReviewText>[1])=>deletionReviewText(locale,key);
  await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);
  await page.getByLabel(securityText(locale,'preferEmail'),{exact:true}).check();
+ await page.getByRole('button',{name:deletionText(locale,'check'),exact:true}).click();
+ await expect(page.locator('#account-deletion ol')).toContainText('WEW_fixture');
+ await page.getByRole('button',{name:deletionText(locale,'review'),exact:true}).click();
  const review=page.locator('.account-deletion-review');
  await review.getByLabel(t('message')).fill('Please review my unresolved obligations.');
  await expect(review.getByRole('button',{name:t('title'),exact:true})).toBeDisabled();
- await review.getByLabel(t('consent')).check();await review.getByRole('button',{name:t('title'),exact:true}).click();
+ await review.getByRole('checkbox').check();await review.getByRole('button',{name:t('title'),exact:true}).click();
  const proof=page.getByRole('region',{name:securityText(locale,'emailProof'),exact:true});
  await proof.getByLabel(securityText(locale,'code'),{exact:true}).fill('12345678');
  await proof.getByRole('button',{name:securityText(locale,'verify'),exact:true}).click();
@@ -67,6 +71,60 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
  await expect(review.getByRole('button',{name:t('withdraw'),exact:true})).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`test-results/account-security/review-${locale}-${width}.png`,fullPage:true});
+});
+for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366])test(`deletion schedule and explicit restoration ${locale} ${width}`,async({page})=>{
+ const state=await fixture(page,true,true),t=(key:Parameters<typeof deletionText>[1])=>deletionText(locale,key);
+ const prefix=locale==='en'?'':'/'+locale;
+ let confirmations=0,cancellations=0,freshLogin=false;
+ const receipt={reference:'DEL_fixture',status:'scheduled',scheduled_at:'2026-12-06T15:00:00Z',can_cancel:true};
+ await page.route('**/api/shida/personal/**',async route=>{
+  const path=new URL(route.request().url()).pathname.replace(/\/$/,'');
+  if(path.endsWith('/security/delete')){
+   if(route.request().method()==='GET')return route.fulfill({json:{eligible:true,obligations:[],retained_records:false}});
+   expect(state.proof).toBe(true);expect(route.request().postDataJSON()).toEqual({authorization:'SEC_authorized',confirmed:true});confirmations++;
+   return route.fulfill({json:receipt});
+  }
+  if(path.endsWith('/personal/deletion'))return route.fulfill({status:freshLogin?200:401,json:freshLogin?{deletion:receipt,binding:'a'.repeat(64)}:{}});
+  if(path.endsWith('/delete/cancel')){expect(freshLogin).toBe(true);expect(route.request().postDataJSON()).toEqual({reference:'DEL_fixture',confirmed:true});cancellations++;return route.fulfill({json:{cancelled:true}});}
+  return route.fallback();
+ });
+ await page.setViewportSize({width,height:900});await page.goto(`${prefix}/shida/space/?view=settings`);
+ await page.getByLabel(securityText(locale,'preferEmail'),{exact:true}).check();
+ await expect(page.locator('.account-deletion-review')).toHaveCount(0);
+ await page.getByRole('button',{name:t('check'),exact:true}).click();
+ await expect(page.getByText(t('eligible'),{exact:true})).toBeVisible();
+ await expect(page.locator('.account-deletion-review')).toHaveCount(0);
+ await page.getByRole('button',{name:t('confirm'),exact:true}).click();
+ const proof=page.getByRole('region',{name:securityText(locale,'emailProof'),exact:true});
+ await proof.getByLabel(securityText(locale,'code'),{exact:true}).fill('12345678');await proof.getByRole('button',{name:securityText(locale,'verify'),exact:true}).click();
+ await expect(page).toHaveURL(new RegExp(`${prefix}/shida/deletion/?$`));
+ await expect(page.getByText(t('pending'),{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:t('cancel'),exact:true})).toHaveCount(0);
+ expect(confirmations).toBe(1);expect(cancellations).toBe(0);
+ // A new successful login permits the status screen; it is not cancellation.
+ freshLogin=true;await page.reload();
+ await expect(page.getByRole('button',{name:t('cancel'),exact:true})).toBeVisible();expect(cancellations).toBe(0);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`test-results/account-security/pending-${locale}-${width}.png`,fullPage:true});
+ await page.getByRole('button',{name:t('cancel'),exact:true}).click();
+ await expect(page.getByText(t('cancelled'),{exact:true})).toBeVisible();expect(cancellations).toBe(1);
+});
+test('failed eligibility read offers retry without confirmation or review',async({page})=>{
+ await fixture(page,true,true);let attempts=0;
+ await page.route('**/api/shida/personal/security/delete/',route=>{attempts++;return route.fulfill(attempts===1?{status:503,json:{}}:{json:{eligible:true,obligations:[],retained_records:false}});});
+ await page.goto('/shida/space/?view=settings');await page.getByRole('button',{name:deletionText('en','check'),exact:true}).click();
+ const panel=page.locator('#account-deletion');await expect(panel.getByRole('alert')).toBeVisible();
+ await expect(panel.getByRole('button',{name:deletionText('en','confirm'),exact:true})).toHaveCount(0);
+ await panel.getByRole('button',{name:deletionText('en','retry'),exact:true}).click();await expect(panel.getByText(deletionText('en','eligible'))).toBeVisible();
+});
+test('deadline status offers sign out without restoration',async({page})=>{
+ await fixture(page,true,true);let logout=0;
+ await page.route('**/api/shida/personal/deletion/',route=>route.fulfill({json:{deletion:{reference:'DEL_fixture',status:'retrying',scheduled_at:'2026-01-01T12:00:00Z',can_cancel:false},binding:'a'.repeat(64)}}));
+ await page.route('**/api/shida/employment/logout/',route=>{logout++;return route.fulfill({json:{logged_out:true}});});
+ await page.goto('/shida/deletion/');await expect(page.getByText(deletionText('en','closed'),{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:deletionText('en','cancel'),exact:true})).toHaveCount(0);
+ await page.getByRole('button',{name:deletionText('en','signout'),exact:true}).click();
+ await expect.poll(()=>logout).toBe(1);
 });
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,768,1024,1440])test(`login email enrollment ${locale} ${width}`,async({page})=>{
  const state=await fixture(page,true,true),t=emailLoginCopy[locale];
@@ -106,7 +164,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
  await fixture(page);await page.setViewportSize({width,height:900});const prefix=locale==='en'?'':`/${locale}`;
  await page.goto(`${prefix}/shida/space/?view=settings`);
  await expect(page.getByRole('heading',{name:accountDesignText(locale,'securityTitle'),exact:true})).toBeVisible();
- await expect(page.locator('#account-deletion summary')).toBeVisible();
+ await expect(page.locator('#account-deletion h3')).toBeVisible();
  await expect(page.getByRole('heading',{name:mySpaceCopy[locale].lost,exact:true})).toBeVisible();
  await expect(page.locator('.account-protection a')).toHaveAttribute('href','?view=recovery');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -146,13 +204,13 @@ for(const width of [390,1366])test(`administrator deletion review ${width}: proo
  });
  await page.setViewportSize({width,height:900});await page.goto('/shida/space/?view=support');
  const review=page.locator('section').filter({has:page.getByRole('heading',{name:'Restricted deletion review',exact:true})});
- const execute=review.getByRole('button',{name:'Execute eligible deletion',exact:true});
+ const execute=review.getByRole('button',{name:'Mark review resolved',exact:true});
  await expect(execute).toBeDisabled();
  await review.getByLabel('Review record',{exact:true}).fill('Independently reviewed the synthetic account obligations.');
  await expect(execute).toBeDisabled();
  await review.getByRole('checkbox').check();await execute.click();
  await expect(review.getByRole('alert')).toBeVisible();
- expect(decisions).toEqual(['execute']);expect(proofs).toBe(1);
+ expect(decisions).toEqual(['resolved']);expect(proofs).toBe(1);
  await expect(review.getByText('SCT_review',{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

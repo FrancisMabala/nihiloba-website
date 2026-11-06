@@ -213,10 +213,14 @@ function wenzeProduct(value:unknown):WenzeProduct { const item=record(value),var
 
 export async function request(path: string, revalidate: number | false): Promise<unknown> {
   let response: Response;
+  // Public account content must disappear on the next read after deactivation,
+  // including when confirmation originated in another browser or channel.
+  // Only identity-free catalog metadata can use time-based response caching.
+  const cacheable=/^\/api\/public\/shida\/jobs\/catalogs(?:\?|$)/.test(path);
   try {
     response = await fetch(`${apiBaseUrl()}${path}`, {
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      ...(revalidate === false ? { cache: "no-store" as const } : { next: { revalidate } }),
+      ...(revalidate === false || !cacheable ? { cache: "no-store" as const } : { next: { revalidate } }),
     });
   } catch {
     throw new ShidaApiError("unavailable");

@@ -2,6 +2,7 @@ import {beforeEach,afterEach,it,expect,vi} from 'vitest';
 const jar=new Map<string,string>(), saved=vi.fn();
 vi.mock('next/headers',()=>({cookies:async()=>({get:(key:string)=>jar.has(key)?{value:jar.get(key)}:undefined,set:(key:string,value:string,options:object)=>{saved(key,value,options);if(value)jar.set(key,value);else jar.delete(key);}})}));
 import {GET,POST} from '../app/api/shida/personal/security/[[...path]]/route';
+import {GET as deletionStatus} from '../app/api/shida/personal/deletion/route';
 import {GET as reviewGet, POST as reviewPost} from '../app/api/shida/personal/deletion-review/[[...path]]/route';
 import {POST as recovery} from '../app/api/shida/recovery/[[...path]]/route';
 import {GET as supportGet,POST as supportPost} from '../app/api/shida/personal/support/[[...path]]/route';
@@ -85,4 +86,30 @@ it('distinguishes email delivery failure from retry limits',async()=>{
  const response=await POST(req('personal/security/login-email/start'),context('login-email/start'));
  expect(response.status).toBe(503);expect(response.headers.get('Retry-After')).toBeNull();
  expect(await response.json()).toEqual({detail:'security_email_delivery_unavailable'});
+});
+
+it('reads restricted deletion status without exposing its session credential',async()=>{
+ const deletion={reference:'DEL_fixture',scheduled_at:'2026-12-06T15:00:00Z',can_cancel:true,status:'scheduled'};
+ fetcher.mockResolvedValueOnce(Response.json({deletion}));
+ const response=await deletionStatus(req('personal/deletion','GET'));
+ expect(response.status).toBe(200);expect(response.headers.get('cache-control')).toContain('no-store');
+ expect(await response.json()).toEqual({deletion,binding:personalSessionBinding(token)});
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/personal/security/delete/status');
+ expect((fetcher.mock.calls[0][1]?.headers as Record<string,string>).Cookie).toBe('shida_dashboard_session='+token);
+});
+it('rejects cross-site status reads and fails closed on unavailable or malformed state',async()=>{
+ expect((await deletionStatus(req('personal/deletion','GET',{}, {Origin:'https://other.test'}))).status).toBe(403);
+ expect(fetcher).not.toHaveBeenCalled();
+ fetcher.mockResolvedValueOnce(Response.json({}));
+ expect((await deletionStatus(req('personal/deletion','GET'))).status).toBe(503);
+ jar.clear();expect((await deletionStatus(req('personal/deletion','GET'))).status).toBe(401);
+});
+it('installs a fresh HttpOnly cookie only after explicit bound cancellation',async()=>{
+ vi.stubEnv('NODE_ENV','production');
+ const fresh='synthetic_fresh_cancellation_session_123456';
+ fetcher.mockResolvedValueOnce(Response.json({cancelled:true},{headers:{'Set-Cookie':`shida_dashboard_session=${fresh}; HttpOnly; Secure; SameSite=Strict`}}));
+ const response=await POST(req('personal/security/delete/cancel','POST',{reference:'DEL_fixture',confirmed:true}),context('delete/cancel'));
+ expect(response.status).toBe(200);expect(await response.json()).toEqual({cancelled:true});
+ expect(saved).toHaveBeenCalledWith(PERSONAL_SESSION_COOKIE,fresh,expect.objectContaining({httpOnly:true,secure:true}));
+ expect((await POST(req('personal/security/delete/cancel'),context('delete/cancel'))).status).toBe(401);
 });

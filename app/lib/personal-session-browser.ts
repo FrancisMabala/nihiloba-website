@@ -14,6 +14,14 @@ export async function restorePersonalSession(signal?: AbortSignal): Promise<Pers
   if (loginUnconfirmed()) throw new PersonalSessionError(401);
   // This endpoint also migrates the legacy Employment-path cookie after validation.
   const response = await fetch("/api/shida/employment/session/", { cache: "no-store", credentials: "same-origin", signal });
+  if(response.status===409){
+    const status=await fetch('/api/shida/personal/deletion/',{cache:'no-store',signal});
+    if(status.ok&&(await status.json()).deletion){
+      const prefix=window.location.pathname.match(/^\/(fr|ln|sw)(?:\/|$)/)?.[0]?.replace(/\/$/,'')||'';
+      window.location.assign(prefix+'/shida/deletion/');
+      throw new PersonalSessionError(401);
+    }
+  }
   if (!response.ok) throw new PersonalSessionError(response.status);
   const value = await response.json();
   if (!/^[a-f0-9]{64}$/.test(value.binding) || typeof value.user?.display_name !== "string") throw new PersonalSessionError(401);

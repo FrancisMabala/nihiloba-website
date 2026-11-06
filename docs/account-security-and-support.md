@@ -81,3 +81,8 @@ Added explicit sign-in email enrollment separately from recovery email, browser-
 Browser credentials stay in HttpOnly cookies. Restart clears the pending email attempt; cross-tab session changes invalidate local progress. Session management shows actual last-active times without guessed device names. Revocation requires existing action-specific proof. Support and recovery-review panels now have distinct React keys, preventing duplicate support forms during session refresh.
 
 Validation: 55 focused gateway/session unit tests; production webpack build and TypeScript; affected ESLint; 55 account-security browser tests across EN/FR/LN/SW, including five-width email enrollment/passkey-removal coverage and independent email login/restart. Browser fixtures are synthetic, not proof of real SMTP delivery. Full backend release validation, deletion review and live rollout remain outstanding.
+
+
+## Cancellable deletion - 6 November 2026
+
+The previous immediate-deletion/review behavior is superseded by [the shared 30-day lifecycle](account-deletion-2026-11-06.md). This is a local implementation, not a deployed change.

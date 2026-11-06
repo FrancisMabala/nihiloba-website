@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { personalRequestOrigin } from "../../../../../lib/personal-request-origin";
-import { PERSONAL_SESSION_COOKIE, PRIVATE_HEADERS, personalSessionBinding } from "../../../employment/route-utils";
+import { PERSONAL_SESSION_COOKIE, PRIVATE_HEADERS, personalSessionBinding, setEmploymentToken } from "../../../employment/route-utils";
 
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ path?: string[] }> };
@@ -8,7 +8,7 @@ const fail = (status: number) => Response.json({ detail: "security_unavailable" 
 async function handle(request: Request, context: Context) {
   const path = ((await context.params).path ?? []).join("/");
   const allowed = request.method === "GET" ? path === "" || path === "phone" || path === "delete" || path === "delete/reviews" || path === "recovery" || path === "navigation" || path === "profile" || path === "sessions"
-    : request.method === "POST" && /^(passkeys\/(revoke|register\/(options|verify)|verify\/(options|finish))|login-email\/(start|verify)|email\/(start|verify|proof\/(start|verify))|profile|recovery\/(set|remove|phone\/(start|verify))|delete(?:\/reviews(?:\/cancel)?)?|sessions\/(revoke|revoke-one)|phone\/(start|verify|complete|cancel))$/.test(path);
+    : request.method === "POST" && /^(passkeys\/(revoke|register\/(options|verify)|verify\/(options|finish))|login-email\/(start|verify)|email\/(start|verify|proof\/(start|verify))|profile|recovery\/(set|remove|phone\/(start|verify))|delete(?:\/(?:cancel|reviews(?:\/cancel)?))?|sessions\/(revoke|revoke-one)|phone\/(start|verify|complete|cancel))$/.test(path);
   if (!allowed || new URL(request.url).search) return fail(404);
   if (request.headers.get("sec-fetch-site") === "cross-site") return fail(403);
   const origin = personalRequestOrigin(request, true);
@@ -46,8 +46,14 @@ async function handle(request: Request, context: Context) {
         });
       }
       const data=await response.json().catch(()=>null);
-      const codes=new Set(['security_verification_required','security_fresh_login_required','security_method_not_ready','security_verification_failed','security_email_delivery_unavailable','security_recovery_review_required','security_change_not_ready','security_number_unavailable','security_phone_delivery_unavailable','security_change_pending']);
+      const codes=new Set(['security_verification_required','security_fresh_login_required','security_method_not_ready','security_verification_failed','security_email_delivery_unavailable','security_recovery_review_required','security_change_not_ready','security_number_unavailable','security_phone_delivery_unavailable','security_change_pending','security_deletion_review_required','security_deletion_obligations_changed','security_deletion_deadline']);
       return Response.json({detail:codes.has(data?.detail)?data.detail:'security_unavailable'},{status:response.status>=400&&response.status<600?response.status:502,headers:PRIVATE_HEADERS});
+    }
+    if(path==='delete/cancel'){
+      const cookie=response.headers.getSetCookie().find(value=>value.startsWith('shida_dashboard_session='));
+      const fresh=cookie?.split(';')[0].slice('shida_dashboard_session='.length);
+      if(!fresh||!/^[A-Za-z0-9_-]{32,128}$/.test(fresh))return fail(502);
+      await setEmploymentToken(fresh);
     }
     return Response.json(await response.json(), {headers: PRIVATE_HEADERS});
   } catch { return fail(503); }
