@@ -2,13 +2,25 @@ import {afterEach,describe,expect,it,vi} from 'vitest';
 import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {listPublicSchools,getPublicSchool} from '../app/services/shida/schools';
-import {SchoolEntry} from '../app/components/shida/school-entry';
+import {SchoolEntry, schoolEntryMetadata} from '../app/components/shida/school-entry';
 import {SchoolDetail} from '../app/components/shida/school-detail';
 
 const school={school_ref:'SCH_ABC12345',name:'Synthetic Kindergarten',school_type_label:'Kindergarten',city:'Kinshasa',commune:'Gombe',description:'Public description',verification_label:'School identity and authority reviewed by SHIDA'};
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 
 describe('reviewed School pages',()=>{
+  it.each(['en','fr','ln','sw'] as const)('keeps branding, preparation and canonical Business entry in %s', (locale)=>{
+    const fetchMock=vi.fn();vi.stubGlobal('fetch',fetchMock);
+    const html=renderToStaticMarkup(createElement(SchoolEntry,{locale,listing:{kind:'ready',items:[],nextPage:null}}));
+    expect(html).toContain('lang="ln">Likita malamu');
+    expect(html).toContain('ya kelasi na SHIDA.');
+    expect(html).toContain(`https://business.nihiloba.com/?lang=${locale}`);
+    expect(html).toContain('2026');
+    expect(html).not.toContain('<form');
+    expect(html).not.toContain('school-entry-breadcrumb');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(schoolEntryMetadata(locale).alternates?.canonical).toBe(`${locale==='en'?'':`/${locale}`}/shida/ecole`);
+  });
   it('reads only the public projection without caching',async()=>{
     const fetchMock=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({items:[school],next_page:null})))
       .mockResolvedValueOnce(new Response(JSON.stringify(school)));
