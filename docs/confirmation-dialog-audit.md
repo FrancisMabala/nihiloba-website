@@ -18,7 +18,7 @@ Candidate profile archive/draft removal; personal job-offer draft removal; Wenze
 Validation: candidate browser suite 31 passed; personal-offer browser suite 8 passed; basket failure checks in all four languages passed; service template archive retry and unsaved-form preservation passed. Production build and affected lint passed. Business component has 7 focused unit/integration tests and passed production build/type checks.
 
 ## Remaining batches (not completed)
-The audit finds native dialogs in Restaurant checkout/guest/counter/intake/daily/inventory/money/service/seller workspace, Services brief/revision/bill/finance/management, and the shared `restaurant-work` navigation guard. Existing custom Wenze confirmation hooks also need migration: quick-sell, stock/sales adjustments, product import and product lifecycle. Business still has restaurant operational, Services and school confirmations beyond table QR operations.
+The audit finds native dialogs in Restaurant checkout/guest/counter/intake/daily/inventory/money/service/seller workspace, Services brief/bill/finance/management, and the shared `restaurant-work` navigation guard. Existing custom Wenze confirmation hooks also need migration: quick-sell, stock/sales adjustments, product import and product lifecycle. Business still has restaurant operational, Services and school confirmations beyond table QR operations.
 
 The synchronous `leaveWork()` event contract needs a coordinated asynchronous migration across callers. Do not replace it with an immediately resolved boolean or monkey-patch window.confirm. Preserve browser `beforeunload` protection for tab closure/reload: browsers control that native prompt and do not allow a custom modal there.
 
@@ -32,3 +32,6 @@ Repeat audit: `rg -n 'window\.(confirm|alert|prompt)\s*\(' app` and inspect bare
 - Existing candidate and personal-offer Playwright configurations remain unchanged.
 
 Browser tests use isolated synthetic route responses, never production mutations. No dependency installation, backend change or migration is part of this batch. Generated Playwright evidence is retained under ignored test-results; existing unrelated outputs are untouched.
+
+## Follow-up: Services request editor
+Back from a modified published-request editor now uses the shared amber confirmation. Dismiss keeps edits; confirming discards only local edits, without deleting or revising the saved request. Pending submissions remain protected. All four locale browser tests exercise dismissal, leaving, reopening the original content, and the existing reviewed revision/retry flow. Affected lint and the webpack production build passed. Default Turbopack cannot resolve this checkout's shared node_modules junction; the established webpack command above is used without installing duplicate dependencies.

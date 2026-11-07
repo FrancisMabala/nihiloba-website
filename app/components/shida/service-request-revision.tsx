@@ -7,12 +7,15 @@ import {requestWords} from "../../lib/services-request-copy";
 import {revisionWords} from "../../lib/services-revision-copy";
 import {useWorkDraft, dateText} from "../../lib/restaurant-work";
 import {ServiceReviewedBrief} from "./service-reviewed-brief";
+import {useConfirmation} from './confirmation-dialog';
+import {leaveFormConfirmation} from '../../lib/confirmation-actions';
 
 type Preview = {posted_ref: string; revision: number; content: BriefContent; summary: BriefContent; summary_digest: string};
 export function ServiceRequestRevision({binding, locale, request, onDenied, onBack, onSaved}: {
   binding: string; locale: ServiceLocale; request: PostedRequest; onDenied: () => void; onBack: () => void; onSaved: () => void;
 }) {
   const t = requestWords(locale), r = revisionWords(locale);
+  const {request:ask,confirmation}=useConfirmation(locale),leave=leaveFormConfirmation[locale];
   const [content, setContent] = useState<BriefContent | null>(null), [preview, setPreview] = useState<Preview | null>(null);
   const [busy, setBusy] = useState(false), [pending, setPending] = useState<string | null>(null);
   const [message, setMessage] = useState(""), [blocked, setBlocked] = useState(false), [reload, setReload] = useState(0);
@@ -60,11 +63,12 @@ export function ServiceRequestRevision({binding, locale, request, onDenied, onBa
     } finally {lock.current = false; if (alive.current) setBusy(false);}
   }
   function back() {
-    if ((dirty || pending) && !window.confirm(t.leave)) return;
+    if (busy || pending) return;
+    if (dirty) {ask({title:leave.title,description:leave.description,confirmLabel:leave.action,severity:'warning',onConfirm:()=>callbacks.current.onBack()});return;}
     callbacks.current.onBack();
   }
   return <section className="svc-request" aria-label={r.title}>
-    <h2>{r.title}</h2><p>{r.warning}</p>
+    {confirmation}<h2>{r.title}</h2><p>{r.warning}</p>
     <p>{t.expires} {dateText(request.expires_at, locale, "Africa/Kinshasa")} · Kinshasa</p>
     {message && <p role="status">{message}</p>}
     {!content && !message && <p role="status">{t.loading}</p>}
