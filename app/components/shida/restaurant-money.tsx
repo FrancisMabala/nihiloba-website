@@ -44,7 +44,7 @@ export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assi
  const [bill,setBill]=useState<Bill|null>(null),[methods,setMethods]=useState<Method[]>([]),[receipt,setReceipt]=useState<Receipt|null>(null);
  const [kind,setKind]=useState<Kind>('receipt'),[methodRef,setMethodRef]=useState(''),[currency,setCurrency]=useState<Currency|''>(''),[amount,setAmount]=useState(''),[manualChange,setChange]=useState(''),[target,setTarget]=useState(''),[order,setOrder]=useState(''),[reason,setReason]=useState('');
  const [pending,setPending]=useState<Pending|null>(null),[busy,setBusy]=useState(false),[fresh,setFresh]=useState(false),[message,setMessage]=useState('');
- useWorkDraft(!!pending||busy,t('uncertain'));
+ useWorkDraft(!!pending||busy,t('uncertain'),locale);
  const live=useRef(true),epoch=useRef(0),lock=useRef(false);
  const clear=useCallback(()=>{epoch.current++;setBill(null);setMethods([]);setReceipt(null);setPending(null);setFresh(false);setMethodRef('');setCurrency('');setAmount('');setChange('');setTarget('');setOrder('');setReason('');},[]);
  const lost=useCallback((e:unknown)=>{if(e instanceof DashboardApiError&&[401,403,404].includes(e.status)){clear();setMessage(t('stale'));return true;}return false;},[clear,t]);

@@ -35,7 +35,7 @@ export function RestaurantOrderScreen({path,binding,locale,timezone,onFailure,on
  const detailRef=detail?.order_ref;
  useEffect(()=>{if(detailRef)document.querySelector('.rst-order-detail')?.scrollIntoView({block:'start'});},[detailRef]);
  const selected=useRef<Order|null>(null), failure=useRef(onFailure), selection=useRef(0), refreshNow=useRef(()=>{});
- useWorkDraft(!!api.pending,t('discard'));
+ useWorkDraft(!!api.pending,t('discard'),locale);
  useEffect(()=>{failure.current=onFailure;selected.current=detail;},[onFailure,detail]);
  useEffect(()=>{let disposed=false;let lock:WakeLockSentinel|null=null;
   async function acquire(){if(!awake || document.hidden || !navigator.wakeLock)return;try{const result=await navigator.wakeLock.request('screen');if(disposed || document.hidden){await result.release();return;}lock=result;setAwakeActive(!result.released);result.addEventListener('release',()=>{if(!disposed)setAwakeActive(false);});}catch{if(!disposed)setAwakeActive(false);}}

@@ -31,7 +31,7 @@ function BillBranding({base,binding,locale,onDenied,onProfile}:{base:string;bind
  const [settings,setSettings]=useState<Settings|null>(null),[name,setName]=useState(""),[accent,setAccent]=useState("slate"),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[reload,setReload]=useState(0),[pending,setPending]=useState<string|null>(null);
  const lock=useRef(false),alive=useRef(true),denied=useRef(onDenied);
  useEffect(()=>{denied.current=onDenied;},[onDenied]);
- useWorkDraft(pending!==null||!!settings&&(name!==(settings.display_name??"")||accent!==settings.accent),ui.leave);
+ useWorkDraft(pending!==null||!!settings&&(name!==(settings.display_name??"")||accent!==settings.accent),ui.leave,locale);
  useEffect(()=>{
   alive.current=true;let active=true;const controller=new AbortController();
   void fetch(`${base}/transactions/bill-presentation`,{credentials:"include",cache:"no-store",signal:controller.signal,headers:{Accept:"application/json","X-Shida-Session":binding}}).then(async response=>{
@@ -64,7 +64,7 @@ function BillBranding({base,binding,locale,onDenied,onProfile}:{base:string;bind
  const dirty=name!==(settings.display_name??"")||accent!==settings.accent;
  return <section className="svc-branding" aria-label={p.identity}>
   <form className="svc-branding-controls svc-editor-card" onSubmit={event=>void save(event)}>
-   <p className="svc-kicker">{profileCopy[locale].issuer}</p><h3>{p.identity}</h3><div className="svc-branding-profile"><span aria-hidden="true">{settings.fallback_display_name.slice(0,1)}</span><div><strong>{settings.fallback_display_name}</strong><p>{profileCopy[locale].profile}</p></div>{onProfile&&<button type="button" disabled={busy||!!pending} onClick={()=>{if(leaveWork())onProfile();}}>{profileCopy[locale].edit} →</button>}</div><p>{t.help}</p>
+   <p className="svc-kicker">{profileCopy[locale].issuer}</p><h3>{p.identity}</h3><div className="svc-branding-profile"><span aria-hidden="true">{settings.fallback_display_name.slice(0,1)}</span><div><strong>{settings.fallback_display_name}</strong><p>{profileCopy[locale].profile}</p></div>{onProfile&&<button type="button" disabled={busy||!!pending} onClick={async ()=>{if((await leaveWork()))onProfile();}}>{profileCopy[locale].edit} →</button>}</div><p>{t.help}</p>
    <fieldset disabled={busy||pending!==null}><label>{t.name}<input maxLength={120} placeholder={settings.fallback_display_name} value={name} onChange={event=>setName(event.target.value)}/></label>
     <h3>{p.look}</h3><fieldset className="svc-accent-options"><legend>{t.accent}</legend>{(Object.keys(accents) as (keyof typeof accents)[]).map(color=><label key={color} className={accent===color?"is-selected":""}><input type="radio" name="bill-accent" value={color} checked={accent===color} onChange={()=>setAccent(color)}/><span aria-hidden="true" style={{background:accents[color]}}>{accent===color?"✓":""}</span><strong>{t[color]}</strong></label>)}</fieldset>
    </fieldset>

@@ -1,4 +1,5 @@
 "use client";
+import {fileValidation} from '../../lib/file-validation';
 import {useEffect, useRef, useState} from "react";
 import {serviceCategoryExperience, type ServiceLocale} from "../../lib/services-category-experience";
 import categories from "../../lib/services-category-experience.json";
@@ -8,6 +9,7 @@ import {serviceRequest, ServiceRequestError, isCustomerBrief, requestBase,
   type BriefContent, type CustomerBrief, type BriefDocument, type CustomerBranch} from "../../lib/services-request-browser";
 import {useWorkDraft, dateText} from "../../lib/restaurant-work";
 import "./service-request-workspace.css";
+import {useConfirmation} from "./confirmation-dialog";
 
 type Completion = {posted_ref?: string; request_ref?: string; brief_ref?: string};
 type Props = {
@@ -28,6 +30,7 @@ export function ServiceBriefEditor(props: Props) {
 type Destination = {offering_ref: string; category: string; name: string; branch_coverage_specified: boolean; customer_branches: CustomerBranch[]};
 function BriefEditor({binding, locale, reference, direct, directRef, branchChoice, onDenied, onSaved, onComplete}: Props) {
   const t = requestWords(locale), c = comparisonWords(locale);
+  const {request:confirmAction,confirmation}=useConfirmation(locale);
   const [brief, setBrief] = useState<CustomerBrief | null>(null);
   const [content, setContent] = useState<BriefContent>({category: direct?.category ?? "", language: locale,
     ...(direct || directRef ? {direct_offering_ref: direct?.offering_ref ?? directRef} : {})});
@@ -43,7 +46,7 @@ function BriefEditor({binding, locale, reference, direct, directRef, branchChoic
   const alive = useRef(true), lock = useRef(false), callbacks = useRef({onDenied, onSaved, onComplete});
   useEffect(() => { callbacks.current = {onDenied, onSaved, onComplete}; }, [onDenied, onSaved, onComplete]);
   const dirty = JSON.stringify(normalize(content)) !== JSON.stringify(normalize(brief?.content ?? {category: "", language: locale}));
-  useWorkDraft((dirty && editable(brief)) || !!pending, t.leave);
+  useWorkDraft((dirty && editable(brief)) || !!pending, t.leave,locale);
   useEffect(() => {
     alive.current = true;
     const update = () => setOnline(navigator.onLine);
@@ -153,24 +156,30 @@ function BriefEditor({binding, locale, reference, direct, directRef, branchChoic
     } catch {if (alive.current) setMessage(t.unavailable);}
     finally {lock.current = false; if (alive.current) setBusy(false);}
   }
-  function reloadSaved() {
-    if (!brief && !reference) return;
-    if (dirty && !window.confirm(t.leave)) return;
-    setConflict(false); setPending(null); setMessage(""); setReviewing(false);
-    if (reference) {setLoading(true); setReload(value => value + 1);}
-    else if (brief) {
-      setLoading(true);
-      void refreshDocuments(brief.brief_ref).catch(() => {if (alive.current) setLoadError(true);})
-        .finally(() => {if (alive.current) setLoading(false);});
-    }
+  async function reloadSaved() {
+    const ref=reference??brief?.brief_ref;
+    if (!ref || lock.current) return;
+    const reloadCurrent=async()=>{
+      if(lock.current)throw new Error('busy');
+      lock.current=true;setBusy(true);
+      try{
+        await refreshDocuments(ref);
+        if(alive.current){setConflict(false);setPending(null);setMessage("");setReviewing(false);setLoadError(false);}
+      }catch(error){
+        if(error instanceof ServiceRequestError && [401,403,404].includes(error.status)&&alive.current)deny();
+        throw error;
+      }finally{lock.current=false;if(alive.current)setBusy(false);}
+    };
+    if(dirty){confirmAction({title:t.reload,description:t.leave,confirmLabel:t.reload,severity:'warning',onConfirm:reloadCurrent});}
+    else try{await reloadCurrent();}catch{if(alive.current)setMessage(t.unavailable);}
   }
   if (denied) return <p role="alert">{t.denied}</p>;
   if (loading) return <p role="status">{t.loading}</p>;
-  if (loadError) return <section><p role="alert">{t.unavailable}</p><button onClick={reloadSaved}>{t.retry}</button></section>;
+  if (loadError) return <section>{confirmation}<p role="alert">{t.unavailable}</p><button onClick={reloadSaved}>{t.retry}</button></section>;
   const status = brief ? ({DRAFT: t.draft, REVIEWED: t.reviewed, PUBLISHED: t.published, CLOSED: t.closed, EXPIRED: t.expired})[brief.status] : t.draft;
   const disabled = busy || !!pending || conflict || !online;
   const selectedCategory = serviceCategoryExperience(content.category, locale);
-  return <section className="svc-request" lang={locale} aria-label={t.title}>
+  return <section className="svc-request" lang={locale} aria-label={t.title}>{confirmation}
     <header><span className="svc-request-tag">{status}</span><h1>{t.title}</h1>
       {(destination || direct) && <p>{destination?.name ?? direct?.name}</p>}
       {editable(brief) && <><p>{t.expiry}</p>{brief && <p>{t.expires} {dateText(brief.expires_at, locale, "Africa/Kinshasa")} · Kinshasa</p>}</>}
@@ -216,7 +225,7 @@ function BriefEditor({binding, locale, reference, direct, directRef, branchChoic
         <section className="svc-brief-card" aria-label={t.pdf}><h2>{t.pdf}</h2>
           {brief?.pdf_uploads_enabled === true ? <><p>{t.pdfHelp}</p><p>{t.retention}</p></> : <p>{t.pdfDisabled}</p>}
           {brief?.pdf_uploads_enabled !== true ? null : dirty ? <p>{t.save}</p> : <fieldset disabled={disabled}>
-            <label>{t.pdf}<input type="file" accept="application/pdf,.pdf" onChange={event => {setFile(event.target.files?.[0] ?? null); setMessage("");}}/></label>
+            <label>{t.pdf}<input type="file" accept="application/pdf,.pdf" onChange={event => {const selected=event.target.files?.[0]??null;const invalid=selected?fileValidation(selected,locale,10,["application/pdf"],"PDF"):"";setFile(invalid?null:selected);setMessage(invalid);}}/></label>
             <button type="button" disabled={!file || file.size > 10 * 1024 * 1024} onClick={() => file && void run({
               path: `briefs/${brief.brief_ref}/document-upload`, body: file, kind: "document",
               headers: {"Content-Type": "application/pdf", "X-Operation-Id": crypto.randomUUID(), "X-Brief-Revision": String(brief.revision)},

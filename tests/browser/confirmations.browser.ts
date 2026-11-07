@@ -1,6 +1,21 @@
 import {test,expect} from '@playwright/test';
 import {wenzeCartCopy} from '../../app/components/shida/wenze-cart-copy';
 import {confirmationCopy} from '../../app/components/shida/confirmation-dialog';
+import {productFixture} from './wenze-products-fixture';
+
+for(const width of [390,1440])test(`Wenze failed archive stays open and prevents uncertain repeat ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:900});
+ const fixture=await productFixture(page);let writes=0;
+ await page.route('**/lifecycle/archive/**',route=>{writes++;return route.fulfill({status:503,json:{detail:'unavailable'}});});
+ page.on('dialog',()=>{throw new Error('Native browser dialog');});
+ await page.goto(fixture.url);await page.getByRole('button',{name:'Manage',exact:true}).click();
+ await page.locator('.wz-more-actions summary').click();await page.locator('.wz-more-actions').getByRole('button',{name:'Archive',exact:true}).click();
+ const modal=page.getByRole('dialog');await expect(modal).toBeVisible();
+ await modal.getByRole('button',{name:'Archive',exact:true}).click();await expect(modal.getByRole('alert')).toBeVisible();
+ expect(writes).toBe(1);await modal.getByRole('button',{name:'Archive',exact:true}).click();expect(writes).toBe(1);
+ await page.screenshot({path:`test-results/confirmations/wenze-failure-${width}.png`,fullPage:true});
+ await modal.getByRole('button',{name:'Go back'}).click();await expect(page.locator('.wp-product-summary')).toContainText('Test cotton shirt');
+});
 for(const locale of ['en','fr','ln','sw'] as const)test(`basket clear keeps failed action visible ${locale}`,async({page})=>{
  const t=wenzeCartCopy[locale];let deletes=0;
  const cart={reference:'CART_test',status:'active',currency:'CDF',version:2,item_count:1,seller_count:1,product_subtotal:'100',delivery_total:null,grand_total:null,expires_at:'2030-01-01T00:00:00Z',seller_groups:[{store_reference:'S_test',store_name:'Fixture shop',subtotal:'100',currency:'CDF',fulfillment_method:null,delivery_fee:null,delivery_fee_status:null,items:[{reference:'I_test',product_reference:'P_test',name:'Fixture item',variant:null,quantity:1,unit_price:'100',line_total:'100',currency:'CDF',image:null,product_url:null}]}]};

@@ -26,7 +26,7 @@ export function ServicesCounterAdjustments({sale,offerings,base,binding,locale,d
  const busy=command.busy||!!command.pending||!!review;
  useEffect(()=>{onBusy(busy);return()=>onBusy(false);},[busy,onBusy]);
  useEffect(()=>{if(command.status==="denied")onDenied();},[command.status,onDenied]);
- useWorkDraft(!!amount||customer!==(sale.customer_name??"")||JSON.stringify(lines)!==JSON.stringify(sale.lines)||!!command.pending,a.review);
+ useWorkDraft(!!amount||customer!==(sale.customer_name??"")||JSON.stringify(lines)!==JSON.stringify(sale.lines)||!!command.pending,a.review,locale);
  const service=offerings.find(o=>o.public_ref===offering),pkg=service?.packages.find(p=>p.public_ref===pack);
  const credits=sale.lines.reduce((sum,l)=>sum+counterCents(l.amount),BigInt(0))-counterCents(sale.total);
  const total=lines.reduce((sum,l)=>sum+counterCents(l.amount),BigInt(0))-credits;

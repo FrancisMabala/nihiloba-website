@@ -11,7 +11,7 @@ import {soloCopy} from '../../lib/restaurant-solo-copy';
 export function RestaurantQuickQr({path,binding,locale,hours,onOpen,onFailure}:{path:string;binding:string;locale:RestaurantLocale;hours:Hours|null;onOpen:(tab:string)=>void;onFailure:(e:unknown)=>void}){
  const c=soloCopy[locale],api=useWorkRequest(binding,onFailure);
  const [config,setConfig]=useState<Configuration|null>(null),[review,setReview]=useState(false),[fresh,setFresh]=useState(false);
- useWorkDraft(review||!!api.pending,workText(locale,'discard'));
+ useWorkDraft(review||!!api.pending,workText(locale,'discard'),locale);
  useEffect(()=>{let active=true;void request(`${path}/order-configuration`,{},binding).then(value=>{if(active){setConfig(value as Configuration);setFresh(true);}}).catch(onFailure);const stale=()=>setFresh(false);window.addEventListener('offline',stale);window.addEventListener('focus',stale);return()=>{active=false;window.removeEventListener('offline',stale);window.removeEventListener('focus',stale);};},[path,binding]); // eslint-disable-line react-hooks/exhaustive-deps
  const schedule={weekly_periods:hours?.schedule?.windows??[],minimum_lead_minutes:0,cutoff_minutes:0,allow_tomorrow:false};
  const enabled=config?.pickup?.enabled??false;

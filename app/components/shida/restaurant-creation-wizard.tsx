@@ -20,7 +20,7 @@ export function RestaurantCreationWizard({binding,locale,operationKey,onClose,on
   const [step,setStep]=useState(0),[busy,setBusy]=useState(true),[error,setError]=useState(''),[blocked,setBlocked]=useState(false),[confirmed,setConfirmed]=useState(false),[saved,setSaved]=useState(false);
   const lock=useRef(false),alive=useRef(true),heading=useRef<HTMLHeadingElement>(null);
   const dirty=!!progress && JSON.stringify(values)!==JSON.stringify(progress.fields);
-  useWorkDraft(dirty,t('discard'));
+  useWorkDraft(dirty,t('discard'),locale);
   const base='personal/restaurants/onboarding';
   const storageKey=`restaurant-onboarding:${binding}`;
   function accept(next:Progress){setProgress(next);setValues(next.fields);setBlocked(false);setConfirmed(false);try{sessionStorage.setItem(storageKey,next.draft_ref);}catch{/* Progress remains recoverable from the authenticated backend. */}}
@@ -65,7 +65,7 @@ export function RestaurantCreationWizard({binding,locale,operationKey,onClose,on
           {step===1&&<><p>{c.location}</p><div className="rc-fields">{field('timezone_name')}<label><span>{t('address_visibility')}</span><select value={String(values.address_visibility??'broad')} onChange={e=>change('address_visibility',e.target.value)}><option value="broad">{t('broad')}</option><option value="public">{t('public')}</option></select></label>{field('public_address')}{field('landmark')}</div><label className="rc-check"><input type="checkbox" checked={values.confirm_location===true} required={values.address_visibility==='public'} onChange={e=>change('confirm_location',e.target.checked)}/><span>{c.consent}</span></label><p className="rc-notice">{c.later}</p></>}
           {step===2&&<><div className="rc-review">{[identity,location].map((keys,i)=><section key={i}><h3>{c.steps[i]} <button type="button" onClick={()=>setStep(i)}>{c.edit}</button></h3><dl>{keys.map(key=><div key={key}><dt>{label(key)}</dt><dd>{key==='confirm_location'?(values[key]===true?'✓':'—'):['food_business_type','address_visibility'].includes(key)?t(String(values[key]??'')):String(values[key]||'—')}</dd></div>)}</dl></section>)}</div><p className="rc-notice">{c.private}</p><label className="rc-check"><input type="checkbox" required checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/><span>{c.confirm}</span></label></>}
         </fieldset>
-        <footer><button type="button" disabled={busy} onClick={()=>{if(step>0&&!blocked)setStep(step-1);else if(leaveWork())onClose();}}>{step>0&&!blocked?c.back:c.cancel}</button><button className="button button-primary" disabled={busy||blocked||step===2&&!confirmed}>{busy?t('saving'):step===2?c.create:c.next} <span aria-hidden="true">→</span></button></footer>
+        <footer><button type="button" disabled={busy} onClick={async ()=>{if(step>0&&!blocked)setStep(step-1);else if((await leaveWork()))onClose();}}>{step>0&&!blocked?c.back:c.cancel}</button><button className="button button-primary" disabled={busy||blocked||step===2&&!confirmed}>{busy?t('saving'):step===2?c.create:c.next} <span aria-hidden="true">→</span></button></footer>
         <p role="status" className="rc-progress">{saved?c.saved:c.resume}</p>
       </form>}
     </div>

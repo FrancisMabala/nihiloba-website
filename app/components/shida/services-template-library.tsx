@@ -52,7 +52,7 @@ type Offering={public_ref:string;service_name:string;category:string;description
 type LibraryProps={base:string;binding:string;locale:Locale;kind:Kind;offerings?:Offering[];onUse?:()=>void};
 export function ServicesTemplates({quoteAllowed,billAllowed,...props}:Omit<LibraryProps,"kind">&{quoteAllowed:boolean;billAllowed:boolean}){
  const [kind,setKind]=useState<Kind>(quoteAllowed?"quote":"bill");const d=design[props.locale];
- return <div className="svc-templates"><nav className="svc-template-tabs" aria-label={d.title}>{(["quote","bill"] as const).filter(k=>k==="quote"?quoteAllowed:billAllowed).map(k=><button type="button" key={k} aria-pressed={kind===k} onClick={()=>{if(leaveWork())setKind(k);}}>{k==="quote"?d.quotes:d.bills}</button>)}</nav><ServicesTemplateLibrary {...props} kind={kind}/></div>;
+ return <div className="svc-templates"><nav className="svc-template-tabs" aria-label={d.title}>{(["quote","bill"] as const).filter(k=>k==="quote"?quoteAllowed:billAllowed).map(k=><button type="button" key={k} aria-pressed={kind===k} onClick={async ()=>{if((await leaveWork()))setKind(k);}}>{k==="quote"?d.quotes:d.bills}</button>)}</nav><ServicesTemplateLibrary {...props} kind={kind}/></div>;
 }
 type Pending={path:string;method:string;body:Record<string,unknown>;archive:boolean};
 export function ServicesTemplateLibrary(props:LibraryProps){
@@ -69,7 +69,7 @@ function TemplateLibrary({base,binding,locale,kind,offerings=[],onUse}:LibraryPr
  const locked=useRef(false),alive=useRef(true);
  useEffect(()=>{if(selected)form.current?.querySelector<HTMLElement>("h3")?.focus();},[step,selected]);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
- useWorkDraft(!denied&&(!!selected||!!pending),common.leave);
+ useWorkDraft(!denied&&(!!selected||!!pending),common.leave,locale);
  function begin(row?:Template){if(busy||pending)return;setSelected(row??{template_ref:"",kind,name:"",content:{},revision:0,archived:false});setName(row?.name??"");setAmount(String(row?.content.amount??""));setCurrency(String(row?.content.currency??"USD"));setDescription(String(row?.content.pricing_description??""));setDuration(String(row?.content.duration_minutes??""));setLines(row?asLines(row.content.lines):[emptyLine()]);setNotice("");setTerms(String(row?.content.terms??""));setStep(0);setSource("");}
  function content(){return kind==="quote"?{...(amount?{amount:serviceAmount(amount)}:{}),currency,...(terms?{terms}:{}),...(description?{pricing_description:description}:{}),...(duration?{duration_minutes:Number(duration)}:{})}:{currency,lines:lines.map(line=>({label:line.label,amount:serviceAmount(line.amount),private_detail:line.private_detail||null}))};}
  async function run(command:Pending,propagate=false){
@@ -127,7 +127,7 @@ function TemplatePicker({base,binding,locale,kind,targetRef,targetRevision,draft
  const [pending,setPending]=useState<{path:string;body:Record<string,unknown>}|null>(null);
  const lock=useRef(false),alive=useRef(true);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
- useWorkDraft(!denied&&!!pending,common.leave);
+ useWorkDraft(!denied&&!!pending,common.leave,locale);
  const appliedResult=useRef<Record<string,unknown>|null>(null);
  // Refresh the saved draft only after the pending leave guard has been removed.
  useEffect(()=>{if(!pending&&appliedResult.current){const value=appliedResult.current;appliedResult.current=null;onApplied(value);}},[pending,onApplied]);

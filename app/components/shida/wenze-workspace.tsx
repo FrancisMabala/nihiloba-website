@@ -274,8 +274,7 @@ export function WenzeWorkspace({locale,binding}:{locale:WenzeLocale;binding:stri
     });
   }
   async function lifecycle(action: string, entity: Item, path: string) {
-    if (!await confirm(t(action),d(action+"Help"))) return;
-    await run(async () => { const updated = await send(`${path}/lifecycle/${action}`, "POST", { expected_revision: entity.revision }) as Item; if (entity.public_ref.startsWith("WNP_")) { setProduct(updated); await loadProducts(); } else { setStore(updated); await reloadStores(); } setNotice(d("savedNotice")); });
+    await run(async () => {await confirm(t(action),d(action+"Help"),async()=>{const updated = await send(`${path}/lifecycle/${action}`, "POST", { expected_revision: entity.revision }) as Item; if (entity.public_ref.startsWith("WNP_")) setProduct(updated); else {setStore(updated);setStores(old=>old.map(row=>row.public_ref===updated.public_ref?updated:row));}setNotice(d("savedNotice"));});});
   }
   async function selectProductTab(tab:string){
     if(!await leaveWork())return;setError("");setNotice("");setProductDirty(false);setEditorDirty(false);setProductTab(tab);

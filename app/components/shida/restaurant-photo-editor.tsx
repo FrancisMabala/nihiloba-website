@@ -20,7 +20,7 @@ export function RestaurantPhotoEditor({ path, binding, locale, establishmentName
   const [message, setMessage] = useState<PhotoCopyKey | null>(null), [confirmed, setConfirmed] = useState(false), [removeConfirmed, setRemoveConfirmed] = useState(false);
   const [blocked, setBlocked] = useState(false), [uncertain, setUncertain] = useState(false), [started, setStarted] = useState(false), [removalPending, setRemovalPending] = useState(false);
   const operation = useRef<string | null>(null), controller = useRef<AbortController | null>(null), alive = useRef(false), lock = useRef(false), loadGeneration = useRef(0);
-  useWorkDraft(Boolean(file) && upload?.status !== 'attached' || removalPending, t('discard'));
+  useWorkDraft(Boolean(file) && upload?.status !== 'attached' || removalPending, t('discard'),locale);
   useEffect(() => { alive.current = true; return () => { alive.current = false; controller.current?.abort(); }; }, []);
   useEffect(() => () => { if (localUrl) URL.revokeObjectURL(localUrl); }, [localUrl]);
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);

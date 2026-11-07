@@ -28,7 +28,7 @@ export function RestaurantIntake({path,binding,locale,timezone,onFailure,onOpen}
  const [now,setNow]=useState(0);
  const [config,setConfig]=useState<Configuration|null>(null),[kind,setKind]=useState<Kind>('pickup'),[editing,setEditing]=useState(false),[enabled,setEnabled]=useState(false),[windows,setWindows]=useState<ServiceWindow[]>([]),[areas,setAreas]=useState<Area[]>([]),[fee,setFee]=useState({amount:'',currency:'CDF'}),[review,setReview]=useState(false),[fresh,setFresh]=useState(false),[dirty,setDirty]=useState(false);
  useEffect(()=>{if(editing){editorHeading.current?.focus({preventScroll:true});editorHeading.current?.scrollIntoView({block:'start',behavior:'instant'});}},[editing,kind]);
- useWorkDraft(dirty || review || !!api.pending,t('discard'));
+ useWorkDraft(dirty || review || !!api.pending,t('discard'),locale);
  function fill(value:Configuration,k:Kind){setKind(k);setConfig(value);const saved=value.schedules?.[k];setWeekly(saved?{weekly_periods:saved.weekly_periods,minimum_lead_minutes:saved.minimum_lead_minutes,cutoff_minutes:saved.cutoff_minutes,allow_tomorrow:saved.allow_tomorrow}:emptySchedule());setEnabled(value[k]?.enabled ?? false);setWindows((value[k]?.windows ?? []).map(w=>({starts_at:localInstant(w.starts_at,timezone),ends_at:localInstant(w.ends_at,timezone)})));setAreas(value.delivery?.areas ?? []);setFee(value.delivery?.fee ?? {amount:'',currency:'CDF'});setFresh(true);setReview(false);setDirty(false);}
  async function refresh(recover=true){
   setFresh(false);

@@ -1,4 +1,5 @@
 "use client";
+import {useConfirmation} from "./confirmation-dialog";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { checkoutCopy } from "../../lib/restaurant-checkout-copy";
 import { guestText, type GuestCopyKey } from "../../lib/restaurant-guest-copy";
@@ -24,6 +25,7 @@ type ServicePayment={group:{rounds:{order_ref:string;state:string;currency:'CDF'
 type Menu = Awaited<ReturnType<typeof getRestaurantMenu>>;
 const key = () => crypto.randomUUID();
 export function RestaurantGuest({locale,establishmentRef,tableLocator,menu:initialMenu,selectedItemRef}:{selectedItemRef?:string;locale:RestaurantLocale;establishmentRef:string;tableLocator?:string|null;menu:Menu|null}) {
+  const {request:confirmAction,confirmation}=useConfirmation(locale);
   const t=checkoutCopy[locale], g=(k:GuestCopyKey)=>guestText(locale,k), storage=`restaurant-guest:${establishmentRef}`;
   const proposalRefs=useRef<string[]>([]);
   const [approvalNotice,setApprovalNotice]=useState('');
@@ -147,7 +149,7 @@ export function RestaurantGuest({locale,establishmentRef,tableLocator,menu:initi
     }
     setCode(null);await refresh();
   }
-  async function mutate(action:GuestAction,replay=false):Promise<unknown> {
+  async function mutate(action:GuestAction,replay=false,propagate=false):Promise<unknown> {
     const epoch=generation.current;
     let confirmed=false;
     setPending(action);setMessage("");
@@ -166,12 +168,13 @@ export function RestaurantGuest({locale,establishmentRef,tableLocator,menu:initi
       }
       handleError(e,!confirmed);
       if(action.path.endsWith('/approve')&&e instanceof GuestError&&e.status===409)setMessage(serviceText(locale,'expired'));
+      if(propagate&&!confirmed)throw e;
     }
   }
-  async function work(fn:()=>Promise<void>) {
-    if(lock.current || Date.now()<retryDeadline.current || !navigator.onLine)return;
+  async function work(fn:()=>Promise<void>,propagate=false) {
+    if(lock.current || Date.now()<retryDeadline.current || !navigator.onLine){if(propagate)throw new Error("unavailable");return;}
     lock.current=true;setBusy(true);
-    try {await fn();}catch(e){handleError(e);}finally{lock.current=false;if(mounted.current)setBusy(false);}
+    try {await fn();}catch(e){handleError(e);if(propagate)throw e;}finally{lock.current=false;if(mounted.current)setBusy(false);}
   }
   async function start() {
     await work(async()=>{
@@ -233,7 +236,7 @@ export function RestaurantGuest({locale,establishmentRef,tableLocator,menu:initi
     setBasket(b=>b?{...b,quote:null,quote_ref:null}:null);
   };
   const lines=(list:GuestLine[])=><ul className="rst-basket-lines">{list.map(l=><li key={l.key}><span>{name(l.item_ref)} · {l.quantity ?? l.selected_amount}</span>{l.quantity!==undefined&&<label className="rst-basket-quantity">{t.quantity}<input type="number" min="1" max="1000" step="1" disabled={menuBlocked} value={l.quantity} onChange={e=>changeQuantity(l.key,Number(e.target.value))}/></label>}<button disabled={menuBlocked} onClick={()=>{setSelections(s=>({standalone:s.standalone.filter(x=>x.key!==l.key),plates:s.plates.map(p=>({...p,components:p.components.filter(x=>x.key!==l.key)})).filter(p=>p.components.length)}));setBasket(b=>b?{...b,quote:null,quote_ref:null}:null);}}>{t.remove}</button></li>)}</ul>;
-  return <section id="guest-order" className="rst-checkout rst-guest" lang={locale} aria-label={g("title")}>
+  return <section id="guest-order" className="rst-checkout rst-guest" lang={locale} aria-label={g("title")}>{confirmation}
     <div className="rst-guest-intro"><h2>{restaurantCopy[locale].menu}</h2>{tableLabel&&<p>{g("table")}: {tableLabel}</p>}{!visitRef && (!message || entry) && <p>{!entry ? t.loading : entry.table || windows.length ? g("chooseFirst") : g("browseClosed")}</p>}{entry && <details><summary>{g("title")}</summary><p>{entry.copy.restaurant_guest_privacy || g("privacy")}</p><p>{entry.copy.restaurant_guest_payment || g("payment")}</p></details>}</div>
     {message && <p role="status">{message}</p>}
     {!visitRef && <>{!entry && <button disabled={busy||!!retryAt} onClick={()=>void work(async()=>{try{await readEntry();setMessage("");}catch(e){handleError(e);}})}>{t.refresh}</button>}{entry && ((entry.table||windows.length)?<button disabled={busy||!!retryAt} onClick={()=>void start()}>{selectedCount ? g("continueOrder") : g("start")}</button>:<p role="status">{t.noWindow}</p>)}</>}
@@ -278,8 +281,8 @@ export function RestaurantGuest({locale,establishmentRef,tableLocator,menu:initi
         <p>{g("until")}: {dateText(visit.order_until,locale)} · {g("access")}: {dateText(visit.access_until,locale)}</p>
       </section>}
       {(!basket||step==="summary") && <button disabled={blocked} onClick={()=>void work(async()=>{await refresh();await readEntry();await mutate(guestAction(`/visits/${visitRef}/baskets`,"POST",{operation_key:key()}));})}>{g("more")}</button>}
-      <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>{if(window.confirm(g("closeWarning")))void work(async()=>{await mutate(guestAction(`/visits/${visitRef}/close`,"POST"));});}}>{g("close")}</button>
-      <button disabled={busy||!!pending||!!retryAt} onClick={()=>{if(window.confirm(g("forgetWarning")))void work(async()=>{invalidate();forgettingRef.current=true;setForgetting(true);proposalRefs.current=[];setApprovalNotice('');setProposals(null);setServiceGroup(null);setServicePayment(null);setDeclined([]);setVisit(null);setBasket(null);setSelections(emptyGuestSelections());setPreference("");setWindowRef("");setLabels({});setCode(null);await mutate(guestAction(`/visits/${visitRef}`,"DELETE"));});}}>{g("forget")}</button>
+      <button disabled={busy||!!pending||!fresh||!!retryAt} onClick={()=>{const action=guestAction(`/visits/${visitRef}/close`,"POST");confirmAction({title:g("close"),description:g("closeWarning"),confirmLabel:g("close"),severity:"warning",onConfirm:()=>work(async()=>{await mutate(action,false,true);},true)});}}>{g("close")}</button>
+      <button disabled={busy||!!pending||!!retryAt} onClick={()=>{const action=guestAction(`/visits/${visitRef}`,"DELETE");confirmAction({title:g("forget"),description:g("forgetWarning"),confirmLabel:g("forget"),severity:"danger",onConfirm:()=>work(async()=>{invalidate();forgettingRef.current=true;setForgetting(true);proposalRefs.current=[];setApprovalNotice('');setProposals(null);setServiceGroup(null);setServicePayment(null);setDeclined([]);setVisit(null);setBasket(null);setSelections(emptyGuestSelections());setPreference("");setWindowRef("");setLabels({});setCode(null);await mutate(action,false,true);},true)});}}>{g("forget")}</button>
     </>}
     {(step==="edit" || selectedCount>0) && <a className="rst-sticky-basket" href="#basket-review"><span aria-live="polite">{t.basket} · {selectedCount}</span><strong>{!entry ? (message?t.failed:t.loading) : basket?.quote ? `${basket.quote.order_total} ${basket.quote.currency}` : visitRef ? t.quote : entry && (entry.table || windows.length) ? g("continueOrder") : t.noWindow}</strong></a>}
   </section>;
