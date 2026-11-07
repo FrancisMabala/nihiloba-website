@@ -1,4 +1,4 @@
-﻿import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { managementNavigation } from './restaurant-management-navigation';
 import { managementCopy } from '../../app/lib/restaurant-management-copy';
 
@@ -19,6 +19,7 @@ async function fixture(page:Page, kind:'malewa'|'restaurant'|'fast_food'|'cafe'=
   if(path.endsWith('/menu/items'))return respond({revision:at,currency:'CDF',result:{items:[{public_ref:'RMI_food',name:'Menu portion',pricing_model:'UNIT_PRICED',availability:'available'}],total:1,page:1,page_size:50}});
   if(path.endsWith('/inventory'))return respond({tracking_active:true,total:stock.length,items:stock});
   if(path.endsWith('/history')){const ref=path.match(/(RII_[^/]+)\/history$/)?.[1]??'';return respond({entries:movements[ref]??[],next_before_id:null});}
+  if(path.endsWith('/archive')&&request.method()==='POST'){const body=request.postDataJSON();writes.push({body,path});if(seen.has(body.operation_key))return respond(seen.get(body.operation_key));const ref=path.match(/(RII_[^/]+)\/archive$/)?.[1]??'';const row=stock.find(entry=>entry.item_ref===ref)!;if(body.expected_revision!==row.revision)return respond({detail:'restaurant_stale'},409);row.status='archived';row.revision++;seen.set(body.operation_key,row);if(uncertain){uncertain=false;return route.abort();}return respond(row);}
   if(path.endsWith('/inventory/items')&&request.method()==='POST'){const body=request.postDataJSON();writes.push({body,path});if(seen.has(body.operation_key))return respond(seen.get(body.operation_key));const made=item('RII_created',body.name,body.stock_kind,body.unit,Number(body.opening_quantity),body.low_stock_threshold===null?null:Number(body.low_stock_threshold));stock.push(made);seen.set(body.operation_key,made);return respond(made);}
   if(path.endsWith('/kind')&&request.method()==='POST'){const body=request.postDataJSON();writes.push({body,path});if(seen.has(body.operation_key))return respond(seen.get(body.operation_key));const ref=path.match(/(RII_[^/]+)\/kind$/)?.[1]??'';const row=stock.find(entry=>entry.item_ref===ref)!;if(body.expected_revision!==row.revision)return respond({detail:'restaurant_stale'},409);row.stock_kind=body.stock_kind;row.revision++;seen.set(body.operation_key,row);return respond(row);}
   if(path.endsWith('/movements')&&request.method()==='POST'){const body=request.postDataJSON();writes.push({body,path});if(seen.has(body.operation_key))return respond(seen.get(body.operation_key));const ref=path.match(/(RII_[^/]+)\/movements$/)?.[1]??'';const row=stock.find(entry=>entry.item_ref===ref)!;if(stale){stale=false;row.balance_revision++;return respond({detail:'restaurant_stale'},409);}if(body.expected_revision!==row.balance_revision)return respond({detail:'restaurant_stale'},409);const before=Number(row.on_hand);const after=body.action==='count'?Number(body.amount):before+(body.action==='waste'?-1:1)*Number(body.amount);row.on_hand=`${after}.000`;row.available=row.on_hand;row.balance_revision++;row.low_stock=row.low_stock_threshold!==null&&after<=Number(row.low_stock_threshold);row.last_changed_at=at;const movement={movement_ref:`RIM_${row.balance_revision}`,kind:body.action==='count'?'count_correction_out':body.action,quantity_effect:`${after-before}.000`,unit:row.unit,created_at:at,balance_after:row.on_hand};movements[ref]=[movement,...(movements[ref]??[])];seen.set(body.operation_key,row);if(uncertain){uncertain=false;return route.abort();}return respond(row);}
@@ -55,3 +56,19 @@ test('older stock is labelled only after the seller classifies it',async({page})
 });
 
 
+
+for(const [locale,width,label,back] of [['fr',390,'Archiver','Revenir'],['en',1440,'Archive','Go back'],['ln',320,'Bomba na lisolo','Zonga'],['sw',820,'Hifadhi zamani','Rudi']] as const)test(`archive confirmation ${locale} ${width}`,async({page})=>{
+ page.on('dialog',()=>{throw new Error('Unexpected native dialog');});
+ await page.setViewportSize({width,height:900});const state=await fixture(page,'cafe');
+ await page.goto(`/${locale}/shida/seller/restaurants`);await managementNavigation(page,managementCopy[locale].stock);
+ const stock=page.locator('.rst-stock');await stock.locator('.rst-stock-row').first().click();
+ await stock.locator('.rst-stock-archive').click();const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
+ await expect(dialog.getByRole('button',{name:back,exact:true})).toBeFocused();
+ await page.screenshot({path:`test-results/confirmations/stock-archive-${locale}-${width}.png`,fullPage:true});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);expect(state.writes).toHaveLength(0);
+ await stock.locator('.rst-stock-archive').click();state.makeUncertain();await dialog.getByRole('button',{name:label,exact:true}).click();
+ await expect(dialog.getByRole('alert')).toBeVisible();await expect(dialog).toBeVisible();
+ await dialog.getByRole('button',{name:label,exact:true}).click();await expect(dialog).toHaveCount(0);
+ expect(state.writes).toHaveLength(2);expect(state.writes[0]).toEqual(state.writes[1]);expect(state.stock[0].status).toBe('archived');
+});

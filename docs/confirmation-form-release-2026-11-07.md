@@ -11,3 +11,9 @@ Services financial forms distinguish unsaved edits from saved-data deletion. Res
 Validation: production webpack build and TypeScript passed; focused lint passed with three existing financial-panel effect warnings; 47 apartment browser tests passed across FR/EN/LN/SW and mobile/desktop. Apartment deletion screenshots inspected at 390 and 1440 pixels. The backend's 33 PostgreSQL tests passed with no skips. Synthetic browser fixtures never changed production data.
 
 Wenze browser regression: 22 passed across four languages and five viewport widths, including saved-draft confirmation checks.
+
+## Restaurant stock archive confirmations
+
+Reuses the shared accessible warning dialog in FR/EN/LN/SW. Archiving makes the item inactive and retains stock/history; canonical backend rules continue to reject menu-linked or reserved items. Failed actions stay open, and uncertain retries reuse the exact operation key and revision. No new deletion, schema or permission behavior.
+
+Validation: 15 Business unit tests and 18 Website browser tests passed, including four localized archive scenarios, safe focus, Escape, failed responses and retry envelopes. Both production webpack builds passed. Focused lint has no errors (one existing Business unused-variable warning). Website screenshots remain in test-results/confirmations and docs/evidence. Remaining platform-wide dialogs and custom validation work are not complete.

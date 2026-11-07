@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useConfirmation } from "./confirmation-dialog";
 import { DashboardApiError } from "@/app/lib/restaurant-seller-browser";
 import "./restaurant-inventory.css";
 
@@ -25,6 +26,12 @@ const extra = {
   ln: { title: "Stock", intro: "Landá biteni, masanga mpe biloko ya kolamba.", search: "Luka eloko", all: "Nyonso", attention: "Esengeli kotala", out: "Esili", prepared: "Biteni oyo ebongami mpo na kopesa", packaged: "Masanga to biloko ya koteka", ingredient: "Biloko ya kolamba to ya mosala", unknown: "Lolenge eyebani te", outStatus: "Esili", normal: "Ezali", last: "Mbongwana ya nsuka", threshold: "Ndelo ya moke", noResults: "Eloko moko te ezwami.", unavailable: "Stock ezali kosala te sikoyo.", denied: "Okoki kotala stock ya esika oyo te.", first: "Sala eloko ya liboso na motángo oyo omoni.", close: "Kanga", reason: "Ntina", effect: "Mbongwana", balance: "Etikali nsima", noHistory: "Mbongwana ya sika ezali te.", uncertain: "Eyebani te soki ebombami. Meká lisusu mosala kaka oyo.", stale: "Stock ebongwani. Talá motángo ya sika liboso ya komeka lisusu.", countHelp: "Komá motángo nyonso oyo omoni.", receiveHelp: "Komá motángo oyo obakisi.", wasteHelp: "Komá motángo oyo ebebi.", noExpense: "Kozwa stock to kobebisa yango ekomaka dépense te.", untracked: "Stock etángami te", insufficient: "Ezali te: stock oyo etángami ekoki te", menuHelp: "Kaka biloko oyo okangisi na menu esalelaka stock oyo mpo na kobomba mpe koteka." },
   sw: { title: "Hisa", intro: "Fuatilia vipimo, vinywaji na viungo.", search: "Tafuta bidhaa", all: "Zote", attention: "Inahitaji kuangaliwa", out: "Zimeisha", prepared: "Vipimo tayari kutolewa", packaged: "Vinywaji au bidhaa za kuuza", ingredient: "Viungo au vifaa", unknown: "Aina haijawekwa", outStatus: "Imeisha", normal: "Ipo", last: "Badiliko la mwisho", threshold: "Kiwango cha chini", noResults: "Hakuna matokeo.", unavailable: "Hisa haipatikani kwa sasa.", denied: "Huwezi kufikia hisa ya eneo hili.", first: "Unda bidhaa ya kwanza kwa kiasi ulichoona.", close: "Funga", reason: "Sababu", effect: "Mabadiliko", balance: "Salio baada", noHistory: "Hakuna mabadiliko ya hivi karibuni.", uncertain: "Matokeo hayana uhakika. Rudia kitendo kilekile.", stale: "Hisa imebadilika. Angalia salio jipya kabla ya kujaribu tena.", countHelp: "Weka kiasi chote halisi ulichoona.", receiveHelp: "Weka kiasi kilichoongezwa.", wasteHelp: "Weka kiasi kilichopotea.", noExpense: "Kupokea hisa au kurekodi upotevu hakuandiki gharama.", untracked: "Hakuna salio lililopimwa", insufficient: "Haipatikani: hisa inayofuatiliwa haitoshi", menuHelp: "Bidhaa zilizounganishwa wazi na menyu pekee ndizo hutumia hisa hii kwa uhifadhi na mauzo." },
 } as const;
+const archiveHelp = {
+  fr: "Cet article deviendra inactif. Son stock et son historique ne seront pas supprimés. Un article lié au menu ou réservé ne peut pas être archivé.",
+  en: "This item will become inactive. Its stock and history will not be deleted. An item linked to the menu or reserved cannot be archived.",
+  ln: "Eloko oyo ekotika kosala. Stock mpe lisolo na yango ekolongwa te. Eloko ekangami na menu to ebombami mpo na commande ekoki kobombama na lisolo te.",
+  sw: "Bidhaa hii haitatumika tena. Hisa na historia yake hazitafutwa. Bidhaa iliyounganishwa na menyu au iliyohifadhiwa kwa oda haiwezi kuwekwa kwenye kumbukumbu."
+} as const;
 const unitNames = { piece: "unitPiece", portion: "unitPortion", boule: "unitBoule", bottle: "unitBottle", can: "unitCan", tray: "unitTray" } as const;
 export const inventoryTitle = (locale: "fr" | "en" | "ln" | "sw") => extra[locale].title;
 const units = ["piece", "portion", "boule", "bottle", "can", "tray", "g", "kg", "ml", "l"];
@@ -46,6 +53,7 @@ function exact(value: string | null, unit: string) { return value == null ? "?" 
 
 export function RestaurantInventory({ path, locale, read, perform }: Props) {
   const t = copy[locale];
+  const { request: confirm, confirmation } = useConfirmation(locale);
   const x = extra[locale];
   const [data, setData] = useState<InventoryPage | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "denied" | "unavailable">("loading");
@@ -100,7 +108,7 @@ export function RestaurantInventory({ path, locale, read, perform }: Props) {
   async function run(work: () => Promise<void>) {
     if (busy || pending.current) return;
     setBusy(true); setMessage("");
-    try { await work(); await load(); if (selected) await openHistory(selected); setMessage(t.updated); }
+    try { await work(); await load(); if (selected) await openHistory(selected); setMessage(t.updated); return true; }
     catch (error) {
       if (!accessLost(error)) {
         if (error instanceof DashboardApiError && error.status === 409) { pending.current = null; setCanRetry(false); await load(); setMessage(x.stale); }
@@ -124,9 +132,25 @@ export function RestaurantInventory({ path, locale, read, perform }: Props) {
       else if (request.path.endsWith('/movements')) setQuantity('');
       else if (request.path.endsWith('/binding')) setMenuRef('');
       else if (request.path.endsWith('/archive')) setSelected(null);
-      await load(); if (selected && !request.path.endsWith('/archive')) await openHistory(selected); setMessage(t.updated); }
+      await load(); if (selected && !request.path.endsWith('/archive')) await openHistory(selected); setMessage(t.updated); return true; }
     catch (error) { if (!accessLost(error)) { if (error instanceof DashboardApiError && error.status === 409) { pending.current = null; setCanRetry(false); await load(); setMessage(x.stale); } else setMessage(x.uncertain); } }
     finally { setBusy(false); }
+  }
+  function confirmArchive(item: Item) {
+    if (busy || pending.current) return;
+    const archivePath = `${base}/items/${encodeURIComponent(item.item_ref)}/archive`;
+    confirm({ title: t.archiveConfirm, description: `${item.name}. ${archiveHelp[locale]}`, confirmLabel: t.archive, severity: "warning",
+      onConfirm: async () => {
+        // An uncertain response must replay the original envelope, not create another operation.
+        const existing = pending.current;
+        if (existing && existing.path !== archivePath) throw new Error("pending_operation");
+        const saved = existing ? await retry() : await run(async () => {
+          await operation("POST", `/items/${encodeURIComponent(item.item_ref)}/archive`, { expected_revision: item.revision });
+        });
+        if (!saved) throw new Error("archive_failed");
+        setSelected(null); setHistory(null);
+      }
+    });
   }
   async function create(event: FormEvent) {
     event.preventDefault();
@@ -147,7 +171,7 @@ export function RestaurantInventory({ path, locale, read, perform }: Props) {
     try { const next = await read<History>(`${base}/items/${encodeURIComponent(itemRef)}/history${beforeId ? `?before_id=${beforeId}` : ""}`, locale); setHistory(previous => beforeId && previous ? {entries:[...previous.entries,...next.entries],next_before_id:next.next_before_id} : next); }
     catch { setMessage(t.failed); }
   }
-  return <section aria-label={x.title} className="rst-stock">
+  return <section aria-label={x.title} className="rst-stock">{confirmation}
     <header className="rst-stock-head"><div><h2>{x.title}</h2><p>{x.intro}</p></div><div className="rst-stock-head-actions"><button type="button" disabled={busy} onClick={() => void load()}>{t.refresh}</button>{data?.tracking_active && <button type="button" className="button-primary" onClick={() => setCreating(value => !value)}>{creating ? x.close : t.create}</button>}</div></header>
     {state === "loading" && <p role="status">{t.refresh}…</p>}
     {state === "denied" && <div className="rst-stock-state" role="status">{x.denied}</div>}
@@ -163,7 +187,7 @@ export function RestaurantInventory({ path, locale, read, perform }: Props) {
         {data.tracking_active && current.status === "active" && <form onSubmit={change} className="rst-stock-action"><div className="rst-stock-filters" role="group" aria-label={x.reason}>{[["stock_received",t.receive],["waste",t.waste],["count",t.count]].map(([value,label]) => <button type="button" key={value} aria-pressed={action === value} onClick={() => { setAction(value); setQuantity(""); }}>{label}</button>)}</div><p>{action === "count" ? x.countHelp : action === "waste" ? x.wasteHelp : x.receiveHelp}</p><label>{t.quantity} ({current.display_label || unitLabel(current.unit,t)})<input inputMode="decimal" required value={quantity} onChange={event => setQuantity(event.target.value)} /></label><button className="button-primary" disabled={busy || canRetry} type="submit">{t.save}</button><small>{x.noExpense}</small></form>}
         <div className="rst-stock-history"><h4>{t.history}</h4>{history?.entries.length === 0 && <p>{x.noHistory}</p>}{history?.entries.map(entry => <div className="rst-stock-movement" key={entry.movement_ref}><time dateTime={entry.created_at}>{when(entry.created_at)}</time><strong>{movementLabel(locale,entry.kind)}</strong><span>{x.effect}: {Number(entry.quantity_effect) > 0 ? "+" : ""}{exact(entry.quantity_effect,entry.unit)} {unitLabel(entry.unit,t)}</span><span>{x.balance}: {exact(entry.balance_after,entry.unit)} {unitLabel(entry.unit,t)}</span></div>)}{history?.next_before_id && <button type="button" onClick={() => void openHistory(current.item_ref,history.next_before_id!)}>{t.page}</button>}</div>
         {current.purpose === "sellable" && <div className="rst-stock-menu"><h4>{t.bind}</h4><p>{x.menuHelp}</p>{bindings.filter(binding=>binding.item_ref===current.item_ref).map(binding=><p key={binding.menu_item_ref}><strong>{menu.find(item=>item.public_ref===binding.menu_item_ref)?.name ?? t.menuItem}</strong> · {binding.active ? Number(current.available) < binding.factor ? x.insufficient : t.stateActive : x.untracked}{binding.recount_required && ` · ${t.recount}`}{binding.reactivation_required && ` · ${t.reactivate}`}</p>)}{menu.length > 0 && <form onSubmit={event => { event.preventDefault(); void saveBinding(true); }} className="rst-stock-fields"><label>{t.menuItem}<select required value={menuRef} onChange={event => { const ref=event.target.value; setMenuRef(ref); const link=bindings.find(binding=>binding.menu_item_ref===ref); setFactor(String(link?.factor ?? 1)); }}><option value="">{t.select}</option>{menu.filter(item=>!bindings.some(binding=>binding.menu_item_ref===item.public_ref && binding.item_ref!==current.item_ref)).map(item=><option key={item.public_ref} value={item.public_ref}>{item.name}{!bindings.some(binding=>binding.menu_item_ref===item.public_ref && binding.active) ? ` · ${x.untracked}` : ""}</option>)}</select></label><label>{t.factor}<input required inputMode="numeric" pattern="[1-9][0-9]*" value={factor} onChange={event=>setFactor(event.target.value)} /></label><button type="submit" disabled={busy || canRetry || !menuRef}>{t.activate}</button>{activeBinding?.active && activeBinding.item_ref===current.item_ref && <button type="button" disabled={busy || canRetry} onClick={()=>void saveBinding(false)}>{t.disable}</button>}</form>}</div>}
-        {data.tracking_active && current.status === "active" && <button type="button" className="rst-stock-archive" disabled={busy || canRetry} onClick={() => { if (window.confirm(t.archiveConfirm)) void run(async () => { await operation("POST", `/items/${encodeURIComponent(current.item_ref)}/archive`, { expected_revision: current.revision }); setSelected(null); }); }}>{t.archive}</button>}
+        {data.tracking_active && current.status === "active" && <button type="button" className="rst-stock-archive" disabled={busy || canRetry} onClick={() => confirmArchive(current)}>{t.archive}</button>}
       </section>}
     </>}
   </section>;
