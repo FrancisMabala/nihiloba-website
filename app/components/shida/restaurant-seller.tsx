@@ -58,14 +58,14 @@ export function RestaurantSeller({ locale, receipt }: { locale: RestaurantLocale
   return () => { alive.current = false; invalidate(); inFlight?.abort(); clearInterval(timer); window.removeEventListener(PERSONAL_SESSION_EVENT, changed); window.removeEventListener("storage", storage); window.removeEventListener("focus", focus); window.removeEventListener("online", focus); window.removeEventListener("offline", offline); document.removeEventListener("visibilitychange", visible); };
  }, []);
  async function logout(changeAccount = false) {
-  if (!leaveWork()) return;
+  if (!(await leaveWork())) return;
   signedOut.current = true; ++generation.current; setSession(null); setPending(true); setMessage("");
   try { await endEmploymentSession(); setSession(null); setSignedOutView(!changeAccount); }
   catch { setMessage(t.unavailable); }
   finally { if (alive.current) setPending(false); }
  }
  return <div lang={locale} className="rst-seller seller-design">
-<WenzeHeader locale={locale} marketplace="Restaurants" name={session?.user.display_name} brandHref={restaurantPath(locale)} beforeNavigate={leaveWork} pending={pending} onLanguage={lang=>{if(leaveWork())window.location.assign(sellerPath(lang)+window.location.search);}} onAccount={()=>void logout(true)} onLogout={()=>void logout()}/>
+<WenzeHeader locale={locale} marketplace="Restaurants" name={session?.user.display_name} brandHref={restaurantPath(locale)} beforeNavigate={leaveWork} pending={pending} onLanguage={async lang=>{if((await leaveWork()))window.location.assign(sellerPath(lang)+window.location.search);}} onAccount={()=>void logout(true)} onLogout={()=>void logout()}/>
 <section className="rst container rst-shell">
    {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <SellerLanding marketplace="restaurants" locale={locale} design={design} browseHref={restaurantPath(locale)} onAuthenticated={() => { signedOut.current = false; }}/>)}
    {message && <p role="status">{message}</p>}

@@ -18,7 +18,7 @@ export function ServicesOnboardingWizard({locale,accountName,categories,call,onC
  const key=useRef<string|null>(null),pending=useRef(false);
  const [finalIntent,setFinalIntent]=useState<Progress|null>(null);
  const dirty=!!progress&&JSON.stringify(values)!==JSON.stringify(progress.fields);
- useWorkDraft(dirty,t.error);
+ useWorkDraft(dirty,t.error,locale);
  async function load(){setBusy(true);try{const result=await api.current('/onboarding') as unknown as Data;setData(result);setFinalIntent(null);setConfirmed(false);setMessage('');const active=result.progress.find(row=>row.status==='active');if(active){setProgress(active);setValues(formValues(active.fields,result.professional_profile));setStep(result.professional_profile?2:1);}else{setProgress(null);setValues({});}}catch{setMessage(t.error);}finally{setBusy(false);}}
  useEffect(()=>{let active=true;void api.current('/onboarding').then(raw=>{if(!active)return;const result=raw as unknown as Data;setData(result);const row=result.progress.find(item=>item.status==='active');if(row){setProgress(row);setValues(formValues(row.fields,result.professional_profile));setStep(result.professional_profile?2:1);}}).catch(()=>{if(active)setMessage(t.error);});return()=>{active=false;};},[t.error]);
  async function command(body:object){return await api.current('/onboarding','POST',body) as unknown as Progress;}
@@ -33,7 +33,7 @@ export function ServicesOnboardingWizard({locale,accountName,categories,call,onC
  return <section className="svc-onboarding" aria-busy={busy}>
   <aside><h2>{identity?t.add:t.title}</h2><p>{t.intro}</p><Image src="/shida/services-onboarding-professions.png" width={1536} height={1024} sizes="(max-width:760px) 220px, 360px" alt="" className="svc-onboarding-art"/><p>{t.private}</p></aside>
   <div className="svc-onboarding-main"><h2>{identity?t.add:t.title}</h2>{data&&<p>{t.remaining}: <strong>{data.remaining_capacity??'—'}</strong></p>}
-   <p role="status">{message}</p>{message&&<button type="button" disabled={busy} onClick={()=>{if(!dirty||leaveWork())void load();}}>{t.reload}</button>}
+   <p role="status">{message}</p>{message&&<button type="button" disabled={busy} onClick={async ()=>{if(!dirty||(await leaveWork()))void load();}}>{t.reload}</button>}
    {!data&&<p>{t.loading}</p>}
    {data&&!progress&&<><button type="button" disabled={busy||data.remaining_capacity===0} onClick={()=>void start()}>{identity?t.add:t.title}</button>{data.progress.filter(row=>['expired','cancelled'].includes(row.status)).map(row=><article key={row.public_ref}><h3>{row.fields.service_name||t.steps[1]}</h3><p>{t.expired}</p><button type="button" disabled={busy} onClick={()=>void operate(async()=>{const restored=await command({action:'resume',public_ref:row.public_ref,revision:row.revision,identity_revision:identity?.revision??null});setProgress(restored);setValues(formValues(restored.fields,identity));setStep(identity?2:1);})}>{t.resume}</button></article>)}</>}
    {progress?.status==="completed"&&progress.service_ref&&<button type="button" onClick={()=>void operate(()=>onCreated(progress.service_ref!))}>{t.manage}</button>}

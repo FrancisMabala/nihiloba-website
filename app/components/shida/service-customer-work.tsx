@@ -25,7 +25,7 @@ function CustomerWork({binding, locale, reference, booking, onDenied, onBooking}
   const [pending, setPending] = useState<{path: string; body: string} | null>(null);
   const alive = useRef(true), lock = useRef(false), callbacks = useRef({onDenied, onBooking});
   useEffect(() => {callbacks.current = {onDenied, onBooking};}, [onDenied, onBooking]);
-  useWorkDraft(!!pending, t.leave);
+  useWorkDraft(!!pending, t.leave,locale);
   useEffect(() => {
     alive.current = true; const controller = new AbortController(); let active = true;
     serviceRequest<Work>(binding, `${booking ? "bookings" : "requests"}/${reference}`, {signal: controller.signal})

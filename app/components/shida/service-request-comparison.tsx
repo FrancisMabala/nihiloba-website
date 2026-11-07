@@ -26,7 +26,7 @@ function ComparisonPanel({binding, locale, reference, onDenied, onBooking}: Prop
   const [history, setHistory] = useState<{proposal: string; versions: ProposalVersion[]; next_ref: string | null} | null>(null);
   const alive = useRef(true), lock = useRef(false), callbacks = useRef({onDenied, onBooking});
   useEffect(() => {callbacks.current = {onDenied, onBooking};}, [onDenied, onBooking]);
-  useWorkDraft(!!pending || Object.values(answers).some(Boolean), common.leave);
+  useWorkDraft(!!pending || Object.values(answers).some(Boolean), common.leave,locale);
   useEffect(() => {
     alive.current = true; let active = true; const controller = new AbortController();
     serviceRequest<Comparison>(binding, `postings/${reference}/proposals`, {signal: controller.signal})

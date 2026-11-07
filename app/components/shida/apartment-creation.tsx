@@ -1,4 +1,5 @@
 'use client';
+import {fileValidation} from '../../lib/file-validation';
 import {PrivatePhoto} from './apartment-private-photo';
 import Link from 'next/link';
 import {useCallback, useEffect, useRef, useState} from 'react';
@@ -65,7 +66,7 @@ function Wizard({locale,actor}:{locale:Locale;actor:ReturnType<typeof useWenzeBu
  }
  async function upload(file:File,op=crypto.randomUUID()) {
   if(lock.current || !draft || !actor.binding) return;
-  if(!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 5*1024*1024) {setError(t.photoHelp);return;}
+  const invalid=fileValidation(file,locale,5,['image/jpeg','image/png','image/webp'],'JPG, PNG, WebP');if(invalid){setError(invalid);return;}
   lock.current = true;setBusy(true);setError('');setNotice('');setPendingPhoto({file,operation:op});
   try {
    const saved = decodeDraft(await request({action:'save',reference:draft.reference,revision:draft.revision,values:draft.values}));

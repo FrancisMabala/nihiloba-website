@@ -1,4 +1,5 @@
 "use client";
+import {useConfirmation} from "./confirmation-dialog";
 import {RestaurantCreationWizard} from './restaurant-creation-wizard';
 import {restaurantOnboardingCopy} from '@/app/lib/restaurant-onboarding-copy';
 import {restaurantWorkspaceGroups} from '../../lib/restaurant-workspace-navigation';
@@ -61,6 +62,7 @@ const options: Record<string, string[]> = { amount_mode: ["configured", "flexibl
 const boolKeys = ["visible", "permanent", "confirm", "confirm_location", "known"];
 
 export function RestaurantWorkspace({ binding, locale }: { binding: string; locale: RestaurantLocale }) {
+  const {request:confirmAction,confirmation}=useConfirmation(locale);
   const t = (key: string) => ["amount_mode","amount_step","configured","flexible"].includes(key) ? basicText(locale,key) : restaurantText(locale, key);
   const design = sellerDesignCopy[locale];
   const management = managementCopy[locale];
@@ -82,9 +84,11 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const [publicAvailability, setPublicAvailability] = useState<Record<string,string>|null>(null);
   const [hours, setHours] = useState<Hours | null>(null), [preview, setPreview] = useState<Fields | null>(null);
   const [choices, setChoices] = useState<Row[]>([]), [editor, setEditor] = useState<Editor | null>(null);
-  useWorkDraft(Boolean(editor && editor.kind !== 'create'), wt('discard'));
+  useWorkDraft(Boolean(editor && editor.kind !== 'create'), wt('discard'),locale);
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(""), [denied, setDenied] = useState(false);
   const alive = useRef(true), gate = useRef(false);
+  const submitLatest = useRef<() => Promise<boolean | undefined>>(async()=>false);
+  useEffect(()=>{submitLatest.current=()=>submit(undefined,true);});
   const path = selected ? `${root}/${encodeURIComponent(selected.public_ref)}` : root;
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   useEffect(() => { if (!editor || editor.kind === 'create') return; const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); }; window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn); }, [editor]);
@@ -104,9 +108,9 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   }
   const workFailure = useCallback((caught:unknown) => error(caught), []);
   async function run(work: () => Promise<void>, mutation = false) {
-    if (gate.current) return;
+    if (gate.current) return false;
     gate.current = true; setBusy(true); setMessage("");
-    try { await work(); } catch (caught) { error(caught, mutation); }
+    try { await work(); return true; } catch (caught) { error(caught, mutation); return false; }
     finally { gate.current = false; if (alive.current) setBusy(false); }
   }
   async function loadList(nextPage = page, status = filter, enter = false) {
@@ -133,7 +137,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     if (alive.current) { setSelected(value); setCapabilities(availability?.capabilities.filter(entry=>entry.available).map(entry=>entry.capability) ?? []); setKitchenAvailable(kitchen);setPosAvailable(availability?.capabilities.some(entry=>entry.capability==='restaurant.pos'&&entry.available)??false); setTab(initialTab); setRows(menu?.result.items ?? []); setRoutingPage(routes); setRowPage(1); setRowTotal(menu?.result.total ?? 0); setHours(null); setPreview(null); }
   }
   async function loadTab(next: string, nextPage = 1, leavingEditor = false) {
-    if((next!==tab || next==='settings') && !leavingEditor && !leaveWork())return;
+    if((next!==tab || next==='settings') && !leavingEditor && !(await leaveWork()))return;
     if(next==='pos'||next==='service'||next==='paymentMethods'||next==='daily'){const value=await readRestaurant<{capabilities:{capability:string;available:boolean}[]}>(`${path}/capabilities`,locale);const allowed=value.capabilities.some(entry=>entry.capability==='restaurant.pos'&&entry.available);setPosAvailable(allowed);setTab(next==='service'?next:allowed?next:'counter');return;}
     if (next === "settings") { await select(selected!.public_ref, "settings"); setSettingsGeneration(value=>value+1); return; }
     if (next === "profile") { await select(selected!.public_ref, "profile"); return; }
@@ -216,8 +220,8 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     if (alive.current) setEditor({ kind, path: editPath, method, readPath, revision, operationKey: crypto.randomUUID(), fields: f, changed: [], windows: structuredClone(windows), closures: structuredClone(closures), target: row?.public_ref });
   }
   function change(key: string, value: string) { setEditor(old => old ? { ...old, fields: { ...old.fields, [key]: value }, changed: [...new Set([...old.changed, key])], operation: undefined } : null); }
-  function itemDestination(next: 'inventory'|'offerings'|'photos') {
-    if (!editor?.target || !leaveWork()) return;
+  async function itemDestination(next: 'inventory'|'offerings'|'photos') {
+    if (!editor?.target || !(await leaveWork())) return;
     if (next === 'photos') setPhotoTarget({target:'item',itemRef:editor.target});
     setEditor(null);
     void run(()=>loadTab(next,1,true));
@@ -249,12 +253,12 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     }
     return fields;
   }
-  async function submit(event: FormEvent) {
-    event.preventDefault(); if (gate.current || !editor || editor.blocked) return;
+  async function submit(event?: FormEvent, confirmed=false) {
+    event?.preventDefault(); if (gate.current || !editor || editor.blocked) return;
     if (!navigator.onLine) { setMessage("unavailable"); return; }
-    if (!editor.operation && (['hours','publish','unpublish'].includes(editor.kind) || editor.kind==='profile' && editor.changed.some(key=>['service_modes','timezone_name'].includes(key)))) {
+    if (!confirmed && !editor.operation && (['hours','publish','unpublish'].includes(editor.kind) || editor.kind==='profile' && editor.changed.some(key=>['service_modes','timezone_name'].includes(key)))) {
       const c=settingsCopy[locale];
-      if (!window.confirm(`${c.confirm}\n${c.hoursHelp}\n${c.reservationHelp}\n${c.preserved}`)) return;
+      confirmAction({title:c.confirm,description:`${c.hoursHelp} ${c.reservationHelp} ${c.preserved}`,confirmLabel:c.confirm,cancelLabel:c.cancel,severity:"warning",onConfirm:async()=>{if(!await submitLatest.current())throw new Error("save_failed");}}); return;
     }
     const original = editor;
     let operation = editor.operation;
@@ -268,7 +272,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
       setEditor(old => old ? { ...old, operation } : null);
     }
     const pending = operation;
-    await run(async () => {
+    return await run(async () => {
       const result = await performRestaurant<Establishment | Envelope<Row>>(pending);
       if (!alive.current) return;
       setEditor(null); setMessage("saved");
@@ -343,7 +347,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     <h1>{setup.title}</h1><p>{setup.note}</p><p>{entry.separate}</p>
     {(busy || message) && <p role={message && message !== "saved" ? "alert" : "status"}>{t(busy ? "loading" : message)}</p>}
     {list.actions?.includes("create") ? <button className="button button-primary" disabled={busy} onClick={()=>void open("create")}>{setup.create}</button> : <p role="alert">{t("denied")}</p>}
-    <p><Link href={restaurantPath(locale)} onClick={event=>{if(!leaveWork())event.preventDefault();}}>{entry.browse}</Link></p>
+    <p><Link href={restaurantPath(locale)} onClick={async event=>{event.preventDefault();const href=event.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{entry.browse}</Link></p>
   </section>;
   const groups: {label:string; entries:[string,string][]}[] = [
     {label:management.work,entries:[["today",management.work],["orders",wt("orders")]]},
@@ -357,7 +361,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   ];
   const icons:Record<string,SellerNavigationItem["icon"]>={today:"overview",orders:"work",pos:"finance",counter:"finance",inventory:"stock",daily:"finance",recovery:"finance",activity:"reports",reservations:"calendar",items:"catalog",offerings:"calendar",settings:"settings",profile:"profile",hours:"calendar",intake:"settings",reviews:"work",sharing:"document"};
   const navigation=groups.flatMap(group=>group.entries.map(([key,label])=>({key,label,icon:icons[key],active:key==="items"&&["categories","batch"].includes(tab)||key===(posAvailable?"pos":"counter")&&tab==="service"})));
-  return <section className="rst container rst-management seller-workspace" aria-label={t("restaurants")}>
+  return <section className="rst container rst-management seller-workspace" aria-label={t("restaurants")}>{confirmation}
     <div className={selected ? 'rst-management-layout seller-layout' : ''}>
     {selected && <aside className="rst-management-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="R" title={t("restaurants")} subtitle={management.workspace}/><div id="restaurant-navigation" className="rst-desktop-groups">{restaurantWorkspaceGroups(locale).map((group,i)=><details className="rst-desktop-group" key={group.label} open={i===0||group.keys.includes(tab)}><summary>{group.label}</summary><SellerWorkspaceNavigation className="rst-management-nav" label={group.label} items={navigation.filter(item=>group.keys.includes(item.key))} current={tab} disabled={busy||Boolean(editor)} onNavigate={key=>void run(()=>loadTab(key))}/></details>)}</div></aside>}
     <div className="rst-management-content seller-content">
@@ -365,7 +369,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     {selected&&!editor&&<RestaurantFocus key={path} path={path} tab={tab} locale={locale} name={selected.profile.name??t("restaurants")}/>}
     {selected&&!editor&&<RestaurantBottomNavigation locale={locale} tab={tab} sell={posAvailable?"pos":"counter"} disabled={busy} items={navigation} onOpen={key=>void run(()=>loadTab(key))}/>}
     {!selected && <SellerWorkspaceHeading eyebrow={management.workspace} title={management.choose}/>}
-    {selected && !editor && <div className="rst-context-actions">{list && list.total > 1 && <button disabled={busy} onClick={()=>{if(!leaveWork())return;setSelected(null);setPreview(null);void run(()=>loadList(1,""));}}>{design.change}</button>}</div>}
+    {selected && !editor && <div className="rst-context-actions">{list && list.total > 1 && <button disabled={busy} onClick={async ()=>{if(!(await leaveWork()))return;setSelected(null);setPreview(null);void run(()=>loadList(1,""));}}>{design.change}</button>}</div>}
     <p role={message && message !== "saved" && message !== "unsaved" ? "alert" : "status"} aria-live="polite">{busy ? t(editor?.operation ? "saving" : "loading") : message ? t(message) === "—" ? t("validation") : t(message) : editor ? t("unsaved") : ""}</p>
     {editor ? <form onSubmit={submit} className={`rst-card rst-editor${editor.kind === "items" ? " rst-portion-editor" : ""}`} aria-label={t(editor.kind)}>
       <div className="rst-editor-main"><h2>{editor.kind === "items" ? editor.fields.name || t(editor.kind) : t(editor.kind)}</h2>
@@ -411,13 +415,13 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
         {tab === 'intake' && <><RestaurantIntake key={path} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onOpen={next=>void run(()=>loadTab(next))} onFailure={workFailure}/><RestaurantGuestAutoAccept path={path} binding={binding} locale={locale} onFailure={workFailure}/></>}
         {tab === 'activity' && <RestaurantInsights key={`${path}:${binding}`} path={path} binding={binding} locale={locale} timezone={selected.profile.timezone_name} onFailure={workFailure}/>}
         {tab === 'batch' && <RestaurantMenuBatch key={path} path={path} binding={binding} locale={locale} onFailure={workFailure}/>}
-        {tab === "profile" && <article className="rst-card">{list?.actions?.includes("create") && <div className="rst-actions"><button type="button" disabled={busy} onClick={()=>void run(()=>open("create"))}>{t("add")}: {management.establishment}</button></div>}<div className="rst-profile-photo"><div className="rst-photo-thumb"><span>{management.noPhoto}</span><RestaurantPhoto src={selected.profile.establishment_photo_url} alt={selected.profile.name || ''} sizes="80px"/></div><div><h2>{design.profile}</h2>{selected.actions.includes('edit') && <button type="button" disabled={busy} onClick={()=>{if(!leaveWork())return;setPhotoTarget({target:'establishment'});setTab('photos');}}>{management.photo}</button>}</div></div><p>{t(selected.status)}</p>{selected.actions.includes("preview") && button("preview",()=>void run(()=>loadTab("preview")))}{details(selected.profile, profileKeys)}<p>{t("location_confirmed")}: {t(selected.location_confirmed ? "yes" : "no")}</p>{selected.missing_publication_fields.length > 0 && <p>{t("missing")}: {selected.missing_publication_fields.map(t).join(", ")}</p>}<div className="rst-actions">{selected.actions.includes("edit") && button("edit", () => void run(() => open("profile")))}{(["publish", "unpublish"] as const).filter(action => selected.actions.includes(action)).map(action => <span key={action}>{button(action, () => void run(() => open(action)))}</span>)}</div></article>}
+        {tab === "profile" && <article className="rst-card">{list?.actions?.includes("create") && <div className="rst-actions"><button type="button" disabled={busy} onClick={()=>void run(()=>open("create"))}>{t("add")}: {management.establishment}</button></div>}<div className="rst-profile-photo"><div className="rst-photo-thumb"><span>{management.noPhoto}</span><RestaurantPhoto src={selected.profile.establishment_photo_url} alt={selected.profile.name || ''} sizes="80px"/></div><div><h2>{design.profile}</h2>{selected.actions.includes('edit') && <button type="button" disabled={busy} onClick={async ()=>{if(!(await leaveWork()))return;setPhotoTarget({target:'establishment'});setTab('photos');}}>{management.photo}</button>}</div></div><p>{t(selected.status)}</p>{selected.actions.includes("preview") && button("preview",()=>void run(()=>loadTab("preview")))}{details(selected.profile, profileKeys)}<p>{t("location_confirmed")}: {t(selected.location_confirmed ? "yes" : "no")}</p>{selected.missing_publication_fields.length > 0 && <p>{t("missing")}: {selected.missing_publication_fields.map(t).join(", ")}</p>}<div className="rst-actions">{selected.actions.includes("edit") && button("edit", () => void run(() => open("profile")))}{(["publish", "unpublish"] as const).filter(action => selected.actions.includes(action)).map(action => <span key={action}>{button(action, () => void run(() => open(action)))}</span>)}</div></article>}
         {tab === "sharing" && (selected.actions.includes("links") ? <RestaurantSharing key={selected.public_ref} establishment={selected.public_ref} binding={binding} locale={locale} onFailure={error}/> : <p>{t("missing")}: {selected.missing_publication_fields.map(t).join(", ") || t(selected.status)}</p>)}
         {tab === "preview" && <article className="rst-card"><h2>{t("preview")}</h2><p>{t("previewNote")}</p>{preview && details(preview, ["name", "type_label", "description", "location", "opening_status", "opening_information", "service_modes"])}<PrivateMenuPreview key={`${path}:${binding}:${locale}`} path={path} binding={binding} locale={locale} onFailure={workFailure}/></article>}
         {["hours", "offerings"].includes(tab) && <p>{t("refreshed")}</p>}
         {tab === "hours" && hours && <article className="rst-card"><h2>{t("hours")}</h2><p>{t(hours.status)} · {hours.timezone_name}</p>{hours.schedule ? hours.schedule.windows.length ? hours.schedule.windows.map((w, i) => <p key={i}>{t(weekdays[w.weekday])}: {w.start}–{w.end}</p>) : <p>{t("closed")}</p> : <p>{t("unknown")}</p>}{hours.exceptional_closures.map((c, i) => <p key={i}>{t("closures")}: {localInstant(c.starts_at, c.timezone_name ?? null)} — {localInstant(c.ends_at, c.timezone_name ?? null)}</p>)}{button("edit", () => void run(() => open("hours")))}</article>}
-{tab === 'items' && <RestaurantPersonalMenu items={rows} routes={routingPage} bindings={stockBindings} offerings={datedOfferings} publicAvailability={publicAvailability} publicCheck={selected.status==='active'} locale={locale} fresh={menuFresh} loadFailed={menuLoadError} busy={busy} stockEnabled={capabilities.includes('restaurant.inventory')} onRefresh={()=>void run(()=>loadTab('items'))} onEdit={row=>void run(()=>open('items',row))} onPhoto={row=>{if(!leaveWork())return;setPhotoTarget({target:'item',itemRef:row.public_ref});setTab('photos');}} onAdd={()=>void run(()=>open('items'))} onCategories={()=>void run(()=>loadTab('categories'))} onBatch={()=>void run(()=>loadTab('batch'))} onStock={()=>void run(()=>loadTab('inventory'))} onOfferings={()=>void run(()=>loadTab('offerings'))}/>}
-{["categories", "offerings"].includes(tab) && <>{tab === "offerings" && <div className="rst-menu-heading"><h2>{design.daily}</h2><button type="button" className="rst-text-button" disabled={busy} onClick={() => void run(() => open("offerings"))}>+ {design.add}</button></div>}<div className="rst-menu-rows">{rows.map(row => <article className="rst-menu-row" key={row.public_ref}><div className="rst-item-identity">{tab === 'items' && <div className="rst-photo-thumb"><span>{management.noPhoto}</span><RestaurantPhoto src={typeof row.image_url === 'string' ? row.image_url : null} alt={row.name || ''} sizes="64px"/></div>}<div><h2>{row.name ?? row.item?.name}</h2>{tab === "items" && <p>{row.pricing_model === "UNIT_PRICED" ? `${design.unit} · ${display(row.sale_unit_label)}` : row.pricing_model === "AMOUNT_PRICED" ? design.amount : design.unknown}</p>}</div></div>{tab === "items" ? <><p className="rst-price">{row.pricing_model === "UNIT_PRICED" ? `${display(row.unit_price)} ${display(row.currency)} / ${display(row.sale_unit_label)}` : row.pricing_model === "AMOUNT_PRICED" ? row.amount_mode === "flexible" ? `${basicText(locale,"flexibleFrom")} ${display(row.minimum_amount)} ${display(row.currency)}` : `${display(row.allowed_amounts)} ${display(row.currency)}` : design.unknown}</p><div><p className={`rst-availability rst-state-${row.availability}`}>{t(String(row.availability ?? "unknown"))}</p>{row.visible === false && <p>{t("hidden")}</p>}</div></> : details(row, tab === "categories" ? ["visible"] : ["state", "visible", "availability"])}{tab === "offerings" && <p>{localInstant(row.starts_at, String(row.timezone_name))} — {localInstant(row.ends_at, String(row.timezone_name))}</p>}{tab === 'items' && <RestaurantItemRouting key={row.public_ref} path={path} binding={binding} locale={locale} itemRef={row.public_ref} page={rowPage} route={routingPage?.items?.find(item=>item.item_ref===row.public_ref)?.station} revision={routingPage?.revision ?? null} onSaved={()=>loadTab('items',rowPage)}/>}<div className="rst-actions">{button("edit", () => void run(() => open(tab as Kind, row)))}{tab === 'items' && <button type="button" disabled={busy} onClick={() => { if(!leaveWork())return; setPhotoTarget({target:'item',itemRef:row.public_ref}); setTab('photos'); }}>{management.photo}</button>}{tab === "offerings" && button("copy", () => void run(() => open("copy", row)))}</div></article>)}</div>{!rows.length && <p className="rst-empty">{t("empty")}</p>}<div className="rst-actions rst-pagination">{button("previous", () => void run(() => loadTab(tab, rowPage - 1)), rowPage <= 1)}<span>{design.page} {rowPage}</span>{button("next", () => void run(() => loadTab(tab, rowPage + 1)), rowPage * 20 >= rowTotal)}</div></>}
+{tab === 'items' && <RestaurantPersonalMenu items={rows} routes={routingPage} bindings={stockBindings} offerings={datedOfferings} publicAvailability={publicAvailability} publicCheck={selected.status==='active'} locale={locale} fresh={menuFresh} loadFailed={menuLoadError} busy={busy} stockEnabled={capabilities.includes('restaurant.inventory')} onRefresh={()=>void run(()=>loadTab('items'))} onEdit={row=>void run(()=>open('items',row))} onPhoto={async row=>{if(!(await leaveWork()))return;setPhotoTarget({target:'item',itemRef:row.public_ref});setTab('photos');}} onAdd={()=>void run(()=>open('items'))} onCategories={()=>void run(()=>loadTab('categories'))} onBatch={()=>void run(()=>loadTab('batch'))} onStock={()=>void run(()=>loadTab('inventory'))} onOfferings={()=>void run(()=>loadTab('offerings'))}/>}
+{["categories", "offerings"].includes(tab) && <>{tab === "offerings" && <div className="rst-menu-heading"><h2>{design.daily}</h2><button type="button" className="rst-text-button" disabled={busy} onClick={() => void run(() => open("offerings"))}>+ {design.add}</button></div>}<div className="rst-menu-rows">{rows.map(row => <article className="rst-menu-row" key={row.public_ref}><div className="rst-item-identity">{tab === 'items' && <div className="rst-photo-thumb"><span>{management.noPhoto}</span><RestaurantPhoto src={typeof row.image_url === 'string' ? row.image_url : null} alt={row.name || ''} sizes="64px"/></div>}<div><h2>{row.name ?? row.item?.name}</h2>{tab === "items" && <p>{row.pricing_model === "UNIT_PRICED" ? `${design.unit} · ${display(row.sale_unit_label)}` : row.pricing_model === "AMOUNT_PRICED" ? design.amount : design.unknown}</p>}</div></div>{tab === "items" ? <><p className="rst-price">{row.pricing_model === "UNIT_PRICED" ? `${display(row.unit_price)} ${display(row.currency)} / ${display(row.sale_unit_label)}` : row.pricing_model === "AMOUNT_PRICED" ? row.amount_mode === "flexible" ? `${basicText(locale,"flexibleFrom")} ${display(row.minimum_amount)} ${display(row.currency)}` : `${display(row.allowed_amounts)} ${display(row.currency)}` : design.unknown}</p><div><p className={`rst-availability rst-state-${row.availability}`}>{t(String(row.availability ?? "unknown"))}</p>{row.visible === false && <p>{t("hidden")}</p>}</div></> : details(row, tab === "categories" ? ["visible"] : ["state", "visible", "availability"])}{tab === "offerings" && <p>{localInstant(row.starts_at, String(row.timezone_name))} — {localInstant(row.ends_at, String(row.timezone_name))}</p>}{tab === 'items' && <RestaurantItemRouting key={row.public_ref} path={path} binding={binding} locale={locale} itemRef={row.public_ref} page={rowPage} route={routingPage?.items?.find(item=>item.item_ref===row.public_ref)?.station} revision={routingPage?.revision ?? null} onSaved={()=>loadTab('items',rowPage)}/>}<div className="rst-actions">{button("edit", () => void run(() => open(tab as Kind, row)))}{tab === 'items' && <button type="button" disabled={busy} onClick={async () => { if(!(await leaveWork()))return; setPhotoTarget({target:'item',itemRef:row.public_ref}); setTab('photos'); }}>{management.photo}</button>}{tab === "offerings" && button("copy", () => void run(() => open("copy", row)))}</div></article>)}</div>{!rows.length && <p className="rst-empty">{t("empty")}</p>}<div className="rst-actions rst-pagination">{button("previous", () => void run(() => loadTab(tab, rowPage - 1)), rowPage <= 1)}<span>{design.page} {rowPage}</span>{button("next", () => void run(() => loadTab(tab, rowPage + 1)), rowPage * 20 >= rowTotal)}</div></>}
       </>}
     </>}
     </div></div>

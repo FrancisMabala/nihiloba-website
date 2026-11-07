@@ -1,4 +1,5 @@
 "use client";
+import {useConfirmation} from "./confirmation-dialog";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { checkoutCopy } from "../../lib/restaurant-checkout-copy";
 import { DashboardApiError, request } from "../../lib/restaurant-seller-browser";
@@ -24,6 +25,7 @@ const safe = (value:unknown):value is Selections => !!value && typeof value === 
 const money = (value:string) => /^\d{1,16}(?:[.,]\d{1,2})?$/.test(value.trim()) ? value.trim().replace(",", ".") : null;
 
 export function RestaurantCheckout({locale,establishment,options:initialOptions,menu}:{locale:RestaurantLocale;establishment:Restaurant;options:RestaurantWebOptions;menu:Awaited<ReturnType<typeof import("../../services/shida/restaurants-client").getRestaurantMenu>>|null}) {
+ const {request:confirmAction,confirmation}=useConfirmation(locale);
  const [options,setOptions]=useState(initialOptions);
  const t=checkoutCopy[locale], base=`${locale==="en"?"":`/${locale}`}/shida/restaurants/${establishment.public_ref}`;
  const path="personal/restaurant-orders", prefix=`shida-restaurant-web:${establishment.public_ref}:`;
@@ -37,7 +39,7 @@ export function RestaurantCheckout({locale,establishment,options:initialOptions,
  const itemMap=new Map((menu?.items??[]).map(item=>[item.public_ref,item]));
  const selectedName=(id:string)=>itemMap.get(id)?.name||labels[id]||t.selected;
  const saveDraft=useCallback((next:Selections)=>{try{sessionStorage.setItem(prefix+"selections",JSON.stringify(next));}catch{ /* Optional pre-auth continuity. */ }},[prefix]);
- const adopt=()=>{try{const active=sessionStorage.getItem("shida-restaurant-active");if(active&&active!==establishment.public_ref){if(!window.confirm(t.confirmReplace))return false;for(const suffix of ["selections","labels","basket","create","submit"])sessionStorage.removeItem(`shida-restaurant-web:${active}:${suffix}`);}sessionStorage.setItem("shida-restaurant-active",establishment.public_ref);}catch{}return true;};
+ const adopt=()=>{try{const active=sessionStorage.getItem("shida-restaurant-active");if(active&&active!==establishment.public_ref){for(const suffix of ["selections","labels","basket","create","submit"])sessionStorage.removeItem(`shida-restaurant-web:${active}:${suffix}`);}sessionStorage.setItem("shida-restaurant-active",establishment.public_ref);}catch{}return true;};
  const explain=(error:unknown)=>error instanceof DashboardApiError ? error.status===401?t.expired:error.detail==="restaurant_order_item_unavailable"?`${t.unavailable}${error.itemRef?` ${selectedName(error.itemRef)}`:""}`:error.detail==="restaurant_quote_changed"?`${t.changed}${error.changedItems?.length?` ${error.changedItems.map(selectedName).join(", ")}`:""}`:error.status===409?t.changed:error.status===422?t.unavailable:t.problem:t.problem;
  const perform=useCallback(async <T,>(suffix:string,method="GET",body?:unknown,binding=session?.binding):Promise<T>=>{
    if(!binding)throw new Error("auth");
@@ -82,24 +84,38 @@ export function RestaurantCheckout({locale,establishment,options:initialOptions,
    const changed=await perform<{basket:Basket}>(`/baskets/${value.basket_ref}`,"PATCH",{operation_key:ref(),expected_revision:value.revision,selections:current,fulfillment_method:method,window_ref:windowRef||null});
    setBasket(changed.basket);return changed.basket;
  }
- async function update(next:Selections){
-   if(lock.current)return;lock.current=true;setBusy(true);setMessage("");
+ async function update(next:Selections,propagate=false){
+   if(lock.current){if(propagate)throw new Error("busy");return;}lock.current=true;setBusy(true);setMessage("");
    try{
-     if(!session){setSelections(next);saveDraft(next);return;}
+     if(!session){setSelections(next);saveDraft(next);return true;}
      const current=await ensureBasket(empty());
      const result=await perform<{basket:Basket}>(`/baskets/${current.basket_ref}`,"PATCH",{operation_key:ref(),expected_revision:current.revision,selections:next,fulfillment_method:method,window_ref:windowRef||null,food_preference:preference||null});
-     setBasket(result.basket);setSelections(next);saveDraft(next);setStep("basket");
-   }catch(error){setMessage(explain(error));}finally{lock.current=false;setBusy(false);}
+     setBasket(result.basket);setSelections(next);saveDraft(next);setStep("basket");return true;
+   }catch(error){setMessage(explain(error));if(propagate)throw error;return false;}finally{lock.current=false;setBusy(false);}
  }
  function remember(item:RestaurantMenuItem){const next={...labels,[item.public_ref]:item.name||t.selected};setLabels(next);try{sessionStorage.setItem(prefix+"labels",JSON.stringify(next));}catch{}}
- function add(item:RestaurantMenuItem, plate:number|null, quantity:number, amount:string){
-   if(!adopt())return;
+ async function add(item:RestaurantMenuItem, plate:number|null, quantity:number, amount:string,approved=false){
+   if(!approved){
+     let active:string|null=null;try{active=sessionStorage.getItem("shida-restaurant-active");}catch{}
+     if(active&&active!==establishment.public_ref){
+       confirmAction({title:t.confirmReplace,description:t.replaceHelp,confirmLabel:t.useCurrent,severity:'warning',onConfirm:()=>add(item,plate,quantity,amount,true)});return;
+     }
+   }
+   // Never erase recovery keys belonging to an uncertain order or basket creation.
+   let previous:string|null=null;try{previous=sessionStorage.getItem("shida-restaurant-active");}catch{}
+   if(previous&&previous!==establishment.public_ref){
+     const oldPrefix=`shida-restaurant-web:${previous}:`;
+     let unresolved=false;try{unresolved=!!(sessionStorage.getItem(oldPrefix+"submit")||sessionStorage.getItem(oldPrefix+"create"));}catch{}
+     if(unresolved){
+       setMessage(t.problem);if(approved)throw new Error("pending recovery");return;
+     }
+   }
    if(item.availability!=="available"||item.pricing_model==="UNKNOWN")return;
    const line:Line={key:ref(),item_ref:item.public_ref,...(item.pricing_model==="UNIT_PRICED"?{quantity}:{selected_amount:money(amount)||"0"})};
    if(item.pricing_model==="AMOUNT_PRICED"&&!money(amount)){setMessage(t.amountHelp);return;}
    remember(item);
    const next:Selections=plate===null?{...selections,standalone:[...selections.standalone,line]}:{...selections,plates:plate<0?[...selections.plates,{key:ref(),components:[line]}]:selections.plates.map((p,i)=>i===plate?{...p,components:[...p.components,line]}:p)};
-   void update(next);
+   if(await update(next,approved))adopt();
  }
  function remove(key:string){const next={standalone:selections.standalone.filter(l=>l.key!==key),plates:selections.plates.map(p=>({...p,components:p.components.filter(l=>l.key!==key)})).filter(p=>p.components.length)};void update(next);}
  function changeLine(line:Line,quantity:number,amount:string){const replacement:Line={...line,...(line.quantity!==undefined?{quantity}:{selected_amount:money(amount)||line.selected_amount})};const next={standalone:selections.standalone.map(l=>l.key===line.key?replacement:l),plates:selections.plates.map(p=>({...p,components:p.components.map(l=>l.key===line.key?replacement:l)}))};void update(next);}
@@ -132,7 +148,7 @@ export function RestaurantCheckout({locale,establishment,options:initialOptions,
    catch(error){if(error instanceof DashboardApiError&&(error.status===409||error.status===422)){if(error.status===409)try{const current=await perform<Basket>(`/baskets/${envelope.basket_ref}`);setBasket(current);if(current.order_ref){setOrderRef(current.order_ref);setStep("submitted");setPending(null);try{sessionStorage.removeItem(prefix+"submit");}catch{}return;}}catch{}setPending(null);try{sessionStorage.removeItem(prefix+"submit");}catch{}setStep("basket");setMessage(explain(error));await refreshTimes(error);}else if(error instanceof DashboardApiError&&error.status===401){setMessage(t.expired);}else await recoverSubmission(envelope);}
    finally{lock.current=false;setBusy(false);}}
  const displayLine=(line:Line)=><li key={line.key}><span>{selectedName(line.item_ref)} · {line.quantity??line.selected_amount}</span> <button type="button" disabled={busy} onClick={()=>remove(line.key)}>{t.remove}</button>{line.quantity!==undefined&&<button type="button" disabled={busy} onClick={()=>changeLine(line,line.quantity!+1,"")}>+</button>}{line.quantity!==undefined&&line.quantity>1&&<button type="button" disabled={busy} onClick={()=>changeLine(line,line.quantity!-1,"")}>−</button>}{line.selected_amount!==undefined&&<label>{t.amount}<input inputMode="decimal" defaultValue={line.selected_amount} aria-label={`${selectedName(line.item_ref)} ${t.amount}`} onBlur={event=>{if(event.target.value!==line.selected_amount)changeLine(line,0,event.target.value);}}/></label>}</li>;
- return <main className="restaurant-public rst-checkout" lang={locale}><div className="container"><nav><a href={`${base}/menu`}>{t.back}</a> · <a href={`${locale==="en"?"":`/${locale}`}/shida/restaurant-orders`}>{t.history}</a></nav><h1>{establishment.name} · {t.order}</h1><p>{t.offered}</p>
+ return <main className="restaurant-public rst-checkout" lang={locale}>{confirmation}<div className="container"><nav><a href={`${base}/menu`}>{t.back}</a> · <a href={`${locale==="en"?"":`/${locale}`}/shida/restaurant-orders`}>{t.history}</a></nav><h1>{establishment.name} · {t.order}</h1><p>{t.offered}</p>
   {message&&<p role="status" className="rst-checkout-message">{message}</p>}
   {pending&&<button type="button" disabled={busy||!session} onClick={()=>void recoverSubmission(pending)}>{t.submitRecover}</button>}
   {step==="menu"&&<><h2>{t.order}</h2>{menu?.items.length? <div className="rst-checkout-items">{menu.items.map(item=><MenuChoice key={item.public_ref} item={item} locale={locale} selections={selections} busy={busy} onAdd={(plate,quantity,amount)=>add(item,plate,quantity,amount)}/>)}</div>:<p role="status">{t.failed}</p>}{menu&&menu.total>menu.page*menu.page_size&&<a href={`${base}/order?page=${menu.page+1}`}>{t.continue}</a>}{menu&&menu.page>1&&<a href={`${base}/order?page=${menu.page-1}`}>{t.back}</a>}<button type="button" disabled={!hasFood(selections)||busy} onClick={()=>setStep("basket")}>{t.basket}</button></>}

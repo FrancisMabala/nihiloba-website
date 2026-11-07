@@ -1,4 +1,5 @@
 "use client";
+import {fileValidation} from '../../lib/file-validation';
 import Image from "next/image";
 import {useRef,useState} from "react";
 import {useWenzeApi} from "@/app/lib/wenze-seller-api";
@@ -16,7 +17,7 @@ export function WenzeListingPhotos({item,base,locale,onClose}:{item:Item;base:st
   try{
    let upload_ref:string|undefined;
    if(file){
-    if(file.size>8*1024*1024||!["image/jpeg","image/png","image/webp"].includes(file.type))throw Error();
+    const invalid=fileValidation(file,locale,8,["image/jpeg","image/png","image/webp"],"JPG, PNG, WebP");if(invalid){setError(invalid);return;}
     const content_base64=await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>resolve(String(reader.result).split(",")[1]);reader.readAsDataURL(file);});
     const uploaded=await request(`${base}/uploads`,{method:"POST",body:JSON.stringify({target_type:"product",target_ref:current.public_ref,content_base64})}) as {upload_ref:string};upload_ref=uploaded.upload_ref;
    }

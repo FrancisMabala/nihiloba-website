@@ -36,7 +36,7 @@ export function RestaurantService({path,binding,locale,assignment}:{path:string;
  const [now,setNow]=useState(()=>Date.now());
  const alive=useRef(false),epoch=useRef(0),lock=useRef(false),current=useRef({group,basket,order});
  useEffect(()=>{current.current={group,basket,order};},[group,basket,order]);
- useWorkDraft(!!basket||!!pending,t('discard'));
+ useWorkDraft(!!basket||!!pending,t('discard'),locale);
  const invalidate=useCallback(()=>{epoch.current++;},[]);
  const clear=useCallback(()=>{invalidate();current.current={group:null,basket:null,order:null};setWorkspace(null);setGroups([]);setGroup(null);setBasket(null);setSelections(empty());setPreference('');setPlate('');setSearch('');setDirty(true);setOrder(null);setProposal(null);setAnchor('');setPending(null);setFresh(false);setLost(true);setMessage(s('lost'));},[s,invalidate]);
  const handle=useCallback((e:unknown,write=false)=>{

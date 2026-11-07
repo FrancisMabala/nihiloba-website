@@ -34,7 +34,7 @@ function BoundFinance({base,binding,locale}:Props){
  const [review,setReview]=useState<FinancialCommand|null>(null),[notice,setNotice]=useState("");
  const alive=useRef(true),readTicket=useRef(0),bookingTicket=useRef(0),pageLock=useRef(false);
  const dirty=!!correcting||!!draft.amount||!!draft.private_note||!!draft.reservation_ref||!!command.pending;
- useWorkDraft(dirty,c.leave);
+ useWorkDraft(dirty,c.leave,locale);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;readTicket.current++;bookingTicket.current++;};},[]);
  const load=useCallback(async(offset=0)=>{
   const ticket=++readTicket.current;setLoading(true);

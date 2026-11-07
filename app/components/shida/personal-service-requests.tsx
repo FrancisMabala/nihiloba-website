@@ -54,8 +54,8 @@ export function PersonalServiceRequests(props: Props) {
       window.removeEventListener("focus", focus); window.removeEventListener("online", focus); window.removeEventListener("offline", disconnected);
       document.removeEventListener("visibilitychange", visible);};
   }, [attempt]);
-  return <main lang={locale} className="account-space space-transaction-page"><SpaceSidebar locale={locale} view="transactions" onNavigate={event=>{if(!leaveWork())event.preventDefault();}}/><div className="space-content">
-    <nav className="svc-request"><Link href={`${locale==="en"?"":`/${locale}`}/shida/space?view=requests`} onClick={event=>{if(!leaveWork())event.preventDefault();}}>← {workspaceText(locale,"back")}</Link><span aria-hidden="true"> · </span><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/services`} onClick={event => {if (!leaveWork()) event.preventDefault();}}>SHIDA · Services</Link></nav>
+  return <main lang={locale} className="account-space space-transaction-page"><SpaceSidebar locale={locale} view="transactions" onNavigate={async event=>{event.preventDefault();const href=event.currentTarget.href;if(await leaveWork())window.location.assign(href);}}/><div className="space-content">
+    <nav className="svc-request"><Link href={`${locale==="en"?"":`/${locale}`}/shida/space?view=requests`} onClick={async event=>{event.preventDefault();const href=event.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>← {workspaceText(locale,"back")}</Link><span aria-hidden="true"> · </span><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/services`} onClick={async event=>{event.preventDefault();const href=event.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>SHIDA · Services</Link></nav>
     {loading ? <p className="svc-request" role="status">{t.loading}</p> : session ?
       <fieldset disabled={offline} inert={offline} style={{border: 0, padding: 0, margin: 0, minWidth: 0}}>
         <CustomerRequests key={session.binding} {...props} binding={session.binding} onDenied={() => setSession(null)}/>
@@ -94,8 +94,8 @@ function CustomerRequests({locale, binding, briefRef, newRequest, requestRef, bo
       .finally(() => {if (active) setLoading(false);});
     return () => {active = false; controller.abort();};
   }, [binding, reload]);
-  function choose(reference: string | null) {
-    if (!leaveWork()) return;
+  async function choose(reference: string | null) {
+    if (!(await leaveWork())) return;
     setResult(null); setSelected(reference);
     setDirectTarget(undefined);
     const url = new URL(window.location.href);

@@ -22,7 +22,7 @@ export function ServiceRequestRevision({binding, locale, request, onDenied, onBa
   const [dirty, setDirty] = useState(false), alive = useRef(true), lock = useRef(false);
   const callbacks = useRef({onDenied, onBack, onSaved});
   useEffect(() => {callbacks.current = {onDenied, onBack, onSaved};}, [onDenied, onBack, onSaved]);
-  useWorkDraft(dirty || !!pending, t.leave);
+  useWorkDraft(dirty || !!pending, t.leave,locale);
   useEffect(() => {
     alive.current = true; let active = true; const controller = new AbortController();
     serviceRequest<CustomerBrief>(binding, `briefs/${request.brief_ref}`, {signal: controller.signal})

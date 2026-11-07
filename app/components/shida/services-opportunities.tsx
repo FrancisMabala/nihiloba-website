@@ -38,7 +38,7 @@ function Opportunities({base, binding, locale, services, mine, onDenied, initial
   const alive = useRef(true), lock = useRef(false), denyCallback = useRef(onDenied);
   useEffect(() => {denyCallback.current = onDenied;}, [onDenied]);
   const dirty = !!proposal && JSON.stringify(form) !== JSON.stringify(formFor(proposal.draft));
-  useWorkDraft(dirty || !!pending || !!question, common.leave);
+  useWorkDraft(dirty || !!pending || !!question, common.leave,locale);
   async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await fetch(`${base}/transactions/competition/${path}`, {...init, credentials: "same-origin", cache: "no-store",
       signal: init.signal ?? AbortSignal.timeout(20000), headers: {Accept: "application/json", "X-Shida-Session": binding,
@@ -87,7 +87,7 @@ function Opportunities({base, binding, locale, services, mine, onDenied, initial
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [base, binding, offering, mine, reload]);
   async function open(reference: string) {
-    if (lock.current || pending || !leaveWork()) return;
+    if (lock.current || pending || !(await leaveWork())) return;
     lock.current = true; setBusy(true); setMessage("");
     try {const row = await api<PrivateProposal>(`proposals/${reference}`); if (alive.current) {apply(row); setConflict(false);}}
     catch (error) {if (alive.current) {if (error instanceof Failure && [401, 403, 404].includes(error.status)) deny(); else setMessage(common.unavailable);}}
@@ -166,11 +166,11 @@ function Opportunities({base, binding, locale, services, mine, onDenied, initial
     {pending && !busy && <button onClick={() => void run(pending)}>{common.retry}</button>}
     {conflict && proposal && <button disabled={busy} onClick={() => void open(proposal.proposal_ref)}>{common.reload}</button>}
     {!services.length ? <p>{t.noServices}</p> : <>
-      {!mine && <label>{t.service}<select disabled={disabled} value={offering} onChange={event => {
-        if (!leaveWork()) return; setOffering(event.target.value); setProposal(null); setForm(formFor()); setQuestion(""); setLoading(true); setMessage("");
+      {!mine && <label>{t.service}<select disabled={disabled} value={offering} onChange={async event => {
+        if (!(await leaveWork())) return; setOffering(event.target.value); setProposal(null); setForm(formFor()); setQuestion(""); setLoading(true); setMessage("");
       }}>{services.map(row => <option value={row.public_ref} key={row.public_ref}>{row.service_name} · {row.commune}</option>)}</select></label>}
       {loading ? <p role="status">{common.loading}</p> : proposal ? <>
-        <button disabled={disabled} onClick={() => {if (leaveWork()) {
+        <button disabled={disabled} onClick={async () => {if ((await leaveWork())) {
           setProposal(null); setForm(formFor()); setQuestion(""); setLoading(true); setReload(value => value + 1);
           const url = new URL(window.location.href); url.searchParams.delete("proposal"); url.searchParams.delete("request"); window.history.replaceState(null, "", url);
         }}}>{mine ? t.mine : t.available}</button>

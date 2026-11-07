@@ -22,7 +22,7 @@ function DeliveryPanel({base,binding,locale,reservationRef,reservationRevision,b
  const t=copy[locale],c=billReviewCopy[locale],rt=reminderCopy[locale],command=useFinancialCommand(binding);
  const [rows,setRows]=useState<Delivery[]>([]),[reminder,setReminder]=useState<Reminder|null>(null),[loading,setLoading]=useState(true),[loaded,setLoaded]=useState(false),[error,setError]=useState<""|"failed"|"denied">("");
  const alive=useRef(true),generation=useRef(0);
- useWorkDraft(!!command.pending,c.leave);
+ useWorkDraft(!!command.pending,c.leave,locale);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;generation.current++;};},[]);
  const load=useCallback(async()=>{
   const ticket=++generation.current;setLoading(true);

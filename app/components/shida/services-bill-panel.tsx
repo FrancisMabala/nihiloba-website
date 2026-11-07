@@ -33,7 +33,7 @@ function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,
  const [origin,setOrigin]=useState<{bill?:string;revision?:number;reservation:number}|null>(null);
  const [review,setReview]=useState<{command:FinancialCommand;lines:Line[];currency:string;total:string|null;automatic:boolean}|null>(null);
  const alive=useRef(true),generation=useRef(0);
- useWorkDraft(!!form||!!command.pending,c.leave);
+ useWorkDraft(!!form||!!command.pending,c.leave,locale);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;generation.current++;};},[]);
  const reload=useCallback(async()=>{
   const ticket=++generation.current;setLoading(true);

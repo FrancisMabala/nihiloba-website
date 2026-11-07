@@ -20,10 +20,7 @@ export function actionsFor(order:Order, now = Date.now()) {
 }
 export const terminal = (o:Order) => ['completed','rejected','cancelled','expired','uncollected','delivery_failed'].includes(o.state);
 export function dateText(value:string|undefined|null,locale:string,timezone?:string|null) { if (!value) return '—'; try {return new Intl.DateTimeFormat(locale === 'ln' ? 'fr' : locale,{dateStyle:locale === 'ln' ? 'short' : 'medium',timeStyle:'short',timeZone:timezone || 'UTC'}).format(new Date(value));} catch{return '—';} }
-export function useWorkDraft(dirty:boolean, message:string) {
- useEffect(()=>{if(!dirty)return;const leave=(e:Event)=>{if(!window.confirm(message))e.preventDefault();};const unload=(e:BeforeUnloadEvent)=>e.preventDefault();window.addEventListener('rst-work-leave',leave);window.addEventListener('beforeunload',unload);return()=>{window.removeEventListener('rst-work-leave',leave);window.removeEventListener('beforeunload',unload);};},[dirty,message]);
-}
-export const leaveWork = () => window.dispatchEvent(new Event('rst-work-leave',{cancelable:true}));
+export {useWorkDraft,leaveWork} from './work-navigation';
 // Each mounted scope owns one mutation. An uncertain envelope is immutable until
 // the original outcome is recovered. No storage, offline queue or revision swap.
 export function useWorkRequest(binding:string,onFailure:(e:unknown)=>void) {

@@ -51,7 +51,7 @@ export function RestaurantSettings({path,binding,locale,establishment,capabiliti
 function ReservationControl({path,binding,locale,onFailure,canEnable}:{canEnable:boolean;path:string;binding:string;locale:RestaurantLocale;onFailure:(error:unknown)=>void}) {
  const c=settingsCopy[locale],r=reservationCopy[locale],api=useWorkRequest(binding,onFailure);
  const [saved,setSaved]=useState<ReservationSetting|null>(null),[desired,setDesired]=useState<boolean|null>(null),[fresh,setFresh]=useState(false);
- useWorkDraft(desired!==null||!!api.pending,workText(locale,'discard'));
+ useWorkDraft(desired!==null||!!api.pending,workText(locale,'discard'),locale);
  useEffect(()=>{let alive=true;void request(`${path}/reservations/setting`,{},binding).then(value=>{if(alive){setSaved(value as ReservationSetting);setFresh(true);}}).catch(error=>{if(alive)onFailure(error);});const stale=()=>setFresh(false);window.addEventListener('offline',stale);window.addEventListener('focus',stale);return()=>{alive=false;window.removeEventListener('offline',stale);window.removeEventListener('focus',stale);};},[path,binding]); // eslint-disable-line react-hooks/exhaustive-deps
  async function refresh(){const value=await api.run<ReservationSetting>(`${path}/reservations/setting`);if(value){setSaved(value);setFresh(true);if(api.conflict){api.reset();setDesired(null);}}}
  async function save(){if(!saved||desired===null)return;const value=await api.run<ReservationSetting>(`${path}/reservations/setting`,'PUT',{enabled:desired,expected_revision:saved.revision,operation_key:crypto.randomUUID()});if(value){setDesired(null);setFresh(false);await refresh();}}

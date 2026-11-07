@@ -62,7 +62,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
   useEffect(()=>{if(open&&!dialog.current?.open)dialog.current?.showModal();},[open]);
 
   async function logout(change=false){
-    if(mutating.current||!leaveWork())return;
+    if(mutating.current||!(await leaveWork()))return;
     mutating.current=true;++generation.current;reading.current?.abort();setSession(null);
     setPending(true);setFailed(false);setLogoutFailed(false);setChecking(false);
     try {await endEmploymentSession();if(alive.current&&!change)dialog.current?.close();}
@@ -76,7 +76,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
       registrationLink={!checking&&!session&&process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==="true"?{label:r.create,href:`${prefix}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}:undefined}
       links={[{label:a.space,href:spaceHref},{label:accountSpaceCopy[locale].messages,href:`${spaceHref}?view=messages`},{label:accountSpaceCopy[locale].settings,href:`${spaceHref}?view=settings`}]}
       languages={/\/shida\/?$/.test(pathname)||/\/shida\/(restaurants|services|seller|space|service-requests|service-bills)(?:\/|$)/.test(pathname)?["fr","en","ln","sw"]:["fr","en"]}
-      onLanguage={(lang:MarketplaceLocale)=>{if(leaveWork())window.location.assign(marketplaceLanguagePath(pathname,lang)+window.location.search);}}
+      onLanguage={async (lang:MarketplaceLocale)=>{if((await leaveWork()))window.location.assign(marketplaceLanguagePath(pathname,lang)+window.location.search);}}
       onLogin={()=>setOpen(true)} onAccount={()=>{setOpen(true);void logout(true);}} onLogout={()=>{setOpen(true);void logout();}} pending={pending} beforeNavigate={leaveWork}/>
     <dialog className="shida-account-dialog" ref={dialog} aria-labelledby={title} onClose={()=>setOpen(false)}>
       {open&&<div className="shida-account-content">
