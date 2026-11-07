@@ -1,6 +1,7 @@
 'use client';
 import './account-deletion.css';
 import {useRef,useState} from 'react';
+import {accountDesignText} from '../../lib/account-design-copy';
 import {deletionText} from '../../lib/account-deletion-copy';
 import {securityActionErrorText} from '../../lib/account-security-errors';
 import {AccountDeletionReview} from './account-deletion-review';
@@ -13,8 +14,8 @@ export function obligationLabel(locale:Locale,kind:string){
  const known=['organization_responsibilities','service','wenze','order','seller_order','restaurant_order','restaurant_reservation','hotel','wewa','refund'];
  return deletionText(locale,known.includes(kind)?kind as 'service':'blocked');
 }
-type Props={locale:Locale;api:(path:string,body?:object)=>Promise<unknown>;authorize:(action:string)=>Promise<string>};
-export function AccountDeletion({locale,api,authorize}:Props){
+type Props={verificationIssue?:string|null;locale:Locale;api:(path:string,body?:object)=>Promise<unknown>;authorize:(action:string)=>Promise<string>};
+export function AccountDeletion({locale,api,authorize,verificationIssue}:Props){
  const t=(key:Parameters<typeof deletionText>[1])=>deletionText(locale,key);
  const [preview,setPreview]=useState<Preview|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[review,setReview]=useState(false),[estimate,setEstimate]=useState('');
  const lock=useRef(false),panel=useRef<HTMLDivElement>(null);
@@ -35,6 +36,8 @@ export function AccountDeletion({locale,api,authorize}:Props){
  {error&&<div role="alert"><p>{error}</p><button type="button" disabled={busy} onClick={()=>void check()}>{t('retry')}</button></div>}
  <div ref={panel} tabIndex={-1}>{preview&&<><p>{t(preview.eligible?'eligible':'blocked')}</p>
  {!preview.eligible&&<ol>{preview.obligations.map(item=><li key={item.kind+item.reference}><p>{obligationLabel(locale,item.kind)}</p><p>{item.reference}</p><a href={`${locale==='en'?'':'/'+locale}${['/shida/service-requests/','/shida/wenze/orders/','/shida/restaurant-orders/','/shida/restaurant-reservations/'].includes(item.action_path)?item.action_path:'/shida/space/?view=support'}`}>{t('resolve')}</a></li>)}</ol>}
+ {verificationIssue&&!error&&<p role="status">{securityActionErrorText(locale,new Error(verificationIssue))}</p>}
+ <p><a href="#account-verification">{accountDesignText(locale,'securityTitle')}</a> · <a href="#account-recovery-verification">{accountDesignText(locale,'recoveryTitle')}</a></p>
  <p>{t('retention')}</p><details><summary>{t('inventoryRetention').split('.')[0]}</summary><p>{t('inventoryRetention')}</p></details>
  {preview.eligible?<><p>{t('estimate')} <strong>{localDeletionDate(estimate,locale)}</strong></p><p>{t('verified')}</p><div className="deletion-actions"><button type="button" disabled={busy} onClick={()=>void confirm()}>{t('confirm')}</button><button type="button" disabled={busy} onClick={()=>{setPreview(null);setError('');}}>{t('keep')}</button></div></>:<><button type="button" disabled={busy} onClick={()=>setReview(true)}>{t('review')}</button>{review&&<AccountDeletionReview locale={locale} api={api} authorize={authorize} run={run} obligations={preview.obligations}/>}</>}
  </>}</div></section>;

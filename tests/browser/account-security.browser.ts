@@ -7,6 +7,7 @@ import {emailLoginCopy} from '../../app/lib/email-login-copy';
 import {accountDesignText} from '../../app/lib/account-design-copy';
 import {deletionReviewText} from '../../app/lib/deletion-review-copy';
 import {deletionText} from '../../app/lib/account-deletion-copy';
+import {securityActionErrorText} from '../../app/lib/account-security-errors';
 
 async function fixture(page:Page,signedIn=true,configured=false){
  const state={registered:configured,email:configured,loginEmail:false,closed:false,message:'',replies:[] as string[],proof:false,removed:0,review:''};
@@ -51,6 +52,39 @@ async function fixture(page:Page,signedIn=true,configured=false){
  });
  return state;
 }
+for(const locale of ['en','fr','ln','sw'] as const)for(const method of ['missing','new-passkey','new-email'] as const)test(`deletion verification guidance ${locale} ${method}`,async({page})=>{
+ await fixture(page);let writes=0;
+ await page.route('**/api/shida/personal/security/**',async route=>{
+  const path=new URL(route.request().url()).pathname.replace(/\/$/,'');
+  if(route.request().method()==='POST'){writes++;return route.fulfill({status:403,json:{detail:'security_method_not_ready'}});}
+  if(path.endsWith('/security'))return route.fulfill({json:{login_email:'l***@example.test',login_email_verified:true,email:method==='new-email'?'r***@example.test':null,email_ready_at:'2099-01-01T00:00:00Z',protected:false,passkeys:method==='new-passkey'?[{reference:'KEY_new',ready_at:'2099-01-01T00:00:00Z'}]:[]}});
+  if(path.endsWith('/delete'))return route.fulfill({json:{eligible:true,obligations:[],retained_records:false}});
+  return route.fallback();
+ });
+ await page.setViewportSize({width:390,height:844});await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);
+ const panel=page.locator('#account-deletion'),message=securityActionErrorText(locale,new Error(method==='missing'?'security_method_missing':'security_method_not_ready'))!;
+ await panel.getByRole('button',{name:deletionText(locale,'check'),exact:true}).click();
+ await expect(panel.getByRole('status')).toHaveText(message);
+ await panel.getByRole('button',{name:deletionText(locale,'confirm'),exact:true}).click();
+ await expect(panel.getByRole('alert')).toContainText(message);expect(writes).toBe(0);
+ await panel.locator('a[href="#account-recovery-verification"]').click();
+ await expect(page.locator('#account-recovery-verification')).toBeFocused();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+for(const code of ['security_method_not_ready','security_fresh_login_required'])test(`deletion explains server verification rejection ${code}`,async({page})=>{
+ await fixture(page,true,true);let confirmations=0;
+ await page.route('**/api/shida/personal/security/**',async route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path.endsWith('/delete/')){if(route.request().method()==='POST')confirmations++;return route.fulfill({json:{eligible:true,obligations:[],retained_records:false}});}
+  if(path.endsWith('/email/proof/start/'))return route.fulfill({status:403,json:{detail:code}});
+  return route.fallback();
+ });
+ await page.goto('/fr/shida/space/?view=settings');await page.getByLabel(securityText('fr','preferEmail'),{exact:true}).check();
+ const panel=page.locator('#account-deletion');
+ await panel.getByRole('button',{name:deletionText('fr','check'),exact:true}).click();
+ await panel.getByRole('button',{name:deletionText('fr','confirm'),exact:true}).click();
+ await expect(panel.getByRole('alert')).toContainText(securityActionErrorText('fr',new Error(code))!);expect(confirmations).toBe(0);
+});
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366])test(`deletion review consent and withdrawal ${locale} ${width}`,async({page})=>{
  const state=await fixture(page,true,true),t=(key:Parameters<typeof deletionReviewText>[1])=>deletionReviewText(locale,key);
  await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);
@@ -74,6 +108,8 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
 });
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366])test(`deletion schedule and explicit restoration ${locale} ${width}`,async({page})=>{
  const state=await fixture(page,true,true),t=(key:Parameters<typeof deletionText>[1])=>deletionText(locale,key);
+ // A mature recovery email alone is sufficient; sign-in email is not a recovery factor.
+ state.registered=false;
  const blockedStorage=locale==='en'&&width===390;
  if(blockedStorage)await page.addInitScript(()=>Object.defineProperty(window,'sessionStorage',{get(){throw new DOMException('Storage disabled','SecurityError');}}));
  const prefix=locale==='en'?'':'/'+locale;

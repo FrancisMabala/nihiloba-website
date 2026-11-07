@@ -1,3 +1,4 @@
+import {securityText} from './account-security-copy';
 type Locale = 'en' | 'fr' | 'ln' | 'sw';
 export class SecurityActionError extends Error {
   constructor(code: string, readonly retryAfter?: number | null) { super(code); }
@@ -7,6 +8,20 @@ export class SecurityActionError extends Error {
 export function securityActionErrorText(locale: Locale, error: unknown): string | null {
   const code = error instanceof Error ? error.message : '';
   const index = {en:0,fr:1,ln:2,sw:3}[locale];
+  if(code==='security_fresh_login_required')return securityText(locale,'fresh');
+  if(code==='passkey_unavailable')return securityText(locale,'unsupported');
+  if(code==='security_method_missing')return [
+    'To confirm this action, first add a passkey or verify a recovery email in your account settings, then wait 24 hours. A sign-in email alone cannot verify this action.',
+    'Pour confirmer cette action, ajoutez d’abord une clé d’accès ou vérifiez un e-mail de récupération dans les paramètres du compte, puis attendez 24 heures. L’e-mail de connexion seul ne permet pas cette vérification.',
+    'Mpo na kondimisa likambo oyo, bakisa liboso fungola to ndimisa e-mail ya kozongisa konti na paramètres, mpe zela ngonga 24. E-mail ya kokota kaka ekoki te.',
+    'Ili kuthibitisha hatua hii, kwanza ongeza ufunguo au thibitisha barua pepe ya urejeshaji katika mipangilio ya akaunti, kisha subiri saa 24. Barua pepe ya kuingia pekee haitoshi.',
+  ][index];
+  if(code==='security_method_not_ready')return [
+    'This verification method is not ready. Check your passkey or recovery email settings for its availability time. New methods require a 24-hour wait.',
+    'Cette méthode de vérification n’est pas prête. Consultez les paramètres de votre clé d’accès ou de votre e-mail de récupération pour connaître sa date de disponibilité. Toute nouvelle méthode nécessite une attente de 24 heures.',
+    'Lolenge oyo ya kondimisa ezali naino pene te. Tala ntango ekobanda kosala na paramètres ya fungola to e-mail ya kozongisa konti. Lolenge ya sika esengaka kozela ngonga 24.',
+    'Njia hii ya uthibitisho bado haiko tayari. Angalia muda wa kupatikana kwake katika mipangilio ya ufunguo au barua pepe ya urejeshaji. Njia mpya zinahitaji kusubiri saa 24.',
+  ][index];
   if (code === 'security_rate_limited') {
     const seconds = error instanceof SecurityActionError ? error.retryAfter : null;
     const minutes = typeof seconds === 'number' && Number.isFinite(seconds) && seconds > 0 && seconds <= 86400 ? Math.ceil(seconds / 60) : null;
