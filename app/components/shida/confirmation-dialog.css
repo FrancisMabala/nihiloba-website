@@ -12,4 +12,5 @@
 .shida-confirmation button:focus-visible{outline:3px solid #b58a33;outline-offset:3px}
 .shida-confirmation button:disabled{opacity:.6;cursor:wait}
 .shida-confirmation .shida-confirmation-error{padding:.75rem;background:#ffebe7;color:#8c1d1d;border-radius:.5rem}
+.shida-confirmation .shida-confirmation-close{position:absolute;inset-inline-end:.5rem;top:.4rem;border:0;background:transparent;font-size:1.5rem;padding:.2rem .6rem}
 @media(max-width:480px){.shida-confirmation-actions{display:grid;grid-template-columns:1fr}.shida-confirmation-actions button{width:100%}}

@@ -1,7 +1,7 @@
 import {securityText} from './account-security-copy';
 type Locale = 'en' | 'fr' | 'ln' | 'sw';
 export class SecurityActionError extends Error {
-  constructor(code: string, readonly retryAfter?: number | null) { super(code); }
+  constructor(code: string, readonly retryAfter?: number | null, readonly status?:number) { super(code); }
 }
 
 /** Public explanations only: never display upstream mail or authentication diagnostics. */

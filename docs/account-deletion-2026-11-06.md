@@ -1,5 +1,8 @@
 # Cancellable Personal deletion — local implementation
 
+For the subsequent compact Mon compte flow and validation, see
+[account deletion UX correction](account-deletion-ux-2026-11-07.md).
+
 The existing account security screen fetches actual obligations on demand and
 shows numbered references, localized explanations and resolution links. The
 private review form opens only after blockers and an explicit review request.

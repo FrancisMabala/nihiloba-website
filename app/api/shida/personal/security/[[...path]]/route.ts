@@ -7,7 +7,7 @@ type Context = { params: Promise<{ path?: string[] }> };
 const fail = (status: number) => Response.json({ detail: "security_unavailable" }, { status, headers: PRIVATE_HEADERS });
 async function handle(request: Request, context: Context) {
   const path = ((await context.params).path ?? []).join("/");
-  const allowed = request.method === "GET" ? path === "" || path === "phone" || path === "delete" || path === "delete/reviews" || path === "recovery" || path === "navigation" || path === "profile" || path === "sessions"
+  const allowed = request.method === "GET" ? path === "" || path === "phone" || path === "delete" || path === "delete/reviews" || path === "delete/status" || path === "recovery" || path === "navigation" || path === "profile" || path === "sessions"
     : request.method === "POST" && /^(passkeys\/(revoke|register\/(options|verify)|verify\/(options|finish))|login-email\/(start|verify)|email\/(start|verify|proof\/(start|verify))|profile|recovery\/(set|remove|phone\/(start|verify))|delete(?:\/(?:cancel|reviews(?:\/cancel)?))?|sessions\/(revoke|revoke-one)|phone\/(start|verify|complete|cancel))$/.test(path);
   if (!allowed || new URL(request.url).search) return fail(404);
   if (request.headers.get("sec-fetch-site") === "cross-site") return fail(403);

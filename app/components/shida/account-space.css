@@ -20,7 +20,7 @@
 .space-support article{border-left:3px solid #d7dfd1;padding:8px 16px;margin:16px 0}
 .space-security :is(input,textarea,button):focus-visible,.space-support :is(input,textarea,select,button):focus-visible{outline:3px solid #a98239;outline-offset:3px}
 #account-deletion{border-top:1px solid #dedbd0;margin-top:30px;padding-top:8px}
-#account-deletion button{background:#803c31;border-color:#803c31}
+#account-deletion button.deletion-destructive{background:#a92222;border-color:#a92222;color:#fff}
 @media(max-width:700px){.space-security,.space-support{padding:18px 14px}.space-security button,.space-support button{width:100%;margin-right:0}}
 
 .recovery-secret{display:block;overflow-wrap:anywhere;padding:16px;border:1px solid #d9ddce;font-family:monospace}.space-security fieldset{min-width:0}.space-security input{max-width:100%;box-sizing:border-box}

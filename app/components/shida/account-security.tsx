@@ -33,7 +33,7 @@ export function AccountSecurity({locale,binding,onCompleted}:{locale:Locale;bind
  const [loadState,setLoadState]=useState<'loading'|'loaded'|'error'|'auth'>('loading');
  const proofResult=useRef<{resolve:(value:string)=>void;reject:(error:Error)=>void}|null>(null);
  useEffect(()=>()=>{proofResult.current?.reject(new Error('cancelled'));proofResult.current=null;},[]);
- async function api(path='',body?:object){const response=await fetch(`/api/shida/personal/security/${path}`,{method:body?'POST':'GET',cache:'no-store',headers:{'x-shida-session':binding,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const data=await response.json();if(!response.ok)throw new SecurityActionError(data.detail,data.retry_after);return data;}
+ async function api(path='',body?:object){const response=await fetch(`/api/shida/personal/security/${path}`,{method:body?'POST':'GET',cache:'no-store',headers:{'x-shida-session':binding,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const data=await response.json();if(!response.ok)throw new SecurityActionError(data.detail,data.retry_after,response.status);return data;}
  useEffect(()=>{const controller=new AbortController();
  void Promise.all(['','phone/'].map(path=>readAccount(path,binding,controller.signal))).then(([value,list])=>{
   if(controller.signal.aborted)return;

@@ -97,6 +97,17 @@ it('reads restricted deletion status without exposing its session credential',as
  expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/personal/security/delete/status');
  expect((fetcher.mock.calls[0][1]?.headers as Record<string,string>).Cookie).toBe('shida_dashboard_session='+token);
 });
+it('reconciles deletion status through the bound read-only security route and fails closed on timeout',async()=>{
+ const response=await GET(req('personal/security/delete/status','GET'),context('delete/status'));
+ expect(response.status).toBe(200);expect(response.headers.get('cache-control')).toContain('no-store');
+ expect(String(fetcher.mock.calls[0][0])).toBe('https://backend.test/api/dashboard/personal/security/delete/status');
+ expect((await POST(req('personal/security/delete/status'),context('delete/status'))).status).toBe(404);
+ expect((await GET(req('personal/security/delete/status','GET',{}, {'x-shida-session':'stale'}),context('delete/status'))).status).toBe(401);
+ expect(fetcher).toHaveBeenCalledTimes(1);
+ fetcher.mockRejectedValueOnce(new DOMException('Synthetic timeout','TimeoutError'));
+ const timedOut=await GET(req('personal/security/delete/status','GET'),context('delete/status'));
+ expect(timedOut.status).toBe(503);expect(await timedOut.json()).toEqual({detail:'security_unavailable'});
+});
 it('rejects cross-site status reads and fails closed on unavailable or malformed state',async()=>{
  expect((await deletionStatus(req('personal/deletion','GET',{}, {Origin:'https://other.test'}))).status).toBe(403);
  expect(fetcher).not.toHaveBeenCalled();

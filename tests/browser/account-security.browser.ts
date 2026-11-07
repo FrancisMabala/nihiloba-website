@@ -1,4 +1,6 @@
-import {test,expect,type Page} from '@playwright/test';
+import {fixture} from './account-security-fixture';
+import {deletionUx} from '../../app/lib/deletion-ux-copy';
+import {test,expect} from '@playwright/test';
 import {mySpaceCopy} from '../../app/lib/my-space-refinement-copy';
 import {securityText} from '../../app/lib/account-security-copy';
 import {accountSupportCopy} from '../../app/lib/account-support-copy';
@@ -9,49 +11,6 @@ import {deletionReviewText} from '../../app/lib/deletion-review-copy';
 import {deletionText} from '../../app/lib/account-deletion-copy';
 import {securityActionErrorText} from '../../app/lib/account-security-errors';
 
-async function fixture(page:Page,signedIn=true,configured=false){
- const state={registered:configured,email:configured,loginEmail:false,closed:false,message:'',replies:[] as string[],proof:false,removed:0,review:''};
- await page.route('**/api/shida/**',async route=>{
-  const path=new URL(route.request().url()).pathname.replace(/\/$/,''),body=route.request().method()==='POST'?route.request().postDataJSON():{};
-  const reply=(data:unknown,status=200)=>route.fulfill({status,json:data});
-  if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Synthetic user'}},signedIn?200:401);
-  if(path.includes('/personal/security')){
-   const base='/api/shida/personal/security',part=path.slice(base.length);
-   if(part==='/profile')return reply({revision:'fixture-revision',values:{personal_name:'Synthetic user',city:'Kinshasa',country_code:'CD',preferred_language:'fr'},primary_phone:{masked:'•••• 0000',verified:true},neighborhood:null});
-   if(part==='/recovery')return reply({methods:[]});
-   if(part==='')return reply({login_email:state.loginEmail?'l***@example.test':null,login_email_verified:state.loginEmail,email:state.email?'s***@example.test':null,email_ready_at:'2026-01-01T00:00:00Z',protected:false,passkeys:state.registered?[{reference:'KEY_fixture',ready_at:'2026-01-01T00:00:00Z'}]:[]});
-   if(part==='/login-email/start'){expect(body.email).toBe('login@example.test');return reply({reference:'SEC_login_email'});}
-   if(part==='/login-email/verify'){expect(body).toEqual({reference:'SEC_login_email',code:'12345678'});state.loginEmail=true;return reply({verified:true});}
-   if(part==='/phone')return reply({changes:[]});
-   if(part==='/passkeys/register/options')return reply({reference:'SEC_fixture',options:{challenge:Buffer.alloc(32,7).toString('base64url'),rp:{id:'localhost',name:'SHIDA'},user:{id:Buffer.from('USR_fixture').toString('base64url'),name:'Synthetic user',displayName:'Synthetic user'},pubKeyCredParams:[{type:'public-key',alg:-7}],authenticatorSelection:{residentKey:'required',userVerification:'required'},timeout:30000}});
-   if(part==='/passkeys/register/verify'){expect(body.credential.response.attestationObject).toBeTruthy();state.registered=true;return reply({registered:true});}
-   if(part==='/email/start')return reply({reference:'SEC_email'});
-   if(part==='/email/verify'){expect(body.code).toBe('12345678');state.email=true;return reply({verified:true});}
-   if(part==='/email/proof/start')return reply({reference:'SEC_proof'});
-   if(part==='/email/proof/verify'){state.proof=true;return reply({authorization:'SEC_authorized'});}
-   if(part==='/passkeys/revoke'){expect(state.proof).toBe(true);expect(body).toEqual({reference:'KEY_fixture',authorization:'SEC_authorized',confirmed:true});state.registered=false;state.removed++;return reply({revoked:true});}
-   if(part==='/sessions/revoke'){expect(state.proof).toBe(true);expect(body.authorization).toBe('SEC_authorized');return reply({revoked:true});}
-   if(part==='/delete')return reply({eligible:false,obligations:[{reference:'WEW_fixture',kind:'wewa',action_path:'/shida/space/?view=support'}],retained_records:false});
-   if(part==='/delete/reviews/cancel'){expect(body.reference).toBe('SCT_fixture');state.review='deletion_cancelled';return reply({state:state.review});}
-   if(part==='/delete/reviews'){
-    if(route.request().method()==='POST'){expect(state.proof).toBe(true);expect(body.confirmed).toBe(true);expect(body.authorization).toBe('SEC_authorized');expect(body.obligations).toEqual(['WEW_fixture']);state.review='deletion_requested';return reply({reference:'SCT_fixture'});}
-    return reply({requests:state.review?[{reference:'SCT_fixture',state:state.review,created_at:'2026-01-01',updated_at:'2026-01-01'}]:[]});
-   }
-  }
-  if(path.includes('/personal/support')){
-   if(route.request().method()==='POST'&&path.endsWith('/support'))state.message=body.message;
-   if(path.endsWith('/reply'))state.replies.push(body.message);
-   if(path.endsWith('/close'))state.closed=true;
-   const ticket={public_ref:'SUP_fixture',category:'other',message:state.message,status:state.closed?'closed':'open',created_at:'2026-01-01T00:00:00Z'};
-   if(path.endsWith('/support')&&route.request().method()==='GET')return reply({tickets:state.message?[ticket]:[]});
-   return reply({ticket,messages:state.replies.map(message=>({sender_type:'user',message}))});
-  }
-  if(path==='/api/shida/recovery')return reply({reference:'REC_fixture'});
-  if(path==='/api/shida/recovery/verify')return reply({submitted:true});
-  return reply({},404);
- });
- return state;
-}
 for(const locale of ['en','fr','ln','sw'] as const)for(const method of ['missing','new-passkey','new-email'] as const)test(`deletion verification guidance ${locale} ${method}`,async({page})=>{
  await fixture(page);let writes=0;
  await page.route('**/api/shida/personal/security/**',async route=>{
@@ -64,7 +23,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const method of ['missing
  await page.setViewportSize({width:390,height:844});await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);
  const panel=page.locator('#account-deletion'),message=securityActionErrorText(locale,new Error(method==='missing'?'security_method_missing':'security_method_not_ready'))!;
  await panel.getByRole('button',{name:deletionText(locale,'check'),exact:true}).click();
- await expect(panel.getByRole('status')).toHaveText(message);
+ await expect(panel.getByText(message,{exact:true})).toBeVisible();
  await panel.getByRole('button',{name:deletionText(locale,'confirm'),exact:true}).click();
  await expect(panel.getByRole('alert')).toContainText(message);expect(writes).toBe(0);
  await panel.locator('a[href="#account-recovery-verification"]').click();
@@ -90,12 +49,12 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
  await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);
  await page.getByLabel(securityText(locale,'preferEmail'),{exact:true}).check();
  await page.getByRole('button',{name:deletionText(locale,'check'),exact:true}).click();
- await expect(page.locator('#account-deletion ol')).toContainText('WEW_fixture');
- await page.getByRole('button',{name:deletionText(locale,'review'),exact:true}).click();
+ await expect(page.locator('#account-deletion .deletion-obligations')).toContainText(deletionUx(locale,'wewa'));
+ await page.locator('#account-deletion .deletion-actions').getByRole('button',{name:deletionUx(locale,'review'),exact:true}).click();
  const review=page.locator('.account-deletion-review');
  await review.getByLabel(t('message')).fill('Please review my unresolved obligations.');
- await expect(review.getByRole('button',{name:t('title'),exact:true})).toBeDisabled();
- await review.getByRole('checkbox').check();await review.getByRole('button',{name:t('title'),exact:true}).click();
+ await expect(review.getByRole('button',{name:deletionUx(locale,'reviewSelection'),exact:true})).toBeDisabled();
+ await review.getByRole('checkbox').check();await review.getByRole('button',{name:deletionUx(locale,'reviewSelection'),exact:true}).click();await review.getByRole('button',{name:t('title'),exact:true}).click();
  const proof=page.getByRole('region',{name:securityText(locale,'emailProof'),exact:true});
  await proof.getByLabel(securityText(locale,'code'),{exact:true}).fill('12345678');
  await proof.getByRole('button',{name:securityText(locale,'verify'),exact:true}).click();
@@ -151,7 +110,7 @@ test('failed eligibility read offers retry without confirmation or review',async
  await fixture(page,true,true);let attempts=0;
  await page.route('**/api/shida/personal/security/delete/',route=>{attempts++;return route.fulfill(attempts===1?{status:503,json:{}}:{json:{eligible:true,obligations:[],retained_records:false}});});
  await page.goto('/shida/space/?view=settings');await page.getByRole('button',{name:deletionText('en','check'),exact:true}).click();
- const panel=page.locator('#account-deletion');await expect(panel.getByRole('alert')).toBeVisible();
+ const panel=page.locator('#account-deletion');await expect(page.getByRole('dialog')).toBeVisible();
  await expect(panel.getByRole('button',{name:deletionText('en','confirm'),exact:true})).toHaveCount(0);
  await panel.getByRole('button',{name:deletionText('en','retry'),exact:true}).click();await expect(panel.getByText(deletionText('en','eligible'))).toBeVisible();
 });
