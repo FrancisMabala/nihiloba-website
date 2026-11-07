@@ -1,4 +1,6 @@
 "use client";
+import {useConfirmation} from "./confirmation-dialog";
+import {leaveFormConfirmation} from "../../lib/confirmation-actions";
 import {useCallback,useEffect,useRef,useState} from "react";
 import {requestWords} from "../../lib/services-request-copy";
 import {serviceAmount} from "../../lib/service-time";
@@ -57,6 +59,8 @@ export function ServicesTemplateLibrary(props:LibraryProps){
  return <TemplateLibrary key={`${props.base}:${props.binding}:${props.kind}`} {...props}/>;
 }
 function TemplateLibrary({base,binding,locale,kind,offerings=[],onUse}:LibraryProps){
+ const {request:ask,confirmation}=useConfirmation(locale);
+ const leave=leaveFormConfirmation[locale];
  const d=design[locale];const [terms,setTerms]=useState("");const [step,setStep]=useState(0),[source,setSource]=useState("");const sourceService=offerings.find(row=>row.public_ref===source);const category=serviceCategoryExperience(sourceService?.category,locale);
  const t=copy[locale],common=requestWords(locale),{rows,error,loading,denied,call,reload}=useTemplates(base,binding,kind);
  const [selected,setSelected]=useState<Template|null>(null),[name,setName]=useState(""),[amount,setAmount]=useState(""),[currency,setCurrency]=useState("USD"),[description,setDescription]=useState(""),[duration,setDuration]=useState(""),[lines,setLines]=useState<Line[]>([emptyLine()]);
@@ -68,9 +72,9 @@ function TemplateLibrary({base,binding,locale,kind,offerings=[],onUse}:LibraryPr
  useWorkDraft(!denied&&(!!selected||!!pending),common.leave);
  function begin(row?:Template){if(busy||pending)return;setSelected(row??{template_ref:"",kind,name:"",content:{},revision:0,archived:false});setName(row?.name??"");setAmount(String(row?.content.amount??""));setCurrency(String(row?.content.currency??"USD"));setDescription(String(row?.content.pricing_description??""));setDuration(String(row?.content.duration_minutes??""));setLines(row?asLines(row.content.lines):[emptyLine()]);setNotice("");setTerms(String(row?.content.terms??""));setStep(0);setSource("");}
  function content(){return kind==="quote"?{...(amount?{amount:serviceAmount(amount)}:{}),currency,...(terms?{terms}:{}),...(description?{pricing_description:description}:{}),...(duration?{duration_minutes:Number(duration)}:{})}:{currency,lines:lines.map(line=>({label:line.label,amount:serviceAmount(line.amount),private_detail:line.private_detail||null}))};}
- async function run(command:Pending){
-  if(locked.current||denied)return;
-  if(!navigator.onLine){setNotice(common.offline);return;}
+ async function run(command:Pending,propagate=false){
+  if(locked.current||denied){if(propagate)throw new Error("unavailable");return;}
+  if(!navigator.onLine){setNotice(common.offline);if(propagate)throw new Error("offline");return;}
   locked.current=true;setBusy(true);setNotice("");setPending(command);
   try{
    await call(command.path,command.method,command.body);
@@ -81,6 +85,7 @@ function TemplateLibrary({base,binding,locale,kind,offerings=[],onUse}:LibraryPr
    const status=error instanceof Error?Number(error.message):0;
    if(status>=400&&status<500&&status!==408){setPending(null);setNotice(status===409?t.stale:recovery[locale].invalid);if(status===409){setSelected(null);await reload();}}
    else setNotice(common.uncertain);
+   if(propagate)throw error;
   }finally{locked.current=false;if(alive.current)setBusy(false);}
  }
  function save(event:React.FormEvent){event.preventDefault();if(!selected||busy||pending)return;
@@ -88,7 +93,7 @@ function TemplateLibrary({base,binding,locale,kind,offerings=[],onUse}:LibraryPr
    body:{kind,name,content:content(),...(selected.template_ref?{revision:selected.revision}:{}),idempotency_key:crypto.randomUUID()}});}
   catch{setNotice(recovery[locale].invalid);}
  }
- function archive(row:Template){if(!pending)void run({path:`/${row.template_ref}/archive`,method:"POST",archive:true,body:{revision:row.revision,idempotency_key:crypto.randomUUID()}});}
+ function archive(row:Template){if(pending)return;const command:Pending={path:`/${row.template_ref}/archive`,method:"POST",archive:true,body:{revision:row.revision,idempotency_key:crypto.randomUUID()}};ask({title:`${t.archive}: ${row.name}`,description:d.archiveConfirm,confirmLabel:t.archive,severity:"warning",onConfirm:()=>run(command,true)});}
  if(denied)return <p role="alert">{recovery[locale].denied}</p>;
  function seed(ref:string){
   setSource(ref);const service=offerings.find(row=>row.public_ref===ref);if(!service)return;
@@ -96,11 +101,11 @@ function TemplateLibrary({base,binding,locale,kind,offerings=[],onUse}:LibraryPr
  }
  function seedPackage(ref:string){const item=sourceService?.packages.find(row=>row.public_ref===ref);if(!item)return;setAmount(item.price??"");if(item.currency)setCurrency(item.currency);setDuration(String(item.duration_minutes));setDescription((item.description||item.name).slice(0,2000));if(kind==="bill")setLines([{label:item.name.slice(0,120),amount:item.price??"",private_detail:""}]);}
  const steps=[d.basics,kind==="bill"?t.lines:d.pricing,d.conditions,d.preview];
- return <section className="svc-template-library" aria-label={kind==="quote"?t.quote:t.bill}>
+ return <section className="svc-template-library" aria-label={kind==="quote"?t.quote:t.bill}>{confirmation}
   <header className="svc-template-toolbar"><div><h2>{selected?(selected.template_ref?t.edit:t.new):(kind==="quote"?d.quotes:d.bills)}</h2><p>{d.reusable}</p></div>{!selected&&<button className="svc-primary" disabled={busy||!!pending||loading||!!error} type="button" onClick={()=>begin()}>＋ {t.new}</button>}</header>
   {loading&&<p role="status">{common.loading}</p>}{error&&<p role="alert">{t.failed}</p>}{notice&&<p className="svc-notice" role="status">{notice}</p>}
   {error&&<button disabled={busy||!!pending} onClick={()=>void reload()}>{common.retry}</button>}{pending&&!busy&&<button onClick={()=>void run(pending)}>{common.retry}</button>}
-  {!selected&&<>{!loading&&!error&&rows.length===0&&<div className="svc-template-empty"><span aria-hidden="true">▤</span><h3>{t.empty}</h3><p>{d.empty}</p></div>}<div className="svc-template-list">{rows.map(row=><article key={row.template_ref}><span className="svc-template-icon" aria-hidden="true">▤</span><div><h3>{row.name}</h3><p>{String(row.content.pricing_description??(kind==="bill"?d.itemized:d.pricing))}</p><span className="svc-template-chip">{String(row.content.currency??"—")}</span>{row.updated_at&&!Number.isNaN(Date.parse(row.updated_at))&&<time dateTime={row.updated_at} className="svc-template-date">{new Intl.DateTimeFormat(locale,{dateStyle:"medium"}).format(new Date(row.updated_at))}</time>}{row.archived&&<span className="svc-template-chip">{t.archived}</span>}</div>{!row.archived&&<div className="svc-template-row-actions"><button disabled={busy||!!pending} type="button" onClick={()=>begin(row)}>{t.edit}</button><details><summary aria-label={`${d.actions}: ${row.name}`}>⋮</summary><div><button disabled={busy||!!pending} type="button" onClick={()=>begin({...row,template_ref:"",revision:0})}>{d.duplicate}</button><button disabled={busy||!!pending} type="button" onClick={()=>{if(window.confirm(d.archiveConfirm))archive(row);}}>{t.archive}</button></div></details></div>}</article>)}</div><aside className="svc-template-info"><strong>{d.about}</strong><p>{d.snapshot}</p>{onUse&&<button type="button" onClick={onUse}>{d.useHelp} →</button>}</aside></>}
+  {!selected&&<>{!loading&&!error&&rows.length===0&&<div className="svc-template-empty"><span aria-hidden="true">▤</span><h3>{t.empty}</h3><p>{d.empty}</p></div>}<div className="svc-template-list">{rows.map(row=><article key={row.template_ref}><span className="svc-template-icon" aria-hidden="true">▤</span><div><h3>{row.name}</h3><p>{String(row.content.pricing_description??(kind==="bill"?d.itemized:d.pricing))}</p><span className="svc-template-chip">{String(row.content.currency??"—")}</span>{row.updated_at&&!Number.isNaN(Date.parse(row.updated_at))&&<time dateTime={row.updated_at} className="svc-template-date">{new Intl.DateTimeFormat(locale,{dateStyle:"medium"}).format(new Date(row.updated_at))}</time>}{row.archived&&<span className="svc-template-chip">{t.archived}</span>}</div>{!row.archived&&<div className="svc-template-row-actions"><button disabled={busy||!!pending} type="button" onClick={()=>begin(row)}>{t.edit}</button><details><summary aria-label={`${d.actions}: ${row.name}`}>⋮</summary><div><button disabled={busy||!!pending} type="button" onClick={()=>begin({...row,template_ref:"",revision:0})}>{d.duplicate}</button><button disabled={busy||!!pending} type="button" onClick={()=>archive(row)}>{t.archive}</button></div></details></div>}</article>)}</div><aside className="svc-template-info"><strong>{d.about}</strong><p>{d.snapshot}</p>{onUse&&<button type="button" onClick={onUse}>{d.useHelp} →</button>}</aside></>}
   {selected&&<form ref={form} onSubmit={event=>{if(step<3){event.preventDefault();setStep(step+1);}else save(event);}}>
    <ol className="svc-template-steps" aria-label={d.editor}>{steps.map((label,index)=><li key={label} aria-current={step===index?"step":undefined}><span>{index+1}</span>{label}</li>)}</ol>
    <fieldset disabled={busy||!!pending} className="svc-template-fields">
@@ -108,7 +113,7 @@ function TemplateLibrary({base,binding,locale,kind,offerings=[],onUse}:LibraryPr
    {step===1&&<><h3 tabIndex={-1}>{steps[1]}</h3>{sourceService&&sourceService.packages.length>0&&<label>{d.package}<select defaultValue="" onChange={event=>seedPackage(event.target.value)}><option value="">{d.choosePackage}</option>{sourceService.packages.map(item=><option key={item.public_ref} value={item.public_ref}>{item.name}{item.price!==null?` · ${item.price} ${item.currency??""}`:""}</option>)}</select></label>}{kind==="quote"?<><p className="svc-template-hint">{d.quoteHelp}</p><label>{t.amount}<input autoFocus inputMode="decimal" value={amount} onChange={event=>setAmount(event.target.value)}/></label><label>{t.description}<textarea rows={4} maxLength={2000} value={description} onChange={event=>setDescription(event.target.value)}/></label><label>{t.duration}<input type="number" min={1} value={duration} onChange={event=>setDuration(event.target.value)}/></label></>:<>{lines.map((line,index)=><div className="svc-template-line" key={index}><label>{t.label}<input required value={line.label} maxLength={120} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,label:event.target.value}:item))}/></label><label>{t.amount}<input required inputMode="decimal" value={line.amount} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,amount:event.target.value}:item))}/></label><label>{t.detail}<input value={line.private_detail} maxLength={500} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,private_detail:event.target.value}:item))}/></label><button type="button" disabled={lines.length===1} onClick={()=>setLines(old=>old.filter((_,i)=>i!==index))}>{t.remove}</button></div>)}<button type="button" onClick={()=>setLines(old=>[...old,emptyLine()])}>＋ {t.add}</button></>}</>}
    {step===2&&<><h3 tabIndex={-1}>{d.conditions}</h3>{kind==="quote"?<label>{d.conditions}<textarea autoFocus rows={8} maxLength={2000} value={terms} onChange={event=>setTerms(event.target.value)}/></label>:<p>{d.billConditions}</p>}<aside className="svc-template-info">{t.review}</aside></>}
    {step===3&&<div className="svc-template-review"><span className="svc-template-chip">{d.previewOnly}</span><h3 tabIndex={-1}>{name}</h3><p>{currency}</p>{kind==="quote"?<><strong>{amount||"—"} {amount?currency:""}</strong><p>{description||"—"}</p>{terms&&<><h4>{d.conditions}</h4><p>{terms}</p></>}{duration&&<p>{t.duration}: {duration}</p>}</>:<ul>{lines.map((line,index)=><li key={index}><span>{line.label}</span><strong>{line.amount} {currency}</strong>{line.private_detail&&<small>{t.detail}: {line.private_detail}</small>}</li>)}</ul>}<p>{d.snapshot}</p></div>}
-   <footer className="svc-template-footer"><button type="button" onClick={()=>{if(step>0)setStep(step-1);else if(window.confirm(common.leave))setSelected(null);}}>{step>0?d.back:t.cancel}</button><button className="svc-primary" disabled={busy} type="submit">{step===3?t.save:d.next} {step<3?"→":""}</button></footer>
+   <footer className="svc-template-footer"><button type="button" onClick={()=>{if(step>0)setStep(step-1);else ask({title:leave.title,description:leave.description,confirmLabel:leave.action,severity:"warning",onConfirm:()=>setSelected(null)});}}>{step>0?d.back:t.cancel}</button><button className="svc-primary" disabled={busy} type="submit">{step===3?t.save:d.next} {step<3?"→":""}</button></footer>
    </fieldset></form>}
  </section>;
 }

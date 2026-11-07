@@ -98,3 +98,18 @@ for(const width of [390,1440])test(`candidate failed save keeps edits and saved 
 test('candidate failed deletion retains the draft',async({page})=>{
  const writes=await fixture(page,{expired:true,failDelete:true}),u=candidateUX.fr;await page.goto('/fr/shida/space?view=candidate');await page.getByRole('button',{name:u.delete,exact:true}).click();const modal=page.getByRole('dialog');await modal.getByRole('button',{name:u.delete,exact:true}).click();await expect(modal.getByRole('alert')).toBeVisible();await modal.getByRole('button',{name:u.keep}).click();await expect(page.locator('.candidate-draft-card')).toBeVisible();expect(writes).toHaveLength(1);
 });
+
+for(const locale of ['en','fr','ln','sw'] as const)test(`candidate confirmation keyboard and failure ${locale}`,async({page})=>{
+ const writes=await fixture(page,{existing:true}),t=candidateCopy[locale];
+ page.on('dialog',()=>{throw new Error('Native browser confirmation must not open');});
+ await page.setViewportSize({width:390,height:844});
+ await page.goto(`${locale==='en'?'':`/${locale}`}/shida/space?view=candidate`);
+ const trigger=page.getByRole('button',{name:t.archive,exact:true});await trigger.click();
+ const modal=page.getByRole('dialog');await expect(modal).toBeVisible();
+ await expect(modal).toHaveAttribute('aria-describedby',/.+/);
+ await page.keyboard.press('Escape');await expect(modal).not.toBeVisible();await expect(trigger).toBeFocused();expect(writes).toHaveLength(0);
+ await trigger.click();await modal.getByRole('button',{name:t.archive,exact:true}).click();
+ await expect(modal.getByRole('alert')).toBeVisible();await expect(modal).toBeVisible();expect(writes).toHaveLength(1);
+ expect(writes[0]).toMatchObject({action:'archive',reference:'CND_test',version:'2026-11-04T00:00:00Z'});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+});

@@ -1,7 +1,8 @@
 import {test,expect,type Page} from '@playwright/test';
 import {personalOfferCopy} from '../../app/lib/personal-offer-copy';
+import {confirmationActions} from '../../app/lib/confirmation-actions';
 import {offerFormCopy} from '../../app/lib/personal-offer-form';
-async function fixture(page:Page){
+async function fixture(page:Page,failDelete=false){
  let draft:Record<string,unknown>|null=null;
  const writes:Record<string,unknown>[]=[];
  await page.route('**/api/**',async route=>{
@@ -14,7 +15,7 @@ async function fixture(page:Page){
    const body=request.postDataJSON();writes.push(body);
    if(body.action==='start'){draft={public_ref:'PJO_test',revision:1,state:'active',values:{},result_job_ref:null};return reply(draft);}
    if(body.action==='save'){draft={...draft,revision:Number(draft?.revision)+1,values:body.values};return reply(draft);}
-   if(body.action==='cancel'){draft={...draft,state:'cancelled'};return reply(draft);}
+   if(body.action==='cancel'){if(failDelete)return reply({},503);draft={...draft,state:'cancelled'};return reply(draft);}
    if(body.action==='finalize'){
     if(writes.filter(w=>w.action==='finalize').length===1)return reply({},503);
     draft={...draft,state:'completed',result_job_ref:'JOB_test',values:{}};return reply(draft);
@@ -85,7 +86,25 @@ test('cancelled progress uses a new operation key on next start',async({page})=>
  const writes=await fixture(page),t=personalOfferCopy.en;await page.goto('/shida/space?view=job-offer');
  await page.getByRole('button',{name:t.start,exact:true}).click();
  await page.getByRole('button',{name:t.save,exact:true}).click();
- page.on('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:t.cancel,exact:true}).click();
+ await page.getByRole('button',{name:confirmationActions.en.deleteDraft,exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:confirmationActions.en.deleteDraft,exact:true}).click();
  await page.getByRole('button',{name:t.start,exact:true}).click();
  const starts=writes.filter(w=>w.action==='start');expect(starts).toHaveLength(2);expect(starts[0].operation_key).not.toBe(starts[1].operation_key);
 });
+
+ test('saved offer removal requires specific confirmation and preserves on failure',async({page})=>{
+  const writes=await fixture(page,true);const t=personalOfferCopy.fr;
+  await page.goto('/fr/shida/space?view=job-offer');await page.getByRole('button',{name:t.start,exact:true}).click();
+  await page.locator('.candidate-form').getByRole('button',{name:t.save,exact:true}).click();
+  page.on('dialog',()=>{throw Error('Native confirmation');});
+  await page.getByRole('button',{name:'Supprimer le brouillon',exact:true}).click();
+  const modal=page.getByRole('dialog');await expect(modal).toContainText(confirmationActions.fr.deleteOffer);
+  await modal.getByRole('button',{name:'Conserver le brouillon',exact:true}).click();
+  await expect(page.getByRole('button',{name:t.resume,exact:true})).toBeVisible();
+  expect(writes.some(w=>w.action==='cancel')).toBe(false);
+  await page.getByRole('button',{name:confirmationActions.fr.deleteDraft,exact:true}).click();
+  await modal.getByRole('button',{name:confirmationActions.fr.deleteDraft,exact:true}).click();
+  await expect(modal.getByRole('alert')).toBeVisible();
+  await modal.getByRole('button',{name:confirmationActions.fr.keepDraft,exact:true}).click();
+  await expect(page.getByRole('button',{name:t.resume,exact:true})).toBeVisible();
+  expect(writes.filter(w=>w.action==='cancel')).toHaveLength(1);
+ });

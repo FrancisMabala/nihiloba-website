@@ -3,6 +3,8 @@
 import {marketplaceLanguagePath} from "../../lib/marketplace-navigation";
 import Link from "next/link";
 import "./wenze-cart.css";
+import {useConfirmation} from "./confirmation-dialog";
+import {confirmationActions} from "../../lib/confirmation-actions";
 import { useState } from "react";
 type Locale = "en"|"fr"|"ln"|"sw";
 import { safePublicImageUrl, safePublicWebsiteUrl } from "../../lib/safe-public-url";
@@ -23,6 +25,7 @@ export function formatCommerceMoney(amount: string | null, currency: string | nu
 }
 
 export function WenzeCartPage({ locale }: { locale: Locale }) {
+  const {request,confirmation}=useConfirmation(locale);
   const [checkoutBusy,setCheckoutBusy]=useState(false);
   const [orderWhatsApp,setOrderWhatsApp]=useState<string|null>(null);
   const [confirmed,setConfirmed]=useState<string|null>(null);
@@ -51,12 +54,13 @@ export function WenzeCartPage({ locale }: { locale: Locale }) {
   }
   async function clearCart() {
     if (checkoutBusy || pendingItem || pendingAction) return;
-    if (!window.confirm(t.clearConfirm)) return;
-    setPendingAction("clear"); setError(null);
-    try { await clear(); setConflicts([]); }
-    catch (caught) { setError(message(caught)); }
-    finally { setPendingAction(null); }
+    request({title:t.clear,description:confirmationActions[locale].clearCart,confirmLabel:t.clear,severity:"warning",errorMessage:message,onConfirm:async()=>{
+      setPendingAction("clear"); setError(null);
+      try { await clear(); setConflicts([]); }
+      finally { setPendingAction(null); }
+    }});
   }
+
   async function acceptPrices() {
     if (checkoutBusy || pendingItem || pendingAction) return;
     setPendingAction("accept"); setError(null);
@@ -76,15 +80,15 @@ export function WenzeCartPage({ locale }: { locale: Locale }) {
     finally { setPendingAction(null); }
   }
 
-  if(confirmed)return <section className="wenze-cart-page"><div className="container wenze-cart-empty" role="status"><h1>{{en:"Order placed",fr:"Commande enregistrée",ln:"Commande ebombami",sw:"Agizo limehifadhiwa"}[locale]}</h1><p>{confirmed}</p><p>{{en:"Your order is saved. Arrange payment with the seller.",fr:"Votre commande est enregistrée. Le paiement reste à convenir avec le vendeur.",ln:"Commande ebombami. Yokana na moteki mpo na kofuta.",sw:"Agizo limehifadhiwa. Kubaliana na muuzaji kuhusu malipo."}[locale]}</p><Link className="button button-primary" href={`${locale==="en"?"":`/${locale}`}/shida/wenze/orders/#${encodeURIComponent(confirmed)}`}>{{en:"Track my orders",fr:"Suivre mes commandes",ln:"Landa bacommande na ngai",sw:"Fuatilia maagizo yangu"}[locale]}</Link>{orderWhatsApp&&<><p><a className="button button-secondary" href={orderWhatsApp}>{{en:"View my orders on WhatsApp",fr:"Voir mes commandes sur WhatsApp",ln:"Tala bacommande na WhatsApp",sw:"Angalia maagizo kwenye WhatsApp"}[locale]}</a></p><p>{{en:"Press Send in WhatsApp using the same SHIDA account. Opening this link does not send a message.",fr:"Appuyez sur Envoyer dans WhatsApp avec le même compte SHIDA. Ouvrir le lien n’envoie aucun message.",ln:"Finá Kotinda na WhatsApp na compte SHIDA moko. Kofungola lien etindaka message te.",sw:"Bonyeza Tuma kwenye WhatsApp kwa akaunti hiyo hiyo ya SHIDA. Kufungua kiungo hakutumi ujumbe."}[locale]}</p></>}</div></section>;
-  if (loading) return <section className="wenze-cart-page"><div className="container marketplace-state" role="status"><p>{t.loading}</p></div></section>;
-  if (!cart || cart.item_count === 0) return <section className="wenze-cart-page"><div className="container wenze-cart-empty"><CartIcon/><h1>{t.title}</h1><p>{restoreError ? commerceErrorMessage(locale, restoreError) : t.empty}</p>{restoreError&&<button className="button button-secondary" type="button" onClick={() => void refresh()}>{t.retry}</button>}<Link className="button button-primary" href={shoppingPath}>{t.continueShopping}</Link></div></section>;
+  if(confirmed)return <section className="wenze-cart-page">{confirmation}<div className="container wenze-cart-empty" role="status"><h1>{{en:"Order placed",fr:"Commande enregistrée",ln:"Commande ebombami",sw:"Agizo limehifadhiwa"}[locale]}</h1><p>{confirmed}</p><p>{{en:"Your order is saved. Arrange payment with the seller.",fr:"Votre commande est enregistrée. Le paiement reste à convenir avec le vendeur.",ln:"Commande ebombami. Yokana na moteki mpo na kofuta.",sw:"Agizo limehifadhiwa. Kubaliana na muuzaji kuhusu malipo."}[locale]}</p><Link className="button button-primary" href={`${locale==="en"?"":`/${locale}`}/shida/wenze/orders/#${encodeURIComponent(confirmed)}`}>{{en:"Track my orders",fr:"Suivre mes commandes",ln:"Landa bacommande na ngai",sw:"Fuatilia maagizo yangu"}[locale]}</Link>{orderWhatsApp&&<><p><a className="button button-secondary" href={orderWhatsApp}>{{en:"View my orders on WhatsApp",fr:"Voir mes commandes sur WhatsApp",ln:"Tala bacommande na WhatsApp",sw:"Angalia maagizo kwenye WhatsApp"}[locale]}</a></p><p>{{en:"Press Send in WhatsApp using the same SHIDA account. Opening this link does not send a message.",fr:"Appuyez sur Envoyer dans WhatsApp avec le même compte SHIDA. Ouvrir le lien n’envoie aucun message.",ln:"Finá Kotinda na WhatsApp na compte SHIDA moko. Kofungola lien etindaka message te.",sw:"Bonyeza Tuma kwenye WhatsApp kwa akaunti hiyo hiyo ya SHIDA. Kufungua kiungo hakutumi ujumbe."}[locale]}</p></>}</div></section>;
+  if (loading) return <section className="wenze-cart-page">{confirmation}<div className="container marketplace-state" role="status"><p>{t.loading}</p></div></section>;
+  if (!cart || cart.item_count === 0) return <section className="wenze-cart-page">{confirmation}<div className="container wenze-cart-empty"><CartIcon/><h1>{t.title}</h1><p>{restoreError ? commerceErrorMessage(locale, restoreError) : t.empty}</p>{restoreError&&<button className="button button-secondary" type="button" onClick={() => void refresh()}>{t.retry}</button>}<Link className="button button-primary" href={shoppingPath}>{t.continueShopping}</Link></div></section>;
 
   const fulfillmentChosen = cart.seller_groups.every(group => group.fulfillment_method !== null);
   const priceChanges = conflicts.filter((conflict) => conflict.code === "price_changed");
   const hasBlockingConflict = conflicts.some((conflict) => conflict.code !== "price_changed");
   const globalConflicts = conflicts.filter((conflict) => !conflict.item_reference);
-  return <div className="wenze-cart-shell"><section className="wenze-cart-hero"><div className="container"><MarketplaceBreadcrumb label={locale==="fr"?"Fil d’Ariane":"Breadcrumb"} items={[{label:"SHIDA",href:`${locale==="en"?"":`/${locale}`}/shida`},{label:"Wenze",href:shoppingPath},{label:t.title}]}/><div className="wenze-cart-title"><div><p className="wenze-cart-eyebrow">WENZE · SHIDA</p><h1>{t.title}</h1></div><span>{cart.item_count} {t.items}</span></div><p>{t.intro}</p></div></section><section className="wenze-cart-page"><div className="container wenze-cart-layout">
+  return <div className="wenze-cart-shell">{confirmation}<section className="wenze-cart-hero"><div className="container"><MarketplaceBreadcrumb label={locale==="fr"?"Fil d’Ariane":"Breadcrumb"} items={[{label:"SHIDA",href:`${locale==="en"?"":`/${locale}`}/shida`},{label:"Wenze",href:shoppingPath},{label:t.title}]}/><div className="wenze-cart-title"><div><p className="wenze-cart-eyebrow">WENZE · SHIDA</p><h1>{t.title}</h1></div><span>{cart.item_count} {t.items}</span></div><p>{t.intro}</p></div></section><section className="wenze-cart-page"><div className="container wenze-cart-layout">
     <div className="wenze-cart-groups">
       {cart.seller_groups.map((group) => <section className="wenze-cart-group" key={group.store_reference} aria-labelledby={`store-${group.store_reference}`}><header><h2 id={`store-${group.store_reference}`}>{group.store_name}</h2><span>{group.items.reduce((sum, item) => sum + item.quantity, 0)}</span></header>
         <div>{group.items.map((item) => { const productUrl = safePublicWebsiteUrl(item.product_url); const image = safePublicImageUrl(item.image?.url); const conflict = conflicts.find((value) => value.item_reference === item.reference); return <article className="wenze-cart-item" key={item.reference}>
