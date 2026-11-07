@@ -49,8 +49,8 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,7
 });
 import {mkdirSync} from 'node:fs';
 const evidence='C:/Users/mabal/Documents/Codex/2026-10-30/one-important-architectural-point-i-would-2/outputs/individual-selling-refinement';
-for(const width of [390,1440])test(`Draft dialogs ${width}`,async({page})=>{
- const t=quickSellCopy.fr,d=draftUX.fr;let saved:Record<string,unknown>|null=null,failSave=true,failDelete=true;
+for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1440])test(`Draft dialogs ${locale} ${width}`,async({page})=>{
+ const t=quickSellCopy[locale],d=draftUX[locale];let saved:Record<string,unknown>|null=null,failSave=true,failDelete=true;
  await page.setViewportSize({width,height:900});
  await page.route('**/api/shida/**',async route=>{const req=route.request(),path=new URL(req.url()).pathname.replace(/\/$/,'');const reply=(json:unknown,status=200)=>route.fulfill({json,status});
  if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Synthetic seller'}});
@@ -62,10 +62,18 @@ for(const width of [390,1440])test(`Draft dialogs ${width}`,async({page})=>{
  if(path.endsWith('/quick-sell-drafts'))return reply({drafts:saved?[saved]:[]});
  if(path.endsWith('/products'))return reply({products:[],total:0});
  return reply({});});
- await page.goto('/fr/shida/wenze/sell/');await page.getByRole('button',{name:t.title,exact:true}).click();
- await page.locator('input[name=name]').fill('Article de test privé');mkdirSync(evidence,{recursive:true});await page.screenshot({path:`${evidence}/form-${width}.png`,fullPage:true});
- await page.getByRole('button',{name:t.cancel,exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog.getByRole('radio').first()).toBeChecked();await dialog.getByRole('radio').nth(1).check();await dialog.getByRole('button',{name:d.continue,exact:true}).click();await expect(dialog.getByRole('alert')).toBeVisible();await expect(page.locator('input[name=name]')).toHaveValue('Article de test privé');await page.screenshot({path:`${evidence}/leave-${width}.png`,fullPage:true});
+ await page.goto(`${locale==='en'?'':'/'+locale}/shida/wenze/sell/`);await page.getByRole('button',{name:t.title,exact:true}).click();
+ await page.locator('input[name=name]').fill('Article de test privé');mkdirSync(evidence,{recursive:true});await page.screenshot({path:`${evidence}/form-${locale}-${width}.png`,fullPage:true});
+ await page.getByRole('button',{name:t.cancel,exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog.getByRole('radio').first()).toBeChecked();await dialog.getByRole('radio').nth(1).check();await dialog.getByRole('button',{name:d.continue,exact:true}).click();await expect(dialog.getByRole('alert')).toBeVisible();await expect(page.locator('input[name=name]')).toHaveValue('Article de test privé');await page.screenshot({path:`${evidence}/leave-${locale}-${width}.png`,fullPage:true});
  await dialog.getByRole('button',{name:d.continue,exact:true}).click();await expect(dialog).not.toBeVisible();await expect(page.locator('.qs-draft-card')).toContainText('Article de test privé');
- await page.locator('.qs-draft-card').getByRole('button',{name:t.remove,exact:true}).click();await page.screenshot({path:`${evidence}/delete-${width}.png`,fullPage:true});await dialog.getByRole('button').last().click();await expect(page.locator('.qs-draft-card')).toBeVisible();await expect(dialog.getByRole('alert')).toBeVisible();
+ await page.locator('.qs-draft-card').getByRole('button',{name:t.remove,exact:true}).click();await expect(dialog.getByRole('button',{name:d.retainDraft,exact:true})).toBeFocused();
+ await expect(dialog.getByRole('button',{name:d.deleteDraft,exact:true})).toBeVisible();
+ const heading=await dialog.getByRole('heading',{name:d.remove,exact:true}).boundingBox(),icon=await dialog.locator('.shida-confirmation-symbol').boundingBox();
+ expect(heading).not.toBeNull();expect(icon).not.toBeNull();expect(icon!.x+icon!.width).toBeLessThan(heading!.x);expect(Math.abs(icon!.y+icon!.height/2-heading!.y-heading!.height/2)).toBeLessThan(2);
+ expect(await dialog.evaluate(node=>node.scrollWidth<=node.clientWidth)).toBe(true);
+ await page.screenshot({path:`${evidence}/delete-${locale}-${width}.png`,fullPage:true});
+ await dialog.getByRole('button',{name:d.retainDraft,exact:true}).click();await expect(dialog).not.toBeVisible();await expect(page.locator('.qs-draft-card')).toBeVisible();
+ await page.locator('.qs-draft-card').getByRole('button',{name:t.remove,exact:true}).click();await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();await expect(page.locator('.qs-draft-card')).toBeVisible();
+ await page.locator('.qs-draft-card').getByRole('button',{name:t.remove,exact:true}).click();await dialog.getByRole('button').last().click();await expect(page.locator('.qs-draft-card')).toBeVisible();await expect(dialog.getByRole('alert')).toBeVisible();
  await dialog.getByRole('button').last().click();await expect(page.locator('.qs-draft-card')).toHaveCount(0);
 });

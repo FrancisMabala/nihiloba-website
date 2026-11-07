@@ -10,7 +10,7 @@ export const confirmationCopy={
  ln:{back:'Zonga',working:'Ezali kosalema…',error:'Likambo oyo esimbi te. Tala makambo ya sikoyo liboso ya komeka lisusu.',conflict:'Makambo ebombami ebongwani. Kanga fenêtre oyo mpe zongisa makambo liboso ya komeka lisusu.'},
  sw:{back:'Rudi',working:'Inaendelea…',error:'Hatua haikukamilika. Kagua taarifa za sasa kabla ya kujaribu tena.',conflict:'Taarifa zilizohifadhiwa zimebadilika. Funga dirisha hili na upakie upya kabla ya kujaribu tena.'}
 };
-export type ConfirmationOptions={title:string;description:string;supportingText?:string;closeLabel?:string;returnFocus?:()=>HTMLElement|null;confirmLabel:string;cancelLabel?:string;severity?:'normal'|'warning'|'danger';onConfirm:()=>void|Promise<void>;errorMessage?:(error:unknown)=>string};
+export type ConfirmationOptions={title:string;description:string;compactHeading?:boolean;supportingText?:string;closeLabel?:string;returnFocus?:()=>HTMLElement|null;confirmLabel:string;cancelLabel?:string;severity?:'normal'|'warning'|'danger';onConfirm:()=>void|Promise<void>;errorMessage?:(error:unknown)=>string};
 
 /** Callbacks must reject on failure; never pass a helper that swallows errors. */
 export function useConfirmation(locale:ConfirmationLocale){
@@ -34,10 +34,10 @@ export function ConfirmationDialog({locale,options,onClose}:{locale:Confirmation
   catch(caught){if(alive.current)setError(options.errorMessage?.(caught)??(caught instanceof Error&&caught.message==='409'?copy.conflict:copy.error));}
   finally{lock.current=false;if(alive.current)setBusy(false);}
  }
- return <dialog ref={dialog} className="shida-confirmation" data-severity={options.severity??'normal'} aria-labelledby={title} aria-describedby={description} aria-busy={busy} onCancel={event=>{event.preventDefault();cancel();}}>
+ return <dialog ref={dialog} className="shida-confirmation" data-compact-heading={options.compactHeading||undefined} data-severity={options.severity??'normal'} aria-labelledby={title} aria-describedby={description} aria-busy={busy} onCancel={event=>{event.preventDefault();cancel();}}>
   {options.closeLabel&&<button className="shida-confirmation-close" type="button" aria-label={options.closeLabel} disabled={busy} onClick={cancel}>×</button>}
-  <span className="shida-confirmation-symbol" aria-hidden="true">{options.severity==='danger'?'!':options.severity==='warning'?'!':'✓'}</span>
-  <h2 id={title}>{options.title}</h2><p id={description}>{options.description}</p>
+  <div className={options.compactHeading?"shida-confirmation-heading":undefined}><span className="shida-confirmation-symbol" aria-hidden="true">{options.severity==='danger'?'!':options.severity==='warning'?'!':'✓'}</span>
+  <h2 id={title}>{options.title}</h2></div><p id={description}>{options.description}</p>
   {options.supportingText&&<p>{options.supportingText}</p>}
   {error&&<p className="shida-confirmation-error" role="alert">{error}</p>}
   {busy&&<p role="status">{copy.working}</p>}

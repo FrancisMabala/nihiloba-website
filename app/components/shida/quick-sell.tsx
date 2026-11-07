@@ -71,7 +71,7 @@ export function QuickSell({locale,embedded=false}:{locale:WenzeLocale;embedded?:
  }
  function removeDraft(saved:SavedDraft){
   const path=`${storePath}/quick-sell-drafts/${enc(saved.draft_ref)}`,body={expected_revision:saved.revision};let completed=false;
-  confirm({title:d.remove,description:d.removeHelp,confirmLabel:t.remove,severity:"danger",errorMessage:error=>error instanceof DashboardApiError&&error.status===409?t.conflict:t.failed,onConfirm:async()=>{
+  confirm({title:d.remove,description:d.removeHelp,confirmLabel:d.deleteDraft,cancelLabel:d.retainDraft,compactHeading:true,severity:"danger",errorMessage:error=>error instanceof DashboardApiError&&error.status===409?t.conflict:t.failed,onConfirm:async()=>{
    if(lock.current)throw new Error("busy");lock.current=true;setBusy(true);
    try{if(!completed){await send(path,body,"DELETE");completed=true;}await load(store,offset,"drafts");}finally{lock.current=false;if(alive.current)setBusy(false);}
   }});

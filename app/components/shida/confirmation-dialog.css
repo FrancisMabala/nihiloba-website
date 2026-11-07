@@ -14,3 +14,9 @@
 .shida-confirmation .shida-confirmation-error{padding:.75rem;background:#ffebe7;color:#8c1d1d;border-radius:.5rem}
 .shida-confirmation .shida-confirmation-close{position:absolute;inset-inline-end:.5rem;top:.4rem;border:0;background:transparent;font-size:1.5rem;padding:.2rem .6rem}
 @media(max-width:480px){.shida-confirmation-actions{display:grid;grid-template-columns:1fr}.shida-confirmation-actions button{width:100%}}
+
+.shida-confirmation-heading{display:flex;align-items:center;gap:.75rem}
+.shida-confirmation-heading .shida-confirmation-symbol{flex-shrink:0}
+.shida-confirmation .shida-confirmation-heading h2{margin:0}
+.shida-confirmation[data-compact-heading] p{margin:.75rem 0}
+.shida-confirmation[data-compact-heading] .shida-confirmation-actions{margin-top:1rem}
