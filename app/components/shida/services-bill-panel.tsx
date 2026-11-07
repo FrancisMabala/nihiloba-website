@@ -1,5 +1,6 @@
 "use client";
 import "./services-financial.css";
+import {useDiscardChanges} from "./discard-changes";
 import {useCallback,useEffect,useRef,useState} from "react";
 import {ServicesBillDelivery} from "./services-bill-delivery";
 import {ServicesTemplatePicker} from "./services-template-library";
@@ -24,6 +25,7 @@ const words={
 type Props={base:string;binding:string;locale:Locale;reservationRef:string;reservationRevision:number;status:string;blocked?:boolean};
 type Action="create"|"edit"|"issue"|"replace"|"void";
 function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,status,blocked=false}:Props){
+ const {discard,confirmation}=useDiscardChanges(locale);
  const t=words[locale],c=billReviewCopy[locale],command=useFinancialCommand(binding);
  const [current,setCurrent]=useState<Version|null>(null),[history,setHistory]=useState<Version[]>([]),[selectedVersion,setSelectedVersion]=useState("");
  const [loading,setLoading]=useState(true),[loaded,setLoaded]=useState(false),[error,setError]=useState<""|"failed"|"denied">(""),[notice,setNotice]=useState("");
@@ -50,7 +52,11 @@ function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,
  const stale=!!origin&&(origin.bill!==current?.bill_ref||origin.revision!==current?.revision||origin.reservation!==effectiveReservationRevision);
  const locked=command.busy||!!command.pending;
  function begin(action:Action){
-  if(locked||form&&!window.confirm(c.leave))return;
+  if(locked)return;
+  if(form){discard(()=>applyBegin(action));return;}
+  applyBegin(action);
+ }
+ function applyBegin(action:Action){
   setForm(action);setReview(null);setNotice("");command.clear();setOrigin({bill:current?.bill_ref,revision:current?.revision,reservation:effectiveReservationRevision});
   setCurrency(current?.currency??"CDF");setLines(current?.lines?.length?current.lines.map(row=>({label:row.label==="Agreed service"?agreed[locale]:row.label,amount:row.amount,private_detail:row.private_detail})):[{label:"",amount:""}]);
   setDueDate(current?.due_date??"");setReason("");
@@ -84,7 +90,7 @@ function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,
  if(error==="denied"||command.status==="denied")return <section className="svc-financial-panel" aria-label={t.title}><h4>{t.title}</h4><p role="alert">{c.denied}</p></section>;
  const actionLabel=form==="create"||form==="edit"?t.save:form==="issue"?t.issue:form==="replace"?t.replace:t.cancel;
  return <section className="svc-financial-panel" aria-label={t.title} style={{border:"1px solid #deded1",borderRadius:16,padding:"clamp(1rem,3vw,1.75rem)",margin:"1rem 0",background:"#fffefa"}}>
-  <h4>{t.title}</h4><p>{t.notice} {c.unpaid}</p>
+  {confirmation}<h4>{t.title}</h4><p>{t.notice} {c.unpaid}</p>
   {loading&&<p role="status">{c.loading}</p>}
   {error&&<p role="alert">{c.failed}</p>}
   {error&&<button type="button" disabled={loading} onClick={()=>void reload()}>{c.retry}</button>}
@@ -127,7 +133,7 @@ function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,
     </div>}
    </section>}
    {command.pending&&<button type="button" disabled={command.busy} onClick={()=>void confirm()}>{c.retry}</button>}
-   {form&&<button type="button" disabled={locked} onClick={()=>{if(window.confirm(c.leave)){setForm(null);setReview(null);setOrigin(null);setNotice("");command.clear();}}}>{back[locale]}</button>}
+   {form&&<button type="button" disabled={locked} onClick={()=>discard(()=>{setForm(null);setReview(null);setOrigin(null);setNotice("");command.clear();})}>{back[locale]}</button>}
    {!form&&!error&&workable&&(!current||current.status==="private_draft")&&<ServicesTemplatePicker base={base} binding={binding} locale={locale} kind="bill" targetRef={reservationRef} targetRevision={current?.revision??reservationRevision} draftRef={current?.status==="private_draft"?current.bill_ref:undefined} onApplied={()=>void reload()}/>}
    {history.length>0&&<details style={{marginTop:20}}><summary>{t.history}</summary><p>{c.history}</p>
     <div style={{display:"flex",gap:8,flexWrap:"wrap",margin:"1rem 0"}}>{history.map(version=><button type="button" key={version.version_ref} aria-pressed={selectedVersion===version.version_ref} onClick={()=>setSelectedVersion(version.version_ref)}>{t.revision} {version.revision} · {version.status==="private_draft"?t.draft:version.status==="void"?t.void:t.issued}</button>)}</div>

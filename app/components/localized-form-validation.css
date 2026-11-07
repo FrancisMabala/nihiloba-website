@@ -1,0 +1,2 @@
+.shida-field-error{display:block;flex-basis:100%;margin-block:0.4rem;color:#a52220;font-size:.875rem;line-height:1.45;font-weight:500;overflow-wrap:anywhere}
+[data-shida-invalid="true"]{outline:2px solid #b32624;outline-offset:1px}

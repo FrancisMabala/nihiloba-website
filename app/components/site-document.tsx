@@ -1,3 +1,4 @@
+import { LocalizedFormValidation } from "./localized-form-validation";
 import type { ReactNode } from "react";
 import type { Locale } from "../lib/i18n";
 import { nav } from "../lib/i18n";
@@ -7,6 +8,7 @@ export function SiteDocument({ children, locale, documentLanguage = locale }: { 
   return (
     <html lang={documentLanguage}>
       <body>
+        <LocalizedFormValidation />
         <a className="skip-link" lang={locale} href="#main-content">{nav[locale].skip}</a>
         <SiteChrome locale={locale}>{children}</SiteChrome>
       </body>

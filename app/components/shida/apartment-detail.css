@@ -44,3 +44,8 @@
 .apt-contract-draft p { margin-bottom: 1rem; }
 .apt-contract-draft dt { margin-top: .8rem; font-weight: 600; }
 .apt-contract-draft dd { margin-left: 0; }
+
+.apt-owner-card { min-width: 0; overflow-wrap: anywhere; }
+.apt-draft-readiness { padding: 1rem; border-radius: .75rem; background: #f1f5ec; margin-block: 1rem; }
+.apt-draft-readiness img { max-width: 100%; height: auto; border-radius: .5rem; object-fit: contain; }
+.apt-owner-card button, .apt-owner-card a { min-height: 44px; }

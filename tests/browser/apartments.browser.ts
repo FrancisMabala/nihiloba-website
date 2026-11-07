@@ -1,5 +1,5 @@
 import {apartmentContractCopy} from '../../app/lib/apartment-contract-copy';
-import {apartmentOwnerCopy} from '../../app/lib/apartment-owner-copy';
+import {apartmentOwnerCopy,apartmentDraftCopy} from '../../app/lib/apartment-owner-copy';
 import {apartmentInterestCopy} from '../../app/lib/apartment-interest-copy';
 import {test, expect} from '@playwright/test';
 import {apartmentSafetyCopy} from '../../app/lib/apartment-safety-copy';
@@ -224,5 +224,34 @@ for(const width of [390,1440]) for(const locale of ['en','fr'] as const) {
   expect(writes).toEqual([]);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   if(locale==='fr')await page.screenshot({path:`test-results/apartments-retention-resume-${width}.png`,fullPage:true});
+ });
+}
+
+for(const locale of ['en','fr','ln','sw'] as const) for(const width of [390,1440]) {
+ test(`private draft deletion keeps data until successful confirmation ${locale} ${width}`,async({page})=>{
+  await page.setViewportSize({width,height:900});const t=apartmentDraftCopy[locale];let writes=0;
+  const native:string[]=[];page.on('dialog',dialog=>{native.push(dialog.message());void dialog.dismiss();});
+  await page.route('**/api/shida/**',route=>{
+   const request=route.request(),path=new URL(request.url()).pathname;
+   if(path.includes('/employment/session'))return route.fulfill({json:{binding:'b'.repeat(64),user:{display_name:'Owner'}}});
+   if(path.endsWith('/manage/'))return route.fulfill({json:{page:1,has_more:false,items:[{reference:'APT_private',commune:'Limete',status:'DRAFT',visible:false,requests:0,web_draft:true,revision:4,draft_summary:{information_complete:true,photo_count:2,minimum_photos:5,updated_at:'2026-11-01T10:00:00Z'}}]}});
+   if(request.method()==='POST'){
+    expect(request.postDataJSON()).toEqual({action:'discard',reference:'APT_private',revision:4,confirmed:true});writes++;
+    return writes===1?route.fulfill({status:503,json:{}}):route.fulfill({json:{status:'DELETED',reference:'APT_private'}});
+   }
+   return route.fulfill({status:404,json:{}});
+  });
+  await page.goto(`${locale==='en'?'':'/'+locale}/shida/appartements/mes-logements/`);
+  await expect(page.getByRole('heading',{name:t.title,exact:true})).toBeVisible();
+  await expect(page.getByRole('link',{name:t.resume,exact:true})).toHaveAttribute('href',/draft=APT_private/);
+  const remove=page.getByRole('button',{name:t.remove,exact:true});await remove.click();
+  await page.keyboard.press('Escape');await expect(remove).toBeFocused();expect(writes).toBe(0);
+  await remove.click();const dialog=page.getByRole('dialog',{name:t.confirm,exact:true});
+  await dialog.getByRole('button',{name:t.remove,exact:true}).click();await expect(dialog.getByRole('alert')).toBeVisible();
+  await expect(page.getByRole('heading',{name:t.title,exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  if(locale==='fr')await page.screenshot({path:`test-results/apartment-draft-delete-${width}.png`,fullPage:true});
+  await dialog.getByRole('button',{name:t.remove,exact:true}).click();await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('heading',{name:t.title,exact:true})).toHaveCount(0);expect(writes).toBe(2);expect(native).toEqual([]);
  });
 }

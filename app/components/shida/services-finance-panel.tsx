@@ -1,5 +1,6 @@
 "use client";
 import "./services-financial.css";
+import {useDiscardChanges} from "./discard-changes";
 import {serviceAmount,serviceLocalInput,serviceTimestamp} from "../../lib/service-time";
 import {useCallback,useEffect,useRef,useState} from "react";
 import {useWorkDraft} from "../../lib/restaurant-work";
@@ -23,6 +24,7 @@ const initial=()=>({measure:"recorded_income",association_kind:"job",reservation
 type Props={base:string;binding:string;locale:Locale};
 export function ServicesFinancePanel(props:Props){return <BoundFinance key={`${props.base}:${props.binding}`} {...props}/>;}
 function BoundFinance({base,binding,locale}:Props){
+ const {discard,confirmation}=useDiscardChanges(locale);
  const t=copy[locale],c=financeReviewCopy[locale],command=useFinancialCommand(binding);
  const [section,setSection]=useState<"recorded_income"|"recorded_expense">("recorded_income");
  const [rows,setRows]=useState<Entry[]>([]),[nextOffset,setNextOffset]=useState<number|null>(null),[reservations,setReservations]=useState<Reservation[]>([]);
@@ -62,7 +64,11 @@ function BoundFinance({base,binding,locale}:Props){
  function set(key:string,value:string){setDraft(old=>({...old,[key]:value}));setReview(null);command.clear();}
  function reset(){setCorrecting(null);setDraft({...initial(),measure:section,category:section==="recorded_income"?"service_income":"general"});setReview(null);setNotice("");command.clear();}
  function begin(row:Entry){
-  if(locked||dirty&&!window.confirm(c.leave))return;
+  if(locked)return;
+  if(dirty){discard(()=>applyBegin(row));return;}
+  applyBegin(row);
+ }
+ function applyBegin(row:Entry){
   setCorrecting(row);setReplacement(true);setReason("error_correction");setReview(null);setNotice("");command.clear();
   setDraft({measure:row.measure,association_kind:row.association_kind,reservation_ref:row.reservation_ref??"",amount:row.amount,currency:row.currency,effective_date:row.effective_date,category:row.category,private_note:row.private_note??""});
  }
@@ -90,7 +96,7 @@ function BoundFinance({base,binding,locale}:Props){
  </dl>;
  if(readError==="denied"||command.status==="denied")return <section className="svc-financial-panel" aria-label={t.title}><h2>{t.title}</h2><p role="alert">{c.denied}</p></section>;
  return <section className="svc-financial-panel" aria-label={t.title} style={{margin:"1.5rem 0",padding:"clamp(1rem,3vw,2rem)",border:"1px solid #deded1",background:"#fffefa",borderRadius:18}}>
-  <div className="svc-planner-tabs" role="group" aria-label={t.title}>{(["recorded_income","recorded_expense"] as const).map(value=><button type="button" key={value} aria-pressed={section===value} disabled={locked} onClick={()=>{if(dirty&&!window.confirm(c.leave))return;setSection(value);setCorrecting(null);setDraft({...initial(),measure:value,category:value==="recorded_income"?"service_income":"general"});setReview(null);command.clear();}}>{value==="recorded_income"?t.income:t.expense}</button>)}</div><h2>{section==="recorded_income"?t.income:t.expense}</h2><p>{t.intro}</p>
+  {confirmation}<div className="svc-planner-tabs" role="group" aria-label={t.title}>{(["recorded_income","recorded_expense"] as const).map(value=><button type="button" key={value} aria-pressed={section===value} disabled={locked} onClick={()=>{const change=()=>{setSection(value);setCorrecting(null);setDraft({...initial(),measure:value,category:value==="recorded_income"?"service_income":"general"});setReview(null);command.clear();};if(dirty)discard(change);else change();}}>{value==="recorded_income"?t.income:t.expense}</button>)}</div><h2>{section==="recorded_income"?t.income:t.expense}</h2><p>{t.intro}</p>
   {loading&&<p role="status">{c.loading}</p>}
   {readError&&<p role="alert">{c.failed} <button type="button" disabled={loading} onClick={()=>void load()}>{c.retry}</button></p>}
   {(notice||command.status)&&<p role="status">{notice||(command.status?c[command.status]:"")}</p>}
@@ -127,7 +133,7 @@ function BoundFinance({base,binding,locale}:Props){
     </div>}
    </section>}
    {command.pending&&<button type="button" disabled={command.busy} onClick={()=>void confirm()}>{c.retry}</button>}
-   {dirty&&<button type="button" disabled={locked} onClick={()=>{if(window.confirm(c.leave))reset();}}>{t.cancel}</button>}
+   {dirty&&<button type="button" disabled={locked} onClick={()=>discard(reset)}>{t.cancel}</button>}
    <h3>{t.history}</h3><p>{c.historyNote}</p><button type="button" disabled={loading||locked} onClick={()=>void load()}>{t.refresh}</button>
    {rows.filter(row=>row.measure===section).length===0&&!readError?<p>{t.empty}</p>:<ul style={{listStyle:"none",padding:0}}>{rows.filter(row=>row.measure===section).map(row=><li key={row.entry_ref} style={{padding:"1rem 0",borderBottom:"1px solid #deded1",overflowWrap:"anywhere"}}>
     <strong>{row.measure==="recorded_income"?t.income:t.expense} · {row.direction<0?"−":"+"}{row.amount} {row.currency}</strong>

@@ -1,4 +1,5 @@
 'use client';
+import {PrivatePhoto} from './apartment-private-photo';
 import Link from 'next/link';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {WenzeBuyerProvider, useWenzeBuyer} from './wenze-buyer';
@@ -122,14 +123,4 @@ function Wizard({locale,actor}:{locale:Locale;actor:ReturnType<typeof useWenzeBu
 function PhotoList({draft,binding,locale,onRemove}:{draft:Draft;binding:string;locale:Locale;onRemove?:(reference:string)=>void}) {
  const pending={en:'Unfinished upload. Retry the same file or cancel this upload.',fr:'Envoi inachevé. Réessayez le même fichier ou annulez cet envoi.',ln:'Foto etindami naino te. Meka fichier wana lisusu to longola botindi.',sw:'Upakiaji haujakamilika. Jaribu faili ileile au ghairi upakiaji.'}[locale];
  return <div className="apt-create-photos">{draft.photos.map((photo,index) => <div key={photo.reference ?? index}><PrivatePhoto listing={draft.reference} reference={photo.reference} binding={binding} label={`${apartmentCreationCopy[locale].photos} ${index+1}`}/>{onRemove && photo.reference && <button type="button" onClick={() => onRemove(photo.reference!)}>{apartmentCreationCopy[locale].remove}</button>}</div>)}{onRemove&&draft.pending_uploads?.filter(reference=>/^APF_[a-f0-9]{32}$/.test(reference)).map(reference=><div key={reference}><p>{pending}</p><button type="button" onClick={()=>onRemove(reference)}>{apartmentCreationCopy[locale].remove}</button></div>)}</div>;
-}
-function PrivatePhoto({listing,reference,binding,label}:{listing:string;reference:string|null;binding:string;label:string}) {
- const [url,setUrl] = useState<string|null>(null);
- useEffect(() => {let alive = true,object:string|null = null;const controller = new AbortController();
-  if(reference && /^APF_[a-f0-9]{32}$/.test(reference)) void fetch(`/api/shida/personal/apartments/${listing}/photos/${reference}/`,{cache:'no-store',headers:{'x-shida-session':binding},signal:controller.signal}).then(async response => {if(!response.ok)throw Error();const blob = await response.blob();if(alive){object = URL.createObjectURL(blob);setUrl(object);}}).catch(() => {});
-  return () => {alive = false;controller.abort();if(object)URL.revokeObjectURL(object);};
- },[listing,reference,binding]);
- // Authenticated preview is a short-lived local blob, never a public provider URL.
- // eslint-disable-next-line @next/next/no-img-element
- return url ? <img src={url} alt={label} width={160} height={120}/> : <span>{label}</span>;
 }

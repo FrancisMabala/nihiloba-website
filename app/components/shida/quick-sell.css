@@ -13,3 +13,5 @@
 .qs .qs-leave-choice{flex-direction:row;align-items:flex-start}
 
 .qs h1{font-family:Georgia,serif}.qs .qs-leave-choice input[type=radio]{width:20px;min-width:20px;height:20px;flex:0 0 20px;padding:0;margin:3px 0 0}.qs .qs-leave-choice span{flex:1}
+
+.qs-list-tools{font-size:.85rem;color:#52645c;margin:12px 0}.qs-list-tools summary{cursor:pointer;min-height:44px;display:flex;align-items:center}.qs-empty{text-align:center;border:1px solid #e2e0d5;border-radius:16px;padding:36px 20px;background:linear-gradient(120deg,#fffefa,#f0f5ea);margin:20px 0}.qs-empty>span{font-size:3rem;color:#38714f}.qs-empty h3{font-family:Georgia,serif;font-size:1.45rem}.qs-draft-photo{border-radius:10px;object-fit:cover;flex-shrink:0}.qs-draft-card>div:first-of-type{flex:1;min-width:0}
