@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {useDiscardChanges} from './discard-changes';
 import { useRestaurantReturn } from '../../lib/use-restaurant-return';
 import type { RestaurantLocale } from '../../services/shida/restaurants-client';
 import type { Envelope, Page, Row } from '../../lib/restaurant-seller';
@@ -23,6 +24,7 @@ type Basket={selections?:{standalone:Selection[];plates:{key:string;components:S
 type CounterOrder=Order&{bill_group_ref?:string|null;balance_due?:string};
 type Line=ItemChoice&{options?:CounterOptions;key:string;item_ref:string;name:string;unitPrice?:string;amounts?:string[];flexible?:boolean;currency:string;quantity?:number;selected_amount?:string;plate:string};
 export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFreeCounter}:{onFreeCounter?:()=>void;pos?:boolean;path:string;binding:string;locale:RestaurantLocale;onFailure:(e:unknown)=>void}) {
+ const {discard,confirmation}=useDiscardChanges(locale);
  const ux=counterCopy(locale), solo=soloCopy[locale];
  const [choice,setChoice]=useState<Row|null>(null),[held,setHeld]=useState<Basket[]>([]),[heldOpen,setHeldOpen]=useState(false),[heldMore,setHeldMore]=useState(false),[showPayment,setShowPayment]=useState(false);
  const simple=checkoutCopy[locale], intent=useRef<'pay'|'later'>('pay');
@@ -76,7 +78,11 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
  const totalText=Object.entries(estimate).filter(([,v])=>v>BigInt(0)).map(([currency,v])=>displayMoney(decimal(v),locale)+' '+currency).join(' · ')||'—';
  async function loadHeld(){const data=await api.run<{items:Basket[];has_more:boolean}>(`${salesPath}/counter-baskets`);if(data){setHeld(data.items);setHeldMore(data.has_more);setHeldOpen(true);}}
  async function hold(){if(!basket||!lines.length)return;const result=await api.run<{basket:Basket}>(`${salesPath}/counter-baskets/${basket.basket_ref}`,'PATCH',{operation_key:crypto.randomUUID(),expected_revision:basket.revision,selections:selections(),fulfillment_method:method,food_preference:preference.trim()||null});if(result){setBasket(null);setLines([]);setPreference('');setDirty(false);setBasketOpen(false);await loadHeld();}}
- async function resume(ref:string){if(basket&&dirty&&!window.confirm(t('discard')))return;const saved=await api.run<Basket>(`${salesPath}/counter-baskets/${ref}`);if(!saved||saved.order_ref||!saved.selections)return;const selected=[...saved.selections.standalone.map(l=>({...l,plate:''})),...saved.selections.plates.flatMap(p=>p.components.map(l=>({...l,plate:p.key})))];const resolved=[...items];for(const ref of new Set(selected.map(l=>l.item_ref))){if(!resolved.some(i=>i.public_ref===ref)){const found=await api.run<Envelope<Row>>(`${path}/menu/items/${ref}`);if(!found)return;resolved.push(found.result);}}setLines(selected.map(l=>{const item=resolved.find(i=>i.public_ref===l.item_ref);return {...l,name:item?.name??l.item_ref,unitPrice:String(item?.unit_price??''),currency:String(item?.currency??''),options:item?.counter_options as CounterOptions,amounts:item?.allowed_amounts as string[]|undefined,flexible:item?.amount_mode==='flexible'};}));setBasket(saved);setMethod(saved.fulfillment_method??'takeaway');setPreference(saved.food_preference??'');setDirty(true);setBasketChanged(false);setHeldOpen(false);setBasketOpen(true);setOrder(null);setMoneyGroupRef(null);}
+ async function resume(ref:string){
+  if(basket&&dirty){discard(async()=>{if(!await loadBasket(ref))throw new Error('resume_failed');});return;}
+  await loadBasket(ref);
+ }
+ async function loadBasket(ref:string){const saved=await api.run<Basket>(`${salesPath}/counter-baskets/${ref}`);if(!saved||saved.order_ref||!saved.selections)return false;const selected=[...saved.selections.standalone.map(l=>({...l,plate:''})),...saved.selections.plates.flatMap(p=>p.components.map(l=>({...l,plate:p.key})))];const resolved=[...items];for(const ref of new Set(selected.map(l=>l.item_ref))){if(!resolved.some(i=>i.public_ref===ref)){const found=await api.run<Envelope<Row>>(`${path}/menu/items/${ref}`);if(!found)return false;resolved.push(found.result);}}setLines(selected.map(l=>{const item=resolved.find(i=>i.public_ref===l.item_ref);return {...l,name:item?.name??l.item_ref,unitPrice:String(item?.unit_price??''),currency:String(item?.currency??''),options:item?.counter_options as CounterOptions,amounts:item?.allowed_amounts as string[]|undefined,flexible:item?.amount_mode==='flexible'};}));setBasket(saved);setMethod(saved.fulfillment_method??'takeaway');setPreference(saved.food_preference??'');setDirty(true);setBasketChanged(false);setHeldOpen(false);setBasketOpen(true);setOrder(null);setMoneyGroupRef(null);return true;}
  async function checkout(next:'pay'|'later'){
   intent.current=next;
   if(basket?.quote&&!dirty){await finalize();return;}
@@ -111,6 +117,7 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
  </section>;
  if(accessLost)return <article className="rst-card rst-work"><p role="alert">{t('posAccessLost')}</p><button type="button" onClick={onFreeCounter}>{t('counter')}</button></article>;
  return <article className="rst-selling" lang={locale}>
+  {confirmation}
   <header className="rst-selling-header"><h2>{ux.title}</h2><button type="button" className="rst-held-entry" disabled={locked} onClick={()=>void loadHeld()}>{ux.held} ({held.length}{heldMore?'+':''})</button></header>
   {!fresh&&<p role="status">{loadFailed?simple.failed:simple.loading}{loadFailed&&<button type="button" disabled={api.busy||!api.online} onClick={()=>void validate()}>{simple.refresh}</button>}</p>}
   {notice&&<p role="status">{notice}</p>}

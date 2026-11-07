@@ -1,4 +1,5 @@
 'use client';
+import {useConfirmation} from './confirmation-dialog';
 import {StationStates} from './restaurant-preparation';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {request,DashboardApiError} from '../../lib/restaurant-seller-browser';
@@ -25,6 +26,7 @@ type Proposal={proposal_ref:string;expires_at:string;group_ref:string;group_revi
 const empty=():Selections=>({standalone:[],plates:[]});
 export function RestaurantService({path,binding,locale,assignment}:{path:string;binding:string;locale:'fr'|'en'|'ln'|'sw';assignment?:ServiceAssignment}){
  const t=useCallback((k:string)=>workText(locale,k),[locale]),s=useCallback((k:string)=>serviceText(locale,k),[locale]);
+ const {request:confirmAction,confirmation}=useConfirmation(locale);
  const assignmentRef=assignment?.assignment_ref,assignmentRevision=assignment?.assignment_revision;
  const url=useCallback((suffix='',query:Record<string,string>={})=>servicePath(path,suffix,assignmentRef&&assignmentRevision?{assignment_ref:assignmentRef,assignment_revision:assignmentRevision}:undefined,query),[path,assignmentRef,assignmentRevision]);
  const [workspace,setWorkspace]=useState<Workspace|null>(null),[groups,setGroups]=useState<GroupSummary[]>([]),[group,setGroup]=useState<ServiceGroup|null>(null);
@@ -77,17 +79,17 @@ export function RestaurantService({path,binding,locale,assignment}:{path:string;
   else{const b=(value as {basket:Basket}).basket;setBasket(b);current.current.basket=b;setDirty(!actionPath.endsWith('/quote'));}
  }
  async function mutate(action:ServiceEnvelope,retry=false){
-  if(lock.current||!navigator.onLine||lost||(!retry&&(!fresh||pending)))return;
+  if(lock.current||!navigator.onLine||lost||(!retry&&(!fresh||pending)))return false;
   lock.current=true;setBusy(true);setMessage('');const generation=epoch.current;let committed=false;
   try{
-   if(retry&&!await read())return;
+   if(retry&&!await read())return false;
    // Freeze the serialized body AND locator query. Reading never rewrites this envelope.
    setPending(action);
    const value=await request(action.path,{method:action.method,body:action.body},binding);
-   if(!alive.current||generation!==epoch.current)return;
-   committed=true;setPending(null);await adopt(action,value);await read();
+   if(!alive.current||generation!==epoch.current)return false;
+   committed=true;setPending(null);await adopt(action,value);await read();return true;
   }catch(e){
-   if(!alive.current||generation!==epoch.current)return;
+   if(!alive.current||generation!==epoch.current)return false;
    if(e instanceof DashboardApiError&&e.status<500&&e.status!==429){
     setPending(null);setDirty(true);setBasket(b=>b?{...b,quote:null,quote_ref:null}:null);
     handle(e);if(![401,403,404].includes(e.status)){await read();setMessage(s('conflict'));}
@@ -95,6 +97,18 @@ export function RestaurantService({path,binding,locale,assignment}:{path:string;
   }finally{lock.current=false;if(alive.current)setBusy(false);}
  }
  const action=(suffix:string,body:unknown,method='POST')=>mutate(serviceEnvelope(url(suffix),method,body));
+ // Keep the latest state gates while retaining the original immutable operation on retries.
+ const confirmationState=useRef({mutate,pending});
+ useEffect(()=>{confirmationState.current={mutate,pending};});
+ function confirmService(kind:'handover'|'close',suffix:string,body:unknown){
+  const operation=serviceEnvelope(url(suffix),'POST',body);let attempted=false;
+  confirmAction({title:s(kind),description:s(kind+'Confirm'),confirmLabel:s(kind),severity:'warning',onConfirm:async()=>{
+   const latest=confirmationState.current;
+   if(attempted&&latest.pending!==operation)throw new Error('409');
+   const retry=attempted;attempted=true;
+   if(!await latest.mutate(operation,retry))throw new Error('action_failed');
+  }});
+ }
  async function open(g:GroupSummary){
   if(lock.current||pending||basket||!navigator.onLine)return;
   lock.current=true;setBusy(true);const generation=epoch.current;
@@ -129,7 +143,7 @@ export function RestaurantService({path,binding,locale,assignment}:{path:string;
  const mixed=new Set(selected.map(line=>workspace?.items.find(i=>i.public_ref===line.item_ref)?.currency).filter(Boolean)).size>1;
  async function selectFromMenu(item:Item){if(!canAdd||locked)return;if(!current.current.basket){await mutate(serviceEnvelope(url('/baskets'),'POST',{operation_key:crypto.randomUUID()}));if(!current.current.basket)return;}add(item);}
  const proposalStale=proposal&&(!group||proposal.group_ref!==group.group_ref||proposal.group_revision!==group.revision||Date.parse(proposal.expires_at)<=now);
- return <article className="rst-work rst-service rst-selling" lang={locale}><h2>{c.title} · {c.table}</h2>
+ return <article className="rst-work rst-service rst-selling" lang={locale}>{confirmation}<h2>{c.title} · {c.table}</h2>
  {workspace&&!workspace.intake_released&&<p role="status">{t('closed')}</p>}
  {message&&<p role="alert">{message}</p>}{!fresh&&!lost&&<p role="status">{s('stale')}</p>}
  <button disabled={busy} onClick={async()=>{if(lock.current)return;lock.current=true;setBusy(true);try{await read();}finally{lock.current=false;setBusy(false);}}}>{t('refresh')}</button>
@@ -139,13 +153,13 @@ export function RestaurantService({path,binding,locale,assignment}:{path:string;
  {(page>1||more)&&<div className="rst-actions"><button disabled={locked||!!basket||page<=1} onClick={()=>{setFresh(false);setPage(p=>p-1);}}>{t('previous')}</button><button disabled={locked||!!basket||!more} onClick={()=>{setFresh(false);setPage(p=>p+1);}}>{t('next')}</button></div>}
  {group&&<section><h3>{group.group_ref}</h3><p>{group.guest_confirmed?s('confirmed'):s('staffOnly')}</p><p>{s('rounds')}</p>
  {!group.can_add_round&&<p>{s('closed')}</p>}<p>{dateText(group.order_until,locale)}</p>
- {group.rounds.map(r=><section className="rst-service-round" key={r.order_ref}><p>{r.order_ref} · {r.entry_source==='assisted'?s('staffRound'):s('guestRound')}</p><p>{t(r.state)} · {r.amount} {r.currency}</p>{r.preparation&&<StationStates preparation={r.preparation} state={r.state} locale={locale}/>} {r.cancellation_pending&&<p>{t('cancellation')}</p>}{r.entry_source==='assisted'&&<><button disabled={locked} onClick={()=>void detail(r.order_ref)}>{t('receipt')}</button>{r.state==='ready'&&<button disabled={locked} onClick={()=>{if(window.confirm(s('handoverConfirm')))void action('/orders/'+r.order_ref+'/actions/assisted_handover',{operation_key:crypto.randomUUID(),expected_revision:r.revision,confirm:true});}}>{s('handover')}</button>}</>}</section>)}
+ {group.rounds.map(r=><section className="rst-service-round" key={r.order_ref}><p>{r.order_ref} · {r.entry_source==='assisted'?s('staffRound'):s('guestRound')}</p><p>{t(r.state)} · {r.amount} {r.currency}</p>{r.preparation&&<StationStates preparation={r.preparation} state={r.state} locale={locale}/>} {r.cancellation_pending&&<p>{t('cancellation')}</p>}{r.entry_source==='assisted'&&<><button disabled={locked} onClick={()=>void detail(r.order_ref)}>{t('receipt')}</button>{r.state==='ready'&&<button disabled={locked} onClick={()=>{confirmService('handover','/orders/'+r.order_ref+'/actions/assisted_handover',{operation_key:crypto.randomUUID(),expected_revision:r.revision,confirm:true});}}>{s('handover')}</button>}</>}</section>)}
  <RestaurantMoney key={`${binding}:${path}:${group.group_ref}`} path={path} groupRef={group.group_ref} groupRevision={group.revision} binding={binding} locale={locale} onChanged={()=>void read()}/>
  {order&&<><ReceiptCard order={order} locale={locale}/>{order.assisted_handover&&<p>{s('attested')} · {dateText(order.assisted_handover.at,locale)}</p>}</>}
  {!basket&&<button disabled={locked||!canAdd} onClick={()=>void action('/baskets',{operation_key:crypto.randomUUID()})}>{s('more')}</button>}
  {group.can_add_round&&!group.guest_confirmed&&<fieldset disabled={locked||!!basket}><legend>{s('propose')}</legend><p>{s('proposalHelp')}</p><label>{s('anchor')}<input maxLength={64} value={anchor} onChange={e=>setAnchor(e.target.value)}/></label><button disabled={!/^[A-Za-z0-9_-]{1,64}$/.test(anchor)} onClick={()=>void action('/groups/'+group.group_ref+'/proposals',{operation_key:crypto.randomUUID(),expected_revision:group.revision,order_ref:anchor})}>{s('propose')}</button></fieldset>}
  {proposal&&!group.guest_confirmed&&<p role="status">{proposalStale?s('expired'):s('pending')+' '+dateText(proposal.expires_at,locale)}</p>}
- {group.can_add_round&&<button disabled={locked||!!basket} onClick={()=>{if(window.confirm(s('closeConfirm')))void action('/groups/'+group.group_ref+'/close',{operation_key:crypto.randomUUID(),expected_revision:group.revision});}}>{s('close')}</button>}
+ {group.can_add_round&&<button disabled={locked||!!basket} onClick={()=>{confirmService('close','/groups/'+group.group_ref+'/close',{operation_key:crypto.randomUUID(),expected_revision:group.revision});}}>{s('close')}</button>}
  </section>}
  <div className="rst-selling-layout">
   <section className="rst-selling-menu" aria-label={c.menu}><div className="rst-selling-menu-head"><div><h3>{c.menu}</h3><p>{c.select}</p></div><span>{filtered.length} {c.items}</span></div>

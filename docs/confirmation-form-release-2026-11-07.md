@@ -17,3 +17,9 @@ Wenze browser regression: 22 passed across four languages and five viewport widt
 Reuses the shared accessible warning dialog in FR/EN/LN/SW. Archiving makes the item inactive and retains stock/history; canonical backend rules continue to reject menu-linked or reserved items. Failed actions stay open, and uncertain retries reuse the exact operation key and revision. No new deletion, schema or permission behavior.
 
 Validation: 15 Business unit tests and 18 Website browser tests passed, including four localized archive scenarios, safe focus, Escape, failed responses and retry envelopes. Both production webpack builds passed. Focused lint has no errors (one existing Business unused-variable warning). Website screenshots remain in test-results/confirmations and docs/evidence. Remaining platform-wide dialogs and custom validation work are not complete.
+
+## Restaurant service and financial confirmations
+
+Replaced native confirmation in basket resumption, handover, group closure, checkout/reopening, journal entries and day closure. These retain the existing server operations, permissions and revisions; no migration or deletion policy changes. Uncertain financial writes require the existing recovery check before retry. Confirmation does not verify or transfer external payments.
+
+Validation: both production webpack builds and TypeScript checks passed; shared behavior passed 47 Business unit tests and five Website browser regressions. Website focused lint passed. Remaining restaurant navigation/guest/conversion dialogs and custom validation audit are still pending.

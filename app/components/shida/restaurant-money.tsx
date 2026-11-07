@@ -6,6 +6,7 @@ import {moneyText,type MoneyLocale} from '../../lib/restaurant-money-copy';
 import {useWorkDraft} from '../../lib/restaurant-work';
 import {workText} from '../../lib/restaurant-work-copy';
 import './restaurant-money.css';
+import {useConfirmation} from './confirmation-dialog';
 import './restaurant-counter-ux.css';
 import {checkoutCopy} from '../../lib/restaurant-sales-checkout-copy';
 import {counterCopy} from '../../lib/restaurant-counter-copy';
@@ -27,6 +28,7 @@ const safeChange=(s:string)=>s===''||/^\d{1,15}(?:\.\d{1,2})?$/.test(s);
 const endpoint:Record<Kind,string>={receipt:'receipts',reversal:'reversals',refund:'refunds',reconciliation:'reconcile-excess'};
 
 export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assignment,paymentAssignment,onChanged,onFinish,recoveryOnly=false,counter=false}:{path:string;groupRef:string;groupRevision?:number;binding:string;locale:MoneyLocale;assignment?:ServiceAssignment;paymentAssignment?:ServiceAssignment;onChanged?:()=>void;onFinish?:()=>void;recoveryOnly?:boolean;counter?:boolean}){
+ const {request:confirmAction,confirmation}=useConfirmation(locale);
  const rc=receiptCopy[locale];
  const [readyUrls,setReadyUrls]=useState<string[]>([]);
  const qrReady=useCallback((url:string)=>setReadyUrls(old=>old.includes(url)?old:[...old,url]),[]);
@@ -62,13 +64,14 @@ export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assi
   return()=>{stopped=true;live.current=false;clearTimeout(timer);clear();window.removeEventListener('focus',resume);window.removeEventListener('online',resume);document.removeEventListener('visibilitychange',resume);window.removeEventListener('shida-signout',clear);};
  },[read,clear]);
  useEffect(()=>{if(groupRevision===undefined)return;const timer=setTimeout(()=>void read(),0);return()=>clearTimeout(timer);},[groupRevision,read]);
- const execute=async(pathToCall:string,body:object,onSuccess:(value:unknown)=>void)=>{if(lock.current||!fresh||pending||!navigator.onLine)return;lock.current=true;setBusy(true);setMessage('');const generation=epoch.current;
+ const execute=async(pathToCall:string,body:object,onSuccess:(value:unknown)=>void)=>{if(lock.current||!fresh||pending||!navigator.onLine)throw new Error('blocked');lock.current=true;setBusy(true);setMessage('');const generation=epoch.current;
   try{const value=await request(pathToCall,{method:'POST',body:JSON.stringify(body)},binding);if(!live.current||generation!==epoch.current)return;onSuccess(value);await read();onChanged?.();}
-  catch(e){if(!live.current||generation!==epoch.current)return;if(!lost(e)){setFresh(false);setMessage(e instanceof DashboardApiError&&e.status===409?t('stale'):t('uncertain'));await read();}}
+  catch(e){if(!live.current||generation!==epoch.current)return;if(!lost(e)){setFresh(false);setMessage(e instanceof DashboardApiError&&e.status===409?t('stale'):t('uncertain'));await read();}throw e;}
   finally{lock.current=false;if(live.current)setBusy(false);}
  };
- const checkout=()=>{if(!bill||bill.pending_rounds.length||bill.state!=='open')return;if(!window.confirm(t('freeze')))return;void execute(service(root+'/checkout'),{operation_key:crypto.randomUUID(),expected_revision:bill.group_revision},value=>setBill((value as {bill:Bill}).bill));};
- const reopen=()=>{if(!bill||bill.state!=='checkout'||bill.payment_revision)return;if(!window.confirm(t('reopen')))return;void execute(service(root+'/reopen'),{operation_key:crypto.randomUUID(),expected_revision:bill.group_revision,expected_payment_revision:bill.payment_revision},value=>setBill((value as {bill:Bill}).bill));};
+ const confirmOnce=(title:string,description:string,action:()=>Promise<void>)=>{let attempted=false;confirmAction({title,description,confirmLabel:title,severity:'warning',errorMessage:()=>t('confirmFailure'),onConfirm:async()=>{if(attempted)throw new Error('check_required');attempted=true;await action();}});};
+ const checkout=()=>{if(!bill||bill.pending_rounds.length||bill.state!=='open')return;const body={operation_key:crypto.randomUUID(),expected_revision:bill.group_revision};confirmOnce(t('freeze'),t('freezeConsequences'),()=>execute(service(root+'/checkout'),body,value=>setBill((value as {bill:Bill}).bill)));};
+ const reopen=()=>{if(!bill||bill.state!=='checkout'||bill.payment_revision)return;const body={operation_key:crypto.randomUUID(),expected_revision:bill.group_revision,expected_payment_revision:bill.payment_revision};confirmOnce(t('reopen'),t('reopenConsequences'),()=>execute(service(root+'/reopen'),body,value=>setBill((value as {bill:Bill}).bill)));};
  const selected=methods.find(m=>m.method_ref===methodRef),original=bill?.entries.find(e=>e.entry_ref===target);
  const change=counter&&selected?.kind==='cash'&&currency&&bill?cashChange(amount,bill.currencies[currency].balance_due):manualChange;
  const valid=!!bill&&canPay&&!!selected&&(selected.enabled||kind==='reversal')&&!!currency&&selected.currencies.includes(currency)&&decimal(amount)&&safeChange(change)&&
@@ -77,11 +80,13 @@ export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assi
  const moneyWrite=async()=>{if(!bill||!valid||lock.current||pending||!fresh)return;
   const body={operation_key:crypto.randomUUID(),method_ref:methodRef,currency,amount,change_returned:change||'0',expected_bill_revision:bill.bill_revision,expected_payment_revision:bill.payment_revision,...(['reversal','refund'].includes(kind)?{target_ref:target,reason:reason.trim()}:{}),...(kind==='refund'?{actually_returned:true}:{}),...(kind==='reconciliation'?{order_ref:order,reason:'received_before_conflict'}:{})};
   const summary=`${t(kind==='receipt'?'record':kind==='reconciliation'?'excess':kind)}\n${selected?.label} · ${currency} · ${amount}${change&&Number(change)>0?` · ${t('change')}: ${change}`:''}`;
-  if(!(counter&&kind==='receipt')&&!window.confirm(`${t('confirm')}\n\n${summary}`))return;
+  const perform=async()=>{
   const envelope:Pending=Object.freeze({path:payment(root+'/money/'+endpoint[kind]),body:JSON.stringify(body),kind,binding,billPath:service(root+'/bill'),recoverPath:payment(root+'/money/recover'),scope:`${path}:${groupRef}:${assignment?.assignment_ref??'owner'}:${assignment?.assignment_revision??0}:${paymentAssignment?.assignment_ref??'owner'}:${paymentAssignment?.assignment_revision??0}`,absence:false});lock.current=true;setBusy(true);setMessage('');setPending(envelope);const generation=epoch.current;
   try{const value=await request(envelope.path,{method:'POST',body:envelope.body},binding) as {bill:Bill};if(!live.current||generation!==epoch.current)return;setPending(null);setBill(value.bill);setReceipt(null);setAmount('');setChange('');setTarget('');setReason('');await read();if(counter&&autoReceipt){try{const receipt=await request(service(root+'/receipt',{language:locale}),{},binding) as Receipt;if(live.current&&generation===epoch.current)setReceipt(receipt);}catch(e){if(!lost(e))setMessage(t('stale'));}}}
-  catch(e){if(!live.current||generation!==epoch.current)return;if(e instanceof DashboardApiError&&e.status<500&&e.status!==429){setPending(null);if(!lost(e)){setAmount('');setChange('');setMessage(t('stale'));await read();}}else setMessage(t('uncertain'));}
+  catch(e){if(!live.current||generation!==epoch.current)return;if(e instanceof DashboardApiError&&e.status<500&&e.status!==429){setPending(null);if(!lost(e)){setAmount('');setChange('');setMessage(t('stale'));await read();}}else setMessage(t('uncertain'));throw e;}
   finally{lock.current=false;if(live.current)setBusy(false);}
+  };
+  if(counter&&kind==='receipt'){try{await perform();}catch{/* Existing counter recovery controls retain the uncertain operation. */}}else confirmOnce(t(kind==='receipt'?'record':kind==='reconciliation'?'excess':kind),`${summary}\n${t('entryConsequences')}`,perform);
  };
  const recover=async()=>{if(!pending||lock.current||!navigator.onLine)return;lock.current=true;setBusy(true);const generation=epoch.current;
   try{const latest=await request(pending.billPath,{},pending.binding) as Bill;const outcome=await request(pending.recoverPath,{method:'POST',body:JSON.stringify({...JSON.parse(pending.body),kind:pending.kind})},pending.binding) as {found:boolean;bill:Bill;operation_outcome?:{entry_ref:string}};
@@ -103,7 +108,7 @@ export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assi
  const settled=!!bill&&bill.entries.length>0&&(['CDF','USD'] as const).every(c=>cents(bill.currencies[c].balance_due)===BigInt(0)&&cents(bill.currencies[c].refund_owed)===BigInt(0));
  const chooseMethod=(m:Method)=>{setKeypadFresh(true);setMethodRef(m.method_ref);setMethodKind(m.kind);const c=m.currencies.find(c=>bill&&cents(bill.currencies[c].balance_due)!>BigInt(0))??m.currencies[0];setCurrency(c??'');setAmount(c&&bill?bill.currencies[c].balance_due:'');setChange('');};
  const fullAmount=!!currency&&!!bill&&cents(amount)!==null&&cents(amount)!>=cents(bill.currencies[currency].balance_due)!&&(selected?.kind==='cash'||cents(amount)===cents(bill.currencies[currency].balance_due));
- if(counter&&!detailed)return <section className="rst-pos-payment" lang={locale}><header><h2>{settled?simple.paid:ux.payment}</h2></header>{message&&<p role="status">{message}</p>}{!bill?<p>{busy?simple.loading:simple.failed}{!busy&&<button onClick={()=>void read()}>{simple.refresh}</button>}</p>:<>
+ if(counter&&!detailed)return <section className="rst-pos-payment" lang={locale}>{confirmation}<header><h2>{settled?simple.paid:ux.payment}</h2></header>{message&&<p role="status">{message}</p>}{!bill?<p>{busy?simple.loading:simple.failed}{!busy&&<button onClick={()=>void read()}>{simple.refresh}</button>}</p>:<>
   {(['CDF','USD'] as const).filter(c=>cents(bill.currencies[c].chargeable)!>BigInt(0)).map(c=><div className="rst-payment-total" key={c}><span>{settled?ux.total:ux.due}</span><strong>{displayMoney(settled?bill.currencies[c].chargeable:bill.currencies[c].balance_due,locale)} {c}</strong>{settled&&<p role="status">{simple.paid}</p>}{cents(bill.currencies[c].refund_owed)!>BigInt(0)&&<p>{t('owed')}: {displayMoney(bill.currencies[c].refund_owed,locale)} {c}</p>}</div>)}
   {pending&&<div role="alert"><p>{t('uncertain')}</p><button disabled={busy} onClick={()=>void recover()}>{t('recover')}</button>{pending.absence&&<button disabled={busy} onClick={()=>void retry()}>{ux.retry}</button>}</div>}
   {!settled&&<fieldset disabled={busy||!fresh||!!pending||!canPay||bill.state==='open'}><legend>{ux.methods}</legend><div className="rst-payment-methods">{(['cash','external_mobile_money','external_card'] as const).map(k=><button type="button" key={k} aria-pressed={methodKind===k} onClick={()=>{setMethodKind(k);const m=methods.find(m=>m.enabled&&m.kind===k);if(m)chooseMethod(m);else{setMethodRef('');setAmount('');}}}>{k==='cash'?simple.cash:k==='external_card'?simple.card:simple.mobile}</button>)}</div>
@@ -115,7 +120,7 @@ export function RestaurantMoney({path,groupRef,groupRevision,binding,locale,assi
   {receipt&&settled&&(receiptOpen||qrOpen)&&<div className="rst-receipt-preview">{receipt.original_rounds.map(r=>r.customer_receipt?<ThermalReceipt key={r.order_ref} value={r.customer_receipt} locale={locale} paper={paper} qrOnly={qrOpen&&!receiptOpen} onReady={qrReady}/>:<p key={r.order_ref}>{simple.failed}</p>)}</div>}
   <details><summary>{simple.other}</summary><button type="button" disabled={busy||!!pending} onClick={()=>setDetailed(true)}>{ux.morePayment}</button><small>{ux.manual}</small></details>
  </>}</section>;
- return <section className="rst-money" lang={locale}>{counter&&<button type="button" disabled={busy||!!pending} onClick={()=>{setDetailed(false);setKind("receipt");setMethodRef("");setCurrency("");setAmount("");setChange("");}}>{ux.back}</button>}<h3>{t('title')}</h3>{message&&<p role="status">{message}</p>}<button disabled={busy} onClick={()=>void read()}>{t('refresh')}</button>
+ return <section className="rst-money" lang={locale}>{confirmation}{counter&&<button type="button" disabled={busy||!!pending} onClick={()=>{setDetailed(false);setKind("receipt");setMethodRef("");setCurrency("");setAmount("");setChange("");}}>{ux.back}</button>}<h3>{t('title')}</h3>{message&&<p role="status">{message}</p>}<button disabled={busy} onClick={()=>void read()}>{t('refresh')}</button>
  {bill&&(!recoveryOnly||bill.state!=='open')&&<>{rounds('chargeable',bill.chargeable_rounds)}{rounds('pending',bill.pending_rounds)}{rounds('excluded',bill.excluded_rounds)}
  <div className="rst-money-totals">{(['CDF','USD'] as const).map(c=><section key={c}><h4>{c}</h4><dl><div><dt>{t('charge')}</dt><dd>{bill.currencies[c].chargeable}</dd></div><div><dt>{t('allocated')}</dt><dd>{bill.currencies[c].net_allocated}</dd></div><div><dt>{t('due')}</dt><dd>{bill.currencies[c].balance_due}</dd></div><div><dt>{t('owed')}</dt><dd>{bill.currencies[c].refund_owed}</dd></div></dl></section>)}</div>
  {bill.state==='open'&&!recoveryOnly&&<button disabled={busy||!fresh||!!pending||!!bill.pending_rounds.length} onClick={checkout}>{t('freeze')}</button>}
