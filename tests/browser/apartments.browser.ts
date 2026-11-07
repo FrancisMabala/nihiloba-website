@@ -1,3 +1,5 @@
+import {apartmentFormCopy} from '../../app/lib/apartment-form-copy';
+import {draftUX} from '../../app/lib/draft-ux-copy';
 import {apartmentContractCopy} from '../../app/lib/apartment-contract-copy';
 import {apartmentOwnerCopy,apartmentDraftCopy} from '../../app/lib/apartment-owner-copy';
 import {apartmentInterestCopy} from '../../app/lib/apartment-interest-copy';
@@ -36,9 +38,9 @@ for (const width of [390,1440]) for (const locale of ['en','fr','ln','sw'] as co
 for (const width of [390,1440]) for (const locale of ['en','fr','ln','sw'] as const) {
  test(`explicit web apartment creation ${locale} ${width}`,async({page}) => {
   await page.setViewportSize({width,height:900});
-  const t=apartmentCreationCopy[locale], m=marketplaceCopy[locale];
+  const t=apartmentCreationCopy[locale], m=marketplaceCopy[locale], c=apartmentFormCopy[locale];
   const writes:string[]=[];
-  const draft={reference:'APT_browser',revision:1,status:'DRAFT',values:{public_name:'Owner Example',property_type:null as string|null,city:null as string|null,commune:'',quartier:'',number_of_rooms:0,bedroom_count:null as number|null,size_sqm:null,description:'',price:0,currency:'USD',advertiser_role:null as string|null,amenities:{}},photos:[] as {reference:string;url:string}[]};
+  const draft={reference:'APT_browser',revision:1,status:'DRAFT',values:{listing_title:'',draft_step:0,public_name:'Owner Example',property_type:null as string|null,city:null as string|null,commune:'',quartier:'',number_of_rooms:null as number|null,bedroom_count:null as number|null,size_sqm:null,description:'',price:0,currency:'USD',advertiser_role:null as string|null,amenities:{}},photos:[] as {reference:string;url:string}[]};
   const image=readFileSync('public/images/apartment-discovery.webp');
   await page.route('**/api/shida/**',async route => {
    const request=route.request(),path=new URL(request.url()).pathname.replace(/\/$/,'');
@@ -57,27 +59,39 @@ for (const width of [390,1440]) for (const locale of ['en','fr','ln','sw'] as co
   });
   await page.goto(`${locale==='en'?'':'/'+locale}/shida/appartements/publier/`);
   await page.getByRole('button',{name:t.start,exact:true}).click();
+  await expect(page.getByLabel(t.rooms,{exact:true})).toHaveValue('');
+  await expect(page.getByLabel(t.name,{exact:true})).toHaveAttribute('readonly','');
+  await page.getByLabel(c.title,{exact:true}).fill('Appartement lumineux');
   await page.getByRole('combobox',{name:t.role,exact:true}).selectOption('owner');
   await page.getByRole('combobox',{name:m.propertyType,exact:true}).selectOption('apartment');
   await page.getByLabel(t.city,{exact:true}).fill('Kinshasa');
-  await page.getByRole('combobox',{name:t.commune,exact:true}).selectOption('Limete');
+  await page.getByRole('combobox',{name:t.commune,exact:true}).fill('Limete');
   await page.getByLabel(t.quartier,{exact:true}).fill('Quartier résidentiel');
   await page.getByLabel(t.rooms,{exact:true}).fill('2');
   await page.getByLabel(t.bedrooms,{exact:true}).fill('1');
   await page.getByLabel(t.description,{exact:true}).fill('Appartement de démonstration pour validation locale.');
-  await page.getByRole('combobox',{name:t.equipment.water,exact:true}).selectOption('true');
-  await page.getByRole('button',{name:t.next,exact:true}).click();
+  await page.getByRole('group',{name:t.equipment.water,exact:true}).getByRole('button',{name:c.yes,exact:true}).click();
+  await expect(page.getByRole('group',{name:t.equipment.parking,exact:true}).getByRole('button',{name:c.unknown,exact:true})).toHaveAttribute('aria-pressed','true');
+  if(locale==='fr'){for(const captureWidth of (width===1440?[768,1024,1440]:[360,390])){await page.setViewportSize({width:captureWidth,height:900});await page.evaluate(async()=>{
+   await document.fonts.ready;
+   (document.activeElement as HTMLElement)?.blur();
+   document.documentElement.style.setProperty('scroll-behavior','auto','important');
+   await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
+   window.scrollTo({top:0,behavior:'instant'});
+  });await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBe(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`test-results/apartment-wizard-information-${captureWidth}.png`,fullPage:true});}await page.setViewportSize({width,height:900});}
+  await page.getByRole('button',{name:apartmentFormCopy[locale].continue,exact:true}).click();
   await page.getByLabel(t.rent,{exact:true}).fill('250');
-  await expect(page.getByRole('button',{name:t.next,exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:apartmentFormCopy[locale].continue,exact:true})).toBeDisabled();
   for(let index=0;index<5;index++) {
    await page.getByLabel(t.choose,{exact:true}).setInputFiles({name:`controlled-${index}.webp`,mimeType:'image/webp',buffer:image});
    await expect(page.getByRole('heading',{name:`${t.photos} · ${index+1}/10`,exact:true})).toBeVisible();
    await expect(page.getByLabel(t.rent,{exact:true})).toHaveValue('250');
   }
   expect(writes.filter(value=>value==='publish')).toHaveLength(0);
-  await page.getByRole('button',{name:t.next,exact:true}).click();
+  await page.getByRole('button',{name:apartmentFormCopy[locale].continue,exact:true}).click();
   await expect(page.getByRole('button',{name:t.publish,exact:true})).toBeDisabled();
   await expect(page.getByRole('checkbox',{name:t.authority,exact:true})).not.toBeChecked();
+  await expect(page.locator('.apt-create-review')).toContainText('Appartement lumineux');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   if(locale==='fr') {
    await expect(page.getByRole('region',{name:t.steps[2],exact:true})).toBeFocused();
@@ -100,6 +114,50 @@ for (const width of [390,1440]) for (const locale of ['en','fr','ln','sw'] as co
   expect(draft.values.city).toBe('Kinshasa');expect(draft.values.price).toBe(250);
  });
 }
+
+for(const locale of ['en','fr','ln','sw'] as const) test(`property save failure and exact step resumption ${locale}`,async({page})=>{
+ const t=apartmentCreationCopy[locale],c=apartmentFormCopy[locale],d=draftUX[locale];
+ const draft={reference:'APT_resume',revision:4,status:'DRAFT',values:{listing_title:'Saved title',draft_step:1,public_name:'Owner Example',property_type:'apartment',city:'Kinshasa',commune:'Limete',quartier:'',number_of_rooms:2,bedroom_count:1,size_sqm:null,description:'Saved description',price:250,currency:'USD',advertiser_role:'owner',amenities:{}},photos:[]};
+ const writes:string[]=[];let fail=true;
+ await page.setViewportSize({width:390,height:900});
+ await page.route('**/api/shida/**',async route=>{
+  const request=route.request(),path=new URL(request.url()).pathname;
+  if(path.includes('/employment/session'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Owner Example'}}});
+  if(path.endsWith('/APT_resume/draft/'))return route.fulfill({json:draft});
+  if(path==='/api/shida/personal/apartments/'&&request.method()==='GET')return route.fulfill({json:{items:[draft],identity:{public_name:'Owner Example',existing_profile:true},kinshasa_communes:['Limete','Gombe']}});
+  if(path==='/api/shida/personal/apartments/'&&request.method()==='POST'){
+   const body=request.postDataJSON();writes.push(body.action);expect(body.reference).toBe('APT_resume');
+   if(fail)return route.fulfill({status:503,json:{}});
+   expect(body.revision).toBe(4);draft.values=body.values;draft.revision++;return route.fulfill({json:draft});
+  }
+  return route.fulfill({status:404,json:{}});
+ });
+ const prefix=locale==='en'?'':'/'+locale;
+ await page.goto(`${prefix}/shida/appartements/publier/?draft=APT_resume`);
+ await expect(page.getByLabel(t.rent,{exact:true})).toHaveValue('250');
+ expect(writes).toEqual([]);
+ await page.getByLabel(t.rent,{exact:true}).fill('300');
+ await page.locator('.apt-create>a').click();
+ const dialog=page.getByRole('dialog',{name:c.leave});
+ await expect(dialog).toBeVisible();await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();
+ await expect(page.getByLabel(t.rent,{exact:true})).toHaveValue('300');
+ await page.locator('.apt-create>a').click();
+ await dialog.getByRole('radio',{name:d.save,exact:true}).check();
+ await dialog.getByRole('button',{name:d.continue,exact:true}).click();
+ await expect(dialog.getByRole('alert')).toHaveText(d.failed);
+ await expect(page.getByLabel(t.rent,{exact:true})).toHaveValue('300');
+ expect(draft.values.price).toBe(250);expect(writes).toEqual(['save']);
+ fail=false;await dialog.getByRole('button',{name:d.continue,exact:true}).click();
+ await expect(page).toHaveURL(`${prefix}/shida/appartements/`);
+ expect(draft.values.price).toBe(300);expect(draft.values.draft_step).toBe(1);expect(writes).toEqual(['save','save']);
+ await page.goto(`${prefix}/shida/appartements/publier/?draft=APT_resume`);
+ await expect(page.getByLabel(t.rent,{exact:true})).toHaveValue('300');
+ await page.getByLabel(t.rent,{exact:true}).fill('450');await page.locator('.apt-create>a').click();
+ await dialog.getByRole('radio',{name:new RegExp(d.discard)}).check();
+ await dialog.getByRole('button',{name:d.continue,exact:true}).click();
+ await expect(page).toHaveURL(`${prefix}/shida/appartements/`);
+ expect(draft.values.price).toBe(300);expect(writes).toEqual(['save','save']);
+});
 
 for(const locale of ['en','fr','ln','sw'] as const) for(const width of [390,1440]) {
  test(`minimal private interest ${locale} ${width}`,async({page})=>{
@@ -169,7 +227,7 @@ for(const locale of ['en','fr','ln','sw'] as const) for(const width of [390,1440
 
 test('resumed draft can cancel an abandoned upload without publishing',async({page})=>{
  const t=apartmentCreationCopy.en, pending='APF_'+'1'.repeat(32),writes:string[]=[];
- const draft={reference:'APT_resume',revision:1,status:'DRAFT',values:{public_name:'Owner Example',property_type:'apartment',city:'Kinshasa',commune:'Limete',quartier:'Public neighbourhood',number_of_rooms:2,bedroom_count:1,size_sqm:null,description:'Controlled draft',price:250,currency:'USD',advertiser_role:'owner',amenities:{}},photos:[],pending_uploads:[pending]};
+ const draft={reference:'APT_resume',revision:1,status:'DRAFT',values:{listing_title:'Controlled draft',public_name:'Owner Example',property_type:'apartment',city:'Kinshasa',commune:'Limete',quartier:'Public neighbourhood',number_of_rooms:2,bedroom_count:1,size_sqm:null,description:'Controlled draft',price:250,currency:'USD',advertiser_role:'owner',amenities:{}},photos:[],pending_uploads:[pending]};
  await page.route('**/api/shida/**',async route=>{
   const request=route.request(),path=new URL(request.url()).pathname.replace(/\/$/,'');
   if(path==='/api/shida/employment/session')return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Owner Example'}}});
@@ -181,11 +239,11 @@ test('resumed draft can cancel an abandoned upload without publishing',async({pa
  });
  await page.goto('/shida/appartements/publier/');
  await page.getByRole('button',{name:t.resume,exact:true}).click();
- await page.getByRole('button',{name:t.next,exact:true}).click();
+ await page.getByRole('button',{name:apartmentFormCopy.en.continue,exact:true}).click();
  await expect(page.getByText('Unfinished upload. Retry the same file or cancel this upload.',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:t.remove,exact:true}).click();
  await expect(page.getByRole('button',{name:t.remove,exact:true})).toHaveCount(0);
- await expect(page.getByRole('button',{name:t.next,exact:true})).toBeDisabled();
+ await expect(page.getByRole('button',{name:apartmentFormCopy.en.continue,exact:true})).toBeDisabled();
  expect(writes).toEqual(['save','save','remove']);expect(draft.status).toBe('DRAFT');
 });
 
