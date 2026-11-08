@@ -58,14 +58,24 @@ for (const width of [390,1440]) for (const locale of ['en','fr','ln','sw'] as co
    return route.fulfill({json:draft});
   });
   await page.goto(`${locale==='en'?'':'/'+locale}/shida/appartements/publier/`);
+  if(locale==='fr')await page.screenshot({path:`test-results/apartment-entry-${width}.png`,fullPage:true});
   await page.getByRole('button',{name:t.start,exact:true}).click();
+  if(locale==='fr'){
+   await page.getByRole('button',{name:c.continue,exact:true}).click();
+   await expect(page.getByText('Ce champ est obligatoire.',{exact:true}).first()).toBeVisible();
+   await page.screenshot({path:`test-results/apartment-validation-${width}.png`,fullPage:true});
+  }
   await expect(page.getByLabel(t.rooms,{exact:true})).toHaveValue('');
   await expect(page.getByLabel(t.name,{exact:true})).toHaveAttribute('readonly','');
   await page.getByLabel(c.title,{exact:true}).fill('Appartement lumineux');
   await page.getByRole('combobox',{name:t.role,exact:true}).selectOption('owner');
   await page.getByRole('combobox',{name:m.propertyType,exact:true}).selectOption('apartment');
   await page.getByLabel(t.city,{exact:true}).fill('Kinshasa');
-  await page.getByRole('combobox',{name:t.commune,exact:true}).fill('Limete');
+  const commune=page.getByRole('combobox',{name:t.commune,exact:true});
+  await commune.fill('');await commune.press('ArrowUp');await commune.press('Enter');await expect(commune).toHaveValue('Gombe');
+  await commune.fill('Li');await expect(page.getByRole('option',{name:'Limete',exact:true})).toBeVisible();
+  if(locale==='fr')await page.screenshot({path:`test-results/apartment-commune-${width}.png`,fullPage:true});
+  await commune.press('ArrowDown');await commune.press('Enter');await expect(commune).toHaveValue('Limete');
   await page.getByLabel(t.quartier,{exact:true}).fill('Quartier résidentiel');
   await page.getByLabel(t.rooms,{exact:true}).fill('2');
   await page.getByLabel(t.bedrooms,{exact:true}).fill('1');
@@ -87,6 +97,7 @@ for (const width of [390,1440]) for (const locale of ['en','fr','ln','sw'] as co
    await expect(page.getByRole('heading',{name:`${t.photos} · ${index+1}/10`,exact:true})).toBeVisible();
    await expect(page.getByLabel(t.rent,{exact:true})).toHaveValue('250');
   }
+  if(locale==='fr')await page.screenshot({path:`test-results/apartment-photos-${width}.png`,fullPage:true});
   expect(writes.filter(value=>value==='publish')).toHaveLength(0);
   await page.getByRole('button',{name:apartmentFormCopy[locale].continue,exact:true}).click();
   await expect(page.getByRole('button',{name:t.publish,exact:true})).toBeDisabled();

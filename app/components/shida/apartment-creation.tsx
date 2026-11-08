@@ -1,5 +1,6 @@
 'use client';
 import {fileValidation} from '../../lib/file-validation';
+import {ApartmentCommune} from './apartment-commune';
 import {PrivatePhoto} from './apartment-private-photo';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
@@ -115,13 +116,13 @@ function Wizard({locale,actor}:{locale:Locale;actor:ReturnType<typeof useWenzeBu
    </section> : draft.status === 'AVAILABLE' ? <section><h2>{t.published}</h2><Link className="button button-primary" href={`${path}/shida/appartements/${draft.reference}/`}>{t.view}</Link></section> : <section ref={panel} tabIndex={-1} aria-label={t.steps[step]}>
     <ol className="apt-create-steps">{t.steps.map((label,index) => <li key={label} aria-current={step === index ? 'step' : undefined}><span className="apt-step-number">{index<step?<CheckIcon/>:index+1}</span><span><strong>{label}</strong><small>{c.steps[index]}</small></span></li>)}</ol>
     <div className="apt-create-layout"><div>
-    <form onSubmit={event => {event.preventDefault();if(step===0&&residential&&v?.bedroom_count!=null&&v.number_of_rooms!=null&&v.bedroom_count>v.number_of_rooms){setError(c.roomsError);return;}void action(step === 2 ? 'publish' : 'save', step === 2 ? undefined : step+1);}}><fieldset disabled={busy}>
+    <form onSubmit={event => {event.preventDefault();if(step===0&&residential&&v?.bedroom_count!=null&&v.number_of_rooms!=null&&v.bedroom_count>v.number_of_rooms){setError(c.roomsError);return;}void action(step === 2 ? 'publish' : 'save', step === 2 ? undefined : step+1);}}><fieldset disabled={busy}><p className="apt-required-help">{c.required}</p>
      {step === 0 && <><div className="apt-form-card"><h2><SpaceIcon name="people"/>{c.general}</h2><div className="apt-create-fields">
       <div>{input('listing_title',c.title,true)}<small>{c.titleHint}</small></div><div>{input('public_name',t.name)}<small>{c.identity}</small></div>
-      <label><span>{t.role}<b className="apt-required" aria-hidden="true"> *</b></span><select aria-label={t.role} required value={v?.advertiser_role ?? ''} onChange={event => set('advertiser_role',event.target.value)}><option value="">{t.unknown}</option>{Object.entries(safety.roles).map(([key,label]) => <option value={key} key={key}>{label}</option>)}</select></label>
+      <label><span>{t.role}<b className="apt-required" aria-hidden="true"> *</b></span><select aria-label={t.role} required value={v?.advertiser_role ?? ''} onChange={event => set('advertiser_role',event.target.value)}><option value="">{t.unknown}</option>{Object.entries(c.roles).map(([key,label]) => <option value={key} key={key}>{label}</option>)}</select></label>
       <label><span>{m.propertyType}<b className="apt-required" aria-hidden="true"> *</b></span><select aria-label={m.propertyType} required value={v?.property_type ?? ''} onChange={event => set('property_type',event.target.value)}><option value="">{t.unknown}</option>{apartmentPropertyTypes.map(key => <option value={key} key={key}>{m.propertyTypes[key]}</option>)}</select></label></div></div>
       <div className="apt-form-card"><h2><SpaceIcon name="home"/>{c.location}</h2><p>{c.locationHint}</p>{input('city',t.city,true)}<div className="apt-create-fields">
-      {v?.city?.trim().toLowerCase() === 'kinshasa' ? <label><span>{t.commune}<b className="apt-required" aria-hidden="true"> *</b></span><input aria-label={t.commune} required list="apt-communes" maxLength={100} value={v.commune ?? ''} onChange={event=>set('commune',event.target.value)}/><datalist id="apt-communes">{progress?.kinshasa_communes.map(name=><option key={name} value={name}/>)}</datalist></label> : input('commune',t.commune,true)}
+      {v?.city?.trim().toLowerCase() === 'kinshasa' ? <ApartmentCommune label={t.commune} value={v.commune ?? ''} options={progress?.kinshasa_communes ?? []} onChange={value=>set('commune',value)}/> : input('commune',t.commune,true)}
       {input('quartier',t.quartier)}</div><small>{c.neighbourhoodHint}</small></div>
       <div className="apt-form-card"><h2><HomeIcon/>{c.features}</h2><div className="apt-create-fields apt-count-fields">{residential&&<>{count('number_of_rooms',t.rooms)}{count('bedroom_count',t.bedrooms)}</>}{input('size_sqm',t.size,false,true)}</div>
       {residential&&v?.bedroom_count!=null&&v.number_of_rooms!=null&&v.bedroom_count>v.number_of_rooms&&<p role="alert">{c.roomsError}</p>}
@@ -129,7 +130,8 @@ function Wizard({locale,actor}:{locale:Locale;actor:ReturnType<typeof useWenzeBu
       <div className="apt-form-card"><h2><SpaceIcon name="management"/>{c.equipment}</h2><p>{c.equipmentHint}</p><div className="apt-create-fields">{Object.entries(t.equipment).filter(([key])=>v?.property_type!=='land'||['water','electricity','parking'].includes(key)).map(([key,label]) => <div key={key} className="apt-amenity" role="group" aria-label={label}><strong>{label}</strong><div>{([true,false,undefined] as const).map((value,index)=><button type="button" key={index} aria-pressed={v?.amenities?.[key]===value} onClick={()=>{const amenities={...v?.amenities};if(value===undefined)delete amenities[key];else amenities[key]=value;set('amenities',amenities);}}>{value===true?c.yes:value===false?c.no:c.unknown}</button>)}</div></div>)}</div></div>
      </>}
      {step === 1 && <div className="apt-form-card"><h2>{t.steps[1]}</h2>{input('price',t.rent,true,true)}<p>{t.terms}</p><h3>{t.photos} · {draft.photos.length}/10</h3><p>{t.photoHelp}</p>
-      <label>{t.choose}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={draft.photos.length >= 10 || Boolean(pendingPhoto)} onChange={event => {const file = event.target.files?.[0];if(file)void upload(file);event.target.value = '';}}/></label>
+      <label className="apt-photo-upload"><SpaceIcon name="orders"/><span>{t.choose}</span><input aria-label={t.choose} type="file" accept="image/jpeg,image/png,image/webp" disabled={draft.photos.length >= 10 || Boolean(pendingPhoto)} onChange={event => {const file = event.target.files?.[0];if(file)void upload(file);event.target.value = '';}}/></label>
+      {pendingPhoto && <p className="apt-upload-name" role="status">{pendingPhoto.file.name}</p>}
       {pendingPhoto && <button type="button" onClick={() => void upload(pendingPhoto.file,pendingPhoto.operation)}>{t.retryPhoto}</button>}
       <PhotoList draft={draft} binding={actor.binding} locale={locale} onRemove={reference => void remove(reference)}/>
      </div>}
@@ -138,7 +140,7 @@ function Wizard({locale,actor}:{locale:Locale;actor:ReturnType<typeof useWenzeBu
      </div>}
      <div className="apt-create-actions">{step > 0 && <button type="button" className="button button-secondary" onClick={() => move(step-1)}>{t.back}</button>}<button type="button" className="button button-secondary" onClick={() => void saveExit()}>{c.saveExit}</button><button className="button button-primary" disabled={step === 1 && (draft.photos.length < 5 || Boolean(pendingPhoto)) || step === 2 && !confirmed}>{busy ? t.working : step === 2 ? t.publish : c.continue}</button></div>
     </fieldset></form>
-    </div><aside className="apt-create-help"><div className="apt-form-card"><Image src="/images/marketplace-heroes/apartments.webp" width={400} height={230} alt=""/><h2>{c.benefitTitle}</h2><ul>{c.benefits.map(text=><li key={text}><CheckIcon/>{text}</li>)}</ul></div><div className="apt-form-card"><h2><LightbulbIcon/>{c.tipsTitle}</h2><ul>{c.tips.map(text=><li key={text}>{text}</li>)}</ul></div><div className="apt-form-card"><h2><HomeIcon/>{c.types}</h2><ul>{apartmentPropertyTypes.map(key=><li key={key}>{m.propertyTypes[key]}</li>)}</ul></div></aside></div>
+    </div><aside className="apt-create-help"><div className="apt-form-card"><Image src="/images/apartment-creation-building.svg" width={400} height={230} alt=""/><h2>{c.benefitTitle}</h2><ul>{c.benefits.map(text=><li key={text}><CheckIcon/>{text}</li>)}</ul></div><div className="apt-form-card"><h2><LightbulbIcon/>{c.tipsTitle}</h2><ul>{c.tips.map(text=><li key={text}>{text}</li>)}</ul></div><div className="apt-form-card"><h2><HomeIcon/>{c.types}</h2><ul>{apartmentPropertyTypes.map(key=><li key={key}><SpaceIcon name={key==='office'?'business':key==='commercial'?'shop':'home'}/>{m.propertyTypes[key]}</li>)}</ul></div></aside></div>
    </section>}
    {error && <div role="alert"><p>{error}</p>{!draft && <button type="button" disabled={busy} onClick={() => void load()}>{t.refresh}</button>}</div>}{notice && <p role="status">{notice}</p>}
   </>}
