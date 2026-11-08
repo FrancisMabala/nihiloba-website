@@ -31,8 +31,10 @@ export function PersonalActivities({locale,current,onMore,onRetry,overview=false
  const prefix=locale==='en'?'':`/${locale}`,w=(key:Parameters<typeof workspaceText>[1])=>workspaceText(locale,key);
  const [creating,setCreating]=useState(false);
 
+ const hasIndividual=!!current&&((current.counts?.listings??0)>0||(current.counts?.listing_drafts??0)>0||(current.counts?.listing_drafts===undefined&&current.items.some(item=>item.individual)));
+ const items=current?.items.filter(item=>!item.individual||hasIndividual)??[];
  const other=current?.markets.filter(m=>['jobs','apartments','hotels','wewa'].includes(m))??[];
- const populated=!!current&&(current.items.length>0||other.length>0||current.business||Object.values(current.counts??{}).some(count=>count>0));
+ const populated=!!current&&(items.length>0||other.length>0||current.business||Object.values(current.counts??{}).some(count=>count>0));
  const whatsapp=(message:string)=>{const url=new URL(OFFICIAL_CHANNELS.whatsapp);url.searchParams.set('text',message);return url.href;};
  const managementLink=(market:string)=>market==='apartments'?`${prefix}/shida/appartements/mes-logements/`:market==='hotels'&&current?.business?'https://business.nihiloba.com/':whatsapp(market==='jobs'?({en:'employment menu',fr:'menu emploi',ln:'menu mosala',sw:'menyu ajira'})[locale]:market==='wewa'?'wewa profile':market==='hotels'?'hotel dashboard':({en:'my profile',fr:'mon profil',ln:'profil na ngai',sw:'wasifu wangu'})[locale]);
  const card=(title:string,help:string,href:string,icon:SpaceIconName,external=false)=><a key={title} href={href} {...external?{target:'_blank',rel:'noopener noreferrer'}:{}}><span className="activity-option-icon"><SpaceIcon name={icon}/></span><span><strong>{title}</strong><small>{help}</small>{external&&<small className="activity-channel">{d.whatsapp}</small>}</span><span aria-hidden="true">›</span></a>;
@@ -41,10 +43,10 @@ export function PersonalActivities({locale,current,onMore,onRetry,overview=false
  const label=(market:ManagedActivity['market'])=>market==='wenze'?t.shop:market==='services'?t.services:t.restaurant;
  const extra=({en:{profiles:'Professional profiles',offerings:'services',mixed:'Different service statuses',more:'Do more with SHIDA'},fr:{profiles:'Profils professionnels',offerings:'services',mixed:'Statuts des services différents',more:'Faites plus avec SHIDA'},ln:{profiles:'Baprofili ya mosala',offerings:'misala',mixed:'Misala ezali na bizaleli ekeseni',more:'Sala mingi na SHIDA'},sw:{profiles:'Wasifu wa kitaalamu',offerings:'huduma',mixed:'Hali tofauti za huduma',more:'Fanya zaidi na SHIDA'}})[locale];
  const groups=current?[
-  {id:'shops',market:'wenze' as const,title:t.shop,items:current.items.filter(i=>i.market==='wenze'&&!i.individual)},
-  {id:'quick-sales',market:'wenze' as const,title:quickSellCopy[locale].individual,items:current.items.filter(i=>i.market==='wenze'&&i.individual)},
-  {id:'restaurants',market:'restaurants' as const,title:t.restaurant,items:current.items.filter(i=>i.market==='restaurants')},
-  {id:'services',market:'services' as const,title:extra.profiles,items:current.items.filter(i=>i.market==='services')}
+  {id:'shops',market:'wenze' as const,title:t.shop,items:items.filter(i=>i.market==='wenze'&&!i.individual)},
+  {id:'quick-sales',market:'wenze' as const,title:quickSellCopy[locale].individual,items:items.filter(i=>i.market==='wenze'&&i.individual)},
+  {id:'restaurants',market:'restaurants' as const,title:t.restaurant,items:items.filter(i=>i.market==='restaurants')},
+  {id:'services',market:'services' as const,title:extra.profiles,items:items.filter(i=>i.market==='services')}
  ]:[];
  return <section className="space-managed activities-dashboard">
  {!current?<p role="status">{t.loading}</p>:<>
@@ -56,7 +58,7 @@ export function PersonalActivities({locale,current,onMore,onRetry,overview=false
  {other.filter(m=>(current.counts?.[m as 'jobs'|'apartments'|'hotels'|'wewa']??0)>0).map(m=><a key={m} className={`summary-${m}`} href={managementLink(m)} {...m==='apartments'?{}:{target:'_blank',rel:'noopener noreferrer'}}><SpaceIcon name={m==='apartments'?'home':m==='hotels'?'business':'management'}/><span><strong>{current.counts![m as 'jobs'|'apartments'|'hotels'|'wewa']}</strong><small>{n[m as 'jobs'|'apartments'|'hotels'|'wewa']}</small></span></a>)}
  </nav>}
  {!populated&&!current.failed&&<div className="activities-welcome"><div><h2>{d.start}</h2><p>{d.empty}</p></div><MarketplaceIllustration/></div>}
- {populated&&(!overview||other.length>0||current.items.some(item=>item.individual))&&<section aria-labelledby="your-activities-heading"><header className="activities-section-heading"><h2 id="your-activities-heading">{overview?u.managed:d.yours}</h2></header>{overview&&current.items.some(item=>item.individual)&&<div className="activity-options">{card(u.listings,u.listingHelp,`${prefix}/shida/space?view=listings`,'orders')}</div>}
+ {populated&&(!overview||other.length>0||hasIndividual)&&<section aria-labelledby="your-activities-heading"><header className="activities-section-heading"><h2 id="your-activities-heading">{overview?u.managed:d.yours}</h2></header>{overview&&hasIndividual&&<div className="activity-options">{card(u.listings,u.listingHelp,`${prefix}/shida/space?view=listings`,'orders')}</div>}
  {!overview&&<div className="activity-groups">{groups.filter(group=>group.items.length).map(group=><section id={`activities-${group.id}`} className={`activity-group group-${group.market}`} key={group.id}><h3><SpaceIcon name={marketIcon(group.market)}/>{group.title}{group.id!=='quick-sales'&&<> ({group.items.length}{group.market==='restaurants'&&current.more?'+':''})</>}</h3><div className="activity-cards">{group.items.map(item=><article key={`${item.market}:${item.ref}`}>
  <ActivityImage item={item}/><div className="activity-card-content"><h3>{item.name||c.unnamed}</h3><span className="activity-category">{item.individual?quickSellCopy[locale].individual:item.providerRef?extra.profiles:label(item.market)}</span>{item.offeringCount&&<p className="activity-offering-count">{item.offeringCount} {extra.offerings}</p>}<div className="activity-meta">{item.location&&<p className="activity-location">{item.location}</p>}<p className={`activity-state activity-state-${item.status}`}>{item.status==='mixed'?extra.mixed:item.status==='pending'?d.pending:c[item.status as 'active'|'inactive'|'draft'|'hidden'|'needsUpdate']}</p></div>
  <div className="activity-actions"><a className="activity-manage" href={item.individual?`${prefix}/shida/space?view=listings`:`${prefix}/shida/seller/${item.market}?${item.query}`}>{item.missing.length?d.complete:d.manage}<span className="sr-only"> · {item.name||c.unnamed}</span><span aria-hidden="true"> →</span></a>{item.published&&!item.individual&&<a href={`${prefix}/shida/${item.market}/${item.providerRef?'providers/':''}${encodeURIComponent(item.providerRef||item.ref)}`}>{item.market==='wenze'?d.viewShop:d.view}<span className="sr-only"> · {item.name||c.unnamed}</span></a>}</div>
