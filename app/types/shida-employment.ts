@@ -46,6 +46,7 @@ export type CandidateApplication = {
 };
 
 export type EmploymentSession = {
+  test_data?: boolean;
   display_name: string;
   account_type: string | null;
 };

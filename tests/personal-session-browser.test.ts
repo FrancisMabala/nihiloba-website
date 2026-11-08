@@ -1,7 +1,14 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { restorePersonalSession, PersonalSessionError } from "../app/lib/personal-session-browser";
 import { request } from "../app/lib/restaurant-seller-browser";
+import {parseEmploymentSession} from '../app/services/shida/employment-client';
 afterEach(() => vi.unstubAllGlobals());
+it.each([true,false,undefined,'true'])("uses only the server boolean test classification (%s)",async flag=>{
+ const user={display_name:'Synthetic',account_type:'personal',test_data:flag};
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue(Response.json({binding:'a'.repeat(64),user})));
+ expect((await restorePersonalSession()).user.test_data).toBe(flag===true);
+ expect(parseEmploymentSession({user}).test_data).toBe(flag===true);
+});
 it("retains private/no-store transport and supports cancellation", async () => {
  const fetcher = vi.fn().mockResolvedValue(Response.json({ binding: "a".repeat(64), user: { display_name: "Synthetic" } })); vi.stubGlobal("fetch", fetcher);
  const signal = new AbortController().signal;

@@ -5,7 +5,7 @@ export function announcePersonalSessionChange() {
   window.dispatchEvent(new Event(PERSONAL_SESSION_EVENT));
   try { localStorage.setItem(PERSONAL_SESSION_EVENT, crypto.randomUUID()); } catch { /* Storage may be disabled. Focus checks remain active. */ }
 }
-export type PersonalSession = { binding: string; user: { display_name: string } };
+export type PersonalSession = { binding: string; user: { display_name: string; test_data?: boolean } };
 export class PersonalSessionError extends Error {
   constructor(public readonly status: number) { super("session_unavailable"); }
 }
@@ -25,5 +25,5 @@ export async function restorePersonalSession(signal?: AbortSignal): Promise<Pers
   if (!response.ok) throw new PersonalSessionError(response.status);
   const value = await response.json();
   if (!/^[a-f0-9]{64}$/.test(value.binding) || typeof value.user?.display_name !== "string") throw new PersonalSessionError(401);
-  return { binding: value.binding, user: { display_name: value.user.display_name } };
+  return { binding: value.binding, user: { display_name: value.user.display_name, test_data: value.user.test_data === true } };
 }

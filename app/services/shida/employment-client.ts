@@ -91,7 +91,7 @@ export function parseCandidateApplication(value: unknown): CandidateApplication 
 
 export function parseEmploymentSession(value: unknown): EmploymentSession {
   const user = record(record(value).user);
-  return { display_name: text(user.display_name, true)!, account_type: text(user.account_type) };
+  return { display_name: text(user.display_name, true)!, account_type: text(user.account_type), test_data: user.test_data === true };
 }
 
 type BackendResult = { payload: unknown; setCookie: string | null };

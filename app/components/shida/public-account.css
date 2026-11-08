@@ -1,6 +1,7 @@
 .shida-header .nav-shell{gap:16px}
 .shida-header .primary-nav{margin-left:auto}
 .shida-public-account{flex:none}
+.shida-test-account-label{display:inline-block;padding:4px 8px;margin:4px;border:1px solid #b5771c;border-radius:6px;background:#fff3d5;color:#644000;font-size:.75rem;font-weight:650}
 .shida-account-trigger{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;max-width:160px;padding:9px 15px;border:1px solid var(--forest);border-radius:999px;background:var(--forest);color:white;font-size:.82rem;font-weight:650;line-height:1.3;cursor:pointer}
 .shida-account-trigger:hover{background:var(--forest-deep)}
 .shida-account-trigger svg{width:18px;height:18px;flex:none}
