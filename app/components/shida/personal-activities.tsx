@@ -1,4 +1,5 @@
 "use client";
+import {MySpaceBanner} from './my-space-banner';
 import {useState} from 'react';
 import {SpaceIcon,type SpaceIconName} from './account-space-icon';
 import type {MarketplaceLocale} from './marketplace-account-copy';
@@ -52,7 +53,7 @@ export function PersonalActivities({locale,current,onMore,onRetry,overview=false
  {!current?<p role="status">{t.loading}</p>:<>
  {!overview&&<div className="activities-toolbar"><button type="button" aria-expanded={creating} aria-controls="new-activity-options" onClick={()=>setCreating(v=>!v)}>{creating?d.close:`+ ${d.newActivity}`}</button></div>}
  {current.failed&&<div className="activities-error" role="alert"><p>{w('partial')}</p><button type="button" onClick={onRetry}>{c.retry}</button></div>}
- {overview&&<div className="activities-hero"><p className="activities-slogan" lang="ln">Misala na yo nyonso, na esika moko!</p><MarketplaceIllustration/><div className="activities-toolbar"><button type="button" aria-expanded={creating} aria-controls="new-activity-options" onClick={()=>setCreating(v=>!v)}>{creating?d.close:`+ ${d.newActivity}`}</button></div></div>}
+ {overview&&<MySpaceBanner locale={locale} label={creating?d.close:`+ ${d.newActivity}`} expanded={creating} onToggle={()=>setCreating(v=>!v)}/>}
  {overview&&<nav className="activities-summary" aria-label={d.yours}>{groups.filter(group=>group.id!=='quick-sales'&&(current.counts?.[group.market]??group.items.length)>0).map(group=><a key={group.id} className={`summary-${group.market}`} href={group.items.length?`${prefix}/shida/space?view=management#activities-${group.id}`:`${prefix}/shida/seller/${group.market}`}><SpaceIcon name={marketIcon(group.market)}/><span><strong>{current.counts?.[group.market]??(!current.loaded.includes(group.market)?'—':`${group.items.length}${group.market==='restaurants'&&current.more?'+':''}`)}</strong><small>{group.title}</small></span></a>)}
  {(current.counts?.listings??0)>0&&<a className="summary-wenze" href={`${prefix}/shida/space?view=listings`}><SpaceIcon name="orders"/><span><strong>{current.counts!.listings}</strong><small>{u.listings}</small></span></a>}
  {other.filter(m=>(current.counts?.[m as 'jobs'|'apartments'|'hotels'|'wewa']??0)>0).map(m=><a key={m} className={`summary-${m}`} href={managementLink(m)} {...m==='apartments'?{}:{target:'_blank',rel:'noopener noreferrer'}}><SpaceIcon name={m==='apartments'?'home':m==='hotels'?'business':'management'}/><span><strong>{current.counts![m as 'jobs'|'apartments'|'hotels'|'wewa']}</strong><small>{n[m as 'jobs'|'apartments'|'hotels'|'wewa']}</small></span></a>)}

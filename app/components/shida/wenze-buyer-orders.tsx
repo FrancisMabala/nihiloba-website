@@ -4,12 +4,15 @@ import {useEffect,useState,useRef} from "react";
 import Link from "next/link";
 type Locale = "en"|"fr"|"ln"|"sw";
 import {WenzeBuyerProvider,useWenzeBuyer} from "./wenze-buyer";
-import {WenzeOrderTimeline,type Timeline} from "./wenze-order-timeline";
+import {WenzeOrderTimeline,progressText,type Timeline} from "./wenze-order-timeline";
 import {WenzeOrderUpdates} from "./wenze-order-updates";
 import {buyerRequest} from "./wenze-buyer";
 import {DeliveryDetails,deliveryLabels} from "./delivery-details";
+import {OrderDetailLayout} from "./order-detail-layout";
+import {orderDetailCopy} from "../../lib/order-detail-copy";
+import {dateText} from "../../lib/restaurant-work";
 import styles from "./wenze-buyer-orders.module.css";
-type Order={fulfillment_method?:string;delivery_details?:Record<string,string|null>|null;delivery_fee?:string|null;delivery_fee_status?:string;reference:string;store_name:string;total:string|null;currency:string;timeline:Timeline;items:{name:string;quantity:number;variant:string|null}[];estimates?:{preparation:string|null;delivery:string|null}|null};
+type Order={created_at?:string;fulfillment_method?:string;delivery_details?:Record<string,string|null>|null;delivery_fee?:string|null;delivery_fee_status?:string;reference:string;store_name:string;total:string|null;currency:string;timeline:Timeline;items:{name:string;quantity:number;variant:string|null}[];estimates?:{preparation:string|null;delivery:string|null}|null};
 const copy={
  en:{title:"My Wenze orders",login:"Sign in to see your orders",empty:"No orders yet. Explore the boutiques to find something you like.",failed:"We couldn’t load your orders. Please try again.",refresh:"Refresh",loading:"Loading your orders…",back:"Browse boutiques",previous:"Previous",next:"Next",amount:"Order total",unknown:"Total to be agreed",note:"Order progress does not confirm payment.",prepare:"Preparation",delivery:"Delivery"},
  fr:{title:"Mes commandes Wenze",login:"Connectez-vous pour voir vos commandes",empty:"Aucune commande pour le moment. Découvrez les boutiques.",failed:"Impossible de charger vos commandes. Réessayez.",refresh:"Actualiser",loading:"Chargement des commandes…",back:"Découvrir les boutiques",previous:"Précédent",next:"Suivant",amount:"Total de la commande",unknown:"Total à convenir",note:"Le suivi de commande ne confirme pas le paiement.",prepare:"Préparation",delivery:"Livraison"} ,ln:{"title": "Bacommande Wenze na ngai", "login": "Kota mpo na kotala bacommande", "empty": "Commande ezali naino te. Tala baboutique.", "failed": "Tokoki kotala bacommande te. Meka lisusu.", "refresh": "Zongisa", "loading": "Tozali koluka bacommande…", "back": "Tala baboutique", "previous": "Ya liboso", "next": "Ya nsima", "amount": "Mbongo nyonso", "unknown": "Mbongo esengeli koyokana", "note": "Kokende liboso ya commande elakisi kofuta te.", "prepare": "Kobongisa", "delivery": "Livraison"},sw:{"title": "Maagizo yangu ya Wenze", "login": "Ingia kuona maagizo", "empty": "Hakuna maagizo bado. Angalia maduka.", "failed": "Hatukuweza kupakia maagizo. Jaribu tena.", "refresh": "Pakua upya", "loading": "Inapakia maagizo…", "back": "Angalia maduka", "previous": "Iliyotangulia", "next": "Inayofuata", "amount": "Jumla ya agizo", "unknown": "Jumla bado kujadiliwa", "note": "Maendeleo ya agizo hayathibitishi malipo.", "prepare": "Maandalizi", "delivery": "Kupeleka"}
@@ -32,12 +35,7 @@ function Orders({binding,locale}:{binding:string;locale:Locale}){
  },[binding,page,refresh]);
  function load(next:number){setData(null);setError(false);setPage(next);setRefresh(value=>value+1);}
  return <><p>{t.note}</p>{(error||Boolean(data?.orders.length))&&<button onClick={()=>load(page)}>{t.refresh}</button>}
- {error?<p role="alert">{t.failed}</p>:!data?<p role="status">{t.loading}</p>:!data.orders.length?<TransactionEmpty locale={locale} message={t.empty} market="wenze"/>:<div style={{display:"grid",gap:"1rem",marginBlock:"1.5rem"}}>{data.orders.map(order=><article id={order.reference} key={order.reference} style={{padding:"1.25rem",border:"1px solid #deded3",borderRadius:".75rem",minWidth:0,overflowWrap:"anywhere"}}>
- <h2>{order.store_name}</h2><small>{order.reference}</small><ul>{order.items.map((item,i)=><li key={i}>{item.name} {item.variant} × {item.quantity}</li>)}</ul>
- <p><strong>{order.total===null?t.unknown:`${t.amount}: ${new Intl.NumberFormat(locale).format(Number(order.total))} ${order.currency}`}</strong></p>
- <OrderDestination key={`${binding}:${order.reference}`} binding={binding} order={order} locale={locale}/><WenzeOrderTimeline locale={locale} timeline={order.timeline}/><WenzeOrderUpdates key={`${binding}:${order.reference}`} locale={locale} identity={`${binding}:${order.reference}`} load={()=>buyerRequest(`orders/${order.reference}/updates`,binding)} read={()=>buyerRequest(`orders/${order.reference}/updates/read`,binding,"POST",{})}/>
- {order.estimates?.preparation&&<p>{t.prepare}: {order.estimates.preparation}</p>}{order.estimates?.delivery&&<p>{t.delivery}: {order.estimates.delivery}</p>}
- </article>)}</div>}
+ {error?<p role="alert">{t.failed}</p>:!data?<p role="status">{t.loading}</p>:!data.orders.length?<TransactionEmpty locale={locale} message={t.empty} market="wenze"/>:<div style={{display:"grid",gap:"1rem",marginBlock:"1.5rem"}}>{data.orders.map(order=><WenzeOrderDetail key={`${binding}:${order.reference}`} binding={binding} order={order} locale={locale}/>)}</div>}
  {data&&(data.orders.length>0||page>0)&&<nav className="transaction-pagination"><button disabled={!data||page===0} onClick={()=>load(page-1)}>{t.previous}</button><button disabled={!data||(page+1)*20>=data.total} onClick={()=>load(page+1)}>{t.next}</button></nav>}</>;
 }
 
@@ -47,4 +45,26 @@ function OrderDestination({binding,order,locale}:{binding:string;order:Order;loc
  const t=deliveryLabels[locale];
  async function open(){setBusy(true);setFailed(false);try{const value=await buyerRequest(`orders/${order.reference}`,binding);if(alive.current)setDetail(value);}catch{if(alive.current)setFailed(true);}finally{if(alive.current)setBusy(false);}}
  return <section><button type="button" disabled={busy} aria-expanded={!!detail} onClick={()=>detail?setDetail(null):void open()}>{t.open}</button>{failed&&<p role="alert">{copy[locale].failed}</p>}{detail&&<><p>{detail.fulfillment_method==="delivery"?t.delivery:t.pickup}</p>{detail.fulfillment_method==="delivery"&&<>{detail.delivery_details&&Object.values(detail.delivery_details).some(Boolean)?<DeliveryDetails locale={locale} fields={detail.delivery_details}/>:<p>{t.missing}</p>}<p>{t.fee}: {detail.delivery_fee_status==="pending"?t.pending:`${detail.delivery_fee??"—"} ${detail.currency}`}</p></>}</>}</section>;
+}
+
+/** Used both by the full order page and the transaction selection panel. */
+export function WenzeOrderDetail({binding,order,locale}:{binding:string;order:Order;locale:Locale}){
+ const t=copy[locale],labels=orderDetailCopy[locale];
+ return <div id={order.reference}><OrderDetailLayout name={order.store_name} reference={order.reference} status={progressText(locale,order.timeline.current)} date={dateText(order.created_at,locale)}
+ progress={<section><WenzeOrderTimeline locale={locale} timeline={order.timeline}/></section>}
+ documents={null}
+ summary={<section><h2>{labels.summary}</h2><ul>{order.items.map((item,i)=><li key={i}>{item.name} {item.variant} × {item.quantity}</li>)}</ul><p><strong>{order.total===null?t.unknown:`${t.amount}: ${new Intl.NumberFormat(locale).format(Number(order.total))} ${order.currency}`}</strong></p></section>}>
+ <section><h2>{labels.payment}</h2><p>{t.note}</p><OrderDestination key={`${binding}:${order.reference}`} binding={binding} order={order} locale={locale}/>
+ {order.estimates?.preparation&&<p>{t.prepare}: {order.estimates.preparation}</p>}{order.estimates?.delivery&&<p>{t.delivery}: {order.estimates.delivery}</p>}</section>
+ <WenzeOrderUpdates key={`${binding}:${order.reference}`} locale={locale} identity={`${binding}:${order.reference}`} load={()=>buyerRequest(`orders/${order.reference}/updates`,binding)} read={()=>buyerRequest(`orders/${order.reference}/updates/read`,binding,"POST",{})}/>
+ </OrderDetailLayout></div>;
+}
+export function WenzeSelectedOrder({binding,reference,locale}:{binding:string;reference:string;locale:Locale}){
+ const [result,setResult]=useState<{key:string;order:Order}|null>(null),[failure,setFailure]=useState(''),[attempt,setAttempt]=useState(0);
+ const key=`${binding}:${reference}:${attempt}`,t=copy[locale];
+ useEffect(()=>{let active=true;const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),15000);
+ fetch(`/api/shida/personal/wenze-buyer/orders/${encodeURIComponent(reference)}/`,{headers:{'X-Shida-Session':binding},credentials:'same-origin',cache:'no-store',signal:controller.signal})
+ .then(async response=>{if(!response.ok)throw Error();return response.json();}).then(order=>{if(active)setResult({key,order});}).catch(()=>{if(active)setFailure(key);}).finally(()=>clearTimeout(timer));
+ return()=>{active=false;clearTimeout(timer);controller.abort();};},[binding,reference,key]);
+ return failure===key?<div role="alert"><p>{t.failed}</p><button onClick={()=>setAttempt(value=>value+1)}>{t.refresh}</button></div>:result?.key===key?<WenzeOrderDetail key={key} binding={binding} order={result.order} locale={locale}/>:<p role="status">{t.loading}</p>;
 }

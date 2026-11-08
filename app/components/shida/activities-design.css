@@ -70,9 +70,14 @@
 
 /* Universal overview: the existing storefront artwork is shared with the welcome state. */
 .activities-hero{position:relative;overflow:hidden;min-height:132px}
-.activities-hero .activities-slogan{max-width:60%;z-index:1}
+.activities-hero-copy{position:relative;z-index:1;flex:1;min-width:0}
+.activities-hero-heading{border-left:4px solid #e7b142;padding-left:16px}
+.activities-hero .activities-slogan{max-width:none;font-size:clamp(24px,2.5vw,34px)}
+.activities-hero-heading>p+p{margin-top:8px;line-height:1.5}
+.activities-hero .activities-toolbar{justify-content:flex-start;margin-top:18px}
+.activities-hero-art{width:32%;max-width:360px;height:auto;flex:none;align-self:flex-end}
 .account-activities-page .activities-hero .activities-illustration{width:220px;height:110px;margin:0;align-self:center;flex:none}
 .activities-new>p{margin-bottom:14px;color:#52635a}
 .activities-new summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:600}
 .activities-dashboard .activity-options a:focus-visible,.activities-summary a:focus-visible,.activities-new summary:focus-visible{outline:3px solid #a48038;outline-offset:3px}
-@media(max-width:700px){.activities-hero{min-height:160px;padding-right:115px}.activities-hero .activities-slogan{max-width:100%;font-size:22px}.account-activities-page .activities-hero .activities-illustration{position:absolute;right:5px;top:20px;bottom:auto;width:105px;height:100px}.activities-hero .activities-toolbar{margin-top:4px}.activities-hero .activities-toolbar button{font-size:12px;padding:8px}.activities-new summary{padding:12px 0}}
+@media(max-width:700px){.activities-hero{min-height:160px;padding:18px;gap:12px}.activities-hero .activities-slogan{font-size:24px}.activities-hero-heading{padding-left:12px}.activities-hero-art{width:170px;max-width:55%;align-self:flex-end}.activities-hero .activities-toolbar{margin-top:16px}.activities-hero .activities-toolbar button{font-size:14px;padding:10px 16px}.activities-new summary{padding:12px 0}}

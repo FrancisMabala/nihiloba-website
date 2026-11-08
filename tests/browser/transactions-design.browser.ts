@@ -91,3 +91,62 @@ for(const width of [390,1440])test(`summary navigation and state evidence ${widt
  await expect(page.getByRole('heading',{name:'No transactions yet'})).toHaveCount(0);
  await page.screenshot({path:`${output}/transactions-error-${width}.png`,fullPage:true});
 });
+
+for (const width of [390, 1440]) for (const kind of ['food', 'wenze']) test(`shared selected order ${kind} ${width}`, async ({page, context}) => {
+ await signIn(context, 'many'); await page.setViewportSize({width, height:950});
+ await page.goto('/shida/space/?view=transactions');
+ const trigger=page.locator(`.tx-row[data-kind="${kind}"] button`);
+ await trigger.click();
+ await expect(page.locator('.tx-selected')).toBeFocused();
+ await expect(page.locator('.tx-selected .shida-order-detail')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`${output}/selected-${kind}-${width}.png`,fullPage:true});
+ await page.locator('.tx-selected > button').click();
+ await expect(trigger).toBeFocused();
+ await trigger.click();
+ await signIn(context,'empty'); await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+ await expect(page.locator('.tx-selected')).toHaveCount(0);
+ await expect(page.getByRole('heading',{name:'No transactions yet'})).toBeVisible();
+});
+
+test('restaurant receipt retries its canonical endpoint without fetching handover secrets',async({page,context})=>{
+ await signIn(context,'many');
+ await page.goto('/shida/space/?view=transactions');
+ const receiptHref=await page.locator('.tx-row[data-kind="food_receipt"] a').getAttribute('href');
+ expect(receiptHref).toBeTruthy();
+ let fail=true;let attempts=0;const privateRequests:string[]=[];
+ page.on('request',request=>{if(/\/(pickup-code|delivery-code|destination)\//.test(request.url()))privateRequests.push(request.url());});
+ await page.route('**/api/shida/personal/restaurant-orders/*/receipt/**',async route=>{
+  attempts++;if(fail)await route.fulfill({status:503,json:{detail:'temporary_failure'}});else await route.continue();
+ });
+ await page.goto(receiptHref!);
+ const retry=page.getByRole('button',{name:/try again|retry/i});
+ await expect(retry).toBeVisible();expect(attempts).toBe(1);
+ fail=false;await retry.click();
+ await expect(page.locator('.rst-thermal')).toBeVisible();
+ expect(attempts).toBe(2);expect(privateRequests).toEqual([]);
+ await expect(page.locator('.rst-thermal')).toContainText('Commercial receipt');
+});
+
+test('preparing restaurant order requests cancellation, retains failures and retries the same operation',async({page,context})=>{
+ await signIn(context,'many');
+ let attempts=0;const keys:string[]=[];
+ await page.route('**/api/shida/personal/restaurant-orders/*/actions/request_cancellation/**',async route=>{
+  attempts++;keys.push(route.request().postDataJSON().operation_key);
+  await route.fulfill({status:503,json:{detail:'temporary_failure'}});
+ });
+ await page.goto('/shida/space/?view=transactions');
+ await page.locator('.tx-row[data-kind="food"] button').click();
+ const cancel=page.locator('.tx-selected button').filter({hasText:/^Request cancellation$/});
+ await cancel.click();
+ const dialog=page.getByRole('dialog');
+ await expect(dialog).toBeVisible();
+ await expect(dialog.getByRole('button',{name:'Keep the order'})).toBeFocused();
+ await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);expect(attempts).toBe(0);
+ await cancel.click();
+ await dialog.getByRole('button',{name:'Request cancellation',exact:true}).click();
+ await expect(dialog.getByRole('alert')).toBeVisible();expect(attempts).toBe(1);
+ await dialog.getByRole('button',{name:'Request cancellation',exact:true}).click();
+ await expect.poll(()=>attempts).toBe(2);expect(keys[0]).toBe(keys[1]);
+ await expect(dialog).toBeVisible();
+});
