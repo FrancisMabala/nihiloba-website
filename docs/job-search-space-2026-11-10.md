@@ -89,3 +89,10 @@ warnings and no errors; all 961 unit tests passed after integrating the latest
 public-offer formatting changes from main. All 16 browser acceptance checks passed,
 covering the scenarios listed above. The local full production build remains
 deliberately unrun; these results must not be described as a production-build pass.
+
+GitHub's existing full frontend validation and secret scan passed for code commit
+`681cf6ebf037fc0edb2d655ef8947a7ff2995986`
+([run 42873777489](https://github.com/FrancisMabala/nihiloba-website/actions/runs/42873777489)).
+This includes the production build on the hosted runner, with no local build or
+installation. Render automatic deployment is off; a Git push alone is not a live
+release. The local task-only Vite cache (2,496,894 bytes) was removed after testing.
