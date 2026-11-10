@@ -24,13 +24,14 @@ export function ServiceAvailabilityPanel({locale,availability,bookingUrl,path,re
   const t=copy[locale],[selectedDate,setSelectedDate]=useState<string|null>(null),[selectedUrl,setSelectedUrl]=useState<string|null>(null);
   const [slotKey,setSlotKey]=useState(''),[loadingSlot,setLoadingSlot]=useState(false),[slotError,setSlotError]=useState('');
   const [week,setWeek]=useState(0);
+  const [professional,setProfessional]=useState('');
   const generation=useRef(0);
-  useEffect(()=>{const current=generation;queueMicrotask(()=>{setWeek(0);setSelectedDate(null);setSelectedUrl(null);setSlotKey('');setLoadingSlot(false);setSlotError('');});return()=>{current.current++;};},[availability]);
+  useEffect(()=>{const current=generation;queueMicrotask(()=>{setProfessional('');setWeek(0);setSelectedDate(null);setSelectedUrl(null);setSlotKey('');setLoadingSlot(false);setSlotError('');});return()=>{current.current++;};},[availability]);
   async function chooseSlot(slot:ServiceAvailability['slots'][number]){
     const ticket=++generation.current;setSelectedUrl(null);setSlotKey(`${slot.date}-${slot.start_time}`);setSlotError('');
     if(!availability?.appointment_booking){setSelectedUrl(slot.booking_url);return;}
     setLoadingSlot(true);
-    const params=new URLSearchParams({service:availability.service_ref,date:slot.date,start:slot.start_time,end:slot.end_time});if(selectedOption)params.set('offering',selectedOption.public_ref);
+    const params=new URLSearchParams({service:availability.service_ref,date:slot.date,start:slot.start_time,end:slot.end_time});if(selectedOption)params.set('offering',selectedOption.public_ref);if(professional)params.set('professional',professional);
     try{const response=await fetch(`/api/shida/services/booking-link?${params}`,{cache:'no-store',credentials:'omit'});if(!response.ok)throw new Error('unavailable');const result=await response.json();if(ticket===generation.current)setSelectedUrl(serviceSlotActionUrl(result.booking_url));}
     catch{if(ticket===generation.current)setSlotError(t.changed);}finally{if(ticket===generation.current)setLoadingSlot(false);}
   }
@@ -44,11 +45,20 @@ export function ServiceAvailabilityPanel({locale,availability,bookingUrl,path,re
     return <section className="service-availability" aria-labelledby="availability-title"><h2 id="availability-title">{t.quoteTitle}</h2><p>{t.quoteInfo}</p>{action?<a className="button" href={action} target="_blank" rel="noopener noreferrer">{t.quoteAction}</a>:<p className="marketplace-action-unavailable">{t.unavailable}</p>}</section>;
   }
   if(availability.availability_mode==="flexible"){const action=safePublicActionUrl(availability.booking_url)||safePublicActionUrl(bookingUrl);return <section className="service-availability" aria-labelledby="availability-title"><h2 id="availability-title">{heading}</h2>{summary}<p>{t.flexible}</p>{<p className="service-confirmation-note">{availability.requested_time_requires_provider_confirmation?t.confirm:t.instant}</p>}{action?<a className="button" href={action} target="_blank" rel="noopener noreferrer">{t.book}</a>:<p className="marketplace-action-unavailable">{t.unavailable}</p>}</section>;}
-  const availableDates=new Set(availability.slots.filter((slot)=>slot.is_available).map((slot)=>slot.date)),slots=availability.slots.filter((slot)=>slot.is_available&&slot.date===selectedDate),action=serviceSlotActionUrl(selectedUrl),previous=availability.from?offsetDate(availability.from,-31):null,next=availability.to?offsetDate(availability.to,1):null;
+  const confirmationNote = availability.requested_time_requires_provider_confirmation
+    ? availability.professionals ? ({en:"Your request is pending until the business approves it.",fr:"Votre demande reste en attente de confirmation par l’organisation.",ln:"Bosengi na yo ekozela kondimama na ebongiseli.",sw:"Ombi lako litasubiri idhini ya shirika."})[locale] : t.confirm
+    : t.instant;
+  const availableSlots=availability.slots.filter(slot=>slot.is_available&&(!professional||slot.professionals?.includes(professional)));
+  const availableDates=new Set(availableSlots.map(slot=>slot.date)),slots=availableSlots.filter(slot=>slot.date===selectedDate),action=serviceSlotActionUrl(selectedUrl),previous=availability.from?offsetDate(availability.from,-31):null,next=availability.to?offsetDate(availability.to,1):null;
   return <section className="service-availability" aria-labelledby="availability-title"><h2 id="availability-title">{heading}</h2>{summary}<p className="service-confirmation-note">{availability.timezone&&availability.timezone!=="Africa/Kinshasa"?availability.timezone:t.zone}</p>{slotError&&<p role="status">{slotError}</p>}
+    {!!availability.professionals?.length && <label className="service-professional-choice">{({fr:"Professionnel",en:"Professional",ln:"Moto ya mosala",sw:"Mtaalamu"})[locale]}
+      <select value={professional} onChange={event=>{generation.current++;setProfessional(event.target.value);setSelectedDate(null);setSlotKey("");setSelectedUrl(null);setSlotError("");setLoadingSlot(false);}}>
+        <option value="">{({fr:"Tout professionnel disponible",en:"Any available professional",ln:"Moto nyonso oyo azali na ntango",sw:"Mtaalamu yeyote anayepatikana"})[locale]}</option>
+        {availability.professionals.map(person=><option key={person.key} value={person.key}>{person.name}</option>)}
+      </select></label>}
     {availableDates.size?<><nav className="service-week-nav"><button type="button" aria-label={({en:"Previous week",fr:"Semaine précédente",ln:"Poso eleki",sw:"Wiki iliyopita"})[locale]} disabled={week===0} onClick={()=>setWeek(w=>w-1)}>←</button><span>{dates[week*7]&&dayLabel(dates[week*7],locale)}</span><button type="button" aria-label={({en:"Next week",fr:"Semaine suivante",ln:"Poso elandi",sw:"Wiki ijayo"})[locale]} disabled={(week+1)*7>=dates.length} onClick={()=>setWeek(w=>w+1)}>→</button></nav><div className="service-date-grid" aria-label={heading}>{dates.slice(week*7,week*7+7).map((date)=>{const available=availableDates.has(date);return <button type="button" aria-pressed={selectedDate===date} disabled={!available} aria-label={`${dayLabel(date,locale)}${available?"":` — ${serviceNavigationCopy[locale].unavailable}`}`} className={selectedDate===date?"is-selected":""} key={date} onClick={()=>{generation.current++;setSelectedDate(date);setSelectedUrl(null);setSlotKey('');setSlotError('');setLoadingSlot(false);}}>{dayLabel(date,locale)}</button>;})}</div>
       {selectedDate?<div className="service-slot-grid" role="group" aria-label={dayLabel(selectedDate,locale)}>{slots.map((slot)=><button type="button" aria-pressed={slotKey===`${slot.date}-${slot.start_time}`} className={slotKey===`${slot.date}-${slot.start_time}`?"is-selected":""} key={`${slot.date}-${slot.start_time}`} onClick={()=>void chooseSlot(slot)}>{slot.start_time}–{slot.end_time}</button>)}</div>:<p>{t.choose}</p>}
-      {<p className="service-confirmation-note">{availability.requested_time_requires_provider_confirmation?t.confirm:t.instant}</p>}{action?<a className="button" href={action} target="_blank" rel="noopener noreferrer">{t.continue}</a>:<button className="button" disabled aria-busy={loadingSlot}>{t.continue}</button>}
+      <p className="service-confirmation-note">{confirmationNote}</p>{action?<a className="button" href={action} target="_blank" rel="noopener noreferrer">{t.continue}</a>:<button className="button" disabled aria-busy={loadingSlot}>{t.continue}</button>}
     </>:<p role="status">{t.empty}</p>}
     <nav className="service-period-nav" aria-label={heading}>{previous&&previous>=new Date().toISOString().slice(0,10)&&<Link href={periodHref(path,previous,selectedOption?.public_ref||null)}>{t.previous}</Link>}{next&&<Link href={periodHref(path,next,selectedOption?.public_ref||null)}>{t.next}</Link>}</nav>
   </section>;

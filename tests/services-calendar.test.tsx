@@ -15,7 +15,7 @@ it('mints only an explicitly selected slot, forwarding no session or customer da
  const [target,options]=fetcher.mock.calls[0];expect(String(target)).toContain('/SVC_one/booking-link?');expect(options?.cache).toBe('no-store');expect(JSON.stringify(options)).not.toContain('Cookie');
 });
 it('rejects malformed, duplicate and cross-site slot selection before reaching backend',async()=>{
- for(const request of [new Request(url+'&date=2026-12-13'),new Request(url+'&organization_ref=BUS_other'),new Request(url.replace('09:00','29:00')),new Request(url,{headers:{'Sec-Fetch-Site':'cross-site'}})])expect((await GET(request)).status).toBe(400);
+ for(const request of [new Request(url+'&date=2026-12-13'),new Request(url+'&organization_ref=BUS_other'),new Request(url+'&professional=BMR_private'),new Request(url.replace('09:00','29:00')),new Request(url,{headers:{'Sec-Fetch-Site':'cross-site'}})])expect((await GET(request)).status).toBe(400);
  expect(fetcher).not.toHaveBeenCalled();
 });
 it('does not expose stale slots or unsafe action URLs',async()=>{

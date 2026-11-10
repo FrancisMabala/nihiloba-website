@@ -34,3 +34,28 @@ test('public appointment selection creates one WhatsApp handoff and handles a st
 for(const kind of ['beauty','legal'])test(`category storefront ${kind}`,async({page})=>{await page.goto(`/shida/services/providers/professional-${kind}`);await expect(page.locator('.professional-service-row')).toHaveCount(3);await expect(page.locator('.service-provider-header')).not.toContainText('Verified');await page.screenshot({path:`test-results/marketplace-${kind}.png`,fullPage:true});});
 
 for(const width of [390,1440])test(`real package references and photo layout ${width}`,async({page})=>{await page.setViewportSize({width,height:960});await page.goto('/shida/services/beauty-packages');await expect(page.locator('.service-option')).toHaveCount(2);await page.getByRole('button',{name:/Hair treatment/}).click();await expect(page).toHaveURL(/option=SPK_care/);await expect(page.locator('.service-selection-summary')).toContainText('35 USD');await expect(page.locator('.service-selection-summary')).toContainText('1 h');await expect(page.locator('.service-identity-photo img').first()).toBeVisible();await expect.poll(()=>page.locator('.service-identity-photo img').first().evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);await page.screenshot({path:`test-results/marketplace-packages-${width}.png`,fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);});
+
+for (const width of [390,1440]) test(`Business professional choice at ${width}`, async ({page}) => {
+  await page.setViewportSize({width,height:940});
+  const choices:(string|null)[]=[];
+  await page.route('**/api/shida/services/booking-link?**',route=>{
+    choices.push(new URL(route.request().url()).searchParams.get('professional'));
+    return route.fulfill({json:{booking_url:'https://wa.me/243812345678?text=START%20opaque'}});
+  });
+  await page.goto('/shida/services/team-appointments');
+  const panel=page.locator('.service-availability:visible');
+  await panel.locator('.service-date-grid button:enabled').first().click();
+  await expect(panel.locator('.service-slot-grid button')).toHaveCount(2);
+  await panel.getByRole('button',{name:'09:30–10:00'}).click();
+  await expect(panel.getByRole('link',{name:'Continue on WhatsApp'})).toBeVisible();
+  await panel.getByRole('combobox').selectOption({label:'Amina'});
+  await expect(panel.getByRole('link',{name:'Continue on WhatsApp'})).toHaveCount(0);
+  await panel.locator('.service-date-grid button:enabled').first().click();
+  await expect(panel.locator('.service-slot-grid button')).toHaveCount(1);
+  await panel.getByRole('button',{name:'09:00–09:30'}).click();
+  await expect(panel.getByRole('link',{name:'Continue on WhatsApp'})).toBeVisible();
+  await expect(panel).toContainText('pending until the business approves');
+  expect(choices).toEqual([null,'a'.repeat(32)]);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await panel.screenshot({path:`test-results/public-appointment-${width}.png`});
+});
