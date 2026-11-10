@@ -51,8 +51,9 @@ function useTemplates(base:string,binding:string,kind:Kind){
 type Offering={public_ref:string;service_name:string;category:string;description:string|null;service_duration_minutes:number|null;is_active:string;packages:{public_ref:string;name:string;description:string|null;price:string|null;currency:string|null;duration_minutes:number}[]};
 type LibraryProps={base:string;binding:string;locale:Locale;kind:Kind;offerings?:Offering[];onUse?:()=>void};
 export function ServicesTemplates({quoteAllowed,billAllowed,...props}:Omit<LibraryProps,"kind">&{quoteAllowed:boolean;billAllowed:boolean}){
- const [kind,setKind]=useState<Kind>(quoteAllowed?"quote":"bill");const d=design[props.locale];
- return <div className="svc-templates"><nav className="svc-template-tabs" aria-label={d.title}>{(["quote","bill"] as const).filter(k=>k==="quote"?quoteAllowed:billAllowed).map(k=><button type="button" key={k} aria-pressed={kind===k} onClick={async ()=>{if((await leaveWork()))setKind(k);}}>{k==="quote"?d.quotes:d.bills}</button>)}</nav><ServicesTemplateLibrary {...props} kind={kind}/></div>;
+ const [kind,setKind]=useState<Kind>(quoteAllowed?"quote":"bill");const d=design[props.locale];const selectedKind=kind==="quote"?quoteAllowed?"quote":"bill":billAllowed?"bill":"quote";
+ if(!quoteAllowed&&!billAllowed)return null;
+ return <div className="svc-templates"><nav className="svc-template-tabs" aria-label={d.title}>{(["quote","bill"] as const).filter(k=>k==="quote"?quoteAllowed:billAllowed).map(k=><button type="button" key={k} aria-pressed={selectedKind===k} onClick={async ()=>{if((await leaveWork()))setKind(k);}}>{k==="quote"?d.quotes:d.bills}</button>)}</nav><ServicesTemplateLibrary {...props} kind={selectedKind}/></div>;
 }
 type Pending={path:string;method:string;body:Record<string,unknown>;archive:boolean};
 export function ServicesTemplateLibrary(props:LibraryProps){

@@ -34,7 +34,7 @@ function BillBranding({base,binding,locale,onDenied,onProfile}:{base:string;bind
  useWorkDraft(pending!==null||!!settings&&(name!==(settings.display_name??"")||accent!==settings.accent),ui.leave,locale);
  useEffect(()=>{
   alive.current=true;let active=true;const controller=new AbortController();
-  void fetch(`${base}/transactions/bill-presentation`,{credentials:"include",cache:"no-store",signal:controller.signal,headers:{Accept:"application/json","X-Shida-Session":binding}}).then(async response=>{
+  void fetch(`${base}/transactions/bill-presentation`,{credentials:"include",cache:"no-store",signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)]),headers:{Accept:"application/json","X-Shida-Session":binding}}).then(async response=>{
    if(!response.ok){if(active&&[401,403,404].includes(response.status))denied.current?.();throw new Error();}
    const value=await response.json() as Settings;if(!validSettings(value))throw new Error();
    if(active){setSettings(value);setName(value.display_name??"");setAccent(value.accent);}
@@ -47,7 +47,7 @@ function BillBranding({base,binding,locale,onDenied,onProfile}:{base:string;bind
   const body=pending??JSON.stringify({revision:settings.revision,idempotency_key:crypto.randomUUID(),display_name:name.trim()||null,accent});
   lock.current=true;setBusy(true);setNotice("");setPending(body);
   try{
-   const response=await fetch(`${base}/transactions/bill-presentation`,{method:"PATCH",credentials:"include",cache:"no-store",headers:{Accept:"application/json","Content-Type":"application/json","X-Shida-Session":binding},body});
+   const response=await fetch(`${base}/transactions/bill-presentation`,{method:"PATCH",credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000),headers:{Accept:"application/json","Content-Type":"application/json","X-Shida-Session":binding},body});
    if(!alive.current)return;
    if(!response.ok){
     if([401,403,404].includes(response.status)){setSettings(null);setPending(null);denied.current?.();return;}

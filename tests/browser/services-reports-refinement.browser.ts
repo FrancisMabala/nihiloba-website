@@ -7,6 +7,7 @@ for(const width of [360,390,768,1024,1440])test(`reports responsive reconciliati
  await page.route('**/api/shida/**',async route=>{
   const url=new URL(route.request().url()),path=url.pathname.replace(/\/$/,'');
   const reply=(json:unknown,status=200)=>route.fulfill({json,status});
+  if(path.endsWith('/services/onboarding'))return reply({progress:[],remaining_capacity:4,professional_profile:{public_ref:'SVI_one',revision:1,name:'Provider',bio:null,primary_category:'repair_maintenance'}});
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Provider'}});
   if(path.endsWith('/services/capabilities'))return reply({capabilities:['profile','operational_reports','financial_reports'],access_policy:'pilot'});
   if(path.endsWith('/services'))return reply({profiles:[offering]});

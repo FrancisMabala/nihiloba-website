@@ -8,7 +8,7 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',360]] as con
   {version_ref:'SBV_second',bill_ref:'SBF_one',revision:3,status:'issued',currency:'CDF',total:'150000.00',issue_date:'2026-10-15',due_date:'2026-10-22',presentation:{display_name:'Maison Verte',accent:'green'},lines:[{ordinal:1,label:'Corrected work',amount:'150000.00'}]},
   {version_ref:'SBV_void',bill_ref:'SBF_one',revision:4,status:'void',currency:'CDF',total:'150000.00',issue_date:null,due_date:null,presentation:{display_name:'Maison Verte',accent:'green'},lines:[]}
  ];
- await page.route('**/api/shida/**',route=>{const path=new URL(route.request().url()).pathname;if(path.endsWith('/employment/session/'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Customer'}}});if(path.endsWith('/customer/reservations/RSV_one/bills'))return route.fulfill({json:{versions:[{version_ref:'SBV_draft',status:'private_draft',lines:[{private_detail:'PRIVATE'}]},...versions]}});return route.fulfill({status:404,json:{detail:'unavailable'}});});
+ await page.route('**/api/shida/**',route=>{const path=new URL(route.request().url()).pathname.replace(/\/$/,'');if(path.endsWith('/employment/session'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Customer'}}});if(path.endsWith('/customer/reservations/RSV_one/bills'))return route.fulfill({json:{versions:[{version_ref:'SBV_draft',status:'private_draft',lines:[{private_detail:'PRIVATE'}]},...versions]}});return route.fulfill({status:404,json:{detail:'unavailable'}});});
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/service-bills/RSV_one`);
  await expect(page.getByText('Maison Verte').first()).toBeVisible();
  await page.getByRole('button',{name:/2 ·/}).click();

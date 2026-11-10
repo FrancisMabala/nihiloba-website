@@ -12,6 +12,7 @@ for(const [locale,width,category] of cases)test(`templates and settings ${locale
  let presentation={display_name:null as string|null,accent:'slate',revision:1,fallback_display_name:'Horizon',preview:{display_name:'Horizon',accent:'slate'}};
  await page.route('**/api/shida/**',async route=>{
   const req=route.request(),url=new URL(req.url()),path=url.pathname.replace(/\/$/,'');const reply=(json:unknown,status=200)=>route.fulfill({json,status});
+  if(path.endsWith('/services/onboarding'))return reply({progress:[],remaining_capacity:4,professional_profile:{public_ref:'SVI_one',revision:1,name:'Provider',bio:null,primary_category:'repair_maintenance'}});
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Provider'}});
   if(path.endsWith('/services/capabilities'))return reply({capabilities:['profile','quote_templates','bill_templates','bills','requests_quotes','reservations','messages'],access_policy:'pilot'});
   if(path.endsWith('/services'))return reply({profiles:services});if(path.endsWith('/reviews'))return reply({reviews:[]});

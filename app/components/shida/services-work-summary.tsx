@@ -4,7 +4,7 @@ import {financialRequest} from '../../lib/services-financial-state';
 import {uniqueWork,workMatches,type WorkRow,type WorkFilter} from '../../lib/services-work-model';
 import {workText} from '../../lib/services-work-copy';
 import type {ServicesLocale} from './services-transaction-copy';
-import {SellerWorkspaceIcon} from './seller-workspace';
+import {SellerWorkspaceIcon} from './services-workspace-icon';
 export function ServicesWorkSummary({base,binding,locale,revision,onSelect,onDenied,disabled,quotesAvailable=true,bookingAvailable=true}:{base:string;binding:string;locale:ServicesLocale;revision:number;onSelect:(kind:'requests'|'reservations',filter:WorkFilter)=>void;onDenied:()=>void;disabled:boolean;quotesAvailable?:boolean;bookingAvailable?:boolean}){
  const [sources,setSources]=useState<Record<string,{rows:WorkRow[];more:boolean;failed:boolean}>>({});
  const denied=useRef(onDenied);useEffect(()=>{denied.current=onDenied;},[onDenied]);

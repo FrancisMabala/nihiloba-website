@@ -7,20 +7,20 @@ import {todayCopy} from "../../lib/services-today-copy";
 import {providerCopy,type ProviderLocale,type ProviderView} from "../../lib/services-provider-copy";
 import {scheduleCopy} from "../../lib/services-calendar-copy";
 import {activeWork,appointmentsForDay,previewCount,uniqueTasks,type TodayData,type TodayItem,type TodayOffering,type TodayAppointment} from "../../lib/services-today-model";
-import {SellerWorkspaceIcon} from "./seller-workspace";
+import {SellerWorkspaceIcon} from "./services-workspace-icon";
 import "./services-today.css";
 export type ServiceTaskLink={kind:"requests"|"reservations"|"messages";ref:string};
 type Result<T>={value:T|null;failed:boolean};
-type Props={base:string;binding:string;locale:ProviderLocale;onOpen:(task:ServiceTaskLink)=>void;onAll:(kind:ServiceTaskLink["kind"])=>void;onDenied:()=>void;actions?:ReactNode;offerings?:TodayOffering[];capabilities?:string[];onNavigate?:(view:ProviderView)=>void;onRefresh?:()=>void};
+type Props={base:string;binding:string;locale:ProviderLocale;onOpen:(task:ServiceTaskLink)=>void;onAll:(kind:ServiceTaskLink["kind"])=>void;onDenied:()=>void;actions?:ReactNode;offerings?:TodayOffering[];capabilities?:string[];onNavigate?:(view:ProviderView)=>void;onRefresh?:()=>void;loadAppointments?:(day:string,signal:AbortSignal)=>Promise<{items:TodayAppointment[];more:boolean}>};
 export function ServicesToday(props:Props){return <Today key={`${props.base}:${props.binding}:${props.locale}`} {...props}/>;}
-function Today({base,binding,locale,onOpen,onAll,onDenied,actions,offerings=[],capabilities=[],onNavigate,onRefresh}:Props){
+function Today({base,binding,locale,onOpen,onAll,onDenied,actions,offerings=[],capabilities=[],onNavigate,onRefresh,loadAppointments}:Props){
  const t=todayCopy[locale],ui=providerCopy[locale],w=workdayCopy[locale],denied=useRef(onDenied);
  useEffect(()=>{denied.current=onDenied;},[onDenied]);
  const [data,setData]=useState<Result<TodayData>>({value:null,failed:false});
  const [jobs,setJobs]=useState<Result<{items:TodayItem[];more:boolean}>>({value:null,failed:false});
  const [calendar,setCalendar]=useState<Result<{items:TodayAppointment[];more:boolean}>>({value:null,failed:false});
  const [refresh,setRefresh]=useState(0);
- const canCalendar=capabilities.includes("structured_availability"),canWork=capabilities.includes("reservations")&&capabilities.includes("messages");
+ const canCalendar=!!loadAppointments||capabilities.includes("structured_availability"),canWork=capabilities.includes("reservations")&&capabilities.includes("messages");
  const active=offerings.filter(row=>row.is_active==="yes");
  const day=data.value?.date??localDate(new Date().toISOString(),SERVICE_TIME_ZONE);
  const retry=()=>{setRefresh(value=>value+1);onRefresh?.();};
@@ -39,11 +39,11 @@ function Today({base,binding,locale,onOpen,onAll,onDenied,actions,offerings=[],c
   if(!canCalendar)return;
   let alive=true;const controller=new AbortController();
   queueMicrotask(()=>{if(alive)setCalendar({value:null,failed:false});});
-  fetch(`${base}/calendar?${new URLSearchParams({date_from:day,date_to:shiftDay(day,1),page:"1"})}`,{credentials:"include",cache:"no-store",signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)]),headers:{Accept:"application/json","X-Shida-Session":binding}})
-   .then(async response=>{if(!response.ok){if(alive&&[401,403].includes(response.status))denied.current();throw Error();}return response.json();})
-   .then(value=>{if(!Array.isArray(value.items))throw Error();if(alive)setCalendar({value:{items:appointmentsForDay(value.items,day),more:value.has_more===true},failed:false});}).catch(()=>{if(alive)setCalendar({value:null,failed:true});});
+  const signal=AbortSignal.any([controller.signal,AbortSignal.timeout(20000)]);
+  const request=loadAppointments?loadAppointments(day,signal):fetch(`${base}/calendar?${new URLSearchParams({date_from:day,date_to:shiftDay(day,1),page:"1"})}`,{credentials:"include",cache:"no-store",signal,headers:{Accept:"application/json","X-Shida-Session":binding}}).then(async response=>{if(!response.ok)throw Error(String(response.status));const value=await response.json();if(!Array.isArray(value.items))throw Error();return {items:value.items,more:value.has_more===true};});
+  void request.then(value=>{if(!Array.isArray(value.items))throw Error();if(alive)setCalendar({value:{items:appointmentsForDay(value.items,day),more:value.more},failed:false});}).catch(error=>{if(alive){if(["401","403"].includes(error.message))denied.current();setCalendar({value:null,failed:true});}});
   return()=>{alive=false;controller.abort();};
- },[base,binding,day,refresh,canCalendar]);
+ },[base,binding,day,refresh,canCalendar,loadAppointments]);
  const showCalendar=canCalendar&&(active.some(row=>row.booking_mode==="time_slots")||calendar.failed||!calendar.value||!!calendar.value.items.length||!!data.value?.upcoming.items.length);
  const navigate=(view:ProviderView)=>onNavigate?.(view);
  const state=(result:Result<unknown>)=>result.failed?<div className="svc-daily-error" role="alert"><p>{t.failed}</p><button onClick={retry}>{t.retry}</button></div>:!result.value?<div className="svc-daily-skeleton" role="status"><span className="sr-only">{t.loading}</span></div>:null;
