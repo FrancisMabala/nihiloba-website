@@ -100,3 +100,6 @@ release. The local task-only Vite cache (2,496,894 bytes) was removed after test
 The final interaction check also preserves confirmed unfollowing directly on job
 pages. Cancelling does not write; confirming updates persisted state. Its four
 locale browser checks are included in the 20-case acceptance run.
+Its final code commit `56ff8e7075997dcb9d608c4449f4943313f01678` also passed the
+hosted build, full frontend checks and secret scan in
+[run 42877556771](https://github.com/FrancisMabala/nihiloba-website/actions/runs/42877556771).
