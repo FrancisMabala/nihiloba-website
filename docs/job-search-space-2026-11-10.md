@@ -68,7 +68,7 @@ Established validation command:
 Lightweight browser command:
 `node node_modules/@playwright/test/cli.js test -c playwright.job-search.config.ts`.
 The installed Chrome and Vite mount the actual job-search, profile, application
-and sign-in components. Only Next navigation adapters and API responses are
+and sign-in components. Only Next navigation/image adapters and API responses are
 fixtures. Coverage includes persistence across reload, account changes, repeated
 clicks, directory identity, verified sign-in continuation, registration links,
 session-expired unsave, expired-offer removal, existing applications/profiles,
@@ -86,7 +86,7 @@ No production migration or data cleanup is required.
 
 Local validation: type checking passed; repository lint passed with 11 existing
 warnings and no errors; all 961 unit tests passed after integrating the latest
-public-offer formatting changes from main. All 16 browser acceptance checks passed,
+public-offer formatting changes from main. All 20 browser acceptance checks passed,
 covering the scenarios listed above. The local full production build remains
 deliberately unrun; these results must not be described as a production-build pass.
 
@@ -96,3 +96,7 @@ GitHub's existing full frontend validation and secret scan passed for code commi
 This includes the production build on the hosted runner, with no local build or
 installation. Render automatic deployment is off; a Git push alone is not a live
 release. The local task-only Vite cache (2,496,894 bytes) was removed after testing.
+
+The final interaction check also preserves confirmed unfollowing directly on job
+pages. Cancelling does not write; confirming updates persisted state. Its four
+locale browser checks are included in the 20-case acceptance run.

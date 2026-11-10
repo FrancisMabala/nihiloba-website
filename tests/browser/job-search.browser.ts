@@ -77,6 +77,18 @@ for(const locale of ['fr','en','ln','sw'] as const){
     await expect(page.getByRole('button',{name:candidateCopy[locale].edit,exact:true})).toBeVisible();
     expect(data.writes).toHaveLength(1);
   });
+  test(`job-page unfollow requires confirmation ${locale}`,async({page})=>{
+    const data=await fixture(page,{initialFollowing:true});
+    await page.goto(`${prefix}/shida/emplois/JOB_fixture`);
+    await page.getByRole('button',{name:t.unfollow,exact:true}).click();
+    await page.getByRole('dialog').getByRole('button',{name:t.cancel,exact:true}).click();
+    expect(data.writes).toHaveLength(0);
+    await page.getByRole('button',{name:t.unfollow,exact:true}).click();
+    await page.getByRole('dialog').getByRole('button',{name:t.unfollow,exact:true}).click();
+    await expect(page.getByRole('status')).toContainText(t.unfollowedAction);
+    await page.reload();await expect(page.getByRole('button',{name:t.follow,exact:true})).toHaveAttribute('aria-pressed','false');
+    expect(data.writes.map(w=>w.body)).toEqual([{action:'follow',enabled:false}]);
+  });
 }
 
 test('embedded WhatsApp sign-in keeps intended save and stays on the job',async({page})=>{
