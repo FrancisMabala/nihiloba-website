@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { POST as externalAction } from "../app/api/shida/public-jobs/[job]/external-action/route";
 import { POST as analyticsEvent } from "../app/api/shida/public-jobs/[job]/[event]/route";
 
-afterEach(()=>vi.unstubAllGlobals());
+afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 
 describe("external job server action boundary",()=>{
   it("keeps anonymous save state out of browser storage and session-deduplicates views",()=>{const source=readFileSync("app/components/shida/job-public-actions.tsx","utf8");expect(source).not.toContain("localStorage");expect(source).toContain("sessionStorage.getItem(key)");expect(source).toContain('event:\"view\"|\"share\"');});
@@ -14,4 +14,17 @@ describe("external job server action boundary",()=>{
   it("maps stale backend rejection to a safe public state",async()=>{vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response("{}",{status:409})));const request=new Request("https://nihiloba.com/api/shida/public-jobs/JOB_airtel/external-action",{method:"POST",headers:{origin:"https://nihiloba.com","Content-Type":"application/json"},body:JSON.stringify({action:"redirect"})});const response=await externalAction(request,{params:Promise.resolve({job:"JOB_airtel"})});expect(response.status).toBe(409);expect(await response.json()).toEqual({error:"job_unavailable"});});
 
   it("forwards only explicit view/share events and rejects unknown events",async()=>{const backend=vi.fn().mockResolvedValue(new Response(null,{status:204}));vi.stubGlobal("fetch",backend);const request=new Request("https://nihiloba.com/api/shida/public-jobs/JOB_airtel/share",{method:"POST",headers:{origin:"https://nihiloba.com"}});expect((await analyticsEvent(request,{params:Promise.resolve({job:"JOB_airtel",event:"share"})})).status).toBe(204);expect(backend).toHaveBeenCalledOnce();expect((await analyticsEvent(request,{params:Promise.resolve({job:"JOB_airtel",event:"open"})})).status).toBe(403);expect(backend).toHaveBeenCalledOnce();});
+});
+
+it('accepts the exact public browser origin behind Render without trusting forwarded hosts',async()=>{
+  vi.stubEnv('NODE_ENV','production');
+  const backend=vi.fn().mockImplementation(()=>Promise.resolve(new Response(JSON.stringify({mode:'redirect',redirect_url:'https://careers.example/apply?id_job=973&id_origin=0'})))); vi.stubGlobal('fetch',backend);
+  const request=(origin:string,extra:Record<string,string>={})=>new Request('http://localhost:10000/api/shida/public-jobs/JOB_test/external-action',{method:'POST',headers:{origin,'Content-Type':'application/json',...extra},body:JSON.stringify({action:'redirect'})});
+  const response=await externalAction(request('https://nihiloba.com'),{params:Promise.resolve({job:'JOB_test'})});
+  expect(response.status).toBe(200); expect((await response.json()).redirect_url).toBe('https://careers.example/apply?id_job=973&id_origin=0');
+  for(const origin of ['https://evil.example','http://localhost:10000','https://nihiloba.com/','null','https://nihiloba.com.evil.example']) {
+    expect((await externalAction(request(origin,{'x-forwarded-host':'nihiloba.com','x-forwarded-proto':'https'}),{params:Promise.resolve({job:'JOB_test'})})).status).toBe(403);
+  }
+  expect((await externalAction(request('https://nihiloba.com',{'sec-fetch-site':'cross-site'}),{params:Promise.resolve({job:'JOB_test'})})).status).toBe(403);
+  expect(backend).toHaveBeenCalledOnce();
 });
