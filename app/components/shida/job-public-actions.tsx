@@ -33,7 +33,7 @@ export function JobPublicActions({ locale, jobReference, title, path, origin, ca
   async function share(){const url=new URL(path,window.location.origin).toString();try{if(navigator.share)await navigator.share({title,url});else await navigator.clipboard.writeText(url);if(origin==="external")void recordEvent(jobReference,"share");setShared(true);}catch{/* Cancellation leaves the page unchanged. */}}
   const reportHref=`mailto:support@nihiloba.com?subject=${encodeURIComponent(`Report public job ${jobReference}`)}`;
   return <div className={compact?"job-public-actions job-public-actions-compact":"job-public-actions"}>
-    <JobRelationshipActions locale={locale} jobReference={jobReference} canSave={canSave} canFollow={canFollow}/>
+    <JobRelationshipActions key={`${locale}:${jobReference}`} locale={locale} jobReference={jobReference} canSave={canSave} canFollow={canFollow}/>
     {canShare&&<button type="button" className="job-action-button" onClick={()=>void share()}>{shared?t.shared:t.share}</button>}
     {!compact&&<a className="job-action-button" href={reportHref}>{t.report}</a>}
     <span className="sr-only" role="status" aria-live="polite">{shared?t.shared:""}</span>

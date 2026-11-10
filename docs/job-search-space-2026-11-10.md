@@ -85,6 +85,7 @@ from Git. Source changes and this documentation must be preserved until released
 No production migration or data cleanup is required.
 
 Local validation: type checking passed; repository lint passed with 11 existing
-warnings and no errors; all 957 unit tests passed. The browser acceptance checks
-cover the scenarios listed above. The local full production build remains
+warnings and no errors; all 961 unit tests passed after integrating the latest
+public-offer formatting changes from main. All 16 browser acceptance checks passed,
+covering the scenarios listed above. The local full production build remains
 deliberately unrun; these results must not be described as a production-build pass.
