@@ -10,13 +10,12 @@ const server = await createServer({
   resolve: {alias: {'next/navigation': fixture, 'next/link': fixture, 'next/image': fixture, '@': root}},
   define: {'process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED': '"true"'},
   plugins: [{name: 'behaviour-only-fixture',
-    transform(_source, id) { if (id.endsWith('.css')) return {code: '', map: null}; },
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         if (req.url === '/health') { res.end('ok'); return; }
         if (!req.headers.accept?.includes('text/html')) return next();
         res.setHeader('Content-Type', 'text/html');
-        res.end('<html><body><div id="root"></div><script type="module" src="/tests/browser/job-search-harness.tsx"></script></body></html>');
+        res.end('<html><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><div id="root"></div><script type="module" src="/tests/browser/job-search-harness.tsx"></script></body></html>');
       });
     },
   }],

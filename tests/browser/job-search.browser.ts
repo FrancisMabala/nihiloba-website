@@ -42,7 +42,7 @@ for(const locale of ['fr','en','ln','sw'] as const){
     await save.evaluate(button=>{(button as HTMLButtonElement).click();(button as HTMLButtonElement).click();});
     await expect(page.getByRole('button',{name:t.unsave,exact:true})).toHaveAttribute('aria-pressed','true');
     expect(data.writes).toHaveLength(1);
-    await expect(page.getByRole('link',{name:t.viewSection})).toHaveAttribute('href',`${prefix}/shida/space?view=job-search&section=saved`);
+    await expect(page.getByRole('link',{name:t.saved+" →"})).toHaveAttribute('href',`${prefix}/shida/space?view=job-search&section=saved`);
     await page.reload();await expect(page.getByRole('button',{name:t.unsave,exact:true})).toBeVisible();
     data.switchAccount();await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));
     await expect(page.getByRole('button',{name:t.save,exact:true})).toHaveAttribute('aria-pressed','false');
@@ -51,7 +51,7 @@ for(const locale of ['fr','en','ln','sw'] as const){
     const data=await fixture(page,{directory:true});
     await page.goto(`${prefix}/shida/emplois/JOB_fixture`);
     await page.getByRole('button',{name:t.follow,exact:true}).click();
-    await page.getByRole('link',{name:t.viewSection}).click();
+    await page.getByRole('link',{name:t.following+" →"}).click();
     await expect(page.getByText(t.directory,{exact:true})).toBeVisible();
     await expect(page.getByText(`${t.notifications}: ${t.disabled}`,{exact:true})).toBeVisible();
     await expect(page.getByRole('link',{name:new RegExp(t.organisation)})).toHaveAttribute('href',`${prefix}/shida/emplois/employeurs/DIR_fixture`);
@@ -143,4 +143,32 @@ test('an expired session preserves the intended unsave through sign-in',async({p
   await expect(page.getByRole('button',{name:t.save,exact:true})).toBeVisible();
   await expect(page.getByRole('status')).toContainText(t.removedAction);
   expect(data.writes.map(w=>w.body)).toEqual([{action:'save',enabled:false}]);
+});
+
+test('overview preserves loaded sections if follows fail on mobile',async({page})=>{
+ await page.setViewportSize({width:375,height:740});await fixture(page,{initialSaved:true});
+ await page.route('**/job-search/following?**',r=>r.fulfill({status:503,json:{}}));
+ await page.goto('/fr/shida/space?view=job-search&section=overview');
+ await expect(page.getByText('Saved assistant job')).toBeVisible();
+ await expect(page.getByText('Existing application')).toBeVisible();
+ await expect(page.getByRole('alert')).toContainText(jobSearchCopy.fr.error);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+for(const width of [820,1440])test('populated overview at '+width+'px',async({page},info)=>{
+ await page.setViewportSize({width,height:900});await fixture(page,{initialSaved:true,initialFollowing:true});
+ await page.goto('/fr/shida/space?view=job-search&section=overview');
+ await expect(page.getByText('Saved assistant job')).toBeVisible();
+ await expect(page.getByText('Fixture organisation',{exact:true})).toBeVisible();
+ await expect(page.getByText('Existing application')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:info.outputPath('overview.png'),fullPage:true});
+});
+test('new account gets a welcome and access to profiles',async({page})=>{
+ await fixture(page);
+ await page.route('**/employment/applications*',r=>r.fulfill({json:{applications:[]}}));
+ await page.route('**/personal/candidate?*',r=>r.fulfill({json:{profiles:[],progress:[]}}));
+ await page.goto('/fr/shida/space?view=job-search&section=overview');
+ const welcome=page.locator('section').filter({has:page.getByRole('heading',{name:'Votre recherche commence ici.'})}).last();
+ await expect(welcome.getByRole('link',{name:candidateCopy.fr.start})).toHaveAttribute('href',/section=profiles/);
 });

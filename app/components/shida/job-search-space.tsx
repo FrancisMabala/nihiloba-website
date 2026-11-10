@@ -8,7 +8,9 @@ import {CandidateApplicationsView} from './candidate-employment';
 import {CandidateProfileSpace} from './candidate-profile-space';
 import {leaveWork} from '../../lib/wenze-work';
 import {useConfirmation} from './confirmation-dialog';
+import {JobOverview,overviewCopy} from './job-search-overview';
 import './candidate-profile-space.css';
+import './job-search-overview.css';
 
 type JobSearchSpaceProps={locale:keyof typeof jobSearchCopy;binding:string;initialSection?:string;onUnauthorized:()=>void};
 export function JobSearchSpace(props:JobSearchSpaceProps){
@@ -50,12 +52,13 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
  const loading=['saved','following','alerts'].includes(section)?!list:section==='applications'?!applications:false;
  return <section className="candidate-workspace job-search-workspace" aria-busy={busy}>
   {confirmation}
-  <nav className="candidate-actions" aria-label={t.title}>{jobSearchSections.map(key=><a key={key} href={jobSearchPath(locale,key)} aria-current={section===key?'page':undefined} onClick={async e=>{e.preventDefault();const href=e.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{t[key]}</a>)}</nav>
-  <h2>{t[section]}</h2>
+  <div className="search-intro"><p>{overviewCopy[locale].intro}</p><a className="button-primary" href={`${prefix}/shida/emplois`}>{t.browse} ↗</a></div>
+  <nav className="search-tabs" aria-label={t.title}>{jobSearchSections.map(key=><a key={key} href={jobSearchPath(locale,key)} aria-current={section===key?'page':undefined} onClick={async e=>{e.preventDefault();const href=e.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{t[key]}</a>)}</nav>
+  {section!=='overview'&&<h2>{t[section]}</h2>}
   {notice&&<p role="status">{notice}</p>}
   {error&&<div role="alert"><p>{t.error}</p><button onClick={reload} disabled={busy}>{t.retry}</button></div>}
   {loading&&!error&&<p role="status">{t.loading}</p>}
-  {section==='overview'&&<><p>{t.intro}</p><div className="space-destinations">{jobSearchSections.filter(k=>k!=='overview').map(key=><a key={key} href={jobSearchPath(locale,key)}>{t[key]} →</a>)}</div><p>{t.optIn}</p><a href={`${prefix}/shida/emplois`}>{t.browse}</a></>}
+  {section==='overview'&&<JobOverview locale={locale} binding={binding} destination={destination} unauthorized={onUnauthorized}/>}
   {section==='profiles'&&<CandidateProfileSpace locale={locale} binding={binding} onUnauthorized={onUnauthorized}/>}
   {section==='applications'&&<><p>{t.directApplications}</p><p>{t.externalGap}</p>{applications&&<CandidateApplicationsView locale={locale} applications={applications}/>}</>}
   {section==='alerts'&&alerts&&<section className="candidate-private-panel"><h3>{t.matching}</h3><p>{t.matchingHelp}</p>{alerts.profile_count?<><p>{alerts.enabled_count===0?t.disabled:alerts.enabled_count===alerts.profile_count?t.enabled:t.mixed}</p><button disabled={busy} onClick={()=>void mutate('alerts','PUT',{enabled:alerts.enabled_count!==alerts.profile_count}).catch(()=>{})}>{alerts.enabled_count===alerts.profile_count?t.disable:t.enable}</button></>:<><p>{t.needProfile}</p><a href={jobSearchPath(locale,'profiles')}>{t.profiles}</a></>}<p>{t.alertGap}</p></section>}

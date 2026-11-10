@@ -103,3 +103,11 @@ locale browser checks are included in the 20-case acceptance run.
 Its final code commit `56ff8e7075997dcb9d608c4449f4943313f01678` also passed the
 hosted build, full frontend checks and secret scan in
 [run 42877556771](https://github.com/FrancisMabala/nihiloba-website/actions/runs/42877556771).
+
+The candidate overview reads saved jobs, followed organisations, applications and
+profiles independently. A failed read has a section-level retry and is never
+counted as zero. The three summary links open their corresponding sections;
+WhatsApp alert preferences remain explicit. The application count covers SHIDA
+applications returned by the candidate endpoint. Opening an external application
+site is not a recorded submission. Saved-job locations are not supplied by the
+relationship list and are omitted rather than inferred or fetched per card.

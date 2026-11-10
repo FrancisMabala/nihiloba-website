@@ -1,3 +1,4 @@
+import { MarketplaceBreadcrumb } from "./marketplace-primitives";
 import {jobSearchCopy,jobSearchPath} from '../../lib/job-search-copy';
 import {OfferText, plainOfferText} from './offer-text';
 import {candidateCopy} from '../../lib/candidate-profile-copy';
@@ -16,7 +17,7 @@ import type { JobCollection, JobSearch, PublicJob, PublicJobEmployer, PublicJobE
 import { ButtonLink } from "../button-link";
 import { ExternalJobAction, JobPublicActions, JobViewTracker } from "./job-public-actions";
 import { MarketplaceImage } from "./marketplace-image";
-import { MarketplaceBreadcrumb } from "./marketplace-primitives";
+import { JobResultsLink, JobReportLink } from "./job-public-actions";
 import { marketplacePath, MarketplaceState, publicLocation } from "./marketplace";
 
 const baseCopy = {
@@ -183,14 +184,14 @@ export async function JobDetailPage({locale,slug}:{locale:Locale;slug:string}) {
   return <>
     {item.origin==="external"&&<JobViewTracker jobReference={item.public_ref}/>} {structuredData&&<script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(structuredData).replaceAll("<","\\u003c")}}/>}
     <section className="marketplace-detail-hero job-detail-hero"><div className="container">
-      <MarketplaceBreadcrumb label="Breadcrumb" items={[{label:"SHIDA",href:marketplacePath(locale,"/shida")},{label:t.jobs,href:marketplacePath(locale,"/shida/emplois")},{label:item.title}]}/>
+      <nav className="job-detail-return"><JobResultsLink href={marketplacePath(locale,"/shida/emplois")} locale={locale}/><Link href={jobSearchPath(locale)}>{jobSearchCopy[locale].title} →</Link></nav>
       <div className="job-detail-labels"><span className="job-type-label">{item.offer_type==="enterprise"?u.company:u.personal}</span>{item.origin==="external"&&<span className="job-origin-label job-origin-external">{originLabel(item,locale)}</span>}{organizationLabel(item,locale)&&<span className="job-origin-label">{organizationLabel(item,locale)}</span>}{stateText&&<strong className="job-lifecycle-state" role="status">{stateText}</strong>}</div>
       <div className="job-detail-title"><JobCategoryIcon category={item.professional_category||item.category} individual={item.offer_type==="individual"}/><h1>{item.title}</h1></div>
-      {item.offer_type==="enterprise"?<EmployerIdentity employer={item.employer} locale={locale}/>:<p className="job-personal-employer">{t.personalEmployer}</p>}
+      <div className="job-detail-identity">{item.offer_type==="enterprise"?<EmployerIdentity employer={item.employer} locale={locale}/>:<p className="job-personal-employer">{t.personalEmployer}</p>}<span id="detail-follow-control"/></div>
       {location&&<p className="marketplace-detail-location">{location}</p>}
       <div className="job-detail-highlights">{salary&&<div><span>{t.compensation}</span><strong>{salary}</strong></div>}{item.work_schedule&&<div><span>{t.schedule}</span><strong>{item.work_schedule}</strong></div>}</div>
       <div className="job-detail-dates">{deadlineLabel&&<strong className={inactive?"job-deadline-expired":""}>{deadlineLabel}</strong>}{published&&<span>{t.published} {published}</span>}</div>
-      <div className="job-detail-primary-actions"><a className="button button-primary" href="#job-application">{u.apply}</a><JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin={item.origin} canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save} canFollow={item.relationship_capabilities.can_follow_employer}/></div>
+      <div className="job-detail-primary-actions"><JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin={item.origin} canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save} canFollow={item.relationship_capabilities.can_follow_employer}/></div>
     </div></section>
     <section className="section"><div className="container job-detail-layout">
       <main className="job-detail-content">
@@ -211,7 +212,7 @@ export async function JobDetailPage({locale,slug}:{locale:Locale;slug:string}) {
         {item.origin==="external"&&item.external_source&&<section className="job-external-source"><h2>{d.source}</h2><p>{item.external_source.explanation}</p>{source&&<a href={source} target="_blank" rel="noopener noreferrer">{item.external_source.source_label}</a>}</section>}
         <section className="job-final-action"><ButtonLink href={marketplacePath(locale,"/shida/emplois")} variant="text">{inactive?(locale==="fr"?"Voir des offres similaires":"View similar jobs"):t.back}</ButtonLink></section>
       </main>
-      <aside className="job-detail-sidebar"><section className="job-application-panel" id="job-application"><h2>{u.apply}</h2>{directAction&&<><p>{u.handoff}</p><p className="job-application-account">{u.account}</p></>}{applyButton||<p className="marketplace-action-unavailable">{t.actionUnavailable}</p>}{directAction&&<Link href={marketplacePath(locale,`/shida/space?view=candidate&job=${encodeURIComponent(item.public_ref)}`)}>{candidateCopy[locale].title}</Link>}<Link className="job-my-applications" href={jobSearchPath(locale,'applications')}>{u.applications} →</Link></section><section className="job-applicant-safety"><p>{u.safety}</p></section><section className="job-detail-summary"><h2>{d.overview}</h2><dl><DetailItem label={t.contract} value={item.contract_type||item.contract_type_raw?jobFactText((item.contract_type||item.contract_type_raw)!,locale):null}/><DetailItem label={t.mode} value={item.work_mode||item.work_mode_raw?jobFactText((item.work_mode||item.work_mode_raw)!,locale):null}/><DetailItem label={t.schedule} value={item.work_schedule}/><DetailItem label={t.vacancies} value={item.vacancies}/><DetailItem label={t.salary} value={salary}/><DetailItem label={t.start} value={start}/><DetailItem label={t.location} value={item.workplace_reference||location}/></dl></section></aside>
+      <aside className="job-detail-sidebar"><section className="job-application-panel" id="job-application"><h2>{u.apply}</h2>{directAction&&<><p>{u.handoff}</p><p className="job-application-account">{u.account}</p></>}{(!inactive&&applyButton)||<p className="marketplace-action-unavailable">{t.actionUnavailable}</p>}{directAction&&<Link href={marketplacePath(locale,`/shida/space?view=candidate&job=${encodeURIComponent(item.public_ref)}`)}>{candidateCopy[locale].title}</Link>}{item.origin!=="external"&&<Link className="job-my-applications" href={jobSearchPath(locale,'applications')}>{u.applications} →</Link>}</section><section className="job-applicant-safety"><p>{u.safety}</p><JobReportLink locale={locale} jobReference={item.public_ref}/></section>{(item.contract_type||item.contract_type_raw||item.work_mode||item.work_mode_raw||item.vacancies||start||item.workplace_reference)&&<section className="job-detail-summary"><h2>{d.overview}</h2><dl><DetailItem label={t.contract} value={item.contract_type||item.contract_type_raw?jobFactText((item.contract_type||item.contract_type_raw)!,locale):null}/><DetailItem label={t.mode} value={item.work_mode||item.work_mode_raw?jobFactText((item.work_mode||item.work_mode_raw)!,locale):null}/><DetailItem label={t.schedule} value={item.work_schedule}/><DetailItem label={t.vacancies} value={item.vacancies}/><DetailItem label={t.salary} value={salary}/><DetailItem label={t.start} value={start}/><DetailItem label={t.location} value={item.workplace_reference||location}/></dl></section>}</aside>
     </div></section>
     {similar.length>0&&<section className="section job-similar"><div className="container"><h2>{u.similar}</h2><div className="job-result-list">{similar.map(other=><JobCard key={other.public_ref} item={other} locale={locale}/>)}</div></div></section>}
   </>;

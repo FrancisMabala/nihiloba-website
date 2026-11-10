@@ -65,8 +65,8 @@ export async function endEmploymentSession(): Promise<void> {
   finally { announcePersonalSessionChange(); }
 }
 
-export async function loadCandidateApplications(): Promise<CandidateApplication[]> {
-  const value = await request("/applications");
+export async function loadCandidateApplications(signal?:AbortSignal): Promise<CandidateApplication[]> {
+  const value = await request("/applications",{signal});
   if (!Array.isArray(value.applications)) throw new EmploymentBrowserError("malformed_response", 502);
   return value.applications.map(parseCandidateApplication);
 }

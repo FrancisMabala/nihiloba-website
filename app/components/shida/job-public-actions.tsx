@@ -31,11 +31,21 @@ export function ExternalJobAction({ locale, jobReference, action, label }: { loc
 export function JobPublicActions({ locale, jobReference, title, path, origin, canShare=true, canSave=false, canFollow=false, compact=false }: { locale:Locale; jobReference:string; title:string; path:string; origin:"direct"|"external"; canShare?:boolean; canSave?:boolean; canFollow?:boolean; compact?:boolean }) {
   const t=copy[locale], [shared,setShared]=useState(false);
   async function share(){const url=new URL(path,window.location.origin).toString();try{if(navigator.share)await navigator.share({title,url});else await navigator.clipboard.writeText(url);if(origin==="external")void recordEvent(jobReference,"share");setShared(true);}catch{/* Cancellation leaves the page unchanged. */}}
-  const reportHref=`mailto:support@nihiloba.com?subject=${encodeURIComponent(`Report public job ${jobReference}`)}`;
+  // Report links live alongside the applicant safety information.
   return <div className={compact?"job-public-actions job-public-actions-compact":"job-public-actions"}>
-    <JobRelationshipActions key={`${locale}:${jobReference}`} locale={locale} jobReference={jobReference} canSave={canSave} canFollow={canFollow}/>
+    <JobRelationshipActions key={`${locale}:${jobReference}`} locale={locale} jobReference={jobReference} canSave={canSave} canFollow={canFollow} detail={!compact}/>
     {canShare&&<button type="button" className="job-action-button" onClick={()=>void share()}>{shared?t.shared:t.share}</button>}
-    {!compact&&<a className="job-action-button" href={reportHref}>{t.report}</a>}
+
     <span className="sr-only" role="status" aria-live="polite">{shared?t.shared:""}</span>
   </div>;
+}
+
+export function JobReportLink({locale,jobReference}:{locale:Locale;jobReference:string}){
+ return <a href={`mailto:support@nihiloba.com?subject=${encodeURIComponent("Report public job "+jobReference)}`}>{copy[locale].report}</a>;
+}
+export function JobResultsLink({locale,href}:{locale:Locale;href:string}){
+ const [destination,setDestination]=useState(href);
+ useEffect(()=>{if(!document.referrer)return;const previous=new URL(document.referrer);
+ if(previous.origin===location.origin&&previous.pathname.replace(/\/$/,'')===href.replace(/\/$/,''))setDestination(previous.pathname+previous.search);},[href]);
+ return <a href={destination}>← {{fr:'Toutes les offres',en:'All jobs',ln:'Misala nyonso',sw:'Kazi zote'}[locale]}</a>;
 }
