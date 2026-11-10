@@ -1,3 +1,5 @@
+import { personalRequestOrigin } from "../../../lib/personal-request-origin";
+
 const DEFAULT_API_BASE_URL = "https://api.nihiloba.com";
 export const PUBLIC_ACTION_HEADERS = { "Cache-Control": "no-store, max-age=0", Pragma: "no-cache" };
 
@@ -16,7 +18,9 @@ export function sameOriginPublicAction(request: Request): boolean {
   if (request.headers.get("sec-fetch-site") === "cross-site") return false;
   const origin = request.headers.get("origin");
   if (!origin) return true;
-  try { return new URL(origin).origin === new URL(request.url).origin; } catch { return false; }
+  // Render's internal request URL is not the browser's public origin. Reuse
+  // the explicit public-origin policy; never trust forwarded host headers.
+  return personalRequestOrigin(request) !== null;
 }
 
 export function publicActionError(status = 503): Response {

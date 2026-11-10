@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useId } from "react";
+import {OfferText} from './offer-text';
 import {JobRelationshipActions} from "./job-relationship-actions";
 import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 import type { PublicJobExternalAction } from "../../types/shida-public";
@@ -22,9 +23,9 @@ export function JobViewTracker({ jobReference }: { jobReference:string }) {
 }
 
 export function ExternalJobAction({ locale, jobReference, action, label }: { locale:Locale; jobReference:string; action:PublicJobExternalAction; label?:string }) {
-  const t=copy[locale], [busy,setBusy]=useState(false), [message,setMessage]=useState(""), [instructions,setInstructions]=useState("");
+  const statusId=useId(), t=copy[locale], [busy,setBusy]=useState(false), [message,setMessage]=useState(""), [instructions,setInstructions]=useState("");
   async function activate(){if(busy)return;setBusy(true);setMessage(action.mode==="redirect"?t.opening:"");setInstructions("");try{const response=await fetch(`/api/shida/public-jobs/${encodeURIComponent(jobReference)}/external-action`,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({action:action.action,idempotency_key:crypto.randomUUID()})});const result:unknown=await response.json();if(!response.ok){setMessage(response.status===409?t.unavailable:t.failed);return;}if(!result||typeof result!=="object"||Array.isArray(result)){setMessage(t.failed);return;}const value=result as Record<string,unknown>;if(value.mode==="redirect"&&typeof value.redirect_url==="string"){window.location.assign(value.redirect_url);return;}if(value.mode==="instructions"&&typeof value.instructions==="string"){setInstructions(value.instructions);setMessage("");return;}setMessage(t.failed);}catch{setMessage(t.failed);}finally{setBusy(false);}}
-  return <div className="job-external-action"><button type="button" className="button button-primary" onClick={()=>void activate()} disabled={busy} aria-describedby={message||instructions?`external-action-status-${jobReference}`:undefined}>{label||(action.mode==="redirect"?t.redirect:t.instructions)}</button>{(message||instructions)&&<p id={`external-action-status-${jobReference}`} className={instructions?"job-application-instructions":"job-action-status"} role="status" aria-live="polite">{instructions||message}</p>}</div>;
+  return <div className="job-external-action"><button type="button" className="button button-primary" onClick={()=>void activate()} disabled={busy} aria-describedby={message||instructions?statusId:undefined}>{label||(action.mode==="redirect"?t.redirect:t.instructions)}</button>{(message||instructions)&&<div id={statusId} className={instructions?"job-application-instructions":"job-action-status"} role="status" aria-live="polite">{instructions?<OfferText value={instructions}/>:message}</div>}</div>;
 }
 
 export function JobPublicActions({ locale, jobReference, title, path, origin, canShare=true, canSave=false, canFollow=false, compact=false }: { locale:Locale; jobReference:string; title:string; path:string; origin:"direct"|"external"; canShare?:boolean; canSave?:boolean; canFollow?:boolean; compact?:boolean }) {

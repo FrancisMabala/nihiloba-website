@@ -27,6 +27,8 @@ globalThis.fetch=async(input,init)=>{
   const page=Number(url.searchParams.get('page')||1),size=Number(url.searchParams.get('page_size')||12),total=selected.length;
   return Response.json({items:selected.slice((page-1)*size,page*size),pagination:{page,page_size:size,total_items:total,total_pages:Math.ceil(total/size)}});
  }
+ if(path==='/api/public/shida/jobs/formatted')return Response.json({...external,slug:'formatted',responsibilities:'### Gestion des équipes\n- **Encadrer** les vendeurs et les chauffeurs.\n- Contrôler les stocks.\n\n_Suivi quotidien._',qualifications:'1. Expérience en gestion.\n2. Maîtrise des outils.',short_summary:'**Coordonner** les équipes commerciales.'});
+ if(path==='/api/public/shida/jobs/JOB_airtel/external-action' && init?.method==='POST')return Response.json({mode:'redirect',redirect_url:'https://careers.example/apply?id_job=973&id_origin=0'});
  if(path==='/api/public/shida/jobs/expired')return Response.json({...external,application:{...external.application,available:false,capability:'none',external_action:null},status:'expired',lifecycle_state:'expired',relationship_capabilities:{...external.relationship_capabilities,can_save:false,can_follow_employer:false},application_available:false});
  if(path.startsWith('/api/public/shida/jobs/')){const row=items.find(i=>i.slug===path.split('/').at(-1));if(row)return Response.json({...detail,...row,requirements_document:{available:false,url:null},description:'Controlled employment fixture. No production records are created.'});}
  return Response.json({detail:'not_found'},{status:404});
