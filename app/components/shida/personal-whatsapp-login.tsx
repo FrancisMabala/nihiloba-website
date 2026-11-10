@@ -18,7 +18,7 @@ type State = "idle" | "creating" | "pending" | "code" | "exchanging" | "expired"
 type Challenge = { challenge_ref: string; whatsapp_url: string; expires_at: string };
 
 // In-place authentication deliberately leaves the complete local URL, filters and language intact.
-export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = false, heading, expectedPhone }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void; registration?: boolean; heading?: string; expectedPhone?:string }) {
+export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = false, heading, expectedPhone, returnTo }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void; registration?: boolean; heading?: string; expectedPhone?:string; returnTo?:string }) {
   const pathname = usePathname();
   const design=authDesignCopy[locale];
   const r=refinementCopy[locale];
@@ -151,7 +151,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
       <button className="button button-secondary" type="button" disabled={busy} onClick={() => void cancel()}>{design.restart}</button>
     </form>}
     {state === "uncertain" ? <button className="button button-secondary" type="button" onClick={() => void cancel(true)}>{t.reset}</button> : !["pending", "code", "exchanging"].includes(state) && <button className="button button-secondary auth-method" type="button" disabled={busy || registration && !eligible} onClick={() => void start()}>{state === "idle"&&!registration ? <><SpaceIcon name="whatsapp"/>{design.whatsapp}<span aria-hidden="true">›</span></> : state === "idle"?t.start:busy ? t[state] : t.retry}</button>}
-    {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <p className="login-register">{r.noAccount} <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}>{r.signup}</a></p>}
+    {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <p className="login-register">{r.noAccount} <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/?returnTo=${encodeURIComponent(returnTo??pathname)}`}>{r.signup}</a></p>}
     {!registration&&<p><a href={`${locale==='en'?'':`/${locale}`}/shida/space?view=recovery`}>{mySpaceCopy[locale].lost}</a></p>}
   </section>;
 }

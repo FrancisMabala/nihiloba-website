@@ -1,5 +1,13 @@
 import {expect,it} from 'vitest';
 import {registrationReturnPath} from '../app/lib/registration/return-path';
+
+it('preserves only an exact public job-action return, never credentials or additional query parameters',()=>{
+ for(const locale of ['', '/fr', '/ln', '/sw'])for(const action of ['save','unsave','follow','unfollow']){
+  const path=`${locale}/shida/emplois/JOB_fixture?job-action=${action}`;
+  expect(registrationReturnPath(path,'/shida/space')).toBe(path);
+ }
+ for(const path of ['/shida/emplois/JOB_fixture?job-action=save&token=secret','/shida/emplois/JOB_fixture?job-action=save#token','/shida/emplois/JOB_fixture?job-action=delete','//evil.invalid/shida/emplois/JOB_fixture?job-action=save','/shida/space?job-action=save'])expect(registrationReturnPath(path,'/shida/space')).toBe('/shida/space');
+});
 it('preserves the local selling destination after registration',()=>{
  expect(registrationReturnPath('/fr/shida/wenze/sell','/shida/space')).toBe('/fr/shida/wenze/sell');
 });

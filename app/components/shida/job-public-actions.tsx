@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {JobRelationshipActions} from "./job-relationship-actions";
 import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 import type { PublicJobExternalAction } from "../../types/shida-public";
 
@@ -26,13 +27,12 @@ export function ExternalJobAction({ locale, jobReference, action, label }: { loc
   return <div className="job-external-action"><button type="button" className="button button-primary" onClick={()=>void activate()} disabled={busy} aria-describedby={message||instructions?`external-action-status-${jobReference}`:undefined}>{label||(action.mode==="redirect"?t.redirect:t.instructions)}</button>{(message||instructions)&&<p id={`external-action-status-${jobReference}`} className={instructions?"job-application-instructions":"job-action-status"} role="status" aria-live="polite">{instructions||message}</p>}</div>;
 }
 
-export function JobPublicActions({ locale, jobReference, title, path, origin, canShare=true, saveUrl, followUrl, employerName, compact=false }: { locale:Locale; jobReference:string; title:string; path:string; origin:"direct"|"external"; canShare?:boolean; saveUrl?:string|null; followUrl?:string|null; employerName?:string; compact?:boolean }) {
+export function JobPublicActions({ locale, jobReference, title, path, origin, canShare=true, canSave=false, canFollow=false, compact=false }: { locale:Locale; jobReference:string; title:string; path:string; origin:"direct"|"external"; canShare?:boolean; canSave?:boolean; canFollow?:boolean; compact?:boolean }) {
   const t=copy[locale], [shared,setShared]=useState(false);
   async function share(){const url=new URL(path,window.location.origin).toString();try{if(navigator.share)await navigator.share({title,url});else await navigator.clipboard.writeText(url);if(origin==="external")void recordEvent(jobReference,"share");setShared(true);}catch{/* Cancellation leaves the page unchanged. */}}
   const reportHref=`mailto:support@nihiloba.com?subject=${encodeURIComponent(`Report public job ${jobReference}`)}`;
   return <div className={compact?"job-public-actions job-public-actions-compact":"job-public-actions"}>
-    {saveUrl&&<a className="job-action-button" href={saveUrl} target="_blank" rel="noopener noreferrer">{t.save}</a>}
-    {followUrl&&<a className="job-action-button" href={followUrl} target="_blank" rel="noopener noreferrer">{employerName?`${t.follow} · ${employerName}`:t.follow}</a>}
+    <JobRelationshipActions locale={locale} jobReference={jobReference} canSave={canSave} canFollow={canFollow}/>
     {canShare&&<button type="button" className="job-action-button" onClick={()=>void share()}>{shared?t.shared:t.share}</button>}
     {!compact&&<a className="job-action-button" href={reportHref}>{t.report}</a>}
     <span className="sr-only" role="status" aria-live="polite">{shared?t.shared:""}</span>

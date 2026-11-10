@@ -1,8 +1,9 @@
 'use client';
-import {CandidateProfileSpace} from './candidate-profile-space';
+import {OFFICIAL_CHANNELS} from '../../lib/brand';
+import {JobSearchSpace} from './job-search-space';
 import {PersonalOfferSpace} from './personal-offer-space';
 import {personalOfferCopy} from '../../lib/personal-offer-copy';
-import {candidateCopy} from '../../lib/candidate-profile-copy';
+import {jobSearchCopy} from '../../lib/job-search-copy';
 import {SpaceSidebar} from './space-sidebar';
 import {useEffect,useState} from 'react';
 import type {MarketplaceLocale} from './marketplace-account-copy';
@@ -36,7 +37,7 @@ import {individualOnlyActivities} from '../../lib/personal-activities';
 import {leaveWork} from '../../lib/wenze-work';
 import {listingCopy} from '../../lib/wenze-listings-copy';
 import {resolveSpaceView,type SpaceView as View} from '../../lib/space-view';
-export function AccountSpace({locale,initialView,transactionRole,inbox=false}:{locale:MarketplaceLocale;initialView?:string;transactionRole?:string;inbox?:boolean}){
+export function AccountSpace({locale,initialView,initialSection,transactionRole,inbox=false}:{locale:MarketplaceLocale;initialView?:string;initialSection?:string;transactionRole?:string;inbox?:boolean}){
  const w=(key:Parameters<typeof workspaceText>[1])=>workspaceText(locale,key);
  const t=accountSpaceCopy[locale],a=marketplaceAccountCopy[locale],prefix=locale==='en'?'':`/${locale}`,bilingual=locale==='en'?'':'/fr',base=`${prefix}/shida/space`;
  const requestedView=resolveSpaceView(initialView,inbox);
@@ -46,7 +47,7 @@ export function AccountSpace({locale,initialView,transactionRole,inbox=false}:{l
  const [activityPages,setActivityPages]=useState(1),[activityRevision,setActivityRevision]=useState(0);
  const activityData=usePersonalActivityData(session?.binding??null,activityPages,activityRevision);
  const individualOnly=individualOnlyActivities(activityData);
- const hasListings=!!activityData?.items.some(item=>item.individual);
+ const hasListings=!!activityData?.items.some(item=>item.individual)||!!activityData?.markets.includes('jobs')||initialView==='job-offer';
  const view=(requestedView==='management'||(!initialView&&requestedView==='overview'))&&individualOnly?'listings':requestedView;
  useEffect(()=>{
   let alive=true,generation=0,controller:AbortController|undefined;
@@ -66,12 +67,13 @@ export function AccountSpace({locale,initialView,transactionRole,inbox=false}:{l
  const orders:[string,string,SpaceIconName][]=[[t.wenzeOrders,`${bilingual}/shida/wenze/orders`,'shop'],[t.foodOrders,`${prefix}/shida/restaurant-orders`,'restaurant']];
  const requests:[string,string,SpaceIconName][]=[[t.serviceRequests,`${prefix}/shida/service-requests`,'requests'],[w('applications'),locale==='fr'?'/fr/shida/mes-candidatures':`${prefix}/shida/my-applications`,'requests'],[w('reservations'),`${prefix}/shida/restaurant-reservations`,'restaurant']];
  return <div className={`account-space${view==='settings'?' account-settings-page':(view==='management'||view==='overview')?' account-activities-page':view==='transactions'?' account-transactions-page':''}`} lang={locale}>
-  <SpaceSidebar locale={locale} view={view} individualOnly={individualOnly} hasListings={hasListings} onNavigate={async event=>{event.preventDefault();const destination=event.currentTarget.href;if(await leaveWork())window.location.assign(destination);}}/>
+  <SpaceSidebar locale={locale} view={view==='candidate'?'job-search':view} individualOnly={individualOnly} hasListings={hasListings} onNavigate={async event=>{event.preventDefault();const destination=event.currentTarget.href;if(await leaveWork())window.location.assign(destination);}}/>
   <div className="space-content">
-   <h1>{view==='job-offer'?personalOfferCopy[locale].title:view==='candidate'?candidateCopy[locale].title:view==='listings'?listingCopy[locale].title:(view==='management'||view==='overview')?a.space:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
+   <h1>{view==='job-offer'?personalOfferCopy[locale].title:(view==='candidate'||view==='job-search')?jobSearchCopy[locale].title:view==='listings'?listingCopy[locale].title:(view==='management'||view==='overview')?a.space:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
    {view==='job-offer'&&(checking?<p role="status">{t.loading}</p>:session?<PersonalOfferSpace key={session.binding} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
+   {view==='listings'&&session&&<section id="published-jobs" className="candidate-private-panel"><h2>{n.jobs}</h2><a href={`${OFFICIAL_CHANNELS.whatsapp}?text=${encodeURIComponent(({en:'employment menu',fr:'menu emploi',ln:'menu mosala',sw:'menyu ajira'})[locale])}`} target="_blank" rel="noopener noreferrer">{n.jobs} · {n.whatsapp} →</a><p><a href={`${base}?view=job-offer`}>{personalOfferCopy[locale].title}</a></p></section>}
    {view==='listings'&&(checking?<p role="status">{t.loading}</p>:session?<WenzeApiProvider key={session.binding} binding={session.binding} onUnauthorized={()=>setSession(null)}><QuickSell locale={locale} embedded/></WenzeApiProvider>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
-   {view==='candidate'&&(checking?<p role="status">{t.loading}</p>:session?<CandidateProfileSpace key={session.binding} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
+   {(view==='candidate'||view==='job-search')&&(checking?<p role="status">{t.loading}</p>:session?<JobSearchSpace key={session.binding} initialSection={view==='candidate'?'profiles':initialSection} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='messages'&&(checking?<p role="status">{t.loading}</p>:session?<MessagesSpace key={session.binding} binding={session.binding} locale={locale}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='recovery'&&<AccountRecovery locale={locale}/>}
    {!session&&view!=='recovery'&&<p><a href={href('recovery')}>{securityText(locale,'report')}</a></p>}
