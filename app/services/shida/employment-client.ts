@@ -74,6 +74,7 @@ export function parseCandidateApplication(value: unknown): CandidateApplication 
   return {
     reference: text(item.reference, true)!,
     job_title: text(item.job_title, true)!,
+    job_location: text(item.job_location),
     employer_name: text(item.employer_name, true)!,
     status: status(item.status),
     created_at: text(item.created_at),
@@ -142,10 +143,14 @@ export async function logoutEmploymentSession(token: string): Promise<void> {
   await backendRequest("/api/dashboard/logout", { method: "POST" }, token);
 }
 
-export async function getCandidateApplications(token: string): Promise<CandidateApplication[]> {
-  const envelope = record((await backendRequest("/api/dashboard/employment/applications", {}, token)).payload);
+export async function getCandidateApplicationPage(token:string,page=1){
+  const envelope = record((await backendRequest("/api/dashboard/employment/applications"+(page===1?"":"?page="+page), {}, token)).payload);
   if (!Array.isArray(envelope.applications)) throw new EmploymentApiError("malformed_response", 502);
-  return envelope.applications.map(parseCandidateApplication);
+  const applications=envelope.applications.map(parseCandidateApplication);
+  return {applications,total:typeof envelope.total==='number'?envelope.total:applications.length,has_more:envelope.has_more===true};
+}
+export async function getCandidateApplications(token:string):Promise<CandidateApplication[]>{
+ return (await getCandidateApplicationPage(token)).applications;
 }
 
 export async function getCandidateApplication(token: string, reference: string): Promise<CandidateApplication> {

@@ -2,9 +2,8 @@
 import {useEffect,useRef,useState} from 'react';
 import {jobSearchCopy,jobSearchPath,jobSearchSections,type JobSearchSection} from '../../lib/job-search-copy';
 import {jobSearchRequest,JobSearchError,type JobSearchList,type JobAlerts,type JobSearchItem} from '../../lib/job-search-api';
-import {loadCandidateApplications,EmploymentBrowserError} from '../../services/shida/employment-browser-client';
-import type {CandidateApplication} from '../../types/shida-employment';
-import {CandidateApplicationsView} from './candidate-employment';
+import {loadApplicationPage,EmploymentBrowserError} from '../../services/shida/employment-browser-client';
+import {WorkspaceApplications} from './workspace-applications';
 import {CandidateProfileSpace} from './candidate-profile-space';
 import {leaveWork} from '../../lib/wenze-work';
 import {useConfirmation} from './confirmation-dialog';
@@ -22,7 +21,7 @@ export function JobSearchSpace(props:JobSearchSpaceProps){
 function JobSearchContents({locale,binding,initialSection='overview',onUnauthorized}:JobSearchSpaceProps){
  const t=jobSearchCopy[locale],prefix=locale==='en'?'':`/${locale}`;
  const section:JobSearchSection=jobSearchSections.includes(initialSection as JobSearchSection)?initialSection as JobSearchSection:'overview';
- const [list,setList]=useState<JobSearchList|null>(null),[applications,setApplications]=useState<CandidateApplication[]|null>(null),[alerts,setAlerts]=useState<JobAlerts|null>(null);
+ const [list,setList]=useState<JobSearchList|null>(null),[applications,setApplications]=useState<Awaited<ReturnType<typeof loadApplicationPage>>|null>(null),[alerts,setAlerts]=useState<JobAlerts|null>(null);
  const [page,setPage]=useState(1),[revision,setRevision]=useState(0),[error,setError]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const lock=useRef(false),alive=useRef(false),unauthorized=useRef(onUnauthorized);
  const {request:confirm,confirmation}=useConfirmation(locale);
@@ -36,7 +35,7 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
      const [items,preferences]=await Promise.all([jobSearchRequest<JobSearchList>(binding,locale,`${section==='saved'?'saved':'following'}?page=${page}`,'GET',undefined,controller.signal),section==='alerts'?jobSearchRequest<JobAlerts>(binding,locale,'alerts','GET',undefined,controller.signal):null]);
      if(active){if(page>1&&!items.items.length){setPage(page-1);return;}setError(false);setList(items);setAlerts(preferences);}
     }else if(section==='applications'){
-     const items=await loadCandidateApplications();if(active)setApplications(items);
+     const items=await loadApplicationPage(controller.signal,page);if(active){setApplications(items);setError(false);}
     }
    }catch(e){if(active){if((e instanceof JobSearchError||e instanceof EmploymentBrowserError)&&e.status===401)unauthorized.current();else setError(true);}}
   }
@@ -61,15 +60,18 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
  const loading=['saved','following','alerts'].includes(section)?!list:section==='applications'?!applications:false;
  return <section className="candidate-workspace job-search-workspace" aria-busy={busy}>
   {confirmation}
-  <div className="search-intro"><p>{overviewCopy[locale].intro}</p><a className={(section==='overview'||section==='saved')?'space-primary-action':'button-primary'} href={`${prefix}/shida/emplois`}>{t.browse} {(section==='overview'||section==='saved')?'→':'↗'}</a></div>
+  <div className="search-intro"><p>{overviewCopy[locale].intro}</p><a className={(section==='overview'||section==='saved'||section==='applications')?'space-primary-action':'button-primary'} href={`${prefix}/shida/emplois`}>{t.browse} {(section==='overview'||section==='saved'||section==='applications')?'→':'↗'}</a></div>
   <nav className="search-tabs" aria-label={t.title}>{jobSearchSections.map(key=><a key={key} href={jobSearchPath(locale,key)} aria-current={section===key?'page':undefined} onClick={async e=>{e.preventDefault();const href=e.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{t[key]}</a>)}</nav>
-  {section!=='overview'&&<h2 className="workspace-heading">{t[section]}{section==='saved'&&list&&<span className="workspace-count">{list.total}</span>}</h2>}
+  {section!=='overview'&&<h2 className="workspace-heading">{t[section]}{section==='applications'&&applications&&<span className="workspace-count">{applications.total}</span>}{section==='saved'&&list&&<span className="workspace-count">{list.total}</span>}</h2>}
   {notice&&<p className="workspace-toast" role="status">{notice}</p>}
   {error&&<div role="alert"><p>{t.error}</p><button onClick={reload} disabled={busy}>{t.retry}</button></div>}
   {loading&&!error&&<p role="status">{t.loading}</p>}
   {section==='overview'&&<JobOverview revision={revision} locale={locale} binding={binding} destination={destination} unauthorized={onUnauthorized}/>}
   {section==='profiles'&&<CandidateProfileSpace locale={locale} binding={binding} onUnauthorized={onUnauthorized}/>}
-  {section==='applications'&&<><p>{t.directApplications}</p><p>{t.externalGap}</p>{applications&&<CandidateApplicationsView locale={locale} applications={applications}/>}</>}
+  {section==='applications'&&applications&&<WorkspaceApplications locale={locale} binding={binding} applications={applications.applications} unauthorized={onUnauthorized}/>} 
+  {section==='applications'&&applications&&(page>1||applications.has_more)&&<nav className="candidate-actions" aria-label={t.applications}>
+    {page>1&&<button onClick={()=>{setApplications(null);setPage(page-1);}}>{t.previous}</button>}{applications.has_more&&<button onClick={()=>{setApplications(null);setPage(page+1);}}>{t.next}</button>}
+   </nav>}
   {section==='alerts'&&alerts&&<section className="candidate-private-panel"><h3>{t.matching}</h3><p>{t.matchingHelp}</p>{alerts.profile_count?<><p>{alerts.enabled_count===0?t.disabled:alerts.enabled_count===alerts.profile_count?t.enabled:t.mixed}</p><button disabled={busy} onClick={()=>void mutate('alerts','PUT',{enabled:alerts.enabled_count!==alerts.profile_count}).catch(()=>{})}>{alerts.enabled_count===alerts.profile_count?t.disable:t.enable}</button></>:<><p>{t.needProfile}</p><a href={jobSearchPath(locale,'profiles')}>{t.profiles}</a></>}<p>{t.alertGap}</p></section>}
   {section==='alerts'&&<><h3>{t.employerAlerts}</h3><p>{t.optIn}</p></>}
   {list&&<>

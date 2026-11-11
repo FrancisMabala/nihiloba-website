@@ -138,3 +138,5 @@ navigation. The job detail browser checks hold the response pending, follow the
 organisation link to another offer and verify the original page and scroll offset.
 
 Saved offers use the paginated personal list, including unavailable rows that can still be removed. The display reuses public vacancy location and lifecycle. A failed removal keeps the bookmark and total; confirmation can be retried. The section refreshes on entry, return and removal.
+
+The applications tab reads the same submitted applications feed as the overview. Its empty state resolves saved bookmarks only after the candidate list is successfully empty. The interview link requires confirmed status plus a valid future date and time. External redirects and manual declarations do not write to this list.

@@ -13,3 +13,13 @@
 .candidate-workspace .workspace-record-actions button{background:transparent;border:0;padding:4px 0;color:#466054}
 .workspace-toast{position:fixed;bottom:90px;right:16px;z-index:80;padding:12px 18px;max-width:calc(100% - 32px);background:#183e33;color:white;border-radius:8px}
 @media(max-width:700px){.workspace-record{grid-template-columns:auto minmax(0,1fr);gap:10px;padding:14px}.workspace-record-actions{grid-column:1/-1;justify-items:start}.workspace-record-icon{width:40px;height:40px}}
+
+.workspace-app-list{border:1px solid #ded9cd;border-radius:12px;padding:0 16px;background:#fffdfa}
+.workspace-app-list .workspace-record{grid-template-columns:auto minmax(0,1.6fr) minmax(0,1fr) auto;border:0;border-radius:0;align-items:center;padding:16px 0}
+.workspace-app-list .workspace-record+.workspace-record{border-top:1px solid #e3e0d7}
+.workspace-app-status{display:grid;justify-items:start;gap:6px}.workspace-app-status span{background:#e7f0df;border-radius:20px;padding:3px 10px}
+.workspace-app-status [data-status=under_review]{background:#deedfc}.workspace-app-status [data-status=interview]{background:#fff0d2}
+.workspace-record-icon.app-tile{background:#e1effb}
+.workspace-app-empty{grid-template-columns:auto minmax(0,1fr);align-items:center}
+.workspace-scope{color:#52655d}
+@media(max-width:700px){.workspace-app-list .workspace-record{grid-template-columns:auto minmax(0,1fr)}.workspace-app-status,.workspace-app-list .workspace-record-actions{grid-column:2}}

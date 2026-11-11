@@ -1,3 +1,4 @@
+import {applicationsCopy} from '../../app/components/shida/workspace-applications';
 import {test,expect,type Page} from '@playwright/test';
 import {jobSearchCopy} from '../../app/lib/job-search-copy';
 import {employerCopy} from '../../app/lib/employer-page-copy';
@@ -71,7 +72,7 @@ for(const locale of ['fr','en','ln','sw'] as const){
     await expect(page.getByText(t.emptySaved,{exact:true})).toBeVisible();
     await page.locator('.search-tabs').getByRole('link',{name:t.applications,exact:true}).click();
     await expect(page.getByText('Existing application',{exact:true})).toBeVisible();
-    await expect(page.getByText(t.externalGap,{exact:true})).toBeVisible();
+    await expect(page.getByText(applicationsCopy[locale].scope,{exact:true})).toBeVisible();
     await expect(page.locator('a[href*="APP_fixture"]')).toHaveAttribute('href',`${prefix}/shida/${locale==='fr'?'mes-candidatures':'my-applications'}/APP_fixture`);
     await page.getByRole('link',{name:t.profiles,exact:true}).click();
     await expect(page.getByRole('heading',{name:candidateCopy[locale].professional,exact:true})).toBeVisible();
@@ -207,7 +208,7 @@ for(const width of [390,1440])test('detail actions populate mockup and destinati
  for(const [i,section] of ['saved','applications','following'].entries()){
   await page.goto(overview);await counts.nth(i).focus();await page.keyboard.press('Enter');await expect(page).toHaveURL(new RegExp('section='+section+'$'));
   if(i!==1)await expect(page.locator('.candidate-application-list article')).toHaveCount(1);
-  else await expect(page.getByText(jobSearchCopy.fr.directApplications)).toBeVisible();
+  else await expect(page.getByText(applicationsCopy.fr.scope)).toBeVisible();
  }
  for(const type of ['professional','occasional_work']){
   await page.goto(overview);await page.locator('.search-profile-row[href$="profile='+type+'"]').click();
@@ -290,4 +291,26 @@ for(const width of [390,1440])test('saved list removal is recoverable and synchr
  await expect(page.getByText('Offre indisponible')).toBeVisible();await expect(page.getByText('Clôturée')).toBeVisible();
  await expect(page.locator('.workspace-record-actions a')).toHaveCount(1);await expect(page.locator('.workspace-record-actions button')).toHaveCount(2);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+for(const width of [390,1440])test('application counts, empty next steps and recorded interviews '+width,async({page},info)=>{
+ await page.setViewportSize({width,height:900});await fixture(page);
+ const url=overview.replace('section=overview','section=applications');
+ let n=0,available=true,mode=0,failed=true;
+ await page.route('**/job-search/saved?*',r=>r.fulfill({json:{total:n,items:n?[{relation_ref:'REL_saved',name:'Emploi',available,reference:available?'JOB_fixture':null,kind:'job'}]:[],page:1,has_more:false}}));
+ await page.route('**/employment/applications*',r=>r.fulfill({status:failed?503:200,json:{applications:Array.from({length:mode},(_,i)=>({reference:'APP_'+i,job_title:'Travail '+i,employer_name:'Bureau',job_location:'Gombe',status:['interview_confirmed','under_review','interview_confirmed'][i],created_at:'2026-10-05T12:00:00Z',interview:i===0?{date:'2099-12-01',time:'10:00'}:{},messages:[],status_history:[]}))}}));
+ await page.goto(url);await expect(page.getByRole('alert')).toBeVisible();await expect(page.locator('.workspace-count')).toHaveCount(0);
+ failed=false;await page.getByRole('button',{name:'Réessayer'}).click();await expect(page.locator('.workspace-count')).toHaveText('0');
+ await expect(page.getByText(applicationsCopy.fr.empty)).toBeVisible();await expect(page.locator('.workspace-app-empty a')).toHaveCount(0);
+ for(const [total,access,single] of [[1,true,true],[2,true,false],[1,false,false]] as const){
+  n=total;available=access;await page.reload();const link=page.locator('.workspace-app-empty a');await expect(link).toHaveAttribute('href',single?'/fr/shida/emplois/JOB_fixture':'/fr/shida/space?view=job-search&section=saved');
+  if(single)await page.screenshot({path:info.outputPath('applications-empty-'+width+'.png'),fullPage:true});
+ }
+ for(const total of [1,3]){
+  mode=total;await page.goto(url);await expect(page.locator('.workspace-count')).toHaveText(String(total));await expect(page.locator('.workspace-app-list article')).toHaveCount(total);
+  await expect(page.getByRole('link',{name:'Voir l’entretien →'})).toHaveAttribute('href','/fr/shida/mes-candidatures/APP_0#interview');
+  if(total===3){await expect(page.getByText('En cours d’examen')).toBeVisible();await expect(page.getByRole('link',{name:'Voir ma candidature →'})).toHaveCount(2);await page.screenshot({path:info.outputPath('applications-'+width+'.png'),fullPage:true});}
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.goto(overview);await expect(page.locator('.search-counts strong').nth(1)).toHaveText(String(total));
+ }
 });
