@@ -18,6 +18,9 @@ import { safePublicActionUrl, safePublicExternalUrl, safePublicImageUrl } from "
 import { getJob, getJobEmployer, getJobs, getJobCategories, jobSearchQuery, ShidaApiError } from "../../services/shida/public-client";
 import type { JobCollection, JobSearch, PublicJob, PublicJobEmployer, PublicJobEmployerSummary, PublicJobSalary, PublicJobSummary } from "../../types/shida-public";
 import { ButtonLink } from "../button-link";
+import {MissionPresentation} from "./mission-presentation";
+import {listingText} from "../../lib/personal-missions-copy";
+import "./mission-management.css";
 import { ExternalJobAction, JobPublicActions, JobViewTracker } from "./job-public-actions";
 import { MarketplaceImage } from "./marketplace-image";
 import { JobResultsLink, JobReportLink } from "./job-public-actions";
@@ -84,7 +87,7 @@ function salaryText(salary:PublicJobSalary|null,locale:Locale){if(!salary)return
 function cardCompensation(item:PublicJobSummary,locale:Locale){if(item.salary_visibility==="hidden")return null;const structured=salaryText(item.salary,locale);if(item.offer_type==="enterprise")return structured;return structured||item.compensation;}
 function matchingExternalAction(item:PublicJobSummary){const action=item.application.external_action;if(item.origin!=="external"||!item.application.available||!action)return null;if(item.application.capability==="external_redirect"&&action.mode==="redirect"&&action.action==="redirect")return action;if(item.application.capability==="external_instructions"&&action.mode==="instructions"&&action.action==="instructions")return action;return null;}
 function directApplicationUrl(item:PublicJobSummary){return item.origin==="direct"&&item.application.available&&item.application.capability==="shida_application"&&item.application.mode==="shida"?safePublicActionUrl(item.application.apply_url):null;}
-function hasSupportedApplication(item:PublicJobSummary){return Boolean(directApplicationUrl(item)||matchingExternalAction(item));}
+function hasSupportedApplication(item:PublicJobSummary){return Boolean((item.origin==="direct"&&item.offer_type==="individual"&&item.application.available&&item.application.mode==="shida"&&item.application.capability==="shida_application")||directApplicationUrl(item)||matchingExternalAction(item));}
 function StructuredJobSection({title,value}:{title:string;value:string|null}){return value?.trim()?<section><h2>{title}</h2><OfferText value={value}/></section>:null;}
 function experienceText(item:PublicJob,locale:Locale){if(item.experience.text)return item.experience.text;if(item.experience.minimum_years!=null)return detailCopy[locale].years(item.experience.minimum_years);if(item.experience.requirement_kind==="not_required")return locale==="fr"?"Aucune expérience exigée":"No experience required";if(item.experience.requirement_kind==="preferred")return locale==="fr"?"Expérience souhaitée":"Experience preferred";return null;}
 function pageHref(locale:Locale,search:JobSearch,page:number){return `${marketplacePath(locale,"/shida/emplois")}${jobSearchQuery({...search,page})}`;}
@@ -174,6 +177,13 @@ export async function JobDetailPage({locale,slug}:{locale:Locale;slug:string}) {
   if(!item)return <MarketplaceState>{t.unavailable}</MarketplaceState>;
   const location=jobLocation(item),published=displayDate(item.published_at,locale),deadline=displayDate(item.application_deadline,locale),deadlineLabel=item.deadline_label||(deadline?`${t.deadline}: ${deadline}`:null),start=displayDate(item.start_date,locale),social=safePublicExternalUrl(item.public_social_link),source=safePublicExternalUrl(item.external_source?.canonical_url),href=jobPath(locale,item),salary=cardCompensation(item,locale),experience=experienceText(item,locale),inactive=["expired","archived","closed","source_invalid"].includes(item.lifecycle_state);
   const structuredValues=[item.short_summary,item.responsibilities,item.qualifications,experience,item.education,item.skills,item.personal_qualities,item.languages,item.benefits,item.employment_conditions],hasStructuredContent=structuredValues.some((value)=>Boolean(value?.trim())),legacyFallback=hasStructuredContent?null:item.description_fallback||item.description;
+  if(item.origin==='direct'&&item.offer_type==='individual'){
+    const action=marketplacePath(locale,'/shida/space?view=job-offer&kind=apply&offer='+encodeURIComponent(item.public_ref));
+    return <section className="section"><div className="container mission-public"><JobResultsLink href={marketplacePath(locale,'/shida/emplois')} locale={locale}/><p className="job-type-label">{u.personal}</p>
+    <MissionPresentation heading locale={locale} title={item.title} location={location} description={item.short_summary||item.description_fallback||item.description} frequency={item.duration_frequency||start} hours={item.work_schedule} pay={salary} experience={item.optional_experience||item.employment_conditions} actions={<div className="mission-actions">
+    {!inactive&&hasSupportedApplication(item)?<ButtonLink href={action}>{listingText(locale,'apply')}</ButtonLink>:<p>{listingText(locale,'unavailable')}</p>}<JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin="direct" canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save}/></div>}/>
+    <JobReportLink locale={locale} jobReference={item.public_ref}/></div></section>
+  }
   let similar:PublicJobSummary[]=[];
   const category=item.professional_category||item.category;
   if(category){try{similar=(await getJobs({category,page:1,page_size:4},locale)).items.filter(other=>other.public_ref!==item.public_ref&&other.status==="open").slice(0,3);}catch{/* Optional recommendations never block the offer. */}}

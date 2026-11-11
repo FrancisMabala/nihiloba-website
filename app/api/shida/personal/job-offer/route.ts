@@ -10,8 +10,11 @@ async function handle(request: Request) {
   let suffix='';
   if(query.size){
     const offer=query.get('offer'),kind=query.get('kind'),record=query.get('record'),reference=/^[A-Za-z0-9_-]{1,64}$/;
-    if(request.method!=='GET'||!offer||!reference.test(offer)||!['applications','candidates'].includes(kind??'')||(record!==null&&!reference.test(record))||[...query.keys()].some(k=>!['offer','kind','record'].includes(k)))return fail(404);
-    suffix='/'+offer+'/'+kind+(record?'?record='+record:'');
+    if(query.size===1&&kind==='catalogue'&&request.method==='GET')suffix='/catalogue';
+    else {
+      if(!offer||!reference.test(offer)||!['applications','candidates','manage','apply'].includes(kind??'')||(request.method!=='GET'&&!['manage','apply'].includes(kind??''))||(record!==null&&!reference.test(record))||[...query.keys()].some(k=>!['offer','kind','record'].includes(k)))return fail(404);
+      suffix='/'+offer+'/'+kind+(record?'?record='+record:'');
+    }
   }
   const origin = personalRequestOrigin(request);
   if (request.headers.get('sec-fetch-site') === 'cross-site' || request.method !== 'GET' && !origin) return fail(403);

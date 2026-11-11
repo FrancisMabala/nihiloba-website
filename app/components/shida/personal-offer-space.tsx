@@ -27,7 +27,8 @@ export function PersonalOfferSpace({locale,binding,onUnauthorized}:{locale:Local
  const autoOpened=useRef(false);
  useEffect(()=>{let active=true;void load().then(async next=>{
   if(!active||autoOpened.current||new URLSearchParams(window.location.search).get('intent')!=='mission')return;
-  autoOpened.current=true;const current=next.progress.find(d=>d.state==='active');if(current){begin(current);return}
+  autoOpened.current=true;const target=new URLSearchParams(window.location.search).get('draft');
+  const current=next.progress.find(d=>target?d.public_ref===target:d.state==='active');if(current){begin(current.state==='expired'?await api({action:'recover',public_ref:current.public_ref,revision:current.revision}):current);return}if(target){setMessage(t.error);return}
   if(next.capacity.used>=next.capacity.limit||next.progress.some(d=>d.state==='expired'))return;
   key.current??=crypto.randomUUID();const started=await api({action:'start',operation_key:key.current});if(active)begin(started);
  }).catch(()=>{if(active)setMessage(t.error)});return()=>{active=false}},[load,api,t.error]);

@@ -3,6 +3,7 @@ import {useEffect,useState} from 'react';
 import {jobSearchCopy,jobSearchPath} from '../../lib/job-search-copy';
 import {jobSearchRequest,type JobSearchList} from '../../lib/job-search-api';
 import type {CandidateApplication} from '../../types/shida-employment';
+import {listingText} from '../../lib/personal-missions-copy';
 import {candidateApplicationPath,candidateStatusLabel} from './candidate-employment';
 import {SpaceIcon} from './account-space-icon';
 
@@ -38,7 +39,7 @@ export function WorkspaceApplications({locale,binding,refresh,applications,unaut
  return <>{applications.length?<div className="workspace-app-list">{[...applications].sort((a,b)=>(b.created_at??'').localeCompare(a.created_at??'')).map(item=>{
   const interview=upcoming(item),created=item.created_at?new Date(item.created_at):null;
   return <article className="workspace-record" key={item.reference}><span className="workspace-record-icon app-tile"><SpaceIcon name="requests"/></span>
-   <div className="workspace-record-body"><h3>{item.job_title}</h3><p>{[item.employer_name,item.job_location].filter(Boolean).join(' · ')}</p>
+   <div className="workspace-record-body"><h3>{item.job_title}</h3>{item.offer_removed&&<strong>{listingText(locale,'gone')}</strong>}<p>{[item.employer_name,item.job_location].filter(Boolean).join(' · ')}</p>
     {created&&Number.isFinite(created.getTime())&&<small>{c.sent} <time dateTime={item.created_at!}>{dates.format(created)}</time></small>}</div>
    <div className="workspace-app-status"><span data-status={interview?'interview':item.status}>{interview?c.interview:candidateStatusLabel(locale,item.status)}</span>{interview&&<small>{new Intl.DateTimeFormat(locale,{dateStyle:'medium',timeStyle:'short'}).format(interview)}</small>}</div>
    <div className="workspace-record-actions"><a href={candidateApplicationPath(locale,item.reference)+(interview?'#interview':'')}>{interview?c.details:c.open} →</a></div>

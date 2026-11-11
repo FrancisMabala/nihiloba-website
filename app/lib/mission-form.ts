@@ -2,7 +2,7 @@ import {validText} from './occasional-form';
 export type MissionValues=Record<string,string|null|undefined>;
 export const blankTerms={category:'',custom:'',frequency:'',day:'',date_flexible:false,weekdays:[] as string[],schedule_note:'',start_date:'',hours:'',start:'',end:'',overnight:false,rate:'',amount:'',currency:'',unit:'',experience:''};
 export type Terms=typeof blankTerms;
-export function missionTerms(v:MissionValues):Terms{return v.mission_terms?JSON.parse(v.mission_terms):{...blankTerms,experience:v.optional_experience||'',start_date:v.start_date||''}}
+export function missionTerms(v:MissionValues):Terms{return v.mission_terms?{...blankTerms,...JSON.parse(v.mission_terms)}:{...blankTerms,experience:v.optional_experience||'',start_date:v.start_date||''}}
 export function missionProblem(v:MissionValues,m:Terms,step:number,communes:string[]){
  if(step===0){
  if(!m.category)return 'category';if(m.category==='custom'&&!validText(m.custom))return 'custom';
