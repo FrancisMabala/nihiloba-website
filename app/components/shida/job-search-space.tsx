@@ -40,6 +40,11 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
   void load();
   return()=>{active=false;controller.abort();};
  },[binding,locale,section,page,revision]);
+ useEffect(()=>{
+  const refresh=()=>{if(!lock.current)setRevision(v=>v+1);};
+  window.addEventListener('focus',refresh);window.addEventListener('pageshow',refresh);
+  return()=>{window.removeEventListener('focus',refresh);window.removeEventListener('pageshow',refresh);};
+ },[]);
  function reload(){setList(null);setApplications(null);setAlerts(null);setError(false);setRevision(v=>v+1);}
  async function mutate(path:string,method:string,body?:unknown){
   if(lock.current)return;lock.current=true;setBusy(true);setError(false);setNotice('');
@@ -48,7 +53,7 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
   finally{lock.current=false;if(alive.current)setBusy(false);}
  }
  function remove(item:JobSearchItem){confirm({title:section==='saved'?t.remove:t.unfollow,description:item.name||t.unavailable,confirmLabel:section==='saved'?t.remove:t.unfollow,cancelLabel:t.cancel,onConfirm:()=>mutate(`relations/${item.relation_ref}`,'DELETE')});}
- const destination=(item:JobSearchItem)=>`${prefix}/shida/${item.kind==='job'?'emplois':item.kind==='company'?'businesses':'emplois/employeurs'}/${encodeURIComponent(item.reference!)}`;
+ const destination=(item:JobSearchItem)=>`${prefix}/shida/${item.kind==='job'?'emplois':item.kind==='company'&&!item.employer_ref?'businesses':'emplois/employeurs'}/${encodeURIComponent(item.employer_ref||item.reference!)}`;
  const loading=['saved','following','alerts'].includes(section)?!list:section==='applications'?!applications:false;
  return <section className="candidate-workspace job-search-workspace" aria-busy={busy}>
   {confirmation}

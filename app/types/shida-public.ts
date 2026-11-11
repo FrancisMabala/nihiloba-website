@@ -204,6 +204,7 @@ export type PublicJob = PublicJobSummary & {
 };
 
 export type PublicJobEmployer = PublicJobEmployerSummary & {
+  management_status?: "managed" | "shida_created";
   public_ref: string;
   description: string | null;
   open_job_count: number;

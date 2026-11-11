@@ -7,7 +7,7 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
  const path=(await context.params).path??[],query=new URL(request.url).searchParams,method=request.method;
  const reference=/^[A-Za-z0-9_-]{1,100}$/;
  const allowed=(method==='GET'&&path.length===1&&['saved','following','alerts'].includes(path[0]))
-  ||(path.length===2&&path[0]==='jobs'&&reference.test(path[1])&&['GET','PUT'].includes(method))
+  ||(path.length===2&&['jobs','employers'].includes(path[0])&&reference.test(path[1])&&['GET','PUT'].includes(method))
   ||(path.length===2&&path[0]==='relations'&&/^REL_[a-f0-9]{64}$/.test(path[1])&&method==='DELETE')
   ||(path.length===3&&path[0]==='relations'&&/^REL_[a-f0-9]{64}$/.test(path[1])&&path[2]==='notifications'&&method==='PUT')
   ||(path.length===1&&path[0]==='alerts'&&method==='PUT');
