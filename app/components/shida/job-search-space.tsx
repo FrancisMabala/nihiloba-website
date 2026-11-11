@@ -12,6 +12,7 @@ import {JobOverview} from './job-search-overview';
 import './candidate-profile-space.css';
 import './job-search-overview.css';
 import './job-search-records.css';
+import {FollowedEmployers,followListCopy} from './followed-employers';
 import {SavedOffers,savedCopy} from './saved-offers';
 
 type JobSearchSpaceProps={locale:keyof typeof jobSearchCopy;binding:string;initialSection?:string;onUnauthorized:()=>void};
@@ -23,6 +24,10 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
  const section:JobSearchSection=jobSearchSections.includes(initialSection as JobSearchSection)?initialSection as JobSearchSection:'overview';
  const [list,setList]=useState<JobSearchList|null>(null),[applications,setApplications]=useState<Awaited<ReturnType<typeof loadApplicationPage>>|null>(null),[alerts,setAlerts]=useState<JobAlerts|null>(null);
  const [page,setPage]=useState(1),[revision,setRevision]=useState(0),[error,setError]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
+ const tabs=useRef<HTMLElement>(null);
+ useEffect(()=>{const nav=tabs.current,active=nav?.querySelector<HTMLElement>('[aria-current="page"]');if(!nav||!active)return;
+  const a=active.getBoundingClientRect(),n=nav.getBoundingClientRect();if(a.right>n.right)nav.scrollLeft+=a.right-n.right+8;else if(a.left<n.left)nav.scrollLeft+=a.left-n.left-8;
+ },[section]);
  const lock=useRef(false),alive=useRef(false),unauthorized=useRef(onUnauthorized);
  const {request:confirm,confirmation}=useConfirmation(locale);
  useEffect(()=>{unauthorized.current=onUnauthorized;},[onUnauthorized]);
@@ -32,12 +37,12 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
   async function load(){
    try{
     if(section==='saved'||section==='following'||section==='alerts'){
-     const [items,preferences]=await Promise.all([jobSearchRequest<JobSearchList>(binding,locale,`${section==='saved'?'saved':'following'}?page=${page}`,'GET',undefined,controller.signal),section==='alerts'?jobSearchRequest<JobAlerts>(binding,locale,'alerts','GET',undefined,controller.signal):null]);
+     const [items,preferences]=await Promise.all([jobSearchRequest<JobSearchList>(binding,locale,`${section==='saved'?'saved':'following'}?page=${page}${section==='following'?'&cards=1':''}`,'GET',undefined,controller.signal),section==='alerts'?jobSearchRequest<JobAlerts>(binding,locale,'alerts','GET',undefined,controller.signal):null]);
      if(active){if(page>1&&!items.items.length){setPage(page-1);return;}setError(false);setList(items);setAlerts(preferences);}
     }else if(section==='applications'){
      const items=await loadApplicationPage(controller.signal,page);if(active){setApplications(items);setError(false);}
     }
-   }catch(e){if(active){if((e instanceof JobSearchError||e instanceof EmploymentBrowserError)&&e.status===401)unauthorized.current();else setError(true);}}
+   }catch(e){if(active){if((e instanceof JobSearchError||e instanceof EmploymentBrowserError)&&e.status===401)unauthorized.current();else {setList(null);setApplications(null);setAlerts(null);setError(true);}}}
   }
   void load();
   return()=>{active=false;controller.abort();};
@@ -55,27 +60,27 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
   catch(e){if(alive.current){if(e instanceof JobSearchError&&e.status===401)unauthorized.current();else if(method!=='DELETE')setError(true);}throw e;}
   finally{lock.current=false;if(alive.current)setBusy(false);}
  }
- function remove(item:JobSearchItem){confirm({title:section==='saved'?t.remove:t.unfollow,description:item.name||t.unavailable,confirmLabel:section==='saved'?t.remove:t.unfollow,cancelLabel:t.cancel,retryLabel:t.retry,onConfirm:()=>mutate(`relations/${item.relation_ref}`,'DELETE',undefined,section==='saved'?savedCopy[locale].removed:t.updated)});}
+ function remove(item:JobSearchItem){confirm({title:section==='saved'?t.remove:t.unfollow,description:item.name||t.unavailable,confirmLabel:section==='saved'?t.remove:t.unfollow,cancelLabel:t.cancel,retryLabel:t.retry,onConfirm:()=>mutate(`relations/${item.relation_ref}`,'DELETE',undefined,section==='saved'?savedCopy[locale].removed:item.name?followListCopy[locale].removed.replace('{name}',item.name):t.unfollowedAction)});}
  const destination=(item:JobSearchItem)=>`${prefix}/shida/${item.kind==='job'?'emplois':item.kind==='company'&&!item.employer_ref?'businesses':'emplois/employeurs'}/${encodeURIComponent((item.kind!=='job'&&item.employer_ref)||item.reference!)}`;
  const loading=['saved','following','alerts'].includes(section)?!list:section==='applications'?!applications:false;
  return <section className="candidate-workspace job-search-workspace" aria-busy={busy}>
   {confirmation}
-  <div className="search-intro"><p>{overviewCopy[locale].intro}</p><a className={(section==='overview'||section==='saved'||section==='applications')?'space-primary-action':'button-primary'} href={`${prefix}/shida/emplois`}>{t.browse} {(section==='overview'||section==='saved'||section==='applications')?'→':'↗'}</a></div>
-  <nav className="search-tabs" aria-label={t.title}>{jobSearchSections.map(key=><a key={key} href={jobSearchPath(locale,key)} aria-current={section===key?'page':undefined} onClick={async e=>{e.preventDefault();const href=e.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{t[key]}</a>)}</nav>
-  {section!=='overview'&&<h2 className="workspace-heading">{t[section]}{section==='applications'&&applications&&<span className="workspace-count">{applications.total}</span>}{section==='saved'&&list&&<span className="workspace-count">{list.total}</span>}</h2>}
+  <div className="search-intro"><p>{overviewCopy[locale].intro}</p><a className={(['overview','saved','applications','following'].includes(section))?'space-primary-action':'button-primary'} href={`${prefix}/shida/emplois`}>{t.browse} {(['overview','saved','applications','following'].includes(section))?'→':'↗'}</a></div>
+  <nav ref={tabs} className="search-tabs" aria-label={t.title}>{jobSearchSections.map(key=><a key={key} href={jobSearchPath(locale,key)} aria-current={section===key?'page':undefined} onClick={async e=>{e.preventDefault();const href=e.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{t[key]}</a>)}</nav>
+  {section!=='overview'&&<h2 className="workspace-heading">{t[section]}{section==='applications'&&applications&&<span className="workspace-count">{applications.total}</span>}{(section==='saved'||section==='following')&&list&&<span className="workspace-count">{list.total}</span>}</h2>}
   {notice&&<p className="workspace-toast" role="status">{notice}</p>}
   {error&&<div role="alert"><p>{t.error}</p><button onClick={reload} disabled={busy}>{t.retry}</button></div>}
   {loading&&!error&&<p role="status">{t.loading}</p>}
   {section==='overview'&&<JobOverview revision={revision} locale={locale} binding={binding} destination={destination} unauthorized={onUnauthorized}/>}
   {section==='profiles'&&<CandidateProfileSpace locale={locale} binding={binding} onUnauthorized={onUnauthorized}/>}
-  {section==='applications'&&applications&&<WorkspaceApplications locale={locale} binding={binding} applications={applications.applications} unauthorized={onUnauthorized}/>} 
+  {section==='applications'&&applications&&<WorkspaceApplications refresh={revision} locale={locale} binding={binding} applications={applications.applications} unauthorized={onUnauthorized}/>}
   {section==='applications'&&applications&&(page>1||applications.has_more)&&<nav className="candidate-actions" aria-label={t.applications}>
     {page>1&&<button onClick={()=>{setApplications(null);setPage(page-1);}}>{t.previous}</button>}{applications.has_more&&<button onClick={()=>{setApplications(null);setPage(page+1);}}>{t.next}</button>}
    </nav>}
   {section==='alerts'&&alerts&&<section className="candidate-private-panel"><h3>{t.matching}</h3><p>{t.matchingHelp}</p>{alerts.profile_count?<><p>{alerts.enabled_count===0?t.disabled:alerts.enabled_count===alerts.profile_count?t.enabled:t.mixed}</p><button disabled={busy} onClick={()=>void mutate('alerts','PUT',{enabled:alerts.enabled_count!==alerts.profile_count}).catch(()=>{})}>{alerts.enabled_count===alerts.profile_count?t.disable:t.enable}</button></>:<><p>{t.needProfile}</p><a href={jobSearchPath(locale,'profiles')}>{t.profiles}</a></>}<p>{t.alertGap}</p></section>}
   {section==='alerts'&&<><h3>{t.employerAlerts}</h3><p>{t.optIn}</p></>}
   {list&&<>
-   {section==='saved'?<SavedOffers locale={locale} list={list} remove={remove} busy={busy} destination={destination}/>:<>{!list.items.length&&<p>{t.emptyFollowing}</p>}
+   {section==='saved'?<SavedOffers locale={locale} list={list} remove={remove} busy={busy} destination={destination}/>:section==='following'?<FollowedEmployers locale={locale} list={list} remove={remove} busy={busy} destination={destination} retry={reload}/>:<>{!list.items.length&&<p>{t.emptyFollowing}</p>}
    <div className="candidate-application-list">{list.items.map(item=><article className="candidate-application-card" key={item.relation_ref}>
     <h3>{item.name||t.unavailable}</h3>{item.employer_name&&<p>{item.employer_name}</p>}
     {item.kind!=='job'&&<p>{item.kind==='company'?t.shida:t.directory}</p>}
@@ -86,7 +91,7 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
     {item.kind!=='job'&&<p>{t.notifications}: {item.notifications?t.enabled:t.disabled}</p>}
     {section==='alerts'&&item.available&&<button disabled={busy} onClick={()=>void mutate(`relations/${item.relation_ref}/notifications`,'PUT',{enabled:!item.notifications}).catch(()=>{})}>{item.notifications?t.disable:t.enable}</button>}
    </article>)}</div></>}
-   <nav className="candidate-actions" aria-label={t[section]}>{page>1&&<button disabled={busy} onClick={()=>{setList(null);setPage(p=>p-1);}}>{t.previous}</button>}{list.has_more&&<button disabled={busy} onClick={()=>{setList(null);setPage(p=>p+1);}}>{t.next}</button>}{section!=='saved'&&<button disabled={busy} onClick={reload}>{t.refresh}</button>}</nav>
+   <nav className="candidate-actions" aria-label={t[section]}>{page>1&&<button disabled={busy} onClick={()=>{setList(null);setPage(p=>p-1);}}>{t.previous}</button>}{list.has_more&&<button disabled={busy} onClick={()=>{setList(null);setPage(p=>p+1);}}>{t.next}</button>}{section==='alerts'&&<button disabled={busy} onClick={reload}>{t.refresh}</button>}</nav>
   </>}
  </section>;
 }

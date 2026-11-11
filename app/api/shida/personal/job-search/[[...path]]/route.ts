@@ -1,3 +1,4 @@
+import {getRestaurantBusiness} from '../../../../../services/shida/restaurants-client';
 import {jobLocation} from '../../../../../lib/job-location';
 import {getJob,getJobEmployer,ShidaApiError} from '../../../../../services/shida/public-client';
 import {JOB_PREVIEW_LIMIT,type JobSearchItem,type JobSearchList} from '../../../../../lib/job-search-api';
@@ -20,9 +21,12 @@ async function enrich(list:JobSearchList,locale:'en'|'fr'|'ln'|'sw',preview:bool
    const employer=item.employer_ref||(item.kind==='organization_directory'?item.reference:null);
    if(employer){
     const profile=await getJobEmployer(employer,locale);
-    return {...item,logo:safePublicImageUrl(profile.profile_image?.url)};
+    return {...item,logo:safePublicImageUrl(profile.profile_image?.url),open_job_count:profile.open_job_count,management_status:profile.management_status,name:profile.name||item.name};
+   }else if(!preview&&item.kind==='company'){
+    const business=await getRestaurantBusiness(locale,item.reference,'1',true);
+    return {...item,open_job_count:business.activities.total,management_status:'managed'};
    }
-  }catch(error){if(error instanceof ShidaApiError&&error.kind==='not-found')return {...item,available:false,reference:null};/* The optional location or logo must not hide a saved record. */}
+  }catch(error){if(error instanceof ShidaApiError&&error.kind==='not-found')return {...item,available:false,reference:null};if(!preview&&item.kind!=='job')return {...item,metadata_error:true};}
   return item;
  }));
  return {...list,items};
@@ -36,6 +40,8 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
   ||(path.length===3&&path[0]==='relations'&&/^REL_[a-f0-9]{64}$/.test(path[1])&&path[2]==='notifications'&&method==='PUT')
   ||(path.length===1&&path[0]==='alerts'&&method==='PUT');
  const overview=method==='GET'&&path.length===1&&['saved','following'].includes(path[0])&&query.getAll('preview').length===1&&query.get('preview')==='1'&&!query.has('page');
+ const cards=method==='GET'&&path.length===1&&path[0]==='following'&&query.getAll('cards').length===1&&query.get('cards')==='1'&&!overview;
+ if(cards)query.delete('cards');
  if(overview)query.delete('preview');
  if(!allowed||[...query].length>2||query.getAll('language').length>1||query.getAll('page').length>1||[...query].some(([k,v])=>k==='language'?!['fr','en','ln','sw'].includes(v):k==='page'?method!=='GET'||!['saved','following'].includes(path[0])||!/^\d{1,5}$/.test(v)||Number(v)<1||Number(v)>10000:true))return fail(404);
  const origin=personalRequestOrigin(request);
@@ -58,7 +64,7 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
   if(response.status===401)await clearEmploymentToken();
   if(!response.ok)return fail(response.status>=400&&response.status<600?response.status:502);
   const result=await response.json();
-  return Response.json(overview||method==='GET'&&path[0]==='saved'?await enrich(result,(query.get('language')||'fr') as 'en'|'fr'|'ln'|'sw',overview):result,{headers:PRIVATE_HEADERS});
+  return Response.json(overview||cards||method==='GET'&&path[0]==='saved'?await enrich(result,(query.get('language')||'fr') as 'en'|'fr'|'ln'|'sw',overview):result,{headers:PRIVATE_HEADERS});
  }catch{return fail(503);}
 }
 export const GET=handle;export const PUT=handle;export const DELETE=handle;

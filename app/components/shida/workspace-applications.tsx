@@ -13,11 +13,11 @@ export const applicationsCopy={
  sw:{empty:'Hakuna ombi lililotumwa kupitia SHIDA',scope:'Maombi yaliyotumwa kupitia SHIDA pekee yanaonekana hapa.',one:'Angalia kazi niliyohifadhi',many:'Angalia kazi nilizohifadhi',open:'Angalia ombi langu',sent:'Limetumwa tarehe',interview:'Mahojiano yamepangwa',details:'Angalia mahojiano'}
 };
 type Locale=keyof typeof applicationsCopy;
-function SavedNextStep({locale,binding,unauthorized}:{locale:Locale;binding:string;unauthorized:()=>void}){
+function SavedNextStep({locale,binding,refresh,unauthorized}:{refresh:number;locale:Locale;binding:string;unauthorized:()=>void}){
  const [list,setList]=useState<JobSearchList|null>(null),[failed,setFailed]=useState(false),[revision,setRevision]=useState(0);
  useEffect(()=>{const controller=new AbortController();
- jobSearchRequest<JobSearchList>(binding,locale,'saved?preview=1','GET',undefined,controller.signal).then(v=>{if(!controller.signal.aborted)setList(v);},e=>{if(controller.signal.aborted)return;if(e.status===401)unauthorized();else setFailed(true);});
- return()=>controller.abort();},[binding,locale,revision,unauthorized]);
+ jobSearchRequest<JobSearchList>(binding,locale,'saved?preview=1','GET',undefined,controller.signal).then(v=>{if(!controller.signal.aborted){setList(v);setFailed(false);}},e=>{if(controller.signal.aborted)return;if(e.status===401)unauthorized();else setFailed(true);});
+ return()=>controller.abort();},[binding,locale,revision,refresh,unauthorized]);
  const t=jobSearchCopy[locale],c=applicationsCopy[locale];
  if(failed)return <div role="alert">{t.error} <button onClick={()=>{setFailed(false);setRevision(v=>v+1);}}>{t.retry}</button></div>;
  if(!list)return <p role="status">{t.loading}</p>;
@@ -33,7 +33,7 @@ function upcoming(item:CandidateApplication){
  const date=new Date(d+'T'+t);
  return date.getDate()===Number(d.slice(-2))&&date.getTime()>Date.now()?date:null;
 }
-export function WorkspaceApplications({locale,binding,applications,unauthorized}:{locale:Locale;binding:string;applications:CandidateApplication[];unauthorized:()=>void}){
+export function WorkspaceApplications({locale,binding,refresh,applications,unauthorized}:{refresh:number;locale:Locale;binding:string;applications:CandidateApplication[];unauthorized:()=>void}){
  const c=applicationsCopy[locale],dates=new Intl.DateTimeFormat(locale,{dateStyle:'medium'});
  return <>{applications.length?<div className="workspace-app-list">{[...applications].sort((a,b)=>(b.created_at??'').localeCompare(a.created_at??'')).map(item=>{
   const interview=upcoming(item),created=item.created_at?new Date(item.created_at):null;
@@ -42,6 +42,6 @@ export function WorkspaceApplications({locale,binding,applications,unauthorized}
     {created&&Number.isFinite(created.getTime())&&<small>{c.sent} <time dateTime={item.created_at!}>{dates.format(created)}</time></small>}</div>
    <div className="workspace-app-status"><span data-status={interview?'interview':item.status}>{interview?c.interview:candidateStatusLabel(locale,item.status)}</span>{interview&&<small>{new Intl.DateTimeFormat(locale,{dateStyle:'medium',timeStyle:'short'}).format(interview)}</small>}</div>
    <div className="workspace-record-actions"><a href={candidateApplicationPath(locale,item.reference)+(interview?'#interview':'')}>{interview?c.details:c.open} →</a></div>
-  </article>;})}</div>:<div className="workspace-record workspace-app-empty"><span className="workspace-record-icon app-tile"><SpaceIcon name="send"/></span><div className="workspace-record-body"><h3>{c.empty}</h3><SavedNextStep locale={locale} binding={binding} unauthorized={unauthorized}/></div></div>}
+  </article>;})}</div>:<div className="workspace-record workspace-app-empty"><span className="workspace-record-icon app-tile"><SpaceIcon name="send"/></span><div className="workspace-record-body"><h3>{c.empty}</h3><SavedNextStep refresh={refresh} locale={locale} binding={binding} unauthorized={unauthorized}/></div></div>}
   <p className="workspace-scope">{c.scope}</p></>;
 }
