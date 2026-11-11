@@ -174,4 +174,14 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
 .offer-formatted-text h3{font-size:1.05rem;margin:1.2em 0 .5em}
 
 .job-detail-return,.job-detail-identity{display:flex;align-items:center;flex-wrap:wrap;gap:1rem}.job-detail-return{justify-content:space-between;margin-bottom:1rem}.job-detail-title h1{overflow-wrap:anywhere}.job-detail-primary-actions .job-action-button,.job-detail-identity .job-action-button{min-height:2.75rem}.job-success-toast{position:fixed;z-index:50;bottom:1rem;right:1rem;max-width:calc(100vw - 2rem);display:flex;align-items:center;gap:1rem;padding:.85rem 1rem;background:#f1f6ec;color:#163c30;border:1px solid #9ab39b;border-radius:.75rem;box-shadow:0 .25rem 1rem #15352320}.job-success-toast a{display:block;text-decoration:underline}.job-success-toast button{align-self:start}.job-applicant-safety a{text-decoration:underline}
-@media(max-width:700px){.job-detail-layout{padding-bottom:6rem}.job-application-panel>.job-external-action:has(button),.job-application-panel>a.button-primary{position:fixed;z-index:20;bottom:0;left:0;right:0;padding:.65rem 1rem calc(.65rem + env(safe-area-inset-bottom));background:var(--surface,#fffdf7)}.job-success-toast{bottom:calc(5rem + env(safe-area-inset-bottom))}}
+@media(max-width:700px){.job-detail-layout{padding-bottom:6rem}.job-application-panel>.job-external-action:has(button),.job-application-panel>a.button-primary{position:fixed;z-index:20;bottom:calc(72px + env(safe-area-inset-bottom,0px));left:0;right:0;padding:.65rem 1rem;background:var(--surface,#fffdf7)}.job-success-toast{bottom:calc(72px + 7rem + env(safe-area-inset-bottom,0px))}}
+
+.job-applicant-safety p {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  color: #81252a;
+}
+.job-applicant-safety svg { flex: 0 0 1.1rem; height: 1.1rem; margin-top: .15rem; }
+.job-applicant-safety a { display: inline-block; margin-top: .35rem; }
+.job-new-tab-hint { display: block; margin-top: .35rem; color: #46554e; font-size: .8125rem; text-align: center; }
