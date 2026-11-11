@@ -10,7 +10,7 @@ export function suggestions(category:string){
  if(family==="shoes_accessories")return ["shoe_size","colour"];
  if(family==="phones_electronics")return type?.includes("laptop")?["ram","storage","colour"]:["storage","colour"];
  if(family==="beauty_cosmetics")return ["volume","fragrance"];
- if(family==="food_drinks")return ["weight","flavour","pack"];
+ if(family==="food_drinks")return [type==="drinks"?"volume":"weight","flavour","pack"];
  return ["size","colour","custom"];
 }
 export const colours={en:["White","Black","Red","Blue","Green","Beige"],fr:["Blanc","Noir","Rouge","Bleu","Vert","Beige"],ln:["Mpembe","Moindo","Motane","Bleu","Vert","Beige"],sw:["Nyeupe","Nyeusi","Nyekundu","Bluu","Kijani","Beige"]};

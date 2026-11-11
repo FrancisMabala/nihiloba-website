@@ -1,5 +1,9 @@
 import React from 'react';
 const paths={
+ lock:'M4 10h16v12H4z M7 10V7a5 5 0 0 1 10 0v3 M12 15v3',
+ pen:'M3 21l5-1 13-13-4-4L4 16z M14 6l4 4',
+ share:'M7 12l10-6 M7 12l10 6 M3 12a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0 M16 5a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0 M16 19a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0',
+ printer:'M6 8V2h12v6 M6 18H2V8h20v10h-4 M6 14h12v8H6z M18 11h1',
  shop:'M3 10h18l-2-7H5z M4 10v11h16V10 M9 21v-7h6v7 M8 3l-1 7 M16 3l1 7',
  camera:'M3 6h5l2-3h4l2 3h5v15H3z M8 13a4 4 0 1 0 8 0 4 4 0 1 0-8 0',
  upload:'M12 16V3 M7 8l5-5 5 5 M4 15v6h16v-6',

@@ -14,19 +14,19 @@ export function WenzeApiProvider({binding,onUnauthorized,children}:{binding:stri
   // An ambiguous keyed command is retried with its original key and payload.
   const pending=new Map<string,{key:string;body:string}>();
   async function fetchPrivate(path:string,init:RequestInit={}){
-   const mutation=!!init.method&&init.method!=='GET';const slot=`${init.method}:${path}`;
+   const mutation=!!init.method&&init.method!=='GET';const supplied=new Headers(init.headers).get("Idempotency-Key");const slot=`${init.method}:${path}`;
    const body=typeof init.body==='string'?init.body:'{}';
-   let operation=pending.get(slot);
-   if(mutation){if(operation&&operation.body!==body)throw new DashboardApiError('conflict',409);operation??={key:crypto.randomUUID(),body};pending.set(slot,operation);}
+   let operation=supplied?{key:supplied,body}:pending.get(slot);
+   if(mutation){if(operation&&operation.body!==body)throw new DashboardApiError('conflict',409);operation??={key:crypto.randomUUID(),body};if(!supplied)pending.set(slot,operation);}
    let response:Response;
    try{response=await fetch(personalWenzePath(path),{...init,cache:'no-store',credentials:'same-origin',signal:AbortSignal.timeout(45000),headers:{Accept:'application/json','X-Shida-Session':binding,...(mutation?{'Content-Type':'application/json','Idempotency-Key':operation!.key}:{}),...init.headers},...(mutation?{body:operation!.body}:{})});}
    catch{throw new DashboardApiError('unavailable',503);}
    // Keep the key until the successful body has also been consumed. A truncated
    // 200 response can still represent a committed sale.
-   if(!response.ok&&response.status<500)pending.delete(slot);
+   if(!supplied&&!response.ok&&response.status<500)pending.delete(slot);
    if(response.status===401)failed.current();
    if(!response.ok){const data=await response.json().catch(()=>null);throw new DashboardApiError(response.status===409?'conflict':response.status===422?'validation':'unavailable',response.status,typeof data?.detail==='string'?data.detail:undefined);}
-   return {response,complete:()=>pending.delete(slot)};
+   return {response,complete:()=>!supplied&&pending.delete(slot)};
   }
   return {file:async(path,init)=>{const {response,complete}=await fetchPrivate(path,init);const blob=await response.blob();complete();return new File([blob],response.headers.get('content-disposition')?.match(/filename="?([^";]+)/)?.[1]??'wenze.pdf',{type:response.headers.get('content-type')??'application/pdf'});},request:async(path,init)=>{const {response,complete}=await fetchPrivate(path,init);const data=await response.json();complete();return data;},download:async(path)=>{const {response,complete}=await fetchPrivate(path);const blob=await response.blob();complete();const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=response.headers.get('content-disposition')?.match(/filename="?([^";]+)/)?.[1]??'wenze-report';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}};
  },[binding]);
