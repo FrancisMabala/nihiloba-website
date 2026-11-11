@@ -1,3 +1,4 @@
+import {jobLocation} from "../../lib/job-location";
 import {SpaceIcon} from "./account-space-icon";
 import { JobRelationshipActions } from "./job-relationship-actions";
 import { employerCopy } from "../../lib/employer-page-copy";
@@ -72,9 +73,6 @@ const detailCopy={...baseDetailCopy,
 
 function jobPath(locale:Locale,item:Pick<PublicJobSummary,"slug"|"public_ref">){return marketplacePath(locale,`/shida/emplois/${encodeURIComponent(item.slug||item.public_ref)}`);}
 function employerPath(locale:Locale,item:PublicJobEmployerSummary){const key=publicJobEmployerKey(item);return key?marketplacePath(locale,`/shida/emplois/employeurs/${encodeURIComponent(key)}`):null;}
-const jobPrivacyMarker=/\[(?:private information hidden|information privée masquée|taarifa binafsi zimefichwa|nsango ya sekele ebombami)\]/giu;
-function cleanJobLocation(value:string|null){if(!value)return null;const seen=new Set<string>();const cleaned=value.replace(jobPrivacyMarker,"").split(",").map((part)=>part.trim()).filter(part=>{const key=part.toLocaleLowerCase();if(!part||seen.has(key))return false;seen.add(key);return true;}).join(", ");return cleaned||null;}
-function jobLocation(item:PublicJobSummary){return cleanJobLocation(item.location.display)||cleanJobLocation([item.location.quartier,item.location.commune,item.location.area,item.location.city].filter(Boolean).join(", "));}
 function employerLocation(item:PublicJobEmployerSummary){return publicLocation(item.area,item.city);}
 function initials(name:string){return name.split(/\s+/).filter(Boolean).slice(0,2).map((part)=>part[0]?.toUpperCase()).join("")||"SH";}
 function displayDate(value:string|null,locale:Locale){if(!value)return null;const date=new Date(value);return Number.isNaN(date.getTime())?null:new Intl.DateTimeFormat(locale,{day:"numeric",month:"short",year:"numeric"}).format(date);}
