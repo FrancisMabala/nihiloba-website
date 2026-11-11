@@ -1,6 +1,7 @@
 'use client';
 import {OFFICIAL_CHANNELS} from '../../lib/brand';
 import {JobSearchSpace} from './job-search-space';
+import {MissionPeople} from './mission-people';
 import {PersonalOfferSpace} from './personal-offer-space';
 import {personalOfferCopy} from '../../lib/personal-offer-copy';
 import {jobSearchCopy} from '../../lib/job-search-copy';
@@ -71,7 +72,7 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
   <div className="space-content">
    <h1>{view==='job-offer'?personalOfferCopy[locale].title:(view==='candidate'||view==='job-search')?jobSearchCopy[locale].title:view==='listings'?listingCopy[locale].title:(view==='management'||view==='overview')?a.space:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>
    {view==='job-offer'&&(checking?<p role="status">{t.loading}</p>:session?<PersonalOfferSpace key={session.binding} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
-   {view==='listings'&&session&&<section id="published-jobs" className="candidate-private-panel"><h2>{n.jobs}</h2><a href={`${OFFICIAL_CHANNELS.whatsapp}?text=${encodeURIComponent(({en:'employment menu',fr:'menu emploi',ln:'menu mosala',sw:'menyu ajira'})[locale])}`} target="_blank" rel="noopener noreferrer">{n.jobs} · {n.whatsapp} →</a><p><a href={`${base}?view=job-offer`}>{personalOfferCopy[locale].title}</a></p></section>}
+   {view==='listings'&&session&&<section id="published-jobs" className="candidate-private-panel"><h2>{n.jobs}</h2><a href={`${OFFICIAL_CHANNELS.whatsapp}?text=${encodeURIComponent(({en:'employment menu',fr:'menu emploi',ln:'menu mosala',sw:'menyu ajira'})[locale])}`} target="_blank" rel="noopener noreferrer">{n.jobs} · {n.whatsapp} →</a><p><a href={`${base}?view=job-offer`}>{personalOfferCopy[locale].title}</a></p><MissionPeople key={session.binding} locale={locale} binding={session.binding}/></section>}
    {view==='listings'&&(checking?<p role="status">{t.loading}</p>:session?<WenzeApiProvider key={session.binding} binding={session.binding} onUnauthorized={()=>setSession(null)}><QuickSell locale={locale} embedded/></WenzeApiProvider>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {(view==='candidate'||view==='job-search')&&(checking?<p role="status">{t.loading}</p>:session?<JobSearchSpace key={session.binding} initialSection={view==='candidate'?'profiles':initialSection} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='messages'&&(checking?<p role="status">{t.loading}</p>:session?<MessagesSpace key={session.binding} binding={session.binding} locale={locale}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}

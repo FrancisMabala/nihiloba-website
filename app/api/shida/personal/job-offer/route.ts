@@ -6,7 +6,13 @@ export const dynamic = 'force-dynamic';
 const fail = (status: number) => Response.json({detail: 'personal_offer_unavailable'}, {status, headers: PRIVATE_HEADERS});
 
 async function handle(request: Request) {
-  if (new URL(request.url).search) return fail(404);
+  const query=new URL(request.url).searchParams;
+  let suffix='';
+  if(query.size){
+    const offer=query.get('offer'),kind=query.get('kind'),record=query.get('record'),reference=/^[A-Za-z0-9_-]{1,64}$/;
+    if(request.method!=='GET'||!offer||!reference.test(offer)||!['applications','candidates'].includes(kind??'')||(record!==null&&!reference.test(record))||[...query.keys()].some(k=>!['offer','kind','record'].includes(k)))return fail(404);
+    suffix='/'+offer+'/'+kind+(record?'?record='+record:'');
+  }
   const origin = personalRequestOrigin(request);
   if (request.headers.get('sec-fetch-site') === 'cross-site' || request.method !== 'GET' && !origin) return fail(403);
   const token = (await cookies()).get(PERSONAL_SESSION_COOKIE)?.value;
@@ -33,7 +39,7 @@ async function handle(request: Request) {
   try {
     const base = new URL(process.env.SHIDA_API_BASE_URL ?? 'https://api.nihiloba.com');
     if (base.protocol !== 'https:' || base.username || base.password) return fail(503);
-    const response = await fetch(new URL('/api/dashboard/employment/personal-offer-onboarding', base.origin), {
+    const response = await fetch(new URL('/api/dashboard/employment/personal-offer-onboarding'+suffix, base.origin), {
       method: request.method, body, cache: 'no-store', redirect: 'manual', signal: AbortSignal.timeout(12000),
       headers: {Cookie: `shida_dashboard_session=${token}`, Accept: 'application/json',
         ...(origin ? {Origin: origin} : {}), ...(body ? {'Content-Type': 'application/json'} : {})},
