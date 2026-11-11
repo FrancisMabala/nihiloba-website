@@ -1,0 +1,22 @@
+import {expect,test} from '@playwright/test';
+import {candidateCopy} from '../../app/lib/candidate-profile-copy';
+for(const width of [390,1440])test('occasional mission profile and retry '+width,async({page})=>{
+ let revision=1,tries=0;const final:unknown[]=[];let stored:Record<string,string>={};
+ await page.route('**/api/**',async r=>{const p=new URL(r.request().url()).pathname;
+ if(!p.includes('/personal/candidate'))return r.fulfill({json:{}});
+ const draft=()=>({public_ref:'COP_1',profile_type:'occasional_work',state:'active',revision,values:stored});
+ if(r.request().method()==='GET')return r.fulfill({json:{profiles:[],progress:[],metadata:{communes:['Limete','Lemba'],categories:[],required:{professional:[],occasional_work:[]}}}});
+ const b=r.request().postDataJSON();if(b.action==='save'){stored=b.values;revision++}if(b.action==='finalize'){final.push(b);if(!tries++)return r.fulfill({status:503,json:{}})}return r.fulfill({json:draft()});
+ });await page.setViewportSize({width,height:820});await page.goto('/fr/shida/space?view=job-search&section=profiles&profile=occasional_work');
+ const form=page.locator('.occ-wizard');await form.getByRole('button',{name:'Garde d’enfants',exact:true}).click();await form.getByLabel('Ville').fill('Kinshasa');
+ await form.getByRole('combobox',{name:'Ajouter',exact:true}).selectOption('Limete');await form.getByRole('combobox',{name:'Ajouter',exact:true}).selectOption('Lemba');
+ await form.getByText('Quartier (facultatif) · Limete',{exact:true}).first().click();await form.getByRole('textbox',{name:'Quartier (facultatif) · Limete'}).fill('ggg');
+ for(const name of ['Samedi','Dimanche','En soirée'])await form.getByRole('button',{name,exact:true}).click();
+ await form.getByRole('button',{name:candidateCopy.fr.next,exact:true}).click();await expect(form.getByRole('alert')).toContainText('Indiquez le nom du quartier');await form.getByRole('textbox',{name:'Quartier (facultatif) · Limete'}).fill('');
+ await form.getByRole('button',{name:candidateCopy.fr.next,exact:true}).click();
+ for(const name of ['Aider aux devoirs','Oui, pour des proches','À convenir'])await form.getByRole('button',{name,exact:true}).click();
+ await form.getByRole('button',{name:candidateCopy.fr.next,exact:true}).click();await expect(form.getByRole('switch')).not.toBeChecked();
+ await form.getByRole('button',{name:'Modifier mon savoir-faire'}).click();await expect(form.getByRole('button',{name:/Aider aux devoirs/})).toHaveAttribute('aria-pressed','true');await form.getByRole('button',{name:'Revenir à la vérification'}).click();
+ await expect(form.getByRole('checkbox',{name:'Je confirme ces informations.'})).not.toBeChecked();await form.getByLabel('Je confirme ces informations.').check();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ await form.getByRole('button',{name:'Créer mon profil',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();await form.getByRole('button',{name:'Créer mon profil',exact:true}).click();await expect.poll(()=>final.length).toBe(2);expect(final[0]).toEqual(final[1]);expect(JSON.parse(stored.occasional_answers)).toMatchObject({discovery:false,communes:['Limete','Lemba'],missions:[{experience:'friends',rate:'agree'}]});
+});
