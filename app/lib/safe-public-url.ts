@@ -4,6 +4,10 @@ const PUBLIC_GO_PATH = /^\/go\/[A-Za-z0-9_-]+\/?$/;
 const WHATSAPP_PATH = /^\/[A-Za-z0-9_-]+\/?$/;
 const WEBSITE_ORIGIN = "https://nihiloba.com";
 
+export function safeWenzeBusinessContact(value: string | null | undefined): string | null {
+  return value && /^https:\/\/wa\.me\/[1-9][0-9]{7,14}(?:\?text=[A-Za-z0-9_-]{1,80})?$/.test(value) ? value : null;
+}
+
 export function safePublicActionUrl(value: string | null | undefined): string | null {
   if (!value) return null;
   try {

@@ -3,6 +3,14 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import {describe,it,expect} from 'vitest';
 import {WenzeShopTrust} from '../app/components/shida/wenze-shop-trust';
 import {shopState,canChangeShopVisibility,shopText,shopUsage} from '../app/lib/wenze-shop-copy';
+import {safeWenzeBusinessContact} from '../app/lib/safe-public-url';
+describe('customer contact',()=>{
+ it('allows an explicit shop number and opaque reference only',()=>{
+   const url='https://wa.me/243799991031';
+   expect(safeWenzeBusinessContact(url+'?text=ORD_123')).toBe(url+'?text=ORD_123');
+   for(const invalid of [null, url+'?text=customer%20address',url+'?other=x','https://example.com/243799991031','https://wa.me/username'])expect(safeWenzeBusinessContact(invalid)).toBeNull();
+ });
+});
 describe('shop trust and visibility',()=>{
  it('keeps voluntary visibility separate from suspension',()=>{
   expect(shopState('active','false')).toBe('hidden');expect(shopState('inactive','false')).toBe('archived');expect(shopState('suspended','true')).toBe('suspended');
