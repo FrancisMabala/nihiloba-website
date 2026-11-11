@@ -73,7 +73,7 @@ export function parseCandidateApplication(value: unknown): CandidateApplication 
   const recruiterEmail = contact ? text(contact.recruiter_email) : null;
   return {
     reference: text(item.reference, true)!,
-    job_title: text(item.job_title, true)!,
+    job_title: text(item.job_title, true)!, offer_removed:item.offer_removed===true,
     job_location: text(item.job_location),
     employer_name: text(item.employer_name, true)!,
     status: status(item.status),

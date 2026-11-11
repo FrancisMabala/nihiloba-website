@@ -178,6 +178,8 @@ export type PublicJobSummary = {
 };
 
 export type PublicJob = PublicJobSummary & {
+  duration_frequency?: string|null;
+  optional_experience?: string|null;
   description: string | null;
   description_fallback: string | null;
   workplace_reference: string | null;
