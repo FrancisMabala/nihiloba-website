@@ -3,8 +3,8 @@ import {useState} from "react";
 import copy from "@/app/lib/wenze-choice-copy.json";
 export type ChoiceRow={label:string;quantity:string;attributes?:Record<string,string>};
 type Locale=keyof typeof copy;
-const presets:Record<string,string[]>={size:["XS","S","M","L","XL","XXL"],shoe_size:["36","37","38","39","40","41","42","43","44","45"],colour:["Blanc","Noir","Rouge","Bleu","Vert","Beige"],storage:["64 GB","128 GB","256 GB","512 GB","1 TB"],ram:["4 GB","8 GB","16 GB","32 GB"],volume:["30 ml","50 ml","100 ml","250 ml","500 ml","1 L"],weight:["100 g","250 g","500 g","1 kg"],pack:["1","2","6","12"],fragrance:[],flavour:[],custom:[]};
-function suggestions(category:string){
+export const presets:Record<string,string[]>={size:["XS","S","M","L","XL","XXL"],shoe_size:["36","37","38","39","40","41","42","43","44","45"],colour:["Blanc","Noir","Rouge","Bleu","Vert","Beige"],storage:["64 GB","128 GB","256 GB","512 GB","1 TB"],ram:["4 GB","8 GB","16 GB","32 GB"],volume:["30 ml","50 ml","100 ml","250 ml","500 ml","1 L"],weight:["100 g","250 g","500 g","1 kg"],pack:["1","2","6","12"],fragrance:[],flavour:[],custom:[]};
+export function suggestions(category:string){
  const [family,type]=category.split(":");
  if(family==="fashion_clothing")return ["size","colour"];
  if(family==="shoes_accessories")return ["shoe_size","colour"];
@@ -13,6 +13,7 @@ function suggestions(category:string){
  if(family==="food_drinks")return ["weight","flavour","pack"];
  return ["size","colour","custom"];
 }
+export const colours={en:["White","Black","Red","Blue","Green","Beige"],fr:["Blanc","Noir","Rouge","Bleu","Vert","Beige"],ln:["Mpembe","Moindo","Motane","Bleu","Vert","Beige"],sw:["Nyeupe","Nyeusi","Nyekundu","Bluu","Kijani","Beige"]};
 export function choiceError(rows:ChoiceRow[],available?:number|null){
  if(!rows.length||rows.some(r=>!r.label.trim()||(r.quantity!==""&&(!/^\d+$/.test(r.quantity)||!Number.isSafeInteger(Number(r.quantity))))))return "invalid";
  if(new Set(rows.map(r=>r.label.trim().normalize("NFKC").toLocaleLowerCase())).size!==rows.length)return "invalid";
@@ -21,7 +22,6 @@ export function choiceError(rows:ChoiceRow[],available?:number|null){
 }
 export function WenzeChoiceEditor({locale,category,rows,available,onChange,optional=false}:{locale:Locale;category:string;rows:ChoiceRow[];available?:number|null;onChange:(rows:ChoiceRow[],kind?:string)=>void;optional?:boolean}){
  const c=copy[locale], recommended=suggestions(category);
- const colours={en:["White","Black","Red","Blue","Green","Beige"],fr:["Blanc","Noir","Rouge","Bleu","Vert","Beige"],ln:["Mpembe","Moindo","Motane","Bleu","Vert","Beige"],sw:["Nyeupe","Nyeusi","Nyekundu","Bluu","Kijani","Beige"]};
  const options:Record<string,string[]>={...presets,colour:colours[locale]};
  const [selected,setSelected]=useState<Record<string,string[]>>({}),[draft,setDraft]=useState<Record<string,string>>({});
  const names=(key:string)=>c[key as keyof typeof c]??key;

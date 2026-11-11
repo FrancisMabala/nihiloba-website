@@ -6,7 +6,7 @@ import { managementCopy } from "../../lib/restaurant-management-copy";
 import { leaveWork } from "../../lib/wenze-work";
 import { sellerDesignCopy } from "../../lib/restaurant-seller-design-copy";
 import { SellerLanding } from "./seller-landing";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 
 import { endEmploymentSession } from "../../services/shida/employment-browser-client";
@@ -22,7 +22,10 @@ import "./restaurant-seller.css";
 import "./wenze-mobile-chrome.css";
 
 export const sellerPath = (locale: RestaurantLocale) => `${locale === "en" ? "" : `/${locale}`}/shida/seller/wenze`;
-export function WenzeSeller({ locale, quickSell = false }: { locale: RestaurantLocale; quickSell?: boolean }) {
+export function WenzeSeller({ locale:routeLocale, quickSell = false }: { locale: RestaurantLocale; quickSell?: boolean }) {
+ const [flowShop,setFlowShop]=useState(''),[inCreation,setInCreation]=useState(false),[chosenLocale,chooseLocale]=useState<RestaurantLocale|null>(null);
+ const locale=chosenLocale??routeLocale;
+ const updateFlow=useCallback((shop:string,active:boolean)=>{setFlowShop(shop);setInCreation(active);},[]);
  const t = sellerChrome[locale];
  const management = managementCopy[locale];
  const [signedOutView, setSignedOutView] = useState(false);
@@ -69,12 +72,12 @@ export function WenzeSeller({ locale, quickSell = false }: { locale: RestaurantL
   finally { if (alive.current) setPending(false); }
  }
  return <div lang={locale} className="rst-seller seller-design">
-{!quickSell&&<WenzeHeader beforeNavigate={leaveWork} locale={locale} name={session?.user.display_name} brandHref={`${locale === "en" ? "" : `/${locale}`}/shida/wenze`} pending={pending} onLanguage={async lang=>{if(await leaveWork())window.location.assign((quickSell?`${lang==="en"?"":`/${lang}`}/shida/wenze/sell`:sellerPath(lang))+window.location.search);}} onAccount={()=>void logout(true)} onLogout={()=>void logout()}/>}
+{!quickSell&&<WenzeHeader shopName={session?flowShop:''} beforeNavigate={leaveWork} locale={locale} name={session?.user.display_name} brandHref={`${locale === "en" ? "" : `/${locale}`}/shida/wenze`} pending={pending} onLanguage={async lang=>{if(inCreation){chooseLocale(lang);window.history.replaceState(null,"",sellerPath(lang)+window.location.search);try{localStorage.setItem("shida-market-language",lang);}catch{}return;}if(await leaveWork())window.location.assign((quickSell?`${lang==="en"?"":`/${lang}`}/shida/wenze/sell`:sellerPath(lang))+window.location.search);}} onAccount={()=>void logout(true)} onLogout={()=>void logout()}/>}
 {(loading||pending||!session||message||connectionLost)&&<section className="rst container rst-shell">
    {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <SellerLanding compact={quickSell} marketplace="wenze" locale={locale} design={design} browseHref={`${locale === "en" ? "" : `/${locale}`}/shida/wenze`} onAuthenticated={() => { signedOut.current = false; }}/>)}
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
   </section>}
-  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><WenzeApiProvider key={`${session.binding}:${locale}`} binding={session.binding} onUnauthorized={()=>setSession(null)}>{quickSell?<QuickSell locale={locale}/>:<WenzeWorkspace locale={locale} binding={session.binding}/>}</WenzeApiProvider></fieldset>}
+  {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}><WenzeApiProvider key={session.binding} binding={session.binding} onUnauthorized={()=>setSession(null)}>{quickSell?<QuickSell locale={locale}/>:<WenzeWorkspace onFlowShop={updateFlow} locale={locale} binding={session.binding}/>}</WenzeApiProvider></fieldset>}
  </div>;
 }

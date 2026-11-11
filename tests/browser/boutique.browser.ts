@@ -32,6 +32,6 @@ test('successful creation opens management without claiming public activation',a
  await page.route('**/api/shida/personal/wenze/stores/',route=>route.fulfill({json:route.request().method()==='POST'?shop:{stores:[shop],categories:[],currencies:['CDF','USD']}}));
  await page.getByLabel('Shop name',{exact:false}).fill(shop.name);await page.locator('.wb-categories input').first().check();await page.getByLabel('City',{exact:false}).fill('Kinshasa');
  await page.getByRole('button',{name:/Continue/}).click();await page.getByRole('button',{name:/Continue/}).click();await page.getByRole('button',{name:/Create my shop/}).click();
- await expect(page.getByRole('heading',{name:'Your shop has been created'})).toBeVisible();await expect(page.getByRole('button',{name:'Manage my shop'})).toBeVisible();await expect(page.getByRole('button',{name:'Add a product'})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Welcome to Wenze!'})).toBeVisible();await expect(page.getByRole('button',{name:'Manage my shop'})).toBeVisible();await expect(page.getByRole('button',{name:'Add my first product'})).toBeVisible();
  await expect(page.getByText('Publicly active',{exact:true})).toHaveCount(0);
 });
