@@ -1,3 +1,4 @@
+import {AccountSecurity} from '../../app/components/shida/account-security';
 import {ExternalJobAction} from '../../app/components/shida/job-public-actions';
 import {createRoot} from 'react-dom/client';
 import type {AnchorHTMLAttributes} from 'react';
@@ -16,6 +17,6 @@ export default function Link(props:AnchorHTMLAttributes<HTMLAnchorElement>){retu
 const query = new URLSearchParams(window.location.search);
 const locale = (window.location.pathname.match(/^\/(fr|ln|sw)\//)?.[1] ?? 'en') as keyof typeof jobSearchCopy;
 createRoot(document.getElementById('root')!).render(window.location.pathname.includes('/space') ?
-  <main className="account-space" lang={locale}><SpaceSidebar view="job-search" locale={locale}/><div className="space-content"><h1>{jobSearchCopy[locale].title}</h1><JobSearchSpace locale={locale} binding={'a'.repeat(64)} initialSection={query.get('section') ?? 'overview'} onUnauthorized={()=>{document.body.dataset.unauthorized='true';}}/></div></main> :
+  <main className="account-space" lang={locale}><SpaceSidebar view="job-search" locale={locale}/><div className="space-content"><h1>{jobSearchCopy[locale].title}</h1>{query.get('view')==='settings'?<AccountSecurity binding={'a'.repeat(64)} locale={locale}/>:<JobSearchSpace locale={locale} binding={'a'.repeat(64)} initialSection={query.get('section') ?? 'overview'} onUnauthorized={()=>{document.body.dataset.unauthorized='true';}}/>}</div></main> :
   <><JobRelationshipActions locale={locale} jobReference={window.location.pathname.split('/').filter(Boolean).pop()!} canSave canFollow/>
    {query.has('external')&&<ExternalJobAction locale={locale} jobReference={window.location.pathname.split('/').filter(Boolean).pop()!} action={{mode:'redirect',action:'redirect',endpoint:'external-action'}}/>}</>);

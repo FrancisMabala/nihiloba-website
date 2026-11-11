@@ -27,6 +27,7 @@ async function fixture(page:Page,{guest=false,directory=false,expired=false,init
     }
     if(path.endsWith('/notifications')){notifications=request.postDataJSON().enabled;return reply({enabled:notifications});}
     if(path.includes('/relations/')){if(path.endsWith('1'.repeat(64)))saved=false;else {following=false;notifications=false;}return reply({removed:true});}
+    if(path.endsWith('/delivery-channel'))return reply({channel:'whatsapp',email_state:'passkey',masked_email:null});
     if(path.endsWith('/alerts'))return reply({profile_count:0,enabled_count:0,external_application_tracking:false});
     const items=path.endsWith('/saved')&&saved?[{relation_ref:'REL_'+'1'.repeat(64),kind:'job',reference:'JOB_fixture',name:'Cash Sales Manager',employer_name:'SERVTEC',location:'Kinshasa',available:true,status:expired?'expired':'open',origin:'external'}]:path.endsWith('/following')&&following?[{relation_ref:'REL_'+'2'.repeat(64),...employer,available:true,notifications,management_status:'shida_created',open_job_count:1}]:[];
     return reply({items,total:items.length,page:1,has_more:false});
@@ -113,11 +114,11 @@ test('embedded WhatsApp sign-in keeps intended save and stays on the job',async(
 test('alerts require an explicit choice and survive refresh',async({page})=>{
   const data=await fixture(page,{initialFollowing:true}),t=jobSearchCopy.en;
   await page.goto('/shida/space?view=job-search&section=alerts');
-  await expect(page.getByText(t.needProfile,{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:t.enable,exact:true}).click();
-  await expect(page.getByRole('button',{name:t.disable,exact:true})).toBeVisible();
+  await expect(page.getByText(t.needProfile,{exact:true})).toBeHidden();
+  await page.getByRole('switch',{name:/Alerts off/}).click();
+  await expect(page.getByRole('switch',{name:/Alerts on/})).toBeChecked();
   await page.reload();
-  await expect(page.getByRole('button',{name:t.disable,exact:true})).toBeVisible();
+  await expect(page.getByRole('switch',{name:/Alerts on/})).toBeChecked();
   expect(data.writes.map(w=>w.body)).toEqual([{enabled:true}]);
 });
 
@@ -338,5 +339,42 @@ for(const width of [390,1440])test('followed organizations stay in SHIDA and syn
  await page.route('**/job-search/following?*',r=>r.fulfill({json:{total:2,page:1,has_more:false,items:[0,4].map((n,i)=>({available:true,kind:'company',reference:'BUS_'+i,relation_ref:'relation'+i,name:'Bureau '+i,open_job_count:n,management_status:'managed'}))}}));
  await page.goto(url);await expect(page.getByText('Aucune offre ouverte',{exact:true})).toBeVisible();await expect(page.getByText('Page gérée par Bureau 1')).toBeVisible();
  await expect(page.getByRole('link',{name:'4 offres ouvertes →'})).toHaveAttribute('href','/fr/shida/businesses/BUS_1?view=jobs#vacancies');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+for(const width of [390,1440])test('profile descriptions and exact alert setup destinations '+width,async({page},info)=>{
+ await page.setViewportSize({width,height:940});await fixture(page,{initialFollowing:true,directory:true});
+ const profileUrl=overview.replace('section=overview','section=profiles'),alerts=overview.replace('section=overview','section=alerts');
+ const started:string[]=[];
+ await page.route('**/personal/candidate?*',r=>{
+ if(r.request().method()==='GET')return r.fulfill({json:{profiles:[],progress:[],metadata:meta}});
+ const type=r.request().postDataJSON().profile_type;started.push(type);return r.fulfill({json:{public_ref:'DRAFT_example',profile_type:type,state:'active',revision:1,values:{},return_job_ref:null}});
+ });
+ for(const [type,help] of [['professional','Présentez votre parcours, vos compétences et votre formation.'],['occasional_work','Indiquez les missions que vous recherchez et vos disponibilités.']]){
+ await page.goto(profileUrl);await expect(page.getByRole('heading',{name:'Mes profils',exact:true})).toBeVisible();
+ const card=page.locator('.candidate-profile-panel').filter({hasText:help});await expect(card).toContainText(help);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ if(type==='professional')await page.screenshot({path:info.outputPath('profiles-'+width+'.png'),fullPage:true});
+ await card.getByRole('button',{name:candidateCopy.fr.start}).click();await expect(page.locator('.candidate-form')).toBeVisible();expect(started.at(-1)).toBe(type);
+ }
+ let state='passkey',channel='whatsapp',fail=false;
+ await page.route('**/job-search/delivery-channel?*',r=>{if(r.request().method()==='PUT'){if(fail)return r.fulfill({status:503,json:{}});channel=r.request().postDataJSON().channel;}return r.fulfill({json:{channel,email_state:state,masked_email:state==='ready'?'a***@example.test':null}});});
+ await page.route('**/personal/security/**',r=>r.fulfill({json:r.request().url().includes('/phone/')?{changes:[]}:{passkeys:[],pending_login_email_reference:state==='verify_email'?'SEC_test':null}}));
+ for(const [scenario,label,target] of [['passkey','Configurer ma clé d’accès','job-alert-passkey'],['add_email','Ajouter mon e-mail de connexion','job-alert-login-email'],['verify_email','Vérifier mon adresse e-mail','job-alert-login-email']]){
+ state=scenario;await page.goto(alerts);await expect(page.getByRole('radio',{name:'E-mail',exact:true})).toBeDisabled();
+ await page.getByRole('link',{name:label+' →'}).click();
+ await expect(page.locator('#'+target)).toHaveAttribute('open','');
+ if(scenario==='verify_email')await expect(page.locator('#'+target+' input[autocomplete="one-time-code"]')).toBeVisible();
+ state='ready';await page.getByRole('link',{name:/Retour à Mes alertes/}).click();await expect(page.getByRole('radio',{name:'WhatsApp'})).toBeChecked();
+ }
+ fail=true;await page.getByRole('radio',{name:'E-mail',exact:true}).click();
+ await expect(page.getByRole('radio',{name:'WhatsApp'})).toBeChecked();await expect(page.getByRole('switch')).not.toBeChecked();
+ fail=false;await page.getByRole('button',{name:'Réessayer'}).click();await expect(page.getByRole('radio',{name:'E-mail',exact:true})).toBeChecked();
+ await expect(page.getByText('Vos prochaines alertes d’emploi seront envoyées par e-mail.')).toBeVisible();
+ await page.getByRole('switch').click();await expect(page.getByRole('switch')).toBeChecked();
+ await page.reload();await expect(page.getByRole('switch')).toBeChecked();
+ await page.screenshot({path:info.outputPath('alerts-'+width+'.png'),fullPage:true});
+ state='add_email';await page.reload();await expect(page.getByText('Les alertes par e-mail sont en pause.')).toBeVisible();
+ await expect(page.getByRole('radio',{name:'E-mail',exact:true})).toBeChecked();await page.getByRole('radio',{name:'WhatsApp'}).click();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
