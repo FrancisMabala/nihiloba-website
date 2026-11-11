@@ -39,3 +39,20 @@ it('bounds request bodies and keeps backend errors private',async()=>{
  const response=await PUT(request('PUT','{"action":"save","enabled":true}'),context(['jobs','JOB_test']));
  expect(response.status).toBe(409);expect(await response.text()).not.toContain('private history');
 });
+
+it('uses account totals and enriches only visible preview records with public data',async()=>{
+ const pub=await import('../app/services/shida/public-client');
+ const job=vi.spyOn(pub,'getJob').mockResolvedValue({location:{city:'Kinshasa'}} as Awaited<ReturnType<typeof pub.getJob>>);
+ const employer=vi.spyOn(pub,'getJobEmployer').mockResolvedValue({profile_image:{url:'https://res.cloudinary.com/dbrxpvmzp/image/upload/org.png'}} as Awaited<ReturnType<typeof pub.getJobEmployer>>);
+ try{
+  for(const section of ['saved','following']){
+   const items=Array.from({length:4},(_,i)=>({relation_ref:'rel'+i,reference:(section==='saved'?'JOB_':'ORGDIR_')+i,kind:section==='saved'?'job':'organization_directory',available:i!==1}));
+   upstream.mockResolvedValueOnce(Response.json({total:12,items,page:1,has_more:true}));
+   const r=await GET(request('GET',undefined,{},'?language=fr&preview=1'),context([section]));
+   const data=await r.json();expect(data.total).toBe(12);expect(data.items).toHaveLength(3);
+   expect(data.items[1]).toEqual(items[1]);expect(data.items[0]).toMatchObject(section==='saved'?{location:'Kinshasa'}:{logo:'https://res.cloudinary.com/dbrxpvmzp/image/upload/org.png'});
+   expect(String(upstream.mock.calls.at(-1)?.[0])).toMatch(new RegExp(section+'\\?language=fr$'));
+  }
+  expect(job).toHaveBeenCalledTimes(2);expect(employer).toHaveBeenCalledTimes(2);
+ }finally{job.mockRestore();employer.mockRestore();}
+});

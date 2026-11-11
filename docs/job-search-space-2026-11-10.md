@@ -12,7 +12,23 @@ visibility consent, application-detail routes and recruitment messages remain
 in place. Published adverts remain under Mes annonces; its Employment management
 entry retains the existing WhatsApp publisher workflow.
 
-The current CSS and components are reused. A broader visual redesign is deferred.
+The overview reuses the Mon espace summary cards and primary action. Each count
+links to its own tab. Saved offers, submitted applications and follows show up
+to three records, with a link to the full list only when more exist. Counts
+come from the account lists, not the preview length. Sections load and retry
+independently; leaving and returning refreshes them. The overview adds no alert
+or application writes.
+
+For saved/followed previews the authenticated gateway accepts `preview=1`.
+It reads the same account list and enriches at most three available rows with
+public job locations or employer logos. No personal credential is sent to the
+public projection. Missing optional fields leave the record visible.
+
+Profile actions open `section=profiles&profile=professional|occasional_work`
+and include the current record reference for an existing profile or draft.
+The destination resolves it against the signed-in account. A new form creates
+no draft until the candidate saves; expired drafts retain explicit recovery.
+There are no schema or migration changes.
 
 ## Public Save/Follow
 

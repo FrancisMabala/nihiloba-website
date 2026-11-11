@@ -1,8 +1,32 @@
+import {jobLocation} from '../../../../../lib/job-location';
+import {getJob,getJobEmployer} from '../../../../../services/shida/public-client';
+import {JOB_PREVIEW_LIMIT,type JobSearchItem,type JobSearchList} from '../../../../../lib/job-search-api';
+import {safePublicImageUrl} from '../../../../../lib/safe-public-url';
 import {cookies} from 'next/headers';
 import {personalRequestOrigin} from '../../../../../lib/personal-request-origin';
 import {PERSONAL_SESSION_COOKIE,PRIVATE_HEADERS,personalSessionBinding,clearEmploymentToken} from '../../../employment/route-utils';
 export const dynamic='force-dynamic';
 const fail=(status:number)=>Response.json({detail:'job_search_unavailable'},{status,headers:PRIVATE_HEADERS});
+// The personal list owns the count and the references. Supplement only its visible
+// preview rows with display fields from the same public projections as their links.
+async function preview(list:JobSearchList,locale:'en'|'fr'|'ln'|'sw'){
+ const items=await Promise.all(list.items.slice(0,JOB_PREVIEW_LIMIT).map(async(item:JobSearchItem)=>{
+  if(!item.available||!item.reference)return item;
+  try{
+   if(item.kind==='job'){
+    const job=await getJob(item.reference,locale);
+    return {...item,location:jobLocation(job)};
+   }
+   const employer=item.employer_ref||(item.kind==='organization_directory'?item.reference:null);
+   if(employer){
+    const profile=await getJobEmployer(employer,locale);
+    return {...item,logo:safePublicImageUrl(profile.profile_image?.url)};
+   }
+  }catch{/* The optional location or logo must not hide a saved record. */}
+  return item;
+ }));
+ return {...list,items};
+}
 async function handle(request:Request,context:{params:Promise<{path?:string[]}>}){
  const path=(await context.params).path??[],query=new URL(request.url).searchParams,method=request.method;
  const reference=/^[A-Za-z0-9_-]{1,100}$/;
@@ -11,6 +35,8 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
   ||(path.length===2&&path[0]==='relations'&&/^REL_[a-f0-9]{64}$/.test(path[1])&&method==='DELETE')
   ||(path.length===3&&path[0]==='relations'&&/^REL_[a-f0-9]{64}$/.test(path[1])&&path[2]==='notifications'&&method==='PUT')
   ||(path.length===1&&path[0]==='alerts'&&method==='PUT');
+ const overview=method==='GET'&&path.length===1&&['saved','following'].includes(path[0])&&query.getAll('preview').length===1&&query.get('preview')==='1'&&!query.has('page');
+ if(overview)query.delete('preview');
  if(!allowed||[...query].length>2||query.getAll('language').length>1||query.getAll('page').length>1||[...query].some(([k,v])=>k==='language'?!['fr','en','ln','sw'].includes(v):k==='page'?method!=='GET'||!['saved','following'].includes(path[0])||!/^\d{1,5}$/.test(v)||Number(v)<1||Number(v)>10000:true))return fail(404);
  const origin=personalRequestOrigin(request);
  if(request.headers.get('sec-fetch-site')==='cross-site'||method!=='GET'&&!origin)return fail(403);
@@ -31,7 +57,8 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
   const response=await fetch(url,{method,body,cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(12000),headers:{Cookie:`shida_dashboard_session=${token}`,Accept:'application/json',...(origin?{Origin:origin}:{}),...(body?{'Content-Type':'application/json'}:{})}});
   if(response.status===401)await clearEmploymentToken();
   if(!response.ok)return fail(response.status>=400&&response.status<600?response.status:502);
-  return Response.json(await response.json(),{headers:PRIVATE_HEADERS});
+  const result=await response.json();
+  return Response.json(overview?await preview(result,(query.get('language')||'fr') as 'en'|'fr'|'ln'|'sw'):result,{headers:PRIVATE_HEADERS});
  }catch{return fail(503);}
 }
 export const GET=handle;export const PUT=handle;export const DELETE=handle;
