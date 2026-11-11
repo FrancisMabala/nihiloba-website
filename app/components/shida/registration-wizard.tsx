@@ -117,7 +117,9 @@ export function RegistrationWizard({ locale:initialLocale, catalogs }: { locale:
   }
   useEffect(() => { let alive=true;queueMicrotask(()=>{if(!alive||restoredOnce.current)return;restoredOnce.current=true;expiry.current=Date.now()+FORM_DRAFT_TTL;try {
     const restored=parseLocalDraft(sessionStorage.getItem(FORM_DRAFT_KEY));
-    if(restored){if(restored.language)setLocale(restored.language);setKind(restored.kind);setValues(restored.values);setPhone(restored.phone);expiry.current=restored.expires;setStep(Object.keys(restored.values).length?4:1);setMessage(r.restored);}
+    const employer=new URLSearchParams(window.location.search).get("employer");
+    if(employer&&/^ORGDIR_[A-Za-z0-9_-]{1,64}$/.test(employer)&&restored?.kind!=="business"){setKind("business");}
+    else if(restored){if(restored.language)setLocale(restored.language);setKind(restored.kind);setValues(restored.values);setPhone(restored.phone);expiry.current=restored.expires;setStep(Object.keys(restored.values).length?4:1);setMessage(r.restored);}
     else sessionStorage.removeItem(FORM_DRAFT_KEY);
   }catch{setStorageFailed(true);}setLocalReady(true);});return()=>{alive=false;}; }, [r.restored]);
   useLayoutEffect(()=>{if(!localReady || ![1,2,4].includes(step) || draft)return;
@@ -199,7 +201,8 @@ export function RegistrationWizard({ locale:initialLocale, catalogs }: { locale:
         if (epoch !== actorEpoch.current) return;
         if (!/^[A-Za-z0-9_-]{32,128}$/.test(grant.token)) throw new Error();
         const form = document.createElement("form"); form.method = "POST"; form.action = "https://business.nihiloba.com/handoff";
-        for (const [name,value] of Object.entries({token:grant.token,language:locale})) { const field = document.createElement("input");field.type="hidden";field.name=name;field.value=value;form.appendChild(field); }
+        const employer=new URLSearchParams(window.location.search).get("employer");
+        for (const [name,value] of Object.entries({token:grant.token,language:locale,...(employer&&/^ORGDIR_[A-Za-z0-9_-]{1,64}$/.test(employer)?{employer}:{})})) { const field = document.createElement("input");field.type="hidden";field.name=name;field.value=value;form.appendChild(field); }
         document.body.appendChild(form); form.submit(); form.remove();
       }
       });

@@ -1,5 +1,6 @@
 import {SpaceIcon} from "./account-space-icon";
-import { MarketplaceBreadcrumb } from "./marketplace-primitives";
+import { JobRelationshipActions } from "./job-relationship-actions";
+import { employerCopy } from "../../lib/employer-page-copy";
 import {jobSearchCopy,jobSearchPath} from '../../lib/job-search-copy';
 import {OfferText, plainOfferText} from './offer-text';
 import {candidateCopy} from '../../lib/candidate-profile-copy';
@@ -13,7 +14,7 @@ import "./jobs-public.css";
 import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 import { publicJobEmployerKey } from "../../lib/job-employer";
 import { safePublicActionUrl, safePublicExternalUrl, safePublicImageUrl } from "../../lib/safe-public-url";
-import { getJob, getJobEmployer, getJobs, getJobCategories, getPublicEntityActions, jobSearchQuery, ShidaApiError } from "../../services/shida/public-client";
+import { getJob, getJobEmployer, getJobs, getJobCategories, jobSearchQuery, ShidaApiError } from "../../services/shida/public-client";
 import type { JobCollection, JobSearch, PublicJob, PublicJobEmployer, PublicJobEmployerSummary, PublicJobSalary, PublicJobSummary } from "../../types/shida-public";
 import { ButtonLink } from "../button-link";
 import { ExternalJobAction, JobPublicActions, JobViewTracker } from "./job-public-actions";
@@ -94,16 +95,16 @@ function viewHref(locale:Locale,search:JobSearch,view:"professional"|"individual
 function EmployerIdentity({employer,locale,large=false,heading=false}:{employer:PublicJobEmployerSummary;locale:Locale;large?:boolean;heading?:boolean}){const image=safePublicImageUrl(employer.profile_image?.url),href=employerPath(locale,employer),location=employerLocation(employer),avatar=<MarketplaceImage src={image} alt={employer.name} fallback={initials(employer.name)} sizes={large?"96px":"48px"}/>;return <div className={large?"job-employer-identity job-employer-identity-large":"job-employer-identity"}>{href?<Link className="job-employer-image" href={href}>{avatar}</Link>:<span className="job-employer-image">{avatar}</span>}<div>{heading?<h1 className="job-employer-name">{employer.name}</h1>:href?<Link className="job-employer-name" href={href}>{employer.name}</Link>:<span className="job-employer-name">{employer.name}</span>}{large&&location&&<p>{location}</p>}</div></div>;}
 function JobFacts({item,locale}:{item:PublicJobSummary;locale:Locale}){const t=copy[locale],facts:Array<[string,string|number|null]>=[[t.contract,item.contract_type||item.contract_type_raw],[t.mode,item.work_mode||item.work_mode_raw],[t.experience,item.seniority],[t.schedule,item.work_schedule],[t.vacancies,item.vacancies]];return <div className="job-facts">{facts.map(([label,value])=>value!=null&&value!==""&&<span key={label}><b>{label}:</b> {typeof value==="string"?jobFactText(value,locale):value}</span>)}</div>;}
 
-export function JobCard({item,locale}:{item:PublicJobSummary;locale:Locale}) {
+export function JobCard({item,locale,forEmployer=false}:{item:PublicJobSummary;locale:Locale;forEmployer?:boolean}) {
  const u=jobDiscoveryCopy[locale],href=jobPath(locale,item),location=jobLocation(item),salary=cardCompensation(item,locale),summary=plainOfferText(item.summary_preview||item.description_preview||""),category=item.professional_category||item.category,organization=organizationLabel(item,locale);
- return <article className={`job-result job-result-${item.offer_type}`}>
-  <div className="job-card-identity"><JobCategoryIcon category={category} individual={item.offer_type==="individual"}/><div><span className={`job-type-label job-type-${item.offer_type}`}>{item.offer_type==="individual"?u.personal:u.company}</span><h3><Link href={href}>{item.title}</Link></h3>{location&&<p className="job-result-location">{location}</p>}</div></div>
-  {item.offer_type==="enterprise"&&<EmployerIdentity employer={item.employer} locale={locale}/>}
-  {item.origin==="external"&&<span className="job-origin-label job-origin-external">{originLabel(item,locale)}</span>}{organization&&<span className="job-origin-label">{organization}</span>}
-  {salary&&<p className="job-result-salary">{salary}</p>}
-  <JobFacts item={item} locale={locale}/>
-  {summary&&<p className="job-result-summary">{summary}</p>}
-  {item.deadline_label&&<p className="job-card-deadline">{item.deadline_label}</p>}
+ return <article className={`job-result job-result-${item.offer_type}${forEmployer?" employer-job-card":""}`}>
+  <div className="job-card-identity"><JobCategoryIcon category={category} individual={item.offer_type==="individual"}/><div>{!forEmployer&&<span className={`job-type-label job-type-${item.offer_type}`}>{item.offer_type==="individual"?u.personal:u.company}</span>}<h3><Link href={href}>{item.title}</Link></h3>{location&&<p className="job-result-location">{location}</p>}</div></div>
+  {!forEmployer&&item.offer_type==="enterprise"&&<EmployerIdentity employer={item.employer} locale={locale}/>}
+  {(item.origin==="external"||forEmployer)&&<span className="job-origin-label job-origin-external">{originLabel(item,locale)}</span>}{!forEmployer&&organization&&<span className="job-origin-label">{organization}</span>}
+  {!forEmployer&&salary&&<p className="job-result-salary">{salary}</p>}
+  {!forEmployer&&<JobFacts item={item} locale={locale}/>}
+  {!forEmployer&&summary&&<p className="job-result-summary">{summary}</p>}
+  {!forEmployer&&item.deadline_label&&<p className="job-card-deadline">{item.deadline_label}</p>}
   <div className="job-result-actions"><ButtonLink href={href}>{u.details}</ButtonLink></div>
  </article>;
 }
@@ -221,9 +222,41 @@ export async function JobDetailPage({locale,slug}:{locale:Locale;slug:string}) {
   </>;
 }
 
-export async function JobEmployerPage({locale,slug}:{locale:Locale;slug:string}){const t=copy[locale];let employer:PublicJobEmployer|undefined;try{employer=await getJobEmployer(slug);}catch(error){if(error instanceof ShidaApiError&&error.kind==="not-found")return <JobUnavailable locale={locale} employer/>;if(!(error instanceof ShidaApiError))throw error;}if(!employer)return <MarketplaceState>{t.unavailable}</MarketplaceState>;let followUrl:string|null=null;try{if(employer.identity_type==="organization_directory"){const actions=await getPublicEntityActions("organization_directory",employer.public_ref);followUrl=safePublicActionUrl(actions.follow_url);}}catch{/* The employer page remains useful when continuation metadata is unavailable. */}return <><section className="marketplace-detail-hero job-employer-hero"><div className="container"><MarketplaceBreadcrumb label="Breadcrumb" items={[{label:"SHIDA",href:marketplacePath(locale,"/shida")},{label:t.jobs,href:marketplacePath(locale,"/shida/emplois")},{label:employer.name}]}/><EmployerIdentity employer={employer} locale={locale} large heading/>{employer.description&&<p className="lead-copy">{employer.description}</p>}{employer.identity_type==="organization_directory"&&<p className="job-directory-note">{locale==="fr"?"Profil public d’organisation. Cette présentation n’implique pas que l’organisation soit cliente ou partenaire de SHIDA.":"Public organization directory profile. This listing does not imply that the organization is a SHIDA customer or partner."}</p>}{followUrl&&<a className="button button-secondary" href={followUrl} target="_blank" rel="noopener noreferrer">{locale==="fr"?`Suivre ${employer.name} sur SHIDA`:`Follow ${employer.name} on SHIDA`}</a>}</div></section><section className="section"><div className="container"><h2>{t.openJobs} ({employer.open_job_count})</h2>{employer.jobs.length?<div className="job-result-list">{employer.jobs.map((item)=><JobCard key={item.public_ref} item={item} locale={locale}/>)}</div>:<MarketplaceState>{t.noEmployerJobs}</MarketplaceState>}</div></section></>;}
+export async function JobEmployerPage({locale,slug}:{locale:Locale;slug:string}) {
+  const t=copy[locale], c=employerCopy[locale], jobsPath=marketplacePath(locale,"/shida/emplois");
+  let employer:PublicJobEmployer;
+  try { employer=await getJobEmployer(slug,locale); }
+  catch(error) {
+    if(error instanceof ShidaApiError) return error.kind==="not-found"?<JobUnavailable locale={locale} employer/>:<MarketplaceState>{t.unavailable}</MarketplaceState>;
+    throw error;
+  }
+  const directory=employer.identity_type==="organization_directory", managed=employer.management_status==="managed";
+  const invitation=directory && employer.management_status==="shida_created";
+  const location=employerLocation(employer), ref=encodeURIComponent(employer.public_ref);
+  const businessEntry=`https://business.nihiloba.com/employer-management/${ref}?lang=${locale}`;
+  const registration=process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==="true"
+    ? `${marketplacePath(locale,"/shida/register")}?employer=${ref}` : businessEntry;
+  return <div className="container employer-page">
+    <Link className="employer-back" href={jobsPath}>← {c.back}</Link>
+    <header>
+      <div className="employer-title-row"><div className="employer-avatar"><MarketplaceImage src={safePublicImageUrl(employer.profile_image?.url)} alt="" fallback={Array.from(employer.name.trim())[0]?.toLocaleUpperCase(locale)||"•"} sizes="80px"/></div>
+        <h1>{employer.name}</h1>
+        {employer.identity_type!=="individual"&&<JobRelationshipActions locale={locale} employerReference={employer.public_ref} canFollow canSave={false}/>}
+      </div>
+      {(directory||managed)&&<p>{managed?`${c.managed} ${employer.name}`:c.created}</p>}
+      {directory&&!managed&&<p>{c.intro}</p>}
+      {employer.description&&<p>{employer.description}</p>}{location&&<p>{location}</p>}
+    </header>
+    <section className="employer-vacancies"><h2>{employer.open_job_count?`${employer.open_job_count} ${employer.open_job_count===1?t.result:t.results}`:c.empty}</h2>
+      {employer.jobs.length?<div className="job-result-list">{employer.jobs.map(item=><JobCard key={item.public_ref} item={item} locale={locale} forEmployer/>)}</div>:<Link href={jobsPath}>{c.back} →</Link>}
+    </section>
+    {invitation&&<aside className="employer-invitation"><SpaceIcon name="business"/><div><h2>{c.represent.replace("{name}",employer.name)}</h2><p>{c.body}</p><p>{c.review}</p>
+      <div className="employer-entry-links"><ButtonLink href={registration} variant="secondary">{c.create}</ButtonLink>
+      <a href={businessEntry}>{c.login} →</a></div></div></aside>}
+  </div>;
+}
 
 function metadataBase(locale:Locale,path:string,title:string,description:string|undefined,image:string|null):Metadata{const canonical=marketplacePath(locale,path);return {title,description,alternates:{canonical,languages:{en:path,fr:`/fr${path}`,ln:`/ln${path}`,sw:`/sw${path}`,"x-default":path}},openGraph:{title,description,url:canonical,images:[{url:image||"/NIHILOBA_logo.png",alt:title}]}};}
 export function jobsMetadata(locale:Locale):Metadata{const t=copy[locale];return metadataBase(locale,"/shida/emplois",t.title,t.intro,null);}
 export async function jobMetadata(locale:Locale,slug:string):Promise<Metadata>{try{const item=await getJob(slug,locale),location=jobLocation(item),title=`${item.title} — ${item.employer.name} | SHIDA Emploi`,description=item.origin==="external"?(locale==="fr"?`Découvrez l’offre ${item.title} publiée par ${item.employer.name} et référencée sur SHIDA Emploi${location?` à ${location}`:""}.`:`Discover the ${item.title} offer published by ${item.employer.name} and listed on SHIDA Employment${location?` in ${location}`:""}.`):([item.short_summary||item.summary_preview||item.description_fallback||item.description,location].filter(Boolean).join(" · ")||undefined),metadata=metadataBase(locale,`/shida/emplois/${item.slug||item.public_ref}`,title,description,safePublicImageUrl(item.employer.profile_image?.url));if(item.status!=="open"||!hasSupportedApplication(item))metadata.robots={index:false,follow:true};return metadata;}catch{return {title:copy[locale].jobUnavailable,robots:{index:false,follow:false}};}}
-export async function jobEmployerMetadata(locale:Locale,slug:string):Promise<Metadata>{try{const item=await getJobEmployer(slug),location=employerLocation(item),description=locale==="fr"?`${item.open_job_count} offre${item.open_job_count===1?"":"s"} ouverte${item.open_job_count===1?"":"s"}${location?` à ${location}`:""} sur SHIDA.`:`${item.open_job_count} open job${item.open_job_count===1?"":"s"}${location?` in ${location}`:""} on SHIDA.`;return metadataBase(locale,`/shida/emplois/employeurs/${item.slug||item.public_ref}`,`${item.name} | SHIDA`,item.description||description,safePublicImageUrl(item.profile_image?.url));}catch{return {title:copy[locale].employerUnavailable,robots:{index:false,follow:false}};}}
+export async function jobEmployerMetadata(locale:Locale,slug:string):Promise<Metadata>{try{const item=await getJobEmployer(slug,locale),location=employerLocation(item),description=locale==="fr"?`${item.open_job_count} offre${item.open_job_count===1?"":"s"} ouverte${item.open_job_count===1?"":"s"}${location?` à ${location}`:""} sur SHIDA.`:`${item.open_job_count} open job${item.open_job_count===1?"":"s"}${location?` in ${location}`:""} on SHIDA.`;return metadataBase(locale,`/shida/emplois/employeurs/${item.slug||item.public_ref}`,`${item.name} | SHIDA`,item.description||description,safePublicImageUrl(item.profile_image?.url));}catch{return {title:copy[locale].employerUnavailable,robots:{index:false,follow:false}};}}
