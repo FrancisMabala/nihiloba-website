@@ -181,3 +181,11 @@ dialog.wz-checkout-dialog::backdrop{background:#0e302a80}
  .wz-checkout .wz-pos-products{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
  .wz-success-confirmation .wc-cash-change{justify-self:stretch;max-width:none}
 }
+
+@media(max-width:760px){
+ .wz-checkout-dialog .wz-receipt-panel .wm-receipt-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:end}
+ .wz-checkout-dialog .wm-receipt-toolbar label{grid-column:1/-1;grid-row:1;width:100%;min-width:0}
+ .wz-checkout-dialog .wm-receipt-toolbar label select{width:100%;min-width:110px}
+ .wz-checkout-dialog .wm-receipt-toolbar>button:first-child{display:none}
+ .wz-checkout-dialog .wm-receipt-toolbar button{white-space:normal}
+}

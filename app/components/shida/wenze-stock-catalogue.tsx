@@ -41,7 +41,7 @@ export function InventoryCatalogue({products,balances,locale,onEdit,onCreate}:{p
   </div>
   {all.length===0?<div className="wc-card"><h2>{t('welcome')}</h2><p>{t('firstEmpty')}</p><button className="seller-primary" onClick={onCreate}>{creationText(locale,'first')}</button></div>:
     !visible.length?<p role="status">{t(filter==='out'&&!search?'noOut':'empty')}</p>:
-    <section className="wi-list wz-inventory-table"><div className="wi-columns wi-head">{(['product','onhand','reserved','sellable','state'] as const).map(key=><strong key={key}>{t(key)}</strong>)}</div>
+    <section className="wi-list"><div className="wi-columns wi-head">{(['product','onhand','reserved','sellable','state'] as const).map(key=><strong key={key}>{t(key)}</strong>)}</div>
     {visible.map(group=>{
       const {product,lines}=group;
       const keys=Array.from(new Set(lines.flatMap(l=>Object.keys(l.attributes))));

@@ -45,7 +45,8 @@ for(const width of [390,1536])test('twenty shirts '+width,async({page})=>{
   const f=await inventoryFixture(page,true);await page.goto(f.url);
   await page.getByRole('button',{name:/5 tailles/}).click();
   await expect(page.locator('.wi-versions tbody tr td:first-child')).toHaveText(['XS','S','M','L','XL']);
-  await expect(page.locator('.wi-sellable strong')).toHaveText('20');await capture(page,'inventory-expanded-'+width);
+  await expect(page.locator('.wi-sellable strong')).toHaveText('20');if(width===390)expect((await page.locator('.wi-versions').boundingBox())!.height).toBeLessThan(430);
+  await capture(page,'inventory-expanded-'+width);
 });
 for(const locale of ['en','ln','sw'] as const)test('inventory language '+locale,async({page})=>{
   const f=await inventoryFixture(page,true,locale);await page.goto(f.url);

@@ -41,7 +41,8 @@ for(const width of [390,1536])test('cash sale from size selection to today’s r
   await capture('confirmation');await saved.getByRole('button',{name:'Voir les ventes du jour'}).click();
   const history=page.locator('.wz-receipt-history');await expect(history).toHaveCount(1);await history.click();
   await expect(page.locator('.wz-receipt-paper')).toContainText(/35.000 CDF/);
-  await expect(page.locator('.wz-receipt-paper')).toContainText(receipt.receipt_ref);await capture('receipt');
+  await expect(page.locator('.wz-receipt-paper')).toContainText(receipt.receipt_ref);if(width===390)expect((await page.locator('.wm-receipt-toolbar select').boundingBox())!.width).toBeGreaterThan(110);
+  await capture('receipt');
   if(width===390)await page.locator('dialog[open] header button').first().click();
   await page.getByRole('button',{name:'Retour à la caisse'}).click();
   await expect(page.locator('.wz-pos-product').first()).toContainText('19');
