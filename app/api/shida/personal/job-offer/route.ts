@@ -45,6 +45,7 @@ async function handle(request: Request) {
         ...(origin ? {Origin: origin} : {}), ...(body ? {'Content-Type': 'application/json'} : {})},
     });
     if (response.status === 401) await clearEmploymentToken();
+    if(response.status===422){const data=await response.json().catch(()=>({}));const field=data?.detail?.field;if(typeof field==='string'&&/^[a-z_]{2,20}$/.test(field))return Response.json({field},{status:422,headers:PRIVATE_HEADERS})}
     if (!response.ok) return fail(response.status >= 400 && response.status < 600 ? response.status : 502);
     return Response.json(await response.json(), {headers: PRIVATE_HEADERS});
   } catch {return fail(503);}
