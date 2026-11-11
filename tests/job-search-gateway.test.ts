@@ -56,3 +56,16 @@ it('uses account totals and enriches only visible preview records with public da
   expect(job).toHaveBeenCalledTimes(2);expect(employer).toHaveBeenCalledTimes(2);
  }finally{job.mockRestore();employer.mockRestore();}
 });
+
+it('forwards only a channel choice for the current account, never a supplied address or an opt-in',async()=>{
+ const route=context(['delivery-channel']);
+ for(const body of [{channel:'email',address:'other@example.test'},{channel:'email',enabled:true},{channel:'sms'}]){
+  expect((await PUT(request('PUT',JSON.stringify(body)),route)).status).toBe(422);
+ }
+ expect(upstream).not.toHaveBeenCalled();
+ const dto={channel:'email',masked_email:'c***@example.test',email_state:'ready'};
+ upstream.mockResolvedValueOnce(Response.json(dto));
+ expect(await (await PUT(request('PUT',JSON.stringify({channel:'email'})),route)).json()).toEqual(dto);
+ expect(String(upstream.mock.calls[0][0])).toMatch(/\/job-search\/delivery-channel$/);
+ expect(upstream.mock.calls[0][1]?.body).toBe('{"channel":"email"}');
+});

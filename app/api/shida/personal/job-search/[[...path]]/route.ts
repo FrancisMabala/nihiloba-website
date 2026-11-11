@@ -38,7 +38,8 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
   ||(path.length===2&&['jobs','employers'].includes(path[0])&&reference.test(path[1])&&['GET','PUT'].includes(method))
   ||(path.length===2&&path[0]==='relations'&&/^REL_[a-f0-9]{64}$/.test(path[1])&&method==='DELETE')
   ||(path.length===3&&path[0]==='relations'&&/^REL_[a-f0-9]{64}$/.test(path[1])&&path[2]==='notifications'&&method==='PUT')
-  ||(path.length===1&&path[0]==='alerts'&&method==='PUT');
+  ||(path.length===1&&path[0]==='alerts'&&method==='PUT')
+  ||(path.length===1&&path[0]==='delivery-channel'&&['GET','PUT'].includes(method));
  const overview=method==='GET'&&path.length===1&&['saved','following'].includes(path[0])&&query.getAll('preview').length===1&&query.get('preview')==='1'&&!query.has('page');
  const cards=method==='GET'&&path.length===1&&path[0]==='following'&&query.getAll('cards').length===1&&query.get('cards')==='1'&&!overview;
  if(cards)query.delete('cards');
@@ -54,7 +55,7 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
   const reader=request.body?.getReader(),chunks:Uint8Array[]=[];let size=0;
   if(reader)for(;;){const chunk=await reader.read();if(chunk.done)break;size+=chunk.value.length;if(size>2048){await reader.cancel();return fail(413);}chunks.push(chunk.value);}
   body=Buffer.concat(chunks).toString();
-  try{const value=JSON.parse(body);if(!value||typeof value!=='object'||Array.isArray(value)||typeof value.enabled!=='boolean'||Object.keys(value).some(k=>!['enabled',...(path[0]==='jobs'?['action']:[])].includes(k))||path[0]==='jobs'&&!['save','follow'].includes(value.action))return fail(422);}catch{return fail(422);}
+  try{const value=JSON.parse(body);if(path[0]==='delivery-channel'){if(!value||Object.keys(value).length!==1||!['whatsapp','email'].includes(value.channel))return fail(422);}else if(!value||typeof value!=='object'||Array.isArray(value)||typeof value.enabled!=='boolean'||Object.keys(value).some(k=>!['enabled',...(path[0]==='jobs'?['action']:[])].includes(k))||path[0]==='jobs'&&!['save','follow'].includes(value.action))return fail(422);}catch{return fail(422);}
  }
  try{
   const base=new URL(process.env.SHIDA_API_BASE_URL??'https://api.nihiloba.com');

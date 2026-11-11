@@ -142,3 +142,6 @@ Saved offers use the paginated personal list, including unavailable rows that ca
 The applications tab reads the same submitted applications feed as the overview. Its empty state resolves saved bookmarks only after the candidate list is successfully empty. The interview link requires confirmed status plus a valid future date and time. External redirects and manual declarations do not write to this list.
 
 Followed companies show the public profile’s management label, logo or initial, and open vacancy count. The vacancy link targets #vacancies; organizations with only a Business profile use its filtered jobs view. The tab never enables notifications, and a failed optional projection does not invent a zero. Alerts remain separate.
+
+### Profiles and alert settings
+The `profiles` route is unchanged; each card explains its profile type above the existing status and actions. The `alerts` route separates followed-employer switches, their shared delivery channel, and the collapsed profile-matching controls. Switches do not follow, unfollow, or enroll email. Account setup links open the specific security control, with a return to alerts; eligibility reloads on return. The backend exposes only the masked login address. Release after backend migration `0235_emp_alerts`, the API, and the subscriber worker.
