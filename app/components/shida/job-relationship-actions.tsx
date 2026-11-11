@@ -1,12 +1,14 @@
 'use client';
 import {createPortal} from 'react-dom';
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {jobSearchCopy,jobSearchPath} from '../../lib/job-search-copy';
 import {jobSearchRequest,JobSearchError,type JobRelationshipState} from '../../lib/job-search-api';
 import {restorePersonalSession,PersonalSessionError,PERSONAL_SESSION_EVENT,type PersonalSession} from '../../lib/personal-session-browser';
 import {LOGIN_EVENT} from '../../lib/personal-login-browser';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {useConfirmation} from './confirmation-dialog';
+// The detail header and its portal target mount together and keep the same DOM identity.
+const subscribeToHeader = () => () => {};
 type Action='save'|'follow'|'unsave'|'unfollow';
 export function JobRelationshipActions({locale,jobReference,canSave,canFollow,detail=false}:{locale:keyof typeof jobSearchCopy;jobReference:string;canSave:boolean;canFollow:boolean;detail?:boolean}){
  const t=jobSearchCopy[locale];
@@ -40,8 +42,8 @@ export function JobRelationshipActions({locale,jobReference,canSave,canFollow,de
  function click(action:Action){if(phase==='guest'){intent(action);return;}if(action==='follow'&&state?.employer?.following){confirm({title:t.unfollow,description:state.employer.name,confirmLabel:t.unfollow,cancelLabel:t.cancel,onConfirm:async()=>{if(!await apply('follow',false))throw new Error('unfollow_unconfirmed');}});return;}void apply(action,action==='save'?!state?.saved:!state?.employer?.following);}
  function resume(action:Action,user=session){return apply(action==='unsave'?'save':action==='unfollow'?'follow':action,action==='save'||action==='follow',user);}
  async function authenticated(){const action=pending;if(!action)return;try{const user=await restorePersonalSession();if(alive.current)await resume(action,user);}catch{if(alive.current)setPhase('error');}}
- const [mount,setMount]=useState<HTMLElement|null>(null),[hover,setHover]=useState(false),[focus,setFocus]=useState(false);
- useEffect(()=>{if(detail)setMount(document.getElementById('detail-follow-control'));},[detail]);
+ const [hover,setHover]=useState(false),[focus,setFocus]=useState(false);
+ const mount = useSyncExternalStore(subscribeToHeader, () => detail ? document.getElementById('detail-follow-control') : null, () => null);
  useEffect(()=>{if(!notice||hover||focus)return;const timer=setTimeout(()=>setNotice(null),8000);return()=>clearTimeout(timer);},[notice,hover,focus]);
  const labels={fr:{saved:'Enregistrée',followed:'Suivi',close:'Fermer'},en:{saved:'Saved',followed:'Following',close:'Close'},ln:{saved:'Ebombami',followed:'Olandi',close:'Kanga'},sw:{saved:'Imehifadhiwa',followed:'Unafuata',close:'Funga'}}[locale];
  const followButton=(canFollow||state?.employer)&&<button type="button" className="job-action-button" disabled={busy||phase==='loading'||phase==='error'||phase==='ready'&&!state?.employer} aria-label={state?.employer?.following?t.unfollow:t.follow} aria-pressed={!!state?.employer?.following} onClick={()=>click('follow')}>{state?.employer?.following?labels.followed+" ✓":t.follow}</button>;

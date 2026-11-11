@@ -24,10 +24,10 @@ type Profiles={profiles:{type:string;archived:boolean;visibility:string;has_cv?:
 function useSection<T>(read:(signal:AbortSignal)=>Promise<T>,unauthorized:()=>void){
  const [data,setData]=useState<T|null>(null),[failed,setFailed]=useState(false),[version,setVersion]=useState(0);
  const latest=useRef({read,unauthorized});useEffect(()=>{latest.current={read,unauthorized};});
- useEffect(()=>{const c=new AbortController();setFailed(false);setData(null);
+ useEffect(()=>{const c=new AbortController();
  latest.current.read(c.signal).then(value=>{if(!c.signal.aborted)setData(value);},err=>{if(c.signal.aborted)return;if(err?.status===401)latest.current.unauthorized();else setFailed(true);});
  return()=>c.abort();},[version]);
- return {data,failed,retry:()=>setVersion(v=>v+1)};
+ return {data,failed,retry:()=>{setFailed(false);setData(null);setVersion(v=>v+1);}};
 }
 export function JobOverview({locale,binding,destination,unauthorized}:{locale:Locale;binding:string;destination:(item:JobSearchItem)=>string;unauthorized:()=>void}){
  const t=jobSearchCopy[locale],u=overviewCopy[locale],p=candidateCopy[locale];
