@@ -54,7 +54,7 @@ test("failed search retries in place, and clear returns to the empty catalogue",
 });
 
 test("the initial Kiswahili jobs response never streams a French placeholder",async({request})=>{
- const response=await request.get("/sw/shida/emplois/");
+ const response=await request.get("/sw/shida/emplois/?query=slow-stream-test");
  expect(response.ok()).toBe(true);
  const html=await response.text();
  expect(html).toContain("Inapakia nafasi za kazi");expect(html).not.toContain("Chargement des offres");
