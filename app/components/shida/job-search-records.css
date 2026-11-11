@@ -1,0 +1,15 @@
+.job-search-workspace .workspace-heading{display:flex;align-items:center;gap:12px;margin:24px 0 16px}
+.workspace-count{border-radius:20px;padding:4px 12px;background:#eeeade;font:600 1rem/1.5 Arial,sans-serif}
+.job-search-workspace .workspace-records{display:grid;grid-template-columns:1fr;gap:12px}
+.workspace-record{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:16px;padding:20px;border:1px solid #ded9cd;border-radius:12px;background:#fffdfa;overflow-wrap:anywhere}
+.workspace-record-body h3{font:600 1.45rem/1.25 Georgia,serif;margin:0}
+.workspace-record-body p{margin:4px 0;color:#43594f}
+.workspace-record-body .search-badges{margin-top:8px}
+.workspace-record-icon{width:48px;height:48px;background:#e4f2e5;border-radius:10px;display:grid;place-items:center}
+.workspace-record-icon svg{width:25px;height:25px}
+.workspace-record-actions{display:grid;justify-items:end;align-self:center}
+.workspace-record-actions a,.workspace-record-actions button,.workspace-inline-link{display:inline-flex;align-items:center;min-height:44px;color:#153f33;text-underline-offset:.2em}
+.workspace-record-actions a,.workspace-inline-link{font-weight:650}
+.candidate-workspace .workspace-record-actions button{background:transparent;border:0;padding:4px 0;color:#466054}
+.workspace-toast{position:fixed;bottom:90px;right:16px;z-index:80;padding:12px 18px;max-width:calc(100% - 32px);background:#183e33;color:white;border-radius:8px}
+@media(max-width:700px){.workspace-record{grid-template-columns:auto minmax(0,1fr);gap:10px;padding:14px}.workspace-record-actions{grid-column:1/-1;justify-items:start}.workspace-record-icon{width:40px;height:40px}}

@@ -12,6 +12,8 @@ import {jobOverviewCopy as overviewCopy} from '../../lib/job-overview-copy';
 import {JobOverview} from './job-search-overview';
 import './candidate-profile-space.css';
 import './job-search-overview.css';
+import './job-search-records.css';
+import {SavedOffers,savedCopy} from './saved-offers';
 
 type JobSearchSpaceProps={locale:keyof typeof jobSearchCopy;binding:string;initialSection?:string;onUnauthorized:()=>void};
 export function JobSearchSpace(props:JobSearchSpaceProps){
@@ -32,7 +34,7 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
    try{
     if(section==='saved'||section==='following'||section==='alerts'){
      const [items,preferences]=await Promise.all([jobSearchRequest<JobSearchList>(binding,locale,`${section==='saved'?'saved':'following'}?page=${page}`,'GET',undefined,controller.signal),section==='alerts'?jobSearchRequest<JobAlerts>(binding,locale,'alerts','GET',undefined,controller.signal):null]);
-     if(active){setList(items);setAlerts(preferences);}
+     if(active){if(page>1&&!items.items.length){setPage(page-1);return;}setError(false);setList(items);setAlerts(preferences);}
     }else if(section==='applications'){
      const items=await loadCandidateApplications();if(active)setApplications(items);
     }
@@ -47,21 +49,22 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
   return()=>{window.removeEventListener('focus',refresh);window.removeEventListener('pageshow',refresh);};
  },[]);
  function reload(){setList(null);setApplications(null);setAlerts(null);setError(false);setRevision(v=>v+1);}
- async function mutate(path:string,method:string,body?:unknown){
+ useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),5000);return()=>clearTimeout(timer);},[notice]);
+ async function mutate(path:string,method:string,body?:unknown,success:string=t.updated){
   if(lock.current)return;lock.current=true;setBusy(true);setError(false);setNotice('');
-  try{await jobSearchRequest(binding,locale,path,method,body);if(alive.current){setNotice(t.updated);reload();}}
-  catch(e){if(alive.current){if(e instanceof JobSearchError&&e.status===401)unauthorized.current();else setError(true);}throw e;}
+  try{await jobSearchRequest(binding,locale,path,method,body);if(alive.current){setNotice(success);reload();}}
+  catch(e){if(alive.current){if(e instanceof JobSearchError&&e.status===401)unauthorized.current();else if(method!=='DELETE')setError(true);}throw e;}
   finally{lock.current=false;if(alive.current)setBusy(false);}
  }
- function remove(item:JobSearchItem){confirm({title:section==='saved'?t.remove:t.unfollow,description:item.name||t.unavailable,confirmLabel:section==='saved'?t.remove:t.unfollow,cancelLabel:t.cancel,onConfirm:()=>mutate(`relations/${item.relation_ref}`,'DELETE')});}
+ function remove(item:JobSearchItem){confirm({title:section==='saved'?t.remove:t.unfollow,description:item.name||t.unavailable,confirmLabel:section==='saved'?t.remove:t.unfollow,cancelLabel:t.cancel,retryLabel:t.retry,onConfirm:()=>mutate(`relations/${item.relation_ref}`,'DELETE',undefined,section==='saved'?savedCopy[locale].removed:t.updated)});}
  const destination=(item:JobSearchItem)=>`${prefix}/shida/${item.kind==='job'?'emplois':item.kind==='company'&&!item.employer_ref?'businesses':'emplois/employeurs'}/${encodeURIComponent((item.kind!=='job'&&item.employer_ref)||item.reference!)}`;
  const loading=['saved','following','alerts'].includes(section)?!list:section==='applications'?!applications:false;
  return <section className="candidate-workspace job-search-workspace" aria-busy={busy}>
   {confirmation}
-  <div className="search-intro"><p>{overviewCopy[locale].intro}</p><a className={section==='overview'?'space-primary-action':'button-primary'} href={`${prefix}/shida/emplois`}>{t.browse} {section==='overview'?'→':'↗'}</a></div>
+  <div className="search-intro"><p>{overviewCopy[locale].intro}</p><a className={(section==='overview'||section==='saved')?'space-primary-action':'button-primary'} href={`${prefix}/shida/emplois`}>{t.browse} {(section==='overview'||section==='saved')?'→':'↗'}</a></div>
   <nav className="search-tabs" aria-label={t.title}>{jobSearchSections.map(key=><a key={key} href={jobSearchPath(locale,key)} aria-current={section===key?'page':undefined} onClick={async e=>{e.preventDefault();const href=e.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{t[key]}</a>)}</nav>
-  {section!=='overview'&&<h2>{t[section]}</h2>}
-  {notice&&<p role="status">{notice}</p>}
+  {section!=='overview'&&<h2 className="workspace-heading">{t[section]}{section==='saved'&&list&&<span className="workspace-count">{list.total}</span>}</h2>}
+  {notice&&<p className="workspace-toast" role="status">{notice}</p>}
   {error&&<div role="alert"><p>{t.error}</p><button onClick={reload} disabled={busy}>{t.retry}</button></div>}
   {loading&&!error&&<p role="status">{t.loading}</p>}
   {section==='overview'&&<JobOverview revision={revision} locale={locale} binding={binding} destination={destination} unauthorized={onUnauthorized}/>}
@@ -70,7 +73,7 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
   {section==='alerts'&&alerts&&<section className="candidate-private-panel"><h3>{t.matching}</h3><p>{t.matchingHelp}</p>{alerts.profile_count?<><p>{alerts.enabled_count===0?t.disabled:alerts.enabled_count===alerts.profile_count?t.enabled:t.mixed}</p><button disabled={busy} onClick={()=>void mutate('alerts','PUT',{enabled:alerts.enabled_count!==alerts.profile_count}).catch(()=>{})}>{alerts.enabled_count===alerts.profile_count?t.disable:t.enable}</button></>:<><p>{t.needProfile}</p><a href={jobSearchPath(locale,'profiles')}>{t.profiles}</a></>}<p>{t.alertGap}</p></section>}
   {section==='alerts'&&<><h3>{t.employerAlerts}</h3><p>{t.optIn}</p></>}
   {list&&<>
-   {!list.items.length&&<p>{section==='saved'?t.emptySaved:t.emptyFollowing}</p>}
+   {section==='saved'?<SavedOffers locale={locale} list={list} remove={remove} busy={busy} destination={destination}/>:<>{!list.items.length&&<p>{t.emptyFollowing}</p>}
    <div className="candidate-application-list">{list.items.map(item=><article className="candidate-application-card" key={item.relation_ref}>
     <h3>{item.name||t.unavailable}</h3>{item.employer_name&&<p>{item.employer_name}</p>}
     {item.kind!=='job'&&<p>{item.kind==='company'?t.shida:t.directory}</p>}
@@ -80,8 +83,8 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
     <button disabled={busy} onClick={()=>remove(item)}>{item.kind==='job'?t.remove:t.unfollow}</button></div>
     {item.kind!=='job'&&<p>{t.notifications}: {item.notifications?t.enabled:t.disabled}</p>}
     {section==='alerts'&&item.available&&<button disabled={busy} onClick={()=>void mutate(`relations/${item.relation_ref}/notifications`,'PUT',{enabled:!item.notifications}).catch(()=>{})}>{item.notifications?t.disable:t.enable}</button>}
-   </article>)}</div>
-   <nav className="candidate-actions" aria-label={t[section]}>{page>1&&<button disabled={busy} onClick={()=>{setList(null);setPage(p=>p-1);}}>{t.previous}</button>}{list.has_more&&<button disabled={busy} onClick={()=>{setList(null);setPage(p=>p+1);}}>{t.next}</button>}<button disabled={busy} onClick={reload}>{t.refresh}</button></nav>
+   </article>)}</div></>}
+   <nav className="candidate-actions" aria-label={t[section]}>{page>1&&<button disabled={busy} onClick={()=>{setList(null);setPage(p=>p-1);}}>{t.previous}</button>}{list.has_more&&<button disabled={busy} onClick={()=>{setList(null);setPage(p=>p+1);}}>{t.next}</button>}{section!=='saved'&&<button disabled={busy} onClick={reload}>{t.refresh}</button>}</nav>
   </>}
  </section>;
 }

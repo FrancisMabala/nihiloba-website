@@ -1,5 +1,5 @@
 import {jobLocation} from '../../../../../lib/job-location';
-import {getJob,getJobEmployer} from '../../../../../services/shida/public-client';
+import {getJob,getJobEmployer,ShidaApiError} from '../../../../../services/shida/public-client';
 import {JOB_PREVIEW_LIMIT,type JobSearchItem,type JobSearchList} from '../../../../../lib/job-search-api';
 import {safePublicImageUrl} from '../../../../../lib/safe-public-url';
 import {cookies} from 'next/headers';
@@ -9,20 +9,20 @@ export const dynamic='force-dynamic';
 const fail=(status:number)=>Response.json({detail:'job_search_unavailable'},{status,headers:PRIVATE_HEADERS});
 // The personal list owns the count and the references. Supplement only its visible
 // preview rows with display fields from the same public projections as their links.
-async function preview(list:JobSearchList,locale:'en'|'fr'|'ln'|'sw'){
- const items=await Promise.all(list.items.slice(0,JOB_PREVIEW_LIMIT).map(async(item:JobSearchItem)=>{
+async function enrich(list:JobSearchList,locale:'en'|'fr'|'ln'|'sw',preview:boolean){
+ const items=await Promise.all((preview?list.items.slice(0,JOB_PREVIEW_LIMIT):list.items).map(async(item:JobSearchItem)=>{
   if(!item.available||!item.reference)return item;
   try{
    if(item.kind==='job'){
     const job=await getJob(item.reference,locale);
-    return {...item,location:jobLocation(job)};
+    return {...item,location:jobLocation(job),status:['expired','archived','closed','source_invalid'].includes(job.lifecycle_state)?job.lifecycle_state:item.status};
    }
    const employer=item.employer_ref||(item.kind==='organization_directory'?item.reference:null);
    if(employer){
     const profile=await getJobEmployer(employer,locale);
     return {...item,logo:safePublicImageUrl(profile.profile_image?.url)};
    }
-  }catch{/* The optional location or logo must not hide a saved record. */}
+  }catch(error){if(error instanceof ShidaApiError&&error.kind==='not-found')return {...item,available:false,reference:null};/* The optional location or logo must not hide a saved record. */}
   return item;
  }));
  return {...list,items};
@@ -58,7 +58,7 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
   if(response.status===401)await clearEmploymentToken();
   if(!response.ok)return fail(response.status>=400&&response.status<600?response.status:502);
   const result=await response.json();
-  return Response.json(overview?await preview(result,(query.get('language')||'fr') as 'en'|'fr'|'ln'|'sw'):result,{headers:PRIVATE_HEADERS});
+  return Response.json(overview||method==='GET'&&path[0]==='saved'?await enrich(result,(query.get('language')||'fr') as 'en'|'fr'|'ln'|'sw',overview):result,{headers:PRIVATE_HEADERS});
  }catch{return fail(503);}
 }
 export const GET=handle;export const PUT=handle;export const DELETE=handle;

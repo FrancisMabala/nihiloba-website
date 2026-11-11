@@ -268,3 +268,26 @@ test('creating from the overview persists only the chosen profile and only on sa
  await page.goto(overview);await page.getByRole('link',{name:'Continuer mon profil de travail occasionnel'}).click();
  await expect(city).toHaveValue('Kisangani');
 });
+
+for(const width of [390,1440])test('saved list removal is recoverable and synchronized '+width,async({page},info)=>{
+ await page.setViewportSize({width,height:900});await fixture(page,{initialSaved:true});
+ let fail=true;
+ await page.route('**/relations/REL_*',r=>fail?r.fulfill({json:{},status:503}):r.fallback());
+ const url=overview.replace('section=overview','section=saved');
+ await page.goto(url);await expect(page.locator('.workspace-count')).toHaveText('1');
+ await expect(page.getByText('SERVTEC · Kinshasa')).toBeVisible();
+ await page.screenshot({path:info.outputPath('saved-'+width+'.png'),fullPage:true});
+ await page.getByRole('button',{name:'Retirer de ma liste'}).click();
+ const dialog=page.getByRole('dialog');await dialog.getByRole('button',{name:'Retirer de ma liste'}).click();
+ await expect(dialog.getByRole('alert')).toBeVisible();await expect(page.locator('.workspace-count')).toHaveText('1');
+ fail=false;await dialog.getByRole('button',{name:'Réessayer'}).click();await expect(page.locator('.workspace-count')).toHaveText('0');
+ await expect(page.getByRole('status')).toContainText('Offre retirée de votre liste.');
+ await expect(page.getByText('Aucune offre enregistrée pour le moment.')).toBeVisible();
+ await page.goto(overview);await expect(page.locator('.search-counts strong').first()).toHaveText('0');
+ await page.goto('/fr/shida/emplois/JOB_fixture');await expect(page.getByRole('button',{name:jobSearchCopy.fr.save,exact:true})).toHaveAttribute('aria-pressed','false');
+ await page.route('**/job-search/saved?*',r=>r.fulfill({json:{items:[{relation_ref:'REL_x',kind:'job',available:false,reference:null},{relation_ref:'REL_y',kind:'job',available:true,reference:'JOB_closed',status:'closed',name:'Un titre très long '.repeat(9),origin:'direct'}],total:2,page:1,has_more:false}}));
+ await page.goto(url);await expect(page.locator('.workspace-count')).toHaveText('2');
+ await expect(page.getByText('Offre indisponible')).toBeVisible();await expect(page.getByText('Clôturée')).toBeVisible();
+ await expect(page.locator('.workspace-record-actions a')).toHaveCount(1);await expect(page.locator('.workspace-record-actions button')).toHaveCount(2);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

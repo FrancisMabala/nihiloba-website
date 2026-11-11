@@ -136,3 +136,5 @@ Failure closes the waiting tab and shows an error on the job page. Instructions
 still open inline. On mobile, the application bar sits above the marketplace
 navigation. The job detail browser checks hold the response pending, follow the
 organisation link to another offer and verify the original page and scroll offset.
+
+Saved offers use the paginated personal list, including unavailable rows that can still be removed. The display reuses public vacancy location and lifecycle. A failed removal keeps the bookmark and total; confirmation can be retried. The section refreshes on entry, return and removal.
