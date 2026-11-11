@@ -7,6 +7,7 @@ import {candidateApplicationPath} from './candidate-employment';
 import {MissionWizard} from './mission-wizard';
 import {MissionPeople} from './mission-people';
 import {SpaceIcon} from './account-space-icon';
+import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {QuickSell} from './quick-sell';
 import './mission-management.css';
 
@@ -21,7 +22,7 @@ function useMission(binding:string,kind:string,offer:string){
  const [data,set]=useState<Model|null>(null),[error,fail]=useState(''),[round,reload]=useState(0);
  const api=useCallback(async(body?:object,signal?:AbortSignal)=>{const params=new URLSearchParams({kind,...(offer?{offer}:{})});
  const r=await fetch('/api/shida/personal/job-offer?'+params,{method:body?'POST':'GET',cache:'no-store',credentials:'same-origin',headers:{'X-Shida-Session':binding,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,signal});
- if(!r.ok){const d=await r.json().catch(()=>({}));throw Error(d.field||String(r.status))}return r.json()},[binding,kind,offer]);
+ if(!r.ok){const d=await r.json().catch(()=>({}));throw Error(d.code === 'personal_sign_in_required' ? d.code : d.field || String(r.status))}return r.json()},[binding,kind,offer]);
  useEffect(()=>{const c=new AbortController();api(undefined,c.signal).then(v=>{if(!c.signal.aborted){set(v);fail('')}},e=>{if(!c.signal.aborted)fail(e.message)});return()=>c.abort()},[api,round]);
  return {data,set,error,fail,api,retry:()=>{set(null);fail('');reload(n=>n+1)}}
 }
@@ -65,6 +66,12 @@ function Catalogue({locale,binding,initial}:Props&{initial:string}){
  const {data,error,retry}=useMission(binding,'catalogue',''),t=(k:Parameters<typeof listingText>[1])=>listingText(locale,k);
  const [tab,choose]=useState(initial),[filter,select]=useState('all'),[menu,open]=useState(false);
  const service=(locale==='en'?'':'/'+locale)+'/shida/seller/services',serviceForm=service+'?view=services&intent=create',mission=missionQuery('job-offer',{intent:'mission'}),article=missionQuery('listings',{tab:'article',item:'new'});
+ if (error === '401' || error === 'personal_sign_in_required') {
+   return <section className="space-sign-in">
+     <p>{t('signInForListings')}</p>
+     <PersonalWhatsAppLogin locale={locale} onAuthenticated={() => window.location.reload()}/>
+   </section>;
+ }
  const create=<nav className="mission-actions"><a href={article}>{t('sell')}</a><a href={mission}>{t('post')}</a><a href={serviceForm}>{t('provide')}</a></nav>;
  const rows=(data?.rows||[]).filter(r=>(tab==='all'||r.type===tab)&&(tab!=='job'||filter==='all'||r.status===filter));
  return <div className="personal-listings-catalogue"><button className="button button-primary" aria-expanded={menu} onClick={()=>open(!menu)}>＋ {t('create')}</button>{menu&&create}

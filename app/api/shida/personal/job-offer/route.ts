@@ -47,6 +47,14 @@ async function handle(request: Request) {
       headers: {Cookie: `shida_dashboard_session=${token}`, Accept: 'application/json',
         ...(origin ? {Origin: origin} : {}), ...(body ? {'Content-Type': 'application/json'} : {})},
     });
+    if (suffix === '/catalogue' && response.status === 404) {
+      const error = await response.json().catch(() => null);
+      // The catalogue has no listing identifier. This denial means that the
+      // authenticated session cannot enter the Personal workspace.
+      if (error?.detail === 'personal_mission_unavailable') {
+        return Response.json({code: 'personal_sign_in_required'}, {status: 403, headers: PRIVATE_HEADERS});
+      }
+    }
     if (response.status === 401) await clearEmploymentToken();
     if(response.status===422){const data=await response.json().catch(()=>({}));const field=data?.detail?.field;if(typeof field==='string'&&/^[a-z_]{2,20}$/.test(field))return Response.json({field},{status:422,headers:PRIVATE_HEADERS})}
     if (!response.ok) return fail(response.status >= 400 && response.status < 600 ? response.status : 502);

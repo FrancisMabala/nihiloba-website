@@ -1,4 +1,5 @@
 const words = {
+ "signInForListings": ["Reconnectez-vous à votre espace personnel pour afficher vos annonces.", "Sign in to your Personal account again to see your listings.", "Kɔtá lisusu na esika na yo moko mpo na komona bapiblisite na yo.", "Ingia tena kwenye akaunti yako binafsi ili kuona matangazo yako."],
  "oneApplication":["Candidature","Application","Bosɛngi","Ombi"],"oneRequest":["Demande","Request","Bosɛngi","Ombi"],
  "workProfile":["Profil occasionnel","Occasional work profile","Profil ya misala ya ntango mokuse","Wasifu wa kazi za muda"],
  "pending":["En attente","Pending","Ekozela","Inasubiri"],"archived":["Archivé","Archived","Ebombami","Imehifadhiwa"],

@@ -39,3 +39,16 @@ it('fails safely on upstream timeouts and redirects', async () => {
   upstream.mockResolvedValueOnce(new Response(null, {status: 302, headers: {Location: 'https://foreign.test'}}));
   expect((await GET(request())).status).toBe(502);
 });
+
+it('recognizes a Personal workspace denial on the catalogue and preserves other not-found responses', async () => {
+  const denied = () => Response.json({detail: 'personal_mission_unavailable'}, {status: 404});
+  upstream.mockResolvedValueOnce(denied());
+  const recovery = await GET(request('GET', undefined, {}, '?kind=catalogue'));
+  expect(recovery.status).toBe(403);
+  expect(await recovery.json()).toEqual({code: 'personal_sign_in_required'});
+  expect(jar.get(PERSONAL_SESSION_COOKIE)).toBe(token);
+  upstream.mockResolvedValueOnce(denied());
+  expect((await GET(request('GET', undefined, {}, '?kind=manage&offer=JOB_missing'))).status).toBe(404);
+  upstream.mockResolvedValueOnce(Response.json({detail:'Not Found'},{status:404}));
+  expect((await GET(request('GET', undefined, {}, '?kind=catalogue'))).status).toBe(404);
+});

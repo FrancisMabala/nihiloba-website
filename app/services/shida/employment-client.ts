@@ -128,8 +128,8 @@ export async function requestEmploymentCode(phone: string): Promise<{ challenge_
   return { challenge_ref: text(record(payload).challenge_ref, true)! };
 }
 
-export async function verifyEmploymentCode(challengeRef: string, code: string): Promise<{ session: EmploymentSession; token: string }> {
-  const { payload, setCookie } = await backendRequest("/api/dashboard/auth/verify-code", { method: "POST", body: JSON.stringify({ challenge_ref: challengeRef, code }) });
+export async function verifyEmploymentCode(challengeRef: string, code: string, origin: string): Promise<{ session: EmploymentSession; token: string }> {
+  const { payload, setCookie } = await backendRequest("/api/dashboard/auth/verify-code", { method: "POST", headers: { Origin: origin }, body: JSON.stringify({ challenge_ref: challengeRef, code }) });
   const match = setCookie?.match(/(?:^|;\s*)shida_dashboard_session=([A-Za-z0-9_-]{20,256})(?:;|$)/);
   if (!match) throw new EmploymentApiError("malformed_response", 502);
   return { session: parseEmploymentSession(payload), token: match[1] };
