@@ -1,3 +1,5 @@
+import {IllustratedMarketplaceHero} from "./illustrated-marketplace-hero";
+import {marketName} from "../../lib/public-markets";
 import {stayTravelOnboarding} from "../../lib/stay-travel-onboarding";
 import Image from "next/image";
 import Link from "next/link";
@@ -34,11 +36,9 @@ export const stayTravelCopy = {
 } as const;
 type Kind = "apartments" | "hotels" | "transport";
 const slogans = {apartments:APARTMENTS_SLOGAN,hotels:HOTELS_SLOGAN,transport:TRANSPORT_SLOGAN};
-export function StayTravelHero({kind,title,locale}:{kind:Kind;title:string;locale:ServiceLocale}) {
-  return <header className={`st-hero st-${kind}`}>
-    <div><h1>{title}</h1><p className="st-slogan" lang="ln">{slogans[kind]}</p><p className="st-intro">{stayTravelCopy[locale][kind].intro}</p></div>
-    <Image className="st-art" src={`/images/marketplace-heroes/${kind}.webp`} alt="" width={kind==="transport"?159:kind==="hotels"?117:131} height={kind==="transport"?79:kind==="hotels"?78:76} unoptimized/>
-  </header>;
+export function StayTravelHero({kind,locale}:{kind:Kind;title:string;locale:ServiceLocale}) {
+  return <IllustratedMarketplaceHero tone={kind} title={marketName(locale,kind==="apartments"?"appartements":kind)} slogan={slogans[kind]} intro={stayTravelCopy[locale][kind].intro} art={<Image src={`/images/marketplace-heroes/${kind}.webp`} alt="" width={kind==="transport"?159:kind==="hotels"?117:131} height={kind==="transport"?79:kind==="hotels"?78:76} unoptimized/>}/>;
+
 }
 export function stayTravelCommand(command:string) {const url=new URL(OFFICIAL_CHANNELS.whatsapp);url.searchParams.set("text",command);return url.toString();}
 export function StayTravelInvitation({kind,locale}:{kind:Kind;locale:ServiceLocale}) {

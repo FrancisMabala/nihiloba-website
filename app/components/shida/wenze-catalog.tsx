@@ -1,3 +1,4 @@
+import {MarketplaceWelcome} from "./marketplace-welcome";
 import {WenzeSellingInvitations} from "./wenze-selling-invitations";
 import {ActiveSearchFilters} from './active-search-filters';
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
@@ -23,6 +24,7 @@ export async function WenzeCatalog({locale,raw,landing=false}:{
   const categories=Object.fromEntries(productCategories.map(row=>[row.code,row.labels[locale]]));
   const root=marketplacePath(locale,landing?"/shida/wenze":"/shida/wenze/catalog");
   let data;try{data=await getWenzeProducts(search);}catch{}
+  const welcome=!!data&&!data.items.length&&!wenzeDiscoveryQuery(search);
   const select=(name:keyof typeof search,title:string,options:Record<string,string>)=><label><span>{title}</span><select name={name} defaultValue={search[name]||""}><option value="">{name==="availability"?t.available:t.all}</option>{Object.entries(options).map(([key,value])=><option key={key} value={key}>{value}</option>)}</select></label>;
   return <WenzeBuyerProvider locale={locale}><div className="marketplace-public"><div className="wenze-public container wzp-discovery">
 
@@ -55,12 +57,12 @@ export async function WenzeCatalog({locale,raw,landing=false}:{
     </form>
     <ActiveSearchFilters locale={locale} path={root} query={wenzeDiscoveryQuery(search)} labels={{query:t.productSearch,city:t.city,category:t.category,condition:t.condition,currency:t.currency,min_price:t.min,max_price:t.max,availability:t.availability,variant_type:t.variant,variant_option:t.option,area:t.area}} values={{category:categories,condition:{new:t.new,like_new:t.like_new,used:t.used,other:t.other},availability:{available:t.available,in_stock:t.in_stock,sold_out:t.sold_out},variant_type:{size:t.size,shoe_size:t.shoe_size,storage:t.storage,volume:t.volume,option:t.other}}}/>
     <section className="wz-category-browser" aria-label={t.category}><h2>{r.categories}</h2><nav className="mp-chips" aria-label={t.category}><Link href={`${root}?${wenzeDiscoveryQuery({...search,category:undefined},null)}`} aria-current={!search.category?'page':undefined}>{t.all}</Link>{roots.slice(0,7).map(row=><Link key={row.code} href={`${root}?${wenzeDiscoveryQuery({...search,category:row.code},null)}`} aria-current={parent===row.code?'page':undefined}><SpaceIcon name={row.code==='phones_electronics'?'phone':row.code==='food_drinks'?'restaurant':row.code==='home_equipment'?'home':'orders'}/>{row.labels[locale]}</Link>)}</nav><details><summary>{r.all}</summary><div className="wz-all-categories">{roots.map(row=><div key={row.code}><Link href={`${root}?${wenzeDiscoveryQuery({...search,category:row.code},null)}`}>{row.labels[locale]}</Link>{productCategories.filter(child=>child.parent===row.code).map(child=><Link key={child.code} href={`${root}?${wenzeDiscoveryQuery({...search,category:child.code},null)}`}>{child.labels[locale]}</Link>)}</div>)}</div></details>{children.length>0&&<nav className="mp-chips wz-subcategories" aria-label={selected?.labels[locale]}>{children.map(row=><Link key={row.code} href={`${root}?${wenzeDiscoveryQuery({...search,category:row.code},null)}`} aria-current={search.category===row.code?'page':undefined}>{row.labels[locale]}</Link>)}</nav>}</section>
-    <h2 className="wz-products-heading">{r.discover}</h2>
-    {!data?<div role="alert" className="wz-results-state"><p>{t.failed}</p><Link className="button button-secondary" href={`${root}?${wenzeDiscoveryQuery(search)}`}>{({en:"Try again",fr:"Réessayer",ln:"Meka lisusu",sw:"Jaribu tena"})[locale]}</Link></div>:data.items.length?<div className="marketplace-grid wenze-product-grid">{data.items.map(p=><ProductCard key={p.public_ref} p={p} l={locale}/>)}</div>:<div className="wz-results-state"><p>{t.empty}</p><Link href={root}>{({en:"Clear filters",fr:"Effacer les filtres",ln:"Longola baponami",sw:"Ondoa vichujio"})[locale]}</Link></div>}
+    {!welcome&&<h2 className="wz-products-heading">{r.discover}</h2>}
+    {!data?<div role="alert" className="wz-results-state"><p>{t.failed}</p><Link className="button button-secondary" href={`${root}?${wenzeDiscoveryQuery(search)}`}>{({en:"Try again",fr:"Réessayer",ln:"Meka lisusu",sw:"Jaribu tena"})[locale]}</Link></div>:data.items.length?<div className="marketplace-grid wenze-product-grid">{data.items.map(p=><ProductCard key={p.public_ref} p={p} l={locale}/>)}</div>:welcome?<MarketplaceWelcome locale={locale} market="wenze"><WenzeSellingInvitations compact locale={locale}/></MarketplaceWelcome>:<div className="wz-results-state"><p>{t.empty}</p><Link href={root}>{({en:"Clear filters",fr:"Effacer les filtres",ln:"Longola baponami",sw:"Ondoa vichujio"})[locale]}</Link></div>}
     <nav className="wzp-discovery-actions" aria-label={t.products}>
       {search.cursor&&<Link href={`${root}?${wenzeDiscoveryQuery(search,null)}`}>{t.first}</Link>}
       {data?.next_cursor&&<Link className="button button-secondary" href={`${root}?${wenzeDiscoveryQuery(search,data.next_cursor)}`}>{t.next} →</Link>}
     </nav>
-    <WenzeSellingInvitations locale={locale}/>
+    {!welcome&&<WenzeSellingInvitations locale={locale}/>}
   </div></div></WenzeBuyerProvider>;
 }

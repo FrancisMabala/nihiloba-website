@@ -15,5 +15,5 @@ export function SiteChrome({ children, locale }: { children: ReactNode; locale: 
   const management = /^\/(?:fr\/|en\/|ln\/|sw\/)?shida\/seller\/(?:restaurants|wenze|services)(?:\/|$)/.test(pathname);
   if (management) return <main id="main-content">{children}</main>;
   const marketplace = /^\/(?:fr\/|en\/|ln\/|sw\/)?shida(?:\/|$)/.test(pathname);
-  return <div className={marketplace ? "market-surface" : undefined}><CartProvider><Header locale={locale}/>{marketplace&&<Suspense><ShidaNavigation/></Suspense>}<main id="main-content">{children}</main></CartProvider><Footer locale={locale} marketplace={marketplace}/></div>;
+  return <div className={marketplace ? "market-surface" : undefined}><CartProvider><Header locale={locale}/>{marketplace&&<Suspense><ShidaNavigation/></Suspense>}<main id="main-content">{children}</main></CartProvider><Footer locale={locale} marketplace={marketplace} marketLocale={pathname.startsWith("/sw/")?"sw":pathname.startsWith("/ln/")?"ln":locale}/></div>;
 }

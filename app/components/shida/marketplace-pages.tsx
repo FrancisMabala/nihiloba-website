@@ -1,3 +1,6 @@
+import {MarketplaceWelcome} from "./marketplace-welcome";
+import {stayTravelOnboarding} from "../../lib/stay-travel-onboarding";
+import {stayTravelCommand} from "./stay-travel-discovery";
 import {ActiveSearchFilters} from "./active-search-filters";
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
 import { StayTravelHero, StayTravelInvitation, stayTravelCopy } from "./stay-travel-discovery";
@@ -42,6 +45,7 @@ export async function ApartmentCollectionPage({ locale, search = {} }: { locale:
   let listings;
   try { listings = await getApartments({ ...search, page: search.page ?? 1, page_size: search.page_size ?? 12 }); }
   catch (error) { if (!unavailable(error)) throw error; }
+  const welcome=listings?.total===0&&!hasApartmentSearch(search)&&(search.page??1)===1;
   const types = listings?.filters.property_types ?? [...apartmentPropertyTypes];
   return <div className="marketplace-public apartment-public"><div className="container">
     <StayTravelHero kind="apartments" title={t.apartments} locale={locale}/>
@@ -52,11 +56,11 @@ export async function ApartmentCollectionPage({ locale, search = {} }: { locale:
       {listings ? <>
         {listings.items.length > 0
           ? <div className="marketplace-grid">{listings.items.map(listing=><ApartmentCard key={listing.public_ref} listing={listing} locale={locale}/>)}</div>
-          : <div className="marketplace-empty-results"><MarketplaceState>{hasApartmentSearch(search)?t.noSearchResults:t.emptyApartments}</MarketplaceState>{hasApartmentSearch(search)&&<Link className="button button-secondary" href={path}>{t.resetFilters}</Link>}</div>}
+          : welcome?<MarketplaceWelcome market="appartements" locale={locale}><Link className="button button-primary" href={path+"/publier/"}>{stayTravelCopy[locale].apartments.action}</Link></MarketplaceWelcome>: <div className="marketplace-empty-results"><MarketplaceState>{t.noSearchResults}</MarketplaceState><Link className="button button-secondary" href={path}>{t.resetFilters}</Link></div>}
         <ApartmentPagination locale={locale} search={search} collection={listings}/>
       </> : <><MarketplaceState>{t.unavailable}</MarketplaceState><div className="st-retry"><Link className="button button-secondary" href={`${path}${apartmentSearchQuery(search)}`}>{stayTravelCopy[locale].retry}</Link></div></>}
     </section>
-    <StayTravelInvitation kind="apartments" locale={locale}/>
+    {!welcome&&<StayTravelInvitation kind="apartments" locale={locale}/>}
   </div></div>;
 }
 
@@ -82,10 +86,10 @@ export async function HotelCollectionPage({ locale, search = {} }: { locale: Loc
 
       <div className="mp-results-heading"><h2 id="hotel-results-title">{d.results}</h2>{listings&&<p role="status">{items.length} {items.length===1?d.one:d.many}</p>}</div>
       {listings ? items.length>0 ? <div className="marketplace-grid">{items.map(listing=><HotelCard key={listing.public_ref} listing={listing} locale={locale}/>)}</div>
-        : hotelSearchQuery(search) ? <MarketplaceState>{d.empty}</MarketplaceState> : <div className="st-empty" role="status"><h3>{stayTravelCopy[locale].emptyHotel}</h3><p>{stayTravelCopy[locale].emptyHotelText}</p></div>
+        : hotelSearchQuery(search) ? <MarketplaceState>{d.empty} <Link href={path}>{t.resetFilters}</Link></MarketplaceState> : <MarketplaceWelcome market="hotels" locale={locale}><a className="button button-primary" href={stayTravelCommand(stayTravelOnboarding.hotels[locale])} target="_blank" rel="noopener noreferrer">{stayTravelCopy[locale].hotels.action} · {stayTravelCopy[locale].whatsapp}</a></MarketplaceWelcome>
         : <><MarketplaceState>{t.unavailable}</MarketplaceState><div className="st-retry"><Link className="button button-secondary" href={`${path}?${hotelSearchQuery(search)}`}>{stayTravelCopy[locale].retry}</Link></div></>}
     </section>
-    <StayTravelInvitation kind="hotels" locale={locale}/>
+    {(!listings||items.length>0||!!hotelSearchQuery(search))&&<StayTravelInvitation kind="hotels" locale={locale}/>}
   </div></div>;
 }
 

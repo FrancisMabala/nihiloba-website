@@ -57,7 +57,7 @@ export function MarketplaceGateway({ locale }: { locale: Locale }) {
   </div></section>;
 }
 
-export function MarketplaceState({ children }: { children: string }) {
+export function MarketplaceState({ children }: { children: React.ReactNode }) {
   return <div className="container marketplace-state" role="status"><p>{children}</p></div>;
 }
 
@@ -182,7 +182,7 @@ export function HotelRoomCard({ room, hotelName, locale, bookingUrl = null }: { 
   const period = rentalPeriodLabel(room.rental_period, locale);
   const action = safePublicActionUrl(bookingUrl);
   return <article className="marketplace-room">
-    <div className="marketplace-room-gallery"><ImageGallery images={images} title={`${room.name} - ${hotelName}`} fallback={t.imageUnavailable} photosLabel={`${t.roomPhotos}: ${room.name}`} sizes="(max-width: 720px) calc(100vw - 64px), 34vw"/></div>
+    <div className="marketplace-room-gallery"><ImageGallery locale={locale} images={images} title={`${room.name} - ${hotelName}`} fallback={t.imageUnavailable} photosLabel={`${t.roomPhotos}: ${room.name}`} sizes="(max-width: 720px) calc(100vw - 64px), 34vw"/></div>
     <div className="marketplace-room-copy"><h3>{room.name}</h3>
       {price && <p className="marketplace-price">{price}{period && <small> / {period}</small>}</p>}
       {room.capacity != null && <p>{t.capacity}: {room.capacity} {t.guests}</p>}

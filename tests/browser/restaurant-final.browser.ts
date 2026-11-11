@@ -12,13 +12,13 @@ for(const locale of ['en','fr','ln','sw'])for(const width of [360,390,768,1024,1
  await page.screenshot({path:`test-results/restaurant-final/${locale}-${width}.png`,fullPage:true});
 });
 test('dish search, correct parent, plate choice, quantities and no cross-restaurant basket',async({page})=>{
- await page.goto('/shida/restaurants/?query=Pondu&city=Kinshasa');
+ await page.goto('/en/shida/restaurants/?query=Pondu&city=Kinshasa');
  await expect(page.locator('.rd-dish-card:visible')).toHaveCount(2);
  await page.locator('.rd-dish-choose:visible').first().click();await expect(page).toHaveURL(/RST-TEST1\/menu\/?.*item=ITM-AMOUNT/);
  await expect(page.getByRole('dialog')).toBeVisible();await page.screenshot({path:'test-results/restaurant-final/plate-choice.png'});
  await page.getByRole('dialog').getByRole('button',{name:'Add',exact:true}).click();
  await expect(page.locator('.rst-basket-review')).toContainText('Plate 1');
- await page.goto('/shida/restaurants/?query=Ntaba');await page.locator('.rd-dish-choose:visible').click();
+ await page.goto('/en/shida/restaurants/?query=Ntaba');await page.locator('.rd-dish-choose:visible').click();
  await expect(page).toHaveURL(/RST-SECOND\/menu\/?.*item=ITM-SECOND/);await expect(page.getByRole('dialog')).toBeVisible();
  await page.getByRole('dialog').getByRole('button',{name:'Increase quantity'}).click();await page.getByRole('dialog').getByRole('button',{name:'Add',exact:true}).click();
  await expect(page.locator('.rst-basket-review')).toContainText('Ntaba');await expect(page.locator('.rst-basket-review')).not.toContainText('Pondu');await expect(page.locator('.rst-basket-review>section')).toHaveCount(0);
@@ -27,10 +27,10 @@ test('dish search, correct parent, plate choice, quantities and no cross-restaur
 test('filters, language, partial failures and no results remain usable',async({page})=>{
  await page.goto('/fr/shida/restaurants/');await page.locator('input[name=query]:visible').fill('Pondu');await page.locator('input[name=city]:visible').fill('Kinshasa');await page.locator('.rd-chip:visible input[value=malewa]').check({force:true});await page.locator('.rd-submit:visible').click();
  await expect(page.locator('.rd-dish-card:visible')).toHaveCount(1);await expect(page).toHaveURL(/food_type=malewa/);
- await page.getByRole('button',{name:'Langue',exact:true}).click();await page.getByRole('button',{name:'Swahili',exact:true}).click();await expect(page).toHaveURL(/\/sw\/.*query=Pondu.*city=Kinshasa/);await expect(page.locator('.illustrated-food .marketplace-permanent-slogan:visible')).toHaveText(slogan);
- await page.goto('/shida/restaurants/?query=partial');await expect(page.locator('.rd-card:visible')).toHaveCount(2);await expect(page.locator('#dishes:visible')).toContainText('could not be loaded');await page.screenshot({path:'test-results/restaurant-final/partial-error.png',fullPage:true});
- await page.goto('/shida/restaurants/?query=empty');await expect(page.locator('.rd-dish-card:visible')).toHaveCount(0);await expect(page.locator('.rd-card:visible')).toHaveCount(0);await expect(page.getByText('No matching dishes to show.',{exact:false})).toBeVisible();await page.screenshot({path:'test-results/restaurant-final/empty.png',fullPage:true});
- await page.goto('/shida/restaurants/?query=failure');await expect(page.getByRole('button',{name:'Try again'})).toHaveCount(2);await page.screenshot({path:'test-results/restaurant-final/error.png',fullPage:true});
+ await page.getByRole('button',{name:'Langue',exact:true}).click();await page.getByRole('button',{name:'Kiswahili',exact:true}).click();await expect(page).toHaveURL(/\/sw\/.*query=Pondu.*city=Kinshasa/);await expect(page.locator('.illustrated-food .marketplace-permanent-slogan:visible')).toHaveText(slogan);
+ await page.goto('/en/shida/restaurants/?query=partial');await expect(page.locator('.rd-card:visible')).toHaveCount(2);await expect(page.locator('#dishes:visible')).toContainText('could not be loaded');await page.screenshot({path:'test-results/restaurant-final/partial-error.png',fullPage:true});
+ await page.goto('/en/shida/restaurants/?query=empty');await expect(page.locator('.rd-dish-card:visible')).toHaveCount(0);await expect(page.locator('.rd-card:visible')).toHaveCount(0);await expect(page.getByText('No establishments match these filters.',{exact:false})).toBeVisible();await page.screenshot({path:'test-results/restaurant-final/empty.png',fullPage:true});
+ await page.goto('/en/shida/restaurants/?query=failure');await expect(page.getByRole('button',{name:'Try again'})).toHaveCount(2);await page.screenshot({path:'test-results/restaurant-final/error.png',fullPage:true});
 });
 
 for(const kind of ['restaurant','malewa'])test(`seller invitation opens authorized ${kind} form`,async({page})=>{

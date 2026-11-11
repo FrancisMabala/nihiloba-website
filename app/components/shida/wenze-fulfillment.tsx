@@ -1,9 +1,11 @@
-import type { Locale } from "../../lib/i18n";
+import type { ServiceLocale as Locale } from "../../lib/services-i18n";
 import type { WenzeFulfillment } from "../../types/shida-public";
 
 const copy = {
   en: { pickup: "Pickup available", pickupCompact: "Pickup available", delivery: "Delivery available", free: "Free delivery", areas: "Delivery areas", communes: "Communes served" },
   fr: { pickup: "Retrait en boutique", pickupCompact: "Retrait disponible", delivery: "Livraison disponible", free: "Livraison gratuite", areas: "Zones de livraison", communes: "Communes desservies" },
+  ln:{pickup:"Zwá na butiki",pickupCompact:"Okoki kozwa yango",delivery:"Bakoki komemela yo",free:"Komema ofele",areas:"Bisika ya komema",communes:"Bakomine oyo basalelaka"},
+  sw:{pickup:"Chukua dukani",pickupCompact:"Unaweza kuchukua",delivery:"Uwasilishaji unapatikana",free:"Uwasilishaji bila malipo",areas:"Maeneo ya kupeleka",communes:"Manispaa zinazohudumiwa"},
 } as const;
 
 function deliveryFee(fee: string | null, currency: string | null, locale: Locale) {

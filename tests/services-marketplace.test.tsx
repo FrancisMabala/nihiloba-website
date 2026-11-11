@@ -29,18 +29,18 @@ it.each(["en","fr","ln","sw"] as const)("preserves %s across public routes, filt
  const html=renderToStaticMarkup(await ServiceCollectionPage({locale,search:{category:"professional_services",commune:"Gombe"}}));
  expect(html).toContain(`href="${prefix}/shida/services/consultation"`);
  expect(html).toContain(`href="${prefix}/shida/seller/services"`);
- for(const language of ["en","fr","ln","sw"] as const)expect(html).toContain(`href="${language==="en"?"":`/${language}`}/shida/services?commune=Gombe&amp;category=professional_services"`);
+ expect(html).toContain(`href="${prefix}/shida/services?commune=Gombe&amp;category=professional_services&amp;page=1`);
  for(const category of serviceCategories){expect(serviceCategoryLabel(category,locale)).toBeTruthy();expect(serviceCategoryExperience(category,locale)?.description).toBeTruthy();}
  expect(serviceCategoryExperience("health",locale)).toBeUndefined();
  expect(serviceCategoryExperience("__proto__",locale)).toBeUndefined();
  expect(servicesMetadata(locale).alternates?.languages).toMatchObject({ln:"/ln/shida/services",sw:"/sw/shida/services"});
  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({...summary,description:"Brief",images:[],offerings:[],availability_endpoint:"/api/public/shida/services/consultation/availability"}))));
  expect((await serviceMetadata(locale,"consultation")).alternates?.canonical).toBe(`${prefix}/shida/services/consultation`);
- expect(servicesLocalizedPath(locale,"/shida/hotels")).toBe(`${locale==="en"?"":"/fr"}/shida/hotels`);
+ expect(servicesLocalizedPath(locale,"/shida/hotels")).toBe(`${prefix}/shida/hotels`);
 });
 
 describe("public Services marketplace",()=>{
-  it("offers only the seven publishable groups and a clear empty state",async()=>{vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({items:[],count:0,total:0,page:1,page_size:12}))));const html=renderToStaticMarkup(await ServiceCollectionPage({locale:"en",search:{}}));expect(serviceCategories).toHaveLength(7);for(const category of serviceCategories)expect(html).toContain(`value="${category}"`);for(const category of ["health","food_catering","restaurant","transport","public_services","church_pastoral","other"])expect(html).not.toContain(`value="${category}"`);expect(html).toContain("No public services match your search.");expect(html).not.toContain('class="marketplace-module-guidance"');});
+  it("offers only the seven publishable groups and a clear empty state",async()=>{vi.stubGlobal("fetch",vi.fn(async()=>Response.json({items:[],count:0,total:0,page:1,page_size:12})));const html=renderToStaticMarkup(await ServiceCollectionPage({locale:"en",search:{}}));expect(serviceCategories).toHaveLength(7);for(const category of serviceCategories)expect(html).toContain(`value="${category}"`);for(const category of ["health","food_catering","restaurant","transport","public_services","church_pastoral","other"])expect(html).not.toContain(`value="${category}"`);expect(html).toContain("Welcome to Services!");expect(html).not.toContain('class="marketplace-module-guidance"');});
   it("renders service work first and localizes the canonical detail identity",()=>{const html=renderToStaticMarkup(<ServiceCard item={summary} locale="en"/>);expect(html).toContain("work.jpg");expect(html).toContain("provider.jpg");expect(html).toContain("Patrick Mbuyi");expect(html).toContain("Consultation générale");expect(html).toContain("Professional services");expect(html).toContain("Kinshasa");expect(html).not.toContain("Cliniques, Gombe, Kinshasa");expect(html).not.toContain("Avenue Publique 10");expect(html).toContain("1 h 30");expect(html).toContain("50 000 CDF");expect(html).not.toContain("50 000 CDF USD");expect(html).toContain("4.8/5 (17)");expect(html).toContain("At provider or customer location");expect(html).not.toContain('href="https://nihiloba.com/shida/services/consultation"');expect(renderToStaticMarkup(<ServiceCard item={summary} locale="fr"/>)).toContain('href="/fr/shida/services/consultation"');expect(html).toContain('href="/shida/services/consultation"');});
 
   it("loads canonical service routes by slug or public reference and preserves the backend action",async()=>{const detail={...summary,description:"Direct service",offerings:[],images:[],social_link:null,completion_mode:null,availability_mode:"flexible",availability_endpoint:"/api/public/shida/services/direct/availability",provider_phone:"PRIVATE PHONE",internal_id:99};const availability={service_ref:"SVC-1",availability_mode:"flexible",requested_time_requires_provider_confirmation:true,from:null,to:null,slots:[],booking_url:"https://api.nihiloba.com/go/service-booking"};const reviews={items:[],count:0,total:0,page:1,page_size:10};const fetchMock=vi.fn(async(input:string|URL|Request)=>{const url=String(input);if(url.includes("/missing-service"))return new Response("missing",{status:404});if(url.includes("/availability"))return new Response(JSON.stringify(availability));if(url.includes("/reviews"))return new Response(JSON.stringify(reviews));return new Response(JSON.stringify(detail));});vi.stubGlobal("fetch",fetchMock);const slugEntry=await ServiceRoute({params:Promise.resolve({service:"example-service"}),searchParams:Promise.resolve({})}),refEntry=await ServiceRoute({params:Promise.resolve({service:"SVC_PUBLIC_123"}),searchParams:Promise.resolve({})});expect(slugEntry.props).toMatchObject({locale:"en",slug:"example-service"});expect(refEntry.props).toMatchObject({locale:"en",slug:"SVC_PUBLIC_123"});const slugHtml=renderToStaticMarkup(await ServiceDetailPage({locale:"en",slug:"example-service"})),refHtml=renderToStaticMarkup(await ServiceDetailPage({locale:"en",slug:"SVC_PUBLIC_123"}));expect(slugHtml).toContain("Direct service");expect(refHtml).toContain("Direct service");expect(slugHtml).toContain("https://api.nihiloba.com/go/service-booking");expect(slugHtml).not.toContain("PRIVATE PHONE");expect(slugHtml).not.toContain("internal_id");expect(fetchMock.mock.calls.some(([url])=>String(url).includes("/services/example-service"))).toBe(true);expect(fetchMock.mock.calls.some(([url])=>String(url).includes("/services/SVC_PUBLIC_123"))).toBe(true);await expect(ServiceDetailPage({locale:"en",slug:"missing-service"})).rejects.toThrow("404")});
@@ -98,3 +98,15 @@ it('connects discovery to the Personal provider area and preserves filters acros
  vi.stubGlobal('fetch',vi.fn(async(input)=>String(input).includes('mode=professionals')?new Response('{}',{status:503}):new Response(JSON.stringify(collection(items)))));
  const partial=renderToStaticMarkup(await ServiceCollectionPage({locale:'en',search:{}}));expect(partial).toContain('Professionals are temporarily unavailable');expect(partial.match(/class="marketplace-card service-card"/g)).toHaveLength(5);
  });
+
+it("keeps public professionals visible when there are no individual service results",async()=>{
+ const profile={...summary.provider,location,categories:[summary.category],service_count:1,rating:summary.rating,services:[]};
+ vi.stubGlobal("fetch",vi.fn(async(input:string)=>{
+  const items=new URL(input).searchParams.get("mode")==="professionals"?[profile]:[];
+  return Response.json({items,total:items.length,count:items.length,page:1,page_size:4});
+ }));
+ const html=renderToStaticMarkup(await ServiceCollectionPage({locale:"sw",search:{}}));
+ expect(html).toContain('class="svc-professional-card"');
+ expect(html).toContain(summary.provider.name);
+ expect(html).not.toContain("welcome-services");
+});

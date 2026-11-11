@@ -1,3 +1,5 @@
+import {IllustratedMarketplaceHero} from "./illustrated-marketplace-hero";
+import {marketName} from "../../lib/public-markets";
 import Link from 'next/link';
 import Image from 'next/image';
 import {JOBS_SLOGAN, OFFICIAL_CHANNELS} from '../../lib/brand';
@@ -14,7 +16,8 @@ export const jobsFinalCopy = {
 
 export function JobsDiscoveryHero({locale}:{locale:ServiceLocale}) {
  const t=jobsFinalCopy[locale];
- return <header className="jobs-final-hero"><div><h1>{t.title}</h1><p className="jobs-brand-slogan" lang="ln">{JOBS_SLOGAN}</p><p className="jobs-hero-description">{t.intro}</p></div><Image className="jobs-hero-illustration" src="/images/marketplace-heroes/jobs.svg" width={360} height={190} alt="" aria-hidden="true"/></header>;
+ return <IllustratedMarketplaceHero title={marketName(locale,"emplois")} tone="jobs" slogan={JOBS_SLOGAN} intro={t.intro} sloganClassName="jobs-brand-slogan" art={<Image src="/images/marketplace-heroes/jobs.svg" width={360} height={190} alt=""/>}/>;
+
 }
 
 export function JobsInvitations({locale}:{locale:ServiceLocale}) {

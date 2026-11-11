@@ -1,3 +1,6 @@
+import {MarketplaceWelcome} from "./marketplace-welcome";
+import {RestaurantRetry} from "./restaurant-retry";
+import {marketName} from "../../lib/public-markets";
 import {ProfessionalCategoryArt} from "./professional-illustration";
 import "./service-detail-refinement.css";
 import {IllustratedMarketplaceHero,ProfessionalIllustration} from './illustrated-marketplace-hero';
@@ -13,7 +16,7 @@ import { servicesDiscoveryCopy } from "../../lib/services-discovery-copy";
 import "./services-public.css";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import {type ServiceLocale as Locale, servicesLocalizedPath as marketplacePath, serviceNavigationCopy, serviceLocales} from "../../lib/services-i18n";
+import {type ServiceLocale as Locale, servicesLocalizedPath as marketplacePath, serviceNavigationCopy} from "../../lib/services-i18n";
 import {additionalServiceCopy,additionalPublicCopy,additionalCategoryLabels} from "../../lib/services-public-copy";
 import { safePublicExternalUrl, safePublicImageUrl, safePublicWebsiteUrl } from "../../lib/safe-public-url";
 import { getProfessionals, getService, getServiceAvailability, getServiceProvider, getServiceReviews, getServices, ShidaApiError, serviceSearchQuery } from "../../services/shida/public-client";
@@ -60,9 +63,7 @@ function servicePublicPath(item:PublicServiceSummary,locale:Locale){
  if(safe){const path=new URL(safe,"https://nihiloba.com").pathname.replace(/^\/(?:fr|ln|sw)(?=\/)/,"");if(path.startsWith("/shida/services/"))return marketplacePath(locale,path);}
  return servicePath(locale,item.slug);
 }
-function ServicesLanguageNavigation({locale,path,query=""}:{locale:Locale;path:string;query?:string}){
- return <nav className="svc-language-nav" aria-label={serviceNavigationCopy[locale].language}>{serviceLocales.map(language=><Link key={language} href={`${marketplacePath(language,path)}${query}`} lang={language} hrefLang={language} aria-current={language===locale?"page":undefined}>{({en:"English",fr:"Français",ln:"Lingála",sw:"Kiswahili"} as const)[language]}</Link>)}</nav>;
-}
+
 function broadLocation(location:ServiceLocation){return publicLocation(location.quartier,location.commune,location.area,location.city);}
 function serviceMode(item:PublicServiceSummary,locale:Locale){const t=copy[locale];if(item.location_type==="public_place"&&item.external_intervention_available)return t.both;if(item.location_type==="public_place")return t.atProvider;if(item.external_intervention_available)return t.atCustomer;return null;}
 function ratingText(item:PublicServiceSummary["rating"],locale:Locale){return item.average_rating!=null&&item.rating_count>0?`${item.average_rating.toLocaleString(locale,{maximumFractionDigits:1})}/5 (${item.rating_count})`:null;}
@@ -102,27 +103,32 @@ export async function ServiceCollectionPage({locale,search}:{locale:Locale;searc
  ]);
  const result=serviceResponse.status==="fulfilled"?serviceResponse.value:undefined;
  const providers=providerResponse.status==="fulfilled"?providerResponse.value:undefined;
+ const filtered=!!serviceSearchQuery({...search,page:undefined,page_size:undefined})||(search.page??1)>1;
+ const welcome=result?.total===0&&providers?.total===0&&!filtered;
+ const clear=filtered&&<Link href={marketplacePath(locale,"/shida/services")}>{t.clear}</Link>;
+ const retry=<RestaurantRetry label={{en:"Try again",fr:"Réessayer",ln:"Meka lisusu",sw:"Jaribu tena"}[locale]}/>;
  const selected=professionals?providers:result;
  const pages=selected?Math.max(1,Math.ceil(selected.total/selected.page_size)):1;
  return <div className="services-public marketplace-public services-discovery-final">
- <div className="container"><ServicesLanguageNavigation locale={locale} path="/shida/services" query={serviceSearchQuery(search)}/>
- <IllustratedMarketplaceHero title={t.services} slogan={SERVICES_SLOGAN} intro={d.intro} tone="services" sloganClassName="svc-brand-slogan" art={<ProfessionalIllustration/>}/></div>
+ <div className="container">
+ <IllustratedMarketplaceHero title={marketName(locale,"services")} slogan={SERVICES_SLOGAN} intro={d.intro} tone="services" sloganClassName="svc-brand-slogan" art={<ProfessionalIllustration/>}/></div>
   <section id="service-discovery" className="section marketplace-collection"><div className="container">
   <form className="marketplace-filters svc-public-filters mp-search" action={marketplacePath(locale,"/shida/services")} method="get">{professionals&&<input type="hidden" name="mode" value="professionals"/>}<div className="mp-search-primary"><label htmlFor="service-query">{t.search}<input id="service-query" type="search" name="query" defaultValue={search.query} placeholder={d.placeholder}/></label><label>{t.city}<input name="city" defaultValue={search.city}/></label><button className="button button-primary" type="submit">{({en:"Search",fr:"Rechercher",ln:"Luka",sw:"Tafuta"})[locale]}</button></div><details className="marketplace-advanced-filters" open={Boolean(search.category||search.area||search.commune||search.location_type||search.min_rating)||undefined}><summary>{t.filters}</summary><div className="marketplace-filter-grid"><label>{t.category}<select name="category" defaultValue={search.category||""}><option value="">{t.any}</option>{serviceCategories.map((category)=><option value={category} key={category}>{serviceCategoryLabel(category,locale)}</option>)}</select></label><label>{t.area}<input name="area" defaultValue={search.area}/></label><label>{t.commune}<input name="commune" defaultValue={search.commune}/></label>
     <label>{t.locationType}<select name="location_type" defaultValue={search.location_type||""}><option value="">{t.any}</option><option value="public_place">{t.atProvider}</option></select></label>
     <label>{t.rating}<select name="min_rating" defaultValue={search.min_rating?.toString()||""}><option value="">{t.any}</option>{[4,3,2,1].map((rating)=><option value={rating} key={rating}>{rating}+</option>)}</select></label>
   </div><div className="marketplace-filter-actions"><button className="button button-secondary" type="submit">{t.apply}</button></div></details><ActiveSearchFilters locale={locale} path={marketplacePath(locale,"/shida/services")} query={serviceSearchQuery(search)} labels={{query:t.search,city:t.city,category:t.category,area:t.area,commune:t.commune,location_type:t.locationType,min_rating:t.rating}} values={{category:Object.fromEntries(serviceCategories.map(category=>[category,serviceCategoryLabel(category,locale)])),location_type:{public_place:t.atProvider}}}/></form>
   <nav className="svc-public-categories mp-chips" aria-label={p.categories}><Link href={pageHref(locale,{...search,category:undefined},1)} aria-current={!search.category?"page":undefined}><CategoryIcon category="all"/>{p.all}</Link>{serviceCategories.map(category=><Link key={category} href={pageHref(locale,{...search,category},1)} aria-current={search.category===category?"page":undefined}><CategoryIcon category={category}/>{serviceCategoryLabel(category,locale)}</Link>)}</nav>
+  {welcome?<MarketplaceWelcome market="services" locale={locale}><ButtonLink href={marketplacePath(locale,"/shida/service-requests?new=1")}>{servicesAccountCopy[locale].describe}</ButtonLink><ButtonLink variant="secondary" href={marketplacePath(locale,"/shida/seller/services")}>{d.offerAction}</ButtonLink></MarketplaceWelcome>:<>
   <section id="discover-services" aria-labelledby="discover-services-title"><div className="svc-results-heading mp-results-heading"><h2 id="discover-services-title">{d.services}</h2><Link href={`${pageHref(locale,{...search,mode:undefined,page_size:24},1)}#discover-services`}>{discoveryCopy[locale].all} →</Link></div>
-  {result?result.items.length?<ServiceResults items={result.items} locale={locale}/>:<><MarketplaceState>{t.empty}</MarketplaceState><Link href={marketplacePath(locale,"/shida/service-requests?new=1")}>{servicesAccountCopy[locale].describe}</Link></>:<MarketplaceState>{t.unavailable}</MarketplaceState>}
+  {result?result.items.length?<ServiceResults items={result.items} locale={locale}/>:<><MarketplaceState>{t.empty}</MarketplaceState>{clear}</>:<MarketplaceState>{t.unavailable} {retry}</MarketplaceState>}
   </section>
   <section id="discover-professionals" aria-labelledby="discover-professionals-title"><div className="svc-results-heading mp-results-heading"><h2 id="discover-professionals-title">{d.professionals}</h2><Link href={`${pageHref(locale,{...search,mode:"professionals",page_size:12},1)}#discover-professionals`}>{d.allProfessionals} →</Link></div>
-  {providers?providers.items.length?<div className="svc-professional-grid">{providers.items.map(profile=><ProfessionalCard key={profile.public_ref} profile={profile} locale={locale}/>)}</div>:<MarketplaceState>{dc.empty}</MarketplaceState>:<MarketplaceState>{d.unavailable}</MarketplaceState>}
+  {providers?providers.items.length?<div className="svc-professional-grid">{providers.items.map(profile=><ProfessionalCard key={profile.public_ref} profile={profile} locale={locale}/>)}</div>:<MarketplaceState>{dc.empty} {clear}</MarketplaceState>:<MarketplaceState>{d.unavailable} {retry}</MarketplaceState>}
   </section>
   {selected&&pages>1&&<nav className="marketplace-pagination" aria-label={`${professionals?dc.professionals:t.services}: ${t.page} ${selected.page} ${t.of} ${pages}`}><span>{selected.page>1?<Link href={pageHref(locale,search,selected.page-1)}>{t.previous}</Link>:t.previous}</span><span>{professionals?dc.professionals:t.services} · {t.page} {selected.page} {t.of} {pages}</span><span>{selected.page<pages?<Link href={pageHref(locale,search,selected.page+1)}>{t.next}</Link>:t.next}</span></nav>}
   <section className="svc-discovery-invitations"><article><CategoryIcon category="education_training"/><div><h2>{d.need}</h2><p>{d.needIntro}</p><ButtonLink href={marketplacePath(locale,"/shida/service-requests?new=1")}>{servicesAccountCopy[locale].describe}</ButtonLink></div></article><article><CategoryIcon category="professional_services"/><div><h2>{d.offer}</h2><p>{d.offerIntro}</p><ButtonLink href={marketplacePath(locale,"/shida/seller/services")}>{d.offerAction}</ButtonLink></div></article></section>
 
-  </div></section></div>; }
+  </>}</div></section></div>; }
 
 export async function ServiceProviderPage({locale,slug}:{locale:Locale;slug:string}){
  const t=copy[locale];let profile;

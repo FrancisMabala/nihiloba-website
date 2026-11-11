@@ -5,7 +5,7 @@ export const discoveryMarkets = ["emplois", "services", "wenze", "appartements",
 export const discoveryCopy = {
   en: {
     eyebrow: "Everyday life, connected", title: "Find what you need, near you.", intro: "Buy, sell, find a job, offer your services, and discover restaurants, accommodation and transport options. All in one place.",
-    explore: "Explore the marketplaces", labels: ["Jobs", "Services", "Wenze", "Apartments", "Hotels", "Restaurants / Malewa", "Wewa / Transport"],
+    explore: "Explore the marketplaces", labels: ["Jobs", "Services", "Wenze", "Apartments", "Hotels", "Restaurants & Malewa", "Wewa / Transport"],
     hints: ["Find work", "Find a professional", "Shop local", "Find a home", "Book a stay", "Find a meal", "Explore the offering"],
     market: "Marketplace", query: "What are you looking for?", city: "City", anywhere: "All cities", search: "Search", searchNote: "Choose a marketplace to search its listings.",
     recent: "Explore public listings", recentNote: "A selection from Jobs and Services. Explore each marketplace for more.", all: "View all", empty: "No public listings available here yet.", error: "Listings are temporarily unavailable. You can still explore this marketplace.", loading: "Loading public listings…", retry: "Try again", from: "From", details: "View listing",
@@ -15,7 +15,7 @@ export const discoveryCopy = {
   },
   fr: {
     eyebrow: "Le quotidien, connecté", title: "Trouvez ce qu’il vous faut, près de vous.", intro: "Achetez, vendez, trouvez un emploi, proposez vos services, découvrez des restaurants, des logements et des solutions de transport. Tout au même endroit.",
-    explore: "Explorez les marchés", labels: ["Emplois", "Services", "Wenze", "Appartements", "Hôtels", "Restaurants / Malewa", "Wewa / Transport"],
+    explore: "Explorez les marchés", labels: ["Emplois", "Services", "Wenze", "Appartements", "Hôtels", "Restaurants & Malewa", "Wewa / Transport"],
     hints: ["Trouver un emploi", "Trouver un professionnel", "Acheter local", "Trouver un logement", "Réserver un séjour", "Trouver un repas", "Découvrir l’offre"],
     market: "Marché", query: "Que recherchez-vous ?", city: "Ville", anywhere: "Toutes les villes", search: "Rechercher", searchNote: "Choisissez un marché pour rechercher ses annonces.",
     recent: "Découvrez les annonces publiques", recentNote: "Une sélection d’emplois et de services. Explorez chaque marché pour en voir plus.", all: "Tout voir", empty: "Aucune annonce publique disponible ici pour le moment.", error: "Les annonces sont temporairement indisponibles. Vous pouvez toujours explorer ce marché.", loading: "Chargement des annonces publiques…", retry: "Réessayer", from: "À partir de", details: "Voir l’annonce",
@@ -25,7 +25,7 @@ export const discoveryCopy = {
   },
   ln: {
     eyebrow: "Bomoi ya mokolo na mokolo, esangani", title: "Zwá oyo ozali koluka, pene na yo.", intro: "Sombá, teká, luká mosala, pesá ba services na yo, mpe moná restaurants, bandako ya kofanda mpe transport. Nyonso na esika moko.",
-    explore: "Talá bazando", labels: ["Misala", "Ba services", "Wenze", "Bandako", "Ba hôtels", "Restaurants / Malewa", "Wewa / Transport"],
+    explore: "Talá bazando", labels: ["Misala", "Ba services", "Wenze", "Bandako", "Ba hôtels", "Restaurants & Malewa", "Wewa / Transport"],
     hints: ["Luká mosala", "Luká mosali ya mayele", "Sombá biloko", "Luká ndako", "Bómbá esika", "Luká bilei", "Talá makambo ezali"],
     market: "Zando", query: "Ozali koluka nini ?", city: "Engumba", anywhere: "Bingumba nyonso", search: "Luká", searchNote: "Poná zando mpo na koluka bapiblisite na yango. Misala, bandako mpe ba hôtels efungwami na Lifalanse.",
     recent: "Talá bapiblisite ya bato nyonso", recentNote: "Misala mpe ba services oyo oki komona. Fungolá zando mokomoko mpo na komona mingi.", all: "Talá nyonso", empty: "Bapiblisite ya bato nyonso ezali naino te awa.", error: "Bapiblisite ezali te mpo na sikoyo. Okoki kaka kotala zando oyo.", loading: "Kozwa bapiblisite…", retry: "Meká lisusu", from: "Kobanda na", details: "Talá piblisite",
@@ -35,7 +35,7 @@ export const discoveryCopy = {
   },
   sw: {
     eyebrow: "Maisha ya kila siku, yameunganishwa", title: "Pata unachohitaji, karibu nawe.", intro: "Nunua, uza, tafuta kazi, toa huduma zako, na gundua migahawa, malazi na usafiri. Vyote mahali pamoja.",
-    explore: "Gundua masoko", labels: ["Kazi", "Huduma", "Wenze", "Nyumba", "Hoteli", "Restaurants / Malewa", "Wewa / Usafiri"],
+    explore: "Gundua masoko", labels: ["Kazi", "Huduma", "Wenze", "Nyumba", "Hoteli", "Migahawa & Malewa", "Wewa / Usafiri"],
     hints: ["Tafuta kazi", "Tafuta mtaalamu", "Nunua karibu", "Tafuta nyumba", "Weka nafasi", "Tafuta chakula", "Gundua huduma"],
     market: "Soko", query: "Unatafuta nini?", city: "Mji", anywhere: "Miji yote", search: "Tafuta", searchNote: "Chagua soko ili kutafuta matangazo yake. Kurasa za kazi, nyumba na hoteli hufunguka kwa Kifaransa.",
     recent: "Gundua matangazo ya umma", recentNote: "Chaguo la kazi na huduma. Fungua kila soko ili kuona zaidi.", all: "Tazama yote", empty: "Hakuna matangazo ya umma hapa kwa sasa.", error: "Matangazo hayapatikani kwa muda. Bado unaweza kufungua soko hili.", loading: "Inapakia matangazo…", retry: "Jaribu tena", from: "Kuanzia", details: "Tazama tangazo",

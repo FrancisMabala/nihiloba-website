@@ -9,8 +9,8 @@ import {restaurantDiscoveryFinalCopy as copy} from '../app/lib/restaurant-discov
 import {restaurant,unit,monetary,menu,collection,actions} from './fixtures/restaurants.mjs';
 vi.mock('next/navigation',async original=>({...await original<typeof import('next/navigation')>(),useRouter:()=>({refresh:vi.fn()})}));
 afterEach(()=>vi.unstubAllGlobals());
-async function renderDiscovery(locale: 'en'|'fr'|'ln'|'sw') {
- const stream=await renderToReadableStream(await RestaurantDiscovery({locale}));
+async function renderDiscovery(locale: 'en'|'fr'|'ln'|'sw', search = {}) {
+ const stream=await renderToReadableStream(await RestaurantDiscovery({locale,search}));
  await stream.allReady;
  return (await new Response(stream).text()).replace(/<!-- -->/g, '');
 }
@@ -79,4 +79,18 @@ it('streams establishments before delayed dishes, fetching establishments once',
  let rest='';
  while(true){const chunk=await reader.read();if(chunk.done)break;rest+=decoder.decode(chunk.value);}
  expect(rest).toContain('class="rd-dish-card"');
+});
+
+it("welcomes only after both feeds confirm an empty first page",async()=>{
+ let fail=false;
+ const fetcher=vi.fn(async(input:string)=>fail&&new URL(input).pathname.endsWith("/restaurant-dishes")
+   ?new Response(null,{status:503}):Response.json(collection([])));
+ vi.stubGlobal("fetch",fetcher);
+ const empty=await renderDiscovery("sw");
+ expect(empty.match(/class="market-welcome welcome-restaurants"/g)).toHaveLength(1);
+ expect(empty.match(/create=restaurant/g)).toHaveLength(1);
+ expect(empty).not.toContain("restaurant-pagination");expect(fetcher).toHaveBeenCalledTimes(2);
+ expect(await renderDiscovery("sw",{city:"Goma"})).not.toContain("welcome-restaurants");
+ fail=true;const failed=await renderDiscovery("sw");
+ expect(failed).not.toContain("welcome-restaurants");expect(failed).toContain("Jaribu tena");
 });

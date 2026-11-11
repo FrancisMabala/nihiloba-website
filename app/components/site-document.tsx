@@ -9,7 +9,7 @@ export function SiteDocument({ children, locale, documentLanguage = locale }: { 
     <html lang={documentLanguage}>
       <body>
         <LocalizedFormValidation />
-        <a className="skip-link" lang={locale} href="#main-content">{nav[locale].skip}</a>
+        <a className="skip-link" lang={documentLanguage} href="#main-content">{documentLanguage==="ln"?"Kende na makambo ya lokasa":documentLanguage==="sw"?"Nenda kwenye maudhui":nav[locale].skip}</a>
         <SiteChrome locale={locale}>{children}</SiteChrome>
       </body>
     </html>

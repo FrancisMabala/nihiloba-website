@@ -14,7 +14,7 @@ it('suppresses landing breadcrumbs while preserving contextual detail links',()=
 it('uses accurate discovery wording and keeps child categories inside the collapsed category browser',async()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify({items:[],count:0,has_more:false,next_cursor:null}))));
  const html=renderToStaticMarkup(await WenzeCatalog({locale:'fr',raw:{},landing:true}));
- expect(html).toContain('Teka, somba, solola prix, nyonso na Wenze!');expect(html).toContain('Découvrir les produits');expect(html).not.toContain('Produits populaires');expect(html).not.toContain('marketplace-breadcrumb');
+ expect(html).toContain('Teka, somba, solola prix, nyonso na Wenze!');expect(html).toContain('Bienvenue sur Wenze !');expect(html).not.toContain('Produits populaires');expect(html).not.toContain('marketplace-breadcrumb');
  const categorySection=html.slice(html.indexOf('class="wz-category-browser"'));
  const primary=categorySection.slice(0,categorySection.indexOf('<details>'));
  for(const child of categories.filter(row=>row.parent))expect(primary).not.toContain(`category=${encodeURIComponent(child.code)}`);

@@ -12,9 +12,9 @@ it('keeps the exact Lingala slogans and original decorative artwork in every loc
 });
 it('distinguishes an unpublished hotel collection from a failed request',async()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(Response.json({items:[],count:0})));
- const empty=renderToStaticMarkup(await HotelCollectionPage({locale:'fr'}));expect(empty).toContain('Bientôt des hôtels à découvrir');expect(empty).toContain('Ajouter mon établissement');expect(empty).not.toContain('Découvrir les appartements');
+ const empty=renderToStaticMarkup(await HotelCollectionPage({locale:'fr'}));expect(empty).toContain('Bienvenue sur Hôtels !');expect(empty).toContain('Ajouter mon établissement');expect(empty).not.toContain('Découvrir les appartements');
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(Response.json({detail:'unavailable'},{status:503})));
- const failed=renderToStaticMarkup(await HotelCollectionPage({locale:'fr',search:{query:'error-test'}}));expect(failed).not.toContain('Bientôt des hôtels à découvrir');expect(failed).toContain('Réessayer');expect(failed).toContain('?query=error-test');
+ const failed=renderToStaticMarkup(await HotelCollectionPage({locale:'fr',search:{query:'error-test'}}));expect(failed).not.toContain('Bienvenue sur Hôtels !');expect(failed).toContain('Réessayer');expect(failed).toContain('?query=error-test');
 });
 it('retains property filters, errors and publishing without creating synthetic records',async()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(Response.json({items:[],count:0,total:0,page:1,page_size:12,filters:{property_types:['apartment','house']}})));

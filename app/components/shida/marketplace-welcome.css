@@ -1,0 +1,11 @@
+.market-welcome {text-align:center;background:#f5f6ee;border:1px solid #cdd6c8;border-radius:16px;padding:clamp(24px,4vw,54px) 18px;margin:24px 0}
+.market-welcome.welcome-restaurants {background:#fcf5e9;border-color:#e6d9c3}
+.market-welcome-icon {display:inline-flex;color:#285740;margin-bottom:10px}
+.market-welcome-icon svg {width:48px;height:48px}
+body .market-surface .market-welcome h2 {margin:0;font:600 clamp(1.6rem,3vw,2.6rem)/1.16 Georgia,serif;color:var(--forest)}
+.market-welcome p {margin:.65rem auto 1.25rem;max-width:65ch}
+.market-welcome-actions {display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:.75rem}
+.market-welcome-actions .button {white-space:normal;min-height:44px}
+.market-welcome-actions small {display:block}
+.market-menu [aria-current=true] {background:var(--forest);color:white}
+.market-menu [aria-current=true]::after {content:"✓";margin-inline-start:auto}

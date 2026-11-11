@@ -16,9 +16,9 @@ it.each(["en","fr","ln","sw"] as const)("keeps %s discovery public and localized
  for(const [index,page] of pages.entries()){const html=renderToStaticMarkup(page);expect(html).toContain('<h1');if(index<5)expect(html).toContain(`${locale==="en"?"":`/${locale}`}/shida`);else expect(html).toContain(`lang="${locale}"`);}
  expect(renderToStaticMarkup(pages[0])).toContain('illustrated-marketplace-hero');
  expect(renderToStaticMarkup(pages[1])).toContain('illustrated-marketplace-hero');
- expect(renderToStaticMarkup(pages[2])).toContain('st-apartments');
- expect(renderToStaticMarkup(pages[3])).toContain('st-hotels');
- expect(renderToStaticMarkup(pages[5])).toContain('st-transport');
+ expect(renderToStaticMarkup(pages[2])).toContain('illustrated-apartments');
+ expect(renderToStaticMarkup(pages[3])).toContain('illustrated-hotels');
+ expect(renderToStaticMarkup(pages[5])).toContain('illustrated-transport');
  const text=renderToStaticMarkup(pages[0]);expect(text).toContain(({en:"Search products",fr:"Rechercher un produit",ln:"Luka eloko",sw:"Tafuta bidhaa"})[locale]);
  expect(fetcher.mock.calls.some(([url])=>String(url).includes('/wenze/products?'))).toBe(true);
 });

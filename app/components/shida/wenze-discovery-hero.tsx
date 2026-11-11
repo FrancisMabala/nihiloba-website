@@ -6,7 +6,7 @@ import {IllustratedMarketplaceHero,StorefrontIllustration} from './illustrated-m
 import type {ServiceLocale} from '../../lib/services-i18n';
 export const wenzeRefinementCopy={
  en:{intro:'Sell, buy and discuss prices. Clothes, phones and home essentials — find them on SHIDA.',discover:'Discover products',categories:'Categories',all:'View all categories'},
- fr:{intro:'Vends, achète et discute les prix. Bilamba, téléphones, biloko ya ndako… tout se retrouve sur SHIDA.',discover:'Découvrir les produits',categories:'Catégories',all:'Voir toutes les catégories'},
+ fr:{intro:'Achetez, vendez et discutez des prix sur Wenze.',discover:'Découvrir les produits',categories:'Catégories',all:'Voir toutes les catégories'},
  ln:{intro:'Teká, sombá mpe sololá ntalo. Bilamba, batelefone mpe biloko ya ndako… nyonso ezali na SHIDA.',discover:'Tala biloko',categories:'Mitindo',all:'Tala mitindo nyonso'},
  sw:{intro:'Uza, nunua na jadili bei. Nguo, simu na vifaa vya nyumbani… vyote kwenye SHIDA.',discover:'Gundua bidhaa',categories:'Aina',all:'Tazama aina zote'}
 };

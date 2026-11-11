@@ -136,6 +136,23 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,390,7
  if(locale==='en'){await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:`test-results/registration/${testInfo.project.name}-review-${width}.png`,fullPage:true});}
  if(locale==='en'&&width<600){await page.getByRole('button',{name:t.finish,exact:true}).evaluate(element=>element.scrollIntoView({block:'center',behavior:'instant'}));await page.screenshot({path:`test-results/registration/${testInfo.project.name}-review-actions-${width}.png`});}
  await page.getByRole('button',{name:t.finish,exact:true}).click();await expect(page).toHaveURL(/\/shida\/space\//);expect(state.completed).toBe(true);
+ if(locale==="sw"&&width===390){
+  let preferred=locale as string;
+  await page.route("**/api/shida/employment/session/",r=>r.fulfill({json:{binding:"a".repeat(64),user:{display_name:state.values.personal_name}}}));
+  await page.route("**/api/shida/personal/security/profile/",r=>{
+   if(r.request().method()==="POST"){
+    expect(r.request().headers()["x-shida-session"]).toBe("a".repeat(64));
+    const body=r.request().postDataJSON();expect(body).toEqual({revision:"1",values:{preferred_language:"ln"}});preferred=body.values.preferred_language;
+   }
+   return r.fulfill({json:{revision:"1",values:{preferred_language:preferred}}});
+  });
+  await page.goto("/shida/wenze/");await expect(page.locator(".market-language")).toHaveText("SW");
+  await expect(page.locator(".market-avatar")).toContainText("SP");
+  await page.locator(".market-language").click();await page.getByRole("button",{name:"Lingala",exact:true}).click();
+  await expect(page.locator(".market-language")).toHaveText("LN");expect(preferred).toBe("ln");
+  await page.goto("/shida/services/");await expect(page).toHaveURL(/\/ln\/shida\/services/);
+ }
+
 });
 for(const locale of ['en','fr','ln','sw'] as const)test(`${locale}: Organization fields and private Business POST handoff`,async({page})=>{
  const state=await fixture(page,false,true),t=registrationCopy[locale];let handedOff=false;

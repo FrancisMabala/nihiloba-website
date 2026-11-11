@@ -1,3 +1,4 @@
+import {MarketplaceWelcome} from "./marketplace-welcome";
 import {Suspense} from "react";
 import {RestaurantDiscoveryHero} from "./restaurant-discovery-hero";
 import {restaurantDiscoveryFinalCopy} from "../../lib/restaurant-discovery-final-copy";
@@ -14,7 +15,7 @@ import { getRestaurants, restaurantQuery, type RestaurantLocale, type Restaurant
 import { RestaurantPhoto } from "./restaurant-photo";
 import { RestaurantRevalidation } from "./restaurant-revalidation";
 import { RestaurantRetry } from "./restaurant-retry";
-import { DiscoveryLanguage } from "./restaurant-discovery-controls";
+
 import "./restaurant-discovery.css";
 
 export async function RestaurantDiscovery({ locale, search = {} }: { locale: RestaurantLocale; search?: RestaurantSearch }) {
@@ -24,13 +25,19 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
  // Start both requests now; a failed or slow preview never delays places.
  const dishesPromise = discoverRestaurantDishes(locale, search).catch(() => null);
  const result = await getRestaurants(locale, search, 6).catch(() => null);
+ const filtered=Array.from(params).some(([key,value])=>!["page","dish_page"].includes(key)||value!=="1");
+ // When places exist, stream the dish preview independently as before.
+ const preview=result?.total===0?await dishesPromise:undefined;
+ const bothEmpty=result?.total===0&&preview?.total===0&&!preview.failed;
+ const welcome=bothEmpty&&!filtered;
+ const seller= `${locale==="en"?"":"/"+locale}/shida/seller/restaurants?create=`;
  const link=(extra:Record<string,string>,anchor="")=>`${path}?${new URLSearchParams({...Object.fromEntries(params),...extra})}${anchor}`;
  const modes = [...new Set([...(params.get("service_mode") ? [params.get("service_mode")!] : []), ...(result?.service_mode_options ?? [])])];
  const advanced = ["name", "area", "dish", "service_mode"].filter(key => params.get(key)).length + (["fast_food", "catering"].includes(params.get("food_type") ?? "") ? 1 : 0);
  return <section className="restaurant-public restaurant-discovery marketplace-public" lang={locale}><div className="container">
   <RestaurantRevalidation/>
   <RestaurantDiscoveryHero locale={locale}/>
-  <div className="rd-language-row"><DiscoveryLanguage locale={locale} search={params.toString()}/></div>
+
  </div>
  <div className="container">
   <form id="restaurant-discovery" action={path} method="get" className="rd-search mp-search">
@@ -40,6 +47,7 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
    <ActiveSearchFilters locale={locale} path={path} query={params.toString()} labels={{query:t.search,city:t.city,dish:d.dish,name:t.name,area:t.area,food_type:t.type,open_now:t.openOnly.split(" — ")[0],service_mode:t.mode}} values={{food_type:{malewa:t.malewa,restaurant:t.restaurant,cafe:t.cafe,fast_food:t.fast_food,catering:t.catering},open_now:{true:t.openOnly.split(" — ")[0]}}}/>
   </form>
   <p className="rd-filter-explanation">{c.filterHelp}</p>
+  {bothEmpty?welcome?<MarketplaceWelcome market="restaurants" locale={locale}><a className="button button-primary" href={seller+"restaurant"}>{c.restaurant}</a><a className="button button-secondary" href={seller+"malewa"}>{c.malewa}</a></MarketplaceWelcome>:<div className="rd-empty"><p>{t.empty}</p><a href={path}>{t.reset}</a></div>:<>
   <Suspense fallback={<section id="dishes" aria-busy="true" aria-label={c.dishes}><h2>{c.dishes}</h2><div className="rd-dish-loading" aria-hidden="true"/></section>}>
    <DiscoveryDishes locale={locale} params={params} dishesPromise={dishesPromise}/>
   </Suspense>
@@ -55,9 +63,10 @@ export async function RestaurantDiscovery({ locale, search = {} }: { locale: Res
      <div className="rd-card-body"><h3><a href={`${href}?${back}`}>{item.name || t.title}</a></h3><p>{[item.type_label, item.general_location].filter(Boolean).join(" · ")}</p>{item.service_modes.length > 0 && <p className="rd-card-modes">{item.service_modes.join(" · ")}</p>}{item.review_summary&&<p>{item.review_summary.count?`${item.review_summary.average} ★ · ${item.review_summary.count} ${restaurantReviewCopy[locale].reviews}`:restaurantReviewCopy[locale].noReviews}</p>}<p className={`rd-status rd-status-${item.hours.status}`}><span aria-hidden="true"/>{item.hours.status === "unknown" ? d.unknown : t[item.hours.status]}</p>{message && <p className="rd-menu-note">{message}</p>}<a className="rd-menu" href={`${href}/menu?${back}`}>{d.menu}<span aria-hidden="true"> →</span></a></div>
     </article>;
    })}</div>
-   <nav className="restaurant-pagination" aria-label={t.page}>{result.page > 1 && <a className="restaurant-link" href={`${path}?${new URLSearchParams({ ...Object.fromEntries(params), page: String(result.page - 1) })}`}>{t.previous}</a>}<span aria-current="page">{t.page} {result.page} / {Math.max(1, Math.ceil(result.total / result.page_size))}</span>{result.page * result.page_size < result.total && <a className="restaurant-link" href={`${path}?${new URLSearchParams({ ...Object.fromEntries(params), page: String(result.page + 1) })}`}>{t.next}</a>}</nav>
+   {result.total>result.page_size&&<nav className="restaurant-pagination" aria-label={t.page}>{result.page > 1 && <a className="restaurant-link" href={`${path}?${new URLSearchParams({ ...Object.fromEntries(params), page: String(result.page - 1) })}`}>{t.previous}</a>}<span aria-current="page">{t.page} {result.page} / {Math.max(1, Math.ceil(result.total / result.page_size))}</span>{result.page * result.page_size < result.total && <a className="restaurant-link" href={`${path}?${new URLSearchParams({ ...Object.fromEntries(params), page: String(result.page + 1) })}`}>{t.next}</a>}</nav>}
   </>}
-  <section className="rd-owner-invite"><SpaceIcon name="shop"/><div><h2>{c.invite}</h2><p>{c.inviteText}</p></div><nav aria-label={c.invite}><a href={`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants?create=restaurant`}>{c.restaurant} →</a><a href={`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants?create=malewa`}>{c.malewa} →</a></nav></section>
+  </>}
+  {!welcome&&<section className="rd-owner-invite"><SpaceIcon name="shop"/><div><h2>{c.invite}</h2><p>{c.inviteText}</p></div><nav aria-label={c.invite}><a href={`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants?create=restaurant`}>{c.restaurant} →</a><a href={`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants?create=malewa`}>{c.malewa} →</a></nav></section>}
  </div></section>;
 }
 

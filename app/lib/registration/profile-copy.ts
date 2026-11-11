@@ -9,4 +9,4 @@ export function profileLabel(locale:RegistrationLocale,key:string):string|undefi
  return Object.prototype.hasOwnProperty.call(profileCopy[locale],key)?profileCopy[locale][key as keyof typeof profileCopy.en]:undefined;
 }
 
-export const registrationLanguages = [{code:'fr',name:'Français'},{code:'ln',name:'Lingala'},{code:'en',name:'English'},{code:'sw',name:'Swahili'}] as const;
+export const registrationLanguages = [{code:'fr',name:'Français'},{code:'en',name:'English'},{code:'ln',name:'Lingala'},{code:'sw',name:'Kiswahili'}] as const;

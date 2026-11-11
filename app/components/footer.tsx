@@ -4,9 +4,13 @@ import { localizedPath, nav } from "../lib/i18n";
 import { OFFICIAL_CHANNELS, SOCIAL_LINKS } from "../lib/brand";
 import { BrandLogo } from "./brand-logo";
 
-export function Footer({ locale, marketplace = false }: { locale: Locale; marketplace?: boolean }) {
+export function Footer({ locale, marketplace = false, marketLocale=locale }: { locale: Locale; marketplace?: boolean; marketLocale?:Locale|"ln"|"sw" }) {
   const t = nav[locale];
-  if(marketplace)return <footer className="site-footer market-footer" lang={locale}><div className="container shida-footer-row"><Link className="market-brand" href={localizedPath(locale,"/shida")}>SHIDA</Link><nav aria-label={t.product}><Link href={localizedPath(locale,"/faq")}>{t.faq}</Link><Link href={localizedPath(locale,"/contact")}>{t.contact}</Link><Link href={localizedPath(locale,"/privacy")}>{t.privacy}</Link><Link href={locale==="en"?"/en/terms":"/fr/conditions-utilisation"}>{t.terms}</Link><Link href={locale==="en"?"/en/trust":"/fr/confiance"}>{t.trustCenter}</Link></nav><small>© {new Date().getFullYear()} NIHILOBA. {t.rights}</small></div></footer>;
+  if(marketplace){
+    const labels=marketLocale==="ln"?{product:"SHIDA",faq:"Mituna ya mbala na mbala",contact:"Bokutani",privacy:"Bomoi ya moto",terms:"Mibeko ya kosalela",trustCenter:"Esika ya bondimi",rights:"Makoki nyonso ebatelami."}
+      :marketLocale==="sw"?{product:"SHIDA",faq:"Maswali ya kawaida",contact:"Mawasiliano",privacy:"Faragha",terms:"Masharti",trustCenter:"Kituo cha uaminifu",rights:"Haki zote zimehifadhiwa."}:t;
+    return <footer className="site-footer market-footer" lang={marketLocale}><div className="container shida-footer-row"><Link className="market-brand" href={`${marketLocale==="en"?"":"/"+marketLocale}/shida`}>SHIDA</Link><nav aria-label={labels.product}><Link href={localizedPath(locale,"/faq")}>{labels.faq}</Link><Link href={localizedPath(locale,"/contact")}>{labels.contact}</Link><Link href={localizedPath(locale,"/privacy")}>{labels.privacy}</Link><Link href={locale==="en"?"/en/terms":"/fr/conditions-utilisation"}>{labels.terms}</Link><Link href={locale==="en"?"/en/trust":"/fr/confiance"}>{labels.trustCenter}</Link></nav><small>© {new Date().getFullYear()} NIHILOBA. {labels.rights}</small></div></footer>;
+  }
   return (
     <footer className={marketplace ? "site-footer market-footer" : "site-footer"} lang={locale}>
       <div className="container footer-grid">

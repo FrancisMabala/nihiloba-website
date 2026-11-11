@@ -1,6 +1,8 @@
 "use client";
 
 import {MarketplaceControls,marketplaceAccountCopy,type MarketplaceLocale} from "./marketplace-controls";
+import {readAccount} from "../../lib/account-load";
+import {isServiceLocale} from "../../lib/services-i18n";
 import {usePathname} from "next/navigation";
 import {marketplaceLanguagePath} from "../../lib/marketplace-navigation";
 import {useCallback,useEffect,useId,useRef,useState} from 'react';
@@ -25,6 +27,44 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
   const [pending,setPending]=useState(false),[logoutFailed,setLogoutFailed]=useState(false);
   const dialog=useRef<HTMLDialogElement>(null),alive=useRef(false),generation=useRef(0);
   const reading=useRef<AbortController|null>(null),mutating=useRef(false);
+
+  const choosing=useRef(false);
+  const [languageError,setLanguageError]=useState(false);
+  const destination=useCallback((lang:MarketplaceLocale)=>marketplaceLanguagePath(pathname,lang)+window.location.search+window.location.hash,[pathname]);
+  const binding=session?.binding;
+  useEffect(()=>{
+    // An explicit locale in a shared link wins. Restore the preference on default entries.
+    if(checking||failed||!/^\/shida(?:\/(?:wenze|restaurants|services|emplois|appartements|hotels|transport)(?:\/|$)|\/?$)/.test(pathname))return;
+    const controller=new AbortController();
+    async function restore(){
+      try{
+        const lang=binding?(await readAccount("profile/",binding,controller.signal)).values?.preferred_language:localStorage.getItem("shida-market-language");
+        if(!controller.signal.aborted&&!choosing.current&&isServiceLocale(lang)&&lang!==locale)window.location.replace(destination(lang));
+      }catch{/* Public browsing stays available when storage or the private profile is unavailable. */}
+    }
+    void restore();return ()=>controller.abort();
+  },[checking,failed,binding,pathname,locale,destination]);
+
+  async function chooseLanguage(lang:MarketplaceLocale){
+    if(choosing.current||!(await leaveWork()))return;
+    choosing.current=true;setPending(true);setLanguageError(false);
+    try{
+      let active=session;
+      if(!active&&failed){
+        try{active=await restorePersonalSession(AbortSignal.timeout(12000));}
+        catch(error){if(!(error instanceof PersonalSessionError&&error.status===401))throw error;}
+      }
+      if(active){
+        const profile=await readAccount("profile/",active.binding,AbortSignal.timeout(12000));
+        if(profile.values.preferred_language!==lang){
+          const saved=await fetch("/api/shida/personal/security/profile/",{method:"POST",cache:"no-store",signal:AbortSignal.timeout(12000),headers:{"Content-Type":"application/json","x-shida-session":active.binding},body:JSON.stringify({revision:profile.revision,values:{preferred_language:lang}})});
+          if(!saved.ok)throw Error();
+        }
+      }
+      try{localStorage.setItem("shida-market-language",lang);}catch{/* The localized URL still persists across refresh. */}
+      window.location.assign(destination(lang));
+    }catch{setLanguageError(true);choosing.current=false;setPending(false);}
+  }
 
   const check=useCallback(async(clear=false)=>{
     if(mutating.current||!alive.current)return;
@@ -77,9 +117,9 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
     <MarketplaceControls key={session?.binding||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref} guestLabel={t.signIn}
       registrationLink={!checking&&!session&&process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==="true"?{label:r.create,href:`${prefix}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}:undefined}
       links={[{label:a.space,href:spaceHref},{label:accountSpaceCopy[locale].messages,href:`${spaceHref}?view=messages`},{label:accountSpaceCopy[locale].settings,href:`${spaceHref}?view=settings`}]}
-      languages={/\/shida\/?$/.test(pathname)||/\/shida\/(restaurants|services|seller|space|service-requests|service-bills)(?:\/|$)/.test(pathname)?["fr","en","ln","sw"]:["fr","en"]}
-      onLanguage={async (lang:MarketplaceLocale)=>{if((await leaveWork()))window.location.assign(marketplaceLanguagePath(pathname,lang)+window.location.search);}}
+      checkingLanguage={checking} onLanguage={chooseLanguage}
       onLogin={()=>setOpen(true)} onAccount={()=>{setOpen(true);void logout(true);}} onLogout={()=>{setOpen(true);void logout();}} pending={pending} beforeNavigate={leaveWork}/>
+    {languageError&&<span role="alert">{{en:"Could not save your language. Please try again.",fr:"Impossible d’enregistrer votre langue. Réessayez.",ln:"Tokoki kobomba lokota te. Meka lisusu.",sw:"Imeshindikana kuhifadhi lugha. Jaribu tena."}[locale]}</span>}
     <dialog className="shida-account-dialog" ref={dialog} aria-labelledby={title} onClose={()=>setOpen(false)}>
       {open&&<div className="shida-account-content">
         <div className="shida-account-heading"><span>SHIDA</span><button type="button" aria-label={t.close} onClick={()=>dialog.current?.close()}>×</button></div>
