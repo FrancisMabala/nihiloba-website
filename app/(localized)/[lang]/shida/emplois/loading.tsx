@@ -1,1 +1,8 @@
-export default function Loading(){return <section className="section" aria-live="polite" aria-busy="true"><div className="container job-loading"><p className="eyebrow">SHIDA · Emplois</p><h1>Chargement des offres…</h1><div className="job-result-list" aria-hidden="true"><div className="job-result marketplace-skeleton"/><div className="job-result marketplace-skeleton"/><div className="job-result marketplace-skeleton"/></div></div></section>;}
+"use client";
+import {useParams} from "next/navigation";
+import {isServiceLocale} from "../../../../lib/services-i18n";
+import {JobFeedLoading} from "../../../../components/shida/job-feed-loading";
+export default function Loading(){
+ const {lang}=useParams<{lang:string}>();
+ return <JobFeedLoading locale={isServiceLocale(lang)?lang:"en"}/>;
+}

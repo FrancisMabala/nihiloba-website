@@ -1,1 +1,2 @@
-export default function Loading(){return <section className="section" aria-live="polite" aria-busy="true"><div className="container job-loading"><p className="eyebrow">SHIDA · Jobs</p><h1>Loading open offers…</h1><div className="job-result-list" aria-hidden="true"><div className="job-result marketplace-skeleton"/><div className="job-result marketplace-skeleton"/><div className="job-result marketplace-skeleton"/></div></div></section>;}
+import {JobFeedLoading} from "../../../components/shida/job-feed-loading";
+export default function Loading(){return <JobFeedLoading locale="en"/>;}

@@ -1,3 +1,4 @@
+import {JobFeedLoading} from "../app/components/shida/job-feed-loading";
 import {afterEach,expect,it,vi} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {compensationPeriod,JobCategories,JobPostingEntry} from '../app/components/shida/job-discovery-ui';
@@ -28,4 +29,9 @@ it('category changes reset pagination and preserve the other filters',()=>{
 });
 it('posting reuses existing Personal and Business workflows in all four languages',()=>{
  for(const locale of ['en','fr','ln','sw'] as const){const html=renderToStaticMarkup(<JobPostingEntry locale={locale}/>);expect(html).toContain('https://business.nihiloba.com/');expect(html).toContain('https://wa.me/');expect(html).not.toContain('/register');}
+});
+
+it.each([["fr","Chargement des offres"],["en","Loading open offers"],["ln","Tozali kozwa misala"],["sw","Inapakia nafasi za kazi"]] as const)("keeps the streamed loading state in %s", (locale, message)=>{
+ const html=renderToStaticMarkup(<JobFeedLoading locale={locale}/>);
+ expect(html).toContain(message);expect(html).toContain('aria-busy="true"');
 });
