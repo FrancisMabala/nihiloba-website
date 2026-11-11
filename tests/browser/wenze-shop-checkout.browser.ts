@@ -74,6 +74,6 @@ for(const width of [390,1440])test(`history is secondary and reversal remains co
  await expect(history.locator('.wz-history-status')).toHaveText(['Active','Reversed']);await screenshot(page,`${width}-history-expanded`);
  await history.locator('.wz-history-action summary').first().click();await expect(history.getByRole('combobox',{name:'Reason'})).toBeVisible();await expect(history.getByRole('textbox')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await screenshot(page,`${width}-history-action`);
- await history.getByRole('button',{name:'Reverse entry',exact:true}).click();const confirm=page.getByRole('dialog',{name:'Confirm this operation?',exact:true});await expect(confirm).toBeVisible();await confirm.getByRole('button',{name:'Cancel',exact:true}).click();await expect(confirm).not.toBeVisible();
+ await history.getByRole('button',{name:'Reverse entry',exact:true}).click();const confirm=page.getByRole('dialog',{name:'Reverse entry',exact:true});await expect(confirm).toBeVisible();await confirm.getByRole('button',{name:'Go back',exact:true}).click();await expect(confirm).not.toBeVisible();
  await history.locator('.wz-history-action summary').last().click();await history.getByRole('button',{name:'Replace reversed entry',exact:true}).click();await expect(history.locator('.wz-history-tools > details').last()).toHaveAttribute('open','');
 });

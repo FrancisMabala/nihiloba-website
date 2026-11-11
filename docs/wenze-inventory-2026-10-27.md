@@ -9,3 +9,7 @@ Product labels are under each product's labels tab. Selecting catalogue rows exp
 No schema, production database, authentication, payment verification or WhatsApp message changes are required. Existing WhatsApp links to the seller workspace retain their account context and authorization checks. Orders remain individually traceable; this change aggregates inventory, not customer orders or payments.
 
 Validation: grouping unit tests, existing management-format and gateway tests; production build with bundled Node 24; targeted ESLint; four-language browser regression covering empty search, product labels, grouped inventory, code lookup, mobile overflow, unsaved drafts and checkout. Browser screenshots are written to ignored test-results/wenze-inventory.
+
+The seller inventory groups active catalogue options by product across all pages. Search and filter counts use the same sellable balances and thresholds as the rows. Receiving records an incremental, replay-safe delivery. Counting records an observed physical total and checks the count revision and reservations before posting.
+
+Catalogue import stages the seller’s workbook or CSV, asks about unclear columns, and preserves explicit zero stock on review. The seller confirms a versioned list of distinct products before publication. Examples are on the template instructions sheet.

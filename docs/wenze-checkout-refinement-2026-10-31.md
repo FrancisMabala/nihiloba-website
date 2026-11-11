@@ -27,3 +27,5 @@ No separate Business app or new authorization implementation. Existing Personal 
 ## Deployment
 Prior Today refinement 9ae79d86cbe61f8d788b99a4182b396fbbe046f7 deployed first: Render dep-dbitsmnb9u1s73cgdbqg confirmed Live, with signed-in desktop/mobile smoke checks. Backend remains 360d11288ebaab183ddb39024089958c7a1884a8.
 This Checkout refinement is prepared for release, not yet deployed. Website automatic deployment remains disabled. The user's instruction authorizes deployment of the prior work followed by this implementation; this change's production rollout remains separate.
+
+The personal register reads structured option attributes, shows exact cash and the outstanding amount, and opens basket receipts for the selected shop’s local day. Single-line confirmations use the remaining sellable quantity captured in the checkout transaction. The receipt reprint continues to use the original payment snapshot.

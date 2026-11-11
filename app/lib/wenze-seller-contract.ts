@@ -133,6 +133,7 @@ const routes=[
   "GET",
   "stores/{store_ref}/products/{product_ref}/valuation"
  ],
+ ["POST","stores/{store_ref}/inventory/items/{item_ref}/receive"],
  [
   "POST",
   "stores/{store_ref}/inventory/counts"

@@ -1,0 +1,33 @@
+.wi-shell .wc-content{padding:24px clamp(16px,2vw,38px) 5rem}
+.wi-shell fieldset.wz-controls{border:0;margin:0;padding:0;min-width:0;display:block}
+.wi-shell .wz-section-tabs{display:flex;gap:.65rem;flex-wrap:wrap;margin:0 0 16px;padding:0;border:0}
+.wi-shell button,.wi-shell input,.wi-shell select{font:inherit}
+.wi-shell .wz-section-tabs button[aria-current=page]{background:#efeee0;border-bottom:3px solid #ac7924}
+.wi-page h1{margin:16px 0 0;font-size:clamp(2.4rem,4.3vw,4.3rem)}
+.wi-page .wi-intro{margin:0 0 24px;font-size:1.22em}
+.wi-page .wi-actions,.wi-filters,.wi-search{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.wi-page .wi-actions{margin:14px 0 24px}
+.wi-page .wi-actions button{display:inline-flex;gap:.6em;align-items:center;min-height:45px}
+.wi-page .wi-link{background:transparent;color:#183b2c;border:0;padding:.25em;text-decoration:underline;min-height:36px}
+.wi-page .wi-actions>.wi-link{margin-left:auto}
+.wi-search{margin:0 0 22px}.wi-search>label{display:flex;align-items:center;gap:8px;border:1px solid #c8c4b5;border-radius:7px;background:white;padding:0 12px;flex:1;min-width:150px}.wi-search input{width:100%;min-width:0;border:0;margin:0}
+.wi-filters button[aria-pressed=true]{background:#163f2c;color:white}
+.wi-list{border:1px solid #cdc9bb;border-radius:12px;overflow:hidden;background:#fffdf8}
+.wi-columns{display:grid;grid-template-columns:minmax(265px,3fr) repeat(3,minmax(74px,.85fr)) minmax(140px,1.25fr);align-items:center;gap:8px;padding:10px 16px}
+.wi-head,.wi-versions th{background:#e9eddf}.wi-head>*:not(:first-child),.wi-metric,.wi-state{text-align:center}
+.wi-product+.wi-product{border-top:1px solid #d4d0c3}.wi-identity{display:flex;gap:clamp(10px,1.5vw,24px);align-items:center;min-width:0}.wi-identity img,.wi-placeholder{width:clamp(64px,8vw,126px);height:clamp(64px,7vw,110px);border-radius:8px;object-fit:contain;background:#f3eddf;flex:none}.wi-placeholder{display:grid;place-items:center}.wi-page .wi-identity h2{font-size:clamp(19px,1.9vw,30px);margin:0;overflow-wrap:anywhere}.wi-identity p{font-size:.88em;margin:3px 0}.wi-out{color:#912f26}.wi-low{color:#83500a}.wi-metric{font-size:1.65em}.wi-metric small{display:none}.wi-sellable strong,.wi-state span,.wi-versions td b{background:#e4ebd9;border-radius:7px;padding:.12em .55em}.wi-state span{display:inline-block;font-size:.9em}.wi-state [data-state=out]{background:#fae5df;color:#8c231a}.wi-state [data-state=low]{background:#f9edcf;color:#754411}.wi-state .wi-link{display:block;margin:auto;font-size:.78em}
+.wi-versions{padding:0 12px 14px}.wi-versions table,.wp-count-tools table{width:100%;border-collapse:collapse}.wi-versions th,.wi-versions td,.wp-count-tools td,.wp-count-tools th{padding:7px;text-align:center;border-bottom:1px solid #ddd9cd}.wi-versions tr[data-match=true]{background:#fff0dc}.wi-tools{margin:22px 0}.wi-page .wp-count-tools form{display:grid;gap:10px;max-width:620px}.wi-page .wp-count-tools label{display:grid;gap:5px}
+@media(max-width:950px){.wi-head{display:none}.wi-product .wi-columns{grid-template-columns:repeat(3,minmax(0,1fr));padding:12px;gap:5px}.wi-identity,.wi-state{grid-column:1/-1}.wi-metric small{display:block;font:500 .57em/1.25 Arial,sans-serif}.wi-identity img,.wi-placeholder{width:65px;height:68px}.wi-state{display:flex;align-items:center;justify-content:space-between}.wi-state .wi-link{margin:0}.wi-shell .wc-content{padding:12px 12px 78px}.wi-search>label{flex-basis:100%}.wi-filters{gap:5px}.wi-filters button{font-size:.9em}.wi-versions{padding:0 5px 8px}.wi-versions th,.wi-versions td{padding:4px;font-size:.87em;overflow-wrap:anywhere}.wi-versions table{table-layout:fixed}.wi-page .wi-actions>.wi-link{margin:0}.wi-shell .wz-section-tabs button{padding:.4rem .55rem}.wp-count-tools table{table-layout:fixed;overflow-wrap:anywhere}}
+
+.wi-shell .wi-page .wi-actions button{flex-direction:row;text-align:left}
+.wi-shell .wi-page .wi-actions .seller-primary,.wi-shell .wb-upload .seller-primary{background:#0b4631;color:#fff}
+.wi-shell .wi-page .wi-actions svg{width:22px;height:22px}
+.wi-shell .wi-page .wi-actions .wi-link{background:transparent}
+
+@media(min-width:951px){
+ .wi-list:has(>.wi-product:only-of-type[data-expanded=true]) .wi-head{display:none}
+ .wi-product[data-expanded=true]>.wi-columns{padding:18px}
+ .wi-product[data-expanded=true] .wi-identity img{height:135px;width:135px}
+ .wi-product[data-expanded=true] .wi-metric small{display:block;font-size:.6em;margin:0 0 8px}
+ .wi-product[data-expanded=true] .wi-metric{font-size:2em}
+}

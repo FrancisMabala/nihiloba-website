@@ -1,4 +1,5 @@
 "use client";
+import bulkCopy from "@/app/lib/wenze-bulk-copy.json";
 import {WenzeBoutiqueWizard} from "./wenze-boutique-wizard";
 import {boutiquePayload} from "@/app/lib/wenze-boutique-copy";
 import {ShopIcon} from "./wenze-shop-icons";
@@ -102,7 +103,9 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
   const [error, setError] = useState(""), [busy, setBusy] = useState(false);
   const creating=editor?.kind==="detailed"||editor?.kind==="quick",created=!!product&&createdRef===product.public_ref&&!editor;
   const savedView=!!product&&!editor&&view==="catalog"&&shopTab==="products"&&!created;
-  const flowName=creating||created||savedView?store?.name??"":"";
+  const [inventoryOrigin,setInventoryOrigin]=useState(false);
+  const [focusOption,setFocusOption]=useState('');
+  const flowName=creating||created||savedView||view==='imports'||view==='inventory'?store?.name??"":"";
   useEffect(()=>{onFlowShop?.(flowName,!!flowName||boutiqueCreated);return()=>onFlowShop?.("",false);},[flowName,onFlowShop,boutiqueCreated]);
   const canGovern = true;
   const [productDirty,setProductDirty]=useState(false);
@@ -307,16 +310,41 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
     if(tab==="sales"&&!hasPhysicalStore(store))tab="orders";
     if(!await leaveWork())return;
     setEditor(null);setEditorDirty(false);setProductDirty(false);setPendingCost(null);setPreview(null);setPlan(null);
-    setView(tab);setDashboardOrder(undefined);setProduct(null);if(tab==="shop"){setShopTab("shopDetails");setProduct(null);}else if(tab==="catalog")setShopTab("products");
+    setInventoryOrigin(false);setFocusOption("");setView(tab);setDashboardOrder(undefined);setProduct(null);if(tab==="shop"){setShopTab("shopDetails");setProduct(null);}else if(tab==="catalog")setShopTab("products");
     if(tab==="catalog"&&store)void run(()=>loadProducts(store,0));
     const url=new URL(window.location.href);url.searchParams.set("view",tab);url.searchParams.delete("product");if(store)url.searchParams.set("store",store.public_ref);window.history.replaceState(null,"",url);
   }
+  function navigateInventoryReturn(){
+    setProduct(null);setProductTab("details");setInventoryOrigin(false);setFocusOption("");setView("inventory");
+    const url=new URL(location.href);url.searchParams.delete("product");url.searchParams.set("view","inventory");window.history.replaceState(null,"",url);
+  }
+  async function createFromCatalogue(){
+    await navigate("catalog");
+    await run(()=>openEditor("quick"));
+  }
+  if(store&&view==="imports"&&!editor){
+    return <main className="wc-flow wi-shell"><aside><WenzeNavigation showOrders={orderAccess.visible} physical={hasPhysicalStore(store)} locale={locale} view={view} onNavigate={tab=>void navigate(tab)}/></aside>
+      <div className="wc-content"><WenzeLeaveDialog locale={locale}/><h1>{bulkCopy[locale].title}</h1>
+        <WenzeSubnavigation locale={locale} view={view} onNavigate={tab=>void navigate(tab)}/>
+        <WenzeR6Workspace key={store.public_ref} context={context} locale={locale} initialView="imports" initialStore={store.public_ref}
+          onCreate={()=>void createFromCatalogue()} onProducts={()=>void navigate("catalog")}/>
+      </div></main>;
+  }
+  if(store&&view==="inventory"&&!editor){
+    return <main className="wc-flow wi-shell"><aside><WenzeNavigation showOrders={orderAccess.visible} physical={hasPhysicalStore(store)} locale={locale} view={view} onNavigate={tab=>void navigate(tab)}/></aside>
+      <div className="wc-content"><WenzeLeaveDialog locale={locale}/><WenzeSubnavigation locale={locale} view={view} onNavigate={tab=>void navigate(tab)}/>
+      {error&&<p role="alert">{t(error)}</p>}
+      <WenzeOperations key={store.public_ref} store={store} locale={locale} view={view} onChoose={()=>void navigate("catalog")} onCreate={()=>void createFromCatalogue()} onEditStock={(ref,option)=>void run(async()=>{
+        const selected=await request(storePath+"/products/"+enc(ref)) as Item;
+        setProduct(selected);setCreatedRef(null);setProductTab("options");setShopTab("products");setInventoryOrigin(true);setFocusOption(option??"");setView("catalog");
+      })}/></div></main>;
+  }
   if(savedView&&store&&product){
-    const detail=()=>{setProductTab("details");setError("");setNotice("");};
+    const detail=()=>{if(inventoryOrigin){void navigateInventoryReturn();return;}setProductTab("details");setError("");setNotice("");};
     const category=productCategories.find(c=>c.code===product.category)?.labels[locale]??categories.find(c=>c.code===product.category)?.labels[locale]??product.category;
     const canShare=store.status==="active"&&store.visible==="true"&&product.status==="active"&&product.visible==="true";
     return <main className="wc-flow wd-flow"><aside><SellerWorkspaceIdentity mark="W" title="Wenze" subtitle={t("personal")}/><WenzeNavigation showOrders={orderAccess.visible} physical={hasPhysicalStore(store)} locale={locale} view="catalog" onNavigate={tab=>void navigate(tab)}/></aside><div className="wc-content"><WenzeLeaveDialog locale={locale}/>{confirmation}{error&&<p role="alert">{error.startsWith("choices:")?choiceCopy[locale][error.slice(8) as keyof typeof choiceCopy.en]:t(error)}</p>}
-    {productTab==="options"?<SavedStock key={product.public_ref} locale={locale} product={product} path={productPath} onDone={detail} onUpdate={p=>setProduct(p as Item)} onConvert={()=>void run(()=>openEditor("conversion"))}/>:
+    {productTab==="options"?<SavedStock initialFocus={focusOption} key={product.public_ref} locale={locale} product={product} path={productPath} onDone={detail} onUpdate={p=>setProduct(p as Item)} onConvert={()=>void run(()=>openEditor("conversion"))}/>:
     productTab==="labels"||productTab==="photos"?<><button className="wd-back" onClick={detail}>← {savedText(locale,"backProduct")}</button>{productTab==="labels"?<WenzeProductLabels storeRef={store.public_ref} productRefs={[product.public_ref]} locale={locale}/>:<section className="wc-card"><h3>{t("photos")}</h3><p>{t("photoHint")}</p><label>{t("upload")}<input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={event => void files(event.target.files)} /></label><p>{product.photos?.length??0} / 5</p><div className="wp-gallery">{product.photos?.map((photo,index) => <article className="wz-card" key={photo.photo_ref}>{/* Hosted URLs come only from the protected backend. */}<Image unoptimized src={photo.url} alt={product.name} width="220" height="180" />{index===0&&<span className="wp-cover">{pc("mainPhoto")}</span>}<details><summary>{pc("photoActions")}</summary><div className="wz-actions">{["cover", "earlier", "later", "remove"].map(action => <button key={action} disabled={busy} onClick={() => void run(async () => setProduct(await send(`${productPath}/photos`, "POST", { expected_revision: product.revision, action, photo_ref: photo.photo_ref }) as Item))}>{t(action)}</button>)}</div><label>{t("replace")}<input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" onChange={event => void files(event.target.files, photo.photo_ref)} /></label></details></article>)}</div></section>}</>:
     <SavedProductPage key={productPath} locale={locale} product={product} category={category} path={productPath} pending={!!pendingCost&&pendingCost.productRef===product.public_ref&&costAllowed} retry={()=>run(async()=>{if(pendingCost)await savePurchaseCost(pendingCost);})} onBack={()=>void navigate("catalog")} onStock={()=>void selectProductTab("options")} onLabels={()=>void selectProductTab("labels")} onPhotos={()=>void selectProductTab("photos")} onEdit={()=>void run(()=>openEditor("product"))} onShare={()=>void run(async()=>setPreview(await request(productPath+"/preview") as Record<string,unknown>))}
       actions={<>{product.status==="active"&&button("duplicate",()=>void run(()=>openEditor("duplicate")))}{button(product.status!=="active"?"restore":product.visible==="true"?"hide":"show",()=>void lifecycle(product.status!=="active"?"restore":product.visible==="true"?"hide":"show",product,productPath))}{product.status==="active"&&button("archive",()=>void lifecycle("archive",product,productPath))}</>}/>}

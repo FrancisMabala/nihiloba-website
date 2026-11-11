@@ -16,11 +16,11 @@ const from=(v:SavedOption):Row=>({...v,key:v.public_ref,tracked:v.available_stoc
 const desired=(r:Row)=>r.tracked?Number(r.q):null;
 const dirty=(r:Row)=>r.fresh||r.archive||desired(r)!==r.available_stock||r.tracked&&r.q==='';
 const norm=(s:string)=>s.normalize('NFKC').trim().replace(/\s+/g,' ').toLowerCase();
-export function SavedStock({locale,product,path,onDone,onUpdate,onConvert}:{locale:WenzeLocale;product:SavedProduct;path:string;onDone:()=>void;onUpdate:(p:SavedProduct)=>void;onConvert:()=>void}){
+export function SavedStock({initialFocus="",locale,product,path,onDone,onUpdate,onConvert}:{initialFocus?:string;locale:WenzeLocale;product:SavedProduct;path:string;onDone:()=>void;onUpdate:(p:SavedProduct)=>void;onConvert:()=>void}){
  const t=savedText.bind(null,locale),c=choices[locale],v=wenzeCopy[locale],ec=editorCopy[locale];
  const {request}=useWenzeApi(),{confirm,confirmation}=useWenzeConfirm(locale);
  const [rows,setRows]=useState(()=>stockRows(product).map(from)),[busy,setBusy]=useState(false),lock=useRef(false),latest=useRef(product);
- const [adding,setAdding]=useState(false),[draft,setDraft]=useState<Record<string,string>>({}),[message,setMessage]=useState(''),[highlight,setHighlight]=useState('');
+ const [adding,setAdding]=useState(false),[draft,setDraft]=useState<Record<string,string>>({}),[message,setMessage]=useState(''),[highlight,setHighlight]=useState(initialFocus);
  const [rename,setRename]=useState(''),[newLabel,setNewLabel]=useState('');
  const fields=useRef(new Map<string,HTMLInputElement>()),changed=rows.some(dirty);
  useWorkDraft(changed||busy,'');
