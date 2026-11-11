@@ -30,3 +30,29 @@ test('application retains the destination through profile setup and handles a mi
  await expect(page.getByText('Cette mission n’accepte plus de candidatures.')).toBeVisible();
  await expect(page.getByRole('button',{name:'Envoyer ma candidature'})).toHaveCount(0);expect(attempts).toBe(1);
 });
+
+for (const width of [390, 1440]) test('older session signs back in and sees the existing mission at '+width, async ({page}) => {
+  await page.setViewportSize({width, height:850});
+  let renewed = false;
+  await page.route('**/api/shida/personal/job-offer?kind=catalogue', r => r.fulfill(renewed
+    ? {json:{rows:[{type:'job',reference:'JOB_existing',title:'Mission existante',status:'open',count:0}]}}
+    : {status:403,json:{code:'personal_sign_in_required'}}));
+  await page.route('**/api/shida/personal/auth/email/capabilities/', r => r.fulfill({json:{enabled:true}}));
+  await page.route('**/api/shida/personal/auth/email/start/', r => r.fulfill({json:{reference:'synthetic-reference'}}));
+  await page.route('**/api/shida/personal/auth/email/verify/', r => {
+    renewed = true;
+    return r.fulfill({json:{authenticated:true}});
+  });
+  await page.goto('/fr/shida/space?view=listings');
+  await expect(page.getByText(/Reconnectez-vous à votre espace personnel/)).toBeVisible();
+  await expect(page.getByText(/Aucune annonce/)).toHaveCount(0);
+  await page.getByRole('button',{name:/Continuer avec un e-mail/}).click();
+  await page.getByLabel('E-mail de connexion').fill('poster@example.test');
+  await page.getByRole('button',{name:'Envoyer le code de connexion'}).click();
+  await page.locator('input[autocomplete="one-time-code"]').fill('12345678');
+  await page.getByRole('button',{name:'Se connecter',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Toutes (1)'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Mission existante'})).toBeVisible();
+  await expect(page.getByRole('link',{name:/Gérer la mission/})).toHaveAttribute('href',/offer=JOB_existing/);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
