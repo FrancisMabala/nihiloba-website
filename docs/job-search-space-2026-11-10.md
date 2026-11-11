@@ -111,3 +111,12 @@ WhatsApp alert preferences remain explicit. The application count covers SHIDA
 applications returned by the candidate endpoint. Opening an external application
 site is not a recorded submission. Saved-job locations are not supplied by the
 relationship list and are omitted rather than inferred or fetched per card.
+
+The job detail header groups the employer identity, Follow control and link to
+the employer’s other offers. The original advert remains in its own source section.
+For external redirects, one click or tap opens a waiting tab and disconnects its
+opener. The existing public job action resolves and validates the destination.
+Failure closes the waiting tab and shows an error on the job page. Instructions
+still open inline. On mobile, the application bar sits above the marketplace
+navigation. The job detail browser checks hold the response pending, follow the
+organisation link to another offer and verify the original page and scroll offset.
