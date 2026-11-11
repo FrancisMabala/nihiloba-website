@@ -1,3 +1,4 @@
+import {applicationsCopy} from '../../app/components/shida/workspace-applications';
 import {test,expect,type Page} from '@playwright/test';
 import {jobSearchCopy} from '../../app/lib/job-search-copy';
 import {employerCopy} from '../../app/lib/employer-page-copy';
@@ -25,9 +26,9 @@ async function fixture(page:Page,{guest=false,directory=false,expired=false,init
       return reply({saved:account==='a'&&saved,can_save:!expired,employer:{...employer,following:account==='a'&&following}});
     }
     if(path.endsWith('/notifications')){notifications=request.postDataJSON().enabled;return reply({enabled:notifications});}
-    if(path.includes('/relations/')){saved=false;following=false;notifications=false;return reply({removed:true});}
+    if(path.includes('/relations/')){if(path.endsWith('1'.repeat(64)))saved=false;else {following=false;notifications=false;}return reply({removed:true});}
     if(path.endsWith('/alerts'))return reply({profile_count:0,enabled_count:0,external_application_tracking:false});
-    const items=path.endsWith('/saved')&&saved?[{relation_ref:'REL_'+'1'.repeat(64),kind:'job',reference:'JOB_fixture',name:'Cash Sales Manager',employer_name:'SERVTEC',location:'Kinshasa',available:true,status:expired?'expired':'open',origin:'external'}]:path.endsWith('/following')&&following?[{relation_ref:'REL_'+'2'.repeat(64),...employer,available:true,notifications}]:[];
+    const items=path.endsWith('/saved')&&saved?[{relation_ref:'REL_'+'1'.repeat(64),kind:'job',reference:'JOB_fixture',name:'Cash Sales Manager',employer_name:'SERVTEC',location:'Kinshasa',available:true,status:expired?'expired':'open',origin:'external'}]:path.endsWith('/following')&&following?[{relation_ref:'REL_'+'2'.repeat(64),...employer,available:true,notifications,management_status:'shida_created',open_job_count:1}]:[];
     return reply({items,total:items.length,page:1,has_more:false});
   });
   return {writes,switchAccount:()=>{account='b';},expireSession:()=>{signedIn=false;}};
@@ -53,8 +54,8 @@ for(const locale of ['fr','en','ln','sw'] as const){
     await page.goto(`${prefix}/shida/emplois/JOB_fixture`);
     await page.getByRole('button',{name:t.follow,exact:true}).click();
     await page.getByRole('link',{name:employerCopy[locale].following+" →"}).click();
-    await expect(page.getByText(t.directory,{exact:true})).toBeVisible();
-    await expect(page.getByText(`${t.notifications}: ${t.disabled}`,{exact:true})).toBeVisible();
+    await expect(page.getByText(employerCopy[locale].created,{exact:true})).toBeVisible();
+    await expect(page.getByText(`${t.notifications}: ${t.disabled}`,{exact:true})).toHaveCount(0);
     await expect(page.getByRole('link',{name:new RegExp(t.organisation)})).toHaveAttribute('href',`${prefix}/shida/emplois/employeurs/DIR_fixture`);
     expect(data.writes.map(w=>w.body)).toEqual([{action:'follow',enabled:true}]);
     await page.getByRole('button',{name:t.unfollow,exact:true}).click();
@@ -71,7 +72,7 @@ for(const locale of ['fr','en','ln','sw'] as const){
     await expect(page.getByText(t.emptySaved,{exact:true})).toBeVisible();
     await page.locator('.search-tabs').getByRole('link',{name:t.applications,exact:true}).click();
     await expect(page.getByText('Existing application',{exact:true})).toBeVisible();
-    await expect(page.getByText(t.externalGap,{exact:true})).toBeVisible();
+    await expect(page.getByText(applicationsCopy[locale].scope,{exact:true})).toBeVisible();
     await expect(page.locator('a[href*="APP_fixture"]')).toHaveAttribute('href',`${prefix}/shida/${locale==='fr'?'mes-candidatures':'my-applications'}/APP_fixture`);
     await page.getByRole('link',{name:t.profiles,exact:true}).click();
     await expect(page.getByRole('heading',{name:candidateCopy[locale].professional,exact:true})).toBeVisible();
@@ -207,7 +208,7 @@ for(const width of [390,1440])test('detail actions populate mockup and destinati
  for(const [i,section] of ['saved','applications','following'].entries()){
   await page.goto(overview);await counts.nth(i).focus();await page.keyboard.press('Enter');await expect(page).toHaveURL(new RegExp('section='+section+'$'));
   if(i!==1)await expect(page.locator('.candidate-application-list article')).toHaveCount(1);
-  else await expect(page.getByText(jobSearchCopy.fr.directApplications)).toBeVisible();
+  else await expect(page.getByText(applicationsCopy.fr.scope)).toBeVisible();
  }
  for(const type of ['professional','occasional_work']){
   await page.goto(overview);await page.locator('.search-profile-row[href$="profile='+type+'"]').click();
@@ -267,4 +268,75 @@ test('creating from the overview persists only the chosen profile and only on sa
  expect(writes[1]).toMatchObject({public_ref:'DRAFT_new',revision:1,values:{city:'Kisangani'}});
  await page.goto(overview);await page.getByRole('link',{name:'Continuer mon profil de travail occasionnel'}).click();
  await expect(city).toHaveValue('Kisangani');
+});
+
+for(const width of [390,1440])test('saved list removal is recoverable and synchronized '+width,async({page},info)=>{
+ await page.setViewportSize({width,height:900});await fixture(page,{initialSaved:true});
+ let fail=true;
+ await page.route('**/relations/REL_*',r=>fail?r.fulfill({json:{},status:503}):r.fallback());
+ const url=overview.replace('section=overview','section=saved');
+ await page.goto(url);await expect(page.locator('.workspace-count')).toHaveText('1');
+ await expect(page.getByText('SERVTEC · Kinshasa')).toBeVisible();
+ await page.screenshot({path:info.outputPath('saved-'+width+'.png'),fullPage:true});
+ await page.getByRole('button',{name:'Retirer de ma liste'}).click();
+ const dialog=page.getByRole('dialog');await dialog.getByRole('button',{name:'Retirer de ma liste'}).click();
+ await expect(dialog.getByRole('alert')).toBeVisible();await expect(page.locator('.workspace-count')).toHaveText('1');
+ fail=false;await dialog.getByRole('button',{name:'Réessayer'}).click();await expect(page.locator('.workspace-count')).toHaveText('0');
+ await expect(page.getByRole('status')).toContainText('Offre retirée de votre liste.');
+ await expect(page.getByText('Aucune offre enregistrée pour le moment.')).toBeVisible();
+ await page.goto(overview);await expect(page.locator('.search-counts strong').first()).toHaveText('0');
+ await page.goto('/fr/shida/emplois/JOB_fixture');await expect(page.getByRole('button',{name:jobSearchCopy.fr.save,exact:true})).toHaveAttribute('aria-pressed','false');
+ await page.route('**/job-search/saved?*',r=>r.fulfill({json:{items:[{relation_ref:'REL_x',kind:'job',available:false,reference:null},{relation_ref:'REL_y',kind:'job',available:true,reference:'JOB_closed',status:'closed',name:'Un titre très long '.repeat(9),origin:'direct'}],total:2,page:1,has_more:false}}));
+ await page.goto(url);await expect(page.locator('.workspace-count')).toHaveText('2');
+ await expect(page.getByText('Offre indisponible')).toBeVisible();await expect(page.getByText('Clôturée')).toBeVisible();
+ await expect(page.locator('.workspace-record-actions a')).toHaveCount(1);await expect(page.locator('.workspace-record-actions button')).toHaveCount(2);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+for(const width of [390,1440])test('application counts, empty next steps and recorded interviews '+width,async({page},info)=>{
+ await page.setViewportSize({width,height:900});await fixture(page);
+ const url=overview.replace('section=overview','section=applications');
+ let n=0,available=true,mode=0,failed=true;
+ await page.route('**/job-search/saved?*',r=>r.fulfill({json:{total:n,items:n?[{relation_ref:'REL_saved',name:'Emploi',available,reference:available?'JOB_fixture':null,kind:'job'}]:[],page:1,has_more:false}}));
+ await page.route('**/employment/applications*',r=>r.fulfill({status:failed?503:200,json:{applications:Array.from({length:mode},(_,i)=>({reference:'APP_'+i,job_title:'Travail '+i,employer_name:'Bureau',job_location:'Gombe',status:['interview_confirmed','under_review','interview_confirmed'][i],created_at:'2026-10-05T12:00:00Z',interview:i===0?{date:'2099-12-01',time:'10:00'}:{},messages:[],status_history:[]}))}}));
+ await page.goto(url);await expect(page.getByRole('alert')).toBeVisible();await expect(page.locator('.workspace-count')).toHaveCount(0);
+ failed=false;await page.getByRole('button',{name:'Réessayer'}).click();await expect(page.locator('.workspace-count')).toHaveText('0');
+ await expect(page.getByText(applicationsCopy.fr.empty)).toBeVisible();await expect(page.locator('.workspace-app-empty a')).toHaveCount(0);
+ for(const [total,access,single] of [[1,true,true],[2,true,false],[1,false,false]] as const){
+  n=total;available=access;await page.reload();const link=page.locator('.workspace-app-empty a');await expect(link).toHaveAttribute('href',single?'/fr/shida/emplois/JOB_fixture':'/fr/shida/space?view=job-search&section=saved');
+  if(single)await page.screenshot({path:info.outputPath('applications-empty-'+width+'.png'),fullPage:true});
+ }
+ for(const total of [1,3]){
+  mode=total;await page.goto(url);await expect(page.locator('.workspace-count')).toHaveText(String(total));await expect(page.locator('.workspace-app-list article')).toHaveCount(total);
+  await expect(page.getByRole('link',{name:'Voir l’entretien →'})).toHaveAttribute('href','/fr/shida/mes-candidatures/APP_0#interview');
+  if(total===3){await expect(page.getByText('En cours d’examen')).toBeVisible();await expect(page.getByRole('link',{name:'Voir ma candidature →'})).toHaveCount(2);await page.screenshot({path:info.outputPath('applications-'+width+'.png'),fullPage:true});}
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.goto(overview);await expect(page.locator('.search-counts strong').nth(1)).toHaveText(String(total));
+ }
+});
+
+for(const width of [390,1440])test('followed organizations stay in SHIDA and synchronize '+width,async({page},info)=>{
+ await page.setViewportSize({width,height:900});const f=await fixture(page,{directory:true});
+ const url=overview.replace('section=overview','section=following'),job='/fr/shida/emplois/JOB_fixture';
+ await page.goto(job);await page.getByRole('button',{name:jobSearchCopy.fr.follow,exact:true}).click();
+ await page.getByRole('link',{name:employerCopy.fr.following+' →'}).click();
+ await expect(page.locator('.workspace-count')).toHaveText('1');await expect(page.getByText('Fiche créée par SHIDA')).toBeVisible();
+ expect(await page.locator('.search-tabs [aria-current]').evaluate(a=>a.getBoundingClientRect().right<=a.parentElement!.getBoundingClientRect().right+1)).toBe(true);
+ const profile='/fr/shida/emplois/employeurs/DIR_fixture';
+ await expect(page.getByRole('link',{name:'1 offre ouverte →'})).toHaveAttribute('href',profile+'#vacancies');
+ await expect(page.getByRole('link',{name:'Voir l’organisation →'})).toHaveAttribute('href',profile);
+ await page.screenshot({path:info.outputPath('following-'+width+'.png'),fullPage:true});
+ let fail=true;await page.route('**/relations/REL_*',r=>fail?r.fulfill({status:503,json:{}}):r.fallback());
+ await page.getByRole('button',{name:'Ne plus suivre'}).click();const dialog=page.getByRole('dialog');await dialog.getByRole('button',{name:'Ne plus suivre'}).click();
+ await expect(dialog.getByRole('alert')).toBeVisible();await expect(page.locator('.workspace-count')).toHaveText('1');
+ fail=false;await dialog.getByRole('button',{name:'Réessayer'}).click();
+ await expect(page.getByText('Vous ne suivez plus SERVTEC.')).toBeVisible();await expect(page.getByText('Vous ne suivez encore aucune entreprise.')).toBeVisible();
+ await expect(page.locator('.workspace-count')).toHaveText('0');
+ await page.goto(overview);await expect(page.locator('.search-counts strong').nth(2)).toHaveText('0');
+ await page.goto(job);await expect(page.getByRole('button',{name:jobSearchCopy.fr.follow,exact:true})).toHaveAttribute('aria-pressed','false');
+ expect(f.writes.map(x=>x.body)).toEqual([{action:'follow',enabled:true},null]);
+ await page.route('**/job-search/following?*',r=>r.fulfill({json:{total:2,page:1,has_more:false,items:[0,4].map((n,i)=>({available:true,kind:'company',reference:'BUS_'+i,relation_ref:'relation'+i,name:'Bureau '+i,open_job_count:n,management_status:'managed'}))}}));
+ await page.goto(url);await expect(page.getByText('Aucune offre ouverte',{exact:true})).toBeVisible();await expect(page.getByText('Page gérée par Bureau 1')).toBeVisible();
+ await expect(page.getByRole('link',{name:'4 offres ouvertes →'})).toHaveAttribute('href','/fr/shida/businesses/BUS_1?view=jobs#vacancies');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

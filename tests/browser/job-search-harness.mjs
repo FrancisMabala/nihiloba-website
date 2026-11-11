@@ -7,7 +7,8 @@ const fixture = fileURLToPath(new URL('./job-search-harness.tsx', import.meta.ur
 const server = await createServer({
   configFile: false, root, cacheDir: 'test-results/job-search-vite',
   server: {host: '127.0.0.1', port: 3049, strictPort: true},
-  resolve: {alias: {'next/navigation': fixture, 'next/link': fixture, 'next/image': fixture, '@': root}},
+  optimizeDeps:{include:['react','react-dom/client','react/jsx-runtime']},
+  resolve: {dedupe:['react','react-dom'],alias: {'next/navigation': fixture, 'next/link': fixture, 'next/image': fixture, '@': root}},
   define: {'process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED': '"true"'},
   plugins: [{name: 'behaviour-only-fixture',
     configureServer(server) {

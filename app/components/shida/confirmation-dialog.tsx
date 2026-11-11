@@ -10,7 +10,7 @@ export const confirmationCopy={
  ln:{back:'Zonga',working:'Ezali kosalema…',error:'Likambo oyo esimbi te. Tala makambo ya sikoyo liboso ya komeka lisusu.',conflict:'Makambo ebombami ebongwani. Kanga fenêtre oyo mpe zongisa makambo liboso ya komeka lisusu.'},
  sw:{back:'Rudi',working:'Inaendelea…',error:'Hatua haikukamilika. Kagua taarifa za sasa kabla ya kujaribu tena.',conflict:'Taarifa zilizohifadhiwa zimebadilika. Funga dirisha hili na upakie upya kabla ya kujaribu tena.'}
 };
-export type ConfirmationOptions={title:string;description:string;compactHeading?:boolean;supportingText?:string;closeLabel?:string;returnFocus?:()=>HTMLElement|null;confirmLabel:string;cancelLabel?:string;severity?:'normal'|'warning'|'danger';onConfirm:()=>void|Promise<void>;errorMessage?:(error:unknown)=>string};
+export type ConfirmationOptions={title:string;description:string;compactHeading?:boolean;supportingText?:string;closeLabel?:string;returnFocus?:()=>HTMLElement|null;confirmLabel:string;retryLabel?:string;cancelLabel?:string;severity?:'normal'|'warning'|'danger';onConfirm:()=>void|Promise<void>;errorMessage?:(error:unknown)=>string};
 
 /** Callbacks must reject on failure; never pass a helper that swallows errors. */
 export function useConfirmation(locale:ConfirmationLocale){
@@ -41,6 +41,6 @@ export function ConfirmationDialog({locale,options,onClose}:{locale:Confirmation
   {options.supportingText&&<p>{options.supportingText}</p>}
   {error&&<p className="shida-confirmation-error" role="alert">{error}</p>}
   {busy&&<p role="status">{copy.working}</p>}
-  <div className="shida-confirmation-actions"><button ref={safe} type="button" disabled={busy} onClick={cancel}>{options.cancelLabel??copy.back}</button><button type="button" className="shida-confirmation-submit" disabled={busy} onClick={()=>void submit()}>{options.confirmLabel}</button></div>
+  <div className="shida-confirmation-actions"><button ref={safe} type="button" disabled={busy} onClick={cancel}>{options.cancelLabel??copy.back}</button><button type="button" className="shida-confirmation-submit" disabled={busy} onClick={()=>void submit()}>{error&&options.retryLabel?options.retryLabel:options.confirmLabel}</button></div>
  </dialog>;
 }

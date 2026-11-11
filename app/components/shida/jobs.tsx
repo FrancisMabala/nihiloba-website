@@ -245,7 +245,7 @@ export async function JobEmployerPage({locale,slug}:{locale:Locale;slug:string})
       {directory&&!managed&&<p>{c.intro}</p>}
       {employer.description&&<p>{employer.description}</p>}{location&&<p>{location}</p>}
     </header>
-    <section className="employer-vacancies"><h2>{employer.open_job_count?`${employer.open_job_count} ${employer.open_job_count===1?t.result:t.results}`:c.empty}</h2>
+    <section id="vacancies" className="employer-vacancies"><h2>{employer.open_job_count?`${employer.open_job_count} ${employer.open_job_count===1?t.result:t.results}`:c.empty}</h2>
       {employer.jobs.length?<div className="job-result-list">{employer.jobs.map(item=><JobCard key={item.public_ref} item={item} locale={locale} forEmployer/>)}</div>:<Link href={jobsPath}>{c.back} →</Link>}
     </section>
     {invitation&&<aside className="employer-invitation"><SpaceIcon name="business"/><div><h2>{c.represent.replace("{name}",employer.name)}</h2><p>{c.body}</p><p>{c.review}</p>

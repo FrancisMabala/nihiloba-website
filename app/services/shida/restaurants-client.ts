@@ -179,13 +179,13 @@ export async function getRestaurantActions(locale: RestaurantLocale, id: string)
 }
 export function parseBusiness(value: unknown) {
   const data = object(value);
-  return { ...identity(data), activities: envelope(data.activities, (value) => {
+  return { ...identity(data), vacancies_only:data.vacancies_only===true, activities: envelope(data.activities, (value) => {
     const activity = object(value);
     return { ...identity(activity), marketplace: choice(activity.marketplace, ["restaurants", "services", "wenze", "jobs"]) };
   }) };
 }
-export async function getRestaurantBusiness(locale: RestaurantLocale, id: string, page = "1") {
-  const result = parseBusiness(await request(`${root}/businesses/${encodeURIComponent(id)}${query(locale, restaurantQuery({ page }))}`, false));
-  if (result.public_ref !== id) throw new ShidaApiError("malformed");
+export async function getRestaurantBusiness(locale: RestaurantLocale, id: string, page = "1", vacanciesOnly=false) {
+  const result = parseBusiness(await request(`${root}/businesses/${encodeURIComponent(id)}${query(locale, restaurantQuery({ page }))}${vacanciesOnly?"&vacancies_only=true":""}`, false));
+  if (result.public_ref !== id || vacanciesOnly&&!result.vacancies_only) throw new ShidaApiError("malformed");
   return result;
 }

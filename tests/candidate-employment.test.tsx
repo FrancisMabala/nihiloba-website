@@ -87,7 +87,7 @@ describe("authenticated candidate Employment UI", () => {
 
 describe("candidate Employment BFF authorization", () => {
   it("requires an HttpOnly session and returns private no-store responses", async () => {
-    const response = await listApplications();
+    const response = await listApplications(new Request("https://nihiloba.com/api/shida/employment/applications"));
     expect(response.status).toBe(401);
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(response.headers.get("x-robots-tag")).toContain("noindex");
@@ -106,7 +106,7 @@ describe("candidate Employment BFF authorization", () => {
   it("sanitizes application list payloads before returning them to the browser", async () => {
     storedToken = "opaque_session_token_safe";
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ applications: [rawApplication] }))));
-    const response = await listApplications();
+    const response = await listApplications(new Request("https://nihiloba.com/api/shida/employment/applications"));
     const serialized = JSON.stringify(await response.json());
     expect(response.status).toBe(200);
     expect(serialized).toContain("Programme Officer");

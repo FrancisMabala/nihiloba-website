@@ -28,6 +28,7 @@ export type EmploymentMessage = {
 export type CandidateApplication = {
   reference: string;
   job_title: string;
+  job_location?: string | null;
   employer_name: string;
   status: EmploymentApplicationStatus;
   created_at: string | null;

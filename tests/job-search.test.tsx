@@ -1,3 +1,4 @@
+import {applicationsCopy} from '../app/components/shida/workspace-applications';
 import {it,expect,vi} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {SpaceSidebar} from '../app/components/shida/space-sidebar';
@@ -15,7 +16,7 @@ for(const locale of ['fr','en','ln','sw'] as const){
  });
  it(`keeps external clicks distinct from SHIDA submissions in ${locale}`,()=>{
   const html=renderToStaticMarkup(<JobSearchSpace locale={locale} binding={'a'.repeat(64)} initialSection="applications" onUnauthorized={()=>{}}/>);
-  expect(html).toContain(jobSearchCopy[locale].externalGap);expect(html).toContain(jobSearchCopy[locale].directApplications);
+  expect(html).not.toContain(jobSearchCopy[locale].externalGap);expect(html).not.toContain(applicationsCopy[locale].empty);expect(html).toContain(jobSearchCopy[locale].loading);
  });
 }
 it('uses persisted authenticated API state and rejects a replaced session',async()=>{

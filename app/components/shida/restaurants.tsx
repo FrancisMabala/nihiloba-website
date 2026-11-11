@@ -154,15 +154,16 @@ export async function RestaurantDetailPage({ locale, id, search = {}, menuOnly =
 export async function RestaurantBusinessPage({ locale, id, search = {} }: { locale: RestaurantLocale; id: string; search?: RestaurantSearch }) {
   const t = restaurantCopy[locale], page = restaurantQuery(search).get("page") ?? "1", back = restaurantReturn(search);
   const establishment = typeof search.establishment === "string" && /^[A-Za-z0-9_-]+$/.test(search.establishment) ? search.establishment : null;
-  const context = new URLSearchParams({ back, ...(establishment ? { establishment } : {}) });
+  const vacanciesOnly=search.view==='jobs';
+  const context = new URLSearchParams({ back, ...(vacanciesOnly?{view:'jobs'}:{}), ...(establishment ? { establishment } : {}) });
   let business;
-  try { business = await getRestaurantBusiness(locale, id, page); } catch (error) { if (error instanceof ShidaApiError && error.kind === "not-found") notFound(); return <Shell locale={locale} title={t.business} business={id}><Failure locale={locale} href={`${businessPath(locale, id)}?${context}&page=${page}`}/></Shell>; }
+  try { business = await getRestaurantBusiness(locale, id, page,vacanciesOnly); } catch (error) { if (error instanceof ShidaApiError && error.kind === "not-found") notFound(); return <Shell locale={locale} title={t.business} business={id}><Failure locale={locale} href={`${businessPath(locale, id)}?${context}&page=${page}`}/></Shell>; }
   return <Shell locale={locale} title={business.name || t.business} business={id} search={`${context}&page=${page}`}>
     {establishment && <Internal href={`${restaurantPath(locale, `/${establishment}`)}?${new URLSearchParams({ back })}`}>{t.details}</Internal>}
-    <h2>{t.activities}</h2>{!business.activities.items.length && <p>{t.noActivities}</p>}
+    <h2 id={vacanciesOnly?'vacancies':undefined}>{vacanciesOnly?t.jobs:t.activities}</h2>{!business.activities.items.length && <p>{t.noActivities}</p>}
     <ul className="restaurant-activities">{business.activities.items.map((activity) => {
       // These are the four reviewed backend adapters, not all Business modules.
-      const path = activity.marketplace === "restaurants" ? `${restaurantPath(locale, `/${encodeURIComponent(activity.public_ref)}`)}?${new URLSearchParams({ back })}` : `${locale === "en" ? "" : "/fr"}/shida/${activity.marketplace === "jobs" ? "emplois" : activity.marketplace}/${encodeURIComponent(activity.public_ref)}`;
+      const path = activity.marketplace === "restaurants" ? `${restaurantPath(locale, `/${encodeURIComponent(activity.public_ref)}`)}?${new URLSearchParams({ back })}` : `${locale === "en" ? "" : "/"+locale}/shida/${activity.marketplace === "jobs" ? "emplois" : activity.marketplace}/${encodeURIComponent(activity.public_ref)}`;
       return <li key={`${activity.marketplace}-${activity.public_ref}`}><Internal href={path}>{activity.name || activity.public_ref}</Internal> <span>{activity.marketplace === "restaurants" ? t.title : t[activity.marketplace]}</span></li>;
     })}</ul><Pagination locale={locale} {...business.activities} href={(next) => `${businessPath(locale, id)}?${context}&page=${next}`}/>
   </Shell>;
