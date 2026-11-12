@@ -16,6 +16,7 @@ async function fixture(page:Page,scenario:Scenario,locale='en'){
   if(path.endsWith('/stores'))return reply({stores:[shop,second],categories:[],currencies:['CDF','USD']});
   if(path.endsWith('/WNZ_demo'))return reply(shop);
   if(path.endsWith('/WNZ_second'))return reply(second);
+  if(path.endsWith('/inventory/stock'))return reply({items:[],next_cursor:null});
   if(path.endsWith('/products'))return reply({products:[],total:0});
   if(path.endsWith('/options'))return reply({stores:[shop,second],categories:[],issues:{}});
   if(path.endsWith('/WOR_review'))return reply(orders[0]);
@@ -68,7 +69,7 @@ test('shop switching, order detail and new sale destinations',async({page})=>{
  await fixture(page,'active');await page.goto('/shida/seller/wenze?store=WNZ_demo');await expect(page.locator('.wt-order').first()).toBeVisible();
  await page.locator('.wt-order').first().click();await expect(page).toHaveURL(/view=orders/);await expect(page.getByRole('heading',{name:/WOR_review/})).toBeVisible();
  await page.goto('/shida/seller/wenze?store=WNZ_demo');await expect(page.locator('.wt-dashboard')).toHaveAttribute('aria-busy','false');
- await page.locator('.wz-store-selector select').selectOption('WNZ_second');await expect(page.locator('.wt-metric').last()).toContainText('73');await expect(page.locator('.wt-order')).toHaveCount(0);await expect(page.locator('.wt-toolbar select')).toHaveValue('Africa/Lubumbashi');
+ await page.locator('.wz-store-selector select').selectOption('WNZ_second');await expect(page.locator('.wt-followers-stat').first()).toContainText('73');await expect(page.locator('.wt-order')).toHaveCount(0);await expect(page.locator('.wt-toolbar select')).toHaveValue('Africa/Lubumbashi');
  await page.screenshot({path:'test-results/wenze-today/shop-switch.png',fullPage:true});
  await page.locator('.wt-tools .seller-primary').click();await expect(page).toHaveURL(/view=sales/);
 });
@@ -83,8 +84,8 @@ test('late responses cannot restore data from the previous shop',async({page})=>
  await fixture(page,'active');let release!:()=>void;const held=new Promise<void>(resolve=>release=resolve);
  await page.route(/\/WNZ_demo\/today\/?\?/,async route=>{await held;await route.fallback();});
  await page.goto('/shida/seller/wenze?store=WNZ_demo');await expect(page.locator('.wt-dashboard')).toHaveAttribute('aria-busy','true');
- await page.locator('.wz-store-selector select').selectOption('WNZ_second');await expect(page.locator('.wt-metric').last()).toContainText('73');
- const finished=page.waitForResponse(/\/WNZ_demo\/today\/?\?/);release();await finished;await expect(page.locator('.wt-metric').last()).toContainText('73');await expect(page.locator('.wt-order')).toHaveCount(0);
+ await page.locator('.wz-store-selector select').selectOption('WNZ_second');await expect(page.locator('.wt-followers-stat').first()).toContainText('73');
+ const finished=page.waitForResponse(/\/WNZ_demo\/today\/?\?/);release();await finished;await expect(page.locator('.wt-followers-stat').first()).toContainText('73');await expect(page.locator('.wt-order')).toHaveCount(0);
 });
 
 test('financial summary opens existing Money reports and preserves shop',async({page})=>{
@@ -106,4 +107,20 @@ test('refresh and timezone preserve read-only requests and returned local day',a
  await expect(page.locator('.wt-toolbar')).toContainText('Saturday, October 31, 2026');
  await expect(page.locator('.wt-order').first()).toContainText('4:15 PM');
  expect(writes).toEqual([]);
+});
+
+test('previous completed order stays on a quiet day',async({page})=>{
+ await fixture(page,'zero','fr');await page.route(/\/orders\/?\?/,r=>r.fulfill({json:{counts:{action_required:0,in_progress:0},orders:[{reference:'WOR_previous',buyer_name:'Edwina',created_at:'2026-10-18T17:58:00Z',status_label:'Terminée',bucket:'completed',total:'15000',currency:'CDF',items:[{quantity:1}]}]}}));
+ await page.goto('/fr/shida/seller/wenze?store=WNZ_demo');await expect(page.locator('.wt-clear')).toContainText('Tout est à jour');
+ await expect(page.locator('.wt-metric').first()).toContainText('0 CDF');await expect(page.locator('.wt-order')).toContainText('18 oct.');
+ await expect(page.locator('.wt-order')).toContainText(/1 article · 15\s000 CDF/);
+});
+test('low stock opens the matching catalogue product once for two low variants',async({page})=>{
+ await fixture(page,'attention','fr');
+ const variants=['XS','S'].map(label=>({public_ref:'WNV_'+label,label,option_attributes:{size:label},is_available:'yes'}));
+ await page.route(/\/products\/?\?/,r=>r.fulfill({json:{products:[{name:'Chemise verte',public_ref:'WNP_shirt',variant_type:'size',variants,status:'active'},{name:'Sac',public_ref:'WNP_bag',available_stock:11,status:'active'}],total:2}}));
+ await page.route(/\/inventory\/stock\/?\?/,r=>r.fulfill({json:{items:variants.map(v=>({catalog_ref:v.public_ref,item_ref:v.public_ref,available:1,reserved:0,on_hand:1,is_low_stock:true,unit:'piece'})),next_cursor:null}}));
+ await page.goto('/fr/shida/seller/wenze?store=WNZ_demo');
+ await page.locator('.wt-attention').getByRole('button',{name:/1 article en stock bas/i}).click();await expect(page).toHaveURL(/stockFilter=low/);
+ const products=page.locator('.wi-page article');await expect(products).toHaveCount(1);await expect(products.getByRole('heading',{name:'Chemise verte'})).toBeVisible();
 });

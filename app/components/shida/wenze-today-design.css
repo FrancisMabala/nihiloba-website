@@ -75,3 +75,19 @@
 @media(max-width:600px){.wt-sold-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}.wt-sold-row>strong{grid-column:1/-1;text-align:right}.wt-financial dl{grid-template-columns:1fr;gap:14px}.wt-financial dl>div+div{border-left:0;padding-left:0;border-top:1px solid var(--wt-line);padding-top:12px}.wt-financial header{flex-wrap:wrap}.wt-financial dd{font-size:1.2rem}.wt-panel header h3{font-size:1.05rem}}
 
 .wt-stats>div>svg{float:right;box-sizing:content-box;padding:7px;border-radius:7px;margin:0 0 8px 8px}.wt-followers-stat>svg{color:#7c3798;background:#f4eafa}.wt-reviews-stat>svg{color:#996b16;background:#fff3dc}
+
+.wt-dashboard .wt-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+.wt-toolbar .wt-date{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem}
+.wt-date p{margin:0;font-size:1rem}.wt-date p:first-letter{text-transform:uppercase}
+.seller-design .wt-date select{background:transparent;border:0;font-size:inherit}
+.wt-clear{padding:10px 16px}.wt-stats{display:block}
+.wt-stats>div{display:flex;align-items:center;gap:10px;padding:6px 0;border:0;border-bottom:1px solid var(--wt-line)}
+.wt-stats dd{margin:0 0 0 auto}.wt-stats>div>svg{margin:0;float:none}
+.seller-design .wt-stock dt button,.seller-design .wt-financial header .wt-report-link{background:transparent;color:inherit;border:0;padding:2px;text-decoration:underline;min-height:32px}
+@media(max-width:600px){
+.wt-dashboard .wt-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+.wt-dashboard .wt-metrics>:first-child{grid-column:1/-1}
+.seller-design .wt-dashboard .wt-metric{grid-template-columns:minmax(0,1fr);gap:4px}
+.wt-dashboard .wt-metric strong{grid-column:1}
+.wt-tools{justify-content:flex-start}.wt-tools .seller-primary{order:-1}.wt-refresh span:last-child{display:none}
+}

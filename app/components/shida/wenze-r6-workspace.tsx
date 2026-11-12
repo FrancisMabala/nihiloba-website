@@ -46,7 +46,7 @@ export function WenzeR6Workspace({ context, locale, initialView, initialStore, i
   const [view, setView] = useState(""), [shops, setShops] = useState<Shop[]>([]), [shop, setShop] = useState(initialStore??"");
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [stale, setStale] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]), [counts, setCounts] = useState<Record<string, number>>({}), [order, setOrder] = useState<Order | null>(null);
-  const [bucket, setBucket] = useState("all"), [search, setSearch] = useState(""), [offset, setOffset] = useState(0), [total, setTotal] = useState(0), [action, setAction] = useState("");
+  const [bucket, setBucket] = useState(()=>{const value=typeof window==='undefined'?null:new URLSearchParams(location.search).get('bucket');return value==='action_required'||value==='in_progress'?value:'all';}), [search, setSearch] = useState(""), [offset, setOffset] = useState(0), [total, setTotal] = useState(0), [action, setAction] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
   const [jobs, setJobs] = useState<Job[]>([]), [job, setJob] = useState<Job | null>(null), [item, setItem] = useState<ImportItem | null>(null), [draft, setDraft] = useState<Payload | null>(null);
   const [options, setOptions] = useState<{categories: {code: string; label: string}[]; currencies: string[]; issues: Record<string, string>; support_url: string | null}>({categories: [], currencies: ["CDF", "USD"], issues: {}, support_url: null});

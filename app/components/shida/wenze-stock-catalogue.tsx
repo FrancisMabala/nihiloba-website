@@ -3,6 +3,7 @@
 import {useState} from 'react';
 import Image from 'next/image';
 import {inventoryCatalogue,matchesStock,type Balance,type StockFilter,type StockLine} from '@/app/lib/wenze-inventory-catalogue';
+import {todayText} from '@/app/lib/wenze-today-copy';
 import type {SavedProduct} from '@/app/lib/wenze-saved';
 import {savedText} from '@/app/lib/wenze-saved';
 import {creationText} from '@/app/lib/wenze-creation';
@@ -19,6 +20,8 @@ export function InventoryCatalogue({products,balances,locale,onEdit,onCreate}:{p
   const t=stockWords.bind(null,locale);
   const [search,setSearch]=useState(()=>new URLSearchParams(typeof window==='undefined'?'':location.search).get('stockSearch')??'');
   const filters:StockFilter[]=['all','available','low','out'];
+  const initialFilter=typeof window==='undefined'?'':new URLSearchParams(location.search).get('stockFilter');
+  if(initialFilter==='untracked'||initialFilter==='uninitialized')filters.push(initialFilter);
   const [filter,setFilter]=useState<StockFilter>(()=>filters.find(f=>f===new URLSearchParams(typeof window==='undefined'?'':location.search).get('stockFilter'))??'all');
   const [expanded,setExpanded]=useState<Record<string,boolean>>({});
   function remember(key:string,value:string){
@@ -37,7 +40,7 @@ export function InventoryCatalogue({products,balances,locale,onEdit,onCreate}:{p
   }
   return <><div className="wi-search">
     <label><ShopIcon name="search"/><input aria-label={t('search')} placeholder={t('search')} type="search" value={search} onChange={event=>{setSearch(event.target.value);remember('stockSearch',event.target.value);}}/></label>
-    <div className="wi-filters">{filters.map(f=><button key={f} aria-pressed={filter===f} onClick={()=>{setFilter(f);setExpanded({});remember('stockFilter',f);}}>{t(f)} · {searched.filter(g=>matchesStock(g,f)).length}</button>)}</div>
+    <div className="wi-filters">{filters.map(f=><button key={f} aria-pressed={filter===f} onClick={()=>{setFilter(f);setExpanded({});remember('stockFilter',f);}}>{f==='untracked'||f==='uninitialized'?todayText(locale,f):t(f)} · {searched.filter(g=>matchesStock(g,f)).length}</button>)}</div>
   </div>
   {all.length===0?<div className="wc-card"><h2>{t('welcome')}</h2><p>{t('firstEmpty')}</p><button className="seller-primary" onClick={onCreate}>{creationText(locale,'first')}</button></div>:
     !visible.length?<p role="status">{t(filter==='out'&&!search?'noOut':'empty')}</p>:
