@@ -1,4 +1,15 @@
 const words = {
+ "workExample": ["Garde d’enfants, ménage, conduite d’une moto-taxi (wewa)…", "Childcare, housekeeping, driving a motorcycle taxi (wewa)…", "Kobatela bana, kosala misala ya ndako, kotambwisa moto-taxi (wewa)…", "Kulea watoto, kazi za nyumbani, kuendesha pikipiki ya abiria (wewa)…"],
+ "viewRequests": ["Voir les {n} demandes", "View {n} requests", "Tala bosɛngi {n}", "Angalia maombi {n}"],
+ "viewRequest": ["Voir la demande", "View request", "Tala bosɛngi", "Angalia ombi"],
+ "noRequests": ["Aucune demande", "No requests", "Bosɛngi moko te", "Hakuna maombi"],
+ "viewApplications": ["Voir les {n} candidatures", "View {n} applications", "Tala bosɛngi {n} ya mosala", "Angalia maombi {n} ya kazi"],
+ "viewApplication": ["Voir la candidature", "View application", "Tala bosɛngi ya mosala", "Angalia ombi la kazi"],
+ "noApplications": ["Aucune candidature", "No applications", "Bosɛngi ya mosala moko te", "Hakuna maombi ya kazi"],
+ "serviceType": ["Service", "Service", "Mosala ya kosalisa", "Huduma"],
+ "articleType": ["Article", "Item", "Eloko", "Bidhaa"],
+ "jobType": ["Emploi de particulier", "Job from an individual", "Mosala oyo moto apesi", "Kazi kutoka kwa mtu binafsi"],
+ "publishWhat": ["Que souhaitez-vous publier ?", "What would you like to post?", "Olingi kobimisa nini?", "Ungependa kutangaza nini?"],
  "signInForListings": ["Reconnectez-vous à votre espace personnel pour afficher vos annonces.", "Sign in to your Personal account again to see your listings.", "Kɔtá lisusu na esika na yo moko mpo na komona bapiblisite na yo.", "Ingia tena kwenye akaunti yako binafsi ili kuona matangazo yako."],
  "oneApplication":["Candidature","Application","Bosɛngi","Ombi"],"oneRequest":["Demande","Request","Bosɛngi","Ombi"],
  "workProfile":["Profil occasionnel","Occasional work profile","Profil ya misala ya ntango mokuse","Wasifu wa kazi za muda"],
@@ -15,12 +26,7 @@ const words = {
   "Biloko",
   "Bidhaa"
  ],
- "job": [
-  "Offres d’emploi",
-  "Job offers",
-  "Misala",
-  "Nafasi za kazi"
- ],
+ "job": ["Emplois de particuliers", "Jobs from individuals", "Misala oyo bato bapesi", "Kazi kutoka kwa watu binafsi"],
  "service": [
   "Services",
   "Services",
@@ -39,12 +45,7 @@ const words = {
   "Kotɛka eloko",
   "Uza bidhaa"
  ],
- "post": [
-  "Publier une mission",
-  "Post a mission",
-  "Bimisa mosala",
-  "Chapisha kazi"
- ],
+ "post": ["Je cherche quelqu’un", "I’m looking for someone", "Nazali koluka moto", "Natafuta mtu"],
  "provide": [
   "Proposer un service",
   "Offer a service",
@@ -57,12 +58,7 @@ const words = {
   "Bongisa eloko",
   "Simamia bidhaa"
  ],
- "jobAction": [
-  "Gérer la mission",
-  "Manage mission",
-  "Bongisa mosala",
-  "Simamia kazi"
- ],
+ "jobAction": ["Gérer l’annonce", "Manage listing", "Kamba liyebisi", "Simamia tangazo"],
  "serviceAction": [
   "Gérer le service",
   "Manage service",
@@ -285,18 +281,8 @@ const words = {
   "Mosala oyo ezwi lisusu bosɛngi te.",
   "Kazi hii haipokei maombi."
  ],
- "none": [
-  "Aucune annonce pour le moment.",
-  "No listings yet.",
-  "Liyebisi moko te.",
-  "Hakuna matangazo bado."
- ],
- "nojob": [
-  "Aucune mission dans cette sélection.",
-  "No missions in this selection.",
-  "Mosala moko te awa.",
-  "Hakuna kazi katika sehemu hii."
- ],
+ "none": ["Vous n’avez pas encore d’annonce.", "You don’t have any listings yet.", "Ozali naino na liyebisi te.", "Bado huna tangazo."],
+ "nojob": ["Vous n’avez pas encore publié d’emploi de particulier.", "You haven’t posted a personal job yet.", "Obimisi naino mosala ya moto te.", "Bado hujachapisha kazi ya mtu binafsi."],
  "noservice": [
   "Aucun service pour le moment.",
   "No services yet.",

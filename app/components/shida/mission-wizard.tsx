@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useState,type ReactNode} from 'react';
 import {missionTerms,missionProblem,payload,type MissionValues,type Terms} from '../../lib/mission-form';
+import {listingText} from '../../lib/personal-missions-copy';
 import {missionText} from '../../lib/mission-copy';
 import {occText,type OccLocale} from '../../lib/occasional-copy';
 import {categories,weekdays,toggle} from '../../lib/occasional-form';
@@ -20,7 +21,7 @@ export function MissionWizard({editLabel,locations,locale,values,change,busy,pen
  try{setResult(await preview(payload(values)));go(2)}catch(err){const key=err instanceof Error?err.message:'';const simple=['category','custom','job','short_summary','work_city','commune','quartier'].includes(key);if(simple)go(0);else go(1);fail(key)}finally{check(false)}}
  const field=(key:string,label:string,node:ReactNode)=><div className="mission-field" id={'mission-'+key} tabIndex={-1}><strong>{label}</strong>{node}{error===key&&<small role="alert">{key==='short_summary'?t('descriptionHelp'):o('invalid')}</small>}</div>;
  const input=(k:string,label:string,v:string,cb:(s:string)=>void,type='text')=>field(k,label,<input aria-label={label} maxLength={160} type={type} value={v} onChange={e=>cb(e.target.value)}/>);
- const choices=(k:string,label:string,keys:string[],selected:string[],cb:(v:string)=>void,translate=t)=>field(k,label,<div className="occ-options">{keys.map(v=><button type="button" key={v} aria-pressed={selected.includes(v)} onClick={()=>cb(v)}>{selected.includes(v)?'✓ ':''}{translate(v)}</button>)}</div>);
+ const choices=(k:string,label:string,keys:string[],selected:string[],cb:(v:string)=>void,translate=t)=>field(k,label,<div>{k==='category'&&<p>{listingText(locale,'workExample')}</p>}<div className="occ-options">{keys.map(v=><button type="button" key={v} aria-pressed={selected.includes(v)} onClick={()=>cb(v)}>{selected.includes(v)?'✓ ':''}{translate(v)}</button>)}</div></div>);
  const loc=(k:string,v:string)=>{if(k!=='quartier')setManual(false);update({...k==='work_city'?{commune:'',quartier:''}:k==='commune'?{quartier:''}:{},[k]:v})};
  const location=(k:string,label:string,opts:string[],strict=false)=>field(k,label,<MissionPicker id={'select-'+k} value={values[k]||''} label={label} options={opts} strict={strict} onChange={v=>loc(k,v)}/>);
  const flag=(k:'date_flexible'|'overnight')=><label className="candidate-checkbox"><input type="checkbox" checked={m[k]} onChange={e=>update({},k==='date_flexible'?{date_flexible:e.target.checked,day:''}:{overnight:e.target.checked})}/>{t(k)}</label>;

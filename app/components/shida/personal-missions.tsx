@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import {useCallback,useEffect,useState} from 'react';
 import {listingText,type MissionLocale} from '../../lib/personal-missions-copy';
 import {occText} from '../../lib/occasional-copy';
@@ -9,11 +10,13 @@ import {MissionPeople} from './mission-people';
 import {SpaceIcon} from './account-space-icon';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {QuickSell} from './quick-sell';
+import {listingCopy} from '../../lib/wenze-listings-copy';
 import './mission-management.css';
+import './personal-listings.css';
 
 type Status='draft'|'closed'|'open'|'available'|'online'|'hidden'|'sold'|'pending'|'archived';
 type Kind='article'|'job'|'service';
-type Row={type:Kind;reference:string;title:string;status:Status;location?:string;count?:number;price?:string;currency?:string};
+type Row={type:Kind;reference:string;title:string;status:Status;location?:string;photo?:string;count?:number;price?:string;currency?:string};
 type Work={example?:string;name:string;city:string;communes:string[];days:string[];slots:string[];frequency:string[];missions:{name:string;category:string;tasks:string[];experience:string;rate:string;amount:string;currency:string;unit:string}[];message?:string};
 type Model=Row&{locations?:{kinshasa_communes:string[];quartiers:Record<string,string[]>};rows:Row[];version:string;values:MissionValues;profile:Work|null;application?:string};
 type Props={locale:MissionLocale;binding:string};
@@ -57,27 +60,83 @@ function Manager({locale,binding,offer,kind}:Props&{offer:string;kind:string}){
  <div className="mission-actions">{data.status==='open'&&<button onClick={()=>ask('close')}>{t('close')}</button>}<button onClick={()=>ask('remove')}>{t('remove')}</button></div>
  {confirm&&<section aria-label={t(confirm)} className="mission-confirm"><p>{t(confirm==='remove'?'removeHelp':'closeHelp')}</p><button disabled={busy} onClick={()=>ask(null)}>{t('cancel')}</button> <button disabled={busy} onClick={()=>void send(confirm)}>{t(confirm)}</button></section>}</>}</section>
 }
-export function PersonalListings(props:Props){
- const params=new URLSearchParams(typeof window==='undefined'?'':window.location.search),offer=params.get('offer'),kind=params.get('kind');
- if(offer)return <Manager {...props} offer={offer} kind={kind||'manage'}/>;
- return <Catalogue {...props} initial={params.get('tab')||'all'}/>
+export function PersonalListings(props:Props) {
+ const query = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
+ const offer = query.get('offer');
+ const article = query.get('tab') === 'article' && query.has('item');
+ if (offer || article) return <><h1>{listingCopy[props.locale].title}</h1>
+   {offer ? <Manager {...props} offer={offer} kind={query.get('kind') || 'manage'}/> : <QuickSell locale={props.locale} embedded/>}
+ </>;
+ const initial = query.get('tab');
+ return <Catalogue {...props} initial={filters.find(key => key === initial) || 'all'}/>;
 }
-function Catalogue({locale,binding,initial}:Props&{initial:string}){
- const {data,error,retry}=useMission(binding,'catalogue',''),t=(k:Parameters<typeof listingText>[1])=>listingText(locale,k);
- const [tab,choose]=useState(initial),[filter,select]=useState('all'),[menu,open]=useState(false);
- const service=(locale==='en'?'':'/'+locale)+'/shida/seller/services',serviceForm=service+'?view=services&intent=create',mission=missionQuery('job-offer',{intent:'mission'}),article=missionQuery('listings',{tab:'article',item:'new'});
- if (error === '401' || error === 'personal_sign_in_required') {
-   return <section className="space-sign-in">
-     <p>{t('signInForListings')}</p>
-     <PersonalWhatsAppLogin locale={locale} onAuthenticated={() => window.location.reload()}/>
-   </section>;
+
+const filters = ['all','article','job','service'] as const;
+const icons = {article:'orders',job:'management',service:'tool'} as const;
+const actionLabels = {article:'sell',job:'post',service:'provide'} as const;
+const typeLabels = {article:'articleType',job:'jobType',service:'serviceType'} as const;
+const manageLabels = {article:'articleAction',job:'jobAction',service:'serviceAction'} as const;
+
+function ListingThumbnail({row}:{row:Row}) {
+ const [failed,markFailed]=useState(false);
+ const photo=row.type==='article' && row.photo && /^https:\/\//i.test(row.photo) && !failed;
+ return <div className="listing-thumbnail">{photo && row.photo
+   ? <Image src={row.photo} unoptimized width={64} height={64} alt="" referrerPolicy="no-referrer" onError={()=>markFailed(true)}/>
+   : <SpaceIcon name={icons[row.type]}/>}</div>;
+}
+
+function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[number]}) {
+ const {data,error,retry} = useMission(binding,'catalogue','');
+ const [tab,choose] = useState(initial);
+ const [menu,open] = useState(false);
+ const t = (key:Parameters<typeof listingText>[1]) => listingText(locale,key);
+ const service = (locale==='en'?'':'/'+locale)+'/shida/seller/services/';
+ const forms = {
+   article:missionQuery('listings',{tab:'article',item:'new'}),
+   job:missionQuery('job-offer',{intent:'mission'}),
+   service:service+'?view=services&intent=create'
+ };
+ const choices = <section className="listing-choices" id="listing-publishing-choices">
+   {!data?.rows.length && <p>{t('none')}</p>}
+   <h2>{t('publishWhat')}</h2>
+   <div>{(['article','job','service'] as const).map(key=><a className="button" key={key} href={forms[key]}>
+     <SpaceIcon name={icons[key]}/>{t(actionLabels[key])}
+   </a>)}</div>
+ </section>;
+ const title = <h1>{listingCopy[locale].title}</h1>;
+ if (error === '401' || error === 'personal_sign_in_required') return <>{title}<section className="space-sign-in">
+   <p>{t('signInForListings')}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>window.location.reload()}/>
+ </section></>;
+ if (!data || error) return <>{title}<p role="status">{t(error?'error':'loading')} {error && <button onClick={retry}>{t('retry')}</button>}</p></>;
+ const rows = data.rows.filter(row=>tab==='all'||row.type===tab);
+ function listing(row:Row) {
+   const ref = encodeURIComponent(row.reference);
+   const manage = row.type==='job' ? row.status==='draft' ? missionQuery('job-offer',{intent:'mission',draft:row.reference}) : missionQuery('listings',{kind:'manage',offer:row.reference})
+     : row.type==='article' ? missionQuery('listings',{tab:'article',item:row.reference})
+     : row.status==='draft' ? forms.service : service+'?offering='+ref;
+   const job = row.type==='job';
+   const count = row.count;
+   const responses = count===undefined ? null : count===0 ? t(job?'noApplications':'noRequests')
+     : <a href={job?missionQuery('listings',{kind:'applications',offer:row.reference}):service+'?view=work&offering='+ref}>
+       {t(job?(count===1?'viewApplication':'viewApplications'):(count===1?'viewRequest':'viewRequests')).replace('{n}',String(count))}
+     </a>;
+   return <article className="personal-listing" key={row.type+row.reference}>
+     <ListingThumbnail key={row.photo} row={row}/>
+     <div className="listing-identity"><small>{t(typeLabels[row.type])}</small><h2>{row.title||t('draft')}</h2>
+       <div className="listing-meta">{row.location&&<span>{row.location}</span>}{row.price&&<span>{row.price} {row.currency}</span>}{responses&&<span>{responses}</span>}</div>
+     </div>
+     <div className="listing-controls"><span>{t(row.status)}</span><a className="button" href={manage}>{t(manageLabels[row.type])}</a></div>
+   </article>;
  }
- const create=<nav className="mission-actions"><a href={article}>{t('sell')}</a><a href={mission}>{t('post')}</a><a href={serviceForm}>{t('provide')}</a></nav>;
- const rows=(data?.rows||[]).filter(r=>(tab==='all'||r.type===tab)&&(tab!=='job'||filter==='all'||r.status===filter));
- return <div className="personal-listings-catalogue"><button className="button button-primary" aria-expanded={menu} onClick={()=>open(!menu)}>＋ {t('create')}</button>{menu&&create}
- <nav className="mission-actions">{(['all','article','job','service'] as const).map(k=><button key={k} aria-pressed={tab===k} onClick={()=>{choose(k);select('all')}}>{t(k)}{data?' ('+data.rows.filter(r=>k==='all'||r.type===k).length+')':''}</button>)}</nav>
- {tab==='job'&&<nav className="mission-actions">{(['all','draft','open','closed'] as const).map((k,i)=><button key={k} aria-pressed={k===filter} onClick={()=>select(k)}>{t((['all','drafts','opens','closes'] as const)[i])}</button>)}</nav>}
- {!data?<p role="status">{error?t('error'):t('loading')} {error&&<button onClick={retry}>{t('retry')}</button>}</p>:tab==='article'?<QuickSell locale={locale} embedded/>:rows.length?rows.map(r=>{
- const href=r.type==='job'?r.status==='draft'?missionQuery('job-offer',{intent:'mission',draft:r.reference}):missionQuery('listings',{kind:'manage',offer:r.reference}):r.type==='article'?missionQuery('listings',{tab:'article',item:r.reference}):r.status==='draft'?serviceForm:service+'?offering='+encodeURIComponent(r.reference);
- return <article key={r.type+r.reference} className="listing-row"><SpaceIcon name={r.type==='job'?'management':r.type==='service'?'tool':'shop'}/><div><small>{t(r.type)}</small><h2>{r.title||t('draft')}</h2><p>{[r.location,r.price&&[r.price,r.currency].join(' '),r.count!=null?r.count+' '+t(r.type==='job'?(r.count===1?'oneApplication':'applications'):(r.count===1?'oneRequest':'requests')).toLocaleLowerCase():null].filter(Boolean).join(' · ')}</p></div><div><span>{t(r.status)}</span><a href={href}>{t(r.type==='job'?'jobAction':r.type==='service'?'serviceAction':'articleAction')} →</a></div></article>}):<section className="mission-card"><p>{t(tab==='service'?'noservice':tab==='job'?'nojob':'none')}</p>{tab==='job'?<a href={mission}>{t('post')}</a>:tab==='service'?<a href={serviceForm}>{t('provide')}</a>:create}</section>}</div>
+ return <div className="my-listings"><header>{title}{data.rows.length>0&&<button className="button button-primary" aria-expanded={menu} aria-controls="listing-publishing-choices" onClick={()=>open(!menu)}>+ {t('create')}</button>}</header>
+   {data.rows.length===0 ? choices : <>
+     {menu&&choices}
+     <div className="listing-filters">{filters.map(key=><button className={'button'+(tab===key?' button-primary':'')} key={key} aria-pressed={key===tab} onClick={()=>choose(key)}>
+       {t(key)} ({key==='all'?data.rows.length:data.rows.filter(row=>row.type===key).length})
+     </button>)}</div>
+     {rows.map(listing)}
+     {!rows.length && tab!=='all' && <section className="listing-choices"><p>{t(tab==='job'?'nojob':tab==='service'?'noservice':'noarticle')}</p>
+       <a className="button" href={forms[tab]}>{t(actionLabels[tab])}</a></section>}
+   </>}
+ </div>;
 }

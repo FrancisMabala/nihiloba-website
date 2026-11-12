@@ -20,7 +20,7 @@ for(const width of [360,390,768,1024,1440])test(`employment discovery and detail
  for(const amount of ['180 USD / month','25 USD / day','20 USD / intervention'])await expect(page.getByText(amount,{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`test-results/jobs-home-${width}.png`,fullPage:true});
- await page.getByRole('link',{name:'Individual offers',exact:true}).click();await expect(page.locator('.job-result')).toHaveCount(2);
+ await page.getByRole('link',{name:'Jobs from individuals',exact:true}).click();await expect(page.locator('.job-result')).toHaveCount(2);
  await page.screenshot({path:`test-results/jobs-individual-${width}.png`,fullPage:true});
  await page.getByRole('link',{name:'Company & organisation offers',exact:true}).click();await expect(page.locator('.job-result')).toHaveCount(3);
  await page.getByRole('link',{name:'Skilled trades',exact:true}).click();await expect(page.locator('.job-result')).toHaveCount(2);

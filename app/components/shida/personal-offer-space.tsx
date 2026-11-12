@@ -22,7 +22,7 @@ export function PersonalOfferSpace({locale,binding,onUnauthorized}:{locale:Local
  useEffect(()=>{unauthorized.current=onUnauthorized;},[onUnauthorized]);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  useWorkDraft(dirty,t.error);
- const api=useCallback(async(body?:unknown)=>{const response=await fetch('/api/shida/personal/job-offer',{method:body===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000),headers:{'X-Shida-Session':binding,...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify({...body as object,language:locale})});if(response.status===401)unauthorized.current();if(!response.ok){const error=await response.json().catch(()=>({}));throw new Error(error.field||String(response.status))}return response.json();},[binding,locale]);
+ const api=useCallback(async(body?:unknown)=>{const response=await fetch('/api/shida/personal/job-offer/',{method:body===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000),headers:{'X-Shida-Session':binding,...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify({...body as object,language:locale})});if(response.status===401)unauthorized.current();if(!response.ok){const error=await response.json().catch(()=>({}));throw new Error(error.field||String(response.status))}return response.json();},[binding,locale]);
  const load=useCallback(async()=>{const next=await api() as Data;if(alive.current)setData(next);return next;},[api]);
  const autoOpened=useRef(false);
  useEffect(()=>{let active=true;void load().then(async next=>{

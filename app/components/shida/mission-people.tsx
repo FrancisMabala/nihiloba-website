@@ -16,7 +16,7 @@ export function MissionPeople({locale,binding}:{locale:OccLocale;binding:string}
  const clear=()=>{controller?.abort();setData(null)};
  const load=async()=>{clear();if(document.hidden)return;const req=new AbortController();controller=req;setError(false);
  try{const qs=offer&&kind?'?'+new URLSearchParams({offer,kind,...(record?{record}:{})}):'';
- const res=await fetch('/api/shida/personal/job-offer'+qs,{cache:'no-store',headers:{'X-Shida-Session':binding},signal:req.signal});if(!res.ok)throw Error();const d=await res.json();if(active&&!req.signal.aborted)setData(d);
+ const res=await fetch('/api/shida/personal/job-offer/'+qs,{cache:'no-store',headers:{'X-Shida-Session':binding},signal:req.signal});if(!res.ok)throw Error();const d=await res.json();if(active&&!req.signal.aborted)setData(d);
  }catch{if(active&&!req.signal.aborted)setError(true)}};
  void load();document.addEventListener('visibilitychange',load);window.addEventListener('pageshow',load);window.addEventListener('pagehide',clear);return()=>{active=false;controller?.abort();document.removeEventListener('visibilitychange',load);window.removeEventListener('pageshow',load);window.removeEventListener('pagehide',clear)}},[binding,kind,offer,record]);
  if(error)return <p role="alert">{l[3]}</p>;if(!data)return <p role="status">{l[5]}</p>;

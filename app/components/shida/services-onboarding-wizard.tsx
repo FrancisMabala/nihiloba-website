@@ -20,7 +20,25 @@ export function ServicesOnboardingWizard({locale,accountName,categories,call,onC
  const dirty=!!progress&&JSON.stringify(values)!==JSON.stringify(progress.fields);
  useWorkDraft(dirty,t.error,locale);
  async function load(){setBusy(true);try{const result=await api.current('/onboarding') as unknown as Data;setData(result);setFinalIntent(null);setConfirmed(false);setMessage('');const active=result.progress.find(row=>row.status==='active');if(active){setProgress(active);setValues(formValues(active.fields,result.professional_profile));setStep(result.professional_profile?2:1);}else{setProgress(null);setValues({});}}catch{setMessage(t.error);}finally{setBusy(false);}}
- useEffect(()=>{let active=true;void api.current('/onboarding').then(raw=>{if(!active)return;const result=raw as unknown as Data;setData(result);const row=result.progress.find(item=>item.status==='active');if(row){setProgress(row);setValues(formValues(row.fields,result.professional_profile));setStep(result.professional_profile?2:1);}}).catch(()=>{if(active)setMessage(t.error);});return()=>{active=false;};},[t.error]);
+ useEffect(()=>{
+  let active=true;
+  async function enter() {
+   const result=await api.current('/onboarding') as unknown as Data;
+   if(!active)return;
+   setData(result);
+   let row=result.progress.find(item=>item.status==='active');
+   if(!row && result.remaining_capacity!==0 && new URLSearchParams(window.location.search).get('intent')==='create') {
+    key.current??=crypto.randomUUID();
+    setBusy(true);
+    row=await api.current('/onboarding','POST',{action:'start',operation_key:key.current}) as unknown as Progress;
+   }
+   if(active && row) {
+    setProgress(row);setValues(formValues(row.fields,result.professional_profile));setStep(result.professional_profile?2:1);
+   }
+  }
+  void enter().catch(()=>{if(active)setMessage(t.error);}).finally(()=>{if(active)setBusy(false);});
+  return()=>{active=false;};
+ },[t.error]);
  async function command(body:object){return await api.current('/onboarding','POST',body) as unknown as Progress;}
  async function operate(work:()=>Promise<void>){if(pending.current)return;pending.current=true;setBusy(true);setMessage('');try{await work();}catch{setMessage(t.error);}finally{pending.current=false;setBusy(false);}}
  async function start(){await operate(async()=>{key.current??=crypto.randomUUID();const row=await command({action:'start',operation_key:key.current});setProgress(row);setValues(formValues(row.fields,data?.professional_profile));setStep(data?.professional_profile?2:1);});}

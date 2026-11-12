@@ -1,11 +1,6 @@
 import {occText,type OccLocale} from './occasional-copy';
 const words:Record<string,string[]> = {
- "title": [
-  "Publier une mission",
-  "Publish a mission",
-  "Kobimisa mosala",
-  "Chapisha kazi"
- ],
+ "title": ["Je cherche quelqu’un", "I’m looking for someone", "Nazali koluka moto", "Natafuta mtu"],
  "s1": [
   "La mission",
   "The mission",
@@ -24,12 +19,7 @@ const words:Record<string,string[]> = {
   "Kotala mpe kobimisa",
   "Kagua na uchapishe"
  ],
- "category": [
-  "Pour quelle mission cherchez-vous quelqu’un ?",
-  "What mission are you hiring for?",
-  "Ozali koluka moto mpo na mosala nini ?",
-  "Unatafuta mtu kwa kazi gani?"
- ],
+ "category": ["Pour quel travail cherchez-vous quelqu’un ?", "What work do you need someone for?", "Ozali koluka moto mpo na mosala nini?", "Unamtafuta mtu kwa kazi gani?"],
  "custom": [
   "Autre",
   "Other",

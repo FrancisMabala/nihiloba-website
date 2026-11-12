@@ -13,7 +13,7 @@ assert (root/'app/main.py').is_file(), 'Pass the SHIDA backend checkout as the f
 from tempfile import TemporaryDirectory
 fixture_directory=TemporaryDirectory(prefix='shida-activities-')
 sys.path.insert(0,str(root))
-os.environ.update(APP_ENV='test',DATABASE_URL='sqlite:///'+str(Path(fixture_directory.name)/'activities.db'),WHATSAPP_VERIFY_TOKEN='local-test-only',DASHBOARD_AUTH_PEPPER='activities-local-test-only',ADMIN_KEY='local-test-only')
+os.environ.update(APP_ENV='test',DASHBOARD_ALLOWED_ORIGINS='https://nihiloba.com',DATABASE_URL='sqlite:///'+str(Path(fixture_directory.name)/'activities.db'),WHATSAPP_VERIFY_TOKEN='local-test-only',DASHBOARD_AUTH_PEPPER='activities-local-test-only',ADMIN_KEY='local-test-only')
 from app.main import app
 from app.database.connection import SessionLocal
 from app.database.models import UserAccountDB,DashboardSessionDB
@@ -22,7 +22,7 @@ from app.services.dashboard_auth_service import _keyed_hash
 from tests.wenze_fixture_support import create_wenze_store
 from tests.test_restaurant_personal_lifecycle import create,publish,edit
 accounts={}
-for index,kind in enumerate(['empty','one','many','overview','properties','private']):
+for index,kind in enumerate(['empty','one','many','overview','properties','private','listings']):
     phone='24382009990'+str(index)
     with SessionLocal() as db:
         account=UserAccountDB(phone_number=phone,personal_name='Acceptance '+kind,city='Kinshasa',country_code='CD')
@@ -67,6 +67,33 @@ for index,kind in enumerate(['empty','one','many','overview','properties','priva
             for index,(name,area) in enumerate([('Appartement du fleuve','Gombe'),('Résidence du parc','Lemba')]):
                 db.add(m.ApartmentListingDB(owner_account_id=accounts[kind]['actor_account_id'],owner_phone=phone,
                     public_ref=f'APT_overview{index}',listing_title=name,city='Kinshasa',commune=area,number_of_rooms=2,price=100,status='AVAILABLE'))
+            db.commit()
+    if kind=='listings':
+        from app.services.wenze_quick_sell_service import prepare_context
+        with SessionLocal() as db:
+            account=db.query(UserAccountDB).filter_by(phone_number=phone).one()
+            owner=dict(owner_account_id=account.id,owner_account_ref=account.public_ref)
+            store=prepare_context(db,{'actor_phone':phone,'active_business_id':None},'Kinshasa')
+            store_id=db.query(m.WenzeStoreDB.id).filter_by(public_ref=store['public_ref']).scalar()
+            db.add(m.WenzeProductDB(store_id=store_id, public_ref='WNP_article', name='Vélo de ville',price='75000',currency='CDF',stock_quantity=1))
+            profile=m.ServiceProviderProfileDB(public_ref='SVI_listings',name='Atelier de Gombe',**owner)
+            db.add(profile);db.flush()
+            for i,name in enumerate(['Réparation de téléphones','Installation de logiciels']):
+                service=m.ServiceProviderDB(public_ref=f'SVC_listings{i}',provider_profile_id=profile.id,provider_public_ref=profile.public_ref,
+                    name=profile.name,phone_number=phone,service_name=name,category='other',location='Kinshasa',commune='Gombe',publication_origin='pilot')
+                db.add(service);db.flush()
+                now=datetime.now(timezone.utc)
+                db.add(m.ServiceWorkRequestDB(public_ref=f'SWR_listings{i}',requester_account_ref=accounts['one']['actor_account_ref'],
+                    offering_id=service.id,provider_profile_id=profile.id,description=name,status='SUBMITTED',
+                    created_at=now,updated_at=now,expires_at=now+timedelta(days=7)))
+            for i,(title,names) in enumerate([('Garde d’enfants',['Marie K.','Paul M.']),('Conduite de wewa',['Jean B.'])]):
+                job=m.PosterDB(public_ref=None if i==0 else 'JOB_wewa',role='job_poster',offer_type=None if i==0 else 'individual',
+                    phone_number=phone,name='Employeur',job=title,work_city='Kinshasa',location='Kinshasa',commune='Kintambo',**owner)
+                db.add(job);db.flush()
+                for j,name in enumerate(names):
+                    db.add(m.ApplicationDB(public_ref=f'APP_listings{i}{j}',poster_id=job.id,poster_phone_number=phone,
+                        poster_name=job.name,poster_job=title,poster_location='Kinshasa',seeker_phone_number='243820099999',
+                        seeker_name=name,seeker_job=title,seeker_location='Kinshasa',status='submitted'))
             db.commit()
 print('Controlled accounts and normal domain records created.',flush=True)
 import uvicorn
