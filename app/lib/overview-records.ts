@@ -1,7 +1,7 @@
 import type {ManagedActivity} from './personal-activities';
 import {OFFICIAL_CHANNELS} from './brand';
 export type ActivityKind='shop'|'malewa'|'restaurant'|'profile'|'job'|'apartment'|'hotel'|'driver'|'item';
-export type OverviewEntry={kind:ActivityKind;ref:string;name:string;location?:string;url:string;image?:string|null;status?:string;publicUrl?:string;preview?:boolean;standaloneService?:boolean};
+export type OverviewEntry={kind:ActivityKind;ref:string;name:string;location?:string;url:string;image?:string|null;status?:string;publicUrl?:string;preview?:boolean;offeringCount?:number;standaloneService?:boolean};
 type JobRow={type:string;reference:string;title?:string;status:string;posted_offer?:boolean;location?:string};
 type Property={reference:string;name?:string;city?:string;commune?:string;web_draft?:boolean;visible?:boolean;status?:string};
 export type Travel={kind:'hotel'|'driver';reference:string;name:string|null};
@@ -12,9 +12,9 @@ export function overviewEntries(locale:string,activities:ManagedActivity[],extra
    if(item.individual)continue;
    const kind=item.market==='wenze'?'shop':item.market==='services'?'profile':item.foodType==='malewa'?'malewa':'restaurant';
    const publicRef=encodeURIComponent(item.providerRef??item.ref);
-   const query=item.providerRef?'view=services&provider='+encodeURIComponent(item.providerRef):item.query;
+   const query=item.providerRef?'view=overview&provider='+encodeURIComponent(item.providerRef):item.query;
    entries.push({kind,ref:item.providerRef??item.ref,name:item.name,image:item.image,location:item.location,status:item.status,
-     standaloneService:kind==='profile'&&!item.providerRef,
+     offeringCount:item.offeringCount,standaloneService:kind==='profile'&&!item.providerRef,
      publicUrl:item.published?base+'/'+item.market+'/'+(item.providerRef?'providers/':'')+publicRef:undefined,
      preview:!item.published&&(kind==='shop'||item.canPreview),url:base+'/seller/'+item.market+'?'+query});
  }

@@ -17,6 +17,9 @@ import {personalWenzePath} from '../../lib/wenze-seller-api';
 import {PrivateMenuPreview} from './restaurant-projection';
 import './managed-activity-list.css';
 
+import {providerCopy} from '../../lib/services-provider-copy';
+import {storefrontCopy} from '../../lib/professional-storefront';
+const counts={fr:'sur',en:'of',sw:'kati ya',ln:'na kati ya'};
 const groups={shop:'shop',food:'restaurant',profile:'people',service:'tool',apartment:'home',hotel:'business',driver:'people',job:'management',item:'orders'} as const;
 function groupOf(row:OverviewEntry):keyof typeof groups{
  if(row.kind==='restaurant'||row.kind==='malewa')return 'food';
@@ -59,14 +62,14 @@ function ShopPreview({row,binding,locale}:{row:OverviewEntry;binding:string;loca
 function ActivityCard({row,binding,locale,icon}:{row:OverviewEntry;binding:string;locale:MarketplaceLocale;icon:SpaceIconName}){
  const t=managedActivityCopy[locale],d=activitiesDesignCopy[locale];
  const [failedImage,setFailedImage]=useState(''),[previewing,setPreviewing]=useState(false);
- const manage=row.kind==='shop'?t.manageShop:row.standaloneService?t.manageService:row.kind==='profile'?t.manageProfile:overviewCopy[locale][row.kind][2];
+ const manage=row.kind==='shop'?t.manageShop:row.standaloneService?t.manageService:row.kind==='profile'?providerCopy[locale].manage:overviewCopy[locale][row.kind][2];
  const view=row.kind==='shop'?d.viewShop:row.kind==='job'?t.viewJob:row.kind==='apartment'?t.viewHome:row.kind==='profile'&&!row.standaloneService?t.viewProfile:d.view;
  const name=row.name||mySpaceCopy[locale].unnamed;
  const suffix=<span className="sr-only"> · {name}</span>;
  return <article data-ref={row.ref}>
   <div className="managed-image">{row.image&&failedImage!==row.image?/* eslint-disable-next-line @next/next/no-img-element */
     <img src={row.image} alt="" loading="lazy" onError={()=>setFailedImage(row.image!)}/>:<SpaceIcon name={icon}/>}</div>
-  <div className="managed-identity"><h3>{name}</h3><p>{[row.location,statusText(locale,row)].filter(Boolean).join(' · ')}</p></div>
+  <div className="managed-identity"><h3>{name}</h3><p>{[row.location,statusText(locale,row)].filter(Boolean).join(' · ')}</p>{row.offeringCount!==undefined&&<p>{storefrontCopy[locale].services} · {row.offeringCount} {counts[locale]} 5</p>}</div>
   <div className="managed-actions"><a className="button button-primary" href={row.url}>{manage}{suffix}</a>
    {row.publicUrl&&<a className="button button-secondary" href={row.publicUrl}>{view}{suffix}</a>}
    {row.preview&&<button className="button button-secondary" type="button" aria-expanded={previewing} onClick={()=>setPreviewing(!previewing)}>{t.preview}{suffix}</button>}
@@ -88,7 +91,7 @@ export function ManagedActivityList({locale,current,creation,onRetry}:{locale:Ma
    {(Object.keys(groups) as (keyof typeof groups)[]).map(group=>{
     const rows=entries.filter(row=>groupOf(row)===group);
     if(!rows.length)return null;
-    return <section key={group} className="managed-group"><h2><SpaceIcon name={groups[group]}/>{t[group][rows.length===1?0:1]} ({rows.length})</h2>
+    return <section key={group} className="managed-group"><h2><SpaceIcon name={groups[group]}/>{t[group][rows.length===1?0:1]}{group==='profile'?'':` (${rows.length})`}</h2>
      <div className={'managed-cards'+(rows.length===1?' full-row':'')+(entries.length===1?' single-row':'')}>{rows.map(row=><ActivityCard key={row.kind+row.ref} row={row} binding={current.binding} locale={locale} icon={groups[group]}/>)}</div></section>;
    })}
   </>}

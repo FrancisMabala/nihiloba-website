@@ -8,3 +8,6 @@
 @media(max-width:600px){.svc-workday .svc-daily-panel{padding:16px}.svc-workday.svc-workday .svc-daily-kpi{padding:14px;gap:9px}.svc-daily-kpi .svc-daily-icon{width:30px;height:30px}.svc-daily-kpi .svc-daily-icon svg{width:20px;height:20px}.svc-daily-kpi span{font-size:.8rem}.svc-daily-kpi strong{font-size:1.5rem}.svc-workday .svc-daily-banner{padding:18px;flex-wrap:wrap;min-height:160px}.svc-daily-banner>div{max-width:100%}.svc-daily-landscape{height:70px;width:55%}.svc-workday .svc-daily-banner h2{font-size:1.6rem}.svc-daily-attention li{padding:12px;gap:10px}.svc-daily-attention .svc-daily-icon{width:32px;height:32px}.svc-daily-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.svc-daily-panel>header{flex-wrap:wrap}.svc-daily-opportunities label{flex-direction:column;align-items:stretch}}
 
 .svc-workday .svc-nav-group>p{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:#69766b;padding:12px 14px 3px;margin:0}
+
+.svc-daily-date{display:flex;align-items:center;justify-content:space-between;gap:1rem}.svc-daily-date p{margin:0}.svc-daily-opportunities{margin-top:1rem}
+@media(min-width:1051px){.svc-daily-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}

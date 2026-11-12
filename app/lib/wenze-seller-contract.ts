@@ -12,6 +12,7 @@ const routes=[
 ["GET", "stores/{store_ref}/pos/catalog"],
 ["GET", "stores/{store_ref}/pos/lookup/{code}"],
 ["POST", "stores/{store_ref}/pos/checkout"],
+["POST", "stores/{store_ref}/report-schedules/{frequency}/preview"],
 ["GET", "stores/{store_ref}/pos/receipts"],
 ["GET", "stores/{store_ref}/pos/receipts/{reference}"],
 ["GET", "stores/{store_ref}/pos/receipts/{reference}/pdf"],
@@ -429,7 +430,7 @@ const routes=[
 export function wenzeRouteAllowed(parts:string[],method:string,query:URLSearchParams){
  if(!parts.length||parts.some(p=>!p||p==='.'||p==='..'||!/^[A-Za-z0-9_.-]{1,200}$/.test(p)))return false;
  const found=routes.some(([verb,path])=>verb===method&&path.split('/').length===parts.length&&path.split('/').every((p,i)=>p.startsWith('{')?/^[A-Za-z0-9_-]+$/.test(parts[i]):p===parts[i]));
- const keys=new Set(['width','timezone','archived','status','search','offset','limit','language','store_ref','bucket','expected_review_version','variant_ref','tracking_state','unit','low_stock_state','cursor','item_ref','movement_kind','reason','date_from','date_to','period','top_limit','low_stock_limit','frequency']);
+ const keys=new Set(['day','payment','width','timezone','archived','status','search','offset','limit','language','store_ref','bucket','expected_review_version','variant_ref','tracking_state','unit','low_stock_state','cursor','item_ref','movement_kind','reason','date_from','date_to','period','top_limit','low_stock_limit','frequency']);
  if(method==='GET'&&parts[2]==='purchase-costs'){keys.add('missing');keys.add('currency');}
  if(method==='GET'&&parts.length===3&&parts[0]==='stores'&&parts[2]==='products')keys.add('listing_state');
  if(method==='GET'&&parts.length===4&&parts[0]==='stores'&&parts[2]==='inventory'&&parts[3]==='stock')keys.add('availability');

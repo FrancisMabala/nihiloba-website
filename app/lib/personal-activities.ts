@@ -10,7 +10,7 @@ export function activityCounts(value:unknown):Partial<Record<ActivityCountKey,nu
  }
  return result;
 }
-export type ManagedActivity={ref:string;name:string;market:'wenze'|'restaurants'|'services';published:boolean|null;query:string;status:string;location:string;missing:string[];individual:boolean;image:string|null;providerRef?:string;professionalName?:string;professionalImage?:string|null;foodType?:string;canPreview?:boolean;offeringCount?:number};
+export type ManagedActivity={ref:string;name:string;market:'wenze'|'restaurants'|'services';published:boolean|null;query:string;status:string;location:string;missing:string[];individual:boolean;image:string|null;providerRef?:string;professionalName?:string;professionalImage?:string|null;foodType?:string;canPreview?:boolean;activeOffering?:boolean;offeringCount?:number};
 export function managedActivities(market:ManagedActivity['market'],value:unknown,policy?:unknown):{items:ManagedActivity[];setup:boolean;more:boolean}{
  const data=value as Record<string,unknown>;
  if(!data||typeof data!=='object')throw Error('Unavailable activities');
@@ -30,7 +30,7 @@ export function managedActivities(market:ManagedActivity['market'],value:unknown
   if(market==='wenze'&&row.catalog_ready===false){if(!row.city)missing.push('location');if(!row.category)missing.push('category');if(!missing.length)missing.push('setup');}
   const published=market==='services'?row.visible_to_customers===true:market==='restaurants'?row.status==='active':typeof row.catalog_ready==='boolean'&&typeof row.status==='string'&&typeof row.visible==='string'?row.catalog_ready&&row.status==='active'&&row.visible==='true':null;
   return {ref:row.public_ref,name,market,foodType:row.profile?.food_business_type,canPreview:market==='restaurants'&&Array.isArray(row.actions)&&row.actions.includes('preview'),published:missing.length?false:published,
-   ...(market==='services'&&typeof row.provider_ref==='string'&&row.provider_ref?{providerRef:row.provider_ref,professionalName:typeof row.professional_profile?.name==='string'?row.professional_profile.name:undefined,professionalImage:safePublicImageUrl(row.professional_profile?.photo)}:{}),
+   ...(market==='services'&&typeof row.provider_ref==='string'&&row.provider_ref?{providerRef:row.provider_ref,activeOffering:row.is_active==="yes",professionalName:typeof row.professional_profile?.name==='string'?row.professional_profile.name:undefined,professionalImage:safePublicImageUrl(row.professional_profile?.photo)}:{}),
    image,status:missing.length?'needsUpdate':row.status==='inactive'||market==='services'&&row.is_active==='no'?'inactive':row.status==='draft'?'draft':['pending','pending_approval'].includes(row.status)?'pending':published?'active':'hidden',
    location:typeof location==='string'?location:'',missing,individual:row.selling_mode==='individual',
    query:`${market==='wenze'?'store':market==='services'?'offering':'establishment'}=${encodeURIComponent(row.public_ref)}${market==='services'?'&view=services':market==='wenze'&&(missing.length>0||row.status==='inactive')?'&view=shop':''}`
@@ -47,7 +47,7 @@ export function dashboardActivities(items:ManagedActivity[]):ManagedActivity[]{
   if(item.market!=='services'||!item.providerRef){result.push(item);continue;}
   const siblings=items.filter(other=>other.market==='services'&&other.providerRef===item.providerRef);
   result.push({...item,name:item.professionalName||item.name,image:item.professionalImage||item.image,
-   query:'view=services',offeringCount:siblings.length,published:siblings.some(row=>row.published===true),
+   query:'view=overview',offeringCount:siblings.filter(row=>row.activeOffering).length,published:siblings.some(row=>row.published===true),
    status:new Set(siblings.map(row=>row.status)).size===1?item.status:'mixed',
    missing:[...new Set(siblings.flatMap(row=>row.missing))],location:[...new Set(siblings.map(row=>row.location).filter(Boolean))].join(' · ')});
  }

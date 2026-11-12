@@ -37,14 +37,14 @@ it('uses restaurant photo and broad service location without hiding legacy rows'
 
 it('groups service offerings by explicit professional identity without merging unrelated providers',()=>{
  const items=managedActivities('services',{profiles:[
-  {public_ref:'SVC_a',provider_ref:'PRO_one',service_name:'Legal advice',professional_profile:{name:'Horizon'},visible_to_customers:true},
+  {public_ref:'SVC_a',provider_ref:'PRO_one',service_name:'Legal advice',is_active:'yes',professional_profile:{name:'Horizon'},visible_to_customers:true},
   {public_ref:'SVC_b',provider_ref:'PRO_one',service_name:'Business advice',professional_profile:{name:'Horizon'},is_active:'no'},
   {public_ref:'SVC_c',provider_ref:'PRO_two',service_name:'Haircut',professional_profile:{name:'Salon'}},
   {public_ref:'SVC_legacy',service_name:'Legacy service'},
  ]},{capabilities:['profile']}).items;
  const result=dashboardActivities(items);
  expect(result).toHaveLength(3);
- expect(result[0]).toMatchObject({name:'Horizon',providerRef:'PRO_one',offeringCount:2,status:'mixed',published:true,query:'view=services'});
+ expect(result[0]).toMatchObject({name:'Horizon',providerRef:'PRO_one',offeringCount:1,status:'mixed',published:true,query:'view=overview'});
  expect(result[1].providerRef).toBe('PRO_two');expect(result[2].ref).toBe('SVC_legacy');
 });
 it('deduplicates the same store reference without turning a quick-sale identity into a shop',()=>{

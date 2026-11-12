@@ -57,3 +57,9 @@
 .wm-ledger [data-label]{display:flex;justify-content:space-between;gap:12px}.wm-ledger [data-label]:before{content:attr(data-label);color:#53665c}
 .wm-ledger .wm-edit-row{margin-top:0}.wm-filters{flex-wrap:wrap}.wm-filters label{flex-basis:100%!important}
 }
+
+.wm-period{display:grid;gap:1rem;min-width:0}.wm-period section,.wm-period>details{padding:clamp(.8rem,2vw,1.35rem);border:1px solid var(--line,#ddd8cb);border-radius:.8rem;background:#fffdf9;min-width:0}.wm-period header,.wm-report-pair p{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}.wm-report-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.wm-period summary{padding:.65rem 0;cursor:pointer}.wm-period .wm-kpis{margin:.8rem 0}.wm-period .wm-warning{padding:.7rem;background:#fff2d7}.wm-report-pair p{border-bottom:1px solid #e5e2db}.wm-report-pair b{margin-inline-start:auto}@media(max-width:760px){.wm-report-pair{grid-template-columns:1fr}}
+
+.wm-ticket-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}.wm-ticket-filters label,.wm-ticket-filters select,.wm-ticket-filters input{min-width:0;width:100%}.wm-cancelled-ticket{display:block;border:2px solid;padding:5px;font-weight:800}.wm-receipt-list[hidden]{display:none}.wm-receipt-preview .wz-receipt-paper{margin-inline:auto;overflow-wrap:anywhere}.wm-report-dates{display:flex;gap:1rem;flex-wrap:wrap}
+@media(min-width:761px){.wm-preview-panel .wm-receipt-toolbar>button:first-child,.wm-ticket-filters+summary{display:none}}
+@media(max-width:760px){.wm-receipts .wm-receipts-layout{display:block}.wm-receipts .wm-receipt-preview{display:block}.wm-ticket-filters{grid-template-columns:1fr}}

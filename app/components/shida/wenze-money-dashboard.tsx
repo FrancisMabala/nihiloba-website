@@ -10,7 +10,7 @@ const obj=(v:unknown):Row=>v&&typeof v==='object'&&!Array.isArray(v)?v as Row:{}
 const rows=(v:unknown):Row[]=>Array.isArray(v)?v:[];
 const number=(v:unknown)=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null;
 export const moneyValue=(v:unknown,locale:string)=>number(v)===null?'—':new Intl.NumberFormat(locale,{maximumFractionDigits:2}).format(Number(v));
-function ComparisonChart({data,currency,locale}:{data:Row;currency:string;locale:WenzeLocale}){
+export function ComparisonChart({data,currency,locale}:{data:Row;currency:string;locale:WenzeLocale}){
  const c=(k:string)=>moneyText(locale,k),keys=['revenue','known_gross_profit','recorded_operating_expenses'],labels=[c('sales'),c('margin'),c('expenses')];
  const values=keys.flatMap(k=>['current','previous'].map(p=>number(obj(data[k])[p]))),present=values.filter((v):v is number=>v!==null);
  const amount=(value:unknown)=>number(value)===null?'—':moneyValue(value,locale)+' '+currency;

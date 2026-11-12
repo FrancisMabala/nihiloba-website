@@ -1,8 +1,8 @@
 const copy: Record<string, [string,string,string,string]> = {
- title: ["Payment preferences","Préférences de paiement","Maponi ya lifuti","Mapendeleo ya malipo"],
- help: ["Choose how you accept payment outside SHIDA. These settings do not collect money or confirm payment.","Choisissez comment vous acceptez les paiements hors SHIDA. Ces réglages ne collectent pas d’argent et ne confirment pas les paiements.","Pona ndenge ozwa lifuti libanda ya SHIDA. Maponi oyo ezwaka mbongo te mpe endimisaka lifuti te.","Chagua jinsi unavyopokea malipo nje ya SHIDA. Mipangilio hii haikusanyi pesa wala kuthibitisha malipo."],
+ title: ["Payment preferences","Moyens de paiement acceptés","Maponi ya lifuti","Mapendeleo ya malipo"],
+ help: ["Choose how you accept payment outside SHIDA. These settings do not collect money or confirm payment.","Les clients vous paient directement, en dehors de SHIDA.","Pona ndenge ozwa lifuti libanda ya SHIDA. Maponi oyo ezwaka mbongo te mpe endimisaka lifuti te.","Chagua jinsi unavyopokea malipo nje ya SHIDA. Mipangilio hii haikusanyi pesa wala kuthibitisha malipo."],
  cash: ["Cash","Espèces","Mbongo ya maboko","Taslimu"],
- mobile_money: ["Mobile money","Mobile money","Mbongo na telefone","Pesa kwa simu"],
+ mobile_money: ["Mobile Money","Mobile Money","Mbongo na telefone","Pesa kwa simu"],
  other: ["Other offline methods","Autres moyens hors ligne","Ndenge mosusu libanda ya SHIDA","Njia nyingine nje ya SHIDA"],
  card: ["Card","Carte bancaire","Karte ya banki","Kadi"],
  paypal: ["PayPal","PayPal","PayPal","PayPal"],
