@@ -20,7 +20,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const method of ['missing
   if(path.endsWith('/delete'))return route.fulfill({json:{eligible:true,obligations:[],retained_records:false}});
   return route.fallback();
  });
- await page.setViewportSize({width:390,height:844});await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);
+ await page.setViewportSize({width:390,height:844});await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);await page.locator('.space-danger > summary').click();
  const panel=page.locator('#account-deletion'),message=securityActionErrorText(locale,new Error(method==='missing'?'security_method_missing':'security_method_not_ready'))!;
  await panel.getByRole('button',{name:deletionText(locale,'check'),exact:true}).click();
  await expect(panel.getByText(message,{exact:true})).toBeVisible();
@@ -38,7 +38,7 @@ for(const code of ['security_method_not_ready','security_fresh_login_required'])
   if(path.endsWith('/email/proof/start/'))return route.fulfill({status:403,json:{detail:code}});
   return route.fallback();
  });
- await page.goto('/fr/shida/space/?view=settings');await page.getByLabel(securityText('fr','preferEmail'),{exact:true}).check();
+ await page.goto('/fr/shida/space/?view=settings');await page.locator('.space-danger > summary').click();await page.getByLabel(securityText('fr','preferEmail'),{exact:true}).check();
  const panel=page.locator('#account-deletion');
  await panel.getByRole('button',{name:deletionText('fr','check'),exact:true}).click();
  await panel.getByRole('button',{name:deletionText('fr','confirm'),exact:true}).click();
@@ -46,7 +46,7 @@ for(const code of ['security_method_not_ready','security_fresh_login_required'])
 });
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366])test(`deletion review consent and withdrawal ${locale} ${width}`,async({page})=>{
  const state=await fixture(page,true,true),t=(key:Parameters<typeof deletionReviewText>[1])=>deletionReviewText(locale,key);
- await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);
+ await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':'/'+locale}/shida/space/?view=settings`);await page.locator('.space-danger > summary').click();
  await page.getByLabel(securityText(locale,'preferEmail'),{exact:true}).check();
  await page.getByRole('button',{name:deletionText(locale,'check'),exact:true}).click();
  await expect(page.locator('#account-deletion .deletion-obligations')).toContainText(deletionUx(locale,'wewa'));
@@ -85,7 +85,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
   if(path.endsWith('/delete/cancel')){expect(freshLogin).toBe(true);expect(route.request().postDataJSON()).toEqual({reference:'DEL_fixture',confirmed:true});cancellations++;return route.fulfill({json:{cancelled:true}});}
   return route.fallback();
  });
- await page.setViewportSize({width,height:900});await page.goto(`${prefix}/shida/space/?view=settings`);
+ await page.setViewportSize({width,height:900});await page.goto(`${prefix}/shida/space/?view=settings`);await page.locator('.space-danger > summary').click();
  await page.getByLabel(securityText(locale,'preferEmail'),{exact:true}).check();
  await expect(page.locator('.account-deletion-review')).toHaveCount(0);
  await page.getByRole('button',{name:t('check'),exact:true}).click();
@@ -109,7 +109,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
 test('failed eligibility read offers retry without confirmation or review',async({page})=>{
  await fixture(page,true,true);let attempts=0;
  await page.route('**/api/shida/personal/security/delete/',route=>{attempts++;return route.fulfill(attempts===1?{status:503,json:{}}:{json:{eligible:true,obligations:[],retained_records:false}});});
- await page.goto('/shida/space/?view=settings');await page.getByRole('button',{name:deletionText('en','check'),exact:true}).click();
+ await page.goto('/shida/space/?view=settings');await page.locator('.space-danger > summary').click();await page.getByRole('button',{name:deletionText('en','check'),exact:true}).click();
  const panel=page.locator('#account-deletion');await expect(page.getByRole('dialog')).toBeVisible();
  await expect(panel.getByRole('button',{name:deletionText('en','confirm'),exact:true})).toHaveCount(0);
  await panel.getByRole('button',{name:deletionText('en','retry'),exact:true}).click();await expect(panel.getByText(deletionText('en','eligible'))).toBeVisible();
@@ -161,7 +161,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1366]
  await fixture(page);await page.setViewportSize({width,height:900});const prefix=locale==='en'?'':`/${locale}`;
  await page.goto(`${prefix}/shida/space/?view=settings`);
  await expect(page.getByRole('heading',{name:accountDesignText(locale,'securityTitle'),exact:true})).toBeVisible();
- await expect(page.locator('#account-deletion h3')).toBeVisible();
+ await expect(page.locator('.space-danger > summary')).toBeVisible();
  await expect(page.getByRole('heading',{name:mySpaceCopy[locale].lost,exact:true})).toBeVisible();
  await expect(page.locator('.account-protection a')).toHaveAttribute('href','?view=recovery');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -215,7 +215,7 @@ test('real browser passkey enrollment and recovery-email step-up',async({page,co
  const state=await fixture(page);const cdp=await context.newCDPSession(page);await cdp.send('WebAuthn.enable');await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}});
  await page.goto('http://localhost:3044/shida/space/?view=settings');await page.locator('summary').filter({hasText:'Passkey'}).click();await page.getByRole('button',{name:securityText('en','passkey'),exact:true}).click();await expect.poll(()=>state.registered).toBe(true);
  await page.locator('summary').filter({hasText:securityText('en','email')}).click();await page.getByLabel(securityText('en','email'),{exact:true}).fill('synthetic@example.test');await page.getByRole('button',{name:securityText('en','send'),exact:true}).first().click();await page.getByLabel(securityText('en','code'),{exact:true}).fill('12345678');await page.getByRole('button',{name:securityText('en','verify'),exact:true}).click();await expect.poll(()=>state.email).toBe(true);
- await page.getByLabel(securityText('en','preferEmail'),{exact:true}).check();await page.locator('summary').filter({hasText:securityText('en','revoke')}).click();await page.getByRole('button',{name:securityText('en','revoke'),exact:true}).click();
+ await page.getByLabel(securityText('en','preferEmail'),{exact:true}).check();await page.locator('.account-sessions summary').click();await page.getByRole('button',{name:securityText('en','revoke'),exact:true}).click();
  const region=page.getByRole('region',{name:securityText('en','emailProof'),exact:true});await region.getByLabel(securityText('en','code'),{exact:true}).fill('12345678');await region.getByRole('button',{name:securityText('en','verify'),exact:true}).click();await expect(region).toHaveCount(0);expect(state.proof).toBe(true);
  await page.screenshot({path:'test-results/account-security/settings.png',fullPage:true});
 });
@@ -254,4 +254,49 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`independent email login
  await form.getByRole('button',{name:t.verify,exact:true}).click();
  await expect(page.locator('.auth-email')).toHaveCount(0);
  expect(verifications).toBe(1);expect(starts).toBe(2);expect(whatsapp).toBe(0);
+});
+
+for(const width of [360,1440])test(`account sections identify the exact key, recovery and sessions at ${width}`,async({page})=>{
+ const state=await fixture(page,true,true);
+ let keys=[{reference:'KEY_one',created_at:'2026-01-01T10:00:00Z',ready_at:'2026-01-02T10:00:00Z'},{reference:'KEY_two',name:'Mon téléphone',created_at:'2026-02-01T10:00:00Z',ready_at:'2026-02-02T10:00:00Z'}];
+ let failed=true,multiple=false,phone=false,removed='';
+ await page.route('**/personal/security/**',async route=>{
+  const path=new URL(route.request().url()).pathname.replace(/\/$/,'');
+  if(path.endsWith('/security'))return route.fulfill({json:{email:multiple?'r***@example.test':null,email_ready_at:'2026-01-01T10:00:00Z',login_email:'m***@example.test',login_email_verified:true,passkeys:keys}});
+  if(path.endsWith('/recovery'))return route.fulfill(failed?{status:503,json:{}}:{json:{methods:phone?[{kind:'phone',phone:'•••• 0123',verified:true,ready_at:'2099-01-01T10:00:00Z'}]:[]}});
+  if(path.endsWith('/sessions'))return route.fulfill(failed?{status:503,json:{}}:{json:{sessions:[{reference:'one',current:true,last_seen_at:'2026-01-01T12:00:00Z'},...(multiple?[{reference:'two',current:false,last_seen_at:'2026-01-01T10:00:00Z'}]:[])]}});
+  if(path.endsWith('/passkeys/revoke')){
+   const body=route.request().postDataJSON();expect(state.proof).toBe(true);expect(body.confirmed).toBe(true);
+   removed=body.reference;keys=keys.filter(key=>key.reference!==removed);return route.fulfill({json:{revoked:true}});
+  }
+  if(path.endsWith('/security/passkeys/verify/options'))return route.fulfill({status:403,json:{detail:'security_verification_required'}});
+  return route.fallback();
+ });
+ await page.setViewportSize({width,height:800});await page.goto('/fr/shida/space?view=settings');
+ await expect(page.locator('.account-sessions [role=alert]')).toBeVisible();
+ await expect(page.getByText('Seule cette session est ouverte.')).toHaveCount(0);
+ const empty='Ajoutez un moyen de retrouver votre compte si vous perdez votre téléphone.';
+ await expect(page.getByText(empty)).toHaveCount(0);await expect(page.locator('#optional-recovery [role=alert]')).toBeVisible();failed=false;
+ await page.locator('.account-sessions [role=alert] button').click();await page.locator('#optional-recovery [role=alert] button').click();
+ await expect(page.getByText('Seule cette session est ouverte.')).toBeVisible();await expect(page.getByText(empty)).toBeVisible();
+ await expect(page.locator('.space-account-security')).toContainText('•••• 0000');
+ await expect(page.locator('#job-alert-login-email summary')).toContainText('m***@example.test');
+ await expect(page.locator('.space-danger')).not.toHaveAttribute('open','');
+ await page.locator('#job-alert-passkey summary').click();
+ const second=page.locator('#job-alert-passkey li').nth(1);await second.getByRole('button',{name:'Retirer',exact:true}).click();
+ await expect(second.locator('p')).toContainText('Mon téléphone');await expect(page.locator('#job-alert-passkey li').first().getByRole('button',{name:securityText('fr','confirmRemovePasskey')})).toHaveCount(0);
+ expect(state.removed).toBe(0);await second.getByRole('button',{name:securityText('fr','cancel'),exact:true}).click();
+ await page.screenshot({path:`test-results/account-security/account-${width}.png`,fullPage:true});
+ multiple=true;phone=true;await page.reload();
+ await expect(page.locator('#optional-recovery > fieldset summary').first()).toContainText('2099');
+ await expect(page.getByText(empty)).toHaveCount(0);await page.locator('.account-sessions summary').click();
+ await expect(page.getByRole('button',{name:'Déconnecter les autres sessions'})).toBeVisible();await expect(page.getByText('Seule cette session est ouverte.')).toHaveCount(0);
+ await page.getByLabel(securityText('fr','preferEmail'),{exact:true}).check();
+ await page.locator('#job-alert-passkey summary').click();
+ await second.getByRole('button',{name:'Retirer',exact:true}).click();
+ await second.getByRole('button',{name:securityText('fr','confirmRemovePasskey')}).click();
+ const proof=page.getByRole('region',{name:securityText('fr','emailProof')});
+ await proof.getByRole('textbox').fill('12345678');await proof.getByRole('button',{name:securityText('fr','verify'),exact:true}).click();
+ await expect.poll(()=>removed).toBe('KEY_two');await expect(page.locator('#job-alert-passkey li')).toHaveCount(1);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

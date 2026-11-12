@@ -2,3 +2,37 @@
 .candidate-workspace h2,.candidate-workspace h3{font-family:Georgia,serif;color:#103e32}.candidate-workspace h2{font-size:1.65rem}.candidate-required{color:#ad291f}.candidate-wide{grid-column:1/-1}.candidate-count{text-align:right}.candidate-optional{margin-top:22px;border-radius:10px;background:#f1f5e9;padding:16px}.candidate-optional summary{font-weight:600;cursor:pointer}.candidate-optional .candidate-fields{margin-top:20px}.candidate-chip-field>label{font-weight:500}.candidate-chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.candidate-chips>span{display:inline-flex;align-items:center;gap:8px;border-radius:18px;background:#edf4e5;padding:3px 8px;overflow-wrap:anywhere;max-width:100%}.candidate-chips button{border:0;background:transparent;padding:3px;min-height:30px;min-width:30px}.candidate-chip-add{display:flex;gap:8px}.candidate-chip-add input{flex:1;min-width:0}.candidate-chip-add button{flex:none}.candidate-review-group{padding:8px 0;border-bottom:1px solid #e1e4d9}.candidate-review-group header{display:flex;justify-content:space-between;gap:12px;align-items:center}.candidate-review-group h3{font-size:1.2rem}.candidate-review-group .candidate-review{margin-top:0}.candidate-draft-card{padding:18px;background:linear-gradient(110deg,#eff5e8,#fffaf2);border:1px solid #dbe3d2;border-radius:12px}.candidate-draft-card progress{width:100%;height:8px;accent-color:#168246}.candidate-draft-card p{font-size:.9rem}.candidate-workspace button.candidate-danger{color:#a72222;border-color:#c54444;background:#fff8f5}.candidate-upload{display:flex;flex-direction:column;gap:12px;padding:18px;border:1px dashed #628765;border-radius:10px;background:#f3f8ed;cursor:pointer}.candidate-upload input::file-selector-button{font:inherit;padding:8px;border:1px solid #bfcbbf;border-radius:7px;background:white}.candidate-workspace .qs-leave-dialog,.candidate-delete{position:fixed;inset:0;margin:auto;width:min(600px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid #dedfd4;border-radius:18px;padding:28px;background:#fffefa;color:#103e32;box-shadow:0 22px 80px #0004}.candidate-workspace dialog::backdrop{background:#15392f77}.candidate-workspace .qs-leave-dialog fieldset{border:0;padding:0}.candidate-workspace .qs-leave-choice{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:10px;background:#f4f4ec;margin:8px 0}.candidate-workspace .qs-leave-choice:has(:checked){background:#e6f1dd;outline:1px solid #468251}.candidate-workspace .qs-leave-choice input{width:20px;height:20px;flex:0 0 20px;margin-top:4px;accent-color:#11663e}.candidate-workspace .qs-leave-choice small{display:block;margin-top:5px}.candidate-workspace .qs-leave-discard{color:#a51d1d;background:#fff1ee}.candidate-workspace .wz-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px;margin-top:22px}.candidate-workspace .seller-primary{background:#103e32;color:white}@media(max-width:800px){.candidate-wizard-art{display:flex;align-items:center;padding:12px;gap:12px}.candidate-wizard-art img{width:90px;height:auto}.candidate-wizard-art h2{font-size:1.1rem}.candidate-wizard-art p{display:none}}@media(max-width:540px){.candidate-delete,.candidate-workspace .qs-leave-dialog{padding:20px}.candidate-workspace h2{font-size:1.4rem}.candidate-chip-add{flex-wrap:wrap}.candidate-chip-add input{flex-basis:65%}.candidate-form{padding:16px}.candidate-steps{gap:6px}.candidate-review-group header button{padding:6px}}
 
 .candidate-workspace,.candidate-wizard-layout>*{min-width:0}.candidate-form{min-width:0}.candidate-form fieldset{margin-inline:0}.candidate-upload{position:relative}.candidate-upload input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}.candidate-upload:focus-within{outline:3px solid #b58a35;outline-offset:2px}.candidate-wizard-art h2{min-width:0;overflow-wrap:anywhere}
+
+.professional-wizard .mobile-step{display:none}
+.professional-wizard .candidate-select{position:relative}
+.candidate-select>button{width:100%;display:flex;justify-content:space-between;text-align:start;gap:.5rem}
+.candidate-options{position:absolute;z-index:5;top:100%;left:0;right:0;margin-top:3px;max-height:min(240px,40dvh);overflow:auto;overscroll-behavior:contain;background:#fffefa;border:1px solid #d5d4cb;border-radius:8px;box-shadow:0 6px 18px #24342d24}
+.candidate-options.above{top:auto;bottom:46px}
+.candidate-options [role=option]{display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:8px 12px;cursor:pointer}
+.candidate-options [aria-selected=true]{background:#edf2e6}
+.candidate-options [data-active=true]{outline:2px solid #416b5c;outline-offset:-3px}
+.professional-wizard .work-types{margin:0}
+.work-types>div{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.work-types label{display:flex;flex-direction:row;align-items:center;min-height:40px}
+.work-types input{width:auto;accent-color:#103e32}
+.professional-wizard .candidate-chip-field>label,.professional-wizard .candidate-select>label{display:block}
+.candidate-chip-field label small{margin-inline-start:8px}
+.professional-wizard .candidate-review dd{white-space:pre-line}
+.candidate-review .review-introduction{display:block}
+.professional-wizard [role=alert]{color:#922a1c}
+.professional-wizard .candidate-review-group button{background:transparent;border:0;text-decoration:underline}
+@media(max-width:800px){
+ .professional-wizard .candidate-wizard-art,.professional-wizard .candidate-steps{display:none}
+ .professional-wizard .mobile-step{display:block;margin:4px 0 10px}
+}
+@media(max-width:540px){
+ .professional-wizard .candidate-actions .button-primary{order:-1;flex:1 0 100%}
+ .professional-wizard .candidate-actions button{min-width:0}
+ .work-types>div{grid-template-columns:1fr}
+}
+
+@media(max-width:700px){
+ .job-search-workspace:has(.professional-wizard)>.search-intro{display:none}
+ .job-search-workspace:has(.professional-wizard)>.search-tabs{display:flex;overflow-x:auto;flex-wrap:nowrap;max-width:100%}
+ .job-search-workspace:has(.professional-wizard)>.search-tabs a{flex:none}
+}

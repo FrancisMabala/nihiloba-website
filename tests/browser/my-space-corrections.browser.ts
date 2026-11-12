@@ -15,7 +15,7 @@ for(const width of [390,1440]) test(`My Space visual ${width}`,async({page})=>{
   return reply({},404);
  });
  await page.setViewportSize({width,height:900});await page.goto('/fr/shida/space?view=settings');
- await expect(page.locator('.registration-card')).toContainText('•••• 0001');
+ await expect(page.locator('.space-account-security')).toContainText('•••• 0001');
  if(process.env.SPACE_CAPTURE_PHASE!=='before'){
   await expect(page.locator('.notification-header-link')).toHaveCount(1);
   await expect(page.locator('.space-content .notification-bell')).toHaveCount(0);
@@ -40,7 +40,7 @@ for(const status of [401,503])test(`account load ${status} ends loading and offe
  await page.route('**/api/shida/personal/security/**',route=>route.fulfill({status,json:{detail:'security_unavailable'}}));
  await page.goto('/fr/shida/space?view=settings');
  await expect(page.locator('.space-account-security')).not.toContainText('Chargement…');
- await expect(page.locator('.space-security [role="alert"]')).toContainText(status===401?'Reconnectez-vous':'temporairement indisponibles');
+ await expect(page.locator('.space-account-security [role="alert"]')).toContainText(status===401?'Reconnectez-vous':'temporairement indisponibles');
  await expect(page.locator('.registration-card [role="alert"]')).toHaveCount(1);
  await expect(page.locator('.registration-card')).not.toContainText('modification n’a pu');
  await expect(page.locator('.registration-card button')).toHaveText('Réessayer');

@@ -13,7 +13,7 @@ const copy={
   ],
   "check": [
     "Review account deletion",
-    "Examiner la suppression du compte",
+    "Vérifier avant de supprimer",
     "Tala kolongola konti",
     "Kagua kufuta akaunti"
   ],

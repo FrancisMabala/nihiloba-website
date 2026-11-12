@@ -1,5 +1,6 @@
 'use client';
 import {useState} from 'react';
+import {accountDesignText} from '../../lib/account-design-copy';
 import {AccountSetting} from './account-setting';
 import {emailLoginCopy} from '../../lib/email-login-copy';
 import {securityText} from '../../lib/account-security-copy';
@@ -11,7 +12,7 @@ export function LoginEmailSetting({locale,current,verified,pending,setup,api,run
 }){
  const [email,setEmail]=useState(''),[reference,setReference]=useState(pending||''),[code,setCode]=useState('');
  const t=emailLoginCopy[locale],reset=()=>{setEmail('');setReference('');setCode('');};
- return <AccountSetting id="job-alert-login-email" icon="email" title={t.email} cancel={t.cancel} onCancel={reset}>
+ return <AccountSetting id="job-alert-login-email" icon="email" title={t.email} status={[current,accountDesignText(locale,current?'edit':'add')].filter(Boolean).join(' · ')} cancel={t.cancel} onCancel={reset}>
   <p>{help[locale]}</p>{verified&&current&&<p>{current}</p>}
   <form onSubmit={event=>{event.preventDefault();void run(async()=>{
    if(reference){await api('login-email/verify/',{reference,code});reset();saved();}

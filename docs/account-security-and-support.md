@@ -86,3 +86,10 @@ Validation: 55 focused gateway/session unit tests; production webpack build and 
 ## Cancellable deletion - 6 November 2026
 
 The previous immediate-deletion/review behavior is superseded by [the shared 30-day lifecycle](account-deletion-2026-11-06.md). This is a local implementation, not a deployed change.
+
+Mon compte groups the personal profile and sign-in methods alongside recovery
+and lost-phone help. Each passkey has an individual confirmation, with creation
+and activation timestamps when available. Session summaries come from the
+authenticated session list. The collapsed deletion control opens a read-only
+eligibility review. A scheduled deletion uses the restricted sign-in and
+explicit cancellation flow until its deadline.

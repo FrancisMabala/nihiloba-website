@@ -1,7 +1,19 @@
 type Locale='en'|'fr'|'ln'|'sw';
 const text={
- securityTitle:['Sign-in and security','Connexion et sécurité','Bokoti mpe bobateli','Kuingia na usalama'],
- recoveryTitle:['Account recovery','Récupération du compte','Kozongisa konti','Kurejesha akaunti'],
+ detailsTitle:['My details','Mes informations','Makambo na ngai','Taarifa zangu'],
+ add:['Add','Ajouter','Kobakisa','Ongeza'],
+ edit:['Edit','Modifier','Kobongola','Hariri'],
+ loginPhone:['WhatsApp number','Numéro WhatsApp','Nimero WhatsApp','Nambari ya WhatsApp'],
+ unverified:['Unverified','Non vérifié','Endimisami te','Haijathibitishwa'],
+ keys:['Passkeys','Clés d’accès','Bafungola ya bokoti','Funguo za kuingia'],
+ created:['Created on','Créée le','Esalemaki na','Uliundwa'],
+ activation:['Active from','Activation le','Ekobanda na','Unaanza'],
+ onlySession:['Only this session is open.','Seule cette session est ouverte.','Kaka session oyo ezali polele.','Kipindi hiki pekee ndicho kimefunguliwa.'],
+ sessions:['Active sessions','Sessions actives','Ba sessions oyo ezali kosala','Vipindi vinavyotumika'],
+ missingMethods:['Add a recovery method in case you lose your phone.','Ajoutez un moyen de retrouver votre compte si vous perdez votre téléphone.','Bakisa nzela ya kozongisa konti soki telefone ebungi.','Ongeza njia ya kurejesha akaunti ukipoteza simu.'],
+
+ securityTitle:['Sign-in and security','Me connecter à SHIDA','Bokoti mpe bobateli','Kuingia na usalama'],
+ recoveryTitle:['Account recovery','Retrouver l’accès à mon compte','Kozongisa konti','Kurejesha akaunti'],
  recoveryHelp:['Configure ways to regain access if you lose your phone.','Configurez des moyens de retrouver votre compte en cas de perte du téléphone.','Bongisa banzela ya kozongisa konti soki telefone ebungi.','Weka njia za kurejesha akaunti ukipoteza simu.'],
  intro:['Protect your account and manage your recovery options.','Protégez votre compte et gérez vos options de récupération.','Batela konti na yo mpe bongisa banzela ya kozongisa yango.','Linda akaunti yako na udhibiti njia za kuirejesha.'],
  delay:['New recovery methods become usable after 24 hours.','Les nouvelles méthodes de récupération sont utilisables après 24 heures.','Banzela ya sika ya kozongisa konti esalaka nsima ya ngonga 24.','Njia mpya za kurejesha akaunti hutumika baada ya saa 24.'],

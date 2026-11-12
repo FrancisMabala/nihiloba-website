@@ -7,6 +7,7 @@ export async function fixture(page:Page,signedIn=true,configured=false){
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Synthetic user'}},signedIn?200:401);
   if(path.includes('/personal/security')){
    const base='/api/shida/personal/security',part=path.slice(base.length);
+   if(part==='/sessions')return reply({sessions:[{reference:'SES_here',current:true,last_seen_at:'2026-11-10T12:00:00Z'},{reference:'SES_other',current:false,last_seen_at:'2026-11-09T09:00:00Z'}]});
    if(part==='/profile')return reply({revision:'fixture-revision',values:{personal_name:'Synthetic user',city:'Kinshasa',country_code:'CD',preferred_language:'fr'},primary_phone:{masked:'•••• 0000',verified:true},neighborhood:null});
    if(part==='/recovery')return reply({methods:[]});
    if(part==='')return reply({login_email:state.loginEmail?'l***@example.test':null,login_email_verified:state.loginEmail,email:state.email?'s***@example.test':null,email_ready_at:'2026-01-01T00:00:00Z',protected:false,passkeys:state.registered?[{reference:'KEY_fixture',ready_at:'2026-01-01T00:00:00Z'}]:[]});

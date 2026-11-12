@@ -27,7 +27,6 @@ import {AccountRecoveryReview} from './account-recovery-review';
 import {AccountDeletionAdmin} from './account-deletion-admin';
 import {AccountSupport} from './account-support';
 import {accountSupportCopy} from '../../lib/account-support-copy';
-import {PersonalProfileSettings} from './personal-profile-settings';
 import {accountNavigationCopy} from '../../lib/account-navigation-copy';
 import {MessagesSpace} from './messages-space';
 
@@ -87,7 +86,7 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
    {view==='receipts'&&<><p className="space-intro">{t.receiptNote}</p>{rows([[t.bills,`${prefix}/shida/service-bills`,'receipts']])}</>}
    {(view==='management'||view==='overview')&&<>{view==='overview'&&<p className="space-overview-slogan" lang="ln">Misala na yo nyonso, na esika moko!</p>}{checking?<p role="status">{t.loading}</p>:session?<PersonalActivities overview={view==='overview'} key={session.binding} locale={locale} current={activityData} onRetry={()=>setActivityRevision(v=>v+1)}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>}</>}
    {!session&&securityResult&&<p role="status">{securityText(locale,securityResult)}</p>}
-   {view==='settings'&&session&&<div className="account-settings-cards"><PersonalProfileSettings key={'profile:'+session.binding} binding={session.binding} locale={locale}/><AccountSecurity key={'security:'+session.binding} binding={session.binding} locale={locale} onCompleted={setSecurityResult}/></div>}
+   {view==='settings'&&session&&<div className="account-settings-cards"><AccountSecurity key={'security:'+session.binding} binding={session.binding} locale={locale} onCompleted={setSecurityResult}/></div>}
 
   </div>
  </div>;

@@ -10,6 +10,6 @@ export function candidateResumeStep(values:Record<string,string|string[]|null>,r
  const present=(key:string)=>Array.isArray(values[key])?(values[key] as string[]).length>0:Boolean(values[key]?.trim());
  const search=kind==='professional'?candidateSearchFields:['work_types','city','preferred_areas','availability'];
  if(search.some(key=>required.includes(key)&&!present(key)))return 0;
- if(required.some(key=>!present(key)))return 1;
+ if(required.some(key=>key!=='cv_choice'&&!present(key)))return 1;
  return 2;
 }

@@ -1,7 +1,7 @@
 /* Approved My Account reference. Scope density changes to this page only. */
-.account-settings-cards{display:grid;gap:18px;align-items:start;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"profile recovery" "security deletion" "protection protection"}
+.account-settings-cards{display:grid;gap:18px;align-items:start;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"profile recovery" "security protection" "sessions sessions" "deletion deletion"}
 .account-settings-cards>.account-security-panels{display:contents}
-.account-settings-cards>.space-profile{grid-area:profile}
+.account-settings-cards .space-profile{grid-area:profile}
 .account-settings-cards .space-account-security{grid-area:security}
 .account-settings-cards .account-recovery-settings{grid-area:recovery}
 .account-settings-cards .space-danger{grid-area:deletion}
@@ -13,7 +13,7 @@
 .account-deletion-review label{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
 .account-deletion-review textarea{width:100%;min-height:100px;border:1px solid #cdd6cc;border-radius:6px;padding:10px}
 .account-deletion-review li{overflow-wrap:anywhere;margin:12px 0}
-@media(max-width:1100px){.account-settings-cards{grid-template-columns:minmax(0,1fr);grid-template-areas:"profile" "security" "recovery" "deletion" "protection"}}
+@media(max-width:1100px){.account-settings-cards{grid-template-columns:minmax(0,1fr);grid-template-areas:"profile" "security" "recovery" "protection" "sessions" "deletion"}}
 .account-settings-page{grid-template-columns:230px minmax(0,1fr);max-width:1320px}
 .account-settings-page .space-content{padding:24px 30px 48px}
 .account-settings-page .space-eyebrow{display:none}
@@ -60,3 +60,17 @@
 .account-settings-page .space-lost-phone>span:last-child{margin-left:auto;font-size:22px;line-height:1}
 @media(max-width:850px){.account-settings-page{grid-template-columns:200px minmax(0,1fr)}.account-settings-page .space-content{padding:24px 20px 40px}.account-settings-page .space-security-detail{padding-left:20px;padding-right:20px}}
 @media(max-width:700px){.account-settings-page{display:block}.account-settings-page .space-content{padding:22px 14px 32px}.account-settings-page h1{font-size:32px}.account-settings-page h2{font-size:25px}.account-settings-page .space-profile,.account-settings-page .space-security{padding:16px 14px}.account-settings-page .space-profile-details>div{grid-template-columns:1fr;gap:4px;padding:10px 0}.account-settings-page .space-security-setting>summary{grid-template-columns:22px minmax(0,1fr) 12px;gap:8px 12px;padding:10px;min-height:48px}.account-settings-page .space-security-setting small{grid-column:2;grid-row:2}.account-settings-page .space-setting-chevron{grid-column:3;grid-row:1}.account-settings-page .space-security-detail{padding:0 12px 14px}.account-settings-page .space-security-detail button{width:100%;margin:8px 0 0}.account-settings-page .space-lost-phone{padding:10px;gap:12px}.account-settings-page .space-section-heading button{min-height:44px}}
+
+.account-settings-cards .account-sessions{grid-area:sessions}
+.account-settings-cards .space-danger>summary,.account-sessions summary{cursor:pointer;padding:6px 0}
+.account-settings-cards .space-danger>summary svg{width:20px;vertical-align:middle;margin-right:10px}
+.account-settings-cards .space-security-setting li{padding:8px 0;border-bottom:1px solid #dedbd0;overflow-wrap:anywhere}
+@media(max-width:700px){.account-settings-page .account-settings-cards .space-security-setting>summary{grid-template-columns:24px minmax(0,1fr) 14px}.account-settings-cards small{overflow-wrap:anywhere}}
+
+.account-settings-cards .account-key{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
+.account-settings-cards .account-key small{display:block;font-size:.8rem;color:#485d55}
+.account-settings-cards .account-key-confirmation{grid-column:1/-1}
+.account-settings-cards .space-security-detail .account-key>button{color:#203f34;background:#fffefb;border:1px solid #cdd6cc}
+.account-settings-cards .space-danger>summary{display:flex;align-items:center;gap:8px;font-weight:600}
+.account-settings-cards .space-danger>summary::after{content:'⌄';margin-left:auto}
+.account-settings-cards .space-danger[open]>summary::after{content:'⌃'}

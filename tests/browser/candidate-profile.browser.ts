@@ -1,6 +1,7 @@
 import {occText} from '../../app/lib/occasional-copy';
 import {candidateWorkspaceCopy as workspaceCopy} from '../../app/lib/candidate-workspace-copy';
 import {test,expect,type Page} from '@playwright/test';
+import {formText} from '../../app/lib/professional-form-copy';
 import {candidateUX} from '../../app/lib/candidate-ux';
 import {candidateCopy} from '../../app/lib/candidate-profile-copy';
 async function fixture(page:Page, options:{success?:boolean;expired?:boolean;existing?:boolean;failSave?:boolean;failDelete?:boolean}={}){
@@ -36,13 +37,17 @@ for(const [locale,width] of (['en','fr','ln','sw'] as const).flatMap(locale=>([3
  const wizard=page.locator('.candidate-form');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
  await page.screenshot({path:`test-results/candidate-profile/step1-${locale}-${width}.png`,fullPage:true});
- await wizard.getByLabel(t.fields.primary_category,{exact:false}).selectOption('administration_office');
- for(const [key,value] of [['desired_titles','Assistant, Clerk'],['city','Kinshasa'],['work_types','Full time'],['availability','Now']] as const)await wizard.getByLabel(t.fields[key],{exact:false}).fill(value);
+ const select=async(name:string,option:string)=>{await wizard.getByRole('combobox',{name}).click();await wizard.getByRole('option',{name:option,exact:true}).click();};
+ await select(t.fields.primary_category,'Administration');
+ await wizard.getByLabel(t.fields.desired_titles,{exact:true}).fill('Assistant, Clerk');await page.keyboard.press('Enter');
+ await wizard.getByLabel(t.fields.city).fill('Kinshasa');
+ await wizard.getByLabel(candidateUX[locale].contracts[0],{exact:true}).check();await select(t.fields.availability,candidateUX[locale].availability[0]);
  await wizard.getByRole('button',{name:t.next,exact:true}).click();
- for(const key of ['skills','experience_level','description'] as const)await wizard.getByLabel(t.fields[key],{exact:false}).fill('Test candidate information');
+ await select(t.fields.experience_level,candidateUX[locale].experience[0]);
+ await wizard.getByLabel(t.fields.skills,{exact:true}).fill('Excel');await page.keyboard.press('Enter');
+ await wizard.getByLabel(t.fields.description,{exact:false}).fill('Test candidate information');
  await page.screenshot({path:`test-results/candidate-profile/step2-${locale}-${width}.png`,fullPage:true});
- await wizard.getByLabel(t.noCV,{exact:true}).check();
- await wizard.getByRole('button',{name:t.next,exact:true}).click();
+ await wizard.getByRole('button',{name:formText(locale,'check'),exact:true}).click();
  await expect(wizard.getByRole('button',{name:t.create,exact:true})).toBeDisabled();
  await wizard.getByLabel(t.confirm,{exact:true}).check();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
@@ -122,4 +127,56 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`candidate confirmation 
  await expect(modal.getByRole('alert')).toBeVisible();await expect(modal).toBeVisible();expect(writes).toHaveLength(1);
  expect(writes[0]).toMatchObject({action:'archive',reference:'CND_test',version:'2026-11-04T00:00:00Z'});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+});
+
+for (const [width,withCV] of [[360,true],[1440,false]] as const) test(`professional draft, section edits and private creation at ${width}`,async({page})=>{
+ const writes=await fixture(page,{success:true});
+ const t=candidateCopy.fr;let uploads=0;
+ await page.route('**/personal/candidate/document/**',route=>++uploads===1?route.fulfill({json:{asset_ref:'AST_fixture'}}):route.fulfill({status:503,json:{}}));
+ await page.setViewportSize({width,height:800});
+ await page.goto('/fr/shida/space?view=job-search&section=profiles&profile=professional');
+ const wizard=page.locator('.professional-wizard');
+ await wizard.getByRole('button',{name:t.next,exact:true}).click();
+ await expect(wizard.locator('[role=alert]')).toHaveCount(5);
+ await expect(wizard.getByRole('combobox').first()).toBeFocused();
+ const sector=wizard.getByRole('combobox',{name:t.fields.primary_category});
+ await sector.press('ArrowDown');await sector.press('Enter');
+ const roles=wizard.getByLabel(t.fields.desired_titles,{exact:true});
+ for(const name of ['Comptable','Assistant','Analyste','comptable']){await roles.fill(name);await roles.press('Enter');}
+ await expect(wizard.locator('.candidate-chips button')).toHaveCount(3);
+ await roles.fill('Quatrième');await roles.press('Enter');await expect(wizard.locator('.candidate-chips button')).toHaveCount(3);await roles.fill('');
+ await wizard.getByLabel(t.fields.city).fill('Goma');
+ await wizard.getByRole('button',{name:t.save}).click();
+ await page.reload();
+ await expect(wizard.getByLabel(t.fields.city)).toHaveValue('Goma');
+ await expect(wizard.locator('.candidate-chips button')).toHaveCount(3);
+ await wizard.getByRole('checkbox',{name:'CDI',exact:true}).check();
+ const availability=wizard.getByRole('combobox',{name:t.fields.availability});await availability.press('ArrowDown');await availability.press('Enter');
+ await wizard.getByRole('button',{name:t.next,exact:true}).click();
+ await wizard.getByRole('button',{name:'Vérifier mon profil →'}).click();
+ const level=wizard.getByRole('combobox',{name:t.fields.experience_level});
+ await expect(level).toBeFocused();await level.press('ArrowDown');await level.press('ArrowDown');await level.press('Escape');
+ await expect(level).toContainText('Sélectionner un niveau');await level.press('ArrowDown');await level.press('Enter');
+ await level.click();await expect(wizard.getByRole('option',{selected:true})).toHaveText(/Aucune expérience/);
+ await page.screenshot({path:`test-results/candidate-profile/selector-${width}.png`,fullPage:true});await level.press('Escape');
+ await wizard.getByLabel(t.fields.skills,{exact:true}).fill('Excel');await page.keyboard.press('Enter');
+ const introduction='Je prépare les factures.\nJe suis les paiements.';
+ await wizard.getByLabel(t.fields.description).fill(introduction);
+ await wizard.locator('.candidate-optional summary').click();await wizard.getByLabel(t.fields.education,{exact:true}).fill('Graduat');
+ if(withCV){
+  const pdf={name:'Parcours.pdf',mimeType:'application/pdf',buffer:Buffer.from('%PDF-1.7 fixture')};
+  await wizard.locator('input[type=file]').setInputFiles(pdf);await expect(wizard.getByText(pdf.name,{exact:true})).toBeVisible();
+  await wizard.locator('input[type=file]').setInputFiles({...pdf,name:'Autre.pdf'});await expect(wizard.getByRole('alert')).toBeVisible();await expect(wizard.getByText(pdf.name,{exact:true})).toBeVisible();
+ }
+ await wizard.getByRole('button',{name:t.save}).click();await page.reload();
+ await expect(wizard.getByRole('heading',{name:t.review})).toBeVisible();
+ await expect(wizard).toContainText(withCV?'Parcours.pdf':'Aucun CV ajouté');await expect(wizard).toContainText('Graduat');
+ await wizard.getByLabel(t.confirm).check();
+ await wizard.getByRole('button',{name:'Modifier ma recherche'}).press('Enter');await wizard.getByLabel(t.fields.city).fill('Bukavu');await wizard.getByRole('button',{name:'Revenir à la vérification'}).click();
+ await expect(wizard).toContainText('Bukavu');await expect(wizard.getByLabel(t.confirm)).not.toBeChecked();
+ await wizard.getByRole('button',{name:'Modifier les détails'}).press('Enter');await expect(wizard.getByLabel(t.fields.education,{exact:true})).toBeVisible();
+ await wizard.getByRole('button',{name:'Revenir à la vérification'}).click();await expect(wizard.locator('.review-introduction dd')).toHaveText(introduction);
+ await wizard.getByLabel(t.confirm).press('Space');await wizard.getByRole('button',{name:t.create}).press('Enter');
+ await expect(page.getByText(t.success,{exact:true})).toBeVisible();
+ expect(writes.filter(item=>item.action==='finalize')).toHaveLength(1);
 });

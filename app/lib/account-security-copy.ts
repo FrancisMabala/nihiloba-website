@@ -1,5 +1,5 @@
 const text={
- removePasskey:['Remove this passkey','Supprimer cette clé d’accès','Longola fungola oyo','Ondoa ufunguo huu'],
+ removePasskey:['Remove this passkey','Retirer','Longola fungola oyo','Ondoa ufunguo huu'],
  confirmRemovePasskey:['Confirm passkey removal','Confirmer la suppression de la clé','Ndimisa kolongola fungola','Thibitisha kuondoa ufunguo'],
  removePasskeyHelp:['This key will no longer sign you in. Other login methods and existing sessions remain available.','Cette clé ne permettra plus de vous connecter. Les autres méthodes et les sessions existantes restent disponibles.','Fungola oyo ekokotisa yo lisusu te. Ndenge mosusu ya kokota mpe ba sessions etikali.','Ufunguo huu hautakuingiza tena. Njia nyingine za kuingia na vipindi vilivyopo vinabaki.'],
 
@@ -24,7 +24,7 @@ const text={
  failed:['Verification failed or expired. Start again.','Vérification incorrecte ou expirée. Recommencez.','Kondimisa esimbi te to esili. Banda lisusu.','Uthibitisho umeshindwa au umeisha. Anza tena.'],
  delivery:['The verification message could not be sent. Try again later.','Le message de vérification n’a pas pu être envoyé. Réessayez plus tard.','Mesaje ya kondimisa etindami te. Meka sima.','Ujumbe wa uthibitisho haukutumwa. Jaribu baadaye.'],
  review:['This action requires a recovery review by SHIDA.','Cette action nécessite une vérification par SHIDA.','SHIDA esengeli kotala likambo oyo.','Hatua hii inahitaji ukaguzi wa SHIDA.'],
- revoke:['Sign out other web sessions','Déconnecter les autres sessions web','Bimisa bokoti mosusu ya web','Ondoa vipindi vingine vya wavuti'],
+ revoke:['Sign out other web sessions','Déconnecter les autres sessions','Bimisa bokoti mosusu ya web','Ondoa vipindi vingine vya wavuti'],
  change:['Change WhatsApp number','Changer de numéro WhatsApp','Bongola nimero ya WhatsApp','Badilisha nambari ya WhatsApp'],
  changeHelp:['Requires a fresh sign-in, an established passkey and a verified recovery email. Verify both numbers, wait 24 hours, then confirm with your passkey. All web sessions will be signed out.','Nécessite une connexion récente, une clé d’accès établie et un e-mail de récupération vérifié. Vérifiez les deux numéros, attendez 24 heures puis confirmez avec votre clé. Toutes les sessions web seront déconnectées.','Esengi bokoti ya sika, fungola oyo esi etelemi mpe e-mail endimami. Ndimisa banimero mibale, zela ngonga 24 mpe ndimisa na fungola. Bokoti nyonso ya web ekokangama.','Inahitaji kuingia upya, ufunguo uliowekwa awali na barua pepe iliyothibitishwa. Thibitisha nambari zote mbili, subiri saa 24 kisha thibitisha kwa ufunguo. Vipindi vyote vya wavuti vitafungwa.'],
  phone:['New number, with country code','Nouveau numéro avec indicatif pays','Nimero ya sika na kode ya mboka','Nambari mpya pamoja na msimbo wa nchi'],

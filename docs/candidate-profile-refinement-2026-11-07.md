@@ -9,3 +9,10 @@ Validation: 15 unit/gateway tests, lint, TypeScript and production webpack build
 Commands: node node_modules/vitest/vitest.mjs run tests/candidate-ux.test.ts tests/candidate-profile-gateway.test.ts tests/candidate-employment.test.ts; node node_modules/next/dist/bin/next build --webpack; node node_modules/@playwright/test/cli.js test --config playwright.candidate-profile.config.ts.
 
 Deploy backend 605b3bbd before this website. Older responses without updated_at remain supported. Rollback is code-only. Urgent WhatsApp templates unchanged. GitHub combined-status API returned no statuses; this does not establish Actions success.
+
+The professional editor groups schedule and contract choices in one required field.
+The three-step review accepts candidates with no prior experience and no CV.
+The work-mode field describes on-site, hybrid or remote work independently of the
+desired city. The authenticated draft retains a newly uploaded CV's display
+filename. Older attachments without a recorded filename use the existing
+attachment label. Finishing uses the same revision-bound finalization on retry.
