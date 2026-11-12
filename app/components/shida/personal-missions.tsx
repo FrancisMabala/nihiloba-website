@@ -21,7 +21,7 @@ export const missionQuery=(view:string,query:Record<string,string>)=>'?'+new URL
 function useMission(binding:string,kind:string,offer:string){
  const [data,set]=useState<Model|null>(null),[error,fail]=useState(''),[round,reload]=useState(0);
  const api=useCallback(async(body?:object,signal?:AbortSignal)=>{const params=new URLSearchParams({kind,...(offer?{offer}:{})});
- const r=await fetch('/api/shida/personal/job-offer?'+params,{method:body?'POST':'GET',cache:'no-store',credentials:'same-origin',headers:{'X-Shida-Session':binding,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,signal});
+ const r=await fetch('/api/shida/personal/job-offer/?'+params,{method:body?'POST':'GET',cache:'no-store',credentials:'same-origin',headers:{'X-Shida-Session':binding,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,signal});
  if(!r.ok){const d=await r.json().catch(()=>({}));throw Error(d.code === 'personal_sign_in_required' ? d.code : d.field || String(r.status))}return r.json()},[binding,kind,offer]);
  useEffect(()=>{const c=new AbortController();api(undefined,c.signal).then(v=>{if(!c.signal.aborted){set(v);fail('')}},e=>{if(!c.signal.aborted)fail(e.message)});return()=>c.abort()},[api,round]);
  return {data,set,error,fail,api,retry:()=>{set(null);fail('');reload(n=>n+1)}}

@@ -41,3 +41,11 @@ Validation and deployment results are recorded in the final release report. Brow
 Validated: production Next.js build (`next build --webpack`) and TypeScript passed. Focused ESLint: no errors, one advisory warning about full-page language navigation (matching the existing language-switch behavior). Focused account/login/production regression tests: 25 passed. Production-server browser suite: 19 passed, covering four languages at 390/820/1440px plus 320px, menu/focus, management grouping, receipts/settings links, guest state, API failure, account switch/sign-out, capability denial and the WhatsApp-code return journey. Three French viewport cases passed again for final screenshots. No full repository test-suite pass is claimed.
 
 The initial webpack dev-server browser attempt did not finish hydration under the production CSP; checks were rerun against the optimized production server without relaxing security headers. A test locator ambiguity between the language button and language select was corrected. Visual review corrected the mobile basket ordering before the passing final run.
+
+The Personal overview groups the signed-in account's manageable activities by
+type. A single activity opens directly. Multiple records expand below the card,
+with a name and exact management link for each. A professional profile groups
+its offerings, and posted jobs open the recruiter's view of the specific offer.
+Apartments include their location when available. Hotel and transport activities
+continue in their authorized WhatsApp editors in the selected language.
+The empty welcome appears only after all activity sources load successfully.

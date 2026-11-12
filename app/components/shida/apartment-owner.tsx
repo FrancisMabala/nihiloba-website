@@ -8,7 +8,7 @@ import {PrivatePhoto} from './apartment-private-photo';
 import {useConfirmation} from './confirmation-dialog';
 import {ApartmentContractDraft} from './apartment-contract-draft';
 type Locale=keyof typeof apartmentOwnerCopy;
-type Property={reference:string;commune:string;status:string;visible:boolean;requests:number;web_draft:boolean;revision?:number;draft_summary?:{information_complete:boolean;photo_count:number;minimum_photos:number;photo_reference?:string|null;updated_at:string|null}};
+type Property={reference:string;name?:string;city?:string;commune:string;status:string;visible:boolean;requests:number;web_draft:boolean;revision?:number;draft_summary?:{information_complete:boolean;photo_count:number;minimum_photos:number;photo_reference?:string|null;updated_at:string|null}};
 type Applicant={token:string;name:string;message:string;people_count:number|null;status:string;visit:{status:string;date:string;time:string}|null};
 type Page<T>={items:T[];page:number;has_more:boolean};
 export function ApartmentOwner({locale}:{locale:Locale}){return <WenzeBuyerProvider locale={locale} loginMessage={apartmentOwnerCopy[locale].login}><Bound locale={locale}/></WenzeBuyerProvider>;}
@@ -21,7 +21,25 @@ function Owner({locale,actor}:{locale:Locale;actor:ReturnType<typeof useWenzeBuy
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  useEffect(()=>{
   if(!actor.binding)return;const controller=new AbortController();lock.current=true;
-  fetch('/api/shida/personal/apartments/manage/',{cache:'no-store',signal:controller.signal,headers:{'x-shida-session':actor.binding}}).then(async response=>{if(!response.ok)throw Error();const result=await response.json();if(!Array.isArray(result.items))throw Error();if(alive.current)setData(result);}).catch(()=>{if(alive.current&&!controller.signal.aborted)setError(true);}).finally(()=>{lock.current=false;if(alive.current)setBusy(false);});
+  const ref=new URLSearchParams(window.location.search).get('property');
+  async function read(path:string){
+    const response=await fetch('/api/shida/personal/apartments/'+path,{cache:'no-store',signal:controller.signal,headers:{'x-shida-session':actor.binding!}});
+    if(!response.ok)throw Error();const result=await response.json();if(!Array.isArray(result.items))throw Error();return result;
+  }
+  async function open(){
+    for(let page=1;;page++){
+      const result=await read('manage/?page='+page);
+      if(controller.signal.aborted)return;
+      if(!ref){setData(result);return;}
+      const property=result.items.find((row:Property)=>row.reference===ref);
+      if(property){
+        const requests=await read(encodeURIComponent(ref)+'/requests/?page=1');
+        if(!controller.signal.aborted){setSelected(property);setRequests(requests);setData(result);}return;
+      }
+      if(!result.has_more||!result.items.length)throw Error();
+    }
+  }
+  open().catch(()=>{if(alive.current&&!controller.signal.aborted)setError(true);}).finally(()=>{if(!controller.signal.aborted){lock.current=false;if(alive.current)setBusy(false);}});
   return()=>controller.abort();
  },[actor.binding]);
 
@@ -43,6 +61,6 @@ function Owner({locale,actor}:{locale:Locale;actor:ReturnType<typeof useWenzeBuy
  return <section className="apt-detail" lang={locale}>{confirmation}<div className="container"><a href={`${prefix}/shida/space?view=management`}>← {t.back}</a><h1>{t.title}</h1>
  <div className="apt-publish"><button className="button button-primary" disabled={busy||actor.checking} onClick={()=>void load(selected,active?.page??1)}>{t.refresh}</button><a href={`${prefix}/shida/appartements/publier/`}>{t.create}</a></div>
  {!actor.binding&&!busy&&<p>{t.login}</p>}{busy&&<p role="status">{t.loading}</p>}{error&&<p role="alert">{t.error}</p>}
- {selected?<><button type="button" disabled={busy} onClick={()=>{setSelected(null);setRequests(null);}}>{t.previous}</button><h2>{selected.commune} · {selected.reference}</h2><p>{t.help}</p><a href={whatsapp.href} target="_blank" rel="noopener noreferrer">{t.schedule}</a><div className="apt-panels">{requests?.items.map(item=><article className="apt-panel" key={item.token}><h2>{item.name}</h2><p>{state(item.status)}</p>{item.people_count!=null&&<p>{t.people}: {item.people_count}</p>}<p className="apt-description">{item.message}</p>{item.visit&&<p>{state(item.visit.status)} · {item.visit.date} · {item.visit.time}</p>}{item.status==='pending_owner_review'&&selected.status==='AVAILABLE'&&selected.visible&&<button disabled={busy} onClick={()=>void shortlist(item)}>{t.shortlist}</button>}{item.status==='shortlisted'&&selected.status==='AVAILABLE'&&selected.visible&&actor.binding&&<ApartmentContractDraft key={item.token} locale={locale} binding={actor.binding} reference={selected.reference} requestToken={item.token}/>}</article>)}</div></>:<div className="apt-panels">{data?.items.map(item=><article className="apt-panel apt-owner-card" key={item.reference}><h2>{item.status==='DRAFT'?d.title:(item.commune||t.title)}</h2><p>{item.status==='DRAFT'?d.status:item.status==='AVAILABLE'&&item.visible?t.available:t.hidden}</p>{(item.status!=='DRAFT'||item.requests>0)&&<><p>{item.requests} · {t.requests}</p><button disabled={busy} onClick={()=>void load(item)}>{t.requests}</button></>}{item.status==='DRAFT'&&item.draft_summary&&<div className="apt-draft-readiness">{actor.binding&&item.draft_summary.photo_reference&&<PrivatePhoto listing={item.reference} reference={item.draft_summary.photo_reference} binding={actor.binding} label={d.photos}/>}<p>{item.draft_summary.information_complete?d.review:d.information}</p><p>{d.photos}: {item.draft_summary.photo_count} / {item.draft_summary.minimum_photos}</p>{item.draft_summary.updated_at&&<p>{d.updated}: {new Date(item.draft_summary.updated_at).toLocaleString(locale)}</p>}</div>}{item.web_draft&&<p><a href={`${prefix}/shida/appartements/publier/?draft=${encodeURIComponent(item.reference)}`}>{d.resume}</a></p>}{item.web_draft&&item.revision&&<button type="button" disabled={busy} onClick={()=>void discard(item)}>{d.remove}</button>}</article>)}</div>}
+ {selected?<><button type="button" disabled={busy} onClick={()=>{setSelected(null);setRequests(null);}}>{t.previous}</button><h2>{selected.name||selected.commune} · {selected.reference}</h2><p>{t.help}</p><a href={whatsapp.href} target="_blank" rel="noopener noreferrer">{t.schedule}</a><div className="apt-panels">{requests?.items.map(item=><article className="apt-panel" key={item.token}><h2>{item.name}</h2><p>{state(item.status)}</p>{item.people_count!=null&&<p>{t.people}: {item.people_count}</p>}<p className="apt-description">{item.message}</p>{item.visit&&<p>{state(item.visit.status)} · {item.visit.date} · {item.visit.time}</p>}{item.status==='pending_owner_review'&&selected.status==='AVAILABLE'&&selected.visible&&<button disabled={busy} onClick={()=>void shortlist(item)}>{t.shortlist}</button>}{item.status==='shortlisted'&&selected.status==='AVAILABLE'&&selected.visible&&actor.binding&&<ApartmentContractDraft key={item.token} locale={locale} binding={actor.binding} reference={selected.reference} requestToken={item.token}/>}</article>)}</div></>:<div className="apt-panels">{data?.items.map(item=><article className="apt-panel apt-owner-card" key={item.reference}><h2>{item.status==='DRAFT'?d.title:(item.commune||t.title)}</h2><p>{item.status==='DRAFT'?d.status:item.status==='AVAILABLE'&&item.visible?t.available:t.hidden}</p>{(item.status!=='DRAFT'||item.requests>0)&&<><p>{item.requests} · {t.requests}</p><button disabled={busy} onClick={()=>void load(item)}>{t.requests}</button></>}{item.status==='DRAFT'&&item.draft_summary&&<div className="apt-draft-readiness">{actor.binding&&item.draft_summary.photo_reference&&<PrivatePhoto listing={item.reference} reference={item.draft_summary.photo_reference} binding={actor.binding} label={d.photos}/>}<p>{item.draft_summary.information_complete?d.review:d.information}</p><p>{d.photos}: {item.draft_summary.photo_count} / {item.draft_summary.minimum_photos}</p>{item.draft_summary.updated_at&&<p>{d.updated}: {new Date(item.draft_summary.updated_at).toLocaleString(locale)}</p>}</div>}{item.web_draft&&<p><a href={`${prefix}/shida/appartements/publier/?draft=${encodeURIComponent(item.reference)}`}>{d.resume}</a></p>}{item.web_draft&&item.revision&&<button type="button" disabled={busy} onClick={()=>void discard(item)}>{d.remove}</button>}</article>)}</div>}
  {active?.items.length===0&&<p>{t.empty}</p>}<nav aria-label={t.title}>{active&&active.page>1&&<button disabled={busy} onClick={()=>void load(selected,active.page-1)}>{t.previous}</button>}{active?.has_more&&<button disabled={busy} onClick={()=>void load(selected,active.page+1)}>{t.next}</button>}</nav></div></section>;
 }
