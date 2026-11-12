@@ -28,3 +28,5 @@ failures, recorded in the implementation validation report; do not report a gree
 full frontend suite. Website browser checks cover 390px/1440px and all four
 languages, visibility observations, explicit reads, handoff and sign-out cleanup.
 Business component tests cover stale Organization responses and separate actions.
+
+The personal sidebar and header bell share the saved unread count and open the same list. A message handoff identifies one notification and its source message. Opening WhatsApp prepares the request. Sending it rechecks the sender and activity before returning the selected message. Neither step marks the notification or the conversation as read. Failed preference saves keep the chosen frequency for retry.

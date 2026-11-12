@@ -43,3 +43,7 @@ TypeScript, scoped ESLint, production webpack build and diff checks pass. Browse
 ## Release
 
 Frontend only; no migration or backend deployment required. Authentication, payment systems, seller Money and urgent WhatsApp templates are unchanged. This new brief requires authorization for its specific production release: implementation is committed locally for review, not automatically deployed. Baseline is website 57de696; rollback after release would revert only this task's commits via a normal forward commit, never rewrite main.
+
+## November 12 update
+
+The default buyer category is Orders. The three category buttons show totals from the same account query as their lists. Job applications are in My job search. The Personal sales tab uses individual-listing orders and inquiries. Selecting a sale opens its existing Wenze detail, including fulfillment and recorded payment information. Point-of-sale receipts belong to the cashier workspace.

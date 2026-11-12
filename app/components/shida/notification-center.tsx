@@ -5,10 +5,11 @@ import './notification-center.css';
 import {mySpaceCopy} from '../../lib/my-space-refinement-copy';
 
 import {notificationCopy as copy,modules,moduleNames} from '../../lib/notification-center-copy';
+import {publishPersonalNotificationCount,usePersonalNotificationCount} from '../../lib/personal-notification-count';
 import {messagesText} from '../../lib/messages-design-copy';
 import {SpaceIcon,type SpaceIconName} from './account-space-icon';
 import Image from 'next/image';
-type Notice = {reference:string; marketplace:string; title:string; description:string; created_at:string; read:boolean; action_required:boolean; expired:boolean; acknowledged:boolean; action_url:string|null;can_handoff?:boolean};
+type Notice = {reference:string; marketplace:string; title:string; description:string; created_at:string; read:boolean; action_required:boolean; expired:boolean; acknowledged:boolean; action_url:string|null;event_type?:string;activity_reference?:string|null;can_handoff?:boolean};
 type Locale=keyof typeof copy;
 const icons:Record<string,SpaceIconName>={wenze:'shop',services:'tool',employment:'management',restaurants:'restaurant',security:'shield',apartments:'home',hotels:'home',school:'business'};
 function validPage(value:unknown):value is {items:Notice[];next_cursor:string|null}{
@@ -17,6 +18,8 @@ function validPage(value:unknown):value is {items:Notice[];next_cursor:string|nu
 }
 function noticeAction(item:Notice,locale:Locale){
  const path=safeActivityUrl(item.action_url)?new URL(item.action_url!).pathname:'';
+ if(item.event_type==='private_report_ready'&&item.action_url?.includes('view=reports'))return messagesText(locale,'report');
+ if(item.marketplace==='security')return messagesText(locale,'account');
  return /restaurant-orders|wenze\/orders/.test(path)?messagesText(locale,'order'):/my-applications|mes-candidatures/.test(path)?messagesText(locale,'application'):/service-requests/.test(path)?messagesText(locale,'request'):copy[locale][7];
 }
 export function safeActivityUrl(value:string|null) {
@@ -26,14 +29,21 @@ export function safeActivityUrl(value:string|null) {
 
 // Mount with a key containing the authenticated session and active context.
 export default function NotificationCenter({binding,apiBase,locale,inline=false,destination}:{binding:string;apiBase:string;locale:Locale;inline?:boolean;destination?:string}) {
- const t=copy[locale], [open,setOpen]=useState(inline),[count,setCount]=useState<number|null>(null),[items,setItems]=useState<Notice[]>([]),[cursor,setCursor]=useState<string|null>(null),[mode,setMode]=useState('all'),[market,setMarket]=useState(''),[error,setError]=useState(false),[busy,setBusy]=useState(true),[ticket,setTicket]=useState<string|null>(null),[badge,setBadge]=useState(true);
+ const t=copy[locale], [open,setOpen]=useState(inline),[localCount,setLocalCount]=useState<number|null>(null),[items,setItems]=useState<Notice[]>([]),[cursor,setCursor]=useState<string|null>(null),[mode,setMode]=useState('all'),[market,setMarket]=useState(''),[error,setError]=useState(false),[busy,setBusy]=useState(true),[ticket,setTicket]=useState<{reference:string;url:string}|null>(null),[badge,setBadge]=useState(true);
+ const personal=apiBase==='/api/shida/personal/notifications';
+ const sharedCount=usePersonalNotificationCount(binding),count=personal?sharedCount:localCount;
  const panel=useRef<HTMLDivElement>(null),bell=useRef<HTMLButtonElement>(null),generation=useRef(0),seen=useRef(new Set<string>());
  const call=useCallback(async(path:string,body?:object,method='POST')=>{
   const [pathname,query]=path.split('?');
   const res=await fetch(apiBase+pathname.replace(/\/$/,'')+'/'+(query?'?'+query:''),{method:body?method:'GET',credentials:'include',cache:'no-store',signal:AbortSignal.timeout(12000),headers:{'X-Shida-Session':binding,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
   if(!res.ok) throw new Error('unavailable'); return res.json();
  },[apiBase,binding]);
- const refresh=useCallback(async()=>{const g=generation.current;try{const data=await call('/count');if(g===generation.current)setCount(Number.isSafeInteger(data.unread_count)&&data.unread_count>=0?data.unread_count:null);}catch{if(g===generation.current)setCount(null);}},[call]);
+ const refresh=useCallback(async()=>{
+  const g=generation.current;let value:number|null=null;
+  try{const data=await call('/count');if(Number.isSafeInteger(data.unread_count)&&data.unread_count>=0)value=data.unread_count;}catch{/* Retry on focus or the next poll. */}
+  if(g!==generation.current)return;
+  if(personal)publishPersonalNotificationCount(binding,value);else setLocalCount(value);
+ },[call,binding,personal]);
  const load=useCallback(async(before?:string)=>{
   const g=++generation.current;setBusy(true);setError(false);setTicket(null);if(!before)setItems([]);
   try{const data=await call('?'+new URLSearchParams({language:locale,mode,...(market?{marketplace:market}:{}),...(before?{before}:{})}));if(!validPage(data))throw Error();if(g!==generation.current)return;setItems(old=>before?[...old,...data.items.filter(row=>!old.some(existing=>existing.reference===row.reference))]:data.items);setCursor(data.next_cursor);await refresh();}
@@ -49,8 +59,20 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
   panel.current.querySelectorAll('[data-reference]').forEach(el=>observer.observe(el));return()=>observer.disconnect();
  },[call,items,open]);
  async function act(references:string[],action:string){const g=generation.current;setBusy(true);try{await call('/actions',{references,action});window.dispatchEvent(new Event('shida-notifications-changed'));if(g===generation.current)await load();}catch{if(g===generation.current){setError(true);setBusy(false);}}}
- async function handoff(reference:string){const g=generation.current;setBusy(true);setTicket(null);try{const data=await call('/'+reference+'/handoff',{});const url=new URL(data.url);if(g!==generation.current)return;if(url.origin!=='https://wa.me'||url.username||url.password)throw new Error();setTicket(url.href);}catch{if(g===generation.current)setError(true);}finally{if(g===generation.current)setBusy(false);}}
-
+ async function handoff(reference:string){
+  const g=generation.current;
+  const popup=window.open('about:blank','_blank');
+  if(popup)popup.opener=null;
+  setBusy(true);setTicket(null);
+  try{
+   const data=await call('/'+reference+'/handoff',{}),url=new URL(data.url);
+   if(g!==generation.current){popup?.close();return;}
+   if(url.origin!=='https://wa.me'||url.username||url.password)throw Error();
+   if(popup&&!popup.closed)popup.location.replace(url.href);
+   else setTicket({reference,url:url.href});
+  }catch{popup?.close();if(g===generation.current)setError(true);}
+  finally{if(g===generation.current)setBusy(false);}
+ }
  async function markAll(){
   const g=generation.current;setBusy(true);setError(false);let before:string|undefined;const cursors=new Set<string>();
   try{for(let page=0;page<100;page++){
@@ -73,8 +95,21 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
    {busy&&<p role="status">{t[15]}</p>}
    {!busy&&!error&&!items.length&&(cursor?<p>{t[6]}</p>:mode==='all'&&!market?<section className="messages-empty"><Image unoptimized src="/images/shida/notifications-empty.svg" alt="" width={420} height={220}/><h2>{mySpaceCopy[locale].emptyNotifications}</h2><p>{messagesText(locale,'emptyBody')}</p><a href={`${locale==='en'?'':'/'+locale}/shida/`}>{messagesText(locale,'explore')} <span aria-hidden="true">→</span></a></section>:<p>{t[6]}</p>)}
    {!inline&&items.some(i=>!i.read)&&<button disabled={busy} onClick={()=>void act(items.filter(i=>!i.read).slice(0,50).map(i=>i.reference),'read')}>{t[14]}</button>}
-   {items.map(item=><article key={item.reference} data-reference={item.reference} className={item.read?'notification-card':'notification-card notification-unread'}><span className="notice-market-icon"><SpaceIcon name={icons[item.marketplace]??'messages'}/></span><div className="notice-content"><small>{moduleNames[locale][modules.indexOf(item.marketplace)]??'SHIDA'}</small><h3>{item.title}</h3><p>{item.description}</p></div><div className="notice-meta"><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleString(locale,{dateStyle:'medium',timeStyle:'short'})}</time><span className={`notice-status ${item.action_required&&!item.expired?'notice-attention':!item.read?'notice-new':''}`}>{item.expired?t[16]:item.action_required?t[4]:!item.read?messagesText(locale,'new'):messagesText(locale,'info')}</span></div><div className="notification-actions">{safeActivityUrl(item.action_url)&&<a className="notice-primary" href={safeActivityUrl(item.action_url)}>{noticeAction(item,locale)}</a>}{!item.expired&&item.can_handoff===true&&<button disabled={busy} onClick={()=>void handoff(item.reference)}><SpaceIcon name="whatsapp"/>{t[10]}</button>}{!item.read&&<button className="notice-read" disabled={busy} onClick={()=>void act([item.reference],'read')}>{t[8]}</button>}{!inline&&item.action_required&&!item.expired&&!item.acknowledged&&<button disabled={busy} onClick={()=>void act([item.reference],'acknowledge')}>{t[9]}</button>}</div></article>)}
-   {ticket&&<p role="status">{t[11]} <a href={ticket} target="_blank" rel="noopener noreferrer">{t[10]}</a></p>}
+   {items.map(item=>{
+    const message=item.event_type==='message',whatsapp=item.can_handoff===true&&!item.expired;
+    const link=safeActivityUrl(item.action_url),marketName=moduleNames[locale][modules.indexOf(item.marketplace)]??'SHIDA';
+    const title=message?messagesText(locale,item.marketplace==='services'?'reservationMessage':item.marketplace==='employment'?'applicationMessage':item.read?'orderMessage':'newOrderMessage'):item.event_type==='private_report_ready'?messagesText(locale,'reportReady'):item.title;
+    const action=message?messagesText(locale,item.read?'openWa':'readWa'):t[10];
+    const firstUnread=message&&!item.read&&item.reference===items.find(row=>row.event_type==='message'&&row.can_handoff&&!row.expired&&!row.read)?.reference;
+    return <article key={item.reference} data-reference={item.reference} className={item.read?'notification-card':'notification-card notification-unread'}>
+     <span className="notice-market-icon"><SpaceIcon name={icons[item.marketplace]??'bell'}/></span>
+     <div className="notice-content"><span className={item.read?'notice-status':'notice-status notice-new'}>{messagesText(locale,item.read?'info':'new')}</span><h3>{title}</h3><p>{[marketName,item.description,item.activity_reference].filter(Boolean).join(' · ')}</p>{item.expired&&<small>{t[16]}</small>}</div>
+     <time className="notice-meta" dateTime={item.created_at}>{new Date(item.created_at).toLocaleString(locale,{dateStyle:'medium',timeStyle:'short'})}</time>
+     <div className="notification-actions">{whatsapp&&(message||!link)?<>{ticket?.reference===item.reference?<a className="notice-primary" target="_blank" rel="noopener noreferrer" href={ticket.url} onClick={()=>setTicket(null)}>{action}</a>:<button className="notice-primary" disabled={busy} onClick={()=>void handoff(item.reference)}>{action}</button>}{firstUnread&&<small>{messagesText(locale,'sendHint')}</small>}</>:link&&<a href={link}>{noticeAction(item,locale)}</a>}
+     {!item.read&&<button className="notice-read" disabled={busy} onClick={()=>void act([item.reference],'read')}>{t[8]}</button>}
+     {!inline&&item.action_required&&!item.expired&&!item.acknowledged&&<button disabled={busy} onClick={()=>void act([item.reference],'acknowledge')}>{t[9]}</button>}</div>
+    </article>;
+   })}
    {cursor&&<button disabled={busy} onClick={()=>void load(cursor)}>{t[12]}</button>}
   </div>}
  </div>;

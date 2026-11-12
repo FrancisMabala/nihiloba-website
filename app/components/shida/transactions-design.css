@@ -27,3 +27,30 @@
 .tx-master-detail{display:grid;grid-template-columns:minmax(0,1fr);gap:24px}.tx-master,.tx-selected{min-width:0}.tx-selected{padding:20px;border:1px solid #deded3;border-radius:16px;background:#fffefa}.tx-selected>.tx-action{margin-bottom:16px}.tx-selected .shida-order-columns{grid-template-columns:minmax(0,1fr)}
 @media(min-width:1200px){.tx-has-selection .tx-master-detail{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:start}.tx-has-selection .tx-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tx-has-selection .tx-summary-card{grid-template-columns:minmax(0,1fr);padding:12px;gap:6px}.tx-has-selection .tx-summary-card .tx-icon{grid-column:1;grid-row:auto;width:36px;height:36px}.tx-has-selection .tx-summary-card .tx-icon svg{width:22px;height:22px}.tx-has-selection .tx-summary-label,.tx-has-selection .tx-summary-card strong,.tx-has-selection .tx-summary-card small{grid-column:1}.tx-has-selection .tx-summary-label{font-size:.78rem}.tx-has-selection .tx-summary-card small{font-size:.7rem;margin:0}.tx-has-selection .tx-summary-chevron{display:none}.tx-has-selection .tx-row{display:flex;flex-wrap:wrap;gap:12px}.tx-has-selection .tx-identity{flex:1 1 150px}}
 @media(max-width:1199px){.tx-has-selection .tx-master{display:none}.tx-selected{padding:12px}}
+
+.tx-overview .tx-summary {display:flex;flex-wrap:wrap;gap:.65rem;margin:1.25rem 0}
+.tx-overview .tx-summary-card {display:inline-flex;align-items:center;gap:.55rem;min-height:44px;padding:.5rem .8rem;width:auto}
+.tx-overview .tx-summary-card strong {font-weight:600;font-family:inherit;font-size:1rem}
+.tx-overview .tx-summary-card .tx-icon {width:28px;height:28px}
+.tx-overview .tx-summary-card[aria-pressed=true]{outline:2px solid #23563f;outline-offset:-2px}
+.tx-overview .tx-empty {min-height:0;padding:1.5rem;gap:.75rem}
+.tx-overview .tx-empty img {width:min(170px,65%);margin:0}
+.tx-overview .tx-empty h2 {margin:0}
+.tx-overview .tx-row {grid-template-columns:auto minmax(0,1fr) auto auto;font-size:1rem}
+.tx-overview .tx-identity {display:flex;flex-direction:row;flex-wrap:wrap;align-items:center}
+.tx-overview .tx-identity small {flex-basis:100%;font-size:.86rem}
+@media(max-width:700px){
+ .tx-overview .tx-summary-card {flex:1 1 100%;justify-content:flex-start}
+ .tx-overview .tx-summary-card strong {margin-inline-start:auto}
+ .tx-overview .tx-row {grid-template-columns:auto minmax(0,1fr);gap:.6rem}
+ .tx-overview .tx-identity {flex-direction:column;align-items:flex-start}
+ .tx-overview .tx-row>.tx-date,.tx-overview .tx-row>.tx-action,.tx-overview .tx-row>.tx-detail {grid-column:2;justify-self:start}
+}
+
+.tx-overview .tx-row>.tx-identity{grid-column:auto}
+@media(max-width:700px){
+ .tx-overview .tx-roles{grid-template-columns:1fr 1fr;margin-bottom:0}
+ .tx-overview .tx-roles button{border-radius:8px;font-size:.85rem;padding:8px}
+ .tx-overview .tx-row>.tx-icon{align-self:start}
+ .tx-overview .tx-row>.tx-identity{grid-column:2}
+}

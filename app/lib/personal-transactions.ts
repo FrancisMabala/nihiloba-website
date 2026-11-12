@@ -6,11 +6,11 @@ import {progressText} from '../components/shida/wenze-order-timeline';
 import {reservationCopy} from './restaurant-reservation-copy';
 export type TransactionCategory='all'|'orders'|'requests'|'documents';
 export type TransactionKind='wenze'|'negotiated'|'food'|'food_receipt'|'reservation'|'application'|'posted'|'service'|'booking'|'bill'|'hotel'|'transport'|'housing'|'visit';
-export type Transaction={id:string;role?:'customer'|'seller';store_reference?:string|null;details?:Record<string,string|number>;kind:TransactionKind;category:Exclude<TransactionCategory,'all'>;reference:string|null;related_reference:string|null;title:string;status:string;date:string|null;amount:string|null;currency:string|null};
+export type Transaction={id:string;merchant_name?:string;fulfillment_method?:string|null;role?:'customer'|'seller';store_reference?:string|null;details?:Record<string,string|number>;kind:TransactionKind;category:Exclude<TransactionCategory,'all'>;reference:string|null;related_reference:string|null;title:string;status:string;date:string|null;amount:string|null;currency:string|null};
 export type TransactionOverview={counts:Record<TransactionCategory,number>;items:Transaction[];documents:Transaction[];page:number;page_size:number;has_more:boolean};
 export function transactionLink(row:Transaction,locale:MarketplaceLocale){
  const prefix=locale==='en'?'':`/${locale}`,ref=encodeURIComponent(row.reference??'');
- if(row.kind==='wenze'||row.kind==='negotiated')return `${locale==='en'?'':'/fr'}/shida/wenze/orders${ref?'#'+ref:''}`;
+ if(row.kind==='wenze'||row.kind==='negotiated')return `${prefix}/shida/wenze/orders${ref?'#'+ref:''}`;
  if(row.kind==='food'||row.kind==='food_receipt')return `${prefix}/shida/restaurant-orders/${ref}${row.kind==='food_receipt'?'/receipt':''}`;
  if(row.kind==='reservation')return `${prefix}/shida/restaurant-reservations?reservation=${ref}`;
  if(row.kind==='application')return `${locale==='fr'?'/fr/shida/mes-candidatures':prefix+'/shida/my-applications'}/${ref}`;
@@ -18,6 +18,8 @@ export function transactionLink(row:Transaction,locale:MarketplaceLocale){
  return `${prefix}/shida/service-requests?${row.kind==='booking'?'booking':'request'}=${ref}`;
 }
 export function transactionStatus(row:Transaction,locale:MarketplaceLocale){
+ if(row.status==='ready'&&row.fulfillment_method==='delivery')return transactionText(locale,'readyDelivery');
+ if(row.status==='ready'&&row.fulfillment_method==='pickup')return progressText(locale,'ready');
  if(row.kind==='food')return workText(locale,row.status);
  if(row.kind==='wenze'||row.kind==='negotiated')return progressText(locale,row.status);
  if(row.kind==='application')return applicationStatus(locale,row.status);
@@ -40,6 +42,7 @@ const reference=(value:unknown)=>value===null||(typeof value==='string'&&/^[A-Za
 function isTransaction(value:unknown):value is Transaction{
  if(!value||typeof value!=='object')return false;
  const r=value as Transaction;
+ if(r.merchant_name!==undefined&&typeof r.merchant_name!=='string')return false;
  if(r.role!==undefined&&!['customer','seller'].includes(r.role))return false;
  if(r.store_reference!==undefined&&!reference(r.store_reference))return false;
  if(r.role==='seller'&&(!r.store_reference||!['wenze','negotiated'].includes(r.kind)))return false;

@@ -16,15 +16,31 @@ fixture_directory=TemporaryDirectory(prefix='shida-transactions-')
 os.environ.update(APP_ENV='test',DATABASE_URL='sqlite:///'+str(Path(fixture_directory.name)/'transactions.db'),WHATSAPP_VERIFY_TOKEN='local-test-only',DASHBOARD_AUTH_PEPPER='transactions-local-test-only',ADMIN_KEY='local-test-only')
 from app.main import app
 from app.database.connection import SessionLocal
-from app.database.models import DashboardSessionDB
+from app.database.models import DashboardSessionDB, WenzeStoreDB
 from app.services.dashboard_auth_service import _keyed_hash
-from tests.transactions_fixture_support import account, mixed, application
+from tests.transactions_fixture_support import account, mixed, purchase
+from app.database.inventory_models import WenzeSaleReceiptDB
+import json
+from tests.wenze_fixture_support import create_wenze_store
 accounts={'empty':account('243820099901','Empty acceptance'),'one':account('243820099902','One acceptance')}
 accounts['many']=mixed()[0]
 accounts['pages']=account('243820099903','History acceptance')
+accounts['seller']=account('243820099904','Personal seller')
+create_wenze_store({'owner_phone':'243820099904','name':'Private listings','category':'fashion_clothing','city':'Kinshasa'})
+chair_buyer=account('243820099905','Buyer of the chair')
 with SessionLocal() as db:
-    application(db,accounts['one'],'one_acceptance',datetime.now(timezone.utc))
-    for number in range(12):application(db,accounts['pages'],'history_'+str(number),datetime.now(timezone.utc)-timedelta(days=number))
+    personal=db.query(WenzeStoreDB).filter_by(name='Private listings').one()
+    personal.selling_mode='individual';personal.personal_owner_account_id=accounts['seller']['actor_account_id'];personal.personal_owner_ref=accounts['seller']['actor_account_ref']
+    chair=purchase(db,chair_buyer,personal,datetime.now(timezone.utc),'Wooden chair')
+    chair.status='completed'
+    db.add(WenzeSaleReceiptDB(receipt_ref='WRC_testcash',store_id=personal.id,
+        actor_account_id=accounts['seller']['actor_account_id'],source_kind='fixed',source_reference=chair.public_ref,
+        key_digest='a'*64,payload_hash='b'*64,snapshot_json=json.dumps({'payment':'seller_recorded_cash'})))
+
+    store=db.query(WenzeStoreDB).filter_by(name='Acceptance Makers Shop').one()
+    store.personal_owner_account_id=accounts['seller']['actor_account_id'];store.personal_owner_ref=accounts['seller']['actor_account_ref']
+    purchase(db,accounts['one'],store,datetime.now(timezone.utc))
+    for number in range(12):purchase(db,accounts['pages'],store,datetime.now(timezone.utc)-timedelta(days=number))
     for kind,who in accounts.items():
         db.add(DashboardSessionDB(account_id=who['actor_account_id'],token_hash=_keyed_hash('dashboard-session','transactions-acceptance-'+kind+'-session'),last_seen_at=datetime.now(timezone.utc),expires_at=datetime.now(timezone.utc)+timedelta(hours=4)))
     db.commit()

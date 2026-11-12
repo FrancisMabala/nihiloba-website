@@ -28,3 +28,13 @@ test('report details and exports remain available',async({page})=>{const f=await
 test('reversed historical receipt stays distinct and unauthorized reads clear data',async({page})=>{const f=await moneyFixture(page);const receipt={store_ref:'WNZ_fixture',receipt_ref:'WRC_reversed',shop_name:'Historical shop',city:'Kinshasa',source:'basket',sold_at:'2026-10-21T12:30:00Z',payment:'not_recorded',has_reversals:true,totals:[{currency:'USD',amount:'12.50'}],lines:[{name:'Original recorded item',quantity:1,unit_price:'12.50',total:'12.50',currency:'USD',reversed:true}]};await page.route('**/pos/receipts/**',route=>{const path=new URL(route.request().url()).pathname.replace(/\/$/,'');return route.fulfill({json:path.endsWith('WRC_reversed')?receipt:{receipts:[receipt],total:1}});});await page.goto(f.url+'&view=receipts');await page.locator('.wz-receipt-history').click();await expect(page.locator('.wz-receipt-paper')).toContainText('Original recorded item');await expect(page.locator('.wz-receipt-paper')).toContainText('12.5');await expect(page.locator('.wz-receipt-paper')).toContainText('Reversed');await page.route('**/pos/receipts/**',route=>route.fulfill({status:403,json:{detail:'denied'}}));await page.reload();await expect(page.locator('.wm-receipts [role=alert]')).toBeVisible();await expect(page.locator('.wz-receipt-history')).toHaveCount(0);await expect(page.locator('.wz-receipt-paper')).toHaveCount(0);expect(f.writes).toHaveLength(0);});
 
 test('period changes preserve explicit shop-local reporting inputs',async({page})=>{const f=await moneyFixture(page);const calls:string[]=[];page.on('request',r=>{if(r.url().includes('/pro/dashboard'))calls.push(r.url());});await page.goto(f.url+'&view=reports');await expect(page.locator('.wm-kpis')).toBeVisible();await page.getByRole('combobox',{name:'Period',exact:true}).selectOption('last_7_days');await page.getByRole('combobox',{name:'Shop time',exact:true}).selectOption('Africa/Lubumbashi');await page.getByRole('button',{name:'Refresh',exact:true}).click();await expect.poll(()=>calls.some(url=>url.includes('last_7_days')&&url.includes('Lubumbashi'))).toBeTruthy();expect(f.writes).toHaveLength(0);});
+
+test('notification opens its specific protected report',async({page})=>{
+ const f=await moneyFixture(page);
+ const suffix='/reports/artifacts/WRA_requested';
+ await page.route('**'+suffix+'*/**',route=>route.fulfill({status:200,contentType:'application/pdf',body:'%PDF-1.4 synthetic'}));
+ await page.goto(f.url+'&view=reports&artifact=WRA_requested');
+ const request=page.waitForRequest(req=>new URL(req.url()).pathname.replace(/\/$/,'').endsWith(suffix));
+ await page.getByRole('button',{name:'View report',exact:true}).click();
+ expect((await request).url()).toContain('WNZ_fixture');
+});

@@ -161,7 +161,7 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
           const listStatus=["active","hidden","archived","all"].includes(status)?status:"active";
           setFilter(listStatus);setSearch(query);
           await loadProducts(selected,Number.isSafeInteger(page)&&page>=0&&page%20===0?page:0,listStatus,query);
-        } const destination=params.get("view");if(destination==="shop")setShopTab(selected.status==="active"?"shopDetails":"settings");if(destination&&["today","catalog","orders","imports","inventory","sales","costs","expenses","money","reports","schedules","receipts","shop"].includes(destination))setView(destination); }
+        } const destination=params.get("view");const order=params.get("order");if(destination==="orders"&&order&&/^[A-Za-z0-9_-]{1,100}$/.test(order))setDashboardOrder(order);if(destination==="shop")setShopTab(selected.status==="active"?"shopDetails":"settings");if(destination&&["today","catalog","orders","imports","inventory","sales","costs","expenses","money","reports","schedules","receipts","shop"].includes(destination))setView(destination); }
       }
     }).catch(() => { if (ticket === generation.current) {setError("unavailable");setSellerCheckFailed(true);} }).finally(()=>{if(ticket===generation.current)setCheckingSeller(false);});
   }, [context, archived, checkAttempt]); // eslint-disable-line react-hooks/exhaustive-deps
