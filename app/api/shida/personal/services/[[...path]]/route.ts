@@ -12,6 +12,7 @@ function allowed(parts:string[],method:string){
  if(parts.length===1&&["capabilities","calendar","today"].includes(parts[0]))return method==="GET";
  if(!/^SVC_[A-Za-z0-9_-]+$/.test(parts[0]))return false;
  if(parts.length===1)return ["GET","PATCH","DELETE"].includes(method);
+ if(parts.length===2&&["schedule-preview","manual-appointment"].includes(parts[1]))return method==="POST";
  if(parts.length===2&&parts[1]==="schedule")return ["GET","PATCH"].includes(method);
  if(parts.length===2&&parts[1]==="share")return method==="GET";
  if(parts.length===2)return parts[1]==="reactivate"&&method==="POST"||["details","professional-profile","professional-work"].includes(parts[1])&&method==="PATCH"||parts[1]==="pilot-review"&&["GET","PATCH"].includes(method)||parts[1]==="reviews"&&method==="GET"||parts[1]==="request-capability"&&method==="PATCH"||parts[1]==="packages"&&method==="POST";

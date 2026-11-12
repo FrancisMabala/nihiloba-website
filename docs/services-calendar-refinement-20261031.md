@@ -48,3 +48,6 @@ Modified: `services-calendar.tsx`, `services-management.tsx`, `shida-calendar.ts
 Added: `services-hours-editor.tsx`, `services-booking-preview.tsx`, `services-planner.css`; `app/lib/services-hours-model.ts`, `app/lib/services-planner-copy.ts`; `app/api/shida/services/availability/route.ts`; focused unit and browser tests.
 
 The protected calendar projection does not expose customer names or addresses, so the redesigned agenda does not invent them. Manual appointment creation, date-specific time off, custom buffers and available-day calendar dots are not implemented in this Personal service system and are not presented as working features. Preview availability is a snapshot; booking always rechecks it. Existing account-specific rights and WhatsApp conversation behavior remain authoritative.
+
+
+The personal Planning tab opens on the selected local day, with appointments, arrival windows, and accepted missions awaiting scheduling. The month view remains available. The Disponibilités tab uses separate editors for the usual week and individual service hours, and previews the selected service using its booking mode.

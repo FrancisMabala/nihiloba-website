@@ -3,3 +3,28 @@
 @media(max-width:1050px){.svc-calendar-refined.is-calendar{grid-template-columns:minmax(0,1fr)}.svc-calendar-refined .shida-cal-agenda{grid-column:1;grid-row:4;border:0;padding:14px 0 0}.svc-calendar-legend{grid-row:3}.svc-compact-day{grid-template-columns:95px 80px minmax(0,1fr)}.svc-compact-day>button{grid-column:3;justify-self:start}.svc-calendar-refined .shida-cal-day{min-height:56px}}
 @media(max-width:600px){.svc-planner .svc-editor-card{padding:12px}.svc-calendar-refined .shida-cal-grid{gap:4px}.svc-calendar-refined .shida-cal-day{min-height:46px;font-size:.85rem}.svc-calendar-refined .shida-cal-toolbar h3{min-width:0;font-size:1rem}.svc-calendar-refined .shida-cal-event button{width:auto}.svc-compact-hours>header{align-items:start;flex-direction:column}.svc-compact-day{grid-template-columns:1fr auto;gap:9px}.svc-compact-day>label{justify-self:end}.svc-hour-summary{grid-column:1}.svc-compact-day>button{grid-column:2;grid-row:2;font-size:.75rem;padding:7px}.svc-live-preview{padding:14px}.svc-preview-slots li{flex:1;text-align:center;min-width:105px}.svc-day-editor{padding:12px}.svc-calendar-legend{gap:8px;font-size:.7rem}}
 .svc-planner .svc-compact-day>label{display:flex;flex-direction:row;margin:0;gap:7px}.svc-planner .svc-compact-day{padding:8px 12px}.svc-planner .svc-compact-day button{min-height:38px;padding:7px 10px}.svc-planner .svc-form-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.svc-planner .svc-compact-day input[type=checkbox]{margin:0}.svc-planner .svc-hours-fields>h3{margin-top:24px}
+
+.svc-cal-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:1rem;margin-block:1rem;align-items:start}
+.svc-cal-panel{padding:clamp(.8rem,2vw,1.4rem);border:1px solid var(--border,#d9d4c8);border-radius:.75rem;background:var(--surface,#fffcf7);min-width:0;overflow-wrap:anywhere}
+.svc-cal-panel+.svc-cal-panel{margin-top:1rem}
+.svc-cal-panel h3,.svc-cal-drawer h3{margin:0 0 .8rem;font-family:var(--font-heading,Georgia,serif)}
+.svc-cal-panel header,.svc-cal-drawer header,.svc-cal-date,.svc-cal-days,.svc-cal-drawer footer{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.svc-cal-panel header,.svc-cal-drawer header{justify-content:space-between}
+.svc-cal-date input{width:auto;min-width:0;max-width:100%}
+.svc-cal-event{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:.7rem;margin-top:.75rem;padding:.8rem;border:1px solid #ddd8cf;border-radius:.55rem}
+.svc-cal-event>small{grid-column:1/-1;color:#70521f}
+.svc-cal-panel small,.svc-cal-event strong,.svc-cal-task span{display:block}
+.svc-cal-event button{display:block;margin-top:.4rem}
+.svc-cal-badge{background:#eef2e7;padding:.2rem .5rem;border-radius:.4rem;font-size:.88rem}
+.svc-cal-task,.svc-cal-preview,.svc-cal-week>div{padding:.65rem 0;border-bottom:1px solid #ddd8cf}
+.svc-cal-week>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.5rem}
+.svc-cal-week dd{margin:0}
+.svc-cal-month{padding:.7rem}.svc-cal-month summary{cursor:pointer}
+.svc-cal-drawer{position:fixed;inset:0 0 0 auto;margin:0;width:min(42rem,100%);max-width:100%;height:100dvh;max-height:100dvh;padding:1.4rem;border:0;background:#fffcf7;color:inherit;overflow:auto}
+.svc-cal-drawer::backdrop{background:rgb(21 27 24 / .4)}
+.svc-cal-drawer footer{position:sticky;bottom:-1.4rem;justify-content:flex-end;background:#fffcf7;border-top:1px solid #ddd8cf;padding:1rem 0}
+.svc-cal-drawer fieldset,.svc-cal-panel fieldset{border:0;margin:.6rem 0;padding:0;min-width:0}
+.svc-cal-drawer label,.svc-cal-panel fieldset label{display:block;margin:.5rem 0}
+.svc-cal-drawer input[type=checkbox],.svc-cal-drawer input[type=radio],.svc-cal-panel input[type=radio]{width:auto;margin-right:.5rem}
+.svc-cal-days [aria-pressed=true]{background:#123e31;color:white}
+@media(max-width:760px){.svc-cal-layout{grid-template-columns:minmax(0,1fr)}.svc-cal-event{grid-template-columns:1fr}.svc-cal-drawer{width:100vw;padding:1rem}.svc-cal-drawer footer{bottom:-1rem}.svc-cal-panel header{align-items:start}.svc-cal-panel .svc-cal-date{gap:.3rem}.svc-cal-drawer input:not([type=checkbox]):not([type=radio]){max-width:100%}}
