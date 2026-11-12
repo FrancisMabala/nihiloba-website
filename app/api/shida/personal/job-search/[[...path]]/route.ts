@@ -16,7 +16,7 @@ async function enrich(list:JobSearchList,locale:'en'|'fr'|'ln'|'sw',preview:bool
   try{
    if(item.kind==='job'){
     const job=await getJob(item.reference,locale);
-    return {...item,location:jobLocation(job),status:['expired','archived','closed','source_invalid'].includes(job.lifecycle_state)?job.lifecycle_state:item.status};
+    return {...item,external_redirect:job.origin==='external' && job.application.capability==='external_redirect' && job.application.external_action?.mode==='redirect',location:jobLocation(job),status:['expired','archived','closed','source_invalid'].includes(job.lifecycle_state)?job.lifecycle_state:item.status};
    }
    const employer=item.employer_ref||(item.kind==='organization_directory'?item.reference:null);
    if(employer){

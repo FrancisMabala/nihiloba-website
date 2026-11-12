@@ -1,5 +1,6 @@
 "use client";
 
+import {candidateWorkspaceCopy} from '../../lib/candidate-workspace-copy';
 import { useEffect, useState, useId, useRef } from "react";
 import {OfferText} from './offer-text';
 import {JobRelationshipActions} from "./job-relationship-actions";
@@ -21,6 +22,7 @@ export function JobViewTracker({ jobReference }: { jobReference:string }) {
   useEffect(()=>{const key=`shida_job_viewed_${jobReference}`;try{if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,"1");}catch{/* A blocked session store only reduces client-side deduplication. */}void recordEvent(jobReference,"view");},[jobReference]);
   return null;
 }
+
 
 export function ExternalJobAction({ locale, jobReference, action, label }: { locale:Locale; jobReference:string; action:PublicJobExternalAction; label?:string }) {
   const statusId = useId(), hintId = useId(), t = copy[locale];
@@ -48,7 +50,7 @@ export function ExternalJobAction({ locale, jobReference, action, label }: { loc
         tab.document.title = t.opening;
         tab.document.body.textContent = t.opening;
       }
-      const response = await fetch(`/api/shida/public-jobs/${encodeURIComponent(jobReference)}/external-action`, {
+      const response = await fetch(`/api/shida/public-jobs/${encodeURIComponent(jobReference)}/external-action/`, {
         method: "POST", credentials: "same-origin", headers: {"Content-Type": "application/json"},
         body: JSON.stringify({action: action.action, idempotency_key: crypto.randomUUID()}),
       });
@@ -79,7 +81,7 @@ export function ExternalJobAction({ locale, jobReference, action, label }: { loc
   const describedBy = [redirect && hintId, (message || instructions) && statusId].filter(Boolean).join(" ");
   return <div className="job-external-action">
     <button type="button" className="button button-primary" onClick={activate} disabled={busy} aria-describedby={describedBy || undefined}>
-      {label || (redirect ? t.redirect : t.instructions)}{redirect && <span aria-hidden="true"> ↗</span>}
+      {redirect ? candidateWorkspaceCopy[locale].official : label || t.instructions}{redirect && <span aria-hidden="true"> ↗</span>}
     </button>
     {redirect && <small className="job-new-tab-hint" id={hintId}>{t.hint}</small>}
     {(message || instructions) && <div id={statusId} className={instructions ? "job-application-instructions" : "job-action-status"} role="status">

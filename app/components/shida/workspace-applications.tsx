@@ -8,7 +8,7 @@ import {candidateApplicationPath,candidateStatusLabel} from './candidate-employm
 import {SpaceIcon} from './account-space-icon';
 
 export const applicationsCopy={
- fr:{empty:'Aucune candidature envoyée via SHIDA',scope:'Seules les candidatures envoyées via SHIDA apparaissent ici.',one:'Voir mon offre enregistrée',many:'Voir mes offres enregistrées',open:'Voir ma candidature',sent:'Envoyée le',interview:'Entretien prévu',details:'Voir l’entretien'},
+ fr:{empty:'Vous n’avez pas encore envoyé de candidature sur SHIDA.',scope:'Seules les candidatures envoyées via SHIDA apparaissent ici.',one:'Revoir l’offre enregistrée',many:'Voir mes offres enregistrées',open:'Voir ma candidature',sent:'Envoyée le',interview:'Entretien prévu',details:'Voir l’entretien'},
  en:{empty:'No applications submitted through SHIDA',scope:'Only applications submitted through SHIDA appear here.',one:'View my saved job',many:'View my saved jobs',open:'View my application',sent:'Submitted on',interview:'Interview scheduled',details:'View interview'},
  ln:{empty:'Candidature moko te etindami na SHIDA',scope:'Kaka ba candidature otindi na SHIDA nde emonanaka awa.',one:'Talá mosala nabombi',many:'Talá misala nabombi',open:'Talá candidature na ngai',sent:'Etindami na',interview:'Entretien ebongisami',details:'Talá entretien'},
  sw:{empty:'Hakuna ombi lililotumwa kupitia SHIDA',scope:'Maombi yaliyotumwa kupitia SHIDA pekee yanaonekana hapa.',one:'Angalia kazi niliyohifadhi',many:'Angalia kazi nilizohifadhi',open:'Angalia ombi langu',sent:'Limetumwa tarehe',interview:'Mahojiano yamepangwa',details:'Angalia mahojiano'}
@@ -22,7 +22,7 @@ function SavedNextStep({locale,binding,refresh,unauthorized}:{refresh:number;loc
  const t=jobSearchCopy[locale],c=applicationsCopy[locale];
  if(failed)return <div role="alert">{t.error} <button onClick={()=>{setFailed(false);setRevision(v=>v+1);}}>{t.retry}</button></div>;
  if(!list)return <p role="status">{t.loading}</p>;
- if(!list.total)return null;
+ if(!list.total)return <a className="workspace-inline-link" href={(locale==='en'?'':'/'+locale)+'/shida/emplois/'}>{t.browse} →</a>;
  const item=list.items[0],one=list.total===1&&item?.available&&item.reference;
  return <a className="workspace-inline-link" href={one?(locale==='en'?'':'/'+locale)+'/shida/emplois/'+encodeURIComponent(item.reference!):jobSearchPath(locale,'saved')}>{one?c.one:c.many} →</a>;
 }

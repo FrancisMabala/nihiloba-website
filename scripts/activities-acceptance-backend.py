@@ -22,7 +22,7 @@ from app.services.dashboard_auth_service import _keyed_hash
 from tests.wenze_fixture_support import create_wenze_store
 from tests.test_restaurant_personal_lifecycle import create,publish,edit
 accounts={}
-for index,kind in enumerate(['empty','one','many','overview','properties','private','listings']):
+for index,kind in enumerate(['empty','one','many','overview','properties','private','listings','candidate']):
     phone='24382009990'+str(index)
     with SessionLocal() as db:
         account=UserAccountDB(phone_number=phone,personal_name='Acceptance '+kind,city='Kinshasa',country_code='CD')
@@ -95,6 +95,27 @@ for index,kind in enumerate(['empty','one','many','overview','properties','priva
                         poster_name=job.name,poster_job=title,poster_location='Kinshasa',seeker_phone_number='243820099999',
                         seeker_name=name,seeker_job=title,seeker_location='Kinshasa',status='submitted'))
             db.commit()
+    if kind=='candidate':
+        import json
+        from app.services import candidate_onboarding_service as onboarding
+        from app.services.external_job_publication_service import publish_external_job
+        from app.database.account_security_models import AccountPasskeyDB, AccountSecurityDB
+        from tests.test_external_job_publication import _proposal
+        from tests.test_occasional_missions import form
+        now=datetime.now(timezone.utc)
+        with SessionLocal() as db:
+            candidate=db.query(UserAccountDB).filter_by(phone_number=phone).one()
+            owner=(candidate.id,candidate.public_ref)
+            db.add(AccountPasskeyDB(account_id=candidate.id,credential_id='candidate-fixture',public_key='local-fixture',created_at=now-timedelta(days=10)))
+            db.add(AccountSecurityDB(account_id=candidate.id,account_ref=candidate.public_ref,login_email='candidate@example.test',login_email_verified_at=now,login_email_version=1))
+            db.commit()
+            draft=onboarding.start(db,*owner,'occasional_work','legacy-work-draft')
+            onboarding.save(db,*owner,draft['public_ref'],draft['revision'],{'occasional_answers':json.dumps(form(discovery=False))})
+            for i,(company,title) in enumerate([('Kivu Réseaux','Technicien réseau'),('Énergie Congo','Technicien énergie')]):
+                proposal,_=_proposal(db,employer=company,suffix=str(90+i))
+                proposal.title=title
+                db.commit()
+                publish_external_job(db,proposal_ref=proposal.public_ref,actor_label='Local acceptance')
 print('Controlled accounts and normal domain records created.',flush=True)
 import uvicorn
 uvicorn.run(app,host='127.0.0.1',port=8057,log_level='warning',access_log=False)

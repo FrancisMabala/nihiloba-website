@@ -4,7 +4,7 @@
 
 Mon espace now groups the candidate journey under **Ma recherche d'emploi**:
 Vue d'ensemble, Offres enregistrées, Mes candidatures, Entreprises suivies,
-Mes profils et CV, Mes alertes. Routes use `view=job-search&section=` with
+Mes profils, Mes alertes. Routes use `view=job-search&section=` with
 `overview`, `saved`, `applications`, `following`, `profiles`, `alerts`.
 The existing `view=candidate` route opens profiles and preserves the `job` return
 context. Existing professional/occasional forms, CV handling, permissions,
@@ -21,7 +21,7 @@ or application writes.
 
 For saved/followed previews the authenticated gateway accepts `preview=1`.
 It reads the same account list and enriches at most three available rows with
-public job locations or employer logos. No personal credential is sent to the
+public job locations, external application methods or employer logos. No personal credential is sent to the
 public projection. Missing optional fields leave the record visible.
 
 Profile actions open `section=profiles&profile=professional|occasional_work`
@@ -40,8 +40,8 @@ jobs, follows, profiles or account data. No candidate profile is required.
 
 Save acts on the actual job public reference. The backend resolves the correct
 organisation. SHIDA Business references and external directory references remain
-distinct, with corresponding public destinations. Success stays on the job page
-and links to the matching private section. Requests set desired state; local
+distinct, with corresponding public destinations. Saving opens Offres enregistrées.
+Following opens Entreprises suivies, independently of alert subscriptions. Requests set desired state; local
 in-flight locks prevent repeated clicks. Refresh and account-change events reload
 private state, and stale session bindings are rejected by the gateway.
 
@@ -147,3 +147,9 @@ Followed companies show the public profile’s management label, logo or initial
 The `profiles` route is unchanged; each card explains its profile type above the existing status and actions. The `alerts` route separates followed-employer switches, their shared delivery channel, and the collapsed profile-matching controls. Switches do not follow, unfollow, or enroll email. Account setup links open the specific security control, with a return to alerts; eligibility reloads on return. The backend exposes only the masked login address. Release after backend migration `0235_emp_alerts`, the API, and the subscriber worker.
 
 Personal listings and household missions: Mes annonces starts on Toutes and combines the signed-in person's articles, product and mission drafts, jobs and service listings. A mission reference opens its private management page; the same reference survives editing and profile creation during application. Opening the application panel does not submit or enable discovery. Public individual offers and the final creation preview use the same facts and conditions component. Business and external application destinations are unchanged.
+
+## Candidate workspace, 12 November 2026
+
+The profile choices describe working for a company or an individual. Both reuse the original profile types and open the candidate’s exact saved record. Employers’ external application links open in a new tab. Only submissions recorded by SHIDA appear in Mes candidatures. The empty applications panel offers the single saved job, the saved list, or the employment marketplace according to the saved count.
+
+Mes alertes reads the switch for each followed company separately. The delivery preference applies to enabled alerts and preserves those switches. The candidate workspace browser check uses disposable saved offers, a private draft and two followed companies to exercise these journeys against the local API.

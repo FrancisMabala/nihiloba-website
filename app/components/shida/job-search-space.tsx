@@ -8,7 +8,7 @@ import {WorkspaceApplications} from './workspace-applications';
 import {CandidateProfileSpace} from './candidate-profile-space';
 import {leaveWork} from '../../lib/wenze-work';
 import {useConfirmation} from './confirmation-dialog';
-import {jobOverviewCopy as overviewCopy} from '../../lib/job-overview-copy';
+import {candidateWorkspaceCopy} from '../../lib/candidate-workspace-copy';
 import {JobOverview} from './job-search-overview';
 import './candidate-profile-space.css';
 import './job-search-overview.css';
@@ -66,7 +66,7 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
  const loading=['saved','following'].includes(section)?!list:section==='applications'?!applications:false;
  return <section className="candidate-workspace job-search-workspace" aria-busy={busy}>
   {confirmation}
-  <div className="search-intro"><p>{overviewCopy[locale].intro}</p><a className="space-primary-action" href={`${prefix}/shida/emplois`}>{t.browse} →</a></div>
+  <div className="search-intro"><p>{candidateWorkspaceCopy[locale].intro}</p><a className="space-primary-action" href={`${prefix}/shida/emplois`}>{t.browse} →</a></div>
   <nav ref={tabs} className="search-tabs" aria-label={t.title}>{jobSearchSections.map(key=><a key={key} href={jobSearchPath(locale,key)} aria-current={section===key?'page':undefined} onClick={async e=>{e.preventDefault();const href=e.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{t[key]}</a>)}</nav>
   {section!=='overview'&&<h2 className="workspace-heading">{t[section]}{section==='applications'&&applications&&<span className="workspace-count">{applications.total}</span>}{(section==='saved'||section==='following')&&list&&<span className="workspace-count">{list.total}</span>}</h2>}
   {notice&&<p className="workspace-toast" role="status">{notice}</p>}

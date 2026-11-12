@@ -1,4 +1,6 @@
 'use client';
+import {candidateWorkspaceCopy} from '../../lib/candidate-workspace-copy';
+
 import {useEffect,useRef,useState} from 'react';
 import {alertCopy} from '../../lib/employer-alert-copy';
 import {jobSearchCopy,jobSearchPath} from '../../lib/job-search-copy';
@@ -42,16 +44,16 @@ export function EmployerAlerts({locale,binding,unauthorized,revision}:{locale:ke
  const toggle=(item:JobSearchItem)=>save({path:'relations/'+item.relation_ref+'/notifications',body:{enabled:!item.notifications}});
  return <div className="employer-alerts">
  {retry&&<div role="alert">{t.error} <button disabled={busy} onClick={()=>void save(retry)}>{t.retry}</button></div>}{notice&&<p role="status" className="workspace-toast">{notice}</p>}
- <section className="candidate-private-panel"><h3>{c.jobs}</h3><p>{c.choose}</p>
+ <section className="candidate-private-panel"><h3>{t.following}</h3>
  {!list.items.length&&<p>{c.empty} <a href={prefix+'/shida/emplois'}>{t.browse} →</a></p>}
  {list.items.map(item=><div className="employer-alert-row" key={item.relation_ref}>
  <span className="workspace-record-icon follow-tile"><MarketplaceImage src={item.logo??null} alt="" sizes="44px" fallback={Array.from(item.name||'')[0]?.toLocaleUpperCase(locale)||'•'}/></span>
- <strong>{item.name||t.unavailable}</strong><button role="switch" type="button" aria-checked={!!item.notifications} aria-label={(item.notifications?c.on:c.off)+' · '+(item.name||t.unavailable)} disabled={busy||!item.available} onClick={()=>void toggle(item)}>{item.notifications?c.on:c.off}<i aria-hidden="true"/></button></div>)}
+ <strong>{item.name||t.unavailable}</strong><span className="alert-label">{candidateWorkspaceCopy[locale].alert.replace('{name}',item.name||t.unavailable)}</span><button role="switch" type="button" aria-checked={!!item.notifications} aria-label={candidateWorkspaceCopy[locale].alert.replace('{name}',item.name||t.unavailable)} disabled={busy||!item.available} onClick={()=>void toggle(item)}>{item.notifications?c.on:c.off}<i aria-hidden="true"/></button></div>)}
  {(page>1||list.has_more)&&<nav className="candidate-actions">{page>1&&<button disabled={busy} onClick={()=>changePage(page-1)}>{t.previous}</button>}{list.has_more&&<button disabled={busy} onClick={()=>changePage(page+1)}>{t.next}</button>}</nav>}</section>
- <section className="candidate-private-panel"><h3 id="job-channel-title">{c.how}</h3>
+ <section className="candidate-private-panel"><h3 id="job-channel-title">{candidateWorkspaceCopy[locale].channel}</h3>
  <div role="radiogroup" aria-labelledby="job-channel-title">
  {(['whatsapp','email'] as const).map(ch=><div key={ch} className="employer-alert-radio"><label><input type="radio" name="employer-alert-channel" value={ch} checked={pref.channel===ch} disabled={busy||(ch==='email'&&state!=='ready')} onChange={()=>void save({path:'delivery-channel',body:{channel:ch}})}/><SpaceIcon name={ch==='email'?'email':'whatsapp'}/>{ch==='email'?c.email:'WhatsApp'}</label>
- <div>{ch==='whatsapp'?c.phone:state==='ready'?pref.masked_email:<>{pref.channel==='email'&&<p>{c.paused}</p>}{state==='account_unavailable'?c[state]:<>{state==='passkey_wait'&&<p>{c[state]}</p>}<a href={setup}>{c[state==='passkey_wait'?'passkey':state]} →</a></>}</>}</div></div>)}</div></section>
+ <div>{ch==='whatsapp'?candidateWorkspaceCopy[locale].phone:state==='ready'?pref.masked_email:<>{pref.channel==='email'&&<p>{c.paused}</p>}{state==='account_unavailable'?c[state]:<>{state==='passkey_wait'&&<p>{c[state]}</p>}<a href={setup}>{c[state==='passkey_wait'?'passkey':state]} →</a></>}</>}</div></div>)}</div><p>{candidateWorkspaceCopy[locale].helper}</p></section>
  <details className="candidate-private-panel"><summary>{c.matching}</summary><p>{t.matchingHelp}</p>{profiles.profile_count?<><p>{profiles.enabled_count===0?t.disabled:profiles.enabled_count===profiles.profile_count?t.enabled:t.mixed}</p><button disabled={busy} onClick={()=>void save({path:'alerts',body:{enabled:profiles.enabled_count!==profiles.profile_count}})}>{profiles.enabled_count===profiles.profile_count?t.disable:t.enable}</button></>:<><p>{t.needProfile}</p><a href={jobSearchPath(locale,'profiles')}>{t.profiles}</a></>}</details>
  </div>;
 }

@@ -1,6 +1,8 @@
 'use client';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {jobSearchCopy,jobSearchPath,type JobSearchSection} from '../../lib/job-search-copy';
+import {candidateWorkspaceCopy} from '../../lib/candidate-workspace-copy';
+import {applicationsCopy} from './workspace-applications';
 import {jobOverviewCopy} from '../../lib/job-overview-copy';
 import {JobSearchError,jobSearchRequest,JOB_PREVIEW_LIMIT,type JobSearchItem,type JobSearchList} from '../../lib/job-search-api';
 import {loadApplicationPage} from '../../services/shida/employment-browser-client';
@@ -34,9 +36,10 @@ export function JobOverview({locale,binding,destination,unauthorized,revision}:{
  const follows=useSection(s=>jobSearchRequest<JobSearchList>(binding,locale,'following?preview=1','GET',undefined,s),unauthorized,revision);
  const apps=useSection(loadApplicationPage,unauthorized,revision);
  const profiles=useSection(async signal=>{
-  const r=await fetch('/api/shida/personal/candidate?language='+locale,{headers:{'X-Shida-Session':binding},credentials:'same-origin',cache:'no-store',signal});
+  const r=await fetch('/api/shida/personal/candidate/?language='+locale,{headers:{'X-Shida-Session':binding},credentials:'same-origin',cache:'no-store',signal});
   if(!r.ok)throw new JobSearchError(r.status);return await r.json() as Profiles;
  },unauthorized,revision);
+ const copy=candidateWorkspaceCopy[locale];
  const path=(section:JobSearchSection)=>jobSearchPath(locale,section);
  function panel<T>(title:string,state:ReturnType<typeof useSection<T>>,render:(d:T)=>ReactNode,more?:JobSearchSection){
   return <section className="search-panel"><header><h2>{title}</h2>{more&&<a href={path(more)} aria-label={title+' — '+u.all}>{u.all} →</a>}</header>
@@ -45,23 +48,26 @@ export function JobOverview({locale,binding,destination,unauthorized,revision}:{
  const plural=new Intl.PluralRules(locale),fmt=new Intl.NumberFormat(locale);
  return <>
   <div className="activities-summary search-counts">{([['saved',saved.data?.total,'bookmark',''],['applications',apps.data?.total,'requests','summary-blue'],['following',follows.data?.total,'business','summary-amber']] as const).map(([key,n,icon,tint],i)=>
-   <a key={key} className={tint} href={path(key)}><SpaceIcon name={icon}/><span><strong>{n===undefined?'—':fmt.format(n)}</strong><small>{u.counts[i][n!==undefined&&plural.select(n)==='one'?0:1]}</small></span></a>)}</div>
+   <a key={key} className={tint} href={path(key)}><SpaceIcon name={icon}/><strong>{n===undefined?'—':fmt.format(n)}</strong>{' '}<span>{u.counts[i][n!==undefined&&plural.select(n)==='one'?0:1].toLocaleLowerCase(locale)}</span></a>)}</div>
   <div className="search-panels">
    {panel(t.saved,saved,list=>list.items.length?list.items.slice(0,JOB_PREVIEW_LIMIT).map(item=>{
     if(!item.available||!item.reference)return <p key={item.relation_ref}>{t.unavailable}</p>;
     const status=item.status==='open'?u.open:item.status==='expired'?t.expired:item.status==='closed'||item.status==='archived'?u.closed:t.unavailable;
-    return <article className="search-row" key={item.relation_ref}><div><strong>{item.name}</strong><small>{[item.employer_name,item.location].filter(Boolean).join(' · ')}</small></div>
-     <div className="search-badges">{item.origin&&<span>{item.origin==='external'?t.external:u.direct}</span>}<span data-open={item.status==='open'}>{status}</span></div>
-     <a className="search-end" href={destination(item)}>{t.open} →</a></article>;
+    return <article className="search-row saved-preview" key={item.relation_ref}>
+     <span className="saved-preview-icon" aria-hidden="true"><SpaceIcon name="bookmark"/></span>
+     <div><strong>{item.name}</strong><small>{[item.employer_name,item.location].filter(Boolean).join(' · ')}</small>
+      {item.external_redirect&&<small>{copy.external}</small>}
+      <a href={destination(item)}>{t.open} →</a></div>
+     <div className="search-badges"><span data-open={item.status==='open'}>{status}</span></div></article>;
    }):<p>{t.emptySaved}</p>,(saved.data?.total??0)>JOB_PREVIEW_LIMIT?'saved':undefined)}
-   {panel(u.recent,apps,page=>page.applications.length?[...page.applications].sort((a,b)=>(b.created_at??'').localeCompare(a.created_at??'')).slice(0,JOB_PREVIEW_LIMIT).map(a=>
-    <article className="search-row" key={a.reference}><div><strong>{a.job_title}</strong><small>{[a.employer_name,candidateStatusLabel(locale,a.status)].filter(Boolean).join(' · ')}</small></div>
-     <a className="search-end" href={candidateApplicationPath(locale,a.reference)}>{u.track} →</a></article>):<p>{u.emptyApplications}</p>,(apps.data?.total??0)>JOB_PREVIEW_LIMIT?'applications':undefined)}
    {panel(t.profiles,profiles,d=>(['professional','occasional_work'] as const).map(kind=>{
     const profile=d.profiles.find(v=>v.type===kind&&!v.archived),draft=d.progress.find(v=>v.profile_type===kind&&['active','expired'].includes(v.state));
     const query=new URLSearchParams({profile:kind});const ref=profile?.reference||draft?.public_ref;if(ref)query.set('record',ref);
-    return <a className="search-profile-row" key={kind} href={path('profiles')+'&'+query}>{u[kind][profile?2:draft?1:0]} <span aria-hidden="true">›</span></a>;
+    return <a className="search-profile-row" key={kind} href={path('profiles')+'&'+query}><SpaceIcon name={kind==='professional'?'management':'people'}/><span className="profile-purpose"><strong>{kind==='professional'?copy.company:copy.individual}</strong>{draft&&!profile&&<small>{draft.state==='active'?copy.draft:t.expired}</small>}</span><b>{profile?copy.edit:draft?copy.resume:copy.start} →</b></a>;
    }))}
+   {panel(u.recent,apps,page=>page.applications.length?[...page.applications].sort((a,b)=>(b.created_at??'').localeCompare(a.created_at??'')).slice(0,JOB_PREVIEW_LIMIT).map(a=>
+    <article className="search-row" key={a.reference}><div><strong>{a.job_title}</strong><small>{[a.employer_name,candidateStatusLabel(locale,a.status)].filter(Boolean).join(' · ')}</small></div>
+     <a className="search-end" href={candidateApplicationPath(locale,a.reference)}>{u.track} →</a></article>):<><p>{copy.empty}</p>{saved.data&&<a href={saved.data.total===1&&saved.data.items[0]?.available?destination(saved.data.items[0]):saved.data.total?path('saved'):(locale==='en'?'':'/'+locale)+'/shida/emplois/'}>{saved.data.total===1&&saved.data.items[0]?.available?copy.one:saved.data.total?applicationsCopy[locale].many:t.browse} →</a>}</>,(apps.data?.total??0)>JOB_PREVIEW_LIMIT?'applications':undefined)}
    {panel(t.following,follows,list=>list.items.length?list.items.slice(0,JOB_PREVIEW_LIMIT).map(item=>!item.available||!item.reference?<p key={item.relation_ref}>{t.unavailable}</p>:
     <article className="search-row" key={item.relation_ref}><div className="search-org"><span className="search-avatar" aria-hidden="true"><MarketplaceImage src={item.logo??null} alt="" fallback={Array.from(item.name?.trim()||'')[0]?.toLocaleUpperCase(locale)||'•'} sizes="40px"/></span><strong>{item.name}</strong></div>
      <a className="search-end" href={destination(item)}>{t.organisation} →</a></article>):<p>{t.emptyFollowing}</p>,(follows.data?.total??0)>JOB_PREVIEW_LIMIT?'following':undefined)}

@@ -8,9 +8,7 @@
 .search-tabs a[aria-current=page]{border-bottom:3px solid #ad7b1a;font-weight:700}
 .search-counts.activities-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
 .search-counts.activities-summary strong{font-family:Georgia,serif;font-variant-numeric:tabular-nums}
-.search-panels{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px}
-.search-panel:nth-child(2){grid-row:2}
-.search-panel:nth-child(3){grid-column:2;grid-row:1}
+.search-panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 .search-panel{min-width:0;overflow-wrap:anywhere;padding:18px;border:1px solid #ded9cd;border-radius:12px;background:#fffdfa}
 .search-panel header,.search-row,.search-org,.search-profile-row{display:flex;align-items:center;gap:12px}
 .search-panel header{justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
@@ -41,4 +39,33 @@
  .search-panel{padding:14px}
  .search-row{gap:6px 12px}
  .search-end{margin-inline-start:0}
+}
+
+.search-counts.activities-summary a { align-items:center; gap:.8rem; }
+.search-counts.activities-summary strong { font-weight:600; font-family:inherit; font-size:1rem; }
+.search-profile-row > svg, .job-profile-cards h3 svg { width:1.6rem; height:1.6rem; flex:none; }
+.search-profile-row .profile-purpose { margin:0; }
+.profile-purpose small { display:block; font-weight:400; margin-top:.4rem; }
+.search-profile-row b { margin-inline-start:auto; }
+.search-panel .saved-preview { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:start; }
+.saved-preview-icon { display:grid; place-items:center; width:2.8rem; height:2.8rem; border-radius:.6rem; background:#fbf1dc; color:#67592f; }
+.saved-preview-icon svg { width:1.3rem; height:1.3rem; }
+.saved-preview small { margin-top:.3rem; }
+@media(max-width:520px) {
+ .search-panel .saved-preview { grid-template-columns:auto minmax(0,1fr); }
+ .saved-preview .search-badges { grid-column:2; }
+}
+.job-profile-cards .candidate-profile-panel { display:flex; flex-direction:column; align-items:flex-start; gap:.8rem; padding:clamp(1rem,2vw,1.8rem); }
+.job-profile-cards h3, .profile-privacy { display:flex; align-items:center; gap:.8rem; }
+.job-profile-cards h3 { margin:0; font-size:clamp(1.28rem,2vw,1.65rem); }
+.job-profile-cards .candidate-draft-card { border:0; background:transparent; padding:0; margin-top:auto; }
+.job-profile-cards .button-primary { margin-top:auto; }
+.profile-privacy svg { width:1.2rem; height:1.2rem; }
+.job-profile-cards .candidate-danger { background:transparent; color:inherit; border:0; text-decoration:underline; }
+@media(max-width:700px) {
+ .search-counts.activities-summary { grid-template-columns:1fr; }
+ .search-counts.activities-summary a { flex-direction:row; }
+ .search-panel .search-profile-row { flex-wrap:wrap; }
+ .search-tabs { flex-wrap:wrap; gap:0 .6rem; }
+ .search-tabs a { white-space:normal; min-height:44px; }
 }

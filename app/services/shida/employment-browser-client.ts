@@ -66,7 +66,7 @@ export async function endEmploymentSession(): Promise<void> {
 }
 
 export async function loadApplicationPage(signal?:AbortSignal,page=1){
-  const value = await request("/applications"+(page===1?"":"?page="+page),{signal});
+  const value = await request("/applications/"+(page===1?"":"?page="+page),{signal});
   if (!Array.isArray(value.applications)) throw new EmploymentBrowserError("malformed_response", 502);
   const applications=value.applications.map(parseCandidateApplication);
   return {applications,total:typeof value.total==='number'?value.total:applications.length,has_more:value.has_more===true};
