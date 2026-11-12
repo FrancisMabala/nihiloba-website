@@ -60,12 +60,15 @@ test('archived and incomplete activities remain visible and link to exact manage
  await page.route('**/api/shida/personal/restaurants/**',route=>route.fulfill({json:{items:[],total:0,actions:['create']}}));
  await page.route('**/api/shida/personal/services/',route=>route.fulfill({json:{profiles:[]}}));
  await page.route('**/api/shida/personal/services/capabilities/',route=>route.fulfill({json:{capabilities:['profile']}}));
+ await page.route('**/api/shida/personal/job-offer/**',route=>route.fulfill({json:{rows:[]}}));
+ await page.route('**/api/shida/personal/apartments/manage/**',route=>route.fulfill({json:{items:[],has_more:false}}));
  await page.goto('/fr/shida/space?view=management');
- await expect(page.locator('.activity-cards article')).toHaveCount(2);
- const old=page.locator('.activity-cards article').filter({hasText:'À compléter'});
- await expect(old).toContainText('Nom de l’activité');await expect(old).toContainText('Localisation');
+ await expect(page.locator('.managed-cards article')).toHaveCount(2);
+ const old=page.locator('.managed-cards article[data-ref="WNZ_old"]');
+ await expect(old).toContainText('À compléter');
  await expect(old.getByRole('link')).toHaveAttribute('href',/store=WNZ_old&view=shop/);
- await expect(page.locator('.space-managed')).not.toContainText('Vous n’avez pas encore');
+ await expect(old.getByRole('button',{name:/Aperçu/})).toBeVisible();
+ await expect(page.locator('.managed-empty')).toHaveCount(0);
 });
 test('empty Messages stays simple and the header links to the unified center',async({page})=>{
  await session(page);await page.route('**/api/shida/personal/notifications**',route=>route.fulfill({json:route.request().url().includes('/count')?{unread_count:0}:{items:[],next_cursor:null}}));

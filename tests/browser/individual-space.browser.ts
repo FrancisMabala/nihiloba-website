@@ -8,6 +8,8 @@ for(const kind of ['individual','mixed','partial','property','organization'])tes
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Test seller'}});
   if(path.endsWith('/security/navigation'))return reply({markets:kind==='property'?['wenze','apartments']:['wenze'],organization_management:kind==='organization'});
   if(path.endsWith('/wenze/stores'))return reply({stores:url.searchParams.get('archived')==='true'?[]:[store,...kind==='mixed'?[{...store,public_ref:'WNZ_shop',name:'Real boutique',selling_mode:'shop'}]:[]],product_categories:[]});
+  if(path.endsWith('/job-offer'))return reply({rows:[{type:'article',reference:'WNP_fixture',title:'Controlled individual listing',status:'sold'}]});
+  if(path.endsWith('/apartments/manage'))return reply({items:[],has_more:false});
   if(path.endsWith('/restaurants'))return reply({items:[],total:0,actions:['create']},kind==='partial'?503:200);
   if(path.endsWith('/services'))return reply({profiles:[]});
   if(path.endsWith('/services/capabilities'))return reply({capabilities:['profile']});
@@ -20,22 +22,17 @@ for(const kind of ['individual','mixed','partial','property','organization'])tes
  });
  await page.goto('/shida/space?view=management');
  const navigation=page.locator('.space-sidebar');
+ await expect(page.locator('.activities-dashboard')).toBeVisible();
+ await expect(navigation.getByRole('link',{name:'My activities',exact:true})).toHaveAttribute('aria-current','page');
+ const listings=navigation.getByRole('link',{name:'My listings',exact:true});
+ await expect(listings).toBeVisible();
  if(kind==='individual'){
-  await expect(page.locator('.qs-embedded')).toBeVisible();
-  await expect(navigation.getByRole('link',{name:'My activities',exact:true})).toHaveCount(0);
-  await expect(navigation.getByRole('link',{name:'My listings',exact:true})).toHaveAttribute('aria-current','page');
-  await expect(page.locator('.qs-listing-card')).toContainText('Outside sale reported by you');
-  await expect(page.locator('.qs-listing-card')).not.toContainText('Payment verified');
-  await page.locator('.qs-listing-card summary').click();
-  await expect(page.locator('.qs-listing-card').getByRole('button',{name:'Mark as sold',exact:true})).toBeDisabled();
- }else{
-  await expect(page.locator('.activities-dashboard')).toBeVisible();
-  await expect(navigation.getByRole('link',{name:'My activities',exact:true})).toHaveAttribute('aria-current','page');
-  await expect(navigation.getByRole('link',{name:'My listings',exact:true})).toBeVisible();
+  await expect(page.locator('.managed-cards article')).toContainText('Controlled individual listing');
+  await expect(page.locator('.managed-cards article a')).toHaveAttribute('href',/item=WNP_fixture/);
  }
  await page.screenshot({path:`test-results/individual-space-${kind}-desktop.png`,fullPage:true});
  await page.setViewportSize({width:390,height:844});
- if(kind==='individual')await expect(page.locator('.qs-tabs').last()).toHaveCSS('flex-wrap','nowrap');
+
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`test-results/individual-space-${kind}.png`,fullPage:true});
 });

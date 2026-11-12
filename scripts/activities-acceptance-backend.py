@@ -22,7 +22,7 @@ from app.services.dashboard_auth_service import _keyed_hash
 from tests.wenze_fixture_support import create_wenze_store
 from tests.test_restaurant_personal_lifecycle import create,publish,edit
 accounts={}
-for index,kind in enumerate(['empty','one','many','overview','properties']):
+for index,kind in enumerate(['empty','one','many','overview','properties','private']):
     phone='24382009990'+str(index)
     with SessionLocal() as db:
         account=UserAccountDB(phone_number=phone,personal_name='Acceptance '+kind,city='Kinshasa',country_code='CD')
@@ -49,10 +49,18 @@ for index,kind in enumerate(['empty','one','many','overview','properties']):
             db.add(profile);db.flush()
             for index,name in enumerate(['Installation','Réparation']):
                 db.add(m.ServiceProviderDB(provider_profile_id=profile.id,public_ref=f'SVC_overview{index}',provider_public_ref=profile.public_ref,phone_number=phone,name=profile.name,service_name=name,category='electricity',location='Kinshasa',publication_origin='pilot'))
-            db.add(m.PosterDB(public_ref='JOB_overview',role='job_poster',phone_number=phone,name='Recruiter',job='Vendeur en boutique',location='Kinshasa',**owner))
+            db.add(m.PosterDB(public_ref='JOB_overview',role='job_poster',phone_number=phone,name='Recruiter',job='Vendeur en boutique',location='Kinshasa',work_city='Kinshasa',**owner))
+            db.commit()
+    if kind=='private':
+        hidden=create_wenze_store({'owner_phone':phone,'name':'Atelier privé','category':'fashion_clothing','city':'Kinshasa'})
+        with SessionLocal() as db:
+            db.query(m.WenzeStoreDB).filter_by(public_ref=hidden['public_ref']).one().visible='false'
             db.commit()
     if kind=='properties':
         with SessionLocal() as db:
+            owner=dict(owner_account_id=accounts[kind]['actor_account_id'],owner_account_ref=accounts[kind]['actor_account_ref'])
+            db.add(m.HotelListingDB(owner_phone=phone,name='Hôtel du fleuve',**owner))
+            db.add(m.WewaDriverProfileDB(driver_phone=phone,display_name='Transport Kivu',**owner))
             db.add(m.SeekerDB(owner_account_id=accounts[kind]['actor_account_id'],
                 owner_account_ref=accounts[kind]['actor_account_ref'],phone_number=phone,
                 name='Test candidat',job='Électricien',location='Kinshasa',profile_type='professional'))

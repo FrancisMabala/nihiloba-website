@@ -11,7 +11,7 @@ export function FoodSummary({preview,locale}:{preview?:FoodPreview;locale:Restau
  return <div className="rst-food-summary">{preview.groups.map((g,i)=><section key={i}><h4>{t(g.kind==='plate'?'plate':'standalone')}{g.plate_number!==null && ` ${g.plate_number}`}</h4>{g.lines.map((line,j)=><p key={j}>{line.name} · {line.quantity!==undefined ? `${line.quantity} ${line.sale_unit_label}` : `${line.selected_amount} ${line.currency}`}</p>)}{g.remaining_lines>0 && <p>{t('groupOmitted')}: {g.remaining_lines}</p>}</section>)}{preview.truncated && <p className="rst-notice">{t('linesOmitted')}: {preview.remaining_lines} · {t('groupsOmitted')}: {preview.remaining_groups}. {t('fullReview')}</p>}</div>;
 }
 
-export function PrivateMenuPreview({path,binding,locale,onFailure}:{path:string;binding:string;locale:RestaurantLocale;onFailure:(e:unknown)=>void}) {
+export function PrivateMenuPreview({path,binding,locale,onFailure}:{path:string;binding:string;locale:RestaurantLocale;onFailure?:(e:unknown)=>void}) {
  const t=(key:string)=>workText(locale,key);
  const [page,setPage]=useState(1),[data,setData]=useState<MenuPreview|null>(null),[status,setStatus]=useState('loading'),[refresh,setRefresh]=useState(0);
  useEffect(()=>{
@@ -27,7 +27,7 @@ export function PrivateMenuPreview({path,binding,locale,onFailure}:{path:string;
     if(!alive || current!==ticket)return;
     if(!validMenuPreview(value,query))throw new DashboardApiError('unavailable',502);
     setData(value);setStatus('');
-   }catch(e){if(!alive || current!==ticket)return;setStatus('unavailable');if(e instanceof DashboardApiError && [401,403,404].includes(e.status))onFailure(e);}
+   }catch(e){if(!alive || current!==ticket)return;setStatus('unavailable');if(e instanceof DashboardApiError && [401,403,404].includes(e.status))onFailure?.(e);}
   }
   const resume=()=>void load();void load();
   window.addEventListener('focus',resume);window.addEventListener('online',resume);window.addEventListener('offline',resume);document.addEventListener('visibilitychange',resume);

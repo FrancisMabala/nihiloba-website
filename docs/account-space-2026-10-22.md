@@ -49,3 +49,9 @@ its offerings, and posted jobs open the recruiter's view of the specific offer.
 Apartments include their location when available. Hotel and transport activities
 continue in their authorized WhatsApp editors in the selected language.
 The empty welcome appears only after all activity sources load successfully.
+
+**My activities** shows the same manageable records as named cards, grouped by type
+with a count. The creation choices open beside the page title. Public links use
+the selected record's reference. Hidden shops and authorized draft restaurants
+can open their existing private previews directly on the page. Job applications
+remain in My job search, and the legacy recovery link opens account support.
