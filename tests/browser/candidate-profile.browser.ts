@@ -4,7 +4,7 @@ import {test,expect,type Page} from '@playwright/test';
 import {formText} from '../../app/lib/professional-form-copy';
 import {candidateUX} from '../../app/lib/candidate-ux';
 import {candidateCopy} from '../../app/lib/candidate-profile-copy';
-async function fixture(page:Page, options:{success?:boolean;expired?:boolean;existing?:boolean;failSave?:boolean;failDelete?:boolean}={}){
+async function fixture(page:Page, options:{success?:boolean;expired?:boolean;existing?:boolean;failSave?:boolean;failDelete?:boolean;companyDraft?:boolean}={}){
  let draft:Record<string,unknown>|null=options.expired?{public_ref:'COP_test',profile_type:'occasional_work',state:'expired',revision:2,updated_at:'2026-11-06T10:00:00Z',values:{city:'Goma',work_types:['Gardening'],preferred_areas:['Centre'],availability:'Weekdays',short_experience:'Two years',description:'Garden maintenance'},return_job_ref:null}:null;
  let profiles:Record<string,unknown>[]=options.existing?[{reference:'CND_test',type:'occasional_work',version:'2026-11-04T00:00:00Z',archived:false,visibility:'private',has_cv:false,values:{city:'Goma',work_types:['Gardening'],preferred_areas:['Centre'],availability:'Weekdays',short_experience:'Two years',description:'Garden maintenance'}}]:[];
  const writes:Record<string,unknown>[]=[];
@@ -13,7 +13,7 @@ async function fixture(page:Page, options:{success?:boolean;expired?:boolean;exi
   const reply=(json:unknown,status=200)=>route.fulfill({json,status});
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Test candidate'}});
   if(path.endsWith('/personal/candidate')){
-   if(r.method()==='GET')return reply({profiles,progress:draft?[draft]:[],metadata:{categories:[{id:'administration_office',label:'Administration'}],required:{professional:['primary_category','desired_titles','city','work_types','availability','skills','experience_level','description','cv_choice'],occasional_work:['work_types','city','preferred_areas','availability','short_experience','description']}}});
+   if(r.method()==='GET')return reply({profiles,progress:[...(options.companyDraft?[{public_ref:'COP_company',profile_type:'professional',state:'active',revision:1,values:{city:'Matadi'},return_job_ref:null}]:[]),...(draft?[draft]:[])],metadata:{communes:['Bumbu','Gombe'],categories:[{id:'administration_office',label:'Administration'}],required:{professional:['primary_category','desired_titles','city','work_types','availability','skills','experience_level','description','cv_choice'],occasional_work:['work_types','city','preferred_areas','availability','short_experience','description']}}});
    const body=r.postDataJSON();writes.push(body);
    if(body.action==='start'&&body.edit_ref&&options.existing)return reply({},409);
    if(body.action==='start'){draft={public_ref:'COP_test',profile_type:body.profile_type,state:'active',revision:1,values:{},return_job_ref:null};return reply(draft);}
@@ -69,17 +69,18 @@ test('expired occasional progress resumes and creates one private profile',async
  await expect(wizard.getByLabel(t.cv,{exact:true})).toHaveCount(0);
  await wizard.getByRole('button',{name:occText('fr','flexible'),exact:true}).click();
  await wizard.getByRole('button',{name:t.next,exact:true}).click();
+ await wizard.getByRole('button',{name:'+ Ajouter un savoir-faire'}).click();
  await wizard.locator('#occ-tasks-0 input').fill('Arroser les plantes');
  await wizard.locator('#occ-tasks-0 button').last().click();
  await wizard.getByRole('button',{name:occText('fr','paid'),exact:true}).click();
- await wizard.getByRole('button',{name:t.next,exact:true}).click();
+ await wizard.getByRole('button',{name:occText('fr','verify'),exact:true}).click();
  await expect(wizard.getByRole('switch')).not.toBeChecked();
  await wizard.getByRole('checkbox',{name:occText('fr','confirm')}).check();
  await wizard.getByRole('button',{name:occText('fr','submit'),exact:true}).click();
  await expect(page.getByText(occText('fr','saved'),{exact:true})).toBeVisible();
  const panel=page.locator('.candidate-profile-panel').filter({has:page.getByRole('heading',{name:workspaceCopy.fr.individual,exact:true})});
- await expect(panel.getByRole('button',{name:t.edit,exact:true})).toBeVisible();
- await expect(panel.getByText(t.private,{exact:true})).toBeVisible();
+ await expect(panel.getByRole('button',{name:occText('fr','editProfile'),exact:true})).toBeVisible();
+ await expect(panel.getByText(occText('fr','private'),{exact:true})).toBeVisible();
  expect(writes.map(w=>w.action)).toEqual(['recover','save','finalize']);
  await page.screenshot({path:'test-results/candidate-profile/created-occasional-mobile.png',fullPage:true});
 });
@@ -89,12 +90,12 @@ test('existing profile editing retains input on a concurrent conflict',async({pa
  await page.goto('/shida/space?view=candidate');
  const panel=page.locator('.candidate-profile-panel').filter({has:page.getByRole('heading',{name:workspaceCopy.en.individual,exact:true})});
  await expect(panel.getByRole('button',{name:workspaceCopy.en.start,exact:true})).toHaveCount(0);
- await panel.getByRole('button',{name:t.edit,exact:true}).click();
+ await panel.getByRole('button',{name:occText('en','editProfile'),exact:true}).click();
  const wizard=page.locator('.candidate-form');
- await wizard.locator('input[list=occ-cities]').fill('Bukavu');
+ await wizard.getByRole('combobox',{name:/Town or city/}).click();await wizard.getByRole('option',{name:'Bukavu'}).click();
  await wizard.getByRole('button',{name:t.save,exact:true}).click();
  await expect(page.locator('.candidate-notice[role="alert"]')).toContainText(t.conflict);
- await expect(wizard.locator('input[list=occ-cities]')).toHaveValue('Bukavu');
+ await expect(wizard.getByRole('combobox',{name:/Town or city/})).toContainText('Bukavu');
  await expect(wizard.getByRole('button',{name:t.save,exact:true})).toBeDisabled();
  expect(writes).toHaveLength(1);expect(writes[0]).toMatchObject({action:'start',profile_type:'occasional_work',edit_ref:'CND_test',edit_version:'2026-11-04T00:00:00Z'});
 });
@@ -179,4 +180,88 @@ for (const [width,withCV] of [[360,true],[1440,false]] as const) test(`professio
  await wizard.getByLabel(t.confirm).press('Space');await wizard.getByRole('button',{name:t.create}).press('Enter');
  await expect(page.getByText(t.success,{exact:true})).toBeVisible();
  expect(writes.filter(item=>item.action==='finalize')).toHaveLength(1);
+});
+
+for(const width of [360,1440])test('owner reviews household profile and reopens saved answers '+width,async({page},info)=>{
+ await fixture(page,{success:true,companyDraft:true});
+ await page.setViewportSize({width,height:900});
+ const url='/fr/shida/space/?view=job-search&section=profiles';
+ await page.goto(url);
+ const individual=page.locator('.candidate-profile-panel').filter({hasText:workspaceCopy.fr.individual});
+ await individual.getByRole('button',{name:workspaceCopy.fr.start}).click();
+ const form=page.locator('.occ-wizard');
+ const button=(name:string)=>form.getByRole('button',{name,exact:true});
+ const noDuplicate=()=>expect(page.getByRole('heading',{name:'Mes profils',exact:true})).toHaveCount(0);
+ await noDuplicate();
+ const questions=form.locator('.occ-group>h3');
+ const tabFont=await page.locator('.search-tabs [aria-current=page]').evaluate(el=>getComputedStyle(el).fontFamily);
+ for(const question of await questions.all()){
+  await expect(question).toHaveCSS('font-family',tabFont);
+  await expect(question).toHaveCSS('font-weight','600');
+  await expect(question).toHaveCSS('font-size',width===360?'17px':'18px');
+ }
+ await button('Garde d’enfants').click();await button('Conduite de wewa').click();
+ await button('+ Ajouter une autre mission').click();
+ await form.getByLabel('Ajouter une autre mission').fill('Jardinage');await button('Ajouter').click();
+ await expect(form.getByText('3 sur 3 sélectionnées')).toBeVisible();
+ await button('Aide en cuisine').click();await expect(form.getByText('3 sur 3 sélectionnées')).toBeVisible();
+ await button('✓ Jardinage ×').click();await button('✓ Conduite de wewa').click();
+ await form.getByRole('combobox',{name:/Ville/}).click();await form.getByRole('option',{name:'Kinshasa'}).click();
+ const commune=form.getByRole('combobox',{name:/Commune de travail/});await commune.click();
+ const search=form.getByRole('combobox',{name:'Rechercher une commune'});await search.fill('bum');
+ await expect(form.getByRole('option',{name:'Bumbu'})).toBeVisible();
+ await expect(form.getByRole('option',{name:'Gombe'})).toHaveCount(0);
+ const field=await commune.boundingBox(),panel=await form.locator('.candidate-options').boundingBox();
+ expect(Math.abs(field!.width-panel!.width)).toBeLessThan(2);
+ await page.screenshot({path:info.outputPath('commune-'+width+'.png')});
+ await search.press('Enter');
+ for(const name of ['Lundi','Mardi','Après-midi'])await button(name).click();
+ await button(candidateCopy.fr.save).click();await page.reload();
+ await individual.getByRole('button',{name:workspaceCopy.fr.resume}).click();
+ await noDuplicate();await expect(form.getByRole('heading',{name:'Garde d’enfants'})).toBeVisible();
+ await button('Aider aux devoirs').click();await button('Je débute').click();
+ await form.getByRole('textbox',{name:'Un exemple de votre savoir-faire (facultatif)'}).fill('Accompagner les enfants après la classe.');
+ await button('Vérifier mon profil').click();await noDuplicate();
+ const expected=['Garde d’enfants','Kinshasa','Bumbu','Lundi et Mardi','Après-midi','Aider aux devoirs','Je débute'];
+ for(const value of expected)await expect(form).toContainText(value);
+ await expect(form.getByRole('switch')).not.toBeChecked();
+ await form.getByLabel('Je confirme ces informations.').check();await button('Créer mon profil').click();
+ await expect(page.getByRole('status').filter({hasText:occText('fr','saved')})).toBeVisible();
+ await page.reload();await noDuplicate();
+ for(const value of expected)await expect(individual).toContainText(value);
+ await individual.getByRole('link',{name:'Voir mon profil'}).click();await page.reload();
+ const detail=page.locator('.occ-read');
+ for(const value of [...expected,'Accompagner les enfants après la classe.'])await expect(detail).toContainText(value);
+ await expect(detail).toContainText(occText('fr','private'));
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+ await page.screenshot({path:info.outputPath('owner-'+width+'.png'),fullPage:true});
+ await detail.getByRole('link',{name:/Retour à mes profils/}).click();
+ const company=page.locator('.candidate-profile-panel').filter({hasText:workspaceCopy.fr.company});
+ await company.getByRole('button',{name:workspaceCopy.fr.resume}).click();
+ await expect(page.locator('.professional-wizard').getByLabel(candidateCopy.fr.fields.city)).toHaveValue('Matadi');
+});
+
+test('two household missions keep their own answers through review, save and refresh',async({page})=>{
+ await fixture(page,{success:true});await page.goto('/fr/shida/space/?view=job-search&section=profiles');
+ const card=page.locator('.candidate-profile-panel').filter({hasText:workspaceCopy.fr.individual});
+ await card.getByRole('button',{name:workspaceCopy.fr.start}).click();
+ const form=page.locator('.occ-wizard');
+ const select=(name:string)=>form.getByRole('button',{name,exact:true}).click();
+ await select('Garde d’enfants');await select('Ménage et entretien');
+ await form.getByRole('combobox',{name:/Ville/}).click();await form.getByRole('option',{name:'Goma'}).click();
+ await select('À convenir');await select('Travail régulier');await select('Continuer');
+ for(const [i,skill,experience,example] of [[0,'Aider aux devoirs','Je débute','Travaux scolaires'],[1,'Nettoyer les sols','Oui, pour des proches','Entretien des sols']] as const){
+  const mission=form.locator('.occ-mission').nth(i);
+  await mission.getByRole('button',{name:skill,exact:true}).click();await mission.getByRole('button',{name:experience,exact:true}).click();
+  await mission.getByRole('textbox',{name:occText('fr','example')}).fill(example);
+ }
+ await select('Vérifier mon profil');await select('Modifier mon savoir-faire');
+ await expect(form.locator('.occ-mission').nth(1).getByRole('textbox',{name:occText('fr','example')})).toHaveValue('Entretien des sols');
+ await select('Revenir à la vérification');await form.getByLabel('Je confirme ces informations.').check();await select('Créer mon profil');
+ await card.getByRole('link',{name:'Voir mon profil'}).click();await page.reload();
+ const skills=page.locator('.occ-summary section').nth(1);
+ const childcare=skills.locator('div').filter({has:page.getByRole('heading',{name:'Garde d’enfants'})}).first();
+ const cleaning=skills.locator('div').filter({has:page.getByRole('heading',{name:'Ménage et entretien'})}).first();
+ await expect(childcare).toContainText('Aider aux devoirs');await expect(childcare).toContainText('Travaux scolaires');await expect(childcare).not.toContainText('Nettoyer les sols');
+ await expect(cleaning).toContainText('Nettoyer les sols');await expect(cleaning).toContainText('Entretien des sols');await expect(cleaning).not.toContainText('Aider aux devoirs');
 });

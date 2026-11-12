@@ -16,3 +16,7 @@ The work-mode field describes on-site, hybrid or remote work independently of th
 desired city. The authenticated draft retains a newly uploaded CV's display
 filename. Older attachments without a recorded filename use the existing
 attachment label. Finishing uses the same revision-bound finalization on retry.
+
+### Household-job profiles
+
+The three-step form keeps mission choices, schedules and practical skills in the owner’s structured answers. The profile card, review and read-only owner page use those answers after reload. A direct owner view includes the profile reference and loads it from the signed-in personal account. Matching consent is optional. Earlier profile-level examples remain readable, and newly entered examples belong to individual missions. Existing free-text cities, multiple Kinshasa communes and private professional drafts remain supported.

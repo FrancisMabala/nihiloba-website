@@ -353,7 +353,7 @@ for(const width of [390,1440])test('profile descriptions and exact alert setup d
  const type=r.request().postDataJSON().profile_type;started.push(type);return r.fulfill({json:{public_ref:'DRAFT_example',profile_type:type,state:'active',revision:1,values:{},return_job_ref:null}});
  });
  for(const [type,help] of [['professional','Présentez votre expérience, votre formation et vos compétences.'],['occasional_work','Indiquez le travail que vous cherchez et vos disponibilités.']]){
- await page.goto(profileUrl);await expect(page.getByRole('heading',{name:'Mes profils',exact:true})).toBeVisible();
+ await page.goto(profileUrl);await expect(page.getByRole('link',{name:'Mes profils',exact:true})).toHaveAttribute('aria-current','page');await expect(page.getByRole('heading',{name:'Mes profils',exact:true})).toHaveCount(0);
  const card=page.locator('.candidate-profile-panel').filter({hasText:help});await expect(card).toContainText(help);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  if(type==='professional')await page.screenshot({path:info.outputPath('profiles-'+width+'.png'),fullPage:true});

@@ -1,5 +1,26 @@
 export type OccLocale='fr'|'en'|'ln'|'sw';
 const words:Record<string,string[]> = {
+ modify: ['Modifier','Edit','Bongisá','Hariri'],
+ profileTitle: ["Mon profil pour les emplois de particuliers","My profile for household jobs","Profil na ngai mpo na misala ya bato","Wasifu wangu kwa kazi za watu binafsi"],
+ wewa: ["Conduite de wewa","Wewa driving","Kotambwisa wewa","Kuendesha wewa"],
+ selected: ["{n} sur 3 sélectionnées","{n} of 3 selected","{n} na 3 eponami","{n} kati ya 3 zimechaguliwa"],
+ chooseCity: ["Choisir une ville","Choose a city","Poná engumba","Chagua jiji"],
+ searchCity: ["Rechercher ou saisir une ville","Search or enter a city","Luká to komá engumba","Tafuta au andika jiji"],
+ commune: ["Commune de travail","Work municipality","Komine ya mosala","Manispaa ya kazi"],
+ chooseCommune: ["Choisir une commune","Choose a municipality","Poná komine","Chagua manispaa"],
+ searchCommune: ["Rechercher une commune","Search municipalities","Luká komine","Tafuta manispaa"],
+ step: ["Étape {n} sur 3","Step {n} of 3","Etape {n} na 3","Hatua ya {n} kati ya 3"],
+ view: ["Voir mon profil","View my profile","Talá profil na ngai","Angalia wasifu wangu"],
+ editProfile: ["Modifier le profil","Edit profile","Bongisá profil","Hariri wasifu"],
+ backProfiles: ["Retour à mes profils","Back to my profiles","Zongá na baprofil na ngai","Rudi kwenye wasifu wangu"],
+ verify: ["Vérifier mon profil","Review my profile","Talá profil na ngai","Kagua wasifu wangu"],
+ skills: ["Savoir-faire","Skills","Makoki","Ujuzi"],
+ xp: ["Expérience","Experience","Boyebi ya mosala","Uzoefu"],
+ updated: ["Votre profil a été modifié.","Your profile was updated.","Profil na yo ebongisami.","Wasifu wako umesasishwa."],
+ optional: ["(facultatif)","(optional)","(soki olingi)","(si lazima)"],
+ freqLabel: ["Fréquence","Frequency","Mbala boni","Mara ngapi"],
+ missionLabel: ["Missions","Missions","Misala","Kazi"],
+ privacy: ["Visibilité","Visibility","Komonana","Mwonekano"],
  "create": [
   "Créer mon profil de travail occasionnel",
   "Create my occasional work profile",
@@ -31,7 +52,7 @@ const words:Record<string,string[]> = {
   "Kagua na uunde wasifu"
  ],
  "missions": [
-  "Quelles missions souhaitez-vous effectuer ?",
+  "Quelles missions souhaitez-vous faire ?",
   "Which missions would you like to do?",
   "Olingi kosala misala nini ?",
   "Ungependa kufanya kazi gani?"
@@ -43,7 +64,7 @@ const words:Record<string,string[]> = {
   "Hadi kazi 3"
  ],
  "custom": [
-  "Saisir une autre mission",
+  "Ajouter une autre mission",
   "Enter another mission",
   "Kokoma mosala mosusu",
   "Andika kazi nyingine"
@@ -181,19 +202,19 @@ const words:Record<string,string[]> = {
   "Kwa makubaliano"
  ],
  "frequency": [
-  "À quelle fréquence ? (facultatif)",
-  "How often? (optional)",
-  "Mbala boni ? (soki olingi)",
-  "Mara ngapi? (si lazima)"
+  "À quelle fréquence ?",
+  "How often?",
+  "Mbala boni ?",
+  "Mara ngapi?"
  ],
  "once": [
-  "Ponctuellement",
+  "Missions ponctuelles",
   "One-off",
   "Mbala moko",
   "Mara moja"
  ],
  "regular": [
-  "Régulièrement, quelques heures",
+  "Travail régulier",
   "Regularly, a few hours",
   "Mbala na mbala, mwa bangonga",
   "Mara kwa mara, saa chache"
@@ -433,7 +454,7 @@ const words:Record<string,string[]> = {
   "Sarafu"
  ],
  "saved": [
-  "Votre profil a été enregistré.",
+  "Votre profil pour les emplois de particuliers a été créé.",
   "Your profile has been saved.",
   "Profil na yo ebombami.",
   "Wasifu wako umehifadhiwa."

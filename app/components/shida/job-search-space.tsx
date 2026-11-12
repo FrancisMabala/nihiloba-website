@@ -68,7 +68,7 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
   {confirmation}
   <div className="search-intro"><p>{candidateWorkspaceCopy[locale].intro}</p><a className="space-primary-action" href={`${prefix}/shida/emplois`}>{t.browse} →</a></div>
   <nav ref={tabs} className="search-tabs" aria-label={t.title}>{jobSearchSections.map(key=><a key={key} href={jobSearchPath(locale,key)} aria-current={section===key?'page':undefined} onClick={async e=>{e.preventDefault();const href=e.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{t[key]}</a>)}</nav>
-  {section!=='overview'&&<h2 className="workspace-heading">{t[section]}{section==='applications'&&applications&&<span className="workspace-count">{applications.total}</span>}{(section==='saved'||section==='following')&&list&&<span className="workspace-count">{list.total}</span>}</h2>}
+  {section!=='overview'&&section!=='profiles'&&<h2 className="workspace-heading">{t[section]}{section==='applications'&&applications&&<span className="workspace-count">{applications.total}</span>}{(section==='saved'||section==='following')&&list&&<span className="workspace-count">{list.total}</span>}</h2>}
   {notice&&<p className="workspace-toast" role="status">{notice}</p>}
   {error&&<div role="alert"><p>{t.error}</p><button onClick={reload} disabled={busy}>{t.retry}</button></div>}
   {loading&&!error&&<p role="status">{t.loading}</p>}

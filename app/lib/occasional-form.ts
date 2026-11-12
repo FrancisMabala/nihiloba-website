@@ -1,8 +1,10 @@
 export const categories=['childcare','cleaning','laundry','kitchen','service','bar'];
+export const candidateMissions=[...categories,'wewa'];
+export const workCities=['Kinshasa','Lubumbashi','Goma','Kisangani','Bukavu','Matadi','Mbuji-Mayi','Kananga'];
 export const weekdays=['mon','tue','wed','thu','fri','sat','sun'];
 export const slots=['morning','afternoon','evening','flexible'];
 export const suggestions:Record<string,string[]>={childcare:['homework','snack','games'],cleaning:['floor','iron'],laundry:['wash','iron'],kitchen:['prep'],service:['tables'],bar:['drinks','setup']};
-export type Mission={category:string;name:string;tasks:string[];experience:string;rate:string;amount:string;currency:string;unit:string};
+export type Mission={category:string;name:string;example?:string;tasks:string[];experience:string;rate:string;amount:string;currency:string;unit:string};
 export type Answers={missions:Mission[];city:string;communes:string[];districts:Record<string,string>;days:string[];slots:string[];frequency:string[];example:string;discovery:boolean};
 export const newMission=(category:string,name=''):Mission=>({category,name,tasks:[],experience:'',rate:'',amount:'',currency:'',unit:''});
 export const toggle=(a:string[],v:string)=>a.includes(v)?a.filter(n=>n!==v):[...a,v];
@@ -22,6 +24,7 @@ export function problem(a:Answers,step:number,title:(m:Mission)=>string){
  }else{
  for(const [i,m] of a.missions.entries()){
  if(!m.tasks.length||m.tasks.some(v=>!validText(v)))return 'tasks-'+i;
+ if(m.example?.trim()&&!validText(m.example))return 'example-'+i;
  if(!m.experience)return 'experience-'+i;
  if(m.rate==='amount'&&(!/^\d{1,12}([.,]\d{1,2})?$/.test(m.amount)||Number(m.amount.replace(',','.'))<=0||!m.unit||!m.currency))return 'rate-'+i;
  }
