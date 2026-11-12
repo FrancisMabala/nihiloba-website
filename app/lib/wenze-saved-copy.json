@@ -30,14 +30,17 @@
     "each": "Une étiquette par pièce disponible",
     "copies": "Étiquettes à imprimer",
     "pieces": "Pièces disponibles",
-    "noCost": "Aucun coût d’achat renseigné.",
+    "noCost": "Prix d’achat à renseigner",
     "format": "60 × 40 mm · Imprimez à taille réelle.",
     "loadingCost": "Lecture des prix privés…",
     "unavailableCost": "Les prix privés n’ont pas pu être chargés.",
     "reviewArchive": "À archiver lors de l’enregistrement",
     "undo": "Annuler ce choix",
     "version": "Version",
-    "managePhotos": "Gérer les photos"
+    "managePhotos": "Gérer les photos",
+    "viewPhotos": "Voir les photos",
+    "unitCost": "Prix d’achat par pièce",
+    "beforeExpenses": "Ce qu’il vous reste avant les frais"
   },
   "en": {
     "backList": "Back to products",
@@ -70,14 +73,17 @@
     "each": "One label per available piece",
     "copies": "Labels to print",
     "pieces": "Available pieces",
-    "noCost": "No purchase cost entered.",
+    "noCost": "Purchase price needed",
     "format": "60 × 40 mm · Print at actual size.",
     "loadingCost": "Loading private prices…",
     "unavailableCost": "Private prices could not be loaded.",
     "reviewArchive": "Will be archived when saved",
     "undo": "Undo this change",
     "version": "Version",
-    "managePhotos": "Manage photos"
+    "managePhotos": "Manage photos",
+    "viewPhotos": "View photos",
+    "unitCost": "Purchase price per item",
+    "beforeExpenses": "What remains before expenses"
   },
   "ln": {
     "backList": "Zonga na biloko",
@@ -110,14 +116,17 @@
     "each": "Étiquette moko mpo na eloko moko oyo ezali",
     "copies": "Ba étiquettes ya kobimisa",
     "pieces": "Biloko oyo ezali",
-    "noCost": "Ntalo ya kosomba ekomami te.",
+    "noCost": "Komá ntalo ya kosomba",
     "format": "60 × 40 mm · Bimisa na bonene na yango.",
     "loadingCost": "Kotanga bantalo ya sekele…",
     "unavailableCost": "Bantalo ya sekele etangami te.",
     "reviewArchive": "Ekobombama ntango okondimisa",
     "undo": "Longola mbongwana oyo",
     "version": "Lolenge",
-    "managePhotos": "Kamba bafɔtɔ"
+    "managePhotos": "Kamba bafɔtɔ",
+    "viewPhotos": "Talá bafɔtɔ",
+    "unitCost": "Ntalo ya kosomba eteni moko",
+    "beforeExpenses": "Oyo etikali liboso ya bafrais"
   },
   "sw": {
     "backList": "Rudi kwenye bidhaa",
@@ -150,13 +159,16 @@
     "each": "Lebo moja kwa kila kipande kinachopatikana",
     "copies": "Lebo za kuchapisha",
     "pieces": "Vipande vinavyopatikana",
-    "noCost": "Gharama ya ununuzi haijaandikwa.",
+    "noCost": "Weka bei ya ununuzi",
     "format": "60 × 40 mm · Chapisha kwa ukubwa halisi.",
     "loadingCost": "Inasoma bei binafsi…",
     "unavailableCost": "Bei binafsi hazijapatikana.",
     "reviewArchive": "Itaondolewa kwenye mauzo ukihifadhi",
     "undo": "Tendua mabadiliko haya",
     "version": "Aina",
-    "managePhotos": "Simamia picha"
+    "managePhotos": "Simamia picha",
+    "viewPhotos": "Angalia picha",
+    "unitCost": "Bei ya ununuzi kwa kipande",
+    "beforeExpenses": "Kinachobaki kabla ya gharama"
   }
 }

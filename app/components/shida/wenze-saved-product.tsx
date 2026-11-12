@@ -1,33 +1,76 @@
 "use client";
+import Image from 'next/image';
 import {useEffect,useState,type ReactNode} from 'react';
 import {creationMoney,creationText} from '@/app/lib/wenze-creation';
 import {savedText,stockRows,axesFor,type SavedProduct} from '@/app/lib/wenze-saved';
+import {inventoryCatalogue} from '@/app/lib/wenze-inventory-catalogue';
+import {posText} from '@/app/lib/wenze-pos-copy';
 import {wenzeCopy,type WenzeLocale} from '@/app/lib/wenze-copy';
 import choices from '@/app/lib/wenze-choice-copy.json';
 import editorCopy from '@/app/lib/wenze-editor-copy.json';
 import {useWenzeApi,DashboardApiError} from '@/app/lib/wenze-seller-api';
-import {CreationGallery,PrivatePricing} from './wenze-creation-summary';
 import {ShopIcon} from './wenze-shop-icons';
+
 type Cost={target_ref:string;unit_cost:string|null;currency:string|null;configured:boolean};
-function SavedPrices({locale,product:p,path,pending,retry}:{locale:WenzeLocale;product:SavedProduct;path:string;pending:boolean;retry:()=>Promise<void>}){
- const {request}=useWenzeApi(),[costs,setCosts]=useState<Cost[]|null>(null),[selected,setSelected]=useState(''),[failed,setFailed]=useState(false),[attempt,setAttempt]=useState(0),[retrying,setRetrying]=useState(false);
- const rows=stockRows(p),refs=rows.map(r=>r.public_ref).join(','),variants=!!p.variant_type,t=savedText.bind(null,locale),ct=creationText.bind(null,locale);
- useEffect(()=>{let active=true;
- async function load(){try{const plan=await request(path.split('/products/')[0]+'/plan') as {plan:string};if(!active)return;if(plan.plan!=='pro'){setFailed(false);setCosts(null);return;}
- const values=await Promise.all(refs.split(',').filter(Boolean).map(ref=>request(path+'/private-cost'+(variants?'?variant_ref='+encodeURIComponent(ref):'')) as Promise<Cost>));if(active){setFailed(false);setCosts(values.filter(v=>typeof v.configured==='boolean'));}
- }catch(err){if(active){setCosts(null);setFailed(!(err instanceof DashboardApiError&&[401,403,404].includes(err.status)));}}}
- void load();return()=>{active=false;};},[request,path,refs,variants,attempt,pending]);
- if(!pending&&!costs?.length&&!failed)return null;
- const cost=costs?.find(v=>v.target_ref===selected)??costs?.[0];
- return <section className="wc-card wd-prices"><h3><ShopIcon name="lock"/> {ct('prices')}</h3>{pending?<><p>{ct('pending')}</p><button disabled={retrying} onClick={async()=>{setRetrying(true);try{await retry();}finally{setRetrying(false);}}}>{ct('retryCost')}</button></>:failed?<><p>{t('unavailableCost')}</p><button onClick={()=>setAttempt(x=>x+1)}>{t('retry')}</button></>:<>
- {costs&&costs.length>1&&<label>{t('version')}<select value={cost?.target_ref} onChange={e=>setSelected(e.target.value)}>{costs.map(v=><option key={v.target_ref} value={v.target_ref}>{rows.find(r=>r.public_ref===v.target_ref)?.label}</option>)}</select></label>}
- {cost?.configured&&cost.unit_cost!=null?(cost.currency===p.currency?<PrivatePricing locale={locale} fields={{price:p.price??'',purchase_price:cost.unit_cost,currency:p.currency??'',category:p.category,price_negotiable:p.price_negotiable??'no'}}/>:<p>{ct('cost')} {creationMoney(locale,cost.unit_cost,cost.currency??'')}</p>):<p>{t('noCost')}</p>}</>}</section>;
+type CostResult={target:string;cost?:Cost;failed?:boolean};
+
+function SavedPrices({locale,product,path,pending,retry,onLabels}:{locale:WenzeLocale;product:SavedProduct;path:string;pending:boolean;retry:()=>Promise<void>;onLabels:()=>void}){
+ const {request}=useWenzeApi();
+ const [selected,setSelected]=useState(''),[result,setResult]=useState<CostResult>(),[attempt,setAttempt]=useState(0),[retrying,setRetrying]=useState(false);
+ const rows=stockRows(product),target=rows.find(row=>row.public_ref===selected)?.public_ref??rows[0]?.public_ref;
+ const variants=!!product.variant_type,t=savedText.bind(null,locale),ct=creationText.bind(null,locale);
+ useEffect(()=>{
+   let active=true;
+   async function load(){
+     if(!target)return;
+     try{
+       const plan=await request(path.split('/products/')[0]+'/plan') as {plan:string};
+       if(!active)return;
+       if(plan.plan!=='pro'){setResult({target});return;}
+       const cost=await request(path+'/private-cost'+(variants?'?variant_ref='+encodeURIComponent(target):'')) as Cost;
+       if(active)setResult({target,cost:cost.target_ref===target&&typeof cost.configured==='boolean'?cost:undefined});
+     }catch(err){
+       if(active)setResult({target,failed:!(err instanceof DashboardApiError&&[401,403,404].includes(err.status))});
+     }
+   }
+   void load();return()=>{active=false;};
+ },[request,path,target,variants,attempt,pending]);
+ const current=result?.target===target?result:undefined,cost=current?.cost;
+ const configured=cost?.configured&&cost.unit_cost!=null&&cost.currency;
+ const money=(value:string|number)=>creationMoney(locale,value,product.currency??'');
+ return <section className="wz-card wd-prices">
+   <h3><ShopIcon name="lock"/> {ct('prices')}</h3>
+   {rows.length>1&&<label>{t('version')}<select value={target} onChange={event=>setSelected(event.target.value)}>{rows.map(row=><option key={row.public_ref} value={row.public_ref}>{row.label}</option>)}</select></label>}
+   <dl><div><dt>{ct('sale')}</dt><dd>{product.price!=null?money(product.price):'—'}</dd></div>
+   {configured&&<><div><dt>{t('unitCost')}</dt><dd>{creationMoney(locale,cost.unit_cost!,cost.currency!)}</dd></div>
+   {cost.currency===product.currency&&product.price!=null&&<div><dt>{t('beforeExpenses')}</dt><dd><output>{money(Number(product.price)-Number(cost.unit_cost))}</output></dd></div>}</>}</dl>
+   {cost&&!configured&&!pending&&<p>{t('noCost')}</p>}
+   {pending&&cost&&<><p>{ct('pending')}</p><button disabled={retrying} onClick={async()=>{setRetrying(true);try{await retry();}finally{setRetrying(false);}}}>{ct('retryCost')}</button></>}
+   {current?.failed&&<><p>{t('unavailableCost')}</p><button onClick={()=>setAttempt(n=>n+1)}>{t('retry')}</button></>}
+   <button className="wd-link wd-label-entry" onClick={onLabels}>{posText(locale,'labels')}</button>
+ </section>;
 }
+
 export function SavedProductPage({product:p,locale,path,category,pending,retry,actions,onBack,onEdit,onStock,onLabels,onShare,onPhotos}:{product:SavedProduct;locale:WenzeLocale;path:string;category:string;pending:boolean;retry:()=>Promise<void>;actions:ReactNode;onBack:()=>void;onEdit:()=>void;onStock:()=>void;onLabels:()=>void;onShare:()=>void;onPhotos:()=>void}){
- const t=savedText.bind(null,locale),ct=creationText.bind(null,locale),v=wenzeCopy[locale],e=editorCopy[locale],c=choices[locale],rows=stockRows(p),axes=axesFor(rows);
- return <div className="wd-details"><h1>{({en:'Products and stock',fr:'Produits et stock',ln:'Biloko mpe stock',sw:'Bidhaa na stock'})[locale]}</h1><button className="wd-back" onClick={onBack}>← {t('backList')}</button>
- <section className="wc-card wp-product-summary wd-hero"><CreationGallery name={p.name} images={(p.photos??[]).map(x=>x.url)}/><div><h2>{p.name}</h2><div className="wd-price"><strong>{creationMoney(locale,p.price??'',p.currency??'')}</strong><span>{t(p.price_negotiable==='yes'?'negotiable':'fixed')}</span><span>{v[p.status!=='active'?'archived':p.visible==='true'?'active':'hidden']}</span></div><p>{[category,p.condition&&v[p.condition as keyof typeof v]].filter(Boolean).join(' · ')}</p><p>{p.description}</p>
- <div className="wd-actions">{p.status==='active'&&<button className="seller-primary" onClick={onEdit}><ShopIcon name="pen"/> {t('editProduct')}</button>}<button onClick={onShare}><ShopIcon name="share"/> {e.share}</button><details className="wd-menu"><summary>••• {e.more}</summary><div><button onClick={onPhotos}>{t('managePhotos')}</button>{actions}</div></details></div></div></section>
- <div className="wd-columns"><section className="wc-card"><h3>{ct('stock')}</h3><div className="wc-between"><strong>{p.available_stock==null?v.untracked:t('count',p.available_stock)}</strong>{p.status==='active'&&<button className="wc-link" onClick={onStock}>{t('editStock')}</button>}</div>{p.variant_type?<table className="wd-stock-table"><thead><tr>{axes.length?axes.map(k=><th key={k}>{c[k as keyof typeof c]??k}</th>):<th>{t('version')}</th>}<th>{t('available')}</th><th>{t('reserved')}</th></tr></thead><tbody>{rows.map(r=><tr key={r.public_ref}>{axes.length?axes.map((k,i)=><td key={k} data-label={c[k as keyof typeof c]}>{r.option_attributes?.[k]??(!i&&!r.option_attributes?r.label:'—')}</td>):<td>{r.label}</td>}<td data-label={t('saleable')}>{r.available_stock??v.untracked}</td><td data-label={t('forOrders')}>{r.committed_quantity}</td></tr>)}</tbody></table>:<p>{t('forOrders')} : {p.committed_quantity??0}</p>}</section>
- <aside><SavedPrices locale={locale} product={p} path={path} pending={pending} retry={retry}/><button className="wc-label-entry" onClick={onLabels}><ShopIcon name="printer"/> {t('printLabels')}</button></aside></div></div>;
+ const t=savedText.bind(null,locale),ct=creationText.bind(null,locale),v=wenzeCopy[locale],e=editorCopy[locale],c=choices[locale];
+ const {lines}=inventoryCatalogue([p],[])[0],axes=axesFor(stockRows(p)),photo=p.photos?.[0],status=p.status!=='active'?'archived':p.visible==='true'?'active':'hidden';
+ const count=p.available_stock==null?v.untracked:t('count',p.available_stock);
+ const axisName=(key:string)=>c[key as keyof typeof c]??key;
+ return <div className="wd-details">
+   <button className="wd-back" onClick={onBack}>← {t('backList')}</button>
+   <section className="wd-hero">
+     <div className="wd-cover">{photo?<Image unoptimized src={photo.url} alt={p.name} width={128} height={146}/>:<span className="wz-photo-fallback">{p.name.slice(0,1)}</span>}
+       <button className="wd-link" onClick={onPhotos}>{t('viewPhotos')}</button></div>
+     <div><h2>{p.name}</h2><div className="wd-price"><strong>{p.price!=null?creationMoney(locale,p.price,p.currency??''):'—'}</strong><span className="wp-publication" data-state={status}>{v[status]}</span><span>{count}</span></div>
+       <p>{[category,p.condition&&(v[p.condition as keyof typeof v]??p.condition),t(p.price_negotiable==='yes'?'negotiable':'fixed')].filter(Boolean).join(' · ')}</p>
+       <div className="wd-actions">{p.status==='active'&&<button className="seller-primary" onClick={onEdit}><ShopIcon name="pen"/> {t('editProduct')}</button>}<button onClick={onShare}><ShopIcon name="share"/> {e.share}</button>
+       <details className="wd-menu"><summary>••• {e.more}</summary><div><button onClick={onPhotos}>{t('managePhotos')}</button>{actions}</div></details></div>
+       {p.description&&<details className="wd-description"><summary>{v.description}</summary><p>{p.description}</p></details>}
+     </div>
+   </section>
+   <div className="wd-columns"><section className="wz-card"><div className="wc-between"><h3>{ct('stock')}</h3>{p.status==='active'&&<button className="wd-link" onClick={onStock}>{t('editStock')}</button>}</div>
+     <strong>{count}</strong><table className="wd-stock-table"><thead><tr>{p.variant_type&&(axes.length?axes.map(k=><th key={k}>{axisName(k)}</th>):<th>{t('version')}</th>)}<th>{t('available')}</th><th>{t('reserved')}</th></tr></thead>
+     <tbody>{lines.map(row=><tr key={row.target}>{p.variant_type&&(axes.length?axes.map((key,index)=><td key={key}>{row.attributes[key]??(!index&&!Object.keys(row.attributes).length?row.option:'—')}</td>):<td>{row.option}</td>)}<td>{row.available??v.untracked}</td><td>{row.reserved??'—'}</td></tr>)}</tbody></table>
+   </section><SavedPrices product={p} path={path} locale={locale} pending={pending} retry={retry} onLabels={onLabels}/></div>
+ </div>;
 }

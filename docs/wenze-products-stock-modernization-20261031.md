@@ -51,3 +51,9 @@ Reused WenzeApiProvider, the existing personal gateway and write lock, WenzeChoi
 ## Visual comparison
 
 Warm background, green active controls, compact rows, four numbered stages, product identity above details, stock facts and upload panels follow the approved references. Existing shell/navigation and supported controls are retained. Counts remain scoped accurately, and no absent barcode/category query, draft library, reason field or import capability is simulated merely to match an illustration.
+
+## Managing a saved product
+
+Open **Manage** from Products to view the product under the same seller header, shop title and catalogue tabs. **Back to products** restores the search, status and page, including after changing language. The link beneath the cover opens the photo tools, and the description can be expanded beside the product actions.
+
+Stock uses the inventory projection and the product’s option attributes. A single-version product shows only quantities. The selling price applies to every version in the current catalogue model. The version selector loads the protected purchase cost for that version. The amount before expenses is shown when both prices are in the same currency. Product labels and their print and PDF controls retain their separate access checks.

@@ -54,7 +54,7 @@ for(const [locale,width] of [...locales.map(l=>[l,390] as const),['fr',1536] as 
  await expect(page.locator('.wp-created')).toContainText(ct('created',{shop:shop.name}));await capture('created');await click(posText(locale,'viewProduct'));
  await expect(page.locator('.wd-details')).toContainText(st('count',20));if(pending){await expect(page.locator('.wd-prices')).toContainText(ct('pending'));await capture('details');pending=false;await click(ct('retryCost'));}await expect(page.locator('.wd-prices output')).toBeVisible();if(width===390)await capture('details');
  await click(e.share);await expect(page.getByRole('dialog').locator('a')).toHaveAttribute('href',publicURL);await click(e.close);
- await click(st('printLabels'));const panel=page.locator('.wd-labels'),copies=panel.getByRole('spinbutton');await expect(copies).toHaveCount(5);await expect(panel.getByRole('button',{name:st('printCount',5)})).toBeEnabled();await capture('labels');
+ await click(posText(locale,'labels'));const panel=page.locator('.wd-labels'),copies=panel.getByRole('spinbutton');await expect(copies).toHaveCount(5);await expect(panel.getByRole('button',{name:st('printCount',5)})).toBeEnabled();await capture('labels');
  const send=async(n:number)=>{const pop=page.waitForEvent('popup');await click(n===1?st('printOne'):st('printCount',n));await (await pop).close();await expect.poll(()=>exports.length).toBeGreaterThan(0);};
  await send(5);await click(st('each'));await expect(panel.getByRole('button',{name:st('printCount',20)})).toBeEnabled();await send(20);
  for(let i=0;i<5;i++)await copies.nth(i).fill(i===1?'1':'0');await panel.locator('tbody button').nth(2).click();await expect(copies.nth(1)).toHaveValue('1');
