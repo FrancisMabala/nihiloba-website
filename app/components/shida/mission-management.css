@@ -1,3 +1,49 @@
 .mission-public,.personal-listings-catalogue,.mission-card{max-width:65rem;min-width:0;overflow-wrap:anywhere}.mission-public .job-type-label{display:table;margin:1rem 0}.personal-listings-catalogue{display:grid;gap:1rem}.personal-listings-catalogue>.button{justify-self:end}.listing-row,.mission-card{background:var(--surface,#fffdf9);border:1px solid var(--line,#ded9ce);border-radius:14px;padding:clamp(1rem,2vw,1.6rem)}.listing-row{display:grid;align-items:center;gap:1rem;grid-template-columns:auto minmax(0,1fr) auto}.listing-row h2,.mission-card h2{margin:.35rem 0}.listing-row>svg{width:3rem;height:3rem;padding:.7rem;background:#e3efdf;border-radius:10px}.listing-row>div:last-child{display:grid;justify-items:end;gap:.75rem}.listing-row>div:last-child span{background:#e9efdf;padding:.2rem .6rem;border-radius:8px}.mission-actions,.mission-facts{display:flex;align-items:center;flex-wrap:wrap;gap:.75rem;margin:1rem 0}.mission-actions button,.mission-confirm button{padding:.6rem .9rem;border:1px solid var(--line,#cbc9bb);border-radius:.5rem;background:#fffdf8;color:var(--forest,#123c31);cursor:pointer}.mission-actions button[aria-pressed=true],.mission-actions button.button-primary{background:var(--forest,#123c31);color:white}.mission-card textarea{display:block;width:100%;min-height:6rem}.profile-share,.mission-confirm{padding:1rem;background:#eef3e7;border-radius:.6rem;margin:1rem 0}.mission-facts{list-style:none;padding:1rem;border:1px solid var(--line,#ded9ce);border-radius:10px;font-weight:600}.mission-facts li+li{border-inline-start:1px solid #ccc;padding-inline-start:1rem}.mission-description{white-space:pre-line}.personal-mission section{margin:1.25rem 0}.personal-mission h2{font-size:1.35rem}@media(max-width:640px){.listing-row{grid-template-columns:auto minmax(0,1fr)}.listing-row>div:last-child{grid-column:2;justify-items:start}.mission-actions>*{min-height:44px}.personal-listings-catalogue>.button{justify-self:start}.mission-facts{align-items:start;flex-direction:column}.mission-facts li+li{border:0;padding:0}.mission-actions .job-public-actions{width:100%}}
 .share-person{display:flex;align-items:center;gap:1rem}.share-person>span{display:grid;place-items:center;flex:none;width:3.25rem;height:3.25rem;border-radius:.65rem;background:#dcebd4;color:#123c31;font-weight:bold}.share-person h3{margin:0}
 .mission-heading{display:flex;align-items:center;gap:.65rem}.mission-heading>svg{flex:none;width:2.8rem;height:2.8rem;padding:.6rem;background:#e3efdf;border-radius:.65rem}
+
+.mission-manager,.mission-wizard{min-width:0;width:100%;max-width:74rem}
+.mission-manager>a,.mission-link,.mission-review-links button{color:#174934;text-underline-offset:3px}
+.mission-link,.mission-wizard button.mission-link{border:0;background:transparent;padding:.4rem 0;text-decoration:underline;cursor:pointer;font:inherit}
+.mission-manager h1,.personal-offer-workspace h1{font-family:Georgia,serif;color:#14392d;margin:.8rem 0}
+.mission-manager>.mission-card{max-width:none;margin:1rem 0}
+.mission-toolbar,.mission-tabs,.mission-review-links{display:flex;align-items:center;flex-wrap:wrap;gap:1rem}
+.mission-toolbar{justify-content:space-between}.mission-toolbar .mission-actions{margin:0}
+.mission-status{display:inline-block;border-radius:2rem;background:#e2eddf;color:#214b35;padding:.35rem .85rem;margin-right:.6rem}
+.mission-actions details{position:relative}.mission-actions summary{cursor:pointer;padding:.6rem;border:1px solid #c9c5b9;border-radius:.4rem}
+.mission-actions details>div{position:absolute;right:0;z-index:2;min-width:12rem;background:white;padding:.5rem;border:1px solid #d5d1c5;display:grid}
+.mission-tabs{border-bottom:1px solid #dad6cb}.mission-tabs a{padding:.7rem;color:inherit}.mission-tabs a[aria-current]{border-bottom:3px solid #195139;font-weight:650}
+.mission-empty{text-align:center;padding:1.8rem .5rem}.mission-empty h3{margin-bottom:1rem}
+.mission-terms{display:grid;margin:.5rem 0}.mission-terms>div{display:grid;grid-template-columns:minmax(7rem,25%) minmax(0,1fr);gap:.8rem;padding:.45rem 0;border-bottom:1px solid #e4dfd4}.mission-terms dt{font-weight:650}.mission-terms dd{margin:0;overflow-wrap:anywhere}
+.mission-manager .mission-card .mission-terms{display:flex;flex-wrap:wrap;gap:1rem 2rem}.mission-manager .mission-card .mission-terms>div{display:block;border:0}
+.mission-wizard .candidate-steps{display:flex;list-style:none;padding:0;justify-content:space-between;gap:.6rem;margin:.9rem 0 1.4rem}
+.mission-wizard .candidate-steps li{flex:1;display:flex;align-items:center;gap:.6rem}
+.mission-wizard .candidate-form{max-width:none;background:#fffdf9;border:1px solid #d6d0c4;border-radius:.8rem;padding:clamp(1rem,2vw,2rem)}
+.mission-wizard .occ-body,.mission-wizard .mission-field{min-width:0}.mission-wizard .mission-field{margin:.6rem 0}
+.mission-field>strong{display:block;margin-bottom:.3rem}.mission-field .mission-picker>label{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
+.mission-wizard .mission-field :is(input,textarea,select),.mission-wizard .occ-inline select{width:100%;box-sizing:border-box;background:white;border:1px solid #aba99c;border-radius:.45rem;padding:.6rem .8rem;color:inherit;font:inherit}
+.mission-wizard textarea{min-height:6rem;resize:vertical}.mission-wizard .mission-picker{position:relative}
+.mission-wizard .mission-list{position:absolute;top:100%;z-index:4;width:100%;max-height:14rem;overflow:auto;background:white;border:1px solid #c2c5b9;border-radius:.45rem;display:grid}
+.mission-wizard .mission-list button{text-align:left}.mission-wizard .occ-inline{display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:1rem;align-items:start}
+.mission-condition-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(1rem,3vw,3rem)}
+.mission-condition-grid>div+div{padding-inline-start:1.5rem;border-inline-start:1px solid #d7d1c6}
+.mission-wizard .occ-options button[aria-pressed=true]{background:#164331;color:white;border-color:#164331}
+.mission-wizard #mission-rate .occ-options{display:grid}.mission-wizard #mission-rate button{text-align:left}
+.mission-review-links{margin:1rem 0}.mission-wizard .personal-mission{padding:1rem;border:1px solid #d7d1c6;border-radius:.6rem;background:white}
+.mission-wizard .candidate-actions{display:flex;justify-content:space-between;gap:.7rem;border-top:1px solid #d7d1c6;margin-top:1rem;padding-top:1rem}
+.mission-wizard :focus-visible,.mission-manager :focus-visible{outline:2px solid #296447;outline-offset:2px}
+@media(max-width:700px){.mission-condition-grid,.mission-wizard .occ-inline{grid-template-columns:minmax(0,1fr);grid-auto-flow:row}.mission-condition-grid>div+div{padding:0;border:0}.occ-wizard.mission-wizard .candidate-steps{display:flex}.mission-wizard .candidate-steps li{flex-direction:column;text-align:center;font-size:.85rem}.mission-manager .mission-toolbar{align-items:flex-start}.mission-manager .mission-toolbar .mission-actions{gap:.5rem}.mission-wizard .candidate-actions>*{min-width:0}.mission-wizard .mission-field{overflow-wrap:anywhere}}
+
+.mission-wizard #mission-category{max-width:36rem}
+.mission-wizard .candidate-steps li span{display:inline-grid;place-items:center;border-radius:50%;width:2rem;height:2rem;flex:none;border:1px solid #bfc4b7}
+.mission-wizard .candidate-steps li[aria-current] span{color:white;background:#164331}
+.mission-wizard .candidate-steps li:not(:last-child)::after{content:'';flex:1;border-top:1px solid #d7d1c6}
+@media(max-width:700px){.mission-wizard .candidate-steps li::after{display:none}}
+
+.mission-wizard .occ-options{display:flex;flex-wrap:wrap;gap:.5rem}
+.mission-wizard .occ-options .button,.mission-wizard .candidate-actions .button{padding:.55rem 1rem;min-height:42px;border:1px solid #bcb9ac;border-radius:.45rem}
+.mission-wizard .occ-options .button:not([aria-pressed=true]),.mission-wizard .candidate-actions .button:not(.button-primary){background:#fffdf8;color:#19382e}
+.mission-wizard .candidate-actions .button-primary{background:#143d30;color:white;border-color:#143d30}
+.mission-wizard .mission-picker::after{content:'⌄';position:absolute;right:.85rem;top:.55rem;pointer-events:none}
+.mission-wizard .mission-picker input{padding-right:2rem}
+.mission-wizard .occ-body>h3,.mission-wizard .personal-mission h3,.mission-empty h3{font:500 1.45rem/1.25 Georgia,serif;color:#173a2e}

@@ -12,7 +12,7 @@ for(const width of [390,1440])test('Personal mission and application at '+width,
  });
  await page.goto('/fr/shida/space?view=listings');await expect(page.getByRole('button',{name:'Toutes (3)'})).toBeVisible();
  await page.getByRole('button',{name:'Emplois de particuliers (1)'}).click();await expect(page.getByText('Chemise')).toHaveCount(0);
- await page.getByRole('link',{name:'Gérer l’annonce'}).click();await page.getByRole('link',{name:'Candidatures (0)'}).click();await expect(page.getByText('Aucun résultat pour cette mission.')).toBeVisible();
+ await page.getByRole('link',{name:'Gérer l’annonce'}).click();await page.getByRole('link',{name:'Candidatures (0)'}).click();await expect(page.getByText('Aucune candidature pour le moment')).toBeVisible();
  await page.goto('/fr/shida/space?view=job-offer&kind=apply&offer=JOB_demo');await expect(page.getByText('Grace M.')).toBeVisible();await page.getByRole('textbox').fill('Samedi soir.');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.getByRole('button',{name:'Envoyer ma candidature'}).click();await expect(page.getByText('Candidature envoyée')).toBeVisible();await expect(page.getByRole('link',{name:/Voir ma candidature/})).toHaveAttribute('href',/APP_example$/);expect(submitted).toBe(1)
 });

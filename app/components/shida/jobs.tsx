@@ -186,7 +186,7 @@ export async function JobDetailPage({locale,slug}:{locale:Locale;slug:string}) {
   if(item.origin==='direct'&&item.offer_type==='individual'){
     const action=marketplacePath(locale,'/shida/space?view=job-offer&kind=apply&offer='+encodeURIComponent(item.public_ref));
     return <section className="section"><div className="container mission-public"><JobResultsLink href={marketplacePath(locale,'/shida/emplois')} locale={locale}/><p className="job-type-label">{listingText(locale,'jobType')}</p>
-    <MissionPresentation heading locale={locale} title={item.title} location={location} description={item.short_summary||item.description_fallback||item.description} frequency={item.duration_frequency||start} hours={item.work_schedule} pay={salary} experience={item.optional_experience||item.employment_conditions} actions={<div className="mission-actions">
+    <MissionPresentation heading locale={locale} title={item.title} location={location} description={item.short_summary||item.description_fallback||item.description} frequency={item.duration_frequency||start} hours={item.work_schedule} pay={item.salary_visibility==="hidden"?null:item.salary?.period?salary:item.compensation||salary} experience={item.optional_experience||item.employment_conditions} actions={<div className="mission-actions">
     {!inactive&&hasSupportedApplication(item)?<ButtonLink href={action}>{listingText(locale,'apply')}</ButtonLink>:<p>{listingText(locale,'unavailable')}</p>}<JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin="direct" canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save}/></div>}/>
     <JobReportLink locale={locale} jobReference={item.public_ref}/></div></section>
   }

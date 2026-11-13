@@ -217,6 +217,29 @@ const words:Record<string,string[]> = {
   "Work area",
   "Esika ya mosala",
   "Eneo la kazi"
- ]
+ ],
+ "createTitle": ["Créer une annonce", "Create a listing", "Salá liyebisi", "Unda tangazo"],
+ "editTitle": ["Modifier l’annonce", "Edit listing", "Bongisá liyebisi", "Hariri tangazo"],
+ "backListing": ["Retour à l’annonce", "Back to listing", "Zonga na liyebisi", "Rudi kwenye tangazo"],
+ "type": ["Type de travail", "Type of work", "Lolenge ya mosala", "Aina ya kazi"],
+ "district": ["Quartier (facultatif)", "Neighbourhood (optional)", "Kartye (soki olingi)", "Mtaa (hiari)"],
+ "workplace": ["Lieu de travail", "Work location", "Esika ya mosala", "Mahali pa kazi"],
+ "review": ["Vérifier", "Review", "Talá", "Kagua"],
+ "reviewAction": ["Vérifier l’annonce", "Review listing", "Talá liyebisi", "Kagua tangazo"],
+ "reviewChanges": ["Vérifier les modifications", "Review changes", "Talá mbongwana", "Kagua mabadiliko"],
+ "candidatePreview": ["Aperçu pour les candidats", "Candidate preview", "Ndenge bato bakomona yango", "Mwonekano kwa waombaji"],
+ "publishListing": ["Publier l’annonce", "Publish listing", "Bimisá liyebisi", "Chapisha tangazo"],
+ "checked": ["J’ai vérifié les informations de cette annonce", "I have checked the information in this listing", "Natali makambo ya liyebisi oyo", "Nimekagua taarifa za tangazo hili"],
+ "more": ["Plus d’actions", "More actions", "Makambo mosusu", "Vitendo vingine"],
+ "closeListing": ["Clôturer l’annonce", "Close listing", "Kangá liyebisi", "Funga tangazo"],
+ "emptyApplications": ["Aucune candidature pour le moment", "No applications yet", "Bosɛngi moko te naino", "Bado hakuna maombi"],
+ "prior": ["Valeur enregistrée", "Saved value", "Motángo ebombamá", "Thamani iliyohifadhiwa"],
+ "nonSpecified": ["Non précisée", "Unspecified", "Elobami te", "Haijatajwa"],
+ "indicateAmount": ["Indiquer un montant", "Enter an amount", "Komá motuya", "Weka kiasi"],
+ "daysLabel": ["Jours", "Days", "Mikolo", "Siku"],
+ "payLabel": ["Rémunération", "Pay", "Lifuti", "Malipo"],
+ "experienceLabel": ["Expérience", "Experience", "Boyebi", "Uzoefu"],
+ "agreePay": ["À convenir", "Negotiable", "Tokoyokana", "Kwa makubaliano"],
+ "chooseListed": ["Choisir dans la liste", "Choose from the list", "Poná na liste", "Chagua katika orodha"]
 };
 export const missionText=(l:OccLocale,k:string)=>words[k]?.[(['fr','en','ln','sw'] as const).indexOf(l)]??occText(l,k);

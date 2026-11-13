@@ -1,0 +1,60 @@
+import {test,expect} from '@playwright/test';
+for(const width of [390,1440])test('edit recurring listing in place and retain its applicant '+width,async({page})=>{
+ await page.setViewportSize({width,height:900});
+ await page.route('**/api/**',r=>{
+  const p=new URL(r.request().url()).pathname.replace(/\/$/,'');
+  if(p.endsWith('/employment/session'))return r.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Test employer'}}});
+  if(p.endsWith('/security/navigation'))return r.fulfill({json:{can_manage:true,markets:[],organization_management:false}});
+  return r.fulfill({status:404,json:{}});
+ });
+ const offer='JOB_recurring', title='Assistance au magasin', location='Kinshasa, Lemba';
+ const terms={category:'custom',custom:'Commerce',frequency:'regular',weekdays:['mon','wed'],hours:'fixed',start:'18:00',end:'01:00',overnight:true,rate:'amount',amount:'2500',currency:'CDF',unit:'hour',experience:'Débutant accepté'};
+ let values={optional_experience:terms.experience,job:title,short_summary:'Ranger les produits dans le magasin.',work_city:'Kinshasa',commune:'Lemba',quartier:'',mission_terms:JSON.stringify(terms),duration_frequency:'Régulièrement · Lundi, Mercredi',work_schedule:'De 18 h à 1 h le lendemain',budget:'2500 CDF par heure'};
+ let writes=0;
+ await page.route('**/api/shida/personal/job-offer/?**',async r=>{
+  const u=new URL(r.request().url());expect(u.searchParams.get('offer')).toBe(offer);
+  if(u.searchParams.get('kind')==='applications')return r.fulfill({json:{records:[{reference:'APP_demo',name:'Test candidat',work:null}]}});
+  if(r.request().method()==='POST'){
+   const b=r.request().postDataJSON(),m=JSON.parse(b.values.mission_terms);
+   expect(m).toMatchObject({hours:'flexible',start:'',end:'',overnight:false,weekdays:['mon','wed']});
+   const next={...values,...b.values,work_schedule:'Horaires à convenir'};
+   if(b.action==='preview_edit')return r.fulfill({json:next});
+   expect(b.action).toBe('edit');expect(b.version).toBe('1');if(++writes===1)return r.fulfill({status:503,json:{}});
+   values=next;
+  }
+  return r.fulfill({json:{reference:offer,title:values.job,status:'open',location,count:1,version:writes===2?'2':'1',values,locations:{kinshasa_communes:['Lemba'],quartiers:{}}}});
+ });
+ await page.goto('/fr/shida/space?view=listings&offer='+offer);
+ await expect(page.getByRole('heading',{name:'Test candidat'})).toBeVisible();
+ await page.getByRole('button',{name:'Modifier l’annonce'}).click();
+ const form=page.locator('.mission-wizard');
+ await page.screenshot({path:`test-results/jobs-marketplace/mission-${width}.png`,fullPage:true});
+ await expect(form.getByLabel(/Titre de l’annonce/)).toHaveValue(title);
+ await form.getByLabel(/Titre de l’annonce/).fill(title+' du quartier');
+ await form.getByRole('button',{name:'Continuer',exact:true}).click();
+ await page.screenshot({path:`test-results/jobs-marketplace/conditions-${width}.png`,fullPage:true});
+ await expect(form.getByLabel('Se termine le lendemain')).toBeChecked();
+ await form.getByRole('button',{name:'Horaires à convenir'}).click();
+ await form.getByRole('button',{name:'Vérifier l’annonce'}).click();
+ const review=form.locator('.personal-mission');
+ await expect(review).toContainText(/2\s500 CDF par heure/);await expect(review).toContainText('Lundi, Mercredi');
+ await form.getByRole('button',{name:'Modifier la mission'}).click();
+ await expect(form.getByLabel(/Titre de l’annonce/)).toHaveValue(title+' du quartier');
+ await form.getByRole('button',{name:'Continuer',exact:true}).click();await form.getByRole('button',{name:'Vérifier l’annonce'}).click();
+ await page.screenshot({path:`test-results/jobs-marketplace/review-${width}.png`,fullPage:true});
+ await form.getByRole('checkbox').check();const before=await review.locator('dl').innerText();
+ const submit=form.getByRole('button',{name:'Enregistrer les modifications'});await submit.click();await expect(page.locator('.mission-manager').getByRole('alert')).toBeVisible();
+ await expect(review).toContainText(title+' du quartier');await submit.click();
+ await expect(page.locator('.mission-manager>h1')).toHaveText(title+' du quartier');await expect(page.getByRole('heading',{name:'Test candidat'})).toBeVisible();
+ expect(await page.locator('.mission-manager dl').innerText()).toBe(before);
+ await page.screenshot({path:`test-results/jobs-marketplace/manage-${width}.png`,fullPage:true});
+ expect(writes).toBe(2);
+ await expect(page.locator('.market-primary-nav a')).toHaveCount(7);
+ const managed=await page.locator('.mission-manager dl').innerText();
+ await page.getByRole('link',{name:'Voir l’annonce',exact:true}).click();
+ await expect(page.locator('.mission-public h1')).toHaveText(values.job);
+ await expect(page.locator('.mission-public .mission-description')).toHaveText(values.short_summary);
+ await expect(page.locator('.mission-public header')).toContainText(location);
+ expect(await page.locator('.mission-public dl').innerText()).toBe(managed);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

@@ -1,8 +1,29 @@
-import {validText} from './occasional-form';
+import {offerFormCopy,parseOfferBudget,parseOfferSchedule} from './personal-offer-form';
+import {missionText} from './mission-copy';
+import {candidateMissions,weekdays,validText} from './occasional-form';
 export type MissionValues=Record<string,string|null|undefined>;
 export const blankTerms={category:'',custom:'',frequency:'',day:'',date_flexible:false,weekdays:[] as string[],schedule_note:'',start_date:'',hours:'',start:'',end:'',overnight:false,rate:'',amount:'',currency:'',unit:'',experience:''};
 export type Terms=typeof blankTerms;
-export function missionTerms(v:MissionValues):Terms{return v.mission_terms?{...blankTerms,...JSON.parse(v.mission_terms)}:{...blankTerms,experience:v.optional_experience||'',start_date:v.start_date||''}}
+export function missionTerms(v:MissionValues):Terms {
+ if(v.mission_terms)return {...blankTerms,...JSON.parse(v.mission_terms)};
+ const m={...blankTerms,weekdays:[] as string[],experience:v.optional_experience||'',start_date:v.start_date||''};
+ const locales=['fr','en','ln','sw'] as const;
+ const matches=(value:string|null|undefined,key:string)=>locales.some(locale=>missionText(locale,key).toLocaleLowerCase()===value?.trim().toLocaleLowerCase());
+ m.category=candidateMissions.find(key=>matches(v.job,key))||'';
+ m.frequency=['once','regular'].find(key=>matches(v.duration_frequency,key))||'';
+ const schedule=parseOfferSchedule(v.work_schedule||'','en');
+ if(schedule){
+  m.weekdays=schedule.days.map(day=>weekdays[offerFormCopy.en.week.indexOf(day)]);
+  m.hours=schedule.flexible?'flexible':'fixed';m.start=schedule.from;m.end=schedule.to;m.overnight=schedule.overnight;
+  if(!v.duration_frequency)m.frequency='regular';
+ }else if(matches(v.work_schedule,'flexible')||Object.values(offerFormCopy).some(c=>c.flexible===v.work_schedule))m.hours='flexible';
+ const pay=parseOfferBudget(v.budget||'');
+ if(pay){for(const c of Object.values(offerFormCopy)){
+  const unit=({1:'day',2:'hour',4:'mission'} as Record<number,string>)[c.periods.indexOf(pay.period)];
+  if(unit){Object.assign(m,{rate:'amount',unit,amount:pay.amount,currency:pay.currency});break}
+ }}else if(matches(v.budget,'agreePay'))m.rate='agree';
+ return m;
+}
 export function missionProblem(v:MissionValues,m:Terms,step:number,communes:string[]){
  if(step===0){
  if(!m.category)return 'category';if(m.category==='custom'&&!validText(m.custom))return 'custom';

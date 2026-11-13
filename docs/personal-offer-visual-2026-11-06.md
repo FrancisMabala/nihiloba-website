@@ -44,3 +44,7 @@ are unchanged. No migration or production configuration change is required.
 Deploy the exact release-branch commit based on the previously live website.
 Do not deploy unrelated account-deletion commits on main before their documented
 backend/migration prerequisites. The same task change is also preserved on main.
+
+## Individual announcement management
+
+The employer opens a listing by its public reference. The applications tab and candidate discovery both use the existing offer-scoped reads. Editing submits the listing version to the same management endpoint. Review, public detail and management use the same labeled conditions, including the pay period and overnight suffix. When converting an older draft, the wizard shows unresolved wording next to the relevant choice. Employers can select a suggested quartier or keep an unlisted neighbourhood.

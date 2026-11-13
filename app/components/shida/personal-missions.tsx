@@ -5,6 +5,8 @@ import {listingText,type MissionLocale} from '../../lib/personal-missions-copy';
 import {occText} from '../../lib/occasional-copy';
 import {payload,type MissionValues} from '../../lib/mission-form';
 import {candidateApplicationPath} from './candidate-employment';
+import {MissionPresentation} from './mission-presentation';
+import {missionText} from '../../lib/mission-copy';
 import {MissionWizard} from './mission-wizard';
 import {MissionPeople} from './mission-people';
 import {SpaceIcon} from './account-space-icon';
@@ -51,21 +53,28 @@ function Manager({locale,binding,offer,kind}:Props&{offer:string;kind:string}){
  const list=missionQuery('listings',{}),dest=(k:string)=>missionQuery('listings',{offer,kind:k});
  async function send(action:string){if(!data||busy)return;lock(true);fail('');try{const d=await api({action,confirmed:true,version:data.version,language:locale,...(action==='edit'?{values:payload(form)}:{})});if(d.removed){window.location.assign(list);return}set(d);editing(false);ask(null)}catch(e){fail((e as Error).message)}finally{lock(false)}}
  if(!data)return <p role="status">{error?t('error'):t('loading')} {error&&<button onClick={retry}>{t('retry')}</button>}</p>;
- return <section className="mission-card"><a href={list}>← {t('list')}</a><h2>{data.title}</h2><p>{t(data.status)} · {data.location}</p>
- {error&&<p role="alert">{t('error')} <button onClick={()=>{editing(false);retry()}}>{t('retry')}</button></p>}
- {edit?<MissionWizard locations={data.locations} locale={locale} values={form} change={change} busy={busy} pending={false} editLabel={t('save')} preview={v=>api({action:'preview_edit',version:data.version,language:locale,values:v})} save={()=>editing(false)} publish={()=>void send('edit')}/>:<>
- <div className="mission-actions">{data.status==='open'&&<><a href={(locale==='en'?'':'/'+locale)+'/shida/emplois/'+encodeURIComponent(offer)}>{t('view')}</a><button onClick={()=>{change(data.values);editing(true)}}>{t('edit')}</button></>}</div>
- <nav className="mission-actions"><a className={'button '+(kind!=='candidates'?'button-primary':'')} href={dest('applications')}>{t('applications')} ({data.count})</a>{data.status==='open'&&<a className={'button '+(kind==='candidates'?'button-primary':'')} href={dest('candidates')}>{t('find')}</a>}</nav>
- {['applications','candidates'].includes(kind)&&<MissionPeople locale={locale} binding={binding}/>}
- <div className="mission-actions">{data.status==='open'&&<button onClick={()=>ask('close')}>{t('close')}</button>}<button onClick={()=>ask('remove')}>{t('remove')}</button></div>
- {confirm&&<section aria-label={t(confirm)} className="mission-confirm"><p>{t(confirm==='remove'?'removeHelp':'closeHelp')}</p><button disabled={busy} onClick={()=>ask(null)}>{t('cancel')}</button> <button disabled={busy} onClick={()=>void send(confirm)}>{t(confirm)}</button></section>}</>}</section>
+ const mt=(k:string)=>missionText(locale,k),v=data.values,open=data.status==='open',tab=kind==='candidates'&&open?'candidates':'applications';
+ const stopEdit=()=>{editing(false);fail('')};
+ return <section className="mission-manager">
+ {edit?<><button className="mission-link" onClick={stopEdit}>← {mt('backListing')}</button><h1>{mt('editTitle')}</h1><p>{data.title}</p></>:<><a href={list}>← {t('list')}</a><h1>{data.title}</h1></>}
+ {error&&<p role="alert">{t('error')}</p>}
+ {edit?<MissionWizard locations={data.locations} locale={locale} values={form} change={change} busy={busy} pending={false} editLabel={t('save')} preview={v=>api({action:'preview_edit',version:data.version,language:locale,values:v})} cancel={stopEdit} publish={()=>void send('edit')}/>:<>
+ <div className="mission-toolbar"><div><span className="mission-status">{t(data.status)}</span> {data.location}</div><div className="mission-actions">
+ {open&&<><a className="button" href={(locale==='en'?'':'/'+locale)+'/shida/emplois/'+encodeURIComponent(offer)}>{t('view')}</a><button className="button button-primary" onClick={()=>{change(data.values);editing(true);fail('')}}>{mt('editTitle')}</button></>}
+ <details><summary>{mt('more')}</summary><div>{open&&<button onClick={()=>ask('close')}>{mt('closeListing')}</button>}<button onClick={()=>ask('remove')}>{t('remove')}</button></div></details></div></div>
+ {confirm&&<section aria-label={t(confirm)} className="mission-confirm"><p>{t(confirm==='remove'?'removeHelp':'closeHelp')}</p><button disabled={busy} onClick={()=>ask(null)}>{t('cancel')}</button> <button disabled={busy} onClick={()=>void send(confirm)}>{confirm==='close'?mt('closeListing'):t(confirm)}</button></section>}
+ <section className="mission-card"><MissionPresentation locale={locale} title="" description={v.short_summary} frequency={v.duration_frequency} hours={v.work_schedule} pay={v.budget} experience={v.optional_experience}/></section>
+ <section className="mission-card"><nav className="mission-tabs"><a aria-current={tab==='applications'?'page':undefined} href={dest('applications')}>{t('applications')} ({data.count})</a>{open&&<a aria-current={tab==='candidates'?'page':undefined} href={dest('candidates')}>{t('find')}</a>}</nav>
+ <MissionPeople locale={locale} binding={binding} defaultKind={tab} discovery={open}/></section></>}</section>
+
 }
 export function PersonalListings(props:Props) {
  const query = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
  const offer = query.get('offer');
  const article = query.get('tab') === 'article' && query.has('item');
- if (offer || article) return <><h1>{listingCopy[props.locale].title}</h1>
-   {offer ? <Manager {...props} offer={offer} kind={query.get('kind') || 'manage'}/> : <QuickSell locale={props.locale} embedded/>}
+ if (offer) return <Manager {...props} offer={offer} kind={query.get('kind') || 'manage'}/>;
+ if (article) return <><h1>{listingCopy[props.locale].title}</h1>
+   <QuickSell locale={props.locale} embedded/>
  </>;
  const initial = query.get('tab');
  return <Catalogue {...props} initial={filters.find(key => key === initial) || 'all'}/>;
