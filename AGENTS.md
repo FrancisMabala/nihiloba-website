@@ -83,6 +83,9 @@ This is standing user authorization for agreed NIHILOBA/SHIDA development tasks,
 
 ## Disk usage and dependency hygiene
 
+- Give each test run a unique directory under the operating system's temporary directory for disposable output. After success, remove the run's unused temporary artifacts. Keep only evidence required for validation or debugging.
+- Present existing worktrees for owner approval before removal. Recheck ignored files, active sessions and processes, and incoming dependency links immediately before using Git's non-forced worktree removal.
+
 - Create worktrees only when needed; first reuse a clean, inactive checkout when safe. Reuse compatible environments where practical.
 - Remove finished worktrees with Git only after verifying their work is preserved on the intended remote, there are no unique changes or evidence, and no active task or shared dependency depends on them. Never force removal to bypass those checks.
 - Reuse existing compatible Python environments and Node.js dependencies. Inspect manifests and lockfiles before installing; do not repeat setup when the environment already works.
