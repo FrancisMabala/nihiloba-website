@@ -1,9 +1,21 @@
 .wm-period .wr-table{width:100%;border-collapse:collapse;margin-top:.75rem;font-variant-numeric:tabular-nums}
 .wr-table :is(th,td){padding:.65rem .75rem;text-align:left;border-bottom:1px solid var(--line,#ddd8cb);vertical-align:middle;overflow-wrap:anywhere}
 .wr-table th{background:#e9eddf;color:#173d30;font-weight:650}
-.wr-sales :is(th,td):nth-child(3),.wr-sales :is(th,td):nth-child(4),.wr-history th:last-child,.wr-history .wr-download{text-align:right}
-.wr-product button{display:inline-flex;align-items:baseline;gap:.55rem;text-align:left;color:inherit}
-.seller-design .wm-period .wr-product button{border:0;background:transparent;padding:.35rem 0;line-height:1.4}
+.wm-period .wr-sales :is(th,td):nth-child(4),.wm-period .wr-sales :is(th,td):nth-child(5),.wr-history th:last-child,.wr-history .wr-download{text-align:right}
+.wm-period .wr-list>header{display:flex;align-items:center;justify-content:space-between;gap:.65rem;flex-wrap:wrap}
+.seller-design .wm-period .wr-list>header h3{font-family:Georgia,serif;font-size:clamp(1.25rem,2vw,1.8rem);margin:0}
+.wm-period .wr-sales thead td{background:#e9eddf}
+.seller-design .wm-period .wr-toggle button{border:0;padding:0;background:transparent;color:#174437;min-width:32px;min-height:36px}
+.wr-pages{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:.85rem}
+.wr-pages span{margin-right:auto}
+.wm-period .wr-extra{margin:0;padding:.3rem .75rem;border:0}
+.wm-period .wr-extra summary{font-size:.86rem}
+@media(min-width:761px){
+ .wr-sales{table-layout:fixed}
+ .wr-sales thead td{width:4%}.wr-sales th:nth-child(2){width:19%}.wr-sales th:nth-child(3){width:37%}.wr-sales th:nth-child(4){width:10%}.wr-sales th:nth-child(5){width:16%}
+ .wm-period .wr-detail>td>dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-radius:.5rem}
+ .wr-detail>td>dl>div+div{border-left:1px solid #c9cfbc;padding-left:1rem}
+}
 .wr-product small,.wr-history small{display:block;color:#52635a}
 .wr-badge{display:inline-block;border-radius:.4rem;padding:.2rem .55rem;background:#e4eddf;color:#194633}
 .wr-badge[data-cancelled=true]{background:#f7e3de;color:#842d26}
@@ -15,8 +27,8 @@
  .wr-table thead{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
  .wr-table tr{display:grid;gap:.35rem .7rem;padding:.75rem 0;border-bottom:1px solid var(--line,#ddd8cb)}
  .wr-table td{display:block;border:0;padding:0}
- .wr-sales tr{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"product amount" "date qty" "status status"}
- .wr-product{grid-area:product}.wr-amount{grid-area:amount;font-weight:650}.wr-date{grid-area:date}.wr-qty{grid-area:qty}.wr-status{grid-area:status}
+ .wr-sales tr{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"toggle product amount" ". date qty" ". status status"}
+ .wr-toggle{grid-area:toggle}.wr-product{grid-area:product}.wr-amount{grid-area:amount;font-weight:650}.wr-date{grid-area:date}.wr-qty{grid-area:qty}.wr-status{grid-area:status}
  .wr-sales tr.wr-detail{display:block;padding:0 0 .6rem}
  .wr-table td[data-label]::before{content:attr(data-label) " · ";font-size:.84rem;color:#52635a}
  .wr-history tr{grid-template-columns:minmax(0,1fr)}.wr-history td:first-child{font-size:1.05rem}

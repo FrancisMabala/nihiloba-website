@@ -1,7 +1,14 @@
 import {wenzeCopy,type WenzeLocale,type WenzeKey} from './wenze-copy';
 // Order: English, French, Lingala, Swahili.
 const labels:Record<string,string[]>={
- saleExport:["Export in-store sales (CSV)", "Exporter les ventes en boutique (CSV)", "Bimisa bavente ya butiki (CSV)", "Hamisha mauzo ya dukani (CSV)"],
+ saleExport:["Export CSV", "Exporter en CSV", "Bimisa na CSV", "Hamisha CSV"],
+ salePageRange:["{start}–{end} of {total} sales","{start}–{end} sur {total} ventes","{start}–{end} kati na bavente {total}","{start}–{end} kati ya mauzo {total}"],
+ saleDetails:["Sale details","Détails de la vente","Makambo ya vente","Maelezo ya mauzo"],
+ saleRef:["Sale reference","Référence de vente","Référence ya vente","Kumbukumbu ya mauzo"],
+ saleReversedAt:["Cancellation date","Date d’annulation","Mokolo ya annulation","Tarehe ya kufutwa"],
+ saleReversalRef:["Cancellation reference","Référence d’annulation","Référence ya annulation","Kumbukumbu ya kufutwa"],
+ saleReversalReason:["Cancellation reason","Motif d’annulation","Ntina ya annulation","Sababu ya kufutwa"],
+ saleReplacement:["Replacement sale","Vente de remplacement","Vente ya remplacement","Mauzo mbadala"],
  reportMonthly:["Monthly", "Mensuel", "Basanza nyonso", "Kila mwezi"],
  reportWeekly:["Weekly", "Hebdomadaire", "Pɔsɔ nyonso", "Kila wiki"],
  reportDaily:["Daily", "Quotidien", "Mikolo nyonso", "Kila siku"],

@@ -110,19 +110,62 @@ for(const width of [390,1440])test('readable sale snapshots and report downloads
  await page.route('**/reports/**',route=>{
   const path=new URL(route.request().url()).pathname.replace(/\/$/,'');
   if(path.endsWith('physical-sales'))return route.fulfill({json:{sales:[sale,{...sale,sale_ref:'WPS_b',target_type:'product',target_label:'Chemise Blanc',quantity:1,revenue:'15000',cost_basis:null,unit_cost_snapshot:null,gross_profit:null,status:'reversed'}]}});
-  if(path.endsWith('/history'))return route.fulfill({json:{reports:[report,{...report,run_ref:'WRA_b',generated_at:'2026-11-12T15:52:00Z',artifacts:[{format:'pdf',artifact_ref:'PDF_b',status:'active'}]},{...report,run_ref:'WRA_c',run_type:'scheduled_weekly',period_start:'2026-11-02T00:00:00Z',period_end:'2026-11-09T00:00:00Z',artifacts:[]}]}});
+  if(path.endsWith('/history'))return route.fulfill({json:{reports:[report,{...report,run_ref:'WRA_b',generated_at:'2026-11-12T15:52:00Z',artifacts:[{format:'pdf',artifact_ref:'PDF_b',status:'active'}]},{...report,run_ref:'WRA_c',run_type:'scheduled_weekly',timezone:'Africa/Lubumbashi',period_start:'2026-11-02T00:00:00Z',period_end:'2026-11-09T00:00:00Z',artifacts:[]}]}});
   const file=path.split('/').at(-1)!;
   return file in files?route.fulfill({body:files[file],headers:{'Content-Disposition':'attachment; filename="'+file+'"'}}):route.fallback();
  });
  await page.goto(f.url+'&view=reports&reportZone=Africa%2FKinshasa');
  const sales=page.locator('.wr-sales'),history=page.locator('.wr-history');
  await expect(page.getByText(/1 vente enregistrée/)).toBeVisible();await expect(sales).toContainText('22:39');await expect(sales).toContainText('Annulée');
- await sales.getByRole('button',{name:/Chemise élégante/}).click();const detail=sales.locator('.wr-detail').first();await expect(detail).toContainText(/2 pièces × 15\s000 CDF/);await expect(detail).toContainText(/Coût total des articles10\s000 CDF/);await expect(detail).toContainText(/Marge brute20\s000 CDF/);await sales.getByRole('button',{name:'Chemise Blanc'}).click();await expect(sales).toContainText('Coût non renseigné');
- await expect(history.locator('tbody tr')).toHaveCount(3);await expect(history.locator('#WRA_a td').first()).toHaveText(await history.locator('#WRA_b td').first().innerText());await expect(history.locator('#WRA_a')).toContainText('16:51');
- await history.locator('#WRA_c summary').click();await expect(history.locator('#WRA_c small')).toHaveText(/01:00.*00:59/);
- for(const [button,file] of [[history.locator('#WRA_a').getByRole('button',{name:'PDF'}),'PDF_a'],[history.locator('#WRA_a').getByRole('button',{name:'Excel'}),'XLS_a'],[history.locator('#WRA_b').getByRole('button',{name:'PDF'}),'PDF_b'],[page.getByRole('button',{name:'Exporter les ventes en boutique (CSV)'}),'physical-sales.csv']] as const){
+ await sales.getByRole('button',{name:/Chemise élégante/}).focus();await page.keyboard.press('Enter');const detail=sales.locator('.wr-detail').first();await expect(detail).toContainText(/Prix de vente unitaire15\s000 CDF/);await detail.locator('summary').click();await expect(detail).toContainText(/2 pièces × 15\s000 CDF/);await expect(detail).toContainText(/Coût total des articles10\s000 CDF/);await expect(detail).toContainText(/Marge brute20\s000 CDF/);await sales.getByRole('button',{name:'Chemise Blanc'}).click();await expect(sales).toContainText('Coût non renseigné');
+ await expect(history.locator('tbody tr')).toHaveCount(3);await expect(history.locator('#WRA_a td').first()).toHaveText(await history.locator('#WRA_b td').first().innerText());await expect(history.locator('#WRA_a')).toContainText('12 nov. 2026 à 16:51');
+ await history.locator('#WRA_c summary').click();await expect(history.locator('#WRA_c small')).toHaveText(/02:00.*01:59.*Lubumbashi/);
+ for(const [button,file] of [[history.locator('#WRA_a').getByRole('button',{name:'PDF'}),'PDF_a'],[history.locator('#WRA_a').getByRole('button',{name:'Excel'}),'XLS_a'],[history.locator('#WRA_b').getByRole('button',{name:'PDF'}),'PDF_b'],[page.getByRole('button',{name:'Exporter en CSV'}),'physical-sales.csv']] as const){
   const pending=page.waitForEvent('download');await button.click();const result=await pending;expect(await readFile((await result.path())!)).toEqual(files[file]);
  }
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await sales.scrollIntoViewIfNeeded();await page.screenshot({path:'test-results/money-evidence/reports-'+width+'.png',fullPage:true});
+});
+
+test('only requested ten-sale pages load and the CSV covers the period',async({page})=>{
+ const fixture=await moneyFixture(page,'complete','fr');
+ const requested:string[]=[];
+ await page.route('**/reports/physical-sales/**',route=>{
+  const params=new URL(route.request().url()).searchParams;
+  expect(params.get('limit')).toBe('10');
+  const cursor=params.get('cursor')??'';
+  requested.push(cursor);
+  const total=params.get('period')==='last_7_days'?10:240;
+  const start=cursor?Number(cursor.slice(4)):total;
+  const sales=Array.from({length:10},(_,i)=>({
+   sale_ref:'WPS_'+(start-i),target_label:'Article '+(start-i),quantity:1,unit:'piece',unit_sale_price:'125',
+   currency:'CDF',revenue:'125',unit_cost_snapshot:'0',cost_basis:'0',gross_profit:'125',status:'active',
+  }));
+  return route.fulfill({json:{sales,total,recorded:total,cancelled:0,next_cursor:start>10?'WPS_'+(start-10):null}});
+ });
+ await page.route('**/reports/physical-sales.csv/**',route=>{
+  const params=new URL(route.request().url()).searchParams;
+  expect(params.get('period')).toBe('last_30_days');expect(params.has('cursor')).toBe(false);expect(params.has('limit')).toBe(false);
+  const csv=['sale_ref,revenue',...Array.from({length:240},(_,i)=>'WPS_'+(240-i)+',125')].join('\n');
+  return route.fulfill({body:csv,contentType:'text/csv',headers:{'Content-Disposition':'attachment; filename="ventes.csv"'}});
+ });
+ await page.goto(fixture.url+'&view=reports');
+ const nav=page.locator('.wr-pages'), rows=page.locator('.wr-sales tbody tr');
+ await expect(nav).toContainText('1–10 sur 240 ventes');await expect(rows).toHaveCount(10);
+ await expect(nav.getByRole('button',{name:'Précédent'})).toBeDisabled();
+ expect(requested).toEqual(['']);
+ await nav.getByRole('button',{name:'Suivant'}).click();
+ await expect(nav).toContainText('11–20 sur 240 ventes');await expect(rows.first()).toContainText('Article 230');
+ await expect(page.locator('.wm-kpis').first()).toContainText(/30\s000 CDF/);
+ await rows.first().getByRole('button').press('Space');
+ await expect(page.locator('.wr-detail')).toContainText('Coût total des articles0 CDF');
+ await expect(page.locator('.wr-detail')).toContainText('Marge brute125 CDF');
+ const downloading=page.waitForEvent('download');await page.getByRole('button',{name:'Exporter en CSV'}).click();
+ const file=await downloading;const csv=await readFile((await file.path())!,'utf8');
+ expect(csv.split('\n')).toHaveLength(241);expect(csv).toContain('WPS_230,125');expect(csv).toContain('WPS_1,125');
+ await nav.getByRole('button',{name:'Précédent'}).click();await expect(nav).toContainText('1–10 sur 240 ventes');
+ await nav.getByRole('button',{name:'Suivant'}).click();await expect(nav).toContainText('11–20 sur 240 ventes');
+ await page.locator('.wm-filters select').first().selectOption('last_7_days');
+ await expect(nav).toHaveCount(0);await expect(rows.first()).toContainText('Article 10');
+ expect(requested).toEqual(['','WPS_230','','WPS_230','']);
 });

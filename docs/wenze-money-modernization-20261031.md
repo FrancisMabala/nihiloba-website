@@ -57,3 +57,5 @@ After specific Money release approval, deploy the validated website main commit 
 ## November 2026 report tables
 
 The store sales table expands each sale into its recorded quantity, price, cost and gross margin. Report history lists each run separately and downloads the artifact attached to that run. Display dates follow the selected shop time zone. Partial-day periods expand to show the first and last covered minutes.
+
+Store sales load ten at a time, newest first. Counts, financial summaries and CSV exports cover the selected period. Changing the period starts on the first page. Report history displays each archived run in its recorded time zone when available.
