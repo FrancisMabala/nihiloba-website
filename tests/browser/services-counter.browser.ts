@@ -15,6 +15,7 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
   if(path.endsWith('/bill-presentation'))return reply({preview:{display_name:'Belleza Salon'}});
   if(path.endsWith('/counter')){if(route.request().method()==='POST'){body=route.request().postDataJSON();saved=true;return reply(sale);}return reply({sales:saved?[sale]:[],next_offset:null});}
   if(path.endsWith('/reviews'))return reply({reviews:[]});
+  if(path.endsWith('/services/onboarding'))return reply({progress:[],remaining_capacity:4,professional_profile:{public_ref:'SVI_one',revision:1,name:'Provider',primary_category:'repair_maintenance'}});
   return route.fulfill({status:404,json:{detail:'unavailable'}});
  });
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=counter`);
@@ -25,13 +26,16 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
  await form.getByRole("combobox",{name:t.service,exact:true}).selectOption('SVC_one');
  await form.getByRole("combobox",{name:t.package,exact:true}).selectOption('SPK_one');
  await form.getByRole('button',{name:t.add,exact:true}).click();
- await form.getByLabel(t.paid,{exact:true}).fill('10');
+ await form.getByRole('button',{name:t.checkout,exact:true}).click();
+ const payment=page.getByRole('dialog');
+ await payment.getByLabel(t.paid,{exact:true}).fill('10');
  await page.screenshot({path:`test-results/counter-basket-${locale}-${width}.png`,fullPage:true});
- await form.getByRole('button',{name:t.save,exact:true}).click();
- await page.getByRole('button',{name:t.confirm,exact:true}).click();
+ await payment.getByRole('button',{name:t.pay,exact:true}).click();
  await expect(page.locator('.svc-counter-receipt')).toContainText('Belleza Salon');
  await expect(page.locator('.svc-counter-receipt')).toContainText('Wash and braids');
  await expect(page.locator('.svc-counter-receipt')).toContainText('25.00');
+ expect(body?.cash_tendered).toBe('10.00');
+ expect(body?.paid_amount).toBe('10.00');
  expect(body?.lines).toEqual([{offering_ref:'SVC_one',package_ref:'SPK_one',quantity:1,unit_price:'35.00'}]);
  await page.getByRole("combobox",{name:t.format,exact:true}).selectOption('58');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

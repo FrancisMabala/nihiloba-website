@@ -3,3 +3,9 @@
 .svc-profile-sharing{display:block;min-width:0}.svc-sharing-profile{min-width:0}.svc-sharing-profile>div:last-child{min-width:0;overflow-wrap:anywhere}.svc-sharing-card>*{min-width:0}@media(max-width:900px){.svc-sharing-card{grid-template-columns:1fr}.svc-sharing-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.svc-sharing-actions>input{grid-column:1/-1}.svc-sharing-qr img{max-width:240px}}
 
 .svc-catalog .svc-work-settings h2{font-size:26px}.svc-catalog .svc-work-settings label,.svc-catalog .svc-work-settings strong{font-size:15px}.svc-catalog .svc-work-settings small{font-size:13px}.svc-catalog .svc-work-settings .svc-work-counter{display:flex;flex-direction:row}.svc-catalog .svc-work-settings .svc-work-counter input{width:24px;min-height:24px;flex-shrink:0}.svc-catalog .svc-work-settings .svc-work-check{display:flex;align-items:center;gap:12px}.svc-catalog .svc-work-settings .svc-work-check input{width:20px;min-height:20px;margin:0;flex-shrink:0}
+
+.svc-share-dialog { width: min(40rem, calc(100% - 2rem)); max-height: 90dvh; overflow: auto; border: 1px solid #d4d1c5; border-radius: .8rem; padding: clamp(1rem, 3vw, 2rem); color: inherit; background: #fffdf9; }
+.svc-share-dialog::backdrop { background: rgb(21 34 29 / 42%); }
+.svc-share-dialog header, .svc-provider-identity { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.svc-share-dialog header button { min-width: 44px; min-height: 44px; }
+.svc-provider-options { margin-block: 1rem; }
