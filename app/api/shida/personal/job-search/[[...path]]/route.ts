@@ -35,6 +35,7 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
  const path=(await context.params).path??[],query=new URL(request.url).searchParams,method=request.method;
  const reference=/^[A-Za-z0-9_-]{1,100}$/;
  const allowed=(method==='GET'&&path.length===1&&['saved','following','alerts'].includes(path[0]))
+  ||(method==='POST'&&path.length===3&&path[0]==='jobs'&&/^JOB_[A-Za-z0-9_-]{1,96}$/.test(path[1])&&path[2]==='recruitment-contact')
   ||(path.length===2&&['jobs','employers'].includes(path[0])&&reference.test(path[1])&&['GET','PUT'].includes(method))
   ||(path.length===2&&path[0]==='relations'&&/^REL_[a-f0-9]{64}$/.test(path[1])&&method==='DELETE')
   ||(path.length===3&&path[0]==='relations'&&/^REL_[a-f0-9]{64}$/.test(path[1])&&path[2]==='notifications'&&method==='PUT')
@@ -65,7 +66,8 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
   if(response.status===401)await clearEmploymentToken();
   if(!response.ok)return fail(response.status>=400&&response.status<600?response.status:502);
   const result=await response.json();
+  if(method==='POST')return Response.json({email:result.email,phone:result.phone},{headers:PRIVATE_HEADERS});
   return Response.json(overview||cards||method==='GET'&&path[0]==='saved'?await enrich(result,(query.get('language')||'fr') as 'en'|'fr'|'ln'|'sw',overview):result,{headers:PRIVATE_HEADERS});
  }catch{return fail(503);}
 }
-export const GET=handle;export const PUT=handle;export const DELETE=handle;
+export const GET=handle;export const PUT=handle;export const DELETE=handle;export const POST=handle;

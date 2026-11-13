@@ -22,6 +22,7 @@ import { ButtonLink } from "../button-link";
 import {MissionPresentation} from "./mission-presentation";
 import {listingText} from "../../lib/personal-missions-copy";
 import "./mission-management.css";
+import { RecruitmentContact } from "./recruitment-contact";
 import { ExternalJobAction, JobPublicActions, JobViewTracker } from "./job-public-actions";
 import { MarketplaceImage } from "./marketplace-image";
 import { JobResultsLink, JobReportLink } from "./job-public-actions";
@@ -88,7 +89,10 @@ function salaryText(salary:PublicJobSalary|null,locale:Locale){if(!salary)return
 function cardCompensation(item:PublicJobSummary,locale:Locale){if(item.salary_visibility==="hidden")return null;const structured=salaryText(item.salary,locale);if(item.offer_type==="enterprise")return structured;return structured||item.compensation;}
 function matchingExternalAction(item:PublicJobSummary){const action=item.application.external_action;if(item.origin!=="external"||!item.application.available||!action)return null;if(item.application.capability==="external_redirect"&&action.mode==="redirect"&&action.action==="redirect")return action;if(item.application.capability==="external_instructions"&&action.mode==="instructions"&&action.action==="instructions")return action;return null;}
 function directApplicationUrl(item:PublicJobSummary){return item.origin==="direct"&&item.application.available&&item.application.capability==="shida_application"&&item.application.mode==="shida"?safePublicActionUrl(item.application.apply_url):null;}
-function hasSupportedApplication(item:PublicJobSummary){return Boolean((item.origin==="direct"&&item.offer_type==="individual"&&item.application.available&&item.application.mode==="shida"&&item.application.capability==="shida_application")||directApplicationUrl(item)||matchingExternalAction(item));}
+function hasRecruitmentContact(item: PublicJobSummary) {
+  return item.origin === "external" && item.application.available && item.application.mode === "recruitment_contact" && item.application.capability === "candidate_contact";
+}
+function hasSupportedApplication(item:PublicJobSummary){return Boolean(hasRecruitmentContact(item)||(item.origin==="direct"&&item.offer_type==="individual"&&item.application.available&&item.application.mode==="shida"&&item.application.capability==="shida_application")||directApplicationUrl(item)||matchingExternalAction(item));}
 function StructuredJobSection({title,value}:{title:string;value:string|null}){return value?.trim()?<section><h2>{title}</h2><OfferText value={value}/></section>:null;}
 function experienceText(item:PublicJob,locale:Locale){if(item.experience.text)return item.experience.text;if(item.experience.minimum_years!=null)return detailCopy[locale].years(item.experience.minimum_years);if(item.experience.requirement_kind==="not_required")return ({fr:"Aucune expérience exigée",en:"No experience required",ln:"Esɛngi boyebi ya kala te",sw:"Uzoefu hauhitajiki"})[locale];if(item.experience.requirement_kind==="preferred")return ({fr:"Expérience souhaitée",en:"Experience preferred",ln:"Boyebi ya kala ekosalisa",sw:"Uzoefu unapendelewa"})[locale];return null;}
 function pageHref(locale:Locale,search:JobSearch,page:number){return `${marketplacePath(locale,"/shida/emplois")}${jobSearchQuery({...search,page})}`;}
@@ -191,7 +195,7 @@ export async function JobDetailPage({locale,slug}:{locale:Locale;slug:string}) {
   if(category){try{similar=(await getJobs({category,page:1,page_size:4},locale)).items.filter(other=>other.public_ref!==item.public_ref&&other.status==="open").slice(0,3);}catch{/* Optional recommendations never block the offer. */}}
   const directAction=directApplicationUrl(item),externalAction=matchingExternalAction(item);
   const employerOffers = item.offer_type === "enterprise" ? employerPath(locale, item.employer) : null;
-  const applyButton=directAction?<ButtonLink href={directAction} external>{u.continue}</ButtonLink>:externalAction?<ExternalJobAction locale={locale} jobReference={item.public_ref} action={externalAction} label={item.apply_label}/>:null;
+  const applyButton=hasRecruitmentContact(item)?<RecruitmentContact key={item.public_ref} locale={locale} reference={item.public_ref}/>:directAction?<ButtonLink href={directAction} external>{u.continue}</ButtonLink>:externalAction?<ExternalJobAction locale={locale} jobReference={item.public_ref} action={externalAction} label={item.apply_label}/>:null;
   const stateText=inactive?(item.lifecycle_state==="expired"?jobSearchCopy[locale].expired:jobSearchCopy[locale].unavailable):null;
   const structuredData=!inactive&&hasSupportedApplication(item)?{"@context":"https://schema.org","@type":"JobPosting",title:item.title,description:plainOfferText(item.short_summary||item.summary_preview||legacyFallback||"")||undefined,datePosted:item.published_at||undefined,validThrough:item.application_deadline||undefined,employmentType:item.contract_type||item.contract_type_raw||undefined,hiringOrganization:{"@type":"Organization",name:item.employer.name},jobLocation:location?{"@type":"Place",address:{"@type":"PostalAddress",addressLocality:item.location.city||undefined,addressRegion:item.location.area||item.location.commune||undefined,addressCountry:item.location.country_code||undefined}}:undefined,url:`https://nihiloba.com${href}`}:null;
   return <>

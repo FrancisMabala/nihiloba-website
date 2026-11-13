@@ -77,8 +77,8 @@ export type PublicJobSalary = {
   period: string | null;
 };
 export type PublicJobSalaryVisibility = "visible" | "hidden" | "not_provided";
-export type PublicJobApplicationMode = "shida" | "redirect" | "email_assisted" | "instructions" | null;
-export type PublicJobApplicationCapability = "shida_application" | "external_redirect" | "external_instructions" | "none";
+export type PublicJobApplicationMode = "shida" | "redirect" | "email_assisted" | "instructions" | "recruitment_contact" | null;
+export type PublicJobApplicationCapability = "shida_application" | "external_redirect" | "external_instructions" | "candidate_contact" | "none";
 
 export type PublicJobEmployerSummary = {
   public_ref: string | null;
@@ -201,7 +201,7 @@ export type PublicJob = PublicJobSummary & {
     explanation: string;
     canonical_url: string | null;
     source_label: string;
-    application_mode: "redirect" | "instructions" | "email_assisted";
+    application_mode: "redirect" | "instructions" | "email_assisted" | "recruitment_contact";
     application_instructions: string | null;
     email_assisted_available: boolean;
   };

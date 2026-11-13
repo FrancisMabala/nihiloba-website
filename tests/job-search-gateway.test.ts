@@ -1,12 +1,23 @@
 import {beforeEach,afterEach,it,expect,vi} from 'vitest';
 const token='synthetic_job_search_token_123456789',jar=new Map<string,string>();
 vi.mock('next/headers',()=>({cookies:async()=>({get:(k:string)=>jar.has(k)?{value:jar.get(k)}:undefined,set:(k:string,v:string)=>jar.set(k,v)})}));
-import {GET,PUT,DELETE} from '../app/api/shida/personal/job-search/[[...path]]/route';
+import {GET,PUT,DELETE,POST} from '../app/api/shida/personal/job-search/[[...path]]/route';
 import {PERSONAL_SESSION_COOKIE,personalSessionBinding} from '../app/api/shida/employment/route-utils';
 const upstream=vi.fn<typeof fetch>();
 const context=(path:string[])=>({params:Promise.resolve({path})});
 const request=(method='GET',body?:string,headers:Record<string,string>={},query='')=>new Request('https://nihiloba.com/api/shida/personal/job-search'+query,{method,body,headers:{Origin:'https://nihiloba.com','Content-Type':'application/json','X-Shida-Session':personalSessionBinding(token),...headers}});
 beforeEach(()=>{jar.clear();jar.set(PERSONAL_SESSION_COOKIE,token);vi.stubGlobal('fetch',upstream);vi.stubEnv('SHIDA_API_BASE_URL','https://backend.test');upstream.mockReset().mockImplementation(async()=>Response.json({saved:true}));});
+it('fetches only the contact fields through a deliberate same-origin Personal request',async()=>{
+ const path=context(['jobs','JOB_contact','recruitment-contact']);
+ expect((await GET(request(),path)).status).toBe(404);
+ expect((await POST(request('POST',undefined,{Origin:'https://different.invalid'}),path)).status).toBe(403);
+ expect((await POST(request('POST',undefined,{'X-Shida-Session':'stale'}),path)).status).toBe(401);
+ expect(upstream).not.toHaveBeenCalled();
+ upstream.mockResolvedValueOnce(Response.json({email:'apply@example.org',phone:null,private_route:'private@example.org'}));
+ const response=await POST(request('POST'),path);
+ expect(await response.json()).toEqual({email:'apply@example.org',phone:null});
+ expect(response.headers.get('cache-control')).toContain('no-store');
+});
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 it('binds reads and writes to the current account and exact origin',async()=>{
  expect((await GET(request('GET',undefined,{'X-Shida-Session':'old-account'}),context(['saved']))).status).toBe(401);

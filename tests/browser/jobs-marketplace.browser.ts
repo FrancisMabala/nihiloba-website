@@ -42,4 +42,34 @@ test('search, empty, failure, pagination and expired states',async({page})=>{
  await page.goto('/shida/emplois?view=professional&page_size=1');await expect(page.locator('.job-result')).toHaveCount(1);await page.getByRole('link',{name:'Next',exact:true}).click();await expect(page).toHaveURL(/page=2/);
  await page.goto('/shida/emplois/expired');await expect(page.getByText('Expired offer',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Apply on employer website'})).toHaveCount(0);await page.screenshot({path:'test-results/jobs-expired.png',fullPage:true});
 });
+test('recruitment contact stays private until a signed-in candidate applies', async ({page}) => {
+ let signedIn = false;
+ let reveals = 0;
+ await page.route('**/api/shida/employment/session/', route => route.fulfill(signedIn
+   ? {json:{binding:'a'.repeat(64),user:{display_name:'Candidate'}}}
+   : {status:401,json:{detail:'sign_in_required'}}));
+ await page.route('**/api/shida/personal/job-search/jobs/JOB_contact/recruitment-contact/**', async route => {
+   expect(route.request().method()).toBe('POST');
+   expect(route.request().headers()['x-shida-session']).toBe('a'.repeat(64));
+   reveals++;
+   await route.fulfill({json:{email:'apply@example.org',phone:'+243812345678'}});
+ });
+ const navigation = await page.goto('/shida/emplois/JOB_contact');
+ expect(await navigation!.text()).not.toContain('apply@example.org');
+ const apply = page.getByRole('button',{name:'Apply with the recruiter'});
+ await apply.click();
+ await expect(page.getByText('Sign in to see the recruitment contact details.')).toBeVisible();
+ expect(reveals).toBe(0);
+ signedIn = true;
+ await page.reload();
+ await expect(apply).toBeVisible();
+ await expect(page.locator('a[href="mailto:apply@example.org"]')).toHaveCount(0);
+ expect(reveals).toBe(0);
+ await apply.click();
+ await expect(page.getByRole('link',{name:/Send an email/})).toHaveAttribute('href','mailto:apply@example.org');
+ await expect(page.getByRole('link',{name:/Call.*243812345678/})).toHaveAttribute('href','tel:+243812345678');
+ expect(reveals).toBe(1);
+ await page.evaluate(() => window.dispatchEvent(new Event('shida-personal-session-changed')));
+ await expect(page.locator('a[href="mailto:apply@example.org"], a[href="tel:+243812345678"]')).toHaveCount(0);
+});
 for(const locale of ['fr','ln','sw'])test(`localized Jobs ${locale}`,async({page})=>{await page.goto(`/${locale}/shida/emplois`); await expect(page.locator('.job-result')).toHaveCount(5);await expect(page.locator('#main-content .jobs-public')).toHaveAttribute('lang',locale);await page.screenshot({path:`test-results/jobs-${locale}.png`,fullPage:true});});
