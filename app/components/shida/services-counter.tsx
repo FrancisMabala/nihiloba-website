@@ -40,8 +40,8 @@ export function CounterDocument({sale,payment,adjustment,locale}:{sale:CounterSa
  </article>;
 }
 
-export function ServicesCounter(props:{base:string;binding:string;locale:ProviderLocale;offerings:Offering[];onDenied:()=>void;historyOnly?:boolean}){return <BoundCounter key={`${props.base}:${props.binding}`} {...props}/>;}
-function BoundCounter({base,binding,locale,offerings,onDenied,historyOnly=false}:{base:string;binding:string;locale:ProviderLocale;offerings:Offering[];onDenied:()=>void;historyOnly?:boolean}){
+export function ServicesCounter(props:{base:string;binding:string;locale:ProviderLocale;offerings:Offering[];onDenied:()=>void;historyOnly?:boolean;documentRef?:{sale:string;receipt:string}}){return <BoundCounter key={`${props.base}:${props.binding}`} {...props}/>;}
+function BoundCounter({base,binding,locale,offerings,onDenied,historyOnly=false,documentRef}:{base:string;binding:string;locale:ProviderLocale;offerings:Offering[];onDenied:()=>void;historyOnly?:boolean;documentRef?:{sale:string;receipt:string}}){
  const w=workplaceCopy[locale],t=counterCopy[locale],a=counterAdjustmentCopy[locale],c=financeReviewCopy[locale],command=useFinancialCommand(binding);
  const [tab,setTab]=useState<"sale"|"history">(historyOnly?"history":"sale"),[success,setSuccess]=useState(false);
  const [adjusting,setAdjusting]=useState(false);
@@ -60,9 +60,14 @@ function BoundCounter({base,binding,locale,offerings,onDenied,historyOnly=false}
  const locked=parentLocked||adjusting;
  useWorkDraft(lines.length>0||!!customer||!!paymentAmount||!!command.pending,providerCopy[locale].leave,locale);
  const load=useCallback(async(offset=0)=>{const id=++ticket.current;setLoading(true);setError("");try{
+  if(documentRef&&offset===0){
+    const sale=await financialRequest<CounterSale>(binding,`${base}/transactions/finance/counter/${documentRef.sale}`);
+    if(id!==ticket.current)return;
+    setRows([sale]);setSelected(sale);setReceipt(documentRef.receipt);setNext(null);return;
+  }
   const data=await financialRequest<{sales:CounterSale[];next_offset:number|null}>(binding,`${base}/transactions/finance/counter?offset=${offset}`);
   if(id!==ticket.current)return;if(!Array.isArray(data.sales))throw Error();setRows(old=>offset?[...old,...data.sales]:data.sales);setNext(data.next_offset);if(offset===0)setSelected(old=>old?data.sales.find(s=>s.sale_ref===old.sale_ref)??old:null);
- }catch(e){if(id!==ticket.current)return;setError(t.failed);if(e instanceof Error&&["401","403","404"].includes(e.message)){setRows([]);setSelected(null);deny.current();}}finally{if(id===ticket.current)setLoading(false);}},[base,binding,t.failed]);
+ }catch(e){if(id!==ticket.current)return;setError(t.failed);if(e instanceof Error&&["401","403","404"].includes(e.message)){setRows([]);setSelected(null);deny.current();}}finally{if(id===ticket.current)setLoading(false);}},[base,binding,t.failed,documentRef]);
  useEffect(()=>{let active=true;queueMicrotask(()=>{if(active)void load();});void financialRequest<{preview:{display_name:string}}>(binding,`${base}/transactions/bill-presentation`).then(v=>{if(active)setBusiness(v.preview.display_name);}).catch(()=>{});return()=>{active=false;};},[load,base,binding]);
  useEffect(()=>{if(command.status==="denied")queueMicrotask(()=>{if(alive.current){setRows([]);setSelected(null);deny.current();}});},[command.status]);
  useEffect(()=>{const done=()=>setPrinting(false);window.addEventListener("afterprint",done);return()=>window.removeEventListener("afterprint",done);},[]);

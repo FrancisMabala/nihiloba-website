@@ -1,7 +1,7 @@
-import {shiftDay, validDay} from "./service-time";
+import {serviceLocalInput, shiftDay, validDay} from "./service-time";
 
 /** The reporting API counts UTC days; money dates are already calendar dates. */
-export function reportPeriod(preset: "week" | "month", today = new Date().toISOString().slice(0, 10)) {
+export function reportPeriod(preset: "week" | "month", today = serviceLocalInput(new Date().toISOString()).slice(0, 10)) {
   if (!validDay(today)) throw new Error("invalid_report_date");
   const date = new Date(`${today}T00:00:00Z`);
   const start = preset === "month" ? `${today.slice(0, 7)}-01`
@@ -12,7 +12,7 @@ export function reportPeriod(preset: "week" | "month", today = new Date().toISOS
 export const reportHelp = {
   en: {week: "This week", month: "This month", period: "Report period", end: "To",
     intro: "See how your work and recorded finances are doing.",
-    dates: "Both dates are included. Activity is counted by UTC day.",
+    dates: "Both dates are included. Activity is counted by Kinshasa day.",
     activity: "Activity", published: "Services visible now", requests: "New requests", bookings: "New bookings",
     current: "Where these bookings stand now", details: "How to read this report",
     counts: "Requests and bookings were created during your chosen dates. Their status and service visibility are checked when you run the report.",
@@ -23,7 +23,7 @@ export const reportHelp = {
     loading: "Preparing your report…", offline: "You’re offline. Your dates are kept; reconnect and try again."},
   fr: {week: "Cette semaine", month: "Ce mois-ci", period: "Période du rapport", end: "Au",
     intro: "Suivez votre activité et l’argent que vous avez enregistré.",
-    dates: "Les deux dates sont incluses. L’activité suit les jours UTC.",
+    dates: "Les deux dates sont incluses. L’activité suit les jours de Kinshasa.",
     activity: "Activité", published: "Services visibles actuellement", requests: "Nouvelles demandes", bookings: "Nouvelles réservations",
     current: "Situation actuelle de ces réservations", details: "Comprendre ce rapport",
     counts: "Les demandes et réservations ont été créées pendant les dates choisies. Leur état et la visibilité des services sont vérifiés au moment du rapport.",
@@ -34,7 +34,7 @@ export const reportHelp = {
     loading: "Préparation du rapport…", offline: "Vous êtes hors ligne. Vos dates sont conservées ; reconnectez-vous puis réessayez."},
   ln: {week: "Poso oyo", month: "Sanza oyo", period: "Eleko ya lapolo", end: "Kino",
     intro: "Tala misala mpe mbongo oyo okomi.",
-    dates: "Mikolo nyonso mibale ekoti. Misala etangami na mikolo ya UTC.",
+    dates: "Mikolo nyonso mibale ekoti. Misala etangami na mikolo ya Kinshasa.",
     activity: "Misala", published: "Misala oyo ezali komonana sikoyo", requests: "Masengi ya sika", bookings: "Ba réservation ya sika",
     current: "Ndenge ba réservation oyo ezali sikoyo", details: "Ndenge ya kotanga lapolo",
     counts: "Masengi mpe ba réservation esalemaki na mikolo oyo oponi. Statut na yango mpe misala oyo emonanaka etalami na ntango ya lapolo.",
@@ -45,7 +45,7 @@ export const reportHelp = {
     loading: "Kobongisa lapolo…", offline: "Internet ezali te. Mikolo oyo oponi ebombami; zongisa internet mpe meka lisusu."},
   sw: {week: "Wiki hii", month: "Mwezi huu", period: "Kipindi cha ripoti", end: "Hadi",
     intro: "Fuatilia kazi zako na fedha ulizorekodi.",
-    dates: "Tarehe zote mbili zinajumuishwa. Shughuli huhesabiwa kwa siku za UTC.",
+    dates: "Tarehe zote mbili zinajumuishwa. Shughuli huhesabiwa kwa siku za Kinshasa.",
     activity: "Shughuli", published: "Huduma zinazoonekana sasa", requests: "Maombi mapya", bookings: "Nafasi mpya",
     current: "Hali ya sasa ya nafasi hizi", details: "Jinsi ya kusoma ripoti",
     counts: "Maombi na nafasi ziliundwa katika tarehe ulizochagua. Hali yake na kuonekana kwa huduma hukaguliwa wakati wa ripoti.",

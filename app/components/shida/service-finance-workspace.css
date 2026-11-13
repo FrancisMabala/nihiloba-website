@@ -1,0 +1,256 @@
+.sf-workspace {
+  --sf-green: #123e32;
+  color: #202f28;
+  min-width: 0;
+}
+
+.sf-workspace h2,.sf-workspace h3 {
+  font-family: Georgia,serif;
+  font-weight: 500;
+  margin: 0 0 .8rem;
+}
+
+.sf-workspace h2 {
+  font-size: clamp(1.45rem,3vw,2rem);
+}
+
+.sf-tabs,.sf-toolbar,.sf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+  align-items: center;
+}
+
+.sf-tabs {
+  padding-bottom: .6rem;
+}
+
+.sf-workspace>nav {
+  border-bottom: 1px solid #d9d5c8;
+  margin-bottom: 1rem;
+}
+
+.sf-workspace button,.sf-workspace select,.sf-workspace input,.sf-workspace textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.sf-workspace button {
+  border: 1px solid #c9c8ba;
+  background: #fffdf8;
+  border-radius: .52rem;
+  padding: .55rem .9rem;
+  cursor: pointer;
+}
+
+.sf-workspace button[aria-current=page],.sf-workspace button[aria-pressed=true],.sf-workspace button.sf-primary {
+  background: var(--sf-green);
+  color: white;
+  border-color: var(--sf-green);
+}
+
+.sf-workspace button:disabled {
+  opacity: .55;
+}
+
+.sf-toolbar {
+  align-items: end;
+  margin: .75rem 0;
+}
+
+.sf-toolbar .sf-tabs {
+  padding: 0;
+}
+
+.sf-workspace label {
+  display: grid;
+  gap: .25rem;
+  font-size: .9rem;
+}
+
+.sf-workspace select,.sf-workspace input,.sf-workspace textarea {
+  border: 1px solid #adb6ad;
+  border-radius: .4rem;
+  background: white;
+  padding: .55rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sf-card,.sf-metrics section {
+  background: #fffefa;
+  border: 1px solid #d8d6cc;
+  border-radius: .8rem;
+  padding: clamp(.8rem,1.6vw,1.35rem);
+  min-width: 0;
+}
+
+.sf-grid,.sf-split,.sf-metrics {
+  display: grid;
+  gap: 1rem;
+  margin: .9rem 0;
+}
+
+.sf-grid {
+  grid-template-columns: repeat(2,minmax(0,1fr));
+}
+
+.sf-split {
+  grid-template-columns: minmax(0,1.6fr) minmax(16rem,1fr);
+  align-items: start;
+}
+
+.sf-metrics {
+  grid-template-columns: repeat(auto-fit,minmax(9rem,1fr));
+}
+
+.sf-metrics strong,.sf-metrics small {
+  display: block;
+}
+
+.sf-metrics strong {
+  font-size: 1.3rem;
+  color: var(--sf-green);
+  margin-top: .45rem;
+}
+
+.sf-workspace li,.sf-workspace dl div,.sf-row header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: .65rem;
+  padding: .65rem 0;
+  border-bottom: 1px solid #e7e5dc;
+}
+
+.sf-workspace ul {
+  padding: 0;
+}
+
+.sf-row {
+  padding: .6rem 0;
+}
+
+.sf-workspace .sf-link {
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.sf-form fieldset {
+  border: 0;
+  padding: 0;
+  display: grid;
+  gap: .7rem;
+}
+
+.sf-workspace .sf-row header,.sf-ledger-head {
+  display: grid;
+  grid-template-columns: minmax(0,1.4fr) minmax(0,1.1fr) minmax(0,1fr) auto;
+  gap: .65rem;
+  align-items: center;
+}
+
+.sf-ledger-head {
+  border-bottom: 1px solid #d8d6cc;
+  padding: .75rem 0;
+}
+
+.sf-status.sf-paid {
+  background: #dcebdc;
+}
+
+.sf-status {
+  background: #fce9bd;
+  border-radius: .4rem;
+  padding: .2rem .5rem;
+}
+
+.sf-table-scroll {
+  overflow-x: auto;
+  margin: .75rem 0;
+}
+
+.sf-workspace table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.sf-workspace th,.sf-workspace td {
+  text-align: end;
+  padding: .55rem;
+  border-bottom: 1px solid #d8d6cc;
+  font-variant-numeric: tabular-nums;
+}
+
+.sf-workspace tr>:first-child {
+  text-align: start;
+}
+
+.sf-workspace thead,.sf-workspace tfoot {
+  background: #f1efe5;
+}
+
+.sf-workspace tfoot {
+  font-weight: bold;
+}
+
+.sf-workspace details {
+  padding: .5rem 0;
+}
+
+.sf-workspace summary {
+  cursor: pointer;
+}
+
+.sf-workspace dd {
+  margin: 0;
+}
+
+.sf-row small {
+  overflow-wrap: anywhere;
+}
+
+.sf-workspace .sf-actions {
+  margin: .5rem 0;
+}
+
+.sf-toolbar>label {
+  flex: 0 1 auto;
+}
+@media(max-width:950px) {
+  .sf-split {
+    grid-template-columns: 1fr;
+  }
+  .sf-form {
+    order: -1;
+  }
+}
+@media(max-width:600px) {
+  .sf-ledger-head {
+    display: none;
+  }
+  .sf-workspace .sf-row header {
+    grid-template-columns: 1fr 1fr;
+  }
+  .sf-grid {
+    grid-template-columns: 1fr;
+  }
+  .sf-tabs button {
+    flex: 1 1 auto;
+  }
+  .sf-workspace button {
+    min-height: 42px;
+  }
+  .sf-workspace th,.sf-workspace td {
+    padding: .4rem;
+    font-size: .87rem;
+  }
+  .sf-toolbar>label {
+    flex: 1;
+  }
+  .sf-split {
+    gap: .6rem;
+  }
+}

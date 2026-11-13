@@ -15,6 +15,8 @@ export function transactionPath(parts: string[], method: string): string | null 
     return null;
   }
   if (parts[1] === 'finance') {
+    if(parts.length===3 && parts[2]==='workspace' && ['GET','POST'].includes(method))return 'services/finance/workspace';
+    if(parts[2]==='counter'&&parts.length===4&&/^SCS_[A-Za-z0-9_-]+$/.test(parts[3])&&method==='GET')return 'services/finance/counter/'+parts[3];
     if(parts[2]==='counter'&&parts.length===3&&['GET','POST'].includes(method))return 'services/finance/counter';
     if(parts[2]==='counter'&&parts.length===5&&/^SCS_[A-Za-z0-9_-]+$/.test(parts[3])&&['payments','adjustments'].includes(parts[4])&&method==='POST')return `services/finance/counter/${parts[3]}/${parts[4]}`;
     if (parts.length === 3 && parts[2] === 'totals' && method === 'GET') return 'services/finance/totals';
@@ -70,6 +72,13 @@ export function transactionQuery(parts:string[], query:URLSearchParams, method:s
   if(parts[1]==='reports'&&parts.length===3&&method==='GET')return ['start_date','end_date'].every(key=>query.getAll(key).length===1&&/^\d{4}-\d{2}-\d{2}$/.test(query.get(key)??''))&&[...query].every(([key,value])=>query.getAll(key).length===1&&(['start_date','end_date'].includes(key)||key==='offering_ref'&&parts[2].startsWith('operational')&&/^SVC_[A-Za-z0-9_-]+$/.test(value)||key==='currency'&&parts[2].startsWith('financial')&&['CDF','USD'].includes(value)));
   if(parts[1]==='templates'&&parts.length===2&&method==='GET')
     return [...query].every(([key,value])=>key==='kind'&&['quote','bill'].includes(value)&&query.getAll(key).length===1);
+  if(parts.length===3 && parts[1]==='finance' && parts[2]==='workspace') {
+    if(method!=='GET')return query.size===0;
+    const date=/^\d{4}-\d{2}-\d{2}$/;
+    return ['start_date','end_date','currency'].every(k=>query.has(k)) && [...query].every(([k,v])=>
+      query.getAll(k).length===1 && (['start_date','end_date','previous'].includes(k)?date.test(v):
+        k==='currency'?['CDF','USD'].includes(v):k==='offering_ref' && /^SVC_[A-Za-z0-9_-]+$/.test(v)));
+  }
   // Organization/provider scope cannot be injected through query parameters.
   if(parts[1]==='finance'&&method==='GET'&&(parts[2]==='totals'||parts[2]==='reservations'&&parts[4]==='totals')){
     const period=parts[2]==='totals', keys=period?['start_date','end_date','as_of']:['as_of'];
