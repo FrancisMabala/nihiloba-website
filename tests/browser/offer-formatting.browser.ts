@@ -1,7 +1,9 @@
+import {signInReader} from './job-reader-session';
 import {test, expect} from '@playwright/test';
 
 
 test.beforeEach(async ({page, browserName, baseURL}) => {
+  await signInReader(page);
   if (browserName !== 'webkit' || !baseURL?.startsWith('http://127.0.0.1:')) return;
   // This fixture serves HTTP. WebKit otherwise upgrades same-origin scripts to TLS.
   await page.route(baseURL + '/**', async route => {
@@ -22,7 +24,7 @@ for (const locale of ['en', 'fr', 'ln', 'sw']) for (const width of [390, 1440]) 
     let resolutions = 0;
     const writes: string[] = [];
     page.on('request', request => {
-      if (request.method() === 'POST') writes.push(new URL(request.url()).pathname);
+      if (request.method() === 'POST') writes.push(new URL(request.url()).pathname.replace(/\/$/,''));
     });
     // Preserve the public browser Origin across the production reverse proxy.
     await page.route('**/api/shida/public-jobs/**', async route => {
@@ -99,7 +101,7 @@ for (const locale of ['en', 'fr', 'ln', 'sw']) for (const width of [390, 1440]) 
 }
 
 test('a rejected destination closes the waiting tab and allows a retry', async ({page, context, isMobile}) => {
-  await page.route('**/external-action*', route => route.fulfill({status: 409, json: {error: 'job_unavailable'}}));
+  await page.route('**/external-action/**', route => route.fulfill({status: 409, json: {error: 'job_unavailable'}}));
   await page.goto('/fr/shida/emplois/formatted');
   const original = page.url();
   const action = page.locator('.job-external-action button');

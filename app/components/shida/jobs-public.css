@@ -214,3 +214,10 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
  .employer-entry-links {flex-direction:column;align-items:stretch;text-align:center}
  .employer-page .job-success-toast {bottom:calc(4.75rem + env(safe-area-inset-bottom,0px))}
 }
+
+.job-access-dialog{position:fixed;inset:0;margin:auto;padding:clamp(24px,4vw,40px);width:min(480px,calc(100vw - 28px));max-height:calc(100dvh - 28px);overflow:auto;box-sizing:border-box;color:#153d31;background:#fffdf8;border:1px solid #d7d3c5;border-radius:16px;box-shadow:0 12px 48px #18352929}
+.job-access-dialog::backdrop{background:rgb(22 39 32 / 28%)}
+.job-access-dialog h2{font:600 clamp(1.5rem,4vw,2rem)/1.18 Georgia,serif;margin:0 28px 12px 0}
+.job-access-close{position:absolute;top:10px;right:10px;border:0;background:transparent;color:inherit;font-size:1.6rem;width:44px;height:44px;cursor:pointer}
+.job-access-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+@media(max-width:480px){.job-access-actions{flex-direction:column}.job-access-actions>*{width:100%}}

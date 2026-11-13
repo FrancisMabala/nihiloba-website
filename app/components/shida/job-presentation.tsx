@@ -1,0 +1,165 @@
+import {jobLocation} from "../../lib/job-location";
+import {SpaceIcon} from "./account-space-icon";
+import {jobSearchCopy, jobSearchPath} from '../../lib/job-search-copy';
+import {OfferText, plainOfferText} from './offer-text';
+import {candidateCopy} from '../../lib/candidate-profile-copy';
+import {JobCategoryIcon, jobDiscoveryCopy, compensationPeriod} from "./job-discovery-ui";
+import Link from "next/link";
+import "./jobs-public.css";
+import type {ServiceLocale as Locale} from "../../lib/services-i18n";
+import {publicJobEmployerKey} from "../../lib/job-employer";
+import {safePublicActionUrl, safePublicExternalUrl, safePublicImageUrl} from "../../lib/safe-public-url";
+import type {PublicJob, PublicJobEmployerSummary, PublicJobSalary, PublicJobSummary} from "../../types/shida-public";
+import {ButtonLink} from "../button-link";
+import {MissionPresentation} from "./mission-presentation";
+import {listingText} from "../../lib/personal-missions-copy";
+import "./mission-management.css";
+import {RecruitmentContact} from "./recruitment-contact";
+import {ExternalJobAction, JobPublicActions, JobViewTracker} from "./job-public-actions";
+import {MarketplaceImage} from "./marketplace-image";
+import {JobResultsLink, JobReportLink} from "./job-public-actions";
+import {marketplacePath, publicLocation} from "./marketplace";
+import {JobAccessLink} from "./job-access";
+const baseCopy = {
+  en: { jobs:"Jobs",title:"Find work with SHIDA",intro:"Discover job opportunities and apply through SHIDA.",professional:"Company & organisation offers",individual:"Individual offers",professionalShort:"Professional",individualShort:"Individual",search:"Search jobs",placeholder:"Job title, organisation or keyword",city:"City",area:"Area",commune:"Commune",filters:"Search filters",applyFilters:"Show jobs",clear:"Clear all",result:"open offer",results:"open offers",empty:"No open offers match these filters.",emptyProfessional:"There are no company or organisation vacancies available right now. Please check back later or explore another SHIDA marketplace.",emptyIndividual:"There are no individual vacancies available right now. Please check back later or explore another SHIDA marketplace.",exploreMarketplaces:"Explore other SHIDA marketplaces",unavailable:"Jobs are temporarily unavailable.",retry:"Try again",details:"View offer",employer:"Organisation",location:"Location",compensation:"Compensation",published:"Published",deadline:"Apply by",closed:"Applications closed",description:"About this role",requirements:"Requirements document",requirementsDocument:"A supporting PDF is available securely during the SHIDA application journey.",apply:"Apply with SHIDA",finalApply:"Ready to apply?",actionUnavailable:"Applications are not available for this offer.",employerProfile:"View organisation offers",openJobs:"Open offers",noEmployerJobs:"This employer has no open offers right now.",employerUnavailable:"This employer profile is unavailable.",jobUnavailable:"This offer is no longer available.",back:"Back to jobs",previous:"Previous",next:"Next",page:"Page",of:"of",image:"Organisation logo unavailable",external:"Public organisation profile",contract:"Contract",experience:"Experience",schedule:"Schedule",mode:"Work mode",vacancies:"Vacancies",start:"Expected start",benefits:"Benefits",salary:"Salary",personalEmployer:"Personal employer"},
+  fr: { jobs:"Emplois",title:"Trouvez un emploi avec SHIDA",intro:"Découvrez des opportunités professionnelles et des travaux locaux, puis postulez en toute sécurité via SHIDA.",professional:"Offres professionnelles",individual:"Emplois de particuliers",professionalShort:"Professionnel",individualShort:"Particulier",search:"Rechercher",placeholder:"Poste, organisation ou mot-clé",city:"Ville",area:"Zone",commune:"Commune",filters:"Filtres de recherche",applyFilters:"Afficher les offres",clear:"Tout effacer",result:"offre ouverte",results:"offres ouvertes",empty:"Aucune offre ouverte ne correspond à ces filtres.",emptyProfessional:"Aucune offre d’entreprise ou d’organisation n’est disponible actuellement. Revenez plus tard ou explorez un autre marché SHIDA.",emptyIndividual:"Aucun emploi de particulier n’est disponible actuellement. Revenez plus tard ou explorez un autre marché SHIDA.",exploreMarketplaces:"Explorer les autres marchés SHIDA",unavailable:"Les offres sont temporairement indisponibles.",retry:"Réessayer",details:"Voir l’offre",employer:"Organisation",location:"Lieu",compensation:"Rémunération",published:"Publiée le",deadline:"Date limite",closed:"Candidatures clôturées",description:"À propos du poste",requirements:"Document des exigences",requirementsDocument:"Un PDF complémentaire est disponible de manière sécurisée pendant la candidature SHIDA.",apply:"Postuler avec SHIDA",finalApply:"Prêt à postuler ?",actionUnavailable:"Les candidatures ne sont pas disponibles pour cette offre.",employerProfile:"Voir les offres de l’organisation",openJobs:"Offres ouvertes",noEmployerJobs:"Cet employeur n’a aucune offre ouverte actuellement.",employerUnavailable:"Ce profil employeur est indisponible.",jobUnavailable:"Cette offre n’est plus disponible.",back:"Retour aux offres",previous:"Précédent",next:"Suivant",page:"Page",of:"sur",image:"Logo de l’organisation indisponible",external:"Profil public de l’organisation",contract:"Contrat",experience:"Expérience",schedule:"Horaire",mode:"Mode de travail",vacancies:"Postes",start:"Début prévu",benefits:"Avantages",salary:"Salaire",personalEmployer:"Employeur particulier"},
+} as const;
+
+export const copy={...baseCopy,
+ ln:{actionUnavailable:"Okoki kotinda bosɛngi mpo na mosala oyo te.",apply:"Sɛnga mosala na SHIDA",applyFilters:"Lakisa misala",back:"Zonga na misala",benefits:"Matomba",closed:"Bosɛngi ekangami",compensation:"Lifuti",deadline:"Mokolo ya nsuka",description:"Na ntina na mosala",employer:"Ebongiseli",employerProfile:"Tala misala ya ebongiseli",employerUnavailable:"Profil ya mopesi mosala ezali te.",external:"Profil ya ebongiseli",finalApply:"Okoki kotinda bosɛngi?",jobUnavailable:"Mosala oyo ezali lisusu te.",location:"Esika",noEmployerJobs:"Mopesi mosala oyo azali na mosala ya kopesa te sikoyo.",openJobs:"Misala oyo ezali polele",personalEmployer:"Moto oyo azali kopesa mosala",requirements:"Mokanda ya masengami",requirementsDocument:"Mokanda PDF ezali na ntango ya kotinda bosɛngi na SHIDA.",salary:"Lifuti",start:"Mokolo ya kobanda",jobs:"Misala",title:"Luka mosala na SHIDA",intro:"Tala misala ya ba entreprises mpe ya bato, mpe tinda bosengi na SHIDA.",professional:"Misala ya ba entreprises",individual:"Misala ya bato",individualShort:"Moto",professionalShort:"Entreprise",search:"Luka mosala",placeholder:"Mosala, organisation to liloba",city:"Engumba",area:"Esika",commune:"Komine",filters:"Baponami ya boluki",clear:"Longola nyonso",result:"mosala",results:"misala",empty:"Mosala ekokani ezali te.",emptyProfessional:"Mosala ya entreprise ezali te na lokasa oyo.",emptyIndividual:"Mosala ya moto ezali te na lokasa oyo.",exploreMarketplaces:"Tala bazando mosusu",unavailable:"Misala ekoki kofungwama te.",retry:"Meka lisusu",details:"Tala mosala",published:"Epesami",previous:"Ya liboso",next:"Elandi",page:"Lokasa",of:"na",contract:"Kontra",mode:"Esika ya mosala",experience:"Boyebi",schedule:"Ngonga",vacancies:"Bisika",image:"Elilingi ya organisation ezali te"},
+ sw:{actionUnavailable:"Huwezi kutuma ombi la nafasi hii kwa sasa.",apply:"Omba kazi kupitia SHIDA",applyFilters:"Onyesha kazi",back:"Rudi kwenye kazi",benefits:"Manufaa",closed:"Maombi yamefungwa",compensation:"Malipo",deadline:"Tuma ombi kabla ya",description:"Kuhusu kazi hii",employer:"Shirika",employerProfile:"Tazama kazi za shirika",employerUnavailable:"Wasifu wa mwajiri haupatikani.",external:"Wasifu wa shirika",finalApply:"Uko tayari kutuma ombi?",jobUnavailable:"Nafasi hii haipatikani tena.",location:"Mahali",noEmployerJobs:"Mwajiri huyu hana nafasi wazi kwa sasa.",openJobs:"Nafasi zilizo wazi",personalEmployer:"Mwajiri binafsi",requirements:"Hati ya mahitaji",requirementsDocument:"Hati ya PDF inapatikana unapotuma ombi kupitia SHIDA.",salary:"Mshahara",start:"Tarehe ya kuanza",jobs:"Kazi",title:"Tafuta kazi na SHIDA",intro:"Gundua kazi za kampuni na za watu binafsi, kisha utume ombi kupitia SHIDA.",professional:"Kazi za kampuni",individual:"Kazi za watu binafsi",individualShort:"Mtu binafsi",professionalShort:"Kampuni",search:"Tafuta kazi",placeholder:"Kazi, shirika au neno",city:"Mji",area:"Eneo",commune:"Manispaa",filters:"Vichujio vya utafutaji",clear:"Ondoa vyote",result:"kazi",results:"kazi",empty:"Hakuna kazi inayolingana.",emptyProfessional:"Hakuna kazi ya kampuni kwenye ukurasa huu.",emptyIndividual:"Hakuna kazi ya mtu binafsi kwenye ukurasa huu.",exploreMarketplaces:"Gundua masoko mengine",unavailable:"Kazi hazipatikani kwa sasa.",retry:"Jaribu tena",details:"Tazama kazi",published:"Imechapishwa",previous:"Iliyotangulia",next:"Inayofuata",page:"Ukurasa",of:"kati ya",contract:"Mkataba",mode:"Mahali pa kazi",experience:"Uzoefu",schedule:"Ratiba",vacancies:"Nafasi",image:"Nembo ya shirika haipatikani"}
+};
+
+const baseDiscoveryCopy = {
+  en: {
+    eyebrow: "LOCAL TALENT. NEW OPPORTUNITIES.",
+    browse: "Explore job offers", all: "All offers", opportunities: "Find your next opportunity",
+    image: "Illustration of a professional working on a laptop overlooking the city",
+    applications: "My applications", how: "From finding an offer to taking the next step.",
+    howIntro: "Explore company vacancies and work offered by individuals. Open an offer to read the role, location and application details, then follow the application option provided.",
+    candidateTitle: "Keep your applications in one place.",
+    candidateIntro: "Return to your SHIDA candidate space to follow your applications and read your private recruitment updates.",
+    candidateAction: "Open my candidate space", candidateEyebrow: "YOUR SHIDA CANDIDATE SPACE",
+  },
+  fr: {
+    eyebrow: "TALENTS LOCAUX. NOUVELLES OPPORTUNITÉS.",
+    browse: "Explorer les offres", all: "Toutes les offres", opportunities: "Trouvez votre prochaine opportunité",
+    image: "Illustration d’un professionnel travaillant sur un ordinateur avec une vue sur la ville",
+    applications: "Mes candidatures", how: "De la recherche d’une offre à la prochaine étape.",
+    howIntro: "Découvrez les offres d’entreprises et les emplois proposés par des particuliers. Consultez le poste, le lieu et les modalités de candidature, puis suivez l’option proposée dans l’offre.",
+    candidateTitle: "Retrouvez toutes vos candidatures au même endroit.",
+    candidateIntro: "Revenez dans votre espace candidat SHIDA pour suivre vos candidatures et consulter vos nouvelles de recrutement privées.",
+    candidateAction: "Ouvrir mon espace candidat", candidateEyebrow: "VOTRE ESPACE CANDIDAT SHIDA",
+  },
+} as const;
+
+export const discoveryCopy={...baseDiscoveryCopy,
+ ln:{...baseDiscoveryCopy.fr,all:"Misala nyonso",opportunities:"Misala ya kotala",applications:"Bosengi na ngai"},
+ sw:{...baseDiscoveryCopy.fr,all:"Kazi zote",opportunities:"Gundua nafasi za kazi",applications:"Maombi yangu"}
+};
+
+const baseDetailCopy = {
+  en: { summary:"Summary",responsibilities:"Responsibilities",qualifications:"Qualifications",experience:"Experience",education:"Education and training",skills:"Skills",qualities:"Personal qualities",languages:"Languages",benefits:"Benefits",conditions:"Employment conditions",social:"Public employer link",source:"Offer source",overview:"Offer overview",years:(value:number)=>`${value} year${value===1?"":"s"} minimum` },
+  fr: { summary:"Résumé",responsibilities:"Responsabilités",qualifications:"Profil recherché",experience:"Expérience",education:"Études et formation",skills:"Compétences",qualities:"Qualités personnelles",languages:"Langues",benefits:"Avantages",conditions:"Conditions d’emploi",social:"Lien public de l’employeur",source:"Source de l’offre",overview:"Aperçu de l’offre",years:(value:number)=>`${value} an${value===1?"":"s"} minimum` },
+} as const;
+
+const detailCopy={...baseDetailCopy,
+ ln:{summary:"Na mokuse",responsibilities:"Misala ya kosala",qualifications:"Makoki",experience:"Boyebi",education:"Mateya",skills:"Makoki ya mosala",qualities:"Bizaleli",languages:"Minoko",benefits:"Matomba",conditions:"Makambo ya mosala",social:"Lien ya mopesi mosala",source:"Esika mosala euti",overview:"Na ntina ya mosala",years:(value:number)=>`Mbula ${value} to koleka`},
+ sw:{summary:"Muhtasari",responsibilities:"Majukumu",qualifications:"Sifa",experience:"Uzoefu",education:"Elimu na mafunzo",skills:"Ujuzi",qualities:"Sifa binafsi",languages:"Lugha",benefits:"Manufaa",conditions:"Masharti ya kazi",social:"Kiungo cha mwajiri",source:"Chanzo cha kazi",overview:"Muhtasari wa kazi",years:(value:number)=>`Angalau miaka ${value}`}
+};
+
+function jobPath(locale:Locale,item:Pick<PublicJobSummary,"slug"|"public_ref">){return marketplacePath(locale,`/shida/emplois/${encodeURIComponent(item.slug||item.public_ref)}`);}
+function employerPath(locale:Locale,item:PublicJobEmployerSummary){const key=publicJobEmployerKey(item);return key?marketplacePath(locale,`/shida/emplois/employeurs/${encodeURIComponent(key)}`):null;}
+export function employerLocation(item:PublicJobEmployerSummary){return publicLocation(item.area,item.city);}
+function initials(name:string){return name.split(/\s+/).filter(Boolean).slice(0,2).map((part)=>part[0]?.toUpperCase()).join("")||"SH";}
+function displayDate(value:string|null,locale:Locale){if(!value)return null;const date=new Date(value);return Number.isNaN(date.getTime())?null:new Intl.DateTimeFormat(locale,{day:"numeric",month:"short",year:"numeric"}).format(date);}
+function originLabel(item:PublicJobSummary,locale:Locale){if(item.origin!=="external")return ({en:"Published on SHIDA",fr:"Publié sur SHIDA",ln:"Epesami na SHIDA",sw:"Imechapishwa kwenye SHIDA"})[locale];if(!item.external_verified)return ({fr:"Offre externe",en:"External offer",ln:"Mosala ya libándá",sw:"Nafasi kutoka nje"})[locale];return item.external_verified_label||(({fr:"Offre externe vérifiée",en:"Verified external offer",ln:"Mosala ya libándá oyo endimami",sw:"Nafasi ya nje iliyothibitishwa"})[locale]);}
+function organizationLabel(item:PublicJobSummary,locale:Locale){if(item.origin!=="direct"||!item.organization_verified)return null;return item.organization_verified_label||(({fr:"Organisation vérifiée",en:"Verified organization",ln:"Ebongiseli oyo endimami",sw:"Shirika lililothibitishwa"})[locale]);}
+export function contractLabel(value:string|null){return value && /^(cdi|cdd)$/i.test(value.trim()) ? value.trim().toUpperCase() : humanize(value);}
+function humanize(value:string|null){return value?value.replaceAll("_"," ").replace(/^./,(letter)=>letter.toUpperCase()):null;}
+function jobFactText(value:string,locale:Locale){const labels:Record<string,Record<Locale,string>>={full_time:{en:"Full time",fr:"Temps plein",ln:"Ntango nyonso",sw:"Muda wote"},part_time:{en:"Part time",fr:"Temps partiel",ln:"Ndambu ya ntango",sw:"Muda wa sehemu"},hybrid:{en:"Hybrid",fr:"Hybride",ln:"Na esika mpe mosika",sw:"Mchanganyiko"},remote:{en:"Remote",fr:"À distance",ln:"Mosika",sw:"Kwa mbali"},onsite:{en:"On site",fr:"Sur place",ln:"Na esika",sw:"Mahali pa kazi"},weekend:{en:"Weekend",fr:"Week-end",ln:"Nsuka ya poso",sw:"Mwisho wa wiki"}};return labels[value]?.[locale]||humanize(value);}
+function salaryText(salary:PublicJobSalary|null,locale:Locale){if(!salary)return null;const format=(value:string|null)=>{if(!value)return null;const number=Number(value);return Number.isFinite(number)?new Intl.NumberFormat(locale,{maximumFractionDigits:2}).format(number):value;};const min=format(salary.minimum),max=format(salary.maximum),amount=min&&max&&min!==max?`${min}–${max}`:min||max;if(!amount)return null;return `${amount}${salary.currency?` ${salary.currency}`:""}${salary.period?` / ${compensationPeriod(salary.period,locale)}`:""}`;}
+function cardCompensation(item:PublicJobSummary,locale:Locale){if(item.salary_visibility==="hidden")return null;const structured=salaryText(item.salary,locale);if(item.offer_type==="enterprise")return structured;return structured||item.compensation;}
+function matchingExternalAction(item:PublicJobSummary){const action=item.application.external_action;if(item.origin!=="external"||!item.application.available||!action)return null;if(item.application.capability==="external_redirect"&&action.mode==="redirect"&&action.action==="redirect")return action;if(item.application.capability==="external_instructions"&&action.mode==="instructions"&&action.action==="instructions")return action;return null;}
+function directApplicationUrl(item:PublicJobSummary){return item.origin==="direct"&&item.application.available&&item.application.capability==="shida_application"&&item.application.mode==="shida"?safePublicActionUrl(item.application.apply_url):null;}
+function hasRecruitmentContact(item: PublicJobSummary) {
+  return item.origin === "external" && item.application.available && item.application.mode === "recruitment_contact" && item.application.capability === "candidate_contact";
+}
+function hasSupportedApplication(item:PublicJobSummary){return Boolean(hasRecruitmentContact(item)||(item.origin==="direct"&&item.offer_type==="individual"&&item.application.available&&item.application.mode==="shida"&&item.application.capability==="shida_application")||directApplicationUrl(item)||matchingExternalAction(item));}
+function StructuredJobSection({title,value}:{title:string;value:string|null}){return value?.trim()?<section><h2>{title}</h2><OfferText value={value}/></section>:null;}
+function experienceText(item:PublicJob,locale:Locale){if(item.experience.text)return item.experience.text;if(item.experience.minimum_years!=null)return detailCopy[locale].years(item.experience.minimum_years);if(item.experience.requirement_kind==="not_required")return ({fr:"Aucune expérience exigée",en:"No experience required",ln:"Esɛngi boyebi ya kala te",sw:"Uzoefu hauhitajiki"})[locale];if(item.experience.requirement_kind==="preferred")return ({fr:"Expérience souhaitée",en:"Experience preferred",ln:"Boyebi ya kala ekosalisa",sw:"Uzoefu unapendelewa"})[locale];return null;}
+
+
+
+function EmployerIdentity({employer,locale,large=false,heading=false}:{employer:PublicJobEmployerSummary;locale:Locale;large?:boolean;heading?:boolean}){const image=safePublicImageUrl(employer.profile_image?.url),href=employerPath(locale,employer),location=employerLocation(employer),avatar=<MarketplaceImage src={image} alt={employer.name} fallback={initials(employer.name)} sizes={large?"96px":"48px"}/>;return <div className={large?"job-employer-identity job-employer-identity-large":"job-employer-identity"}>{href?<Link className="job-employer-image" href={href}>{avatar}</Link>:<span className="job-employer-image">{avatar}</span>}<div>{heading?<h1 className="job-employer-name">{employer.name}</h1>:href?<Link className="job-employer-name" href={href}>{employer.name}</Link>:<span className="job-employer-name">{employer.name}</span>}{large&&location&&<p>{location}</p>}</div></div>;}
+function JobFacts({item,locale}:{item:PublicJobSummary;locale:Locale}){const t=copy[locale],facts:Array<[string,string|number|null]>=[[t.contract,item.contract_type||item.contract_type_raw],[t.mode,item.work_mode||item.work_mode_raw],[t.experience,item.seniority],[t.schedule,item.work_schedule],[t.vacancies,item.vacancies]];return <div className="job-facts">{facts.map(([label,value])=>value!=null&&value!==""&&<span key={label}><b>{label}:</b> {typeof value==="string"?(label===t.contract?contractLabel(value):jobFactText(value,locale)):value}</span>)}</div>;}
+
+export function JobCard({item,locale,forEmployer=false}:{item:PublicJobSummary;locale:Locale;forEmployer?:boolean}) {
+ const u=jobDiscoveryCopy[locale],href=jobPath(locale,item),location=jobLocation(item),salary=cardCompensation(item,locale),summary=plainOfferText(item.summary_preview||item.description_preview||""),category=item.professional_category||item.category,organization=organizationLabel(item,locale);
+ return <article className={`job-result job-result-${item.offer_type}${forEmployer?" employer-job-card":""}`}>
+  <div className="job-card-identity"><JobCategoryIcon category={category} individual={item.offer_type==="individual"}/><div>{!forEmployer&&<span className={`job-type-label job-type-${item.offer_type}`}>{item.offer_type==="individual"?listingText(locale,'jobType'):u.company}</span>}<h3><JobAccessLink href={href}>{item.title}</JobAccessLink></h3>{location&&<p className="job-result-location">{location}</p>}</div></div>
+  {!forEmployer&&item.offer_type==="enterprise"&&<EmployerIdentity employer={item.employer} locale={locale}/>}
+  {(item.origin==="external"||forEmployer)&&<span className="job-origin-label job-origin-external">{originLabel(item,locale)}</span>}{!forEmployer&&organization&&<span className="job-origin-label">{organization}</span>}
+  {!forEmployer&&salary&&<p className="job-result-salary">{salary}</p>}
+  {!forEmployer&&<JobFacts item={item} locale={locale}/>}
+  {!forEmployer&&summary&&<p className="job-result-summary">{summary}</p>}
+  {!forEmployer&&item.deadline_label&&<p className="job-card-deadline">{item.deadline_label}</p>}
+  <div className="job-result-actions"><JobAccessLink href={href} primary>{u.details}</JobAccessLink></div>
+ </article>;
+}
+
+export function JobUnavailable({locale,employer=false}:{locale:Locale;employer?:boolean}){const t=copy[locale];return <section className="section"><div className="container job-unavailable"><h1>{employer?t.employerUnavailable:t.jobUnavailable}</h1><ButtonLink href={marketplacePath(locale,"/shida/emplois")} variant="secondary">{t.back}</ButtonLink></div></section>;}
+function DetailItem({label,value}:{label:string;value:string|number|null}){return value!=null&&value!==""?<div><dt>{label}</dt><dd>{typeof value==="string"?humanize(value):value}</dd></div>:null;}
+
+export function JobDetailContent({locale,item,similar}:{locale:Locale;item:PublicJob;similar:PublicJobSummary[]}) {
+  const t=copy[locale],d=detailCopy[locale],u=jobDiscoveryCopy[locale];
+  const location=jobLocation(item),published=displayDate(item.published_at,locale),deadline=displayDate(item.application_deadline,locale),deadlineLabel=item.deadline_label||(deadline?`${t.deadline}: ${deadline}`:null),start=displayDate(item.start_date,locale),social=safePublicExternalUrl(item.public_social_link),source=safePublicExternalUrl(item.external_source?.canonical_url),href=jobPath(locale,item),salary=cardCompensation(item,locale),experience=experienceText(item,locale),inactive=["expired","archived","closed","source_invalid"].includes(item.lifecycle_state);
+  const structuredValues=[item.short_summary,item.responsibilities,item.qualifications,experience,item.education,item.skills,item.personal_qualities,item.languages,item.benefits,item.employment_conditions],hasStructuredContent=structuredValues.some((value)=>Boolean(value?.trim())),legacyFallback=hasStructuredContent?null:item.description_fallback||item.description;
+  if(item.origin==='direct'&&item.offer_type==='individual'){
+    const action=marketplacePath(locale,'/shida/space?view=job-offer&kind=apply&offer='+encodeURIComponent(item.public_ref));
+    return <section className="section"><div className="container mission-public"><JobResultsLink href={marketplacePath(locale,'/shida/emplois')} locale={locale}/><p className="job-type-label">{listingText(locale,'jobType')}</p>
+    <MissionPresentation heading locale={locale} title={item.title} location={location} description={item.short_summary||item.description_fallback||item.description} frequency={item.duration_frequency||start} hours={item.work_schedule} pay={item.salary_visibility==="hidden"?null:item.salary?.period?salary:item.compensation||salary} experience={item.optional_experience||item.employment_conditions} actions={<div className="mission-actions">
+    {!inactive&&hasSupportedApplication(item)?<ButtonLink href={action}>{listingText(locale,'apply')}</ButtonLink>:<p>{listingText(locale,'unavailable')}</p>}<JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin="direct" canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save}/></div>}/>
+    <JobReportLink locale={locale} jobReference={item.public_ref}/></div></section>
+  }
+  const directAction=directApplicationUrl(item),externalAction=matchingExternalAction(item);
+  const employerOffers = item.offer_type === "enterprise" ? employerPath(locale, item.employer) : null;
+  const applyButton=hasRecruitmentContact(item)?<RecruitmentContact key={item.public_ref} locale={locale} reference={item.public_ref}/>:directAction?<ButtonLink href={directAction} external>{u.continue}</ButtonLink>:externalAction?<ExternalJobAction locale={locale} jobReference={item.public_ref} action={externalAction} label={item.apply_label}/>:null;
+  const stateText=inactive?(item.lifecycle_state==="expired"?jobSearchCopy[locale].expired:jobSearchCopy[locale].unavailable):null;
+  return <>
+    {item.origin==="external"&&<JobViewTracker jobReference={item.public_ref}/>}
+    <section className="marketplace-detail-hero job-detail-hero"><div className="container">
+      <nav className="job-detail-return"><JobResultsLink href={marketplacePath(locale,"/shida/emplois")} locale={locale}/><Link href={jobSearchPath(locale)}>{jobSearchCopy[locale].title} →</Link></nav>
+      <div className="job-detail-labels"><span className="job-type-label">{item.offer_type==="enterprise"?u.company:listingText(locale,'jobType')}</span>{item.origin==="external"&&<span className="job-origin-label job-origin-external">{originLabel(item,locale)}</span>}{organizationLabel(item,locale)&&<span className="job-origin-label">{organizationLabel(item,locale)}</span>}{stateText&&<strong className="job-lifecycle-state" role="status">{stateText}</strong>}</div>
+      <div className="job-detail-title"><JobCategoryIcon category={item.professional_category||item.category} individual={item.offer_type==="individual"}/><h1>{item.title}</h1></div>
+      <div className="job-detail-identity">{item.offer_type==="enterprise"?<EmployerIdentity employer={item.employer} locale={locale}/>:<p className="job-personal-employer">{t.personalEmployer}</p>}<span id="detail-follow-control"/>
+        {employerOffers && <ButtonLink href={employerOffers} variant="text">{t.employerProfile}</ButtonLink>}
+      </div>
+      {location&&<p className="marketplace-detail-location">{location}</p>}
+      <div className="job-detail-highlights">{salary&&<div><span>{t.compensation}</span><strong>{salary}</strong></div>}{item.work_schedule&&<div><span>{t.schedule}</span><strong>{item.work_schedule}</strong></div>}</div>
+      <div className="job-detail-dates">{deadlineLabel&&<strong className={inactive?"job-deadline-expired":""}>{deadlineLabel}</strong>}{published&&<span>{t.published} {published}</span>}</div>
+      <div className="job-detail-primary-actions"><JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin={item.origin} canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save} canFollow={item.relationship_capabilities.can_follow_employer}/></div>
+    </div></section>
+    <section className="section"><div className="container job-detail-layout">
+      <main className="job-detail-content">
+        <StructuredJobSection title={d.summary} value={item.short_summary}/>
+        <StructuredJobSection title={d.responsibilities} value={item.responsibilities}/>
+        <StructuredJobSection title={d.qualifications} value={item.qualifications}/>
+        <StructuredJobSection title={d.experience} value={experience}/>
+        <StructuredJobSection title={d.education} value={item.education}/>
+        <StructuredJobSection title={d.skills} value={item.skills}/>
+        <StructuredJobSection title={d.languages} value={item.languages}/>
+        <StructuredJobSection title={d.qualities} value={item.personal_qualities}/>
+        <StructuredJobSection title={d.benefits} value={item.benefits}/>
+        <StructuredJobSection title={d.conditions} value={item.employment_conditions}/>
+        <StructuredJobSection title={t.description} value={legacyFallback}/>
+        {item.requirements_document.available&&item.origin==="direct"&&<section className="job-document-note"><h2>{t.requirements}</h2><p>{t.requirementsDocument}</p></section>}
+        {social&&<section><h2>{d.social}</h2><a href={social} target="_blank" rel="noopener noreferrer">{t.external}</a></section>}
+        {item.origin==="external"&&item.external_source&&<section className="job-external-source"><h2>{d.source}</h2><p>{item.external_source.explanation}</p>{source&&<a href={source} target="_blank" rel="noopener noreferrer">{item.external_source.source_label}</a>}</section>}
+        <section className="job-final-action"><ButtonLink href={marketplacePath(locale,"/shida/emplois")} variant="text">{inactive?(({fr:"Voir des offres similaires",en:"View similar jobs",ln:"Tala misala ya ndenge moko",sw:"Tazama kazi zinazofanana"})[locale]):t.back}</ButtonLink></section>
+      </main>
+      <aside className="job-detail-sidebar"><section className="job-application-panel" id="job-application"><h2>{u.apply}</h2>{directAction&&<><p>{u.handoff}</p><p className="job-application-account">{u.account}</p></>}{(!inactive&&applyButton)||<p className="marketplace-action-unavailable">{t.actionUnavailable}</p>}{directAction&&<Link href={marketplacePath(locale,`/shida/space?view=candidate&job=${encodeURIComponent(item.public_ref)}`)}>{candidateCopy[locale].title}</Link>}{item.origin!=="external"&&<Link className="job-my-applications" href={jobSearchPath(locale,'applications')}>{u.applications} →</Link>}</section><section className="job-applicant-safety"><p><SpaceIcon name="warning"/><span>{u.safety}</span></p><JobReportLink locale={locale} jobReference={item.public_ref}/></section>{(item.contract_type||item.contract_type_raw||item.work_mode||item.work_mode_raw||item.vacancies||start||item.workplace_reference)&&<section className="job-detail-summary"><h2>{d.overview}</h2><dl><DetailItem label={t.contract} value={contractLabel(item.contract_type||item.contract_type_raw)}/><DetailItem label={t.mode} value={item.work_mode||item.work_mode_raw?jobFactText((item.work_mode||item.work_mode_raw)!,locale):null}/><DetailItem label={t.schedule} value={item.work_schedule}/><DetailItem label={t.vacancies} value={item.vacancies}/><DetailItem label={t.salary} value={salary}/><DetailItem label={t.start} value={start}/><DetailItem label={t.location} value={item.workplace_reference||location}/></dl></section>}</aside>
+    </div></section>
+    {similar.length>0&&<section className="section job-similar"><div className="container"><h2>{u.similar}</h2><div className="job-result-list">{similar.map(other=><JobCard key={other.public_ref} item={other} locale={locale}/>)}</div></div></section>}
+  </>;
+}

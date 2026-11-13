@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { getJobs, getJob, getJobEmployer } from '../app/services/shida/public-client';
+import { getJobs, getJobPreview, getJobEmployer } from '../app/services/shida/public-client';
 import { publicJobEmployerKey } from '../app/lib/job-employer';
 import { DiscoveryListings } from '../app/components/pages/shida-discovery-listings';
 
@@ -14,7 +14,7 @@ it('accepts anonymous individual posters in collections and detail without expos
  expect(parsed.employer.public_ref).toBeNull();expect(parsed.employer.slug).toBeNull();
  expect(parsed.employer).not.toHaveProperty('owner_phone');expect(parsed.relationship_capabilities.can_follow_employer).toBe(false);
  expect(publicJobEmployerKey(parsed.employer)).toBeNull();
- mock(job);expect((await getJob('anonymous-detail-fixture')).employer.public_ref).toBeNull();
+ mock(job);expect((await getJobPreview('anonymous-detail-fixture')).employer.public_ref).toBeNull();
 });
 it.each([
  {identity_type:'shida_employer',public_ref:null},

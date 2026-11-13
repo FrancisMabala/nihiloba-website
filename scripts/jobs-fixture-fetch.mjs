@@ -18,7 +18,12 @@ const items=[{...individual,title:'Household assistant (test)',salary:{minimum:'
 globalThis.fetch=async(input,init)=>{
  const url=new URL(typeof input==='string'||input instanceof URL?input:input.url);
  if(url.origin!==origin){if(['localhost','127.0.0.1'].includes(url.hostname))return originalFetch(input,init);throw new Error('External network disabled in Jobs fixture process');}
- const path=url.pathname.replace(/\/$/,'');
+ const requested=url.pathname.replace(/\/$/,'');
+ const privateDetail=requested.endsWith('/full');
+ if ((privateDetail || requested.endsWith('/external-action')) && !new Headers(init?.headers).get('cookie')?.includes('shida_dashboard_session=isolated-job-test-session')) {
+   return Response.json({detail:'session_required'},{status:401});
+ }
+ const path=privateDetail ? requested.slice(0,-5) : requested;
  if(path==='/api/public/shida/jobs/catalogs')return Response.json({job_categories:categories});
  if(path==='/api/public/shida/jobs'){
   const q=url.searchParams.get('query')||'';

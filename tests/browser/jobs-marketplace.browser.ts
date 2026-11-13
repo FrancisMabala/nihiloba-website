@@ -1,3 +1,8 @@
+import {fixture as registrationFixture,fillName,fillCountry} from './registration-fixture';
+import {registrationCopy,registrationEligibility} from '../../app/lib/registration/copy';
+import {personalLoginCopy} from '../../app/lib/personal-login-copy';
+import {authDesignCopy} from '../../app/lib/auth-design-copy';
+import {signInReader} from './job-reader-session';
 import {assertSearchLayout} from './shared-search-layout';
 import {test,expect} from '@playwright/test';
 import {JOBS_SLOGAN} from '../../app/lib/brand';
@@ -6,8 +11,8 @@ for(const locale of ['en','fr','ln','sw'])for(const width of [390,1440])test(`fi
  await expect(page.locator('#main-content .jobs-brand-slogan')).toHaveCount(1);await expect(page.locator('#main-content .jobs-brand-slogan')).toHaveText(JOBS_SLOGAN);await expect(page.locator('#main-content .jobs-brand-slogan')).toHaveAttribute('lang','ln');
  await expect(page.locator('#main-content .jobs-public-topline,.jobs-header-row')).toHaveCount(0);
  await expect(page.locator('#main-content .jobs-invitation')).toHaveCount(3);
- await expect(page.locator('#main-content .jobs-invitation-candidate .button')).toHaveAttribute('href',/^https:\/\/wa.me\//);
- await expect(page.locator('#main-content .jobs-invitation-personal .button')).toHaveAttribute('href',/^https:\/\/wa.me\//);
+ await expect(page.locator('#main-content .jobs-invitation-candidate small a')).toHaveAttribute('href',/^https:\/\/wa.me\//);
+ await expect(page.locator('#main-content .jobs-invitation-personal small a')).toHaveAttribute('href',/^https:\/\/wa.me\//);
  await expect(page.locator('#main-content .jobs-invitation-business .button')).toHaveAttribute('href','https://business.nihiloba.com/');
  await expect(page.locator('#main-content .jobs-invitation-candidate a').last()).toHaveAttribute('href',/\/(my-applications|mes-candidatures)\/?$/);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -25,11 +30,26 @@ for(const width of [360,390,768,1024,1440])test(`employment discovery and detail
  await page.getByRole('link',{name:'Company & organisation offers',exact:true}).click();await expect(page.locator('.job-result')).toHaveCount(3);
  await page.getByRole('link',{name:'Skilled trades',exact:true}).click();await expect(page.locator('.job-result')).toHaveCount(2);
  await page.screenshot({path:`test-results/jobs-category-${width}.png`,fullPage:true});
- await page.getByRole('link',{name:'Electrical technician (test)',exact:true}).click();
+ const opener=page.getByRole('link',{name:'Electrical technician (test)',exact:true});
+ const url=page.url();
+ let fullFetches=0;
+ page.on('request',req=>{if(req.url().includes('/full/'))fullFetches++;});
+ await opener.click();
+ const modal=page.getByRole('dialog');
+ await expect(modal).toBeVisible();
+ await expect(modal.getByRole('link',{name:'Create an account'})).toHaveAttribute('href',/returnTo=.*technical/);
+ expect(page.url()).toBe(url);
+ expect(fullFetches).toBe(0);
+ const scroll=await page.evaluate(()=>scrollY);
+ await page.keyboard.press('Escape');
+ expect(await page.evaluate(()=>scrollY)).toBe(scroll);
+ await expect(opener).toBeFocused();
+ await signInReader(page);
+ await opener.click();
  await expect(page.locator('.job-detail-highlights')).toContainText('20 USD / intervention');
  await expect(page.getByRole('link',{name:'Continue in WhatsApp'})).toHaveAttribute('href',/^https:\/\/wa.me\//);
  await expect(page.locator('.job-application-panel')).toContainText('does not submit an application');
- await expect(page.locator('.job-my-applications')).toHaveAttribute('href',/^\/shida\/my-applications\/?$/);
+ await expect(page.locator('.job-my-applications')).toHaveAttribute('href','/shida/space/?view=job-search&section=applications');
  await expect(page.locator('.job-similar .job-result')).toHaveCount(1);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.getByRole('heading',{name:'Electrical technician (test)',exact:true}).click();
@@ -40,7 +60,7 @@ test('search, empty, failure, pagination and expired states',async({page})=>{
  await page.goto('/shida/emplois?query=missing');await expect(page.getByText('No jobs match your search')).toBeVisible();await page.screenshot({path:'test-results/jobs-empty.png',fullPage:true});
  await page.goto('/shida/emplois?query=failure');await expect(page.locator('.job-api-error')).toContainText('temporarily unavailable');await page.screenshot({path:'test-results/jobs-error.png',fullPage:true});
  await page.goto('/shida/emplois?view=professional&page_size=1');await expect(page.locator('.job-result')).toHaveCount(1);await page.getByRole('link',{name:'Next',exact:true}).click();await expect(page).toHaveURL(/page=2/);
- await page.goto('/shida/emplois/expired');await expect(page.getByText('Expired offer',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Apply on employer website'})).toHaveCount(0);await page.screenshot({path:'test-results/jobs-expired.png',fullPage:true});
+ await signInReader(page); await page.goto('/shida/emplois/expired');await expect(page.getByText('Expired offer',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Apply on employer website'})).toHaveCount(0);await page.screenshot({path:'test-results/jobs-expired.png',fullPage:true});
 });
 test('recruitment contact stays private until a signed-in candidate applies', async ({page}) => {
  let signedIn = false;
@@ -56,12 +76,13 @@ test('recruitment contact stays private until a signed-in candidate applies', as
  });
  const navigation = await page.goto('/shida/emplois/JOB_contact');
  expect(await navigation!.text()).not.toContain('apply@example.org');
- const apply = page.getByRole('button',{name:'Apply with the recruiter'});
- await apply.click();
- await expect(page.getByText('Sign in to see the recruitment contact details.')).toBeVisible();
+ await expect(page.getByRole('dialog')).toBeVisible();
+ await expect(page).toHaveURL(/offer=JOB_contact/);
  expect(reveals).toBe(0);
- signedIn = true;
- await page.reload();
+ signedIn=true;
+ await signInReader(page);
+ await page.goto('/shida/emplois/JOB_contact');
+ const apply=page.getByRole('button',{name:'Apply with the recruiter'});
  await expect(apply).toBeVisible();
  await expect(page.locator('a[href="mailto:apply@example.org"]')).toHaveCount(0);
  expect(reveals).toBe(0);
@@ -73,3 +94,68 @@ test('recruitment contact stays private until a signed-in candidate applies', as
  await expect(page.locator('a[href="mailto:apply@example.org"], a[href="tel:+243812345678"]')).toHaveCount(0);
 });
 for(const locale of ['fr','ln','sw'])test(`localized Jobs ${locale}`,async({page})=>{await page.goto(`/${locale}/shida/emplois`); await expect(page.locator('.job-result')).toHaveCount(5);await expect(page.locator('#main-content .jobs-public')).toHaveAttribute('lang',locale);await page.screenshot({path:`test-results/jobs-${locale}.png`,fullPage:true});});
+
+for(const width of [390,1440])test('shared offer returns through WhatsApp sign-in '+width,async({page})=>{
+ await page.setViewportSize({width,height:840});
+ await page.addInitScript(()=>{window.open=()=>null;});
+ await page.route('**/api/shida/personal/auth/whatsapp/**',async route=>{
+   const path=new URL(route.request().url()).pathname.replace(/\/$/,'');
+   if(path.endsWith('/session')){
+     expect(route.request().postDataJSON().code).toBe('610294');
+     await signInReader(page);
+     return route.fulfill({json:{authenticated:true}});
+   }
+   if(path.endsWith('/whatsapp'))return route.fulfill({status:201,json:{challenge_ref:'DWC_fixture_gate',expires_at:new Date(Date.now()+300000).toISOString(),whatsapp_url:'https://wa.me/243000000000?text=synthetic-not-sent'}});
+   return route.fulfill({json:{status:'verified'}});
+ });
+ const direct=await page.goto('/fr/shida/emplois/formatted/');
+ const html=await direct!.text();
+ expect(html).not.toContain('Encadrer');
+ expect(html).not.toContain('careers.example/apply');
+ const dialog=page.getByRole('dialog');
+ await expect(dialog.getByRole('heading')).toHaveText('Connectez-vous pour lire l’offre complète');
+ await expect(page).toHaveURL(/emplois\/\?offer=formatted/);
+ await expect(dialog.getByRole('link',{name:'Créer un compte'})).toHaveAttribute('href',/returnTo=%2Ffr%2Fshida%2Femplois%2Fformatted%2F/);
+ await dialog.getByRole('button',{name:'Se connecter',exact:true}).click();
+ await dialog.getByRole('button',{name:authDesignCopy.fr.whatsapp,exact:true}).click();
+ await dialog.locator('input[autocomplete="one-time-code"]').fill('610294');
+ await dialog.getByRole('button',{name:authDesignCopy.fr.verify,exact:true}).click();
+ await expect(page).toHaveURL(/\/fr\/shida\/emplois\/formatted\/$/);
+ await expect(page.getByText('Encadrer',{exact:true})).toBeVisible();
+ const api='/api/shida/public-jobs/formatted/full/?language=fr';
+ const full=await page.request.get(api);
+ expect(full.ok()).toBe(true);
+ expect(full.headers()['cache-control']).toContain('no-store');
+ await page.context().clearCookies();
+ expect((await page.request.get(api)).status()).toBe(401);
+ expect(await (await page.request.get('/fr/shida/emplois/formatted/')).text()).not.toContain('Encadrer');
+});
+
+for(const width of [390,1440])test('register from the offer dialog and return to its description '+width,async({page})=>{
+ await page.setViewportSize({width,height:900});
+ const state=await registrationFixture(page,false,false,()=>signInReader(page));
+ const t=registrationCopy.fr,login=personalLoginCopy.fr;
+ await page.goto('/fr/shida/emplois/?view=individual');
+ await page.locator('.job-result h3 a').first().click();
+ const dialog=page.getByRole('dialog');
+ const registration=dialog.getByRole('link',{name:'Créer un compte'});
+ const offer=new URL((await registration.getAttribute('href'))!,'http://127.0.0.1:3028').searchParams.get('returnTo');
+ await registration.click();
+ await page.getByRole('button',{name:t.next,exact:true}).click();
+ await fillName(page,'Synthetic Personal');
+ await page.locator('#registration-phone').fill('+243910004001');
+ await page.locator('#registration-city').fill('Kinshasa');
+ await fillCountry(page,'CD');
+ await page.getByRole('button',{name:t.next,exact:true}).click();
+ await page.getByLabel(registrationEligibility.fr).check();
+ await page.getByRole('button',{name:login.open,exact:true}).click();
+ await page.getByLabel(login.codeLabel).fill('610294');
+ await page.getByRole('button',{name:t.verifyButton,exact:true}).click();
+ await expect(page.locator('.registration-consent input')).toHaveCount(2);
+ for(const box of await page.locator('.registration-consent input').all())await box.check();
+ await page.getByRole('button',{name:t.next,exact:true}).click();
+ await page.getByRole('button',{name:t.finish,exact:true}).click();
+ await expect(page.locator('.mission-public h1')).toBeVisible();
+ expect(state.completed).toBe(true);
+ expect(new URL(page.url()).pathname.replace(/\/$/,'')).toBe(offer!.replace(/\/$/,''));
+});

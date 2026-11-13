@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { POST as externalAction } from "../app/api/shida/public-jobs/[job]/external-action/route";
 import { POST as analyticsEvent } from "../app/api/shida/public-jobs/[job]/[event]/route";
 
+vi.mock("next/headers",()=>({cookies:async()=>({get:()=>({value:"isolated-job-test-session"})})}));
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 
 describe("external job server action boundary",()=>{

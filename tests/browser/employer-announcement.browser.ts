@@ -1,8 +1,11 @@
+import {signInReader} from './job-reader-session';
 import {test,expect} from '@playwright/test';
 for(const width of [390,1440])test('edit recurring listing in place and retain its applicant '+width,async({page})=>{
+ await signInReader(page);
  await page.setViewportSize({width,height:900});
  await page.route('**/api/**',r=>{
   const p=new URL(r.request().url()).pathname.replace(/\/$/,'');
+  if(p.startsWith('/api/shida/public-jobs/'))return r.fallback();
   if(p.endsWith('/employment/session'))return r.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Test employer'}}});
   if(p.endsWith('/security/navigation'))return r.fulfill({json:{can_manage:true,markets:[],organization_management:false}});
   return r.fulfill({status:404,json:{}});

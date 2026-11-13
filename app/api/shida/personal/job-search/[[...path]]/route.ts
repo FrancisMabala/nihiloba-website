@@ -10,12 +10,12 @@ export const dynamic='force-dynamic';
 const fail=(status:number)=>Response.json({detail:'job_search_unavailable'},{status,headers:PRIVATE_HEADERS});
 // The personal list owns the count and the references. Supplement only its visible
 // preview rows with display fields from the same public projections as their links.
-async function enrich(list:JobSearchList,locale:'en'|'fr'|'ln'|'sw',preview:boolean){
+async function enrich(list:JobSearchList,locale:'en'|'fr'|'ln'|'sw',preview:boolean,token:string){
  const items=await Promise.all((preview?list.items.slice(0,JOB_PREVIEW_LIMIT):list.items).map(async(item:JobSearchItem)=>{
   if(!item.available||!item.reference)return item;
   try{
    if(item.kind==='job'){
-    const job=await getJob(item.reference,locale);
+    const job=await getJob(item.reference,locale,token);
     return {...item,external_redirect:job.origin==='external' && job.application.capability==='external_redirect' && job.application.external_action?.mode==='redirect',location:jobLocation(job),status:['expired','archived','closed','source_invalid'].includes(job.lifecycle_state)?job.lifecycle_state:item.status};
    }
    const employer=item.employer_ref||(item.kind==='organization_directory'?item.reference:null);
@@ -67,7 +67,7 @@ async function handle(request:Request,context:{params:Promise<{path?:string[]}>}
   if(!response.ok)return fail(response.status>=400&&response.status<600?response.status:502);
   const result=await response.json();
   if(method==='POST')return Response.json({email:result.email,phone:result.phone},{headers:PRIVATE_HEADERS});
-  return Response.json(overview||cards||method==='GET'&&path[0]==='saved'?await enrich(result,(query.get('language')||'fr') as 'en'|'fr'|'ln'|'sw',overview):result,{headers:PRIVATE_HEADERS});
+  return Response.json(overview||cards||method==='GET'&&path[0]==='saved'?await enrich(result,(query.get('language')||'fr') as 'en'|'fr'|'ln'|'sw',overview,token):result,{headers:PRIVATE_HEADERS});
  }catch{return fail(503);}
 }
 export const GET=handle;export const PUT=handle;export const DELETE=handle;export const POST=handle;
