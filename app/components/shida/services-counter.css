@@ -66,3 +66,9 @@
 .svc-counter[data-format="58"] .svc-document-lines li,.svc-counter-print[data-format="58"] .svc-document-lines li{display:block}
 .svc-counter[data-format="58"] .svc-document-lines li>*,.svc-counter-print[data-format="58"] .svc-document-lines li>*{display:block}
 @media(max-width:900px){.svc-counter-checkout{bottom:4rem}.svc-counter-checkout>strong,.svc-counter-pay .svc-pay-total{font-size:1.08rem}}
+
+.svc-counter-pay #svc-pay-title,.svc-counter .svc-counter-sale h2{font:600 clamp(1.4rem,2.15vw,2.1rem)/1.2 Georgia,serif}
+.svc-counter-pay .wz-cash-digits button[data-key="C"]{grid-row:span 2}
+.svc-counter-pay .wz-cash-digits button[data-key="0"]{grid-column:span 2}
+.svc-counter-pay .svc-counter-calculator output{padding:1rem}
+.svc-counter-pay .svc-counter-calculator output strong{display:block;font:600 clamp(1.3rem,2.4vw,2rem)/1.25 Georgia,serif;margin-top:.35rem}

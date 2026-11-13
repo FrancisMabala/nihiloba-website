@@ -148,8 +148,8 @@ function BoundCounter({base,binding,locale,offerings,onDenied,historyOnly=false,
    <button className="svc-pay-close" type="button" aria-label={t.close} disabled={command.busy||!!command.pending} onClick={()=>setPayOpen(false)}>×</button><h2 id="svc-pay-title">{t.payment}</h2><p>{lines[0]?.package_name??lines[0]?.service_name} · {business}</p><strong className="svc-pay-total">{t.totalDue} <b>{displayMoney(money(total),locale)} {currency}</b></strong>
    <fieldset disabled={command.busy||!!command.pending}><legend>{t.method}</legend><div className="svc-counter-methods">{(["cash","mobile_money","bank","other"] as const).map(m=><button type="button" key={m} aria-pressed={method===m} onClick={()=>setMethod(m)}>{t[m]}</button>)}</div>
    <label>{t.paid}<input inputMode="decimal" value={paid} onChange={e=>setPaid(e.target.value)}/></label>
-   {method==="mobile_money"&&<p>{t.note}</p>}<div className="svc-counter-calculator">{method==="cash"&&<CashKeypad value={paid} total={Number(total)} currency={currency} locale={locale} onChange={setPaid}/>}
-   {tender!==null&&<output>{tender>total?t.change:t.balance} · {displayMoney(money(tender>total?tender-total:total-tender),locale)} {currency}</output>}</div>
+   {method==="mobile_money"&&<p>{t.note}</p>}<div className="svc-counter-calculator">{method==="cash"&&<CashKeypad layout="service" value={paid} total={Number(total)} currency={currency} locale={locale} onChange={setPaid}/>}
+   {tender!==null&&<output><span>{tender>total?t.change:t.balance} · </span><strong>{displayMoney(money(tender>total?tender-total:total-tender),locale)} {currency}</strong></output>}</div>
    </fieldset>{error&&<p role="alert">{error}</p>}{command.status&&<p role="status">{c[command.status]}</p>}
    <div><button type="button" disabled={command.busy||!!command.pending} onClick={()=>setPayOpen(false)}>{t.back}</button><button type="button" className="svc-primary" disabled={command.busy} onClick={prepare}>{command.pending?t.retry:t.pay}</button></div>
   </dialog></>}

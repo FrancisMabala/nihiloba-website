@@ -26,6 +26,7 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
  const form=page.locator('.svc-counter-form').first();
  await form.getByRole("button",{name:/Hair styling/}).click();
  await form.getByRole("button",{name:/Wash and braids/}).click();
+ await expect(form.getByRole('button',{name:new RegExp(t.custom)})).toBeEnabled();
  await form.getByRole('button',{name:t.checkout,exact:true}).click();
  const payment=page.getByRole('dialog');
  await payment.getByRole('button',{name:t.back,exact:true}).click();
@@ -121,6 +122,9 @@ test("quoted ticket, mixed currencies and retry after a lost sale response",asyn
   await dialog.getByLabel(t.paid).fill(cash);
   expect((await dialog.locator("output").innerText()).replace(/\s/g,"")).toBe((label+"·"+value+"CDF").replace(/\s/g,""));
  }
+ await dialog.locator('[data-key="C"]').click();
+ for(const key of ["5","00","00"])await dialog.locator(`[data-key="${key}"]`).click();
+ await expect(dialog.getByLabel(t.paid)).toHaveValue("50000");
  await dialog.getByRole("button",{name:t.pay}).dblclick();
  await expect(dialog.getByLabel(t.paid)).toHaveValue("50000");
  await dialog.getByRole("button",{name:t.retry}).click();

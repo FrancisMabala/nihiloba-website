@@ -28,7 +28,7 @@ export function CounterPicker({offerings,locale,currency,hasLines,onAdd,editLine
     {open&&options.map(pack=>{
      const ref=pack?.public_ref??service.public_ref,selected=choice===ref;
      const listed=(pack?.price??"").replace(/[ \u00a0\u202f]/g,"").replace(",",".");
-     const fixed=/^\d{1,16}(?:\.\d{1,2})?$/.test(listed),code=pack?.currency??unit;
+     const fixed=/^\d{1,16}(?:\.\d{1,2})?$/.test(listed),code=pack?.currency??(hasLines?currency:unit);
      const mismatch=hasLines&&code!==currency;
      const starting=!pack&&service.packages.find(p=>p.price!=null);
      const label=pack?.name??(service.packages.length?t.custom:service.service_name);
@@ -40,7 +40,7 @@ export function CounterPicker({offerings,locale,currency,hasLines,onAdd,editLine
       {mismatch&&<small>{t.mismatch} {currency}.</small>}
       {selected&&!mismatch&&(!fixed||editLine)&&<div className="svc-counter-agreed">
        {!fixed&&<><label>{t.agreed}<input autoFocus inputMode="decimal" value={agreed} onChange={e=>setAgreed(e.target.value)}/></label>
-        {!pack?.currency&&<label>{t.currency}<select value={unit} disabled={hasLines} onChange={e=>setUnit(e.target.value)}><option>CDF</option><option>USD</option></select></label>}</>}
+        {!pack?.currency&&<label>{t.currency}<select value={hasLines?currency:unit} disabled={hasLines} onChange={e=>setUnit(e.target.value)}><option>CDF</option><option>USD</option></select></label>}</>}
        {editLine&&<label>{t.quantity}<input type="number" min="1" max="100" value={quantity} onChange={e=>setQuantity(Number(e.target.value))}/></label>}
        <button type="button" onClick={add}>{editLine?t.confirm:t.add}</button>
       </div>}
