@@ -4,6 +4,8 @@ import {useDiscardChanges} from "./discard-changes";
 import {useCallback,useEffect,useRef,useState} from "react";
 import {ServicesBillDelivery} from "./services-bill-delivery";
 import {ServicesTemplatePicker} from "./services-template-library";
+import {DocumentEditor} from "./service-document-editor";
+import {docWords,lineAmount,type DocumentFields} from "../../lib/service-document";
 import {ServiceBillStatement} from "./service-bill-statement";
 import {serviceAmount} from "../../lib/service-time";
 import {useWorkDraft} from "../../lib/restaurant-work";
@@ -11,7 +13,8 @@ import {financialRequest,useFinancialCommand,type FinancialCommand} from "../../
 import {billReviewCopy,billTotal} from "../../lib/services-bill-review-copy";
 type Locale="fr"|"en"|"ln"|"sw";
 type Line={label:string;amount:string;private_detail?:string};
-type Version={current_reservation_revision?:number;bill_ref:string;version_ref:string;revision:number;status:string;source_kind:string;currency:string|null;total:string|null;issue_date:string|null;due_date:string|null;reason:string|null;presentation?:{display_name:string;accent:string};lines:(Line&{ordinal:number})[]};
+type Prefill={document?:DocumentFields;client_name?:string;source_quote_ref?:string;total?:string|null;currency?:string|null;presentation?:{display_name:string;accent:string}};
+type Version=Prefill&{current_reservation_revision?:number;bill_ref:string;version_ref:string;revision:number;status:string;source_kind:string;currency:string|null;total:string|null;issue_date:string|null;due_date:string|null;reason:string|null;presentation?:{display_name:string;accent:string};lines:(Line&{ordinal:number})[]};
 const agreed={en:"Agreed service",fr:"Service convenu",ln:"Mosala oyo bondimaki",sw:"Huduma iliyokubaliwa"} as const;
 const back={en:"Back",fr:"Retour",ln:"Zonga",sw:"Rudi"} as const;
 const words={
@@ -22,14 +25,16 @@ const words={
 } as const;
 
 
-type Props={base:string;binding:string;locale:Locale;reservationRef:string;reservationRevision:number;status:string;blocked?:boolean};
+type Props={initialPrepare?:boolean;mission?:string;client?:string;base:string;binding:string;locale:Locale;reservationRef:string;reservationRevision:number;status:string;blocked?:boolean};
 type Action="create"|"edit"|"issue"|"replace"|"void";
-function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,status,blocked=false}:Props){
+function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,status,blocked=false,initialPrepare=false,mission="",client=""}:Props){
  const {discard,confirmation}=useDiscardChanges(locale);
  const t=words[locale],c=billReviewCopy[locale],command=useFinancialCommand(binding);
  const [current,setCurrent]=useState<Version|null>(null),[history,setHistory]=useState<Version[]>([]),[selectedVersion,setSelectedVersion]=useState("");
  const [loading,setLoading]=useState(true),[loaded,setLoaded]=useState(false),[error,setError]=useState<""|"failed"|"denied">(""),[notice,setNotice]=useState("");
  const [form,setForm]=useState<Action|null>(null),[currency,setCurrency]=useState("CDF"),[lines,setLines]=useState<Line[]>([{label:"",amount:""}]),[dueDate,setDueDate]=useState(""),[reason,setReason]=useState("");
+ const [prefill,setPrefill]=useState<Prefill>({}),[document,setDocument]=useState<DocumentFields>({}),[single,setSingle]=useState("");
+ const fromAccepted=!!(current||prefill).source_quote_ref,firstOpen=useRef(initialPrepare);
  const [origin,setOrigin]=useState<{bill?:string;revision?:number;reservation:number}|null>(null);
  const [review,setReview]=useState<{command:FinancialCommand;lines:Line[];currency:string;total:string|null;automatic:boolean}|null>(null);
  const alive=useRef(true),generation=useRef(0);
@@ -38,14 +43,15 @@ function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,
  const reload=useCallback(async()=>{
   const ticket=++generation.current;setLoading(true);
   try{
-   const value=await financialRequest<{current:Version|null;bill_ref?:string}>(binding,`${base}/transactions/reservations/${reservationRef}/bills`);
+   const value=await financialRequest<{current:Version|null;prefill?:Prefill;bill_ref?:string}>(binding,`${base}/transactions/reservations/${reservationRef}/bills`);
    const versions=value.bill_ref?await financialRequest<{versions:Version[]}>(binding,`${base}/transactions/bills/${value.bill_ref}/history`):{versions:[]};
    if(!alive.current||ticket!==generation.current)return;
+   setPrefill(value.prefill||{});if(firstOpen.current&&!value.current){firstOpen.current=false;const p=value.prefill||{};setDocument(p.document||{});setCurrency(p.currency||"CDF");setSingle(p.total||"");setOrigin({reservation:reservationRevision});setForm("create");}
    setCurrent(value.current);setHistory(versions.versions);setSelectedVersion(old=>versions.versions.some(row=>row.version_ref===old)?old:value.current?.version_ref??"");
    setLoaded(true);setError("");
   }catch(failure){if(alive.current&&ticket===generation.current){const denied=failure instanceof Error&&["401","403","404"].includes(failure.message);setError(denied?"denied":"failed");if(denied){setCurrent(null);setHistory([]);}}}
   finally{if(alive.current&&ticket===generation.current)setLoading(false);}
- },[base,binding,reservationRef]);
+ },[base,binding,reservationRef,reservationRevision]);
  useEffect(()=>{let active=true;queueMicrotask(()=>{if(active)void reload();});const focus=()=>void reload();window.addEventListener("focus",focus);return()=>{active=false;window.removeEventListener("focus",focus);};},[reload]);
  const workable=["confirmed","in_progress","completed"].includes(status)&&!blocked;
  const effectiveReservationRevision=current?.current_reservation_revision??reservationRevision;
@@ -57,15 +63,19 @@ function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,
   applyBegin(action);
  }
  function applyBegin(action:Action){
-  setForm(action);setReview(null);setNotice("");command.clear();setOrigin({bill:current?.bill_ref,revision:current?.revision,reservation:effectiveReservationRevision});
-  setCurrency(current?.currency??"CDF");setLines(current?.lines?.length?current.lines.map(row=>({label:row.label==="Agreed service"?agreed[locale]:row.label,amount:row.amount,private_detail:row.private_detail})):[{label:"",amount:""}]);
+  const seed=current||prefill;
+  setDocument({...seed.document,items:seed.document?.items??current?.lines.map(l=>({label:l.label,quantity:1,unit_price:l.amount}))});
+  setSingle(seed.total||"");setForm(action);setReview(null);setNotice("");command.clear();setOrigin({bill:current?.bill_ref,revision:current?.revision,reservation:effectiveReservationRevision});
+  setCurrency(seed.currency??"CDF");setLines(current?.lines?.length?current.lines.map(row=>({label:row.label==="Agreed service"?agreed[locale]:row.label,amount:row.amount,private_detail:row.private_detail})):[{label:"",amount:""}]);
   setDueDate(current?.due_date??"");setReason("");
  }
  function prepare(event:React.FormEvent){
   event.preventDefault();if(!form||locked||stale||error||!workable)return;
-  const automatic=form==="create"&&(lines.length===0||lines.length===1&&!lines[0].label.trim()&&!lines[0].amount.trim());
+  const replacementLines=lines;
+  const automatic=form==="create"&&!!prefill.total&&!document.items?.length;
   let entered:Line[]=[];
   if(["create","edit","replace"].includes(form)&&!automatic){
+   const lines=form==="replace"?replacementLines:document.items?.length?document.items.map(i=>({label:i.label,amount:lineAmount(i)})):[{label:mission||t.title,amount:single}];
    if(!lines.length||lines.some(line=>!line.label.trim()||!line.amount.trim())){setNotice(c.incomplete);return;}
    try{entered=lines.map(row=>({...row,label:row.label.trim(),amount:serviceAmount(row.amount)}));}catch{setNotice(c.incomplete);return;}
   }
@@ -73,7 +83,7 @@ function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,
   let body:Record<string,unknown>={revision:form==="create"?reservationRevision:current?.revision,idempotency_key:crypto.randomUUID()};
   if(form==="create"||form==="edit"){
    if(form==="edit"){target+=`/${current?.bill_ref}`;method="PATCH";}
-   if(!automatic)body={...body,currency,lines:entered};
+   body.document=document; if(!automatic)body={...body,currency,lines:entered};
   }else{
    target+=`/${current?.bill_ref}/${form}`;
    body={...body,reservation_revision:effectiveReservationRevision,...(form!=="void"?{due_date:dueDate}:{}),...(form!=="issue"?{reason}:{}),...(form==="replace"?{currency,lines:entered}:{})};
@@ -107,7 +117,8 @@ function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,
    {form&&<form onSubmit={prepare}>
     <fieldset disabled={locked||!!review||stale||!workable} style={{border:0,padding:0,margin:"1rem 0",display:"grid",gap:16}}>
      <legend>{actionLabel}</legend>
-     {["create","edit","replace"].includes(form)&&<>
+     {["create","edit"].includes(form)&&<DocumentEditor agreedDescription={fromAccepted&&!!(current||prefill).document?.description} locked={fromAccepted||!!prefill.total} locale={locale} change={setDocument} amount={setSingle} currency={setCurrency} paper={{kind:"bill",issuer:(current||prefill).presentation?.display_name||t.title,accent:(current||prefill).presentation?.accent,client:(current||prefill).client_name||client,reference:(current||prefill).source_quote_ref||reservationRef,state:docWords(locale).draft,amount:single,currency,document}}><strong>{mission}</strong>{(current||prefill).source_quote_ref&&<span>{docWords(locale).quote} · {(current||prefill).source_quote_ref}</span>}</DocumentEditor>}
+     {form==="replace"&&<>
       <label>{t.currency}<select value={currency} onChange={e=>setCurrency(e.target.value)}><option>CDF</option><option>USD</option></select></label>
       {lines.map((line,index)=><div key={index} style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,180px),1fr))",gap:12,alignItems:"end"}}>
        <label>{t.label}<input value={line.label} maxLength={120} onChange={e=>setLines(old=>old.map((row,i)=>i===index?{...row,label:e.target.value}:row))}/></label>
@@ -115,7 +126,7 @@ function BoundBillPanel({base,binding,locale,reservationRef,reservationRevision,
        <button type="button" onClick={()=>setLines(old=>old.filter((_,i)=>i!==index))}>{t.remove}</button>
       </div>)}
       <button type="button" onClick={()=>setLines(old=>[...old,{label:"",amount:""}])}>{t.add}</button>
-      {form==="create"&&<p>{c.fromQuote}</p>}
+
      </>}
      {["issue","replace"].includes(form)&&<label>{t.due}<input type="date" required value={dueDate} onChange={e=>setDueDate(e.target.value)}/></label>}
      {["replace","void"].includes(form)&&<label>{t.reason}<textarea required maxLength={500} value={reason} onChange={e=>setReason(e.target.value)}/></label>}

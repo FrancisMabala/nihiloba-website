@@ -1,3 +1,5 @@
+import {readFile} from 'node:fs/promises';
+import {docWords} from "../../app/lib/service-document";
 import {test,expect} from '@playwright/test';
 import {templateDesign} from '../../app/lib/services-template-design';
 import {providerCopy} from '../../app/lib/services-provider-copy';
@@ -29,27 +31,52 @@ for(const [locale,width,category] of cases)test(`templates and settings ${locale
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=templates`);
  const panel=page.locator('.svc-templates');await expect(panel.getByText(d.empty)).toBeVisible();
  await page.screenshot({path:`test-results/template-empty-${locale}-${width}.png`,fullPage:true});
- await panel.getByRole('button',{name:t.new,exact:false}).click();expect(writes).toHaveLength(0);
- await panel.getByLabel(d.source).selectOption('SVC_0');await expect(panel.getByLabel(t.name)).toHaveValue('Consultation');
- await page.screenshot({path:`test-results/template-basics-${locale}-${width}.png`,fullPage:true});
- const next=()=>panel.getByRole('button',{name:new RegExp(`^${d.next}`)}).click();await next();
- await panel.getByLabel(d.package).selectOption('PKG_0');await expect(panel.getByLabel(t.amount,{exact:true})).toHaveValue('50.00');await next();
- await panel.getByRole("textbox",{name:t.terms,exact:true}).fill('Advice only. Representation excluded.');await next();
- await expect(panel.getByText(d.previewOnly)).toBeVisible();await expect(panel.getByText('Advice only. Representation excluded.')).toBeVisible();expect(writes).toHaveLength(0);
- await page.screenshot({path:`test-results/template-review-${locale}-${width}.png`,fullPage:true});
- await panel.getByRole('button',{name:t.save,exact:true}).click();
- await expect(panel.getByRole('button',{name:ui.retry,exact:true})).toBeVisible();await expect(panel.getByRole('button',{name:t.save,exact:true})).toBeDisabled();
- await panel.getByRole('button',{name:ui.retry,exact:true}).click();await expect(panel.locator('article').getByRole('heading',{name:'Consultation',exact:true})).toBeVisible();expect(bodies[0]).toBe(bodies[1]);
+ const w=docWords(locale);
+ const create=()=>panel.locator('.svc-template-toolbar button').click();
+ await create();await panel.getByLabel(d.source).selectOption('SVC_0');await expect(panel.getByLabel(t.name)).toHaveValue('Consultation');
+ await panel.getByRole('combobox',{name:d.package,exact:true}).selectOption('PKG_0');
+ await expect(panel.getByLabel(w.unit,{exact:true})).toHaveValue('50.00');
+ await panel.locator('.svc-doc-fields details summary').click();await panel.getByRole('textbox',{name:w.conditions,exact:true}).fill('Advice only. Representation excluded.');
+ await panel.getByRole('textbox',{name:w.private,exact:true}).fill('Private stock note');
+ if(locale==='fr'||width===1440){
+  await panel.getByRole('textbox',{name:w.description,exact:true}).fill(('Consultation juridique. Mandat, étapes et limites de la représentation.\n').repeat(86));
+ }
+ if(width<=850)await panel.locator('.svc-doc-mobile').getByRole('button',{name:w.preview,exact:true}).click();
+ await expect(panel.locator('.svc-document-pages')).toContainText('Advice only. Representation excluded.');
+ await expect(panel.locator('.svc-document-pages')).not.toContainText('Private stock note');
+ if(locale==='fr'||width===1440){
+  const pages=panel.locator('.svc-document-pages svg');const count=await pages.count();expect(count).toBeGreaterThan(1);
+  await expect(pages.last()).toContainText(count+' / '+count);
+  const download=page.waitForEvent('download');await panel.getByRole('button',{name:w.download,exact:true}).click();
+  const file=await download;const pdf=await readFile((await file.path())!);expect(pdf.subarray(0,8).toString()).toBe('%PDF-1.4');
+  expect(pdf.toString('latin1').match(/\/Type \/Page\b/g)).toHaveLength(count);
+  await file.saveAs('test-results/legal-document-'+width+'.pdf');
+  await page.evaluate(()=>{window.print=()=>{document.documentElement.dataset.printed=String(document.querySelectorAll('.svc-document-paper.is-printing .svc-document-pages svg').length);};});
+  await panel.getByRole('button',{name:w.print,exact:true}).click();
+  await expect(page.locator('html')).toHaveAttribute('data-printed',String(count));
+ }
+ await panel.getByRole('button',{name:t.save,exact:true}).click();await panel.getByRole('button',{name:ui.retry,exact:true}).click();
+ await expect(panel.getByRole('heading',{name:'Consultation',exact:true})).toBeVisible();expect(bodies[0]).toBe(bodies[1]);
  expect(templates[0].content).toMatchObject({amount:'50.00',currency:'USD',terms:'Advice only. Representation excluded.'});
- await page.screenshot({path:`test-results/template-list-${locale}-${width}.png`,fullPage:true});
  await panel.locator('summary').click();await panel.getByRole('button',{name:d.duplicate,exact:true}).click();await expect(panel.getByLabel(t.name)).toHaveValue('Consultation');
- await panel.getByLabel(t.name).fill('Second consultation');await next();await expect(panel.getByLabel(t.amount,{exact:true})).toHaveValue('50.00');await next();await expect(panel.getByRole("textbox",{name:t.terms,exact:true})).toHaveValue('Advice only. Representation excluded.');await next();await panel.getByRole('button',{name:t.save,exact:true}).click();await expect(panel.locator('article')).toHaveCount(2);
- await panel.locator('article').filter({has:page.getByRole('heading',{name:'Consultation',exact:true})}).getByRole('button',{name:t.edit,exact:true}).click();await next();await next();await panel.getByRole('textbox',{name:t.terms,exact:true}).fill('Updated future conditions');await next();await panel.getByRole('button',{name:t.save,exact:true}).click();await expect(panel.locator('article')).toHaveCount(2);expect((templates[1].content as Record<string,unknown>).terms).toBe('Advice only. Representation excluded.');
- await panel.getByRole('button',{name:d.bills,exact:true}).click();await panel.getByRole('button',{name:t.new,exact:false}).click();await panel.getByLabel(t.name).fill('General bill');await next();await panel.getByLabel(t.line,{exact:true}).fill('Agreed advice');await panel.getByLabel(t.amount,{exact:true}).fill('80');await panel.getByLabel(t.detail,{exact:true}).fill('Private cost note');await next();await next();await panel.getByRole('button',{name:t.save,exact:true}).click();await expect(panel.locator('article')).toHaveCount(1);
+ await panel.getByLabel(t.name).fill('Second consultation');await panel.getByRole('button',{name:t.save,exact:true}).click();await expect(panel.locator('article')).toHaveCount(2);
+ await page.getByRole('button',{name:w.bills,exact:true}).click();await create();await panel.getByLabel(t.name).fill('General bill');await panel.getByLabel(w.amount,{exact:true}).fill('80');
+ if(locale==='fr'||width===1440){
+  await panel.getByRole('combobox',{name:'CDF / USD'}).selectOption('CDF');
+  await panel.getByRole('combobox',{name:w.bill,exact:true}).selectOption('items');
+  await panel.getByLabel(w.label,{exact:true}).first().fill('Prise murale');await panel.getByLabel(w.qty,{exact:true}).first().fill('3');await panel.getByLabel(w.unit,{exact:true}).first().fill('10000');
+  await panel.getByRole('button',{name:new RegExp(w.add)}).click();await panel.getByLabel(w.label,{exact:true}).last().fill('Main-d’œuvre');await panel.getByLabel(w.unit,{exact:true}).last().fill('40000');
+  await panel.getByRole('textbox',{name:w.private,exact:true}).fill('stock privé');
+  if(width<=850)await panel.locator('.svc-doc-mobile').getByRole('button',{name:w.preview}).click();
+  const paper=panel.locator('.svc-document-pages');await expect(paper).toContainText(/70[\s,]*000 CDF/);await expect(paper).not.toContainText('stock privé');
+  const answer=page.waitForEvent('download');await panel.getByRole('button',{name:w.download,exact:true}).click();await (await answer).saveAs('test-results/electrician-'+width+'.pdf');
+  if(width<=850)await panel.locator('.svc-doc-mobile').getByRole('button',{name:w.write}).click();
+ }
+ await panel.getByRole('textbox',{name:w.private,exact:true}).fill('Private cost note');await panel.getByRole('button',{name:t.save,exact:true}).click();await expect(panel.locator('article')).toHaveCount(1);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=settings`);
  const branding=page.locator('.svc-branding');await expect(branding.locator('.svc-branding-profile strong')).toHaveText('Horizon');await branding.getByLabel(t.billName).fill('Horizon Practice');await branding.getByRole('radio',{name:({en:'Plum',fr:'Prune',ln:'Violet',sw:'Zambarau'} as const)[locale],exact:true}).check();
- await expect(branding.locator('.service-bill-identity strong')).toHaveText('Horizon Practice');await expect(branding.locator('.service-bill-identity p')).toContainText('Horizon');await branding.getByRole('button',{name:t.brandSave,exact:true}).click();
+ await expect(branding.locator('.svc-document-pages')).toContainText('Horizon Practice');await branding.getByRole('button',{name:t.brandSave,exact:true}).click();
  await page.screenshot({path:`test-results/template-settings-${locale}-${width}.png`,fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- expect(writes).toEqual(['template','template','edit','template','branding']);
+ expect(writes).toEqual(['template','template','template','branding']);
 });

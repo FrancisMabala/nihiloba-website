@@ -1,6 +1,12 @@
 # Services document preparation refinement — 31 October 2026
 
-## Result
+## November 2026 document workspace
+
+Under More tools, Templates and appearance groups quote templates, invoice templates and document appearance. Desktop editors show the client paper beside the form. Phones offer Write and Preview. Templates prefill mission drafts. Sending a quote, accepting it, issuing an invoice and recording a payment remain distinct actions. Client papers paginate descriptions and itemised prices and use the same layout for print and PDF. Legacy issued invoices retain their statement layout.
+
+Profile and published service sharing use the same QR panel in Services and prices. Today and Requests and jobs also open it in place. Legacy management links with a service parameter select that published service, and public QR URLs remain stable.
+
+## October 2026 result
 
 Quotes and Bills are separate tabs over the existing private library. New
 template opens an editor only. Four steps cover basic information, supported

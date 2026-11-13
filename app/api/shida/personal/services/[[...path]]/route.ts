@@ -40,7 +40,8 @@ async function handle(request:Request,context:Context){
  const token=(await cookies()).get(PERSONAL_SESSION_COOKIE)?.value;
  if(!token||!/^[A-Za-z0-9_-]{20,256}$/.test(token)||request.headers.get("X-Shida-Session")!==personalSessionBinding(token))return fail(401);
  let body:string|undefined;
- const bodyLimit=parts[0]==="transactions"&&parts[1]==="competition"?65536:10000;
+ const documentWrite=parts[0]==="transactions"&&(parts[1]==="templates"||parts[1]==="quotes"||parts[1]==="requests"&&parts[3]==="quotes"||parts[1]==="reservations"&&parts[3]==="bills");
+ const bodyLimit=documentWrite?131072:parts[0]==="transactions"&&parts[1]==="competition"?65536:10000;
  if(request.method!=="GET"){
   if(!request.headers.get("content-type")?.startsWith("application/json"))return fail(415);
   if(Number(request.headers.get("content-length"))>bodyLimit)return fail(413);

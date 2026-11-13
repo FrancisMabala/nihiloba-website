@@ -82,6 +82,7 @@ function Today({base,binding,locale,onOpen,onAll,onDenied,actions,offerings=[],c
    </section>}
    {showCalendar&&<section className="svc-daily-panel svc-daily-schedule"><header><h3>{t.schedule}</h3><button onClick={()=>navigate("calendar")}>{ui.calendar} →</button></header>{state(calendar)}{calendar.value&&<>{calendar.value.items.length===0?<p className="svc-daily-empty">{t.noSchedule}</p>:<ol>{calendar.value.items.map(item=><li key={item.reference}><time dateTime={item.startsAt}>{new Intl.DateTimeFormat(locale,{hour:"numeric",minute:"2-digit",timeZone:SERVICE_TIME_ZONE}).format(new Date(item.startsAt))}</time><button onClick={()=>onOpen({kind:"reservations",ref:item.reference})}><strong>{item.title}</strong><small>{status(item.status)}</small></button></li>)}</ol>}{calendar.value.more&&<p className="svc-daily-note">{t.limited}</p>}</>}</section>}
   </div>
+  {capabilities.includes("profile")&&<button type="button" onClick={()=>navigate("share")}>{{fr:"Partager mon profil",en:"Share my profile",ln:"Kabola profil na ngai",sw:"Shiriki wasifu wangu"}[locale]}</button>}
   {actions}
  </section>;
 }

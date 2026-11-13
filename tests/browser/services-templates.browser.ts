@@ -1,4 +1,5 @@
-import {templateDesign} from "../../app/lib/services-template-design";
+import {docWords} from "../../app/lib/service-document";
+import {workText} from "../../app/lib/services-work-copy";
 import {requestWords} from "../../app/lib/services-request-copy";
 import {providerCopy} from "../../app/lib/services-provider-copy";
 import {test,expect} from '@playwright/test';
@@ -22,9 +23,10 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  const receipts=new Map<string,Record<string,unknown>>();
  let failLoad=true,lostSave=true;
  await page.route('**/api/shida/**',async route=>{
-  const req=route.request(),path=new URL(req.url()).pathname,tx=path.split('/transactions/')[1];
-  if(path.endsWith('/employment/session/'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Provider'}}});
+  const req=route.request(),path=new URL(req.url()).pathname.replace(/\/$/,''),tx=path.split('/transactions/')[1];
+  if(path.endsWith('/employment/session'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Provider'}}});
   if(path.endsWith('/services/capabilities'))return route.fulfill({json:{bundle:'personal_pro',access_policy:'pilot',purchase_required:false,capabilities:['profile','packages','requests_quotes','reservations','messages','quote_templates','bill_templates','bills']}});
+  if(path.endsWith('/services/onboarding'))return route.fulfill({json:{progress:[],remaining_capacity:4,professional_profile:{public_ref:'SVI_one',revision:1,name:'Provider'}}});
   if(!tx){if(path.endsWith('/reviews'))return route.fulfill({json:{reviews:[]}});if(path.endsWith('/services'))return route.fulfill({json:{profiles:[offering]}});return route.fulfill({status:404,json:{detail:'unavailable'}});}
   if(tx==='bill-presentation'){if(req.method()==='PATCH'){const body=req.postDataJSON() as {display_name:string;accent:string};presentation={display_name:body.display_name,accent:body.accent,revision:presentation.revision+1,fallback_display_name:'Provider',preview:{display_name:body.display_name,accent:body.accent}};}return route.fulfill({json:presentation});}
   if(tx==='templates'&&req.method()==='GET'&&new URL(req.url()).searchParams.get('kind')==='quote'&&failLoad){failLoad=false;return route.fulfill({status:503,json:{}});}
@@ -43,20 +45,18 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
   return route.fulfill({json:responses[tx]??{}});
  });
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=settings`);
- const branding=page.locator('.svc-branding');await branding.getByLabel(brand[locale].name).fill('Studio Kivu');await branding.getByRole('button',{name:brand[locale].save}).click();await expect(branding.getByText('Studio Kivu')).toBeVisible();
- if(width<=760)await page.getByRole("navigation",{name:providerCopy[locale].navigation}).getByRole("button",{name:providerCopy[locale].tools,exact:true}).click();
- await page.getByRole("navigation",{name:providerCopy[locale].navigation}).getByRole("button",{name:providerCopy[locale].templates,exact:true}).click();
+ const branding=page.locator('.svc-branding');await branding.getByLabel(brand[locale].name).fill('Studio Kivu');await branding.getByRole('button',{name:brand[locale].save}).click();await expect(branding.locator('.svc-document-pages')).toContainText('Studio Kivu');
+ await page.goto((locale==='en'?'':'/'+locale)+'/shida/seller/services?view=templates');
  const quotes=page.getByRole('region',{name:t.quote,exact:true});
- const next=(panel:typeof quotes)=>panel.getByRole('button',{name:new RegExp(`^${templateDesign[locale].next}`)}).click();
  await quotes.getByRole('button',{name:common.retry,exact:true}).click();
- await quotes.getByRole('button',{name:t.new}).click();await quotes.getByLabel(t.name).fill('Standard repair');await next(quotes);await quotes.getByLabel(t.amount).fill('80,00');await next(quotes);await next(quotes);await quotes.getByRole('button',{name:t.save}).click();await expect(quotes.getByText(common.uncertain,{exact:true})).toBeVisible();
+ await quotes.locator('.svc-template-toolbar button').click();await quotes.getByLabel(t.name).fill('Standard repair');await quotes.getByLabel(docWords(locale).amount,{exact:true}).fill('80,00');await quotes.getByRole('button',{name:t.save}).click();await expect(quotes.getByText(common.uncertain,{exact:true})).toBeVisible();
  await expect(quotes.getByRole('button',{name:t.save,exact:true})).toBeDisabled();
  await quotes.getByRole('button',{name:common.retry,exact:true}).click();
  await expect(quotes.getByText('Standard repair')).toBeVisible();
  expect(attempts).toHaveLength(2);expect(attempts[0]).toBe(attempts[1]);
- await page.getByRole('button',{name:templateDesign[locale].bills,exact:true}).click();const bills=page.getByRole('region',{name:t.bill});await bills.getByRole('button',{name:t.new}).click();await bills.getByLabel(t.name).fill('Standard bill');await next(bills);await bills.getByRole('textbox').nth(0).fill('Agreed work');await bills.getByLabel(t.amount).fill('80.00');await next(bills);await next(bills);await bills.getByRole('button',{name:t.save}).click();await expect(bills.getByText('Standard bill')).toBeVisible();
+ await page.getByRole('button',{name:docWords(locale).bills,exact:true}).click();const bills=page.getByRole('region',{name:t.bill});await bills.locator('.svc-template-toolbar button').click();await bills.getByLabel(t.name).fill('Standard bill');await bills.getByLabel(docWords(locale).billDescription).fill('Agreed work');await bills.getByLabel(docWords(locale).amount,{exact:true}).fill('80.00');await bills.getByRole('button',{name:t.save}).click();await expect(bills.getByText('Standard bill')).toBeVisible();
  await page.getByRole("navigation",{name:providerCopy[locale].navigation}).getByRole("button",{name:providerCopy[locale].work,exact:true}).click();
- const workspace=page.getByRole('region',{name:servicesText(locale,'workspace')});await workspace.getByRole('button',{name:/Repairs/}).click();const quotePicker=workspace.getByLabel(t.choose).first();await quotePicker.selectOption('SDT_1');await workspace.getByRole('button',{name:t.apply}).first().click();await expect(workspace.getByText('80.00 USD').first()).toBeVisible();
- await workspace.getByRole('button',{name:servicesText(locale,'reservations'),exact:true}).click();await workspace.getByRole('button',{name:/Repairs/}).click();const billPicker=workspace.getByLabel(t.choose).last();await billPicker.selectOption('SDT_2');await workspace.getByRole('button',{name:t.apply}).last().click();await workspace.locator("summary").filter({hasText:({en:"Bill history",fr:"Historique des factures",ln:"Lisolo ya ba facture",sw:"Historia ya bili"} as const)[locale]}).click();await expect(workspace.getByText(/80.00 USD/).last()).toBeVisible();
+ const workspace=page.getByRole('region',{name:servicesText(locale,'workspace')});await workspace.getByRole('row').filter({hasText:'Repairs'}).getByRole('button').click();const quotePicker=workspace.getByLabel(locale==='fr'?'Partir d’un modèle':t.choose).first();await quotePicker.selectOption('SDT_1');await workspace.getByRole('button',{name:t.apply}).first().click();await expect(workspace.getByText('80.00 USD').first()).toBeVisible();
+ await workspace.locator('.svc-work-detail > button').first().click();await workspace.getByRole('button',{name:workText(locale,'missions'),exact:true}).click();await workspace.getByRole('row').filter({hasText:'Repairs'}).getByRole('button').click();const billPicker=workspace.getByLabel(locale==='fr'?'Partir d’un modèle':t.choose).last();await billPicker.selectOption('SDT_2');await workspace.getByRole('button',{name:t.apply}).last().click();await workspace.locator("summary").filter({hasText:({en:"Bill history",fr:"Historique des factures",ln:"Lisolo ya ba facture",sw:"Historia ya bili"} as const)[locale]}).click();await expect(workspace.getByText(/80.00 USD/).last()).toBeVisible();
  expect(unexpectedDialogs).toEqual([]);expect(writes).toEqual(['templates','templates','templates/SDT_1/apply','templates/SDT_2/apply']);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

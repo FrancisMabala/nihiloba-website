@@ -45,6 +45,6 @@ globalThis.fetch=async(input,init)=>{
  if(path.endsWith("/availability"))return Response.json({service_ref:service.public_ref,availability_mode:"flexible",requested_time_requires_provider_confirmation:true,from:"2026-10-16",to:"2026-11-16",slots:[],booking_url:null});
  if(path.endsWith('/reviewed-service/reviews'))return Response.json({items:[{rating:5,comment:'A clear and helpful consultation. Controlled review fixture.',reviewer_display:'verified_customer',created_at:'2026-10-20'}],count:1,total:1,page:1,page_size:10});
  if(path.endsWith("/reviews"))return Response.json({items:[],count:0,total:0,page:1,page_size:10});
- if(path.startsWith("/api/public/shida/services/")){const item=items.find(row=>path.endsWith('/'+row.slug));return item?Response.json({...item,description:item.short_description,offerings:[],images:[],social_link:null,completion_mode:null,availability_endpoint:path+"/availability"}):Response.json({detail:"missing"},{status:404});}
+ if(path.startsWith("/api/public/shida/services/")){const item=items.find(row=>path.endsWith('/'+row.slug)||path.endsWith('/'+row.public_ref));return item?Response.json({...item,description:item.short_description,offerings:[],images:[],social_link:null,completion_mode:null,availability_endpoint:path+"/availability"}):Response.json({detail:"missing"},{status:404});}
  return Response.json({detail:"fixture_unavailable"},{status:401});
 };

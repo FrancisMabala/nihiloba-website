@@ -5,9 +5,11 @@ import {useCallback,useEffect,useRef,useState} from "react";
 import {requestWords} from "../../lib/services-request-copy";
 import {serviceAmount} from "../../lib/service-time";
 import {templateDesign as design} from "../../lib/services-template-design";
-import {serviceCategoryExperience} from "../../lib/services-category-experience";
+import {docWords,itemTotal,lineAmount,type DocumentFields} from "../../lib/service-document";
+import {DocumentEditor} from "./service-document-editor";
+import type {OfferTerms} from "../../lib/service-catalog";
 import "./services-template-library.css";
-import {leaveWork,useWorkDraft} from "../../lib/restaurant-work";
+import {useWorkDraft} from "../../lib/restaurant-work";
 
 type Locale="fr"|"en"|"ln"|"sw";
 type Kind="quote"|"bill";
@@ -48,31 +50,40 @@ function useTemplates(base:string,binding:string,kind:Kind){
  return {rows,error,loading,denied,call,reload};
 }
 
-type Offering={public_ref:string;service_name:string;category:string;description:string|null;service_duration_minutes:number|null;is_active:string;packages:{public_ref:string;name:string;description:string|null;price:string|null;currency:string|null;duration_minutes:number}[]};
-type LibraryProps={base:string;binding:string;locale:Locale;kind:Kind;offerings?:Offering[];onUse?:()=>void};
-export function ServicesTemplates({quoteAllowed,billAllowed,...props}:Omit<LibraryProps,"kind">&{quoteAllowed:boolean;billAllowed:boolean}){
- const [kind,setKind]=useState<Kind>(quoteAllowed?"quote":"bill");const d=design[props.locale];const selectedKind=kind==="quote"?quoteAllowed?"quote":"bill":billAllowed?"bill":"quote";
- if(!quoteAllowed&&!billAllowed)return null;
- return <div className="svc-templates"><nav className="svc-template-tabs" aria-label={d.title}>{(["quote","bill"] as const).filter(k=>k==="quote"?quoteAllowed:billAllowed).map(k=><button type="button" key={k} aria-pressed={selectedKind===k} onClick={async ()=>{if((await leaveWork()))setKind(k);}}>{k==="quote"?d.quotes:d.bills}</button>)}</nav><ServicesTemplateLibrary {...props} kind={selectedKind}/></div>;
-}
+type Offering={name?:string;offer_terms?:OfferTerms;public_ref:string;service_name:string;category:string;description:string|null;service_duration_minutes:number|null;is_active:string;packages:{public_ref:string;name:string;description:string|null;price:string|null;currency:string|null;duration_minutes:number}[]};
+type LibraryProps={base:string;binding:string;locale:Locale;kind:Kind;issuer?:string;accent?:string;offerings?:Offering[];onUse?:()=>void};
 type Pending={path:string;method:string;body:Record<string,unknown>;archive:boolean};
 export function ServicesTemplateLibrary(props:LibraryProps){
  return <TemplateLibrary key={`${props.base}:${props.binding}:${props.kind}`} {...props}/>;
 }
-function TemplateLibrary({base,binding,locale,kind,offerings=[],onUse}:LibraryProps){
+function TemplateLibrary({base,binding,locale,kind,issuer,accent,offerings=[],onUse}:LibraryProps){
  const {request:ask,confirmation}=useConfirmation(locale);
  const leave=leaveFormConfirmation[locale];
- const d=design[locale];const [terms,setTerms]=useState("");const [step,setStep]=useState(0),[source,setSource]=useState("");const sourceService=offerings.find(row=>row.public_ref===source);const category=serviceCategoryExperience(sourceService?.category,locale);
+ const d=design[locale],w=docWords(locale);
+ const [document,setDocument]=useState<DocumentFields>({}),[source,setSource]=useState("");
+ const sourceService=offerings.find(row=>row.public_ref===source);
  const t=copy[locale],common=requestWords(locale),{rows,error,loading,denied,call,reload}=useTemplates(base,binding,kind);
- const [selected,setSelected]=useState<Template|null>(null),[name,setName]=useState(""),[amount,setAmount]=useState(""),[currency,setCurrency]=useState("USD"),[description,setDescription]=useState(""),[duration,setDuration]=useState(""),[lines,setLines]=useState<Line[]>([emptyLine()]);
+ const [selected,setSelected]=useState<Template|null>(null),[name,setName]=useState(""),[amount,setAmount]=useState(""),[currency,setCurrency]=useState("USD"),[duration,setDuration]=useState("");
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(""),[pending,setPending]=useState<Pending|null>(null);
  const form=useRef<HTMLFormElement>(null);
  const locked=useRef(false),alive=useRef(true);
- useEffect(()=>{if(selected)form.current?.querySelector<HTMLElement>("h3")?.focus();},[step,selected]);
+ useEffect(()=>{if(selected)form.current?.querySelector<HTMLElement>("h3")?.focus();},[selected]);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  useWorkDraft(!denied&&(!!selected||!!pending),common.leave,locale);
- function begin(row?:Template){if(busy||pending)return;setSelected(row??{template_ref:"",kind,name:"",content:{},revision:0,archived:false});setName(row?.name??"");setAmount(String(row?.content.amount??""));setCurrency(String(row?.content.currency??"USD"));setDescription(String(row?.content.pricing_description??""));setDuration(String(row?.content.duration_minutes??""));setLines(row?asLines(row.content.lines):[emptyLine()]);setNotice("");setTerms(String(row?.content.terms??""));setStep(0);setSource("");}
- function content(){return kind==="quote"?{...(amount?{amount:serviceAmount(amount)}:{}),currency,...(terms?{terms}:{}),...(description?{pricing_description:description}:{}),...(duration?{duration_minutes:Number(duration)}:{})}:{currency,lines:lines.map(line=>({label:line.label,amount:serviceAmount(line.amount),private_detail:line.private_detail||null}))};}
+ function begin(row?:Template){if(busy||pending)return;setSelected(row??{template_ref:"",kind,name:"",content:{},revision:0,archived:false});setName(row?.name??"");setAmount(String(row?.content.amount??""));setCurrency(String(row?.content.currency??"USD"));setDuration(String(row?.content.duration_minutes??""));
+  const saved=(row?.content.document??{}) as DocumentFields;
+  const legacy=Array.isArray(row?.content.lines)?asLines(row.content.lines):[];
+  const items=saved.items??legacy.map(i=>({label:i.label,quantity:1,unit_price:i.amount}));
+  setDocument({...saved,items,description:saved.description??String(row?.content.pricing_description??""),conditions:saved.conditions??String(row?.content.terms??"")});
+  if(items.length)setAmount(itemTotal(items));setNotice("");setSource("");}
+ function content(){
+  const items=document.items??[],normal={...document,items:items.map(i=>({...i,unit_price:serviceAmount(i.unit_price)}))};
+  const price=serviceAmount(items.length?itemTotal(items):amount);
+  if(kind==="quote")return {document:normal,amount:price,currency,...(document.description?{pricing_description:document.description.slice(0,2000)}:{}),...(document.conditions?{terms:document.conditions.slice(0,2000)}:{}),...(duration?{duration_minutes:Number(duration)}:{})};
+  const previous=asLines(selected?.content.lines);
+  const lines=items.length?items.map(i=>({label:i.label,amount:lineAmount(i),private_detail:previous.find(p=>p.label===i.label)?.private_detail||null})):[{label:document.subject||name,amount:price}];
+  return {document:normal,currency,lines};
+ }
  async function run(command:Pending,propagate=false){
   if(locked.current||denied){if(propagate)throw new Error("unavailable");return;}
   if(!navigator.onLine){setNotice(common.offline);if(propagate)throw new Error("offline");return;}
@@ -98,23 +109,22 @@ function TemplateLibrary({base,binding,locale,kind,offerings=[],onUse}:LibraryPr
  if(denied)return <p role="alert">{recovery[locale].denied}</p>;
  function seed(ref:string){
   setSource(ref);const service=offerings.find(row=>row.public_ref===ref);if(!service)return;
-  setName(service.service_name);setDescription((service.description??"").slice(0,2000));setDuration(service.service_duration_minutes?String(service.service_duration_minutes):"");
+  setName(service.service_name);setDocument({subject:service.service_name,description:service.description||""});setDuration(String(service.service_duration_minutes||""));
+  const price=service.offer_terms?.pricing;setAmount(price?.amount??"");if(price?.currency)setCurrency(price.currency);
  }
- function seedPackage(ref:string){const item=sourceService?.packages.find(row=>row.public_ref===ref);if(!item)return;setAmount(item.price??"");if(item.currency)setCurrency(item.currency);setDuration(String(item.duration_minutes));setDescription((item.description||item.name).slice(0,2000));if(kind==="bill")setLines([{label:item.name.slice(0,120),amount:item.price??"",private_detail:""}]);}
- const steps=[d.basics,kind==="bill"?t.lines:d.pricing,d.conditions,d.preview];
+ function seedPackage(ref:string){const p=sourceService?.packages.find(item=>item.public_ref===ref);if(!p)return;setDocument({subject:p.name,description:p.description||p.name,items:[{label:p.name,quantity:1,unit_price:p.price??""}]});setAmount(p.price??"");if(p.currency)setCurrency(p.currency);setDuration(String(p.duration_minutes));}
  return <section className="svc-template-library" aria-label={kind==="quote"?t.quote:t.bill}>{confirmation}
-  <header className="svc-template-toolbar"><div><h2>{selected?(selected.template_ref?t.edit:t.new):(kind==="quote"?d.quotes:d.bills)}</h2><p>{d.reusable}</p></div>{!selected&&<button className="svc-primary" disabled={busy||!!pending||loading||!!error} type="button" onClick={()=>begin()}>＋ {t.new}</button>}</header>
+  <header className="svc-template-toolbar"><div><h2>{selected?(kind==="quote"?w.editQuote:w.editBill):(kind==="quote"?w.quotes:w.bills)}</h2><p>{d.reusable}</p></div>{!selected&&<button className="svc-primary" disabled={busy||!!pending||loading||!!error} type="button" onClick={()=>begin()}>＋ {locale==="fr"?(kind==="quote"?"Créer un modèle de devis":"Créer un modèle de facture"):t.new+" · "+w[kind]}</button>}</header>
   {loading&&<p role="status">{common.loading}</p>}{error&&<p role="alert">{t.failed}</p>}{notice&&<p className="svc-notice" role="status">{notice}</p>}
   {error&&<button disabled={busy||!!pending} onClick={()=>void reload()}>{common.retry}</button>}{pending&&!busy&&<button onClick={()=>void run(pending)}>{common.retry}</button>}
   {!selected&&<>{!loading&&!error&&rows.length===0&&<div className="svc-template-empty"><span aria-hidden="true">▤</span><h3>{t.empty}</h3><p>{d.empty}</p></div>}<div className="svc-template-list">{rows.map(row=><article key={row.template_ref}><span className="svc-template-icon" aria-hidden="true">▤</span><div><h3>{row.name}</h3><p>{String(row.content.pricing_description??(kind==="bill"?d.itemized:d.pricing))}</p><span className="svc-template-chip">{String(row.content.currency??"—")}</span>{row.updated_at&&!Number.isNaN(Date.parse(row.updated_at))&&<time dateTime={row.updated_at} className="svc-template-date">{new Intl.DateTimeFormat(locale,{dateStyle:"medium"}).format(new Date(row.updated_at))}</time>}{row.archived&&<span className="svc-template-chip">{t.archived}</span>}</div>{!row.archived&&<div className="svc-template-row-actions"><button disabled={busy||!!pending} type="button" onClick={()=>begin(row)}>{t.edit}</button><details><summary aria-label={`${d.actions}: ${row.name}`}>⋮</summary><div><button disabled={busy||!!pending} type="button" onClick={()=>begin({...row,template_ref:"",revision:0})}>{d.duplicate}</button><button disabled={busy||!!pending} type="button" onClick={()=>archive(row)}>{t.archive}</button></div></details></div>}</article>)}</div><aside className="svc-template-info"><strong>{d.about}</strong><p>{d.snapshot}</p>{onUse&&<button type="button" onClick={onUse}>{d.useHelp} →</button>}</aside></>}
-  {selected&&<form ref={form} onSubmit={event=>{if(step<3){event.preventDefault();setStep(step+1);}else save(event);}}>
-   <ol className="svc-template-steps" aria-label={d.editor}>{steps.map((label,index)=><li key={label} aria-current={step===index?"step":undefined}><span>{index+1}</span>{label}</li>)}</ol>
-   <fieldset disabled={busy||!!pending} className="svc-template-fields">
-   {step===0&&<><h3 tabIndex={-1}>{d.basics}</h3><label>{t.name}<input autoFocus required maxLength={100} value={name} onChange={event=>setName(event.target.value)}/></label><label>{d.source}<select value={source} onChange={event=>seed(event.target.value)}><option value="">{d.general}</option>{offerings.filter(row=>row.is_active==="yes").map(row=><option key={row.public_ref} value={row.public_ref}>{row.service_name}</option>)}</select></label><p className="svc-template-hint">{d.sourceHelp}</p>{category&&<aside className="svc-template-category"><strong>{category.service}</strong><p>{category.description}</p></aside>}<label>{t.currency}<select value={currency} onChange={event=>setCurrency(event.target.value)}><option>USD</option><option>CDF</option></select></label></>}
-   {step===1&&<><h3 tabIndex={-1}>{steps[1]}</h3>{sourceService&&sourceService.packages.length>0&&<label>{d.package}<select defaultValue="" onChange={event=>seedPackage(event.target.value)}><option value="">{d.choosePackage}</option>{sourceService.packages.map(item=><option key={item.public_ref} value={item.public_ref}>{item.name}{item.price!==null?` · ${item.price} ${item.currency??""}`:""}</option>)}</select></label>}{kind==="quote"?<><p className="svc-template-hint">{d.quoteHelp}</p><label>{t.amount}<input autoFocus inputMode="decimal" value={amount} onChange={event=>setAmount(event.target.value)}/></label><label>{t.description}<textarea rows={4} maxLength={2000} value={description} onChange={event=>setDescription(event.target.value)}/></label><label>{t.duration}<input type="number" min={1} value={duration} onChange={event=>setDuration(event.target.value)}/></label></>:<>{lines.map((line,index)=><div className="svc-template-line" key={index}><label>{t.label}<input required value={line.label} maxLength={120} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,label:event.target.value}:item))}/></label><label>{t.amount}<input required inputMode="decimal" value={line.amount} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,amount:event.target.value}:item))}/></label><label>{t.detail}<input value={line.private_detail} maxLength={500} onChange={event=>setLines(old=>old.map((item,i)=>i===index?{...item,private_detail:event.target.value}:item))}/></label><button type="button" disabled={lines.length===1} onClick={()=>setLines(old=>old.filter((_,i)=>i!==index))}>{t.remove}</button></div>)}<button type="button" onClick={()=>setLines(old=>[...old,emptyLine()])}>＋ {t.add}</button></>}</>}
-   {step===2&&<><h3 tabIndex={-1}>{d.conditions}</h3>{kind==="quote"?<label>{d.conditions}<textarea autoFocus rows={8} maxLength={2000} value={terms} onChange={event=>setTerms(event.target.value)}/></label>:<p>{d.billConditions}</p>}<aside className="svc-template-info">{t.review}</aside></>}
-   {step===3&&<div className="svc-template-review"><span className="svc-template-chip">{d.previewOnly}</span><h3 tabIndex={-1}>{name}</h3><p>{currency}</p>{kind==="quote"?<><strong>{amount||"—"} {amount?currency:""}</strong><p>{description||"—"}</p>{terms&&<><h4>{d.conditions}</h4><p>{terms}</p></>}{duration&&<p>{t.duration}: {duration}</p>}</>:<ul>{lines.map((line,index)=><li key={index}><span>{line.label}</span><strong>{line.amount} {currency}</strong>{line.private_detail&&<small>{t.detail}: {line.private_detail}</small>}</li>)}</ul>}<p>{d.snapshot}</p></div>}
-   <footer className="svc-template-footer"><button type="button" onClick={()=>{if(step>0)setStep(step-1);else ask({title:leave.title,description:leave.description,confirmLabel:leave.action,severity:"warning",onConfirm:()=>setSelected(null)});}}>{step>0?d.back:t.cancel}</button><button className="svc-primary" disabled={busy} type="submit">{step===3?t.save:d.next} {step<3?"→":""}</button></footer>
+  {selected&&<form ref={form} onSubmit={save}><fieldset disabled={busy||!!pending} className="svc-doc-container">
+    <DocumentEditor locale={locale} change={setDocument} amount={setAmount} currency={setCurrency} paper={{kind,issuer:issuer||offerings[0]?.name||w[kind],accent,client:w.sample,state:w.sample,document,currency,amount}}>
+     <label>{t.name}<input required maxLength={100} value={name} onChange={e=>setName(e.target.value)}/></label>
+     <label>{d.source}<select value={source} onChange={e=>seed(e.target.value)}><option value="">{d.general}</option>{offerings.filter(r=>r.is_active==="yes").map(r=><option key={r.public_ref} value={r.public_ref}>{r.service_name}</option>)}</select></label>
+     {!!sourceService?.packages.length&&<label>{d.package}<select defaultValue="" onChange={e=>seedPackage(e.target.value)}><option value="">{d.choosePackage}</option>{sourceService.packages.map(p=><option value={p.public_ref} key={p.public_ref}>{p.name}</option>)}</select></label>}
+     {kind==="quote"&&<label>{t.duration}<input type="number" min={1} value={duration} onChange={e=>setDuration(e.target.value)}/></label>}
+    </DocumentEditor><footer className="svc-doc-footer"><button type="button" onClick={()=>ask({title:leave.title,description:leave.description,confirmLabel:leave.action,severity:"warning",onConfirm:()=>setSelected(null)})}>{t.cancel}</button><button className="svc-primary" type="submit">{t.save}</button></footer>
    </fieldset></form>}
  </section>;
 }
@@ -149,6 +159,6 @@ function TemplatePicker({base,binding,locale,kind,targetRef,targetRevision,draft
  if(denied)return <p role="alert">{recovery[locale].denied}</p>;
  return <div style={{border:"1px solid #cbd5e1",borderRadius:8,padding:".8rem",margin:".8rem 0"}}><p>{t.review}</p>
   {loading&&<p role="status">{common.loading}</p>}{error&&<><p role="status">{t.failed}</p><button disabled={busy||!!pending} onClick={()=>void reload()}>{common.retry}</button></>}
-  <label>{t.choose}<select disabled={busy||!!pending||loading||!!error} value={selected} onChange={event=>setSelected(event.target.value)} style={{display:"block",width:"100%",padding:8}}><option value=""></option>{rows.filter(row=>!row.archived).map(row=><option key={row.template_ref} value={row.template_ref}>{row.name}</option>)}</select></label>
+  <label>{locale==="fr"?"Partir d’un modèle":t.choose}<select disabled={busy||!!pending||loading||!!error} value={selected} onChange={event=>setSelected(event.target.value)} style={{display:"block",width:"100%",padding:8}}><option value=""></option>{rows.filter(row=>!row.archived).map(row=><option key={row.template_ref} value={row.template_ref}>{row.name}</option>)}</select></label>
   <button type="button" disabled={busy||(!pending&&(!current||loading||!!error))} onClick={()=>void apply()}>{pending?common.retry:t.apply}</button>{notice&&<p role="status">{notice}</p>}</div>;
 }
