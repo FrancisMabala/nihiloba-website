@@ -46,7 +46,7 @@ for(const width of [360,390,768,1024,1440])test(`employment discovery and detail
  await expect(opener).toBeFocused();
  await signInReader(page);
  await opener.click();
- await expect(page.locator('.job-detail-highlights')).toContainText('20 USD / intervention');
+ await expect(page.locator('.job-other-facts')).toContainText('20 USD / intervention');
  await expect(page.getByRole('link',{name:'Continue in WhatsApp'})).toHaveAttribute('href',/^https:\/\/wa.me\//);
  await expect(page.locator('.job-application-panel')).toContainText('does not submit an application');
  await expect(page.locator('.job-my-applications')).toHaveAttribute('href','/shida/space/?view=job-search&section=applications');
@@ -84,11 +84,18 @@ test('recruitment contact stays private until a signed-in candidate applies', as
  await page.goto('/shida/emplois/JOB_contact');
  const apply=page.getByRole('button',{name:'Apply with the recruiter'});
  await expect(apply).toBeVisible();
+ const instructions=page.locator('section').filter({has:page.getByRole('heading',{name:'How to apply',exact:true})}).locator('.offer-formatted-text').last();
+ await expect(instructions.locator('ol li')).toHaveCount(2);
+ await expect(instructions.locator('strong')).toHaveText('Indiquez le poste dans l’objet.');
+ await expect(instructions.locator('p')).toHaveText('Écrivez à jobs@example.org ou appelez le +243 810 123 456.');
+ await expect(page.locator('.job-offer-facts')).toContainText('Kinshasa, Beni, Goma');
+ await expect(page.locator('.job-offer-facts dd').filter({hasText:/^CDI$/})).toHaveCount(1);
  await expect(page.locator('a[href="mailto:apply@example.org"]')).toHaveCount(0);
  expect(reveals).toBe(0);
  await apply.click();
  await expect(page.getByRole('link',{name:/Send an email/})).toHaveAttribute('href','mailto:apply@example.org');
  await expect(page.getByRole('link',{name:/Call.*243812345678/})).toHaveAttribute('href','tel:+243812345678');
+ await expect(instructions).toBeVisible();
  expect(reveals).toBe(1);
  await page.evaluate(() => window.dispatchEvent(new Event('shida-personal-session-changed')));
  await expect(page.locator('a[href="mailto:apply@example.org"], a[href="tel:+243812345678"]')).toHaveCount(0);

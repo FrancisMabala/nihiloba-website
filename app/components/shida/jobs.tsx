@@ -37,14 +37,14 @@ function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
       <details open={Boolean(search.area||search.commune||search.contract)||undefined}>
         <summary>{t.filters}</summary>
         <div className="jobs-search-advanced">
-          <label>{t.contract}<select name="contract" defaultValue={search.contract?.toLowerCase()||""}><option value="">—</option>{Array.from(new Set(["cdi","cdd","stage",...(search.contract?[search.contract.toLowerCase()]:[])])).map(key=><option key={key} value={key}>{contractLabel(key)}</option>)}</select></label>
+          <label>{t.contract}<select name="contract" defaultValue={search.contract?.toLowerCase()||""}><option value="">—</option>{Array.from(new Set(["cdi","cdd","stage",...(search.contract?[search.contract.toLowerCase()]:[])])).map(key=><option key={key} value={key}>{contractLabel(key,locale)}</option>)}</select></label>
           <label>{t.area}<input name="area" defaultValue={search.area} maxLength={120}/></label>
           <label>{t.commune}<input name="commune" defaultValue={search.commune} maxLength={120}/></label>
         </div>
       </details>
 
     </div>
-  <ActiveSearchFilters locale={locale} path={marketplacePath(locale,"/shida/emplois")} query={jobSearchQuery(search)} values={{contract: search.contract ? {[search.contract]:contractLabel(search.contract)||search.contract} : {}}} labels={{contract:t.contract,query:t.search,city:t.city,area:t.area,commune:t.commune,category:jobDiscoveryCopy[locale].categories}}/>
+  <ActiveSearchFilters locale={locale} path={marketplacePath(locale,"/shida/emplois")} query={jobSearchQuery(search)} values={{contract: search.contract ? {[search.contract]:contractLabel(search.contract,locale)||search.contract} : {}}} labels={{contract:t.contract,query:t.search,city:t.city,area:t.area,commune:t.commune,category:jobDiscoveryCopy[locale].categories}}/>
   </form>;
 }
 function JobPagination({locale,search,collection}:{locale:Locale;search:JobSearch;collection:JobCollection}){const t=copy[locale],p=collection.pagination;if(p.total_pages<=1)return null;return <nav className="marketplace-pagination" aria-label={`${t.page} ${p.page} ${t.of} ${p.total_pages}`}><span>{p.page>1?<Link href={pageHref(locale,search,p.page-1)}>{t.previous}</Link>:t.previous}</span><span>{t.page} {p.page} {t.of} {p.total_pages}</span><span>{p.page<p.total_pages?<Link href={pageHref(locale,search,p.page+1)}>{t.next}</Link>:t.next}</span></nav>;}

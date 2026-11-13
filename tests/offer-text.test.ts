@@ -23,3 +23,9 @@ it('uses explicit markers for numbered and pasted bullet lists and preserves bla
   expect(render('Une\n\nDeux')).toContain('<p>Une</p><p>Deux</p>');
   expect(plainOfferText('### Titre\n- **Gestion** _quotidienne_')).toBe('Titre\nGestion quotidienne');
 });
+
+it('preserves literal email characters alongside formatted application instructions',()=>{
+  const text='Écrivez à recrutement_rdc_est@example.org et indiquez **votre ville**.';
+  expect(render(text)).toContain('recrutement_rdc_est@example.org et indiquez <strong>votre ville</strong>');
+  expect(plainOfferText(text)).toContain('recrutement_rdc_est@example.org');
+});

@@ -221,3 +221,9 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
 .job-access-close{position:absolute;top:10px;right:10px;border:0;background:transparent;color:inherit;font-size:1.6rem;width:44px;height:44px;cursor:pointer}
 .job-access-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
 @media(max-width:480px){.job-access-actions{flex-direction:column}.job-access-actions>*{width:100%}}
+
+.job-offer-facts {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:1rem;margin:1rem 0;padding:1rem;border:1px solid var(--border,#d8d6c9);border-radius:.65rem}
+.job-offer-facts dt,.job-other-facts dt {font-size:.86rem}
+.job-offer-facts dd,.job-other-facts dd {margin:.2rem 0 0;font-weight:650;overflow-wrap:anywhere}
+.job-other-facts {display:flex;flex-wrap:wrap;gap:1rem 2rem}
+@media(max-width:600px){.job-offer-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}

@@ -26,7 +26,7 @@ function collection(items:unknown[]){return {items,pagination:{page:1,page_size:
 
 describe("Employment Batch 5B structured public frontend",()=>{
   it("displays legacy contract values consistently",()=>{
-    expect(["cdi","Cdi","CDI","cDd","CDD","stage"].map(contractLabel)).toEqual(["CDI","CDI","CDI","CDD","CDD","Stage"]);
+    expect(["cdi","Cdi","CDI","cDd","CDD","internship"].map(value => contractLabel(value,"fr"))).toEqual(["CDI","CDI","CDI","CDD","CDD","Stage"]);
   });
   it('does not invent missing compensation currency, period or amounts',()=>{
     const bare=renderToStaticMarkup(<JobCard locale="en" item={{...individual,salary:{minimum:'180',maximum:null,currency:null,period:null},compensation:null}}/>);
@@ -64,7 +64,7 @@ describe("Employment Batch 5B structured public frontend",()=>{
     expect(html).not.toContain("save_job_opaque");expect(html).not.toContain("follow_org_opaque");
   });
 
-  it("does not duplicate the localized deadline label when no date is provided",async()=>{vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({...detail,application_deadline:null,deadline_label:"Date limite : Non précisée"}))));const html=renderToStaticMarkup(await authenticatedDetail({locale:"fr",slug:"sans-date"}));expect(html).toContain("Date limite : Non précisée");expect(html).not.toContain("Date limite:</strong> Date limite");});
+  it("does not duplicate the localized deadline label when no date is provided",async()=>{vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({...detail,application_deadline:null,deadline_label:"Date limite : Non précisée"}))));const html=renderToStaticMarkup(await authenticatedDetail({locale:"fr",slug:"sans-date"}));expect(html).toContain("<dt>Date limite de candidature</dt><dd>Non précisée</dd>");expect(html).not.toContain("Aperçu de l’offre");});
 
   it("keeps redacted addresses private without displaying backend privacy markers",async()=>{const payload={...detail,workplace_reference:null,location:{...detail.location,city:null,area:"Bandal",commune:"Bandal",quartier:null,display:"Bandal, [private information hidden]"}};vi.stubGlobal("fetch",vi.fn().mockImplementation(()=>Promise.resolve(new Response(JSON.stringify(payload)))));const html=renderToStaticMarkup(await authenticatedDetail({locale:"en",slug:"private-location"})),metadata=JSON.stringify(await jobMetadata("en","private-location"));expect(html).toContain("Bandal");expect(html).not.toContain("private information hidden");expect(metadata).not.toContain("private information hidden");const french=renderToStaticMarkup(<JobCard item={{...individual,location:{...individual.location,display:"Bandal, [information privée masquée]"}}} locale="fr"/>);expect(french).toContain("Bandal");expect(french).not.toContain("information privée masquée");});
 

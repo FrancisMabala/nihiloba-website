@@ -2,14 +2,15 @@ import * as React from 'react';
 
 // offer-text-v1: mirrored in the public marketplace. Only these formatting
 // tokens are supported. HTML, images and links remain inert React text.
+const inlineTokens = /(\b[a-z\d][a-z\d._%+-]*@[a-z\d-]+(?:\.[a-z\d-]+)+)|\*\*([^*\n]+)\*\*|_([^_\n]+)_/gi;
+
 function inline(value: string, depth = 0): React.ReactNode[] {
   if (depth >= 4) return [value];
   const nodes: React.ReactNode[] = [];
-  const pattern = /\*\*([^*\n]+)\*\*|_([^_\n]+)_/g;
   let position = 0;
-  for (const match of value.matchAll(pattern)) {
+  for (const match of value.matchAll(inlineTokens)) {
     nodes.push(value.slice(position, match.index));
-    nodes.push(match[1] !== undefined ? <strong key={match.index}>{inline(match[1],depth+1)}</strong> : <em key={match.index}>{inline(match[2],depth+1)}</em>);
+    nodes.push(match[1] ?? (match[2] !== undefined ? <strong key={match.index}>{inline(match[2],depth+1)}</strong> : <em key={match.index}>{inline(match[3],depth+1)}</em>));
     position = match.index + match[0].length;
   }
   nodes.push(value.slice(position));
@@ -17,7 +18,7 @@ function inline(value: string, depth = 0): React.ReactNode[] {
 }
 
 export function plainOfferText(value: string): string {
-  return value.replace(/\*\*([^*\n]+)\*\*|_([^_\n]+)_/g, (_, bold, italic) => bold ?? italic)
+  return value.replace(inlineTokens, (_, email, bold, italic) => email ?? bold ?? italic)
     .replace(/^\s*###\s+/gm, '').replace(/^\s*(?:[-*•]|\d+[.)])\s+/gm, '');
 }
 

@@ -62,7 +62,7 @@ export function RecruitmentContact({locale, reference}: {locale: keyof typeof la
     }
   }
   if (contact) return <div className="job-external-action" role="status">
-    {contact.email && <p><a href={'mailto:'+encodeURIComponent(contact.email).replace('%40','@')}>{t.email} · {contact.email}</a></p>}
+    {contact.email && <div><p>{contact.email}</p><a className="button button-primary" href={'mailto:'+encodeURIComponent(contact.email).replace('%40','@')}>{t.email}</a></div>}
     {contact.phone && <p><a href={'tel:'+contact.phone}>{t.phone} · {contact.phone}</a></p>}
   </div>;
   if (phase === 'guest') return <div className="job-action-login"><p>{t.signIn}</p>
