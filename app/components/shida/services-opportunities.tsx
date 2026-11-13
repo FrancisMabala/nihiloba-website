@@ -1,7 +1,8 @@
 "use client";
+import {ServiceProviderSummary} from "./service-provider-summary";
 import {useEffect, useRef, useState} from "react";
 import type {PostedRequest, PrivateProposal, ProposalVersion, QuoteTerms} from "../../lib/services-request-browser";
-import {serviceCategoryExperience, type ServiceLocale} from "../../lib/services-category-experience";
+import {type ServiceLocale} from "../../lib/services-category-experience";
 import {requestWords} from "../../lib/services-request-copy";
 import {comparisonWords} from "../../lib/services-comparison-copy";
 import {opportunityWords} from "../../lib/services-opportunity-copy";
@@ -146,9 +147,7 @@ function Opportunities({base, binding, locale, services, mine, onDenied, initial
   }
   const date = (value?: string) => value ? `${dateText(value, locale, "Africa/Kinshasa")} · Kinshasa` : "—";
   function summary(row: PostedRequest) {
-    return <><h2>{serviceCategoryExperience(row.summary.category, locale)?.service}</h2><p>{row.summary.description}</p>
-      <p>{row.summary.commune || row.summary.city} · {row.summary.timing || row.summary.preferred_date}</p>
-      {row.summary.budget_amount && <p>{common.budget}: {row.summary.budget_amount} {row.summary.budget_currency}</p>}
+    return <><ServiceProviderSummary summary={row.summary} locale={locale}/>
       <p>{common.expires} {date(row.expires_at)}</p></>;
   }
   function terms(value: QuoteTerms) {

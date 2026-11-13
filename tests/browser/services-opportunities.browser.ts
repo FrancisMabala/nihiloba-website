@@ -25,6 +25,7 @@ test(`Provider private quotation review, exact retry and history ${locale}`, asy
     if (path.endsWith("/employment/session")) return route.fulfill({json:{binding:"a".repeat(64),user:{display_name:"Provider"}}});
     if (path.endsWith("/services/capabilities")) return route.fulfill({json:{capabilities:["profile","requests_quotes"],access_policy:"pilot"}});
     if (path.endsWith("/services")) return route.fulfill({json:{profiles:[offering]}});
+    if (path.endsWith("/services/onboarding")) return route.fulfill({json:{progress:[],remaining_capacity:4,professional_profile:{public_ref:offering.provider_ref,revision:1,name:offering.name}}});
     if (path.endsWith("/reviews")) return route.fulfill({json:{reviews:[]}});
     const action = path.split("/competition/")[1];
     if (action === "postings/available") return route.fulfill({json:{requests:[posted],next_cursor:null}});
@@ -47,6 +48,8 @@ test(`Provider private quotation review, exact retry and history ${locale}`, asy
   });
   await page.goto(`${locale==="en"?"":`/${locale}`}/shida/seller/services?view=available`);
   const panel = page.locator(".svc-request");
+  await expect(panel.locator(".svc-provider-summary")).toContainText("Clean two rooms");
+  await expect(panel.locator(".svc-provider-summary")).toContainText("Gombe");
   const support=requestSupportCopy(locale);
   await panel.getByText(support.report,{exact:true}).click();
   await expect(panel.getByLabel(support.reference,{exact:true})).toHaveValue("SPR_one");
@@ -55,9 +58,10 @@ test(`Provider private quotation review, exact retry and history ${locale}`, asy
   expect(saves).toHaveLength(0);expect(submits).toHaveLength(0);
   if(locale==="fr")await panel.screenshot({path:"test-results/services-request-report-fr.png"});
   await panel.getByRole("button", {name:t.prepare,exact:true}).click();
-  await page.locator(".rst-dropdown").first().locator("summary").click();
-  await expect(page.locator('a[hreflang="fr"]')).toHaveAttribute("href",/view=available.*request=SPR_one.*proposal=SPF_one/);
-  await page.locator(".rst-dropdown").first().locator("summary").click();
+  await expect(page).toHaveURL(url=>url.searchParams.get("view")==="available" && url.searchParams.get("request")==="SPR_one" && url.searchParams.get("proposal")==="SPF_one");
+  await page.locator(".wz-header button[aria-controls$='-languages']").click();
+  await expect(page.getByRole("button",{name:"Français",exact:true})).toBeVisible();
+  await page.locator(".wz-header button[aria-controls$='-languages']").click();
   await panel.getByRole("textbox",{name:c.scope,exact:true}).fill("Two rooms including windows");
   await panel.getByRole("textbox",{name:c.amount,exact:true}).fill("75,50");
   await panel.getByRole("button",{name:t.save,exact:true}).click();

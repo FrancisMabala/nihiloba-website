@@ -1,4 +1,5 @@
 "use client";
+import {ServiceOpenBrief} from "./service-open-brief";
 import {fileValidation} from '../../lib/file-validation';
 import {useEffect, useRef, useState} from "react";
 import {serviceCategoryExperience, type ServiceLocale} from "../../lib/services-category-experience";
@@ -42,6 +43,7 @@ function BriefEditor({binding, locale, reference, direct, directRef, branchChoic
   const [reviewing, setReviewing] = useState(false), [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<Operation | null>(null);
   const [conflict, setConflict] = useState(false), [message, setMessage] = useState("");
+  const [recovered, setRecovered] = useState(0);
   const [reload, setReload] = useState(0), [online, setOnline] = useState(true), [denied, setDenied] = useState(false);
   const alive = useRef(true), lock = useRef(false), callbacks = useRef({onDenied, onSaved, onComplete});
   useEffect(() => { callbacks.current = {onDenied, onSaved, onComplete}; }, [onDenied, onSaved, onComplete]);
@@ -164,7 +166,7 @@ function BriefEditor({binding, locale, reference, direct, directRef, branchChoic
       lock.current=true;setBusy(true);
       try{
         await refreshDocuments(ref);
-        if(alive.current){setConflict(false);setPending(null);setMessage("");setReviewing(false);setLoadError(false);}
+        if(alive.current){setRecovered(value=>value+1);setConflict(false);setPending(null);setMessage("");setReviewing(false);setLoadError(false);}
       }catch(error){
         if(error instanceof ServiceRequestError && [401,403,404].includes(error.status)&&alive.current)deny();
         throw error;
@@ -179,6 +181,37 @@ function BriefEditor({binding, locale, reference, direct, directRef, branchChoic
   const status = brief ? ({DRAFT: t.draft, REVIEWED: t.reviewed, PUBLISHED: t.published, CLOSED: t.closed, EXPIRED: t.expired})[brief.status] : t.draft;
   const disabled = busy || !!pending || conflict || !online;
   const selectedCategory = serviceCategoryExperience(content.category, locale);
+  const documentPanel = (target || brief?.pdf_uploads_enabled || documents.length > 0) && (<section className="svc-brief-card" aria-label={t.pdf}><h2>{t.pdf}</h2>
+          {brief?.pdf_uploads_enabled === true ? <><p>{t.pdfHelp}</p><p>{t.retention}</p></> : <p>{t.pdfDisabled}</p>}
+          {brief?.pdf_uploads_enabled !== true ? null : dirty ? <p>{t.save}</p> : <fieldset disabled={disabled}>
+            <label>{t.pdf}<input type="file" accept="application/pdf,.pdf" onChange={event => {const selected=event.target.files?.[0]??null;const invalid=selected?fileValidation(selected,locale,10,["application/pdf"],"PDF"):"";setFile(invalid?null:selected);setMessage(invalid);}}/></label>
+            <button type="button" disabled={!file || file.size > 10 * 1024 * 1024} onClick={() => file && void run({
+              path: `briefs/${brief.brief_ref}/document-upload`, body: file, kind: "document",
+              headers: {"Content-Type": "application/pdf", "X-Operation-Id": crypto.randomUUID(), "X-Brief-Revision": String(brief.revision)},
+            })}>{t.upload}</button>
+          </fieldset>}
+          {documents.map(document => <article key={document.document_ref}>
+            <p role="status">{({RECEIVED: t.received, CHECKING: t.checking, READY: t.ready, UNREADABLE: t.unreadable,
+              REJECTED: t.rejected, FAILED: t.scanUnavailable, DELETING: t.removed, DELETED: t.removed})[document.status]}</p>
+            {document.preview && <details><summary>{t.preview}</summary><pre>{document.preview}</pre>{document.truncated && <p>{t.truncated}</p>}</details>}
+            {["RECEIVED", "CHECKING"].includes(document.status) && <button type="button" disabled={disabled || dirty} onClick={reloadSaved}>{t.reload}</button>}
+            {document.has_original && <button type="button" disabled={disabled} onClick={() => void download(document)}>{t.download}</button>}
+            {!["DELETING", "DELETED"].includes(document.status) && brief && <button type="button" disabled={disabled || dirty}
+              onClick={() => void run({path: `briefs/${brief.brief_ref}/documents/${document.document_ref}/remove`, kind: "remove", body: JSON.stringify({revision: document.revision})})}>{t.remove}</button>}
+          </article>)}
+        </section>);
+  if (!target && !directRef && !direct && editable(brief)) return <>
+    {confirmation}
+    <ServiceOpenBrief key={recovered} binding={binding} locale={locale} brief={brief} content={content} onChange={setContent}
+      onDenied={deny} onFollow={onComplete} disabled={disabled}
+      onReload={reloadSaved}
+      onPersist={row => {setBrief(row); setContent(row.content); callbacks.current.onSaved?.(row.brief_ref);}}>
+      {documentPanel}
+      {message && <p role="status">{message}</p>}
+      {pending && !busy && <button onClick={() => void run(pending)}>{t.retry}</button>}
+      {conflict && <button onClick={reloadSaved}>{t.reload}</button>}
+    </ServiceOpenBrief>
+  </>;
   return <section className="svc-request" lang={locale} aria-label={t.title}>{confirmation}
     <header><span className="svc-request-tag">{status}</span><h1>{t.title}</h1>
       {(destination || direct) && <p>{destination?.name ?? direct?.name}</p>}
@@ -222,25 +255,7 @@ function BriefEditor({binding, locale, reference, direct, directRef, branchChoic
             <button type="submit" className="button button-primary">{busy ? t.working : t.save}</button>
           </fieldset>
         </form>
-        <section className="svc-brief-card" aria-label={t.pdf}><h2>{t.pdf}</h2>
-          {brief?.pdf_uploads_enabled === true ? <><p>{t.pdfHelp}</p><p>{t.retention}</p></> : <p>{t.pdfDisabled}</p>}
-          {brief?.pdf_uploads_enabled !== true ? null : dirty ? <p>{t.save}</p> : <fieldset disabled={disabled}>
-            <label>{t.pdf}<input type="file" accept="application/pdf,.pdf" onChange={event => {const selected=event.target.files?.[0]??null;const invalid=selected?fileValidation(selected,locale,10,["application/pdf"],"PDF"):"";setFile(invalid?null:selected);setMessage(invalid);}}/></label>
-            <button type="button" disabled={!file || file.size > 10 * 1024 * 1024} onClick={() => file && void run({
-              path: `briefs/${brief.brief_ref}/document-upload`, body: file, kind: "document",
-              headers: {"Content-Type": "application/pdf", "X-Operation-Id": crypto.randomUUID(), "X-Brief-Revision": String(brief.revision)},
-            })}>{t.upload}</button>
-          </fieldset>}
-          {documents.map(document => <article key={document.document_ref}>
-            <p role="status">{({RECEIVED: t.received, CHECKING: t.checking, READY: t.ready, UNREADABLE: t.unreadable,
-              REJECTED: t.rejected, FAILED: t.scanUnavailable, DELETING: t.removed, DELETED: t.removed})[document.status]}</p>
-            {document.preview && <details><summary>{t.preview}</summary><pre>{document.preview}</pre>{document.truncated && <p>{t.truncated}</p>}</details>}
-            {["RECEIVED", "CHECKING"].includes(document.status) && <button type="button" disabled={disabled || dirty} onClick={reloadSaved}>{t.reload}</button>}
-            {document.has_original && <button type="button" disabled={disabled} onClick={() => void download(document)}>{t.download}</button>}
-            {!["DELETING", "DELETED"].includes(document.status) && brief && <button type="button" disabled={disabled || dirty}
-              onClick={() => void run({path: `briefs/${brief.brief_ref}/documents/${document.document_ref}/remove`, kind: "remove", body: JSON.stringify({revision: document.revision})})}>{t.remove}</button>}
-          </article>)}
-        </section>
+        {documentPanel}
         <button type="button" className="button button-primary" disabled={disabled || !brief || dirty} onClick={() => {setReviewing(true); setMessage("");}}>{t.review}</button>
       </> : brief && <section className="svc-brief-card">
         <h2>{t.summary}</h2><p>{content.direct_offering_ref ? t.directAudience : t.audience}</p>

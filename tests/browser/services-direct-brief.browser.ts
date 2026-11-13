@@ -1,3 +1,4 @@
+import {catalogCopy} from "../../app/lib/service-catalog";
 import {test,expect} from "@playwright/test";
 import {requestWords} from "../../app/lib/services-request-copy";
 import {comparisonWords} from "../../app/lib/services-comparison-copy";
@@ -31,7 +32,7 @@ for(const locale of ["en","fr","ln","sw"] as const)test(`Public direct quotation
     return route.fulfill({status:404,json:{detail:"unavailable"}});
   });
   await page.goto(`${prefix}/shida/services/home-repair`);
-  await page.getByRole("link",{name:t.askQuote,exact:true}).click();
+  await page.locator("#booking").getByRole("link",{name:catalogCopy(locale).send,exact:true}).click();
   await expect(page).toHaveURL(/service=SVC_fixture/);
   const editor=page.getByRole("region",{name:t.title,exact:true});
   await expect(editor.getByRole("combobox",{name:t.category,exact:true})).toHaveValue("repair_maintenance");

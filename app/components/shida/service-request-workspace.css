@@ -26,3 +26,24 @@
 .svc-request details summary{padding:12px 0;cursor:pointer}
 .svc-request article{border-top:1px solid #deded1;margin-top:20px;padding-top:12px}.svc-request article button{margin:8px 8px 0 0}
 @media(max-width:560px){.svc-request-grid{grid-template-columns:1fr;gap:0}.svc-request-actions>*{width:100%}.svc-request-steps{display:block}.svc-request-steps li{margin:12px 0}}
+
+.svc-brief-back,.svc-open-brief{width:100%;max-width:1280px;padding:0 clamp(12px,2vw,30px);box-sizing:border-box}
+.svc-brief-back{margin-top:20px}.svc-brief-back a{text-underline-offset:3px;color:inherit}
+.svc-open-brief h1{font-size:clamp(1.95rem,3vw,2.9rem);margin:22px 0}
+.svc-brief-columns{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(0,1fr);align-items:start;gap:clamp(12px,2vw,24px)}
+.svc-open-brief fieldset.svc-open-fields,.svc-live-preview{background:#fffefa;border:1px solid #d8d4c8;border-radius:12px;min-width:0}
+.svc-open-brief fieldset.svc-open-fields{padding:clamp(16px,2vw,26px)}
+.svc-open-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.svc-open-fields label{margin-bottom:16px}.svc-open-pair:last-child label{margin-bottom:0}
+.svc-open-fields #brief-privacy{font-size:.86rem;color:#536158;margin:-8px 0 20px}
+.svc-live-preview{overflow:hidden}.svc-live-preview>h2,.svc-live-preview .svc-preview-toggle{background:#f2eee4;margin:0;border:0;padding:18px 22px}
+.svc-live-preview .svc-preview-toggle{display:none}.svc-live-preview #svc-preview-body{padding:0 22px}
+.svc-provider-summary p{white-space:pre-wrap}.svc-provider-summary dl:empty{display:none}
+.svc-open-actions{display:flex;gap:12px;margin-top:22px}.svc-open-brief .svc-open-deadline{font-size:.92rem;color:#526357}
+.svc-field-error{color:#8a301e}.svc-open-fields [aria-invalid=true]{border-color:#98432c}
+@media(max-width:760px){
+  .svc-brief-columns{grid-template-columns:minmax(0,1fr)}.svc-live-preview>h2{display:none}
+  .svc-live-preview .svc-preview-toggle{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:start;font:1.25rem Georgia,serif}
+  .svc-live-preview:not(.expanded) #svc-preview-body{display:none}.svc-open-actions{flex-direction:column-reverse}.svc-open-actions button{width:100%}
+  .svc-open-pair{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+}

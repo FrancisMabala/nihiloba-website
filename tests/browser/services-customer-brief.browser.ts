@@ -1,7 +1,7 @@
 import {test, expect} from "@playwright/test";
 import {requestWords} from "../../app/lib/services-request-copy";
-import {comparisonWords} from "../../app/lib/services-comparison-copy";
-import {serviceCategoryExperience} from "../../app/lib/services-category-experience";
+import {servicesAccountCopy} from "../../app/lib/services-account-navigation";
+
 import type {CustomerBrief} from "../../app/lib/services-request-browser";
 
 test("An open editor removes PDF intake when the backend disables it", async ({page}) => {
@@ -28,72 +28,84 @@ test("An open editor removes PDF intake when the backend disables it", async ({p
   await page.getByRole("button", {name: t.upload, exact: true}).click();
   await expect(page.locator('input[type="file"]')).toHaveCount(0);
   await expect(page.getByText(t.pdfDisabled, {exact: true}).first()).toBeVisible();
-  await expect(page.getByRole("button", {name: t.review, exact: true})).toBeEnabled();
-  await expect(page.getByRole("textbox", {name: serviceCategoryExperience("cleaning", "en")!.request, exact: true})).toHaveValue("Keep my written request");
+  await expect(page.getByRole("button", {name: t.publish, exact: true})).toBeEnabled();
+  await expect(page.getByRole("textbox", {name: t.needDescription, exact: true})).toHaveValue("Keep my written request");
   expect(uploads).toBe(1);
 });
 
-for (const [locale, width] of [["en", 320], ["fr", 390], ["ln", 430], ["sw", 768]] as const) {
-  test(`Customer reviewed text brief and exact retry ${locale}`, async ({page}) => {
-    await page.setViewportSize({width, height: 900});
-    const t = requestWords(locale), bodies: string[] = [];
-    let brief: CustomerBrief | null = null, uncertain = true;
-    const writes: string[] = [];
+for (const [locale, width] of [["en", 320], ["fr", 390], ["ln", 430], ["sw", 1280]] as const) {
+  test(`Marketplace publishes latest edits and retries once ${locale}`, async ({page}) => {
+    const t = requestWords(locale);
+    let brief: CustomerBrief | null = null;
+    const writes: string[] = [], publications: string[] = [];
+    await page.setViewportSize({width,height:900});
     await page.route("**/api/shida/**", async route => {
-      const request = route.request(), path = new URL(request.url()).pathname.replace(/\/$/, "");
-      if (path.endsWith("/employment/session")) return route.fulfill({json: {binding: "a".repeat(64), user: {display_name: "Customer"}}});
-      const action = path.split("/service-requests/")[1];
-      if (action === "postings") return route.fulfill({json: {requests: [], next_ref: null}});
-      if (action === "briefs" && request.method() === "GET") return route.fulfill({json: {briefs: [], has_more: false}});
-      if (action === "briefs" && request.method() === "POST") {
-        bodies.push(request.postData()!);
-        const payload = request.postDataJSON();
-        brief = {brief_ref: "SCB_one", revision: 1, status: "DRAFT", content: payload.content, summary: payload.content,
-          summary_digest: "b".repeat(64), edited_at: "2026-10-20T12:00:00Z", expires_at: "2026-11-19T12:00:00Z"};
-        if (uncertain) {uncertain = false; return route.abort("failed");}
-        return route.fulfill({json: brief});
+      const req=route.request(), path=new URL(req.url()).pathname.replace(/\/$/,"");
+      if (path.endsWith("/employment/session")) return route.fulfill({json:{binding:"a".repeat(64),user:{display_name:"Customer"}}});
+      if (path.endsWith("/registration-reference")) return route.fulfill({json:{kinshasa_communes:["Lemba","Gombe"]}});
+      const action=path.split("/service-requests/")[1];
+      if (action==="postings") return route.fulfill({json:{requests:[],next_ref:null}});
+      if (action==="briefs" && req.method()==="GET") return route.fulfill({json:{briefs:brief?[brief]:[],has_more:false}});
+      if (action==="briefs/preview") return route.fulfill({json:{summary:req.postDataJSON()}});
+      if (action==="briefs/SCB_one/documents") return route.fulfill({json:{documents:[]}});
+      if (action==="briefs/SCB_one") return route.fulfill({json:brief});
+      if (action==="briefs" || action==="briefs/SCB_one/save") {
+        const {content}=req.postDataJSON(); writes.push("save");
+        brief={brief_ref:"SCB_one",revision:(brief?.revision??0)+1,status:"DRAFT",content,summary:content,summary_digest:"b".repeat(64),edited_at:"2026-10-20T12:00:00Z",expires_at:"2026-11-19T12:00:00Z"};
+        return route.fulfill({json:brief});
       }
-      if (action === "briefs/SCB_one/review") {
-        writes.push("review");
-        expect(request.postDataJSON().summary_digest).toBe("b".repeat(64));
-        brief = {...brief!, status: "REVIEWED", revision: 2};
-        return route.fulfill({json: brief});
+      if (action==="briefs/SCB_one/review") {
+        writes.push("review"); expect(req.postDataJSON().summary_digest).toBe(brief!.summary_digest);
+        brief={...brief!,status:"REVIEWED",revision:brief!.revision+1};
+        return route.fulfill({json:brief});
       }
-      if (action === "briefs/SCB_one/publish") {
-        writes.push("publish");
-        expect(request.postDataJSON().revision).toBe(2);
-        return route.fulfill({json: {posted_ref: "SPR_one", revision: 1, status: "OPEN"}});
+      if (action==="briefs/SCB_one/publish") {
+        publications.push(req.postData()!);
+        return publications.length===1 ? route.abort("failed") : route.fulfill({json:{posted_ref:"SPR_one"}});
       }
-      if (action === "postings/SPR_one/proposals") return route.fulfill({json: {request: {
-        posted_ref: "SPR_one", revision: 1, status: "OPEN", summary: brief!.summary,
-        brief_revision_ref: "SCV_one", created_at: "2026-10-20T12:00:00Z", expires_at: "2026-10-22T12:00:00Z",
-      }, proposals: [], next_ref: null}});
-      return route.fulfill({status: 404, json: {detail: "service_brief_unavailable"}});
+      return route.fulfill({status:404,json:{detail:"service_brief_unavailable"}});
     });
-    await page.goto(`${locale === "en" ? "" : `/${locale}`}/shida/service-requests?new=1`);
-    const editor = page.getByRole("region", {name: t.title, exact: true});
-    await expect(editor.getByText(t.pdfDisabled, {exact: true})).toBeVisible();
-    await expect(editor.locator('input[type="file"]')).toHaveCount(0);
-    await editor.getByRole("combobox", {name: t.category, exact: true}).selectOption("cleaning");
-    await editor.getByLabel(serviceCategoryExperience("cleaning", locale)!.request, {exact: true}).fill("Clean two rooms; customer supplies products.");
-    await editor.getByLabel(t.commune, {exact: true}).fill("Gombe");
-    await editor.getByLabel(t.timing, {exact: true}).fill("Next Tuesday morning");
-    await editor.getByLabel(t.budget, {exact: true}).fill("75,50");
-    await editor.getByRole("button", {name: t.save, exact: true}).click();
-    await expect(editor.getByText(t.uncertain, {exact: true})).toBeVisible();
-    await expect(editor.getByLabel(t.commune, {exact: true})).toBeDisabled();
-    await editor.getByRole("button", {name: t.retry, exact: true}).click();
-    expect(bodies).toHaveLength(2); expect(bodies[0]).toBe(bodies[1]);
-    await expect(editor.getByText(t.pdfDisabled, {exact: true})).toBeVisible();
-    await expect(editor.locator('input[type="file"]')).toHaveCount(0);
-    await editor.getByRole("button", {name: t.review, exact: true}).click();
-    await expect(editor.getByRole("button", {name: t.publish, exact: true})).toHaveCount(0);
-    await expect(editor.getByText(t.audience, {exact: true})).toBeVisible();
-    await editor.getByRole("button", {name: t.confirm, exact: true}).click();
-    await editor.getByRole("button", {name: t.publish, exact: true}).click();
-    await expect(page.getByRole("heading", {name: comparisonWords(locale).title, exact: true})).toBeVisible();
-    expect(writes).toEqual(["review", "publish"]);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.goto(`${locale==="en"?"":"/"+locale}/shida/services`);
+    await page.getByRole("link",{name:servicesAccountCopy[locale].describe,exact:true}).first().click();
+    const editor=page.getByRole("region",{name:t.needHeading,exact:true});
+    const button=(name:string)=>editor.getByRole("button",{name,exact:true});
+    await button(t.publish).click();
+    await expect(editor.locator('[name="category"]')).toBeFocused();
+    await editor.locator('[name="description"]').fill("Restore lighting");
+    if (locale==="fr") {
+      await button(t.save).click();
+      await expect(editor.getByRole("status").filter({hasText:t.saved})).toContainText("30");
+      expect(writes).toEqual(["save"]); expect(publications).toHaveLength(0);
+      await page.reload();
+      await expect(editor.locator('[name="description"]')).toHaveValue("Restore lighting");
+    }
+    await editor.locator('[name="category"]').selectOption("repair_maintenance");
+    await editor.locator('[name="city"]').fill("Kinshasa");
+    await editor.locator('[name="commune"]').selectOption("Lemba");
+    await editor.locator('[name="timing"]').fill("Saturday morning");
+    await editor.locator('[name="description"]').fill("Replace two sockets");
+    if (width>760) {
+      await editor.getByLabel(t.budget,{exact:true}).fill("25000");
+      await expect(editor.locator("#svc-preview-body")).toContainText("Replace two sockets");
+      await expect(editor.locator("#svc-preview-body")).toContainText("CDF");
+      await editor.getByLabel(t.budget,{exact:true}).fill("");
+      await expect(editor.locator("#svc-preview-body")).toContainText("Lemba, Kinshasa");
+      await expect(editor.locator("#svc-preview-body")).not.toContainText("CDF");
+    } else {
+      await expect(button(t.providerPreview)).toHaveAttribute("aria-expanded","false");
+      await expect(editor.locator("#svc-preview-body")).toBeHidden();
+    }
+    await button(t.publish).dblclick();
+    await expect(editor.getByText(t.uncertain,{exact:true})).toBeVisible();
+    await expect(editor.locator('[name="description"]')).toHaveValue("Replace two sockets");
+    await button(t.retry).click();
+    await expect(page.getByRole("heading",{name:t.postedSuccess})).toBeVisible();
+    await expect(page.getByRole("link",{name:t.track})).toHaveAttribute("href","?request=SPR_one");
+    expect(publications).toHaveLength(2); expect(publications[0]).toBe(publications[1]);
+    expect(writes).toEqual(locale==="fr"?["save","save","review"]:["save","review"]);
+    expect(brief!.content.description).toBe("Replace two sockets");
+    expect(brief!.content).not.toHaveProperty("budget_amount");
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   });
 }
 
@@ -101,8 +113,8 @@ test("Customer sees only reviewed summary, keeps original private and recovers s
   const t = requestWords("en");
   let failSave = true;
   const row: CustomerBrief = {brief_ref: "SCB_pdf", revision: 3, status: "DRAFT",
-    content: {category: "cleaning", language: "en", description: "Clean the kitchen", commune: "Gombe", timing: "Tuesday"},
-    summary: {category: "cleaning", language: "en", description: "Clean the kitchen", commune: "Gombe", timing: "Tuesday"},
+    content: {category: "cleaning", language: "en", description: "Clean the kitchen", city:"Kinshasa", commune:"Gombe", preferred_date:"2026-12-08", preferred_start_time:"09:00"},
+    summary: {category: "cleaning", language: "en", description: "Clean the kitchen", city:"Kinshasa", commune:"Gombe", preferred_date:"2026-12-08", preferred_start_time:"09:00"},
     summary_digest: "b".repeat(64), edited_at: "2026-10-20T12:00:00Z", expires_at: "2026-11-19T12:00:00Z"};
   await page.route("**/api/shida/**", async route => {
     const req = route.request(), path = new URL(req.url()).pathname.replace(/\/$/, "");
@@ -110,6 +122,7 @@ test("Customer sees only reviewed summary, keeps original private and recovers s
     const action = path.split("/service-requests/")[1];
       if (action === "postings") return route.fulfill({json: {requests: [], next_ref: null}});
     if (action === "briefs") return route.fulfill({json: {briefs: [row], has_more: false}});
+    if (path.endsWith("/registration-reference")) return route.fulfill({json:{kinshasa_communes:["Gombe","Limete"]}});
     if (action === "briefs/SCB_pdf/documents") return route.fulfill({json: {documents: [{
       document_ref: "SCD_one", revision: 1, status: "READY", has_original: true, preview: "Original private attachment text",
       error: null, truncated: true, page_count: 2,
@@ -123,15 +136,16 @@ test("Customer sees only reviewed summary, keeps original private and recovers s
   await expect(page.locator('input[type="file"]')).toHaveCount(0);
   await page.getByText(t.preview, {exact: true}).click();
   await expect(page.getByText("Original private attachment text", {exact: true})).toBeVisible();
-  await page.getByRole("button", {name: t.review, exact: true}).click();
-  await expect(page.getByText("Original private attachment text", {exact: true})).toHaveCount(0);
-  await expect(page.getByText("Clean the kitchen", {exact: true})).toBeVisible();
-  await page.getByRole("button", {name: t.edit, exact: true}).click();
-  await page.getByLabel(t.commune, {exact: true}).fill("Limete");
+  const providerPreview = page.locator("#svc-preview-body");
+  await expect(providerPreview).not.toContainText("Original private attachment text");
+  await expect(providerPreview).toContainText("Clean the kitchen");
+  await expect(page.locator('[name="timing"]')).toHaveValue("2026-12-08 · 09:00");
+  await page.locator('[name="commune"]').selectOption("Limete");
   await page.getByRole("button", {name: t.save, exact: true}).click();
   await expect(page.getByText(t.stale, {exact: true})).toBeVisible();
-  await expect(page.getByRole("button", {name: t.review, exact: true})).toBeDisabled();
-  page.once("dialog", dialog => dialog.accept());
+  await expect(page.getByRole("button", {name: t.publish, exact: true})).toBeDisabled();
+
   await page.getByRole("button", {name: t.reload, exact: true}).click();
-  await expect(page.getByLabel(t.commune, {exact: true})).toHaveValue("Gombe");
+  await page.getByRole("dialog").getByRole("button", {name:t.reload,exact:true}).click();
+  await expect(page.locator('[name="commune"]')).toHaveValue("Gombe");
 });

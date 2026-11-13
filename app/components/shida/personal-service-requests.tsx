@@ -55,7 +55,7 @@ export function PersonalServiceRequests(props: Props) {
       document.removeEventListener("visibilitychange", visible);};
   }, [attempt]);
   return <main lang={locale} className="account-space space-transaction-page"><SpaceSidebar locale={locale} view="transactions" onNavigate={async event=>{event.preventDefault();const href=event.currentTarget.href;if(await leaveWork())window.location.assign(href);}}/><div className="space-content">
-    <nav className="svc-request"><Link href={`${locale==="en"?"":`/${locale}`}/shida/space?view=requests`} onClick={async event=>{event.preventDefault();const href=event.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>← {workspaceText(locale,"back")}</Link><span aria-hidden="true"> · </span><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/services`} onClick={async event=>{event.preventDefault();const href=event.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>SHIDA · Services</Link></nav>
+    {!props.newRequest && !props.briefRef && <nav className="svc-request"><Link href={`${locale==="en"?"":`/${locale}`}/shida/space?view=requests`} onClick={async event=>{event.preventDefault();const href=event.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>← {workspaceText(locale,"back")}</Link><span aria-hidden="true"> · </span><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/services`} onClick={async event=>{event.preventDefault();const href=event.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>SHIDA · Services</Link></nav>}
     {loading ? <p className="svc-request" role="status">{t.loading}</p> : session ?
       <fieldset disabled={offline} inert={offline} style={{border: 0, padding: 0, margin: 0, minWidth: 0}}>
         <CustomerRequests key={session.binding} {...props} binding={session.binding} onDenied={() => setSession(null)}/>
@@ -129,7 +129,7 @@ function CustomerRequests({locale, binding, briefRef, newRequest, requestRef, bo
       <ServiceCustomerWork binding={binding} locale={locale} reference={result.reservation_ref ?? result.request_ref!}
         booking={!!result.reservation_ref} onDenied={onDenied} onBooking={reference => follow({reservation_ref: reference})}/>}
   </>;
-  if (selected) return <><div className="svc-request"><button type="button" onClick={() => choose(null)}>{t.requests}</button></div>
+  if (selected) return <><div className="svc-request svc-brief-back"><a href={`${locale === "en" ? "" : `/${locale}`}/shida/service-requests`} onClick={event => {event.preventDefault(); void choose(null);}}>← {t.requests}</a></div>
     <ServiceBriefEditor binding={binding} locale={locale} directRef={selected === "new" ? directTarget : undefined} reference={selected === "new" ? undefined : selected}
       onDenied={onDenied} onSaved={reference => {
         const url = new URL(window.location.href); url.search = `?brief=${reference}`; window.history.replaceState(null, "", url);

@@ -405,3 +405,7 @@ browser run exposed trailing-slash and duplicate-heading selectors plus an old
 navigation count; these were corrected to assert the current destinations.
 Production webpack/TypeScript and scoped lint passed. No runtime dependency or
 configuration was added to the website. The coordinated release is still pending.
+
+## Marketplace request form · November 2026
+
+The marketplace opens a single form. Unsaved text is previewed through the authenticated, read-only brief projection. The same summary component renders eligible providers’ opportunities. Saving keeps a private draft for 30 days after its last edit. Publishing persists current edits, reviews the server summary digest and posts the request with replayable operations. Customers can follow the specific publication from its confirmation.

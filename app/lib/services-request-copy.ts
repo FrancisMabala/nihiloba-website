@@ -1,5 +1,19 @@
 import type {ServiceLocale} from "./services-category-experience";
 const text = {
+  needHeading: ["What do you need?", "De quoi avez-vous besoin ?", "Ozali na mposa ya nini ?", "Unahitaji nini?"],
+  needDescription: ["Describe your need", "Décrivez votre besoin", "Limbola bosengi na yo", "Eleza unachohitaji"],
+  needExample: ["I need an electrician to replace two sockets in my living room.", "Je cherche un électricien pour remplacer deux prises dans mon salon.", "Nazali koluka moto ya kura mpo na kobongola ba prise mibale na salon.", "Natafuta fundi umeme kubadilisha soketi mbili sebuleni."],
+  providerPreview: ["Provider preview", "Aperçu pour les prestataires", "Ndenge bapesi mosala bakomona yango", "Muonekano kwa watoa huduma"],
+  place: ["Location", "Lieu", "Esika", "Mahali"],
+  when: ["Preferred time", "Moment souhaité", "Ntango olingi", "Wakati unaotaka"],
+  budgetLabel: ["Budget", "Budget", "Budget", "Bajeti"],
+  deadline: ["After publication, eligible providers will have 48 hours to respond.", "Après publication, les prestataires admissibles auront 48 heures pour vous répondre.", "Nsima ya kobimisa bosengi, bapesi mosala oyo babongi bakozala na ngonga 48 mpo na koyanola.", "Baada ya kuchapisha, watoa huduma wanaostahili watakuwa na saa 48 kujibu."],
+  postedSuccess: ["Request published", "Demande publiée", "Bosengi ebimi", "Ombi limechapishwa"],
+  track: ["Track my request", "Suivre ma demande", "Landa bosengi na ngai", "Fuatilia ombi langu"],
+  draftLife: ["30-day draft", "Brouillon valable 30 jours", "Brouillon ya mikolo 30", "Rasimu ya siku 30"],
+  requiredField: ["Complete this field.", "Renseignez ce champ.", "Tondisa esika oyo.", "Jaza sehemu hii."],
+  validBudget: ["Enter a positive amount with up to two decimal places.", "Indiquez un montant positif avec deux décimales maximum.", "Koma motuya eleki zero, na mituya mibale nsima ya virgule koleka te.", "Weka kiasi chanya chenye hadi nafasi mbili za desimali."],
+
   busy: ["Please wait before trying again. Your saved work is kept.", "Patientez avant de réessayer. Votre travail enregistré est conservé.", "Zela liboso ya komeka lisusu. Mosala na yo oyo ebombami ezali kaka.", "Subiri kabla ya kujaribu tena. Kazi yako iliyohifadhiwa imebaki."],
   title: ["Describe what you need", "Décrivez votre besoin", "Limbola bosengi na yo", "Eleza unachohitaji"],
   requests: ["My requests", "Mes demandes", "Masengi na ngai", "Maombi yangu"],

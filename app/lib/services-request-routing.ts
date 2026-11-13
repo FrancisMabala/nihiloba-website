@@ -11,7 +11,8 @@ export function servicesRequestTarget(parts: string[], method: string, query: UR
     if (parts.length === 1) {
       path = "service-briefs";
       if (get) keys = ["offset"];
-    } else if (reference("SCB")) {
+    } else if (parts.length === 2 && ref === "preview" && post) path = "service-briefs/preview";
+    else if (reference("SCB")) {
       if (parts.length === 2 && get) path = `service-briefs/${ref}`;
       if (parts.length === 3 && (get && action === "documents" || post && ["save", "review", "close", "document-upload"].includes(action)))
         path = `service-briefs/${ref}/${action}`;
