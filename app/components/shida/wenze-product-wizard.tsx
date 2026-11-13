@@ -1,15 +1,16 @@
 "use client";
 import {useState,useRef,useEffect,type ReactNode,type FormEvent} from 'react';
 import Image from 'next/image';
+import {SellerWorkspaceHeading} from './seller-workspace';
 import {productText} from '@/app/lib/wenze-products-copy';
 import {wenzeCopy,type WenzeLocale} from '@/app/lib/wenze-copy';
 import {creationText} from "@/app/lib/wenze-creation";
-export function WenzeProductWizard({locale,basic,photos,variations,review,busy,validPhotos,validChoices,shirt,blocked,feedback,onSave,onCancel}:{locale:WenzeLocale;basic:ReactNode;photos:ReactNode;variations:ReactNode;review:(edit:(step:number)=>void)=>ReactNode;shirt:boolean;busy:boolean;validPhotos:boolean;validChoices:boolean;blocked?:boolean;feedback?:ReactNode;onSave:(event:FormEvent)=>void;onCancel:()=>void}){
+export function WenzeProductWizard({shopName,locale,basic,photos,variations,review,busy,validPhotos,validChoices,shirt,blocked,feedback,onSave,onCancel}:{shopName?:string;locale:WenzeLocale;basic:ReactNode;photos:ReactNode;variations:ReactNode;review:(edit:(step:number)=>void)=>ReactNode;shirt:boolean;busy:boolean;validPhotos:boolean;validChoices:boolean;blocked?:boolean;feedback?:ReactNode;onSave:(event:FormEvent)=>void;onCancel:()=>void}){
  const [step,setStep]=useState(0),[editing,setEditing]=useState(false),heading=useRef<HTMLHeadingElement>(null),t=creationText.bind(null,locale),c=(key:string)=>productText(locale,key);
  useEffect(()=>{heading.current?.focus({preventScroll:true});window.scrollTo({top:0});},[step]);
  function go(next:number){setStep(next);}
  const titles=[t('present'),t('photos'),t('options'),t('check')];
- return <section className="wp-wizard"><ol className="wp-steps">{(['info','photos','options','review'] as const).map((key,n)=><li key={key} aria-current={step===n?'step':undefined}><span>{n+1}</span><small>{t(key)}</small></li>)}</ol><h1 ref={heading} tabIndex={-1}>{titles[step]}</h1>{step===2&&shirt&&<h2>{t('shirtOptions')}</h2>}<p className="wc-lead">{[t('intro'),c('photoHelp'),t(shirt?'shirtHelp':'stockHelp'),t('checkHelp')][step]}</p>{feedback}
+ return <section className="wp-wizard"><SellerWorkspaceHeading eyebrow="Wenze" title={titles[step]} headingRef={heading} actions={shopName&&<span className="wz-current-shop">{shopName}</span>}/><ol className="wp-steps">{(['info','photos','options','review'] as const).map((key,n)=><li key={key} aria-current={step===n?'step':undefined}><span>{n+1}</span><small>{t(key)}</small></li>)}</ol>{step===2&&shirt&&<h2>{t('shirtOptions')}</h2>}<p className="wc-lead">{[t('intro'),c('photoHelp'),t(shirt?'shirtHelp':'stockHelp'),t('checkHelp')][step]}</p>{feedback}
  <form onSubmit={event=>{if(step<3){event.preventDefault();if(step===1&&!validPhotos||step===2&&!validChoices)return;go(editing?3:step+1);setEditing(false);}else onSave(event);}}><fieldset disabled={busy}><legend className="wz-visually-hidden">{titles[step]}</legend>{[basic,<div key="photos" className="wc-card">{photos}</div>,variations,step===3?review(n=>{setEditing(true);go(n);}):null][step]}<div className="wp-step-actions"><span>{!editing&&<button type="button" onClick={()=>{if(step)go(step-1);else onCancel();}}>{step?c('back'):wenzeCopy[locale].cancel}</button>}</span><button className="seller-primary" disabled={busy||step===3&&blocked||(step===1||step===3)&&!validPhotos||(step===2||step===3)&&!validChoices}>{step===3?c('create'):editing?t('check'):[t('nextPhoto'),t('nextStock'),t('check')][step]}</button></div></fieldset></form></section>;
 }
 export function WenzeDraftPhotos({locale,refs,previews,busy,onFiles,onChange}:{locale:WenzeLocale;refs:string[];previews:Record<string,string>;busy:boolean;onFiles:(files:FileList|null)=>void;onChange:(refs:string[])=>void}){

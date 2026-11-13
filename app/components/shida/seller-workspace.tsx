@@ -1,5 +1,5 @@
 "use client";
-import {useEffect, useRef, type ReactNode} from "react";
+import {useEffect, useRef, type Ref, type ReactNode} from "react";
 import "./seller-workspace.css";
 
 import {SellerWorkspaceIcon} from "./services-workspace-icon";
@@ -23,6 +23,6 @@ export function SellerWorkspaceNavigation({id,label,items,current,onNavigate,dis
  },[current]);
  return <nav ref={navigation} id={id} className={`seller-navigation ${className}`} aria-label={label}>{items.map(item=><button key={item.key} type="button" disabled={disabled} aria-current={item.active || current===item.key ? "page" : undefined} onClick={()=>onNavigate(item.key)}><SellerWorkspaceIcon name={item.icon}/>{item.label}</button>)}</nav>;
 }
-export function SellerWorkspaceHeading({eyebrow,title,children,actions}:{eyebrow:string;title:string;children?:ReactNode;actions?:ReactNode}) {
- return <header className="seller-heading"><div><p className="seller-eyebrow">{eyebrow}</p><h1>{title}</h1>{children}</div>{actions&&<div className="seller-heading-actions">{actions}</div>}</header>;
+export function SellerWorkspaceHeading({eyebrow,title,children,actions,headingRef}:{headingRef?:Ref<HTMLHeadingElement>;eyebrow:string;title:string;children?:ReactNode;actions?:ReactNode}) {
+ return <header className="seller-heading"><div><p className="seller-eyebrow">{eyebrow}</p><h1 ref={headingRef} tabIndex={headingRef?-1:undefined}>{title}</h1>{children}</div>{actions&&<div className="seller-heading-actions">{actions}</div>}</header>;
 }

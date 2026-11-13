@@ -18,3 +18,29 @@
  .ws-shop form>.wz-fields:has(>.ws-customer-preview)>:is(.ws-modes,.ws-form-group){grid-column:1}
  .ws-shop .ws-customer-preview{grid-column:2;grid-row:1/span 4}
 }
+
+.seller-design .wz-personal.ws-shop .wz .wz-shop-identity{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem 1rem}
+.seller-design .wz-personal.ws-shop .wz .wz-shop-identity>:is(img,.wz-photo-fallback){width:64px;height:64px;min-height:0;flex:none;object-fit:cover;font-size:1.5rem}
+.seller-design .wz-personal.ws-shop .wz .wz-shop-identity .ws-upload{display:block;width:auto;min-height:0;padding:.4rem;margin:0}
+.ws-upload summary{text-decoration:underline;cursor:pointer}.ws-upload[open] small{display:block}
+.ws-shop .ws-fulfillment-layout{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:1rem}
+.ws-shop .ws-fulfillment-form{display:grid;gap:1rem;min-width:0}
+.seller-design .wz-personal.ws-shop .wz .ws-fulfillment-form .ws-modes{margin:0;padding:0}
+.seller-design .ws-shop .ws-fulfillment-form .ws-form-group{margin:0!important}
+.seller-design .ws-shop .wz-editor:has(.ws-fulfillment-layout)>h2{margin:0 0 1rem}
+.seller-design .ws-shop .ws-zone-menu .ws-choice-list label{display:flex;flex-direction:row;align-items:center}
+.seller-design .ws-shop .ws-zone-menu input[type=checkbox]{width:1.1rem;min-height:0}
+@media(min-width:960px){.ws-shop .ws-fulfillment-layout{grid-template-columns:minmax(0,2fr) minmax(200px,1fr)}}
+@media(max-width:760px){.seller-design .wz-personal.ws-shop .wz .wz-shop-identity>:is(img,.wz-photo-fallback){width:48px;height:48px}.ws-modes label{flex-wrap:wrap}}
+
+@media(max-width:959px){
+ .ws-shop form:has(>.ws-fulfillment-layout){display:flex;flex-direction:column;gap:1rem}
+ .ws-shop form>.ws-fulfillment-layout{display:contents}
+ .ws-shop .ws-fulfillment-form{order:0}
+ .ws-shop form:has(.ws-fulfillment-form)>.wz-save-bar{order:1}
+ .ws-shop form .ws-customer-preview{order:2;width:100%;box-sizing:border-box}
+}
+
+@media(min-width:960px){
+ .seller-design .wz-personal.ws-shop .wz .ws-form-group[data-tone=purple]>.wz-fields{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,.8fr)}
+}

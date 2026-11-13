@@ -16,3 +16,7 @@ Web drafts remain in sessionStorage for up to 24 hours, keyed by the existing au
 
 ## Release
 Not deployed. This release needs the explicit authorization requested by the supplied brief. Deploy backend before website. No database migration required. Roll back website first if needed; new backend fields are optional for old clients. Do not remove urgent WhatsApp templates. Live checks must verify both commit SHAs and a real authorized creation flow; local validation does not establish production deployment.
+
+## Pickup and delivery settings
+
+The pickup commune filters quartier suggestions. A seller can enter an unlisted quartier or keep an existing address. Delivery communes are saved separately. The registration and pickup fields share the same suggestions. The reference includes [OpenStreetMap RDC quartier data](https://data.humdata.org/dataset/quartiers-rdc-quarters-drc), © OpenStreetMap contributors, under the [Open Database License](https://www.openstreetmap.org/copyright). The derived directory is available in `app/lib/registration/kinshasa-quartiers.json`.

@@ -1,0 +1,10 @@
+.ws-search-choice,.ws-zone-picker{min-width:0}
+.ws-choice-list{display:grid;max-height:15rem;overflow:auto;border:1px solid #cdd5ca;background:#fffefa;border-radius:.4rem;padding:.3rem}
+.ws-search-choice .ws-choice-list button,.ws-zone-menu .ws-choice-list label{display:flex;align-items:center;gap:.6rem;text-align:left;color:#153d30;background:#fffefa;padding:.45rem .7rem;min-height:36px;border:0;margin:0}
+.ws-search-choice .ws-choice-list button:hover,.ws-zone-menu label:has(:checked){background:#eaf1e5}
+.ws-zone-picker{grid-column:1/-1;display:grid;gap:.35rem}
+.ws-zone-picker>button{text-align:left}
+.ws-zone-menu{padding:.5rem;border:1px solid #cdd5ca;background:#fffefa;border-radius:.5rem}
+.ws-zone-menu input[type=checkbox]{width:1.1rem;height:1.1rem;accent-color:#184633}
+.ws-zone-tags{display:flex;flex-wrap:wrap;gap:.35rem}
+.seller-design .ws-shop .ws-zone-tags button{min-height:30px;padding:.2rem .65rem;border-radius:2rem;background:#edf2e7}

@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import {useState} from 'react';
 import {creationMoney,creationText} from '@/app/lib/wenze-creation';
-import {productMargin,sellerImprovements} from '@/app/lib/wenze-seller-improvements';
+import {productMargin} from '@/app/lib/wenze-seller-improvements';
 import type {WenzeLocale} from '@/app/lib/wenze-copy';
 import choiceCopy from '@/app/lib/wenze-choice-copy.json';
 import type {ChoiceRow} from './wenze-choice-editor';
@@ -11,8 +11,8 @@ type Pricing={locale:WenzeLocale;fields:Record<string,string>;change?:(key:strin
 export function PrivatePricing({locale,fields:f,change}:Pricing){
  const t=creationText.bind(null,locale),shirt=f.category==='fashion_clothing:shirts',noun=t(shirt?'shirt':'item'),money=(n:number)=>creationMoney(locale,n,f.currency);
  const result=productMargin(f.price,f.purchase_price??'');
- return <div className="wc-private">{change?<><label>{t('cost')} <small>({t('optional')})</small><input inputMode="decimal" pattern="[0-9]{1,12}([.,][0-9]{1,2})?" value={f.purchase_price??''} onChange={e=>change('purchase_price',e.target.value)}/></label><p>{t('example',{lot:money(f.currency==='CDF'?50000:50),unit:money(f.currency==='CDF'?10000:10),plural:t(shirt?'shirts':'items'),noun})}</p></>:<p>{t('cost')} <strong>{money(Number(f.purchase_price.replace(',','.')))}</strong></p>}
- <output aria-live="polite">{result?<><span className="wc-highlight">{t(shirt?'leftShirt':'left')} <strong>{t('before',{amount:money(result.amount)})}</strong></span><span>{result.amount<0?t('loss',{amount:money(-result.amount)}):t('explain',{noun,amount:money(result.amount)})}</span></>:t('missing')}</output>{f.price_negotiable==='yes'&&<p>{t('basis')}</p>}<small>{sellerImprovements[locale].privacy}</small></div>;
+ return <div className="wc-private">{change?<><label><span>{t('cost')} ({t('optional')})</span><input placeholder={t('costPlaceholder',{amount:money(f.currency==='CDF'?10000:10)})} inputMode="decimal" pattern="[0-9]{1,12}([.,][0-9]{1,2})?" value={f.purchase_price??''} onChange={e=>change('purchase_price',e.target.value)}/></label></>:<p>{t('cost')} <strong>{money(Number(f.purchase_price.replace(',','.')))}</strong></p>}
+ {result&&<output aria-live="polite"><><span className="wc-highlight">{t(shirt?'leftShirt':'left')} <strong>{t('before',{amount:money(result.amount)})}</strong></span><span>{result.amount<0?t('loss',{amount:money(-result.amount)}):t('explain',{noun,amount:money(result.amount)})}</span></></output>}{result&&f.price_negotiable==='yes'&&<p>{t('basis')}</p>}<small>{t('costPrivacy')}</small></div>;
 }
 export function CreationGallery({images,name}:{images:string[];name:string}){
  const [index,setIndex]=useState(0);return <div className="wc-gallery">{images[0]&&<Image className="wc-main-photo" unoptimized src={images[index]??images[0]} width={420} height={520} alt={name}/>}<div className="wc-thumbs">{images.map((src,i)=><button type="button" key={i} aria-pressed={index===i} aria-label={name+' · '+(i+1)} onClick={()=>setIndex(i)}><Image unoptimized src={src} width={70} height={76} alt=""/></button>)}</div></div>;

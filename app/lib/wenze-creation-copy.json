@@ -16,7 +16,7 @@
     "name": "Nom du produit",
     "sale": "Prix de vente",
     "extra": "Autres détails (facultatif)",
-    "cost": "À combien avez-vous acheté une pièce ?",
+    "cost": "Coût d’achat par unité",
     "optional": "facultatif",
     "example": "Si vous avez payé {lot} pour 5 {plural}, entrez {unit} par {noun}.",
     "shirt": "chemise",
@@ -68,7 +68,9 @@
     "each": "Pièces par version",
     "pieces": "{n} pièces",
     "sizeCount": "{n} tailles",
-    "bySize": "Pièces par taille"
+    "bySize": "Pièces par taille",
+    "costPlaceholder": "Ex. : {amount}",
+    "costPrivacy": "Seuls les gestionnaires autorisés de la boutique peuvent voir ce coût."
   },
   "en": {
     "welcome": "Welcome to Wenze!",
@@ -87,7 +89,7 @@
     "name": "Product name",
     "sale": "Selling price",
     "extra": "Other details (optional)",
-    "cost": "How much did you pay for one item?",
+    "cost": "Purchase cost per unit",
     "optional": "optional",
     "example": "If you paid {lot} for 5 {plural}, enter {unit} per {noun}.",
     "shirt": "shirt",
@@ -139,7 +141,9 @@
     "each": "Pieces per version",
     "pieces": "{n} pieces",
     "sizeCount": "{n} sizes",
-    "bySize": "Pieces by size"
+    "bySize": "Pieces by size",
+    "costPlaceholder": "E.g. {amount}",
+    "costPrivacy": "Only authorized shop managers can see this cost."
   },
   "ln": {
     "welcome": "Boyei malamu na Wenze !",
@@ -158,7 +162,7 @@
     "name": "Nkombo ya eloko",
     "sale": "Ntalo ya koteka",
     "extra": "Makambo mosusu (soki olingi)",
-    "cost": "Osombaki eloko moko na boni ?",
+    "cost": "Ntalo ya kosomba eteni moko",
     "optional": "soki olingi",
     "example": "Soki osombaki {plural} 5 na {lot}, kotisa {unit} mpo na {noun} moko.",
     "shirt": "shɛmizi",
@@ -210,7 +214,9 @@
     "each": "Biloko na lolenge moko",
     "pieces": "Biloko {n}",
     "sizeCount": "taille {n}",
-    "bySize": "Biloko na taille mokomoko"
+    "bySize": "Biloko na taille mokomoko",
+    "costPlaceholder": "Ndakisa: {amount}",
+    "costPrivacy": "Kaka bakambi ya butiki oyo bazali na ndingisa bakoki komona ntalo oyo."
   },
   "sw": {
     "welcome": "Karibu Wenze!",
@@ -229,7 +235,7 @@
     "name": "Jina la bidhaa",
     "sale": "Bei ya kuuza",
     "extra": "Maelezo mengine (hiari)",
-    "cost": "Ulinunua kipande kimoja kwa bei gani?",
+    "cost": "Gharama ya ununuzi kwa kipande",
     "optional": "hiari",
     "example": "Ukilipa {lot} kwa {plural} 5, andika {unit} kwa kila {noun}.",
     "shirt": "shati",
@@ -281,6 +287,8 @@
     "each": "Vipande kwa kila aina",
     "pieces": "Vipande {n}",
     "sizeCount": "ukubwa {n}",
-    "bySize": "Vipande kwa kila ukubwa"
+    "bySize": "Vipande kwa kila ukubwa",
+    "costPlaceholder": "Mf. {amount}",
+    "costPrivacy": "Wasimamizi wa duka walioidhinishwa pekee wanaweza kuona gharama hii."
   }
 }

@@ -79,9 +79,9 @@
 .wc-flow .seller-navigation button{display:flex;align-items:center;gap:16px;border:0;text-align:left;padding:12px 16px;background:transparent;color:var(--wc-ink);font-size:1em}
 .wc-flow .seller-navigation button[aria-current=page]{border-left:4px solid #be8728;background:#0b4631;color:white}
 .wc-flow .seller-navigation svg{width:24px;height:24px;flex:none}
-.wc-flow .wc-toggle input{appearance:none;position:relative;width:49px;height:28px;border-radius:20px;background:#dedfdc;border:1px solid #bec4bd}
+:is(.wc-flow,.seller-design .wp-wizard) .wc-toggle input{appearance:none;position:relative;width:49px;height:28px;border-radius:20px;background:#dedfdc;border:1px solid #bec4bd}
 .wc-toggle input:before{content:'';position:absolute;border-radius:50%;width:22px;height:22px;left:2px;top:2px;background:white;box-shadow:0 1px 3px #0003}
-.wc-flow .wc-toggle input:checked{background:#16583b}.wc-toggle input:checked:before{left:23px}
+:is(.wc-flow,.seller-design .wp-wizard) .wc-toggle input:checked{background:#16583b}.wc-toggle input:checked:before{left:23px}
 .wc-flow .wc-private label small{display:inline-block;margin:0;background:#eaf0e5;border-radius:5px;padding:1px 6px}
 .wc-chips button{padding:8px 12px}.wc-flow .wc-stock td{padding:5px}
 .wc-flow .wc-warning strong{display:flex;align-items:center;gap:12px}.wc-warning svg{color:#a87014}
@@ -109,3 +109,15 @@
 .wc-saved-total{font-size:1.15em}
 .wc-saved-grid table{text-align:center;border:1px solid var(--wc-line)}
 .wc-saved-grid td,.wc-saved-grid th{border:1px solid var(--wc-line);text-align:center}
+
+.seller-design .wz-personal .wz .wp-wizard{max-width:none;margin:0;border:0;background:transparent;padding:0;--wc-line:#d8d7cc;--wc-ink:#143b2d;--wc-leaf:#edf1e6}
+.wp-wizard>.seller-heading{margin:0 0 .75rem}
+.seller-design .wz-personal .wp-wizard .wp-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:.5rem 0 1rem;padding:0;gap:.35rem}
+.seller-design .wp-wizard .wp-steps li{display:flex;align-items:center;gap:.35rem;padding:.4rem;min-width:0}
+.seller-design .wp-wizard .wc-info{grid-template-columns:minmax(0,3fr) minmax(0,2fr);align-items:start}
+.seller-design .wp-wizard form>fieldset{display:block;min-width:0;border:0;padding:0;margin:0}
+.wp-wizard .wc-card{min-width:0;border:1px solid #d8d7cc;border-radius:.6rem;background:#fffefa}
+.wp-wizard .wp-step-actions{display:flex;justify-content:space-between;align-items:center;margin-top:1rem}
+.seller-design .wp-wizard .wc-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.seller-design .wp-wizard .wc-toggle input{min-height:0;padding:0;cursor:pointer}
+@media(max-width:760px){.seller-design .wp-wizard .wc-info,.seller-design .wp-wizard .wc-grid{grid-template-columns:minmax(0,1fr)}.seller-design .wp-wizard .wp-steps li{flex-direction:column;text-align:center}.wp-wizard .wp-steps small{line-height:1.2}}
