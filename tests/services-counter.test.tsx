@@ -23,6 +23,15 @@ it('only forwards explicit Counter paths and rejects injected owner scopes',()=>
  expect(transactionQuery(['transactions','finance','counter'],new URLSearchParams('offset=0&offset=1'),'GET')).toBe(false);
 });
 
+it('forwards scoped receipt downloads and outstanding filters',()=>{
+ const path=['transactions','finance','counter','SCS_one','document.pdf'];
+ expect(transactionPath(path,'GET')).toBe('services/finance/counter/SCS_one/document.pdf');
+ expect(transactionQuery(path,new URLSearchParams('document=SCR_one&language=fr'),'GET')).toBe(true);
+ expect(transactionQuery(path,new URLSearchParams('document=SCR_one&organization_ref=BUS_other'),'GET')).toBe(false);
+ expect(transactionQuery(path,new URLSearchParams('document=SCR_one&document=current'),'GET')).toBe(false);
+ expect(transactionQuery(path.slice(0,3),new URLSearchParams('offset=50&outstanding_only=true'),'GET')).toBe(true);
+});
+
 it('forwards only POST adjustments with valid sale references and no owner injection',()=>{
  const path=['transactions','finance','counter','SCS_one','adjustments'];
  expect(transactionPath(path,'POST')).toBe('services/finance/counter/SCS_one/adjustments');

@@ -42,3 +42,11 @@ then website. Disposable PostgreSQL runtime checks passed before deployment.
 - Read-only production smoke: English/French Services pages return 200, the unauthenticated Counter gateway returns 401, and API health returns 200. No live customer transactions or WhatsApp messages were created.
 - Render Auto-Deploy remains Off. This final closeout changes documentation only; the live application SHAs above remain authoritative.
 - Local release evidence: `C:/NIHILOBA/release-evidence/services-counter-20261026`, including CI results and screenshots of both successful Render deployments.
+
+## Personal Comptoir update, 13 November 2026
+
+Nouvelle vente opens the saved catalogue beside the ticket. Select a priced package to add it directly, or enter Prix convenu for an unpriced or text-priced prestation. The ticket keeps one currency. Document settings and the authorized Wenze cash register open in a new tab so the service ticket stays in memory.
+
+Enregistrer le paiement uses the Wenze cash keypad. An overpayment records only the sale total and snapshots the tender and change. A partial payment retains the balance. Mobile Money uses the provider declaration. An uncertain save retries with the same key and payload.
+
+Historique et reçus defaults to all sales. The remaining-balance filter runs before pagination. Receipts open alongside the list on desktop and in a detail view on mobile. Providers can print the chosen document or download its PDF. Hiding the Comptoir shortcut keeps it in Autres outils.

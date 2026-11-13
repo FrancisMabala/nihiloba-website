@@ -1,4 +1,3 @@
-import {workplaceCopy} from '../../app/lib/services-workplace-copy';
 import {test,expect} from '@playwright/test';
 import {servicesProviderOffering} from './fixtures/services-provider';
 import {counterCopy} from '../../app/lib/services-counter-copy';
@@ -14,6 +13,7 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
  await page.route('**/api/**',async route=>{
   const path=new URL(route.request().url()).pathname.replace(/\/$/,'');const reply=(json:unknown)=>route.fulfill({json});
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Owner'}});
+  if(path.endsWith('/services/onboarding'))return reply({progress:[],remaining_capacity:4,professional_profile:{public_ref:'SVI_one',revision:1,name:'Provider',primary_category:'repair_maintenance'}});
   if(path.endsWith('/capabilities'))return reply({capabilities:['profile','bills','manual_journal','basic_totals','structured_availability']});
   if(path.endsWith('/services'))return reply({profiles:[{...servicesProviderOffering,service_name:'Hair styling',packages:[]}]});
   if(path.endsWith('/bill-presentation'))return reply({preview:{display_name:'Belleza Salon'}});
@@ -32,8 +32,8 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',820],['sw',320]] as co
   return route.fulfill({status:404,json:{detail:'unavailable'}});
  });
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?view=counter`);
- await page.getByRole('button',{name:workplaceCopy[locale].history,exact:true}).click();
- await page.getByRole('button',{name:/Original client · 2026/}).click();
+ await page.getByRole('button',{name:t.archive,exact:true}).click();
+ await page.getByRole('button',{name:/2026-10-01.*Hair styling/}).click();
  const panel=page.locator('.svc-counter-adjustments');
  await panel.getByLabel(a.amount,{exact:true}).fill('5');
  await panel.getByRole('button',{name:a.refund,exact:true}).click();
@@ -70,6 +70,7 @@ test('payment reversal retries the identical request after an uncertain response
  await page.route('**/api/**',async route=>{
   const path=new URL(route.request().url()).pathname.replace(/\/$/,'');const reply=(json:unknown)=>route.fulfill({json});
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Owner'}});
+  if(path.endsWith('/services/onboarding'))return reply({progress:[],remaining_capacity:4,professional_profile:{public_ref:'SVI_one',revision:1,name:'Provider',primary_category:'repair_maintenance'}});
   if(path.endsWith('/capabilities'))return reply({capabilities:['profile','bills','manual_journal','basic_totals','structured_availability']});
   if(path.endsWith('/services'))return reply({profiles:[servicesProviderOffering]});
   if(path.endsWith('/bill-presentation'))return reply({preview:{display_name:'Salon'}});
@@ -84,7 +85,7 @@ test('payment reversal retries the identical request after an uncertain response
   }
   if(path.endsWith('/reviews'))return reply({reviews:[]});return route.fulfill({status:404,json:{detail:'unavailable'}});
  });
- await page.goto('/shida/seller/services?view=counter');await page.getByRole('button',{name:workplaceCopy.en.history,exact:true}).click();await page.getByRole('button',{name:/Retry client · 2026/}).click();
+ await page.goto('/shida/seller/services?view=counter');await page.getByRole('button',{name:t.archive,exact:true}).click();await page.getByRole('button',{name:/2026-10-01.*Hair styling/}).click();
  const panel=page.locator('.svc-counter-adjustments');
  await panel.getByRole('combobox',{name:a.title,exact:true}).selectOption('payment_reversal');
  await panel.getByRole('combobox',{name:t.receiptChoice,exact:true}).selectOption('SCR_retry');

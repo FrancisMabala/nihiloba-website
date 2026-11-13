@@ -175,7 +175,7 @@ export function ServicesManagement({binding,locale,accountName="",offeringRef=nu
  const isSetup=rows.length===0;
  const newServiceForm=<ServicesOnboardingWizard locale={lang} accountName={accountName??""} categories={categoryLabels[lang]} call={call} onCreated={async ref=>{setNewDraft({});setSettingUp(false);await refresh(true);setSelected(ref);setEditorOpen(true);setEditorStep(2);navigate("services");}}/>;
  if(isSetup&&settingUp&&can("profile"))return <section className="container svc-onboarding-page" lang={lang}><h1 className="sr-only">{setup.title}</h1>{newServiceForm}</section>;
- if(isSetup)return <section className="rst container svc-provider-setup" lang={lang} aria-labelledby="svc-setup-title">
+ if(isSetup&&view!=="counter")return <section className="rst container svc-provider-setup" lang={lang} aria-labelledby="svc-setup-title">
   <header className="svc-setup-heading"><p className="svc-setup-eyebrow">SHIDA / {ui.area}</p><h1 id="svc-setup-title">{setup.title}</h1><p>{setup.note}</p></header>
   <div className="svc-setup-card">
    <header><h2 id="svc-setup-card-title">{setup.formTitle}</h2><p>{setup.formNote}</p></header>
@@ -185,12 +185,12 @@ export function ServicesManagement({binding,locale,accountName="",offeringRef=nu
   </div>
   {!settingUp&&<p className="svc-setup-back"><Link href={`${lang==="en"?"":`/${lang}`}/shida/services`} onClick={async event=>{event.preventDefault();const href=event.currentTarget.href;if(await leaveWork())window.location.assign(href);}}><span aria-hidden="true">← </span>{entry.browse}</Link></p>}
  </section>;
- const navigation:ProviderView[]=["overview",...(can("requests_quotes")?["available" as const,"proposals" as const]:[]),...(can("reservations")&&can("messages")?["work" as const]:[]),...(can("structured_availability")?["calendar" as const]:[]),...(can("profile")?["services" as const]:[]),...(can("manual_journal")&&can("bills")&&profileAnchor?.professional_settings?.counter_enabled!==false?["counter" as const]:[]),...(can("manual_journal")||can("basic_totals")||can("operational_reports")?["finance" as const]:[]),...(can("quote_templates")||can("bill_templates")?["templates" as const]:[]),...(can("bills")?["settings" as const]:[])];
+ const navigation:ProviderView[]=["overview",...(can("requests_quotes")?["available" as const,"proposals" as const]:[]),...(can("reservations")&&can("messages")?["work" as const]:[]),...(can("structured_availability")?["calendar" as const]:[]),...(can("profile")?["services" as const]:[]),...(can("manual_journal")&&can("bills")?["counter" as const]:[]),...(can("manual_journal")||can("basic_totals")||can("operational_reports")?["finance" as const]:[]),...(can("quote_templates")||can("bill_templates")?["templates" as const]:[]),...(can("bills")?["settings" as const]:[])];
  const selectedView=navigation.includes(view)?view:"overview";
  const fieldLabels:Record<string,string>={name:t.name,service_name:t.service,category:t.category,description:t.description,service_duration_minutes:t.duration,commune:t.area,service_location_type:t.location,home_service_available:t.home,booking_mode:t.booking,availability:t.availability};
  return <section aria-label={t.title} className="svc-workspace svc-workday container seller-layout" lang={lang}>{confirmation}
   <aside className="svc-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="S" title={ui.title} subtitle={ui.personal}/>
-   <ServicesProviderNavigation locale={lang} items={navigation} current={selectedView} onNavigate={async key=>{if(["calendar","share","counter","finance"].includes(selectedView)&&!(await leaveWork()))return;setCalendarTab("calendar");navigate(key);}}/>
+   <ServicesProviderNavigation locale={lang} items={navigation} counterShortcut={profileAnchor?.professional_settings?.counter_enabled!==false} current={selectedView} onNavigate={async key=>{if(["calendar","share","counter","finance"].includes(selectedView)&&!(await leaveWork()))return;setCalendarTab("calendar");navigate(key);}}/>
 
 
   </aside>
