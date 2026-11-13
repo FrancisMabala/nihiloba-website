@@ -82,7 +82,7 @@ export function transactionQuery(parts:string[], query:URLSearchParams, method:s
   if(parts.length===2 && parts[1]==='requests' && method==='GET')
     return [...query].every(([key,value])=>query.getAll(key).length===1 && (key==='offering_ref' ? /^SVC_[A-Za-z0-9_-]{1,28}$/.test(value) : key==='offset' && /^\d{1,6}$/.test(value)));
   return [...query].every(([key,value]) => method === 'GET' && key === 'offset' && query.getAll(key).length === 1
-    && /^\d{1,6}$/.test(value) && (parts.length === 2 && ['requests','reservations'].includes(parts[1]) || parts[1] === 'requests' && parts[3] === 'quotes' || parts[1] === 'messages' && parts.length === 3 || parts[1] === 'reservations' && parts[3] === 'customer-history' && parts.length === 4));
+    && /^\d{1,6}$/.test(value) && (parts.length === 2 && ['requests','reservations','messages'].includes(parts[1]) || parts[1] === 'requests' && parts[3] === 'quotes' || parts[1] === 'messages' && parts.length === 3 || parts[1] === 'reservations' && parts[3] === 'customer-history' && parts.length === 4));
 }
 export function transactionSearch(parts:string[], query:URLSearchParams): URLSearchParams {
   const result = new URLSearchParams(query);
