@@ -24,6 +24,7 @@ import {listingText} from "../../lib/personal-missions-copy";
 import "./mission-management.css";
 import { RecruitmentContact } from "./recruitment-contact";
 import { ExternalJobAction, JobPublicActions, JobViewTracker } from "./job-public-actions";
+import { EmployerPageView } from "./employer-page-view";
 import { MarketplaceImage } from "./marketplace-image";
 import { JobResultsLink, JobReportLink } from "./job-public-actions";
 import { marketplacePath, MarketplaceState, publicLocation } from "./marketplace";
@@ -251,6 +252,7 @@ export async function JobEmployerPage({locale,slug}:{locale:Locale;slug:string})
   const registration=process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==="true"
     ? `${marketplacePath(locale,"/shida/register")}?employer=${ref}` : businessEntry;
   return <div className="container employer-page">
+    {directory && <EmployerPageView key={employer.public_ref} reference={employer.public_ref}/>}
     <Link className="employer-back" href={jobsPath}>← {c.back}</Link>
     <header>
       <div className="employer-title-row"><div className="employer-avatar"><MarketplaceImage src={safePublicImageUrl(employer.profile_image?.url)} alt="" fallback={Array.from(employer.name.trim())[0]?.toLocaleUpperCase(locale)||"•"} sizes="80px"/></div>

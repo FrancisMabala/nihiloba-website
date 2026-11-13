@@ -32,3 +32,7 @@ Directory organizations use `identity_type: organization_directory` and are desc
 ## Operational dependency
 
 This UI depends on the Backend Batch 5A public Jobs DTO, the controlled external-action endpoint, entity-action continuation endpoint, and external view/share endpoints. Live verification still requires approved direct/external production fixtures and reachable API/CORS/network configuration. Batch 6 can expand Backend-provided email-assisted actions, direct-job analytics, and employer follow capability coverage without changing the anonymous web boundary.
+
+### Employer page measurement
+
+A visible directory employer page sends one observation for its canonical employer reference per page mount. Public reads for metadata and link previews do not send observations. The public gateway forwards only the observation receipt and optional per-employer session identifier. The page honors Do Not Track and Global Privacy Control and works if storage or the measurement service is unavailable. The resulting counts are available in SHIDA Admin under **Employeurs → Statistiques**.

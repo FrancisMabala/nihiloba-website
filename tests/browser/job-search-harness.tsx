@@ -3,6 +3,7 @@ import {WenzeApiProvider} from '../../app/lib/wenze-seller-api';
 import {PersonalOfferSpace} from '../../app/components/shida/personal-offer-space';
 import {AccountSecurity} from '../../app/components/shida/account-security';
 import {ExternalJobAction} from '../../app/components/shida/job-public-actions';
+import {EmployerPageView} from '../../app/components/shida/employer-page-view';
 import {createRoot} from 'react-dom/client';
 import type {AnchorHTMLAttributes} from 'react';
 import {JobRelationshipActions} from '../../app/components/shida/job-relationship-actions';
@@ -19,7 +20,8 @@ export function useRouter(){return {push:(href:string)=>window.location.assign(h
 export default function Link(props:AnchorHTMLAttributes<HTMLAnchorElement>){return <a {...props}/>;}
 const query = new URLSearchParams(window.location.search);
 const locale = (window.location.pathname.match(/^\/(fr|ln|sw)\//)?.[1] ?? 'en') as keyof typeof jobSearchCopy;
-createRoot(document.getElementById('root')!).render(window.location.pathname.includes('/space') ?
+createRoot(document.getElementById('root')!).render(window.location.pathname.includes('/emplois/employeurs/ORGDIR_') ?
+  <EmployerPageView reference={window.location.pathname.split('/').filter(Boolean).pop()!}/> : window.location.pathname.includes('/space') ?
   <main className="account-space" lang={locale}><SpaceSidebar view="job-search" locale={locale}/><div className="space-content"><h1>{jobSearchCopy[locale].title}</h1>{query.get('view')==='listings'?<WenzeApiProvider binding={'a'.repeat(64)} onUnauthorized={()=>{}}><PersonalListings binding={'a'.repeat(64)} locale={locale}/></WenzeApiProvider>:query.get('kind')==='apply'?<MissionApply binding={'a'.repeat(64)} locale={locale} offer={query.get('offer')!}/>:query.get('view')==='job-offer'?<PersonalOfferSpace binding={'a'.repeat(64)} locale={locale} onUnauthorized={()=>{document.body.dataset.unauthorized='true'}}/>:query.get('view')==='settings'?<AccountSecurity binding={'a'.repeat(64)} locale={locale}/>:<JobSearchSpace locale={locale} binding={'a'.repeat(64)} initialSection={query.get('section') ?? 'overview'} onUnauthorized={()=>{document.body.dataset.unauthorized='true';}}/>}</div></main> :
   <><JobRelationshipActions locale={locale} jobReference={window.location.pathname.split('/').filter(Boolean).pop()!} canSave canFollow/>
    {query.has('external')&&<ExternalJobAction locale={locale} jobReference={window.location.pathname.split('/').filter(Boolean).pop()!} action={{mode:'redirect',action:'redirect',endpoint:'external-action'}}/>}</>);
