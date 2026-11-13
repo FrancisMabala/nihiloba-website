@@ -1,9 +1,10 @@
 import {test,expect} from '@playwright/test';
 import {fixture} from './wenze-checkout-fixture';
 import path from 'node:path';
+import {readFile} from 'node:fs/promises';
 import bulk from '../../app/lib/wenze-bulk-copy.json';
 import {r6Text} from '../../app/lib/wenze-r6-copy';
-for(const width of [360,390,768,1440])test(`import explicit review ${width}`,async({page})=>{await page.setViewportSize({width,height:1000});const locale=width===390||width===1440?'fr':'en';const f=await fixture(page,{locale});const writes:string[]=[];const job={import_ref:'IMPORT_fixture',review_version:1,store_ref:'WNZ_fixture',store_name:'Boutique du Fleuve',original_filename:'products.csv',status:'review',column_mapping:{name:'Name',price:'Price'},source_columns:[{name:'Name',display_name:'Name',samples:['Controlled import']},{name:'Price',display_name:'Price',samples:['9000']}],summary:{ready:1,published:0},items:[{item_ref:'ROW_fixture',review_version:1,review_state:'ready',payload:{name:'Controlled import',price:'9000',currency:'CDF',category:'other',condition:'new',description:'Test',negotiable:false,stock:5,variant_type:null,variants:[],photos:[]},errors:[],warnings:[],duplicate_candidates:[],published_product_ref:null}],publication_runs:[]};await page.route('**/api/**/catalog-imports/**',async route=>{const path=new URL(route.request().url()).pathname.replace(/\/$/,'');if(path.endsWith('/options'))return route.fallback();if(route.request().method()!=='GET'){writes.push(path);if(path.endsWith('/catalog-imports'))return route.fulfill({json:job});if(path.endsWith('/publish'))return route.fulfill({json:{run_ref:'RUN_fixture',run_version:1,total:1,remaining:0,outcomes:[{item_ref:'ROW_fixture',outcome:'published'}]}});}if(path.endsWith('/catalog-imports'))return route.fulfill({json:{jobs:[],total:0}});return route.fulfill({json:job});});await page.goto(f.url+'&view=imports');await expect(page.locator('.wp-import-upload')).toBeVisible();await page.screenshot({path:path.join(process.env.WENZE_EVIDENCE??'test-results/products-evidence',`import-${width}.png`),fullPage:true});await page.locator('.wp-import-upload input').setInputFiles({name:'products.csv',mimeType:'text/csv',buffer:Buffer.from('Name,Price\nControlled import,9000')});await expect(page.locator('.wp-import')).toContainText('Controlled import');expect(writes.filter(p=>p.endsWith('/publish'))).toHaveLength(0);await page.getByRole('button',{name:r6Text(locale,'ready_snapshot'),exact:true}).click();expect(writes.filter(p=>p.endsWith('/publish'))).toHaveLength(0);await page.screenshot({path:path.join(process.env.WENZE_EVIDENCE??'test-results/products-evidence',`import-review-${width}.png`),fullPage:true});await page.getByRole('button',{name:bulk[locale].confirm.replace('{n}','1').replace('(s)',''),exact:true}).click();await expect.poll(()=>writes.filter(p=>p.endsWith('/publish')).length).toBe(1);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();expect(f.errors).toEqual([]);});
+for(const width of [360,390,768,1440])test(`import explicit review ${width}`,async({page})=>{await page.setViewportSize({width,height:1000});const locale=width===390||width===1440?'fr':'en';const f=await fixture(page,{locale});const writes:string[]=[];const job={import_ref:'IMPORT_fixture',review_version:1,store_ref:'WNZ_fixture',store_name:'Boutique du Fleuve',original_filename:'products.csv',status:'review',column_mapping:{name:'Name',price:'Price'},source_columns:[{name:'Name',display_name:'Name',samples:['Controlled import']},{name:'Price',display_name:'Price',samples:['9000']}],summary:{ready:1,published:0},items:[{item_ref:'ROW_fixture',review_version:1,review_state:'ready',payload:{name:'Controlled import',price:'9000',currency:'CDF',category:'other',condition:'new',description:'Test',negotiable:false,stock:5,variant_type:null,variants:[],photos:[]},errors:[],warnings:[],duplicate_candidates:[],published_product_ref:null}],publication_runs:[]};await page.route('**/api/**/catalog-imports/**',async route=>{const path=new URL(route.request().url()).pathname.replace(/\/$/,'');if(path.endsWith('/options'))return route.fallback();if(route.request().method()!=='GET'){writes.push(path);if(path.endsWith('/catalog-imports'))return route.fulfill({json:job});if(path.endsWith('/publish'))return route.fulfill({json:{run_ref:'RUN_fixture',run_version:1,total:1,remaining:0,outcomes:[{item_ref:'ROW_fixture',outcome:'published'}]}});}if(path.endsWith('/catalog-imports'))return route.fulfill({json:{jobs:[],total:0}});return route.fulfill({json:job});});await page.goto(f.url+'&view=imports');await expect(page.getByText(bulk[locale].intro,{exact:true})).toBeVisible();await expect(page.locator('.wp-import-upload')).toBeVisible();await page.screenshot({path:path.join(process.env.WENZE_EVIDENCE??'test-results/products-evidence',`import-${width}.png`),fullPage:true});await page.locator('.wp-import-upload input').setInputFiles({name:'products.csv',mimeType:'text/csv',buffer:Buffer.from('Name,Price\nControlled import,9000')});await expect(page.locator('.wp-import')).toContainText('Controlled import');expect(writes.filter(p=>p.endsWith('/publish'))).toHaveLength(0);await page.getByRole('button',{name:r6Text(locale,'ready_snapshot'),exact:true}).click();expect(writes.filter(p=>p.endsWith('/publish'))).toHaveLength(0);await page.screenshot({path:path.join(process.env.WENZE_EVIDENCE??'test-results/products-evidence',`import-review-${width}.png`),fullPage:true});await page.getByRole('button',{name:bulk[locale].confirm.replace('{n}','1').replace('(s)',''),exact:true}).click();await expect.poll(()=>writes.filter(p=>p.endsWith('/publish')).length).toBe(1);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();expect(f.errors).toEqual([]);});
 
 for(const locale of ['en','fr','ln','sw'] as const)test('import prompts for ambiguous quantity in '+locale,async({page})=>{
  const f=await fixture(page,{locale});
@@ -28,10 +29,26 @@ for(const locale of ['en','fr','ln','sw'] as const)test('import prompts for ambi
  await expect(page.locator('.wb-mapping')).toContainText('Qté');
  await page.locator('.wb-mapping select').first().selectOption('stock');
  await page.locator('.wb-mapping button').click();
- const cards=page.locator('.wp-import article.wz-card');
+ const cards=page.locator('.wb-review tbody tr');
  await expect(cards).toHaveCount(2);await expect(cards.first()).toContainText(bulk[locale].fileDup);
  await expect(page.getByRole('button',{name:r6Text(locale,'ready_snapshot')})).toHaveCount(0);
  await cards.first().getByRole('checkbox').last().check();await page.getByRole('button',{name:r6Text(locale,'ready_snapshot')}).click();
  await expect(page.getByRole('button',{name:bulk[locale].confirm.replace('{n}','1').replace('(s)','')})).toBeVisible();
  expect(publications).toBe(0);
+});
+
+test('downloads the French Excel template in the seller workspace',async({page})=>{
+ const f=await fixture(page,{locale:'fr'});
+ const workbook=await readFile('tests/browser/fixtures/wenze-catalog-fr.xlsx');
+ await page.route('**/catalog-imports/?**',r=>r.fulfill({json:{jobs:[],total:0}}));
+ await page.route('**/personal/wenze/catalog-imports/template/?language=fr',r=>r.fulfill({
+  body:workbook,contentType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  headers:{'Content-Disposition':'attachment; filename="shida-catalog.xlsx"'},
+ }));
+ await page.goto(f.url+'&view=imports');
+ const pending=page.waitForEvent('download');
+ await page.getByRole('button',{name:bulk.fr.download}).click();
+ const download=await pending;
+ expect(download.suggestedFilename()).toBe('shida-catalog.xlsx');
+ expect(await readFile((await download.path())!)).toEqual(workbook);
 });

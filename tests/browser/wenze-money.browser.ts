@@ -1,3 +1,4 @@
+import {readFile} from 'node:fs/promises';
 import {test,expect,type Page} from '@playwright/test';
 import {fixture} from './wenze-checkout-fixture';
 import {item} from './wenze-products-fixture';
@@ -94,4 +95,34 @@ test('empty expenses, saved totals, download and refresh at phone width',async({
  await page.route(/\/reports\/expenses\.csv/,route=>route.fulfill({status:204}));
  await downloadAction.click();await expect(page.locator('.wm-workspace')).toContainText('Aucune dépense à exporter');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+});
+
+for(const width of [390,1440])test('readable sale snapshots and report downloads '+width,async({page})=>{
+ await page.setViewportSize({width,height:900});
+ const f=await moneyFixture(page,'complete','fr');
+ const sale={sale_ref:'WPS_a',target_label:'Chemise élégante à manches longues - XL / Vert',target_type:'variant',occurred_at:'2026-11-12T21:39:00Z',quantity:2,unit:'piece',currency:'CDF',unit_sale_price:'15000',revenue:'30000',unit_cost_snapshot:'5000',cost_basis:'10000',gross_profit:'20000',status:'active'};
+ const report={run_ref:'WRA_a',run_type:'manual',period_start:'2026-10-13T23:00:00Z',period_end:'2026-11-12T23:00:00Z',generated_at:'2026-11-12T15:51:00Z',status:'generated',artifacts:[{format:'pdf',artifact_ref:'PDF_a',status:'active'},{format:'xlsx',artifact_ref:'XLS_a',status:'active'}]};
+ const fixtures='tests/browser/fixtures/';
+ const files:Record<string,Buffer>={
+  PDF_a:await readFile(fixtures+'wenze-report-a.pdf'),PDF_b:await readFile(fixtures+'wenze-report-b.pdf'),
+  XLS_a:await readFile(fixtures+'wenze-report.xlsx'),'physical-sales.csv':await readFile(fixtures+'wenze-sales.csv'),
+ };
+ await page.route('**/reports/**',route=>{
+  const path=new URL(route.request().url()).pathname.replace(/\/$/,'');
+  if(path.endsWith('physical-sales'))return route.fulfill({json:{sales:[sale,{...sale,sale_ref:'WPS_b',target_type:'product',target_label:'Chemise Blanc',quantity:1,revenue:'15000',cost_basis:null,unit_cost_snapshot:null,gross_profit:null,status:'reversed'}]}});
+  if(path.endsWith('/history'))return route.fulfill({json:{reports:[report,{...report,run_ref:'WRA_b',generated_at:'2026-11-12T15:52:00Z',artifacts:[{format:'pdf',artifact_ref:'PDF_b',status:'active'}]},{...report,run_ref:'WRA_c',run_type:'scheduled_weekly',period_start:'2026-11-02T00:00:00Z',period_end:'2026-11-09T00:00:00Z',artifacts:[]}]}});
+  const file=path.split('/').at(-1)!;
+  return file in files?route.fulfill({body:files[file],headers:{'Content-Disposition':'attachment; filename="'+file+'"'}}):route.fallback();
+ });
+ await page.goto(f.url+'&view=reports&reportZone=Africa%2FKinshasa');
+ const sales=page.locator('.wr-sales'),history=page.locator('.wr-history');
+ await expect(page.getByText(/1 vente enregistrée/)).toBeVisible();await expect(sales).toContainText('22:39');await expect(sales).toContainText('Annulée');
+ await sales.getByRole('button',{name:/Chemise élégante/}).click();const detail=sales.locator('.wr-detail').first();await expect(detail).toContainText(/2 pièces × 15\s000 CDF/);await expect(detail).toContainText(/Coût total des articles10\s000 CDF/);await expect(detail).toContainText(/Marge brute20\s000 CDF/);await sales.getByRole('button',{name:'Chemise Blanc'}).click();await expect(sales).toContainText('Coût non renseigné');
+ await expect(history.locator('tbody tr')).toHaveCount(3);await expect(history.locator('#WRA_a td').first()).toHaveText(await history.locator('#WRA_b td').first().innerText());await expect(history.locator('#WRA_a')).toContainText('16:51');
+ await history.locator('#WRA_c summary').click();await expect(history.locator('#WRA_c small')).toHaveText(/01:00.*00:59/);
+ for(const [button,file] of [[history.locator('#WRA_a').getByRole('button',{name:'PDF'}),'PDF_a'],[history.locator('#WRA_a').getByRole('button',{name:'Excel'}),'XLS_a'],[history.locator('#WRA_b').getByRole('button',{name:'PDF'}),'PDF_b'],[page.getByRole('button',{name:'Exporter les ventes en boutique (CSV)'}),'physical-sales.csv']] as const){
+  const pending=page.waitForEvent('download');await button.click();const result=await pending;expect(await readFile((await result.path())!)).toEqual(files[file]);
+ }
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await sales.scrollIntoViewIfNeeded();await page.screenshot({path:'test-results/money-evidence/reports-'+width+'.png',fullPage:true});
 });

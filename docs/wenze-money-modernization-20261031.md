@@ -53,3 +53,7 @@ Tests: `tests/wenze-money.test.tsx`, `tests/browser/wenze-money.browser.ts`, `pl
 ## Release and rollback
 
 After specific Money release approval, deploy the validated website main commit on Render, verify its exact live SHA, then inspect all six destinations using existing data without recording expenses, changing costs or sending reports. Keep urgent WhatsApp templates enabled. Roll back the website by deploying `d0c596d5228c8584c56aa23393f9cbba1638d936` if necessary; no data rollback is required.
+
+## November 2026 report tables
+
+The store sales table expands each sale into its recorded quantity, price, cost and gross margin. Report history lists each run separately and downloads the artifact attached to that run. Display dates follow the selected shop time zone. Partial-day periods expand to show the first and last covered minutes.

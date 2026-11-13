@@ -19,7 +19,7 @@
     "soldOption": "{option} épuisée",
     "sizes": "Voir les {n} tailles",
     "formats": "Voir les {n} formats",
-    "options": "Voir les options",
+    "options": "Voir les variantes",
     "welcome": "Bienvenue dans votre stock !",
     "firstEmpty": "Ajoutez votre premier produit pour suivre ce qu’il vous reste à vendre.",
     "noOut": "Aucun produit ni aucune option n’est épuisé.",
@@ -42,7 +42,9 @@
     "back": "Retour à l’inventaire",
     "pieces": "Pièces",
     "packs": "Lots",
-    "lowOption": "{option} · Plus que {n} à vendre"
+    "lowOption": "{option} · Plus que {n} à vendre",
+    "colours": "Voir les {n} couleurs",
+    "singleVariant": "Voir la variante"
   },
   "en": {
     "title": "Inventory",
@@ -64,7 +66,7 @@
     "soldOption": "{option} sold out",
     "sizes": "View {n} sizes",
     "formats": "View {n} formats",
-    "options": "View options",
+    "options": "View variants",
     "welcome": "Welcome to your inventory!",
     "firstEmpty": "Add your first product to track what you have left to sell.",
     "noOut": "No products or options are sold out.",
@@ -87,7 +89,9 @@
     "back": "Back to inventory",
     "pieces": "Pieces",
     "packs": "Packs",
-    "lowOption": "{option} · Only {n} left to sell"
+    "lowOption": "{option} · Only {n} left to sell",
+    "colours": "View {n} colours",
+    "singleVariant": "View variant"
   },
   "ln": {
     "title": "Inventaire",
@@ -132,7 +136,9 @@
     "back": "Zongá na inventaire",
     "pieces": "Biteni",
     "packs": "Bapake",
-    "lowOption": "{option} · Etikali kaka {n} ya kotɛka"
+    "lowOption": "{option} · Etikali kaka {n} ya kotɛka",
+    "colours": "Talá balangi {n}",
+    "singleVariant": "Talá lolenge"
   },
   "sw": {
     "title": "Hesabu ya bidhaa",
@@ -177,6 +183,8 @@
     "back": "Rudi kwenye stoo",
     "pieces": "Vipande",
     "packs": "Vifurushi",
-    "lowOption": "{option} · Zimebaki {n} tu za kuuza"
+    "lowOption": "{option} · Zimebaki {n} tu za kuuza",
+    "colours": "Angalia rangi {n}",
+    "singleVariant": "Angalia chaguo"
   }
 }

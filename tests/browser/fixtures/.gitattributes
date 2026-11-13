@@ -1,0 +1,2 @@
+wenze-report-*.pdf binary
+wenze-sales.csv -text whitespace=trailing-space,cr-at-eol

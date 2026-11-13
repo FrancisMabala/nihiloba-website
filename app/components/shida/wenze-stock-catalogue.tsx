@@ -49,20 +49,21 @@ export function InventoryCatalogue({products,balances,locale,onEdit,onCreate}:{p
       const {product,lines}=group;
       const keys=Array.from(new Set(lines.flatMap(l=>Object.keys(l.attributes))));
       const different=keys.filter(k=>new Set(lines.map(l=>l.attributes[k])).size>1);
-      const dimension=different.length<=1?(different[0]??keys[0]):null;
+      const dimension=different.length===1?different[0]:keys.length===1?keys[0]:null;
+      const hasVariants=Boolean(product.variant_type && lines.length);
       const isOpen=expanded[product.public_ref]??(filter==='out'||filter==='low');
       const state=group.available===0?'out':group.low.length?'low':group.canSell?'available':'untracked';
       const warnings=group.available===0?[]:[...group.out,...group.low].filter(l=>l.option);
       const edit=(line?:StockLine)=>onEdit(product.public_ref,line?.target);
-      return <article key={product.public_ref} className="wi-product" data-expanded={!!product.variant_type&&isOpen}><div className="wi-columns">
+      return <article key={product.public_ref} className="wi-product" data-expanded={hasVariants&&isOpen}><div className="wi-columns">
         <div className="wi-identity">{product.photos?.[0]?<Image unoptimized src={product.photos[0].url} alt="" width={120} height={118}/>:<span className="wi-placeholder"><ShopIcon name="stock"/></span>}
           <div><h2>{product.name}</h2>{warnings.map(line=><p className={line.available===0?'wi-out':'wi-low'} key={line.target}>{t(line.available===0?'soldOption':'lowOption',{option:shortOption(line,lines),n:line.available??''})}</p>)}
-          {product.variant_type&&<button className="wi-link" aria-expanded={isOpen} onClick={()=>setExpanded({...expanded,[product.public_ref]:!isOpen})}>{isOpen?'▴':'▾'} {t(dimension==='size'||dimension==='shoe_size'?'sizes':dimension==='volume'||dimension==='pack'||dimension==='weight'?'formats':'options',{n:lines.length})}</button>}</div></div>
+          {hasVariants&&<button className="wi-link" aria-expanded={isOpen} onClick={()=>setExpanded({...expanded,[product.public_ref]:!isOpen})}>{isOpen?'▴':'▾'} {lines.length===1?t('singleVariant'):t(dimension==='size'||dimension==='shoe_size'?'sizes':dimension==='colour'||dimension==='color'?'colours':dimension==='volume'||dimension==='pack'||dimension==='weight'?'formats':'options',{n:lines.length})}</button>}</div></div>
         <div className="wi-metric"><small>{t('onhand')}</small>{group.on_hand??'—'}</div><div className="wi-metric"><small>{t('reserved')}</small>{group.reserved??'—'}</div>
         <div className="wi-metric wi-sellable"><small>{t('sellable')}</small><strong>{group.available??'—'}</strong></div>
         <div className="wi-state"><span data-state={state}>{state==='out'?'⊖':state==='low'?'⚠':state==='available'?'✓':'—'} {state==='low'&&lines.length===1?t('lowHint',{n:group.available??''}):t(state)}</span><button className="wi-link" onClick={()=>edit()}>{savedText(locale,'editStock')}</button></div>
       </div>
-      {product.variant_type&&isOpen&&<div className="wi-versions"><table><thead><tr>{keys.length?keys.map(k=><th key={k}>{axis(k)}</th>):<th>{savedText(locale,'version')}</th>}{(['onhand','reserved','sellable'] as const).map(k=><th key={k}>{t(k)}</th>)}</tr></thead><tbody>{lines.map(line=><tr key={line.target} data-match={filter==='out'&&line.available===0||filter==='low'&&group.low.includes(line)}>
+      {hasVariants&&isOpen&&<div className="wi-versions"><table><thead><tr>{keys.length?keys.map(k=><th key={k}>{axis(k)}</th>):<th>{savedText(locale,'version')}</th>}{(['onhand','reserved','sellable'] as const).map(k=><th key={k}>{t(k)}</th>)}</tr></thead><tbody>{lines.map(line=><tr key={line.target} data-match={filter==='out'&&line.available===0||filter==='low'&&group.low.includes(line)}>
         {(keys.length?keys:['']).map((k,i)=><td key={k} data-label={k?axis(k):savedText(locale,'version')}>{i===0?<button className="wi-link" aria-label={savedText(locale,'editStock')+' · '+line.option} onClick={()=>edit(line)}>{line.attributes[k]??line.option}</button>:line.attributes[k]??'—'}</td>)}
         <td data-label={t('onhand')}>{line.on_hand??'—'}</td><td data-label={t('reserved')}>{line.reserved??'—'}</td><td data-label={t('sellable')}><b>{line.available??'—'}</b></td>
       </tr>)}</tbody></table></div>}</article>;

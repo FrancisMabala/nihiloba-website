@@ -153,7 +153,7 @@ export function WenzeOperations({store,locale,view,onChoose,onEditStock,onCreate
  {conflict&&<button disabled={busy} onClick={()=>void guard(async()=>{await reload();if(view==='inventory'||view==='sales')await loadStock();if(count)setCount(await read(`inventory/counts/${enc(str(count.count_ref))}`));if(adoption)setAdoption(await read(`${productPath}/inventory-adoption`));setConflict(false);setMessage('review');})}>{t('refresh')}</button>}
  <fieldset disabled={busy||!!pending||conflict} className="wz-controls">
  {view==='inventory'&&<div className="wi-page">
- <h1>{words('title')}</h1><p className="wi-intro">{words('intro')}</p>
+
  <div className="wi-actions">
    <button className="seller-primary" onClick={()=>stockMode('receive')}><SellerWorkspaceIcon name="stock"/>{words('receive')}</button>
    <button onClick={()=>stockMode('count')}><SellerWorkspaceIcon name="calendar"/>{words('count')}</button>

@@ -73,3 +73,17 @@ test('receiving and counting use different quantities',async({page})=>{
   await page.getByRole('dialog').getByRole('button',{name:sellerText('en','post'),exact:true}).click();
   await expect.poll(()=>writes).toEqual(['receipt','count:0','post']);
 });
+
+for(const width of [390,1440])test('catalogue tabs retain position '+width,async({page})=>{
+ await page.setViewportSize({width,height:900});const f=await inventoryFixture(page);
+ await page.route('**/catalog-imports/?**',r=>r.fulfill({json:{jobs:[],total:0}}));await page.goto(f.url.replace('view=inventory','view=catalog'));await expect(page.locator('.wp-catalog')).toBeVisible();
+const tabs=page.locator('.wz-section-tabs').first();await expect(tabs).toBeVisible();await page.evaluate(()=>document.fonts.ready);const first=await tabs.boundingBox();
+ await capture(page,'products-'+width);
+ for(const index of [1,2,0]){
+  await tabs.getByRole('button').nth(index).click();await expect(tabs.getByRole('button').nth(index)).toHaveAttribute('aria-current','page');
+  if(index===1)await expect(page.locator('.wi-search')).toBeVisible();
+  if(index===2)await expect(page.locator('.wp-import-upload')).toBeVisible();
+  const box=await tabs.boundingBox();expect(Math.abs(box!.x-first!.x)).toBeLessThan(2);expect(Math.abs(box!.y-first!.y)).toBeLessThan(2);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ }
+});

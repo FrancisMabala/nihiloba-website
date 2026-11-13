@@ -57,3 +57,7 @@ Warm background, green active controls, compact rows, four numbered stages, prod
 Open **Manage** from Products to view the product under the same seller header, shop title and catalogue tabs. **Back to products** restores the search, status and page, including after changing language. The link beneath the cover opens the photo tools, and the description can be expanded beside the product actions.
 
 Stock uses the inventory projection and the product’s option attributes. A single-version product shows only quantities. The selling price applies to every version in the current catalogue model. The version selector loads the protected purchase cost for that version. The amount before expenses is shown when both prices are in the same currency. Product labels and their print and PDF controls retain their separate access checks.
+
+## November 2026 inventory and import update
+
+Products, inventory and catalog import share the personal seller heading and tab bar. The inventory list groups balances by product and expands only products with variants. Receiving and counting use their existing confirmation flows. Catalog import provides the Excel template beside the file picker and retains the mapping, row correction and publication review steps.

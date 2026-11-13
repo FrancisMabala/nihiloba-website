@@ -7,6 +7,8 @@ import {moneyText} from '../../lib/wenze-money-copy';
 import {moneyValue,ComparisonChart} from './wenze-money-dashboard';
 import {WenzeReportFacts} from './wenze-report-facts';
 
+import {ShopSalesTable,ReportHistoryTable} from './wenze-period-tables';
+
 type Row=Record<string,unknown>;
 const obj=(v:unknown)=>(v??{}) as Row;
 const list=(v:unknown):Row[]=>Array.isArray(v)?v:[];
@@ -30,7 +32,6 @@ export function PeriodReport({base,data,range,locale,zone}:{base:string;data:Row
   await download(base+'/reports/artifacts/'+file.artifact_ref);command.current.delete(key);refresh(v=>v+1);
  }
  const span=obj(data.period),currencies=list(data.currency_summaries),money=(v:unknown,code:unknown)=>v==null?'—':moneyValue(v,locale)+' '+code;
- const when=(v:unknown)=>v?new Date(String(v)).toLocaleString(locale,{timeZone:zone,dateStyle:'medium',timeStyle:'short'}):'—';
  const date=(v:unknown)=>v?new Date(String(v).slice(0,10)+'T12:00Z').toLocaleDateString(locale,{timeZone:'UTC',dateStyle:'medium'}):'—';
  return <div className="wm-period">{error&&<p role="alert">{t('unavailable')} <button onClick={()=>refresh(v=>v+1)}>{t('retry')}</button></p>}
  <section><header><h2>{word('Rapport de la période','reports')}</h2><span>{date(span.date_from)} – {date(span.date_to)}</span><div className="wz-actions">{['pdf','xlsx'].map(f=><button disabled={busy} key={f} onClick={()=>void action(()=>generate(f))}>{f==='pdf'?word('Télécharger le PDF','pdf'):word('Classeur Excel','xlsx')}</button>)}</div></header>
@@ -38,9 +39,8 @@ export function PeriodReport({base,data,range,locale,zone}:{base:string;data:Row
  {partial&&<div className="wm-warning">{locale==='fr'?`Coût d’achat connu pour ${money(s.revenue_with_known_cost,code)} sur ${money(s.total_revenue,code)} de ventes (${moneyValue(obj(c.completeness).revenue_cost_coverage_percent,locale)} %).`:m('warning')} <a href={'?store='+encodeURIComponent(String(data.store_ref??base.split('/').pop()))+'&view=costs'}>{m('viewCosts')}</a></div>}</div>;})}</section>
  {currencies.map(c=>{const code=String(c.currency);const items=list(list(obj(data.top_items).top_by_revenue).find(g=>g.currency===code)?.items);
  return <div className="wm-report-pair" key={code}><section><h3>{word('Ventes par canal','sales')}</h3>{[[word('En boutique','physical'),obj(c.physical_sales).total_revenue],[word('Sur Wenze','marketplace'),obj(c.marketplace_sales).total_revenue],[t('total'),obj(c.combined_sales).total_revenue]].map(([k,v])=><p key={String(k)}>{String(k)} <b>{money(v,code)}</b></p>)}</section><section><h3>{m('top')}</h3>{items.map((it,i)=><p key={i}>{String(it.label)} · {Object.values(obj(it.channel_breakdown)).reduce<number>((sum,ch)=>sum+Number(obj(ch).quantity??0),0)} {m('units')} <b>{money(it.revenue,code)}</b></p>)}</section></div>})}
- <section><header><h3>{word('Ventes en boutique','physical_sales')}</h3><button onClick={()=>void action(()=>download(base+'/reports/physical-sales.csv?'+range+'&language='+locale))}>{word('Exporter les ventes en boutique (CSV)','physical_sales')} {locale!=='fr'&&'CSV'}</button></header>
- {sales&&<p>{sales.filter(s=>s.status==='active').length} {word('ventes actives','active')} · {sales.filter(s=>s.status==='reversed').length} {word('ventes annulées','reversed')}</p>}
- {sales?.map(s=><details key={String(s.sale_ref)}><summary>{when(s.occurred_at)} · {String(s.target_label)} · {s.quantity as number} · {money(s.revenue,s.currency)} · {t(String(s.status))}</summary><WenzeReportFacts value={s} locale={locale} timeZone={zone}/></details>)}</section>
+ <section><header><h3>{word('Ventes en boutique','physical_sales')}</h3><button onClick={()=>void action(()=>download(base+'/reports/physical-sales.csv?'+range+'&language='+locale))}>{t('saleExport')}</button></header>
+ {sales&&<ShopSalesTable sales={sales} locale={locale} zone={zone}/>}</section>
  <details><summary>{m('moreReports')}</summary>{list(obj(data.comparison).currency_summaries).map(c=><ComparisonChart key={String(c.currency)} data={c} currency={String(c.currency)} locale={locale}/>)}<h3>{word('Stock actuel','inventory')} · {date(data.generated_at??new Date().toISOString())}</h3><WenzeReportFacts value={data.current_inventory} locale={locale} timeZone={zone}/><WenzeReportFacts value={data.low_stock} locale={locale} timeZone={zone}/>{currencies.map(c=><WenzeReportFacts key={String(c.currency)} value={obj(c.recorded_operating_expenses).top_categories} locale={locale} timeZone={zone}/>)}<a href={'?store='+base.split('/').pop()+'&view=expenses&'+range}>{m('expenses')}</a></details>
- <details open={new URLSearchParams(typeof window==='undefined'?'':window.location.search).has('run')||undefined}><summary>{word('Historique des rapports','history')}</summary>{history.map(h=><article key={String(h.run_ref)} id={String(h.run_ref)}><strong>{word('Rapport d’activité','reports')}</strong> · {when(h.period_start)} – {when(new Date(Date.parse(String(h.period_end))-1).toISOString())} · {when(h.generated_at)} · {t(String(h.status))} {list(h.artifacts).map(a=><button disabled={a.status!=='active'||busy} key={String(a.artifact_ref)} onClick={()=>void action(()=>download(base+'/reports/artifacts/'+a.artifact_ref))}>{String(a.format).toUpperCase()}</button>)}</article>)}</details></div>;
+ <ReportHistoryTable history={history} locale={locale} zone={zone} busy={busy} download={ref=>void action(()=>download(base+'/reports/artifacts/'+encodeURIComponent(ref)))}/></div>;
 }
