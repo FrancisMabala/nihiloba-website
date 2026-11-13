@@ -47,7 +47,7 @@ export function dashboardActivities(items:ManagedActivity[]):ManagedActivity[]{
   if(item.market!=='services'||!item.providerRef){result.push(item);continue;}
   const siblings=items.filter(other=>other.market==='services'&&other.providerRef===item.providerRef);
   result.push({...item,name:item.professionalName||item.name,image:item.professionalImage||item.image,
-   query:'view=overview',offeringCount:siblings.filter(row=>row.activeOffering).length,published:siblings.some(row=>row.published===true),
+   query:'view=services&provider='+encodeURIComponent(item.providerRef),offeringCount:siblings.filter(row=>row.activeOffering).length,published:siblings.some(row=>row.published===true),
    status:new Set(siblings.map(row=>row.status)).size===1?item.status:'mixed',
    missing:[...new Set(siblings.flatMap(row=>row.missing))],location:[...new Set(siblings.map(row=>row.location).filter(Boolean))].join(' · ')});
  }

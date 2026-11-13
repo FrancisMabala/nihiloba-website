@@ -12,7 +12,7 @@ export function overviewEntries(locale:string,activities:ManagedActivity[],extra
    if(item.individual)continue;
    const kind=item.market==='wenze'?'shop':item.market==='services'?'profile':item.foodType==='malewa'?'malewa':'restaurant';
    const publicRef=encodeURIComponent(item.providerRef??item.ref);
-   const query=item.providerRef?'view=overview&provider='+encodeURIComponent(item.providerRef):item.query;
+   const query=item.query;
    entries.push({kind,ref:item.providerRef??item.ref,name:item.name,image:item.image,location:item.location,status:item.status,
      offeringCount:item.offeringCount,standaloneService:kind==='profile'&&!item.providerRef,
      publicUrl:item.published?base+'/'+item.market+'/'+(item.providerRef?'providers/':'')+publicRef:undefined,

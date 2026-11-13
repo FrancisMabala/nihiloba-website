@@ -29,3 +29,9 @@ The preceding Calendar website release ae9eb6ca362bf9c575431da5cd4878a7d7572175 
 This new release is prepared on feature/services-professional-identity-20261031. Backend 33b03723 must deploy before the website. No migration is required. Roll back by redeploying backend 07e6931c and website ae9eb6c; additive biography data can remain. The new release has not been deployed.
 
 Frontend validation: production build and targeted ESLint passed; 18 gateway unit tests and 47 distinct browser checks passed, including the final legacy-response check. Desktop/mobile captures cover 360, 390, 768 and 1440px, with additional 320px regression coverage. Publication field links, missing saved selections, preserved time-slot settings, validation errors, package retries, stale edits, new-service idempotency, first-name choice and capacity messaging were exercised. The GitHub combined-status connector returned no backend statuses; this is not a green CI claim.
+
+## Personal service catalog
+
+Manage services opens the professional catalog. The active-service count includes drafts and paused services. Archived services retain their references and history. Each service has four editing steps covering presentation, location and booking, prices and packages, and publication. The availability link opens the selected service in Calendar and returns to its editor.
+
+The service owns its base price. Fixed and starting prices carry an amount and a currency, including an explicit zero. A quote carries neither. Existing packages keep their own prices, durations and references. The marketplace and service counter read the same saved terms.

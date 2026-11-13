@@ -14,6 +14,7 @@ export function professionalBase(profile:PublicServiceProvider):string {
   : profile.location.city?.trim()||'';
 }
 export function professionalAction(item:PublicServiceSummary):'book'|'quote'|'details' {
+ if(item.intake_paused)return 'details';
  if(item.availability_mode==='time_slots')return 'book';
  if(item.requests_enabled)return 'quote';
  return 'details';

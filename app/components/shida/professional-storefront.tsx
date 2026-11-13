@@ -1,3 +1,4 @@
+import {offerPrice,catalogCopy} from "../../lib/service-catalog";
 import Link from 'next/link';
 import type {PublicServiceProvider,PublicServiceSummary,ServiceReviewCollection} from '../../types/shida-public';
 import {professionalAction,professionalBase,professionalCategory,storefrontCopy} from '../../lib/professional-storefront';
@@ -28,7 +29,7 @@ export function ProfessionalStorefront({profile,reviews,locale,labels}:{profile:
   <div className="professional-columns"><section id="professional-services" tabIndex={-1}><h2>{t.services}</h2>
    {profile.services.length?<div className="professional-service-list">{profile.services.map(item=>{const image=safePublicImageUrl(item.image_preview?.url),kind=professionalAction(item),price=item.starting_price?.price,formatted=price?/[A-Za-z]{3}|[$€£]/.test(price)?price:`${price}${item.starting_price?.currency?` ${item.starting_price.currency}`:''}`:null;return <article className="professional-service-row" key={item.public_ref} data-category={item.category}>
     <Link className="professional-service-photo" href={serviceHref(item)} aria-label={item.service_name}>{image?<MarketplaceImage src={image} alt={item.image_preview?.alt||item.service_name} fallback={labels.category(item.category)} sizes="88px"/>:<ProfessionalCategoryArt category={item.category}/>}</Link>
-    <div className="professional-service-text"><h3><Link href={serviceHref(item)}>{item.service_name}</Link></h3><p>{labels.category(item.category)}{item.duration_minutes!=null?` · ${labels.duration(item.duration_minutes)}`:''}</p>{labels.mode(item)&&<small>{labels.mode(item)}</small>}{formatted&&<strong>{t.from} {formatted}</strong>}</div>
+    <div className="professional-service-text"><h3><Link href={serviceHref(item)}>{item.service_name}</Link></h3><p>{labels.category(item.category)}{item.duration_minutes!=null?` · ${item.availability_mode==="flexible"?catalogCopy(locale).estimated+" · ":""}${labels.duration(item.duration_minutes)}`:''}</p>{labels.mode(item)&&<small>{labels.mode(item)}</small>}{item.offer_terms?.pricing?<strong>{offerPrice(item.offer_terms,locale)}</strong>:formatted&&<strong>{t.from} {formatted}</strong>}</div>
     <Link className={kind==='book'?'professional-primary professional-service-action':'professional-service-action'} href={`${serviceHref(item)}${kind==='details'?'':'#booking'}`}>{t[kind]} <span aria-hidden="true">→</span></Link>
    </article>;})}</div>:<p className="professional-empty">{labels.empty}</p>}
   </section><aside className="professional-information">

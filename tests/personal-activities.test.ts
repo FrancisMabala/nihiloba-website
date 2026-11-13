@@ -44,7 +44,7 @@ it('groups service offerings by explicit professional identity without merging u
  ]},{capabilities:['profile']}).items;
  const result=dashboardActivities(items);
  expect(result).toHaveLength(3);
- expect(result[0]).toMatchObject({name:'Horizon',providerRef:'PRO_one',offeringCount:1,status:'mixed',published:true,query:'view=overview'});
+ expect(result[0]).toMatchObject({name:'Horizon',providerRef:'PRO_one',offeringCount:1,status:'mixed',published:true,query:'view=services&provider=PRO_one'});
  expect(result[1].providerRef).toBe('PRO_two');expect(result[2].ref).toBe('SVC_legacy');
 });
 it('deduplicates the same store reference without turning a quick-sale identity into a shop',()=>{

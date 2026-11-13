@@ -17,7 +17,7 @@ import {useWorkDraft} from "../../lib/restaurant-work";
 import {serviceLocalInput} from "../../lib/service-time";
 import "./services-counter.css";
 
-export type Offering={name?:string;public_ref:string;service_name:string;is_active:string;packages:{public_ref:string;name:string;price:string|null;currency:string|null}[]};
+export type Offering={offer_terms?:import("../../lib/service-catalog").OfferTerms;name?:string;public_ref:string;service_name:string;is_active:string;packages:{public_ref:string;name:string;price:string|null;currency:string|null}[]};
 export type Line={offering_ref:string;package_ref:string|null;quantity:number;unit_price:string;service_name:string;package_name:string|null;amount:string};
 type CounterSnapshot={sale_ref:string;customer_name:string|null;presentation:{display_name:string;cash_tendered?:string;cash_change?:string};lines:Line[];currency:string;total:string;received:string;outstanding:string;effective_date:string;refund_due?:string;revision?:number};
 type Payment={receipt_ref:string;amount:string;method:"cash"|"mobile_money"|"bank"|"other";effective_date:string;reversed?:boolean;document?:CounterSnapshot};

@@ -1,3 +1,4 @@
+import {catalogCopy} from "../../app/lib/service-catalog";
 import {providerCopy} from "../../app/lib/services-provider-copy";
 import {test,expect} from '@playwright/test';
 
@@ -7,13 +8,14 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  let row={public_ref:'SVC_personal',provider_ref:'SVI_personal',name:'Solo provider',service_name:'Home repair',category:'repair_maintenance',description:'Careful repairs',service_duration_minutes:60,commune:'Gombe',service_location_type:'private_home',home_service_available:'yes',booking_mode:'flexible',availability:'Weekdays',publication_origin:'unclassified',visible_to_customers:false,requests_enabled:false,is_active:'yes',revision:1,missing_fields:[],packages:[],rating:{average:null,count:0}};
  const writes:{path:string;body:Record<string,unknown>}[]=[];
  await page.route('**/api/shida/**',async route=>{
-  const request=route.request(),url=new URL(request.url()),path=url.pathname;
-  if(path.endsWith('/employment/session/'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Solo provider'}}});
+  const request=route.request(),url=new URL(request.url()),path=url.pathname.replace(/\/$/,"");
+  if(path.endsWith('/employment/session'))return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Solo provider'}}});
   if(path.endsWith('/services/capabilities'))return route.fulfill({json:{bundle:'personal_pro',access_policy:'pilot',purchase_required:false,capabilities:['profile','packages']}});
   if(path==='/api/shida/personal/services'){
    if(request.method()==='GET')return route.fulfill({json:{profiles:[row]}});
    return route.fulfill({status:403,json:{detail:'service_profile_access_denied'}});
   }
+  if(path.endsWith('/onboarding'))return route.fulfill({json:{progress:[],remaining_capacity:4,professional_profile:{public_ref:row.provider_ref,revision:1,name:row.name,primary_category:null}}});
   if(path.includes('/transactions/'))return route.fulfill({json:{requests:[],reservations:[],threads:[],has_more:false}});
   if(path.endsWith('/reviews'))return route.fulfill({json:{reviews:[]}});
   if(path.endsWith('/pilot-review')&&request.method()==='PATCH'){
@@ -29,7 +31,7 @@ for(const [locale,width] of [['en',320],['fr',390],['ln',430],['sw',768]] as con
  await expect(page.locator('.svc-pilot')).toHaveCount(0);
  await expect(page.getByText(new RegExp(labels[locale].pilot))).toHaveCount(0);
  await expect(page.getByRole('button',{name:'Personal Pro'})).toHaveCount(0);
- await page.locator('.svc-editor-steps button').nth(3).click();await page.locator('.svc-publication').getByRole('button',{name:labels[locale].publish,exact:true}).click();
+ await page.locator('.svc-editor-steps button').nth(3).click();await page.locator('.svc-publication').getByRole('button',{name:catalogCopy(locale).publish,exact:true}).click();
  await expect.poll(()=>writes.length).toBe(1);
  expect(writes[0].body).toEqual({expected_revision:1});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
