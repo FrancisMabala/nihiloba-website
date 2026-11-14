@@ -1,12 +1,13 @@
 'use client';
-import {restaurantClarityCopy} from '../../lib/restaurant-clarity-copy';
+import {intakeDesignText} from '../../lib/restaurant-intake-design-copy';
+import {SellerWorkspaceIcon as SpaceIcon} from './services-workspace-icon';
 import { useEffect, useRef, useState } from 'react';
 import { useRestaurantReturn } from '@/app/lib/use-restaurant-return';
 import { intakeSetupCopy } from '@/app/lib/restaurant-intake-setup-copy';
 import { localInstant } from '@/app/lib/restaurant-seller';
 import { dateText, useWorkRequest, useWorkDraft, type Configuration, type ServiceWindow, type Area } from '@/app/lib/restaurant-work';
 import { workText } from '@/app/lib/restaurant-work-copy';
-import { receivingCopy, receivingHeadline, type ReceivingReason } from '@/app/lib/restaurant-receiving';
+import { receivingCopy, type ReceivingReason } from '@/app/lib/restaurant-receiving';
 import type { RestaurantLocale } from '@/app/services/shida/restaurants-client';
 import { LocalTime } from './restaurant-local-time';
 import './restaurant-intake.css';
@@ -18,6 +19,8 @@ import { WeeklyEditor, WeeklySummary } from './restaurant-weekly-schedule';
 type Kind='pickup'|'delivery';
 export function RestaurantIntake({path,binding,locale,timezone,onFailure,onOpen}:{path:string;binding:string;locale:RestaurantLocale;timezone:string|null;onFailure:(e:unknown)=>void;onOpen?:(tab:string)=>void}) {
  const r=receivingCopy[locale],t=(k:string)=>workText(locale,k),api=useWorkRequest(binding,onFailure);
+ const d=(key:Parameters<typeof intakeDesignText>[1])=>intakeDesignText(locale,key);
+ const toggleLock=useRef(false);
  const c=scheduleCopy[locale],u=intakeSetupCopy[locale];
  const {discard,confirmation:discardDialog}=useDiscardChanges(locale);
  const {request:confirm,confirmation:replaceDialog}=useConfirmation(locale);
@@ -52,7 +55,7 @@ export function RestaurantIntake({path,binding,locale,timezone,onFailure,onOpen}
  const scheduleWrite=modern&&validSchedule(weekly);
  const legacyPause=modern&&!config?.schedules?.[kind]&&!enabled;
  const status=config?.receiving,verified=fresh&&api.online&&!api.conflict;
- const headline=receivingHeadline(config?.intake_released,status,verified);
+
  const reasons=(values:ReceivingReason[],weeklyMode=false)=>values.filter((v,i)=>values.indexOf(v)===i).map(v=><li key={v}><span>{v==='paused'?r.pausedReason:weeklyMode&&['windows','expired'].includes(v)?u.scheduleUnavailable:r[v]}</span>{onOpen&&['profile','address','timezone','menu','hours','closure'].includes(v)&&<button type="button" onClick={()=>onOpen(v==='menu'?'items':['hours','closure'].includes(v)?'hours':'profile')}>{v==='menu'?r.goMenu:['hours','closure'].includes(v)?r.goHours:r.goProfile}</button>}</li>);
  const blocked=status?.[kind].activation_blockers??(!config?.intake_released?['release'] as ReceivingReason[]:[]);
  const nowLocal=localInstant(new Date(now).toISOString(),timezone);
@@ -63,7 +66,7 @@ export function RestaurantIntake({path,binding,locale,timezone,onFailure,onOpen}
  const keepPickupPeriods=kind==='pickup'&&!enabled&&(!pickupWindowEdits||!windows.length);
  const invalid=modern?invalidDelivery||!legacyPause&&(!timezone||!validSchedule(weekly)):invalidDelivery||enabled&&(blocked.length>0||!timezone||invalidWindows)||kind==='pickup'&&!keepPickupPeriods&&invalidWindows;
  const availability=(value?:boolean)=>!verified?r.unknown:config&&!config.intake_released?r.blocked:value===undefined?r.unknown:value?r.ready:r.blocked;
- function edit(k:Kind){if(!config)return;const change=()=>{fill(config,k);setEditing(true);};if(dirty)discard(change);else change();}
+ async function edit(k:Kind){if(api.busy)return;const current=await api.run<Configuration>(`${path}/order-configuration`);if(!current)return;const change=()=>{fill(current,k);setEditing(true);};if(dirty)discard(change);else change();}
  function periods(values:ServiceWindow[]){return values.length?<ul className="rst-intake-periods">{values.map((w,i)=>{
   const start=localInstant(w.starts_at,timezone),end=localInstant(w.ends_at,timezone);
   return <li key={i}><time>{dateText(w.starts_at,locale,timezone)}</time> → <time>{dateText(w.ends_at,locale,timezone)}</time>{start.slice(0,10)!==end.slice(0,10)&&<small>{r.overnight}</small>}{Date.parse(w.ends_at)<=now?<strong>{r.expiredLabel}</strong>:Date.parse(w.starts_at)<=now?<small>{r.started}</small>:null}</li>;
@@ -82,17 +85,26 @@ export function RestaurantIntake({path,binding,locale,timezone,onFailure,onOpen}
    {review&&<aside className="rst-intake-confirm"><h4>{kind==='pickup'?r.reviewPickup:r.reviewDelivery}</h4><p>{enabled?r.enableEffect:r.pauseEffect}</p><p>{r[kind]} · {enabled?t('enabled'):r.paused}</p>{scheduleWrite?<WeeklySummary value={weekly} locale={locale}/>:keepPickupPeriods?<p>{r.keepPeriods}</p>:<ul>{windows.map((w,i)=><li key={i}>{w.starts_at.replace('T',' ')} → {w.ends_at.replace('T',' ')} · {timezone}</li>)}</ul>}{kind==='delivery'&&<p>{fee.amount} {fee.currency} · {areas.length} {t('areas')}</p>}</aside>}
    <div className="rst-actions"><button type="button" disabled={api.busy||!!api.pending} onClick={()=>{const cancel=()=>{if(config)fill(config,kind);setEditing(false);requestAnimationFrame(()=>editButtons.current[kind]?.focus());};if(dirty)discard(cancel);else cancel();}}>{r.cancel}</button><button className="button button-primary" disabled={!fresh||!api.online||api.busy||api.conflict||!config||(!api.pending&&(invalid||!dirty))}>{api.pending?t('retry'):review?r.confirm:kind==='pickup'?r.reviewPickup:r.reviewDelivery}</button></div>
   </form>) : null;
- return <section className="rst-card rst-work rst-intake" lang={locale}>{discardDialog}{replaceDialog}
-  <header><h2>{r.title}</h2><p>{restaurantClarityCopy[locale].intake}</p><div className="rst-intake-status" data-state={headline} role="status"><h3>{r[headline]}</h3><p>{!config?.intake_released&&config?r.release:headline==='available'?r.availableHelp:headline==='unknown'?r.noStatus:r.menu}</p>{config&&!config.intake_released&&<p>{r.nextRelease}</p>}</div><button type="button" disabled={api.busy||!api.online} onClick={()=>void refresh()}>{r.refresh}</button>{status&&<small>{r.checked} {dateText(status.evaluated_at,locale,timezone)} · {timezone}</small>}</header>
-  {!api.online?<p role="alert">{r.offline}</p>:!fresh&&<p>{r.stale}</p>}
-  <p className="rst-intake-preserved">{r.existing}</p>
+ function configured(k:Kind,value=config){return !!value?.[k]&&((value.schedules?.[k]?.weekly_periods.length??0)>0||(value[k]?.windows.length??0)>0)&&(k==='pickup'||!!value.delivery?.areas.length&&value.delivery.fee.amount!=='');}
+ function state(k:Kind){if(!verified||!status)return 'unknown';if(!config?.intake_released)return 'blocked';if(!configured(k))return 'setup';if(!config?.[k]?.enabled)return 'paused';if(status[k].web.available||status[k].whatsapp.available)return 'ready';if([...status[k].web.reasons,...status[k].whatsapp.reasons].some(v=>['hours','closure'].includes(v)))return 'closed';return 'blocked';}
+ async function toggle(k:Kind){if(toggleLock.current||api.busy)return;toggleLock.current=true;try{const current=await api.run<Configuration>(`${path}/order-configuration`);if(!current)return;if(!configured(k,current)){fill(current,k);setEditing(true);return;}const enabled=!current[k]!.enabled;const saved=current.schedules?.[k];const schedule=saved?{weekly_periods:saved.weekly_periods,minimum_lead_minutes:saved.minimum_lead_minutes,cutoff_minutes:saved.cutoff_minutes,allow_tomorrow:saved.allow_tomorrow}:null;const result=await api.run(`${path}/${k}-intake`,'PUT',{operation_key:crypto.randomUUID(),expected_updated_at:current.revision,enabled,windows:current.schedules?.[k]||k==='pickup'&&!enabled?[]:current[k]!.windows.map(w=>({starts_at:localInstant(w.starts_at,timezone),ends_at:localInstant(w.ends_at,timezone)})),...(schedule?{schedule}:{}),...(k==='delivery'?{fee:current.delivery!.fee,areas:current.delivery!.areas}:{})});if(result)await refresh(false);else setFresh(false);}finally{toggleLock.current=false;}}
+ function todayHours(k:Kind){const local=localInstant(status?.evaluated_at,timezone);if(!local)return '';const weekday=(new Date(local.slice(0,10)+'T12:00:00Z').getUTCDay()+6)%7;return config?.schedules?.[k]?.weekly_periods.filter(p=>p.weekday===weekday).map(p=>p.start+'–'+p.end).join(' · ')??'';}
+ const friendlyZone=(timezone??'').split('/').pop()?.replaceAll('_',' ')??'';
+ const checked=status?new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{timeZone:timezone??'UTC',hour:'2-digit',minute:'2-digit'}).format(new Date(status.evaluated_at)):'';
+ return <section className="rst-card rst-work rst-intake rst-intake-redesign" lang={locale}>{discardDialog}{replaceDialog}
+  <header><div><h2>{r.title}</h2><p>{d('intro')}</p></div><div className="rst-intake-refresh"><button type="button" disabled={api.busy||!api.online} onClick={()=>void refresh()}>{d('refresh')}</button>{status&&<small>{d('checked').replace('{time}',checked).replace('{zone}',friendlyZone)}</small>}</div></header>
+  {(!verified||!api.online)&&<p role="status">{d('error')}</p>}
   <div className="rst-intake-channels">
-   <section><h3>{r.inPerson}</h3><strong>{availability(status?.in_person.available)}</strong><p>{r.inPersonHelp}</p>{status&&<ul>{reasons(status.in_person.reasons.filter(v=>v!=='release'))}</ul>}</section>
-   {(['pickup','delivery'] as const).map(k=><section key={k} data-service={k} className={editing&&kind===k?'rst-intake-editing':undefined}><h3>{r[k]}</h3><p>{u[k]}</p><p><strong>{config?(config[k]?.enabled?r.savedOn:r.savedOff):r.noStatus}</strong></p><details><summary>{restaurantClarityCopy[locale].details}</summary><dl><div><dt>{r.website}</dt><dd>{availability(status?.[k].web.available)}</dd></div><div><dt>WhatsApp</dt><dd>{availability(status?.[k].whatsapp.available)}</dd></div></dl><p>{config?(config[k]?.enabled?r.savedOn:r.savedOff):r.noStatus}</p>{status&&<ul>{reasons([...status[k].web.reasons,...status[k].whatsapp.reasons].filter(v=>v!=='release'),modern)}</ul>}{config&&config.schedules?.[k]?<><h4>{c.saved}</h4><WeeklySummary value={config.schedules[k]!} locale={locale}/></>:config&&<>{modern&&<p>{config[k]?.windows.length?c.migration:u.notConfigured}</p>}{(!modern||!!config[k]?.windows.length)&&periods(config[k]?.windows??[])}</>}{modern&&<><h4>{c.actual}</h4>{verified?[nowLocal.slice(0,10),tomorrow.toISOString().slice(0,10)].map(day=>{const choices=(status?.[k].customer_windows??[]).filter(w=>localInstant(w.starts_at,timezone).slice(0,10)===day);return <details key={day}><summary>{day} {'\u00b7'} {choices.length}</summary>{choices.length?periods(choices):<p>{c.none}</p>}</details>}):<p>{r.stale}</p>}</>}</details><button ref={node=>{editButtons.current[k]=node;}} type="button" aria-expanded={editing&&kind===k} aria-controls={editing&&kind===k?"restaurant-intake-editor":undefined} disabled={!fresh||!api.online||api.busy||!!api.pending||api.conflict} onClick={()=>edit(k)}>{k==='pickup'?r.editPickup:r.editDelivery}</button>{editing&&kind===k&&editor}</section>)}
-  </div>
-  {modern&&config?.hours&&<section><h3>{c.exceptions}</h3>{config.hours.exceptional_closures.length?periods(config.hours.exceptional_closures):<p>{u.noClosures}</p>}</section>}
-  {onOpen&&<button type="button" onClick={()=>onOpen('hours')}>{r.goHours}</button>}
+   {(['pickup','delivery'] as const).map(k=><section key={k} data-service={k}><div className="rst-intake-card-title"><span className="rst-intake-icon"><SpaceIcon name={k==='pickup'?'catalog':'work'}/></span><div><h3>{d(k)}</h3><p>{d(k==='pickup'?'pickupHelp':'deliveryHelp')}</p></div></div><p><strong className={`rst-intake-badge is-${state(k)}`}>{d(state(k))}</strong>{todayHours(k)&&<span className="rst-intake-hours-today">{todayHours(k)}</span>}</p>
+   {state(k)==='setup'&&k==='delivery'&&<p>{d('deliveryMissing')}</p>}{verified&&status&&state(k)!=='ready'&&state(k)!=='paused'&&state(k)!=='setup'&&<ul>{reasons([...status[k].web.reasons,...status[k].whatsapp.reasons].filter(v=>v!=='paused'),modern)}</ul>}
+   <button className="button button-primary" ref={node=>{editButtons.current[k]=node;}} type="button" disabled={!config||!api.online||api.busy||!!api.pending||api.conflict} onClick={()=>configured(k)?void toggle(k):void edit(k)}>{configured(k)?config?.[k]?.enabled?d('pause'):d('resume'):d(k==='pickup'?'setupPickup':'setupDelivery')}</button>
+   {configured(k)&&<button type="button" className="rst-intake-link" disabled={api.busy||!!api.pending} onClick={()=>void edit(k)}>{k==='pickup'?d('editHours'):r.editDelivery}</button>}
+   {config?.[k]?.enabled&&<small>{d('preserved')}</small>}
+   <details><summary>{d('details')}</summary><dl><div><dt>{r.website}</dt><dd>{availability(status?.[k].web.available)}</dd></div><div><dt>WhatsApp</dt><dd>{availability(status?.[k].whatsapp.available)}</dd></div></dl>{config?.schedules?.[k]?<WeeklySummary value={config.schedules[k]!} locale={locale}/>:periods(config?.[k]?.windows??[])}</details></section>)}
+  </div>{editing&&editor}
+  <div className="rst-intake-compact"><span className="rst-intake-icon"><SpaceIcon name="catalog"/></span><div><h3>{d('inPerson')}</h3><p>{d('inPersonHelp')}</p></div>{onOpen&&<button type="button" onClick={()=>onOpen('pos')}>{d('take')}</button>}</div>
+  {onOpen&&<button type="button" className="rst-intake-compact rst-intake-hours" onClick={()=>onOpen('hours')}><span className="rst-intake-icon"><SpaceIcon name="calendar"/></span><strong>{d('hours')}</strong><span aria-hidden="true">›</span></button>}
+  {api.pending&&!editing&&<button type="button" disabled={api.busy||api.conflict} onClick={()=>void toggle(api.pending!.path.includes('/delivery-intake')?'delivery':'pickup')}>{t('retry')}</button>}
   {api.message&&<p role="status">{t(api.message)}</p>}
-
  </section>;
 }
