@@ -40,7 +40,7 @@ export function validOrderQuery(path: string, method: string, q: URLSearchParams
   if (isPreparationPath(path)) return validPreparationQuery(path,method,q);
   const kitchen = path.includes('/kitchen/');
   const orders = method === 'GET' && /\/orders$/.test(path), feed = /\/(?:order-feed|kitchen\/feed)$/.test(path), summary = /\/order-summary$/.test(path);
-  const allowed = ['language', ...(method==='GET'&&path.endsWith('/counter-unpaid')?['page']:[]), ...(orders || summary ? ['page','page_size'] : []), ...(orders ? kitchen ? ['completed'] : ['states','as_of','search','fulfillment','origin','date_from','date_to'] : []), ...(feed ? kitchen ? ['cursor','limit'] : ['cursor','states','limit'] : []), ...(summary ? ['from_date','to_date','start_offset','end_offset'] : [])];
+  const allowed = ['language', ...(method==='GET'&&(path.endsWith('/counter-unpaid')||path.endsWith('/counter-baskets'))?['page']:[]), ...(orders || summary ? ['page','page_size'] : []), ...(orders ? kitchen ? ['completed'] : ['states','as_of','search','fulfillment','origin','date_from','date_to'] : []), ...(feed ? kitchen ? ['cursor','limit'] : ['cursor','states','limit'] : []), ...(summary ? ['from_date','to_date','start_offset','end_offset'] : [])];
   for (const [key,value] of q) {
     if (!allowed.includes(key) || (key !== 'states' && q.getAll(key).length !== 1)) return false;
     if (key === 'language' && !enumOf(value,['en','fr','ln','sw'])) return false;

@@ -1,0 +1,66 @@
+/* Compact operational POS; shared catalog and ledger behaviors stay canonical. */
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-header{align-items:center;gap:12px;flex-wrap:wrap}
+:is(.rst-management,.rst-business-management) .rst-pos-queues,:is(.rst-management,.rst-business-management) .rst-pos-categories{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+:is(.rst-management,.rst-business-management) .rst-pos-categories button{min-height:44px;padding:8px 12px;border:1px solid #d8d5ca;border-radius:8px;background:#fffefa;color:#173e32}
+:is(.rst-management,.rst-business-management) .rst-pos-categories button[aria-pressed=true]{background:#173e32;color:#fff}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-filters{display:block}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-filters label{display:grid;gap:6px}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item{display:flex;flex-direction:column;align-items:center;padding:12px;gap:4px;min-width:0;background:#fffefa;border:1px solid #deded3}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item.is-selected{border:2px solid #24613c;padding:11px;background:#f4f8ef}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-photo{width:44px;height:44px;min-height:0;flex:none;background:#edf2e6;border-radius:8px;overflow:hidden}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-photo img{width:44px;height:44px;object-fit:cover}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-photo>span{font-size:24px}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item-body{padding:0;min-height:0;text-align:center;flex:1;overflow-wrap:anywhere;font-size:.92rem}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item-body strong{font-size:1rem;line-height:1.3}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item-body small{display:none}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item>button{min-width:48px;min-height:44px;margin:4px 0 0;padding:5px 16px;font-weight:700;font-size:1rem}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-layout{align-items:start;gap:16px}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-basket{position:sticky;top:16px;max-height:calc(100dvh - 32px);overflow:auto;padding:18px;min-width:0}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-basket-fields{border:0;padding:0;min-width:0}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-line{grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:16px 0;align-items:center}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-line>strong{font-size:1rem;overflow-wrap:anywhere}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-line>label{grid-column:1/-1}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-pos-quantity{display:flex;align-items:center;gap:0;width:fit-content}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-pos-quantity input{width:50px!important;min-width:0;text-align:center;border-radius:0;padding:6px!important;appearance:textfield}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-pos-quantity button{min-width:44px;min-height:44px;padding:6px}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-actions{display:flex;flex-direction:column;gap:8px;position:sticky;bottom:-18px;background:#fffefa;padding:12px 0}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-actions>button{width:100%;background:#173e32;color:#fff;border-color:#173e32}
+:is(.rst-management,.rst-business-management) .rst-pos-secondary{display:flex;gap:8px;flex-wrap:wrap}
+:is(.rst-management,.rst-business-management) .rst-pos-secondary>button{flex:1;min-width:120px;white-space:normal;min-height:44px}
+:is(.rst-management,.rst-business-management) .rst-pos-success{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:16px;border:1px solid #cfdbc6;background:#eef4e8;border-radius:10px;margin-bottom:16px}
+:is(.rst-management,.rst-business-management) .rst-pos-dialog{width:min(650px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;border:1px solid #d8d5ca;border-radius:14px;background:#fffefa;color:#173e32;padding:16px;box-sizing:border-box}
+:is(.rst-management,.rst-business-management) .rst-pos-dialog::backdrop{background:#15291f66}
+:is(.rst-management,.rst-business-management) .rst-pos-dialog-back{position:sticky;top:-16px;z-index:3;min-height:44px;background:#fffefa!important;margin-bottom:8px}
+:is(.rst-management,.rst-business-management) .rst-pos-dialog .rst-pos-payment{border:0;padding:8px;max-width:none}
+:is(.rst-management,.rst-business-management) .rst-pos-dialog .rst-pos-primary{background:#173e32!important;border-color:#173e32!important}
+:is(.rst-management,.rst-business-management) .rst-payment-keypad[hidden]{display:none!important}
+:is(.rst-management,.rst-business-management) .rst-pos-dialog .rst-held{padding:0;border:0}
+:is(.rst-management,.rst-business-management) .rst-pos-dialog .rst-held>article{grid-template-columns:minmax(0,1fr)}
+:is(.rst-management,.rst-business-management) .rst-pos-dialog .rst-held article button{grid-column:1;grid-row:auto}
+@media(max-width:700px){
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-items{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-layout{display:block}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-header h2{font-size:1.8rem}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-header{display:block}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item{padding:8px}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item.is-selected{padding:7px}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item-body strong{font-size:.9rem}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-basket{display:none}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-pos-dialog .rst-selling-basket{display:block;position:static;max-height:none;border:0;padding:0;box-shadow:none;width:auto;height:auto;inset:auto}
+ :is(.rst-management,.rst-business-management) .rst-pos-dialog{width:100%;max-width:100%;max-height:100dvh;border-radius:12px 12px 0 0;margin:auto 0 0;padding:16px 16px max(20px,env(safe-area-inset-bottom))}
+ :is(.rst-management,.rst-business-management) .rst-pos-dialog .rst-selling-basket-head>button{display:none}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-mobile-summary{display:flex;position:fixed;bottom:calc(64px + env(safe-area-inset-bottom));left:12px;right:12px;width:auto;z-index:46;background:#173e32;color:#fff;min-height:50px;gap:12px;white-space:normal;border-radius:10px}
+ :is(.rst-management,.rst-business-management) .rst-focus-mode .rst-selling-mobile-summary{bottom:max(12px,env(safe-area-inset-bottom))}
+ :is(.rst-management,.rst-business-management) .rst-selling{padding-bottom:130px}
+}
+@media(max-width:340px){:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item-body{font-size:.82rem}}
+
+:is(.rst-management,.rst-business-management) .rst-selling{font-family:Arial,sans-serif}
+:is(.rst-management,.rst-business-management) .rst-selling :is(button,input,select,textarea,label){font-family:Arial,sans-serif}
+:is(.rst-management,.rst-business-management) .rst-selling h3{font-family:Georgia,serif}
+:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-photo svg{width:28px;height:28px}
+
+:is(.rst-management,.rst-business-management) .rst-pos-composer{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+:is(.rst-management,.rst-business-management) .rst-pos-composer button{min-height:48px;white-space:normal}
+
+@media(min-width:701px){:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-basket-fields{max-height:clamp(180px,32dvh,360px);overflow:auto;padding-right:4px}:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-totals{padding:12px;margin-top:12px}:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-actions{padding:8px 0}}
