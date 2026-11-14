@@ -72,7 +72,7 @@ for(const width of [320,375,390,820,1440])test(`redesigned POS ${width}`,async({
  if([375,1440].includes(width))await page.screenshot({path:`C:/NIHILOBA/release-evidence/restaurants-management-20261114/pos-payment-${width}.png`,fullPage:true});
  await page.getByRole('button',{name:'Confirmer le paiement reçu',exact:true}).dblclick();await expect(page.locator('.rst-pos-success')).toContainText('Paiement enregistré');
  expect(state.writes.filter(write=>write.path.endsWith('/money/receipts'))).toHaveLength(1);await expect(page.locator('.rst-selling-line')).toHaveCount(0);
- await page.locator('.rst-pos-success').getByRole('button',{name:'Afficher le reçu'}).click();await page.getByRole('button',{name:'Imprimer le reçu',exact:true}).click();await expect(page.locator('html')).toHaveAttribute('data-printed','yes');
+ await page.locator('.rst-pos-success').getByRole('button',{name:'Afficher le reçu'}).click();await page.getByRole('button',{name:'Imprimer le reçu',exact:true}).click();await expect(page.locator('html')).toHaveAttribute('data-printed','yes');await page.emulateMedia({media:'print'});await expect(page.locator('.rst-thermal')).toBeVisible();await expect(page.getByRole('button',{name:'Imprimer le reçu',exact:true})).toBeHidden();expect(await page.locator('.rst-pos-dialog[open]').evaluate(node=>getComputedStyle(node).overflow)).toBe('visible');await page.emulateMedia({media:'screen'});
  await page.getByRole('button',{name:'← Retour au panier',exact:true}).click();await expect(page.getByRole('button',{name:'Ajouter Poulet braisé',exact:true})).toBeEnabled();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

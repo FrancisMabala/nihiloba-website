@@ -64,3 +64,5 @@
 :is(.rst-management,.rst-business-management) .rst-pos-composer button{min-height:48px;white-space:normal}
 
 @media(min-width:701px){:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-basket-fields{max-height:clamp(180px,32dvh,360px);overflow:auto;padding-right:4px}:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-totals{padding:12px;margin-top:12px}:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-actions{padding:8px 0}}
+
+@media print{body:has(.rst-thermal) .rst-pos-dialog[open]{position:static!important;inset:auto!important;width:auto!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:0!important;border:0!important}body:has(.rst-thermal) .rst-pos-dialog::backdrop{display:none}}
