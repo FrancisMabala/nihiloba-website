@@ -24,6 +24,8 @@ globalThis.fetch=async(input,init)=>{
    return Response.json({detail:'session_required'},{status:401});
  }
  const path=privateDetail ? requested.slice(0,-5) : requested;
+ const report = row => ({...row,report_url:'https://wa.me/243000000000?text='+encodeURIComponent(`Bonjour SHIDA, je souhaite signaler cette offre.\nOffre : ${row.title}\nEmployeur : ${row.employer.name}\nRéférence : ${row.public_ref}\n\nSHIDA JOB REPORT ${row.public_ref} fr`)});
+ if(path==='/api/public/shida/jobs/report-external')return Response.json(report(external));
  if(path==='/api/public/shida/jobs/catalogs')return Response.json({job_categories:categories});
  if(path==='/api/public/shida/jobs/travel')return Response.json({...external,slug:'travel',contract_type:'volunteer',travel_requirement:'required',travel_details:'Beni et Goma, deux fois par mois.'});
  if(path==='/api/public/shida/jobs'){
@@ -42,6 +44,6 @@ globalThis.fetch=async(input,init)=>{
  if(path==='/api/public/shida/jobs/formatted')return Response.json({...external,slug:'formatted',responsibilities:'### Gestion des équipes\n- **Encadrer** les vendeurs et les chauffeurs.\n- Contrôler les stocks.\n\n_Suivi quotidien._',qualifications:'1. Expérience en gestion.\n2. Maîtrise des outils.',short_summary:'**Coordonner** les équipes commerciales.'});
  if(path==='/api/public/shida/jobs/JOB_airtel/external-action' && init?.method==='POST')return Response.json({mode:'redirect',redirect_url:'https://careers.example/apply?id_job=973&id_origin=0'});
  if(path==='/api/public/shida/jobs/expired')return Response.json({...external,application:{...external.application,available:false,capability:'none',external_action:null},status:'expired',lifecycle_state:'expired',relationship_capabilities:{...external.relationship_capabilities,can_save:false,can_follow_employer:false},application_available:false});
- if(path.startsWith('/api/public/shida/jobs/')){const row=items.find(i=>i.slug===path.split('/').at(-1));if(row)return Response.json({...detail,...row,requirements_document:{available:false,url:null},description:'Controlled employment fixture. No production records are created.'});}
+ if(path.startsWith('/api/public/shida/jobs/')){const row=items.find(i=>i.slug===path.split('/').at(-1));if(row)return Response.json(report({...detail,...row,requirements_document:{available:false,url:null},description:'Controlled employment fixture. No production records are created.'}));}
  return Response.json({detail:'not_found'},{status:404});
 };

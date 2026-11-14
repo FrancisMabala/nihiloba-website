@@ -138,6 +138,7 @@ export type PublicJobLocation = {
 };
 
 export type PublicJobSummary = {
+  report_url?: string | null;
   public_ref: string;
   slug: string | null;
   title: string;

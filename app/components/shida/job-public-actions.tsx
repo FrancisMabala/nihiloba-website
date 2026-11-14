@@ -1,5 +1,6 @@
 "use client";
 
+import {jobReportUrl} from "../../lib/job-report-url";
 import {candidateWorkspaceCopy} from '../../lib/candidate-workspace-copy';
 import { useEffect, useState, useId, useRef } from "react";
 import {OfferText} from './offer-text';
@@ -10,8 +11,8 @@ import type { PublicJobExternalAction } from "../../types/shida-public";
 const copy = {
   en: { save:"Save in SHIDA", follow:"Follow on SHIDA", share:"Share", shared:"Link copied", report:"Report offer", hint:"Opens in a new tab.", blocked:"Allow a new tab for SHIDA, then try again.", redirect:"Apply on employer website", instructions:"See how to apply", opening:"Opening employer website…", unavailable:"This offer is no longer open for applications.", failed:"The application link is temporarily unavailable." },
   fr: { save:"Enregistrer dans SHIDA", follow:"Suivre sur SHIDA", share:"Partager", shared:"Lien copié", report:"Signaler l’offre", hint:"S’ouvre dans un nouvel onglet.", blocked:"Autorisez l’ouverture d’un nouvel onglet pour SHIDA, puis réessayez.", redirect:"Postuler sur le site officiel", instructions:"Voir comment postuler", opening:"Ouverture du site de l’employeur…", unavailable:"Cette offre n’est plus ouverte aux candidatures.", failed:"Le lien de candidature n’est pas disponible pour le moment." },
-  ln: {save:"Bomba na SHIDA",follow:"Landa na SHIDA",share:"Kabola",shared:"Lien ekopiami",report:"Yebisa mokakatano na email",hint:"Ekofungwama na onglet ya sika.",blocked:"Pesa SHIDA nzela ya kofungola onglet ya sika, mpe meká lisusu.",redirect:"Senga na site ya mopesi mosala",instructions:"Tala ndenge ya kosenga",opening:"Site ezali kofungwama…",unavailable:"Bosengi ekangami mpo na mosala oyo.",failed:"Lien ya bosengi ezali kosala te."},
-  sw: {save:"Hifadhi kwenye SHIDA",follow:"Fuata kwenye SHIDA",share:"Shiriki",shared:"Kiungo kimenakiliwa",report:"Ripoti kazi kwa barua pepe",hint:"Itafunguka kwenye kichupo kipya.",blocked:"Ruhusu SHIDA kufungua kichupo kipya, kisha ujaribu tena.",redirect:"Omba kwenye tovuti ya mwajiri",instructions:"Ona jinsi ya kuomba",opening:"Inafungua tovuti ya mwajiri…",unavailable:"Kazi hii haipokei maombi tena.",failed:"Kiungo cha ombi hakipatikani kwa sasa."},
+  ln: {save:"Bomba na SHIDA",follow:"Landa na SHIDA",share:"Kabola",shared:"Lien ekopiami",report:"Yebisa mokakatano na mosala",hint:"Ekofungwama na onglet ya sika.",blocked:"Pesa SHIDA nzela ya kofungola onglet ya sika, mpe meká lisusu.",redirect:"Senga na site ya mopesi mosala",instructions:"Tala ndenge ya kosenga",opening:"Site ezali kofungwama…",unavailable:"Bosengi ekangami mpo na mosala oyo.",failed:"Lien ya bosengi ezali kosala te."},
+  sw: {save:"Hifadhi kwenye SHIDA",follow:"Fuata kwenye SHIDA",share:"Shiriki",shared:"Kiungo kimenakiliwa",report:"Ripoti tangazo",hint:"Itafunguka kwenye kichupo kipya.",blocked:"Ruhusu SHIDA kufungua kichupo kipya, kisha ujaribu tena.",redirect:"Omba kwenye tovuti ya mwajiri",instructions:"Ona jinsi ya kuomba",opening:"Inafungua tovuti ya mwajiri…",unavailable:"Kazi hii haipokei maombi tena.",failed:"Kiungo cha ombi hakipatikani kwa sasa."},
 } as const;
 
 async function recordEvent(jobReference:string,event:"view"|"share") {
@@ -102,8 +103,10 @@ export function JobPublicActions({ locale, jobReference, title, path, origin, ca
   </div>;
 }
 
-export function JobReportLink({locale,jobReference}:{locale:Locale;jobReference:string}){
- return <a href={`mailto:support@nihiloba.com?subject=${encodeURIComponent("Report public job "+jobReference)}`}>{copy[locale].report}</a>;
+export function JobReportLink({locale,jobReference,reportUrl}:{locale:Locale;jobReference:string;reportUrl?:string|null}){
+ const href=jobReportUrl(reportUrl,jobReference);
+ if(!href)return null;
+ return <a href={href} target="_blank" rel="noopener noreferrer">{copy[locale].report}</a>;
 }
 export function JobResultsLink({locale,href}:{locale:Locale;href:string}){
  const anchor = useRef<HTMLAnchorElement>(null);
