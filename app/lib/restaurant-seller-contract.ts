@@ -1,3 +1,4 @@
+import {validInventoryQuery,validInventoryBody} from './restaurant-inventory-contract';
 import { photoRoutes, isPhotoPath, validPhotoQuery, validPhotoAttachment } from './restaurant-photo-contract';
 import { onboardingBody } from './restaurant-onboarding-contract';
 import { isOrderPath, orderRoutes, validOrderBody, validOrderQuery } from './restaurant-orders-contract';
@@ -44,41 +45,6 @@ export const sellerRoutes: [RegExp, readonly string[]][] = [
 ];
 
 function inventoryPath(path: string): boolean { return /^RST_[A-Za-z0-9_-]+\/inventory(?:\/|$)/.test(path); }
-function validInventoryQuery(path: string, query: URLSearchParams): boolean {
-  const listing = /\/inventory$/.test(path);
-  const history = /\/history$/.test(path);
-  const allowed = listing ? ["language", "page", "page_size", "low_stock"] : history ? ["language", "page_size", "before_id", "days"] : ["language"];
-  for (const [key, value] of query) {
-    if (!allowed.includes(key) || query.getAll(key).length !== 1) return false;
-    if (key === "language" && !["fr", "en", "ln", "sw"].includes(value)) return false;
-    if (key === "low_stock") { if (!["true", "false"].includes(value)) return false; continue; }
-    if (key !== "language" && (!/^[1-9]\d{0,6}$/.test(value) || key === "page_size" && Number(value) > 50 || key === "days" && Number(value) > 730)) return false;
-  }
-  return true;
-}
-function inventoryObject(value: unknown): value is Record<string, unknown> { return !!value && typeof value === "object" && !Array.isArray(value); }
-function validInventoryBody(path: string, value: unknown): boolean {
-  if (!inventoryObject(value)) return false;
-  const keys = Object.keys(value);
-  const operation = typeof value.operation_key === "string" && value.operation_key.length >= 1 && value.operation_key.length <= 200;
-  const revision = Number.isSafeInteger(value.expected_revision) && Number(value.expected_revision) >= 1;
-  const amount = (v: unknown) => typeof v === "string" && /^\d{1,15}(?:\.\d{1,3})?$/.test(v);
-  if (/\/inventory\/items$/.test(path)) return operation && keys.every(k => ["operation_key", "name", "purpose", "stock_kind", "unit", "opening_quantity", "display_label", "low_stock_threshold"].includes(k)) &&
-    typeof value.name === "string" && !!value.name.trim() && value.name.length <= 160 && ["sellable", "ingredient"].includes(String(value.purpose)) &&
-    (value.stock_kind == null || value.stock_kind === "ingredient" && value.purpose === "ingredient" || ["prepared", "packaged"].includes(String(value.stock_kind)) && value.purpose === "sellable" && ["piece", "portion", "boule", "bottle", "can", "tray"].includes(String(value.unit))) &&
-    ["piece", "portion", "boule", "bottle", "can", "tray", "g", "kg", "ml", "l"].includes(String(value.unit)) && amount(value.opening_quantity) &&
-    (value.low_stock_threshold == null || amount(value.low_stock_threshold)) && (value.display_label == null || typeof value.display_label === "string" && value.display_label.length <= 80);
-  if (/\/movements$/.test(path)) return operation && revision && keys.every(k => ["operation_key", "action", "amount", "expected_revision", "linked_movement_ref", "private_note"].includes(k)) &&
-    ["stock_received", "preparation_produced", "manual_increase", "return_to_stock", "manual_issue", "waste", "spoilage", "damaged", "internal_use", "count"].includes(String(value.action)) && amount(value.amount) &&
-    (value.linked_movement_ref == null || typeof value.linked_movement_ref === "string" && /^RIM_[A-Za-z0-9_-]+$/.test(value.linked_movement_ref)) &&
-    (value.private_note == null || typeof value.private_note === "string" && value.private_note.length <= 500);
-  if (/\/kind$/.test(path)) return operation && revision && keys.every(k => ["operation_key", "stock_kind", "expected_revision"].includes(k)) && ["prepared", "packaged", "ingredient"].includes(String(value.stock_kind));
-  if (/\/archive$/.test(path)) return operation && revision && keys.every(k => ["operation_key", "expected_revision"].includes(k));
-  if (/\/binding$/.test(path)) return operation && keys.every(k => ["operation_key", "item_ref", "factor", "expected_revision", "active"].includes(k)) &&
-    typeof value.item_ref === "string" && /^RII_[A-Za-z0-9_-]+$/.test(value.item_ref) && Number.isSafeInteger(value.factor) && Number(value.factor) > 0 &&
-    Number.isSafeInteger(value.expected_revision) && Number(value.expected_revision) >= 0 && (value.active === undefined || typeof value.active === "boolean");
-  return false;
-}
 
 export const profileKeys = ["name", "description", "food_business_type", "city", "commune", "quartier", "public_address", "landmark", "address_visibility", "timezone_name", "opening_information", "service_modes", "logo_url", "logo_secure_url"];
 export const itemKeys = ["name", "description", "image_url", "category_ref", "presentation", "pricing_model", "currency", "sale_unit_label", "unit_price", "allowed_amounts", "minimum_amount", "amount_mode", "amount_step", "visible", "availability", "permanent", "counter_options"];
@@ -145,7 +111,7 @@ export function validSellerBody(path: string, method: string, value: unknown): b
   return Object.keys(value.fields).every(key => allowed.includes(key));
 }
 
-export const sellerErrorCodes = new Set(['restaurant_service_closed','restaurant_service_limit',"restaurant_inventory_invalid_input", "restaurant_inventory_invalid_quantity", "restaurant_inventory_insufficient", "restaurant_inventory_entitlement_required", "restaurant_inventory_uninitialized", "restaurant_inventory_binding_invalid", "restaurant_inventory_legacy_obligation", "restaurant_inventory_item_in_use", "restaurant_stale", "restaurant_idempotency_conflict", "restaurant_incomplete", "restaurant_location_confirmation_required", "restaurant_invalid_profile", "restaurant_menu_invalid", "restaurant_menu_currency_conflict", "restaurant_operation_key_required", "restaurant_time_invalid", "restaurant_time_ambiguous", "restaurant_time_overlap", "restaurant_time_expired", "restaurant_time_confirmation_required", "restaurant_timezone_unavailable", "restaurant_hours_timezone_conflict", "restaurant_invalid_input", "restaurant_unavailable", "restaurant_destination_unavailable"]);
+export const sellerErrorCodes = new Set(['restaurant_service_closed','restaurant_service_limit',"restaurant_inventory_duplicate", "restaurant_inventory_invalid_input", "restaurant_inventory_invalid_quantity", "restaurant_inventory_insufficient", "restaurant_inventory_entitlement_required", "restaurant_inventory_uninitialized", "restaurant_inventory_binding_invalid", "restaurant_inventory_legacy_obligation", "restaurant_inventory_item_in_use", "restaurant_stale", "restaurant_idempotency_conflict", "restaurant_incomplete", "restaurant_location_confirmation_required", "restaurant_invalid_profile", "restaurant_menu_invalid", "restaurant_menu_currency_conflict", "restaurant_operation_key_required", "restaurant_time_invalid", "restaurant_time_ambiguous", "restaurant_time_overlap", "restaurant_time_expired", "restaurant_time_confirmation_required", "restaurant_timezone_unavailable", "restaurant_hours_timezone_conflict", "restaurant_invalid_input", "restaurant_unavailable", "restaurant_destination_unavailable"]);
 
 export function validShare(value: unknown, ref: string, destination: string): value is { establishment_ref: string; destination: string; public_url: string; qr_content: string } {
   if (!object(value) || value.establishment_ref !== ref || value.destination !== destination) return false;
