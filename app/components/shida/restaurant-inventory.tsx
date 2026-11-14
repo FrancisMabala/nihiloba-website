@@ -58,7 +58,7 @@ export function RestaurantInventory({ path, locale, read, perform }: Props) {
   const [data, setData] = useState<InventoryPage | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "denied" | "unavailable">("loading");
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "attention" | "out">("all");
+  const [filter, setFilter] = useState<"all" | "attention" | "out">(()=>typeof window!=="undefined"&&new URLSearchParams(location.search).get("stockFilter")==="low"?"attention":"all");
   const [creating, setCreating] = useState(false);
   const [bindings, setBindings] = useState<Binding[]>([]);
   const [menu, setMenu] = useState<MenuItem[]>([]);

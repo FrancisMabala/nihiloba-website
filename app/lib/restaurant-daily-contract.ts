@@ -2,6 +2,7 @@ const root='RST_[A-Za-z0-9_-]+/service/';
 const day='[0-9]{4}-[0-9]{2}-[0-9]{2}';
 const currency='(?:CDF|USD)';
 export const dailyRoutes:[RegExp,readonly string[]][]=[
+ [new RegExp('^'+root+'daily/summary$'),['GET']],
  [new RegExp('^'+root+'financial/entries$'),['GET','POST']],
  [new RegExp('^'+root+'financial/recover$'),['POST']],
  [new RegExp('^'+root+'daily/time-zone$'),['GET','PUT']],

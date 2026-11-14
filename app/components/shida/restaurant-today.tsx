@@ -1,91 +1,76 @@
 'use client';
-import {counterCopy} from '../../lib/restaurant-counter-copy';
-import './restaurant-counter-ux.css';
+import {useCallback,useEffect,useRef,useState} from 'react';
+import {request,DashboardApiError} from '../../lib/restaurant-seller-browser';
+import {workText} from '../../lib/restaurant-work-copy';
+import {operationsCopy,operationDay,operationTime} from '../../lib/restaurant-operations-copy';
+import {displayMoney} from '../../lib/restaurant-counter-values';
+import './restaurant-operations.css';
+import {SpaceIcon} from './account-space-icon';
 
-import { useCallback, useEffect, useState } from 'react';
-import { request } from '../../lib/restaurant-seller-browser';
-import type { RestaurantLocale } from '../../services/shida/restaurants-client';
-import { workText } from '../../lib/restaurant-work-copy';
-
-type Order = { order_ref: string; state: string; submitted_at: string; fulfillment_method: string };
-type Reservation = { reservation_ref: string; state: string; starts_at: string; party_size: number };
-type Snapshot = {
-  pending?: { items: Order[]; total: number };
-  active?: { items: Order[]; total: number };
-  reservations?: { items: Reservation[]; has_more: boolean };
-  upcoming?: { items: Reservation[]; has_more: boolean };
-  visits?: { items: { group_ref: string; state: string }[]; has_more: boolean };
-  stock?: { items: { item_ref: string; name: string; low_stock: boolean }[]; total: number };
-  intake?: { intake_released: boolean };
-  money?: { bill_summary?: Record<'CDF' | 'USD', { recorded_collections: string; order_value: string }>; outstanding: Record<'CDF' | 'USD', { balance_due: string }> };
-};
-
-const copy = {
-  en: { title: 'Today', intro: 'The work that needs attention at this restaurant.', incoming: 'New orders', preparing: 'In preparation or ready', visits: 'Active visits', requests: 'Reservation requests', upcoming: 'Upcoming reservations', stock: 'Low stock', money: 'Money recorded today', due: 'Still due', value: 'Order value', open: 'Open', empty: 'Nothing needs action here.', closed: 'New order intake is closed. Existing work remains available.', setting: 'Review intake setting', unavailable: 'This section could not be loaded. Refresh to try again.', refresh: 'Refresh today', setup: 'Set up your menu and intake to start selling.' },
-  fr: { title: 'Aujourd’hui', intro: 'Le travail à suivre dans ce restaurant.', incoming: 'Nouvelles commandes', preparing: 'En préparation ou prête', visits: 'Visites en cours', requests: 'Demandes de réservation', upcoming: 'Réservations à venir', stock: 'Stock bas', money: 'Encaissements enregistrés aujourd’hui', due: 'Reste à payer', value: 'Valeur des commandes', open: 'Ouvrir', empty: 'Rien à traiter ici.', closed: 'La réception des nouvelles commandes est fermée. Le travail en cours reste accessible.', setting: 'Voir le réglage de réception', unavailable: 'Impossible de charger cette partie. Actualisez pour réessayer.', refresh: 'Actualiser aujourd’hui', setup: 'Configurez le menu et la réception pour commencer à vendre.' },
-  ln: { title: 'Lelo', intro: 'Misala ya kolandela na restaurant oyo.', incoming: 'Bakomande ya sika', preparing: 'Ezali kobongisama to esili', visits: 'Bapaya bazali awa', requests: 'Bosengi ya kobomba esika', upcoming: 'Esika ebombami ekoya', stock: 'Stock ekiti', money: 'Mbongo ekomami lelo', due: 'Oyo etikali kofuta', value: 'Ntalo ya bakomande', open: 'Fungola', empty: 'Mosala ya kosala ezali te awa.', closed: 'Koyamba bakomande ya sika ekangami. Mosala oyo ezali ekoki kolandama.', setting: 'Tala ndenge ya koyamba', unavailable: 'Tokoki komonisa eteni oyo te. Zongisa lisusu.', refresh: 'Zongisa ya lelo', setup: 'Bongisa menu mpe boyambi mpo na kobanda koteka.' },
-  sw: { title: 'Leo', intro: 'Kazi zinazohitaji kufuatiliwa kwenye mgahawa huu.', incoming: 'Maagizo mapya', preparing: 'Yanaandaliwa au tayari', visits: 'Ziara zinazoendelea', requests: 'Maombi ya nafasi', upcoming: 'Nafasi zijazo', stock: 'Hisa iko chini', money: 'Malipo yaliyorekodiwa leo', due: 'Bado kulipwa', value: 'Thamani ya maagizo', open: 'Fungua', empty: 'Hakuna kazi ya kufanya hapa.', closed: 'Kupokea maagizo mapya kumefungwa. Kazi iliyopo bado inapatikana.', setting: 'Angalia mpangilio wa kupokea', unavailable: 'Sehemu hii haijapakiwa. Onyesha upya ujaribu tena.', refresh: 'Onyesha upya leo', setup: 'Sanidi menyu na upokeaji ili kuanza kuuza.' },
-} as const;
-const coverage = { en: 'Linked service bills only.', fr: 'Factures de service liées uniquement.', ln: 'Ba factures ya service oyo ekangami kaka.', sw: 'Bili za huduma zilizounganishwa pekee.' } as const;
-
-function localDate(zone: string | null) {
-  try {
-    const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: zone || 'UTC', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date()).map(part => [part.type, part.value]));
-    return `${parts.year}-${parts.month}-${parts.day}`;
-  } catch { return new Date().toISOString().slice(0, 10); }
-}
-
-export function RestaurantToday({ path, binding, locale, zone, canPrepare, canSell, canStock, canEditIntake, onOpen }: { path: string; binding: string; locale: RestaurantLocale; zone: string | null; canPrepare: boolean; canSell: boolean; canStock: boolean; canEditIntake: boolean; onOpen: (tab: string) => void }) {
-  const t = copy[locale];
-  const [snapshot, setSnapshot] = useState<Snapshot>({});
-  const [failed, setFailed] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [version, setVersion] = useState(0);
-  const day = localDate(zone);
-  const dateTo = new Date(`${day}T12:00:00Z`); dateTo.setUTCDate(dateTo.getUTCDate() + 8);
-  const until = dateTo.toISOString().slice(0, 10);
-  const load = useCallback(async (signal: AbortSignal) => {
-    const reads: [keyof Snapshot, string][] = [
-      ['pending', `${path}/orders?states=pending&page=1&page_size=5`],
-      ['active', `${path}/orders?states=accepted&states=preparing&states=ready&page=1&page_size=10`],
-      ['reservations', `${path}/reservations/pending?page=1&page_size=5`],
-      ['upcoming', `${path}/reservations/calendar?date_from=${day}&date_to=${until}&page=1&page_size=10`],
-      ['intake', `${path}/order-configuration`],
-      ...(canSell ? [['visits', `${path}/service/groups?page=1`], ['money', `${path}/service/daily/days/${day}/preview`]] as [keyof Snapshot, string][] : []),
-      ...(canStock ? [['stock', `${path}/inventory?page=1&page_size=50`]] as [keyof Snapshot, string][] : []),
-    ];
-    const results = await Promise.allSettled(reads.map(([, url]) => request(url, { signal }, binding)));
-    if (signal.aborted) return;
-    const next: Snapshot = {}, errors: string[] = [];
-    results.forEach((result, index) => {
-      const key = reads[index][0];
-      if (result.status === 'fulfilled') Object.assign(next, { [key]: result.value });
-      else errors.push(key);
-    });
-    setSnapshot(next); setFailed(errors); setLoading(false);
-  }, [path, binding, day, until, canSell, canStock]);
-  useEffect(() => { const controller = new AbortController(); queueMicrotask(() => void load(controller.signal)); return () => controller.abort(); }, [load, version]);
-  const card = (key: keyof Snapshot, title: string, count: number | string | null, destination: string, detail?: string) => <article className="rst-today-card" key={key}>
-    <div><span className="rst-overline">{title}</span><strong>{failed.includes(key) ? '—' : loading ? '…' : count ?? '—'}</strong></div>
-    <p>{failed.includes(key) ? t.unavailable : detail ?? (count === 0 || count === '0' ? t.empty : '')}</p>
-    <button type="button" onClick={() => onOpen(destination)}>{t.open} <span aria-hidden="true">→</span></button>
-  </article>;
-  const pending = snapshot.pending?.total ?? null;
-  const active = snapshot.active?.total ?? null;
-  const visits = Array.isArray(snapshot.visits?.items) ? `${snapshot.visits.items.filter(group => group.state !== 'closed').length}${snapshot.visits.has_more ? '+' : ''}` : null;
-  const low = Array.isArray(snapshot.stock?.items) ? `${snapshot.stock.items.filter(item => item.low_stock).length}${snapshot.stock.total > snapshot.stock.items.length ? '+' : ''}` : null;
-  return <section className="rst-today" lang={locale}>
-    <div className="rst-today-heading"><div><span className="rst-overline">{day}</span><h2>{t.title}</h2><p>{t.intro}</p></div><button type="button" onClick={() => { setLoading(true); setVersion(value => value + 1); }}>{t.refresh}</button></div>
-    {snapshot.intake && !snapshot.intake.intake_released && <div className="rst-today-notice"><p>{t.closed}</p>{canEditIntake && <button type="button" onClick={() => onOpen('intake')}>{t.setting}</button>}</div>}
-    <section className="rst-today-actions"><header><h3>{counterCopy(locale).actions}</h3><button type="button" onClick={()=>onOpen(canSell?'pos':'counter')}>+ {counterCopy(locale).newSale}</button></header>{loading?<p>{counterCopy(locale).loading}</p>:failed.includes('pending')||failed.includes('active')?<p>{t.unavailable}</p>:[...(snapshot.pending?.items??[]),...(snapshot.active?.items??[])].length?[...(snapshot.pending?.items??[]),...(snapshot.active?.items??[])].map(order=><article key={order.order_ref}><div><strong>{counterCopy(locale).orders} · {order.order_ref}</strong><p>{workText(locale,order.state)} · {workText(locale,order.fulfillment_method)}</p></div><button type="button" onClick={()=>onOpen('orders')}>{counterCopy(locale).view}</button></article>):<p>{counterCopy(locale).noWork}</p>}</section>
-    <div className="rst-today-grid">
-      {card('pending', t.incoming, pending, 'orders', snapshot.pending?.items[0] && workText(locale, snapshot.pending.items[0].state))}
-      {card('active', t.preparing, active, canPrepare ? 'kitchen' : 'orders', snapshot.active?.items[0] && workText(locale, snapshot.active.items[0].state))}
-      {canSell && card('visits', t.visits, visits, 'service')}
-      {card('reservations', t.requests, Array.isArray(snapshot.reservations?.items) ? `${snapshot.reservations.items.length}${snapshot.reservations.has_more ? '+' : ''}` : null, 'reservations', snapshot.reservations?.items?.[0] && new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short', timeZone: zone || 'UTC' }).format(new Date(snapshot.reservations.items[0].starts_at)))}
-      {card('upcoming', t.upcoming, Array.isArray(snapshot.upcoming?.items) ? `${snapshot.upcoming.items.filter(item => item.state === 'accepted').length}${snapshot.upcoming.has_more ? '+' : ''}` : null, 'reservations', snapshot.upcoming?.items?.find(item => item.state === 'accepted') && new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short', timeZone: zone || 'UTC' }).format(new Date(snapshot.upcoming.items.find(item => item.state === 'accepted')!.starts_at)))}
-      {canStock && card('stock', t.stock, low, 'inventory', snapshot.stock?.items?.find(item => item.low_stock)?.name)}
-    </div>
-    {canSell && <section className="rst-today-money"><div><h3>{t.money}</h3><p>{snapshot.money?.bill_summary ? t.value + ': ' + ['CDF', 'USD'].map(currency => `${snapshot.money!.bill_summary![currency as 'CDF' | 'USD'].order_value} ${currency}`).join(' · ') : failed.includes('money') ? t.unavailable : t.empty}</p><small>{coverage[locale]}</small></div><div className="rst-today-currencies">{(['CDF', 'USD'] as const).map(currency => <div key={currency}><strong>{currency}</strong><p>{snapshot.money?.bill_summary?.[currency]?.recorded_collections ?? '—'}</p><small>{t.due}: {snapshot.money?.outstanding?.[currency]?.balance_due ?? '—'}</small></div>)}</div><button type="button" onClick={() => onOpen('daily')}>{t.open} →</button></section>}
-  </section>;
+type Locale='fr'|'en'|'ln'|'sw';
+type Order={order_ref:string;state:string;submitted_at:string;fulfillment_method:string};
+type Reservation={reservation_ref:string;state:string;starts_at:string;party_size:number};
+type Page<T>={items:T[];total?:number;has_more?:boolean};
+type Snapshot={pending?:Page<Order>;preparing?:Page<Order>;ready?:Page<Order>;reservations?:Page<Reservation>;upcoming?:Page<Reservation>;visits?:Page<{group_ref:string;state:string}>;stock?:Page<{item_ref:string;name:string;low_stock:boolean}>;intake?:{intake_released:boolean};money?:{as_of:string;time_zone:string;currencies:Record<string,{recorded_net:string;balance_due:string}>}};
+type Key=keyof Snapshot;
+type Failure='unavailable'|'restricted'|'zoneRequired';
+export function RestaurantToday({path,binding,locale,zone,canSell,canStock,canEditIntake,canReservations=false,onOpen}:{path:string;binding:string;locale:Locale;zone:string|null;canPrepare:boolean;canSell:boolean;canStock:boolean;canEditIntake:boolean;canReservations?:boolean;onOpen:(tab:string)=>void}){
+ const c=operationsCopy[locale], [data,setData]=useState<Snapshot>({}),[errors,setErrors]=useState<Partial<Record<Key,Failure>>>({}),[busy,setBusy]=useState<Key[]>([]),[updated,setUpdated]=useState<string|null>(null),[now,setNow]=useState(()=>new Date());
+ const active=useRef(new Map<Key,AbortController>()),epoch=useRef(0);
+ const day=operationDay(zone,now);
+ const load=useCallback(async(only?:Key)=>{
+  const generation=epoch.current;
+  const until=day?new Date(Date.parse(day+'T12:00:00Z')+7*86400000).toISOString().slice(0,10):null;
+  const reads:[Key,string][]=[['pending',`${path}/orders?states=pending&page=1&page_size=5`],['preparing',`${path}/orders?states=accepted&states=preparing&page=1&page_size=1`],['ready',`${path}/orders?states=ready&page=1&page_size=5`],['intake',`${path}/order-configuration`]];
+  if(canReservations){reads.push(['reservations',`${path}/reservations/pending?page=1&page_size=5`]);if(day)reads.push(['upcoming',`${path}/reservations/calendar?date_from=${day}&date_to=${until}&page=1&page_size=10`]);}
+  if(canSell)reads.push(['visits',`${path}/service/groups?page=1`]);
+  if(canSell&&canEditIntake)reads.push(['money',`${path}/service/daily/summary`]);
+  if(canStock)reads.push(['stock',`${path}/inventory?low_stock=true&page=1&page_size=3`]);
+  const selected=reads.filter(([key])=>(!only||key===only)&&!active.current.has(key)).map(([key,url])=>{const controller=new AbortController();active.current.set(key,controller);return {key,url,controller};});
+  if(!selected.length)return;
+  setBusy(keys=>[...new Set([...keys,...selected.map(r=>r.key)])]);
+  const results=await Promise.allSettled(selected.map(({url,controller})=>request(url,{signal:controller.signal},binding)));
+  if(generation!==epoch.current)return;
+  const values:Partial<Snapshot>={},failures:Partial<Record<Key,Failure>>={};
+  results.forEach((result,index)=>{const {key,controller}=selected[index];if(active.current.get(key)===controller)active.current.delete(key);
+   if(result.status==='fulfilled')Object.assign(values,{[key]:result.value});
+   else{const error=result.reason;failures[key]=error instanceof DashboardApiError&&[401,403,404].includes(error.status)?'restricted':error?.detail==='restaurant_time_zone_required'?'zoneRequired':'unavailable';}
+  });
+  setData(previous=>{const next={...previous,...values};for(const key of Object.keys(failures) as Key[])if(failures[key]==='restricted')delete next[key];return next;});
+  setErrors(previous=>{const next={...previous};selected.forEach(({key})=>{delete next[key];});return {...next,...failures};});
+  setBusy(keys=>keys.filter(key=>!selected.some(r=>r.key===key)));
+  if(!only&&results.every(result=>result.status==='fulfilled'))setUpdated(new Date().toISOString());
+ },[path,binding,day,canSell,canEditIntake,canStock,canReservations]);
+ useEffect(()=>{epoch.current++;const controllers=active.current,generation=epoch;queueMicrotask(()=>void load());const refresh=(event:Event)=>{if((event as CustomEvent).detail?.path===path){setNow(new Date());void load();}};window.addEventListener('rst-refresh',refresh);return()=>{generation.current++;controllers.forEach(controller=>controller.abort());controllers.clear();window.removeEventListener('rst-refresh',refresh);};},[load,path]);
+ function open(tab:string,query:Record<string,string>={}){const url=new URL(location.href);['order','orderStates','reservation','stockFilter'].forEach(key=>url.searchParams.delete(key));Object.entries(query).forEach(([key,value])=>url.searchParams.set(key,value));history.replaceState(history.state,'',url);onOpen(tab);}
+ const number=(key:Key)=>{const page=data[key];if(errors[key])return '—';if(!page)return busy.includes(key)?'…':'—';if('items' in page)return new Intl.NumberFormat(locale).format(page.total??page.items.length)+(page.total===undefined&&page.has_more?'+':'');return '—';};
+ const problem=(key:Key)=>errors[key]?<div className="rst-ops-error" role="status"><span>{c[errors[key]!]} {data[key]?c.stale:''}</span><button type="button" disabled={busy.includes(key)} onClick={()=>void load(key)}>{c.retry}</button></div>:null;
+ const money=(value:string)=>`${value.startsWith('-')?'−':''}${displayMoney(value.replace(/^-/,'') ,locale)}`;
+ const work=[...(data.pending?.items??[]),...(data.ready?.items??[])].sort((a,b)=>Number(b.state==='pending')-Number(a.state==='pending')||a.submitted_at.localeCompare(b.submitted_at)).slice(0,5);
+ const reservations=(data.reservations?.items??[]).slice(0,Math.max(0,5-work.length));
+ const allLoaded=!!data.pending&&!!data.ready&&(!canReservations||!!data.reservations);
+ return <section className="rst-today rst-operations" lang={locale}>
+  <header className="rst-ops-heading"><div><h2>{c.today}</h2><p>{day?new Intl.DateTimeFormat(locale,{dateStyle:'full',timeZone:zone!}).format(now):c.unknownZone}</p></div><div className="rst-ops-actions">{canSell&&<button className="primary" type="button" onClick={()=>open('pos')}>+ {c.newSale}</button>}<button type="button" disabled={busy.length>0} onClick={()=>{setNow(new Date());void load();}}>{c.refresh}</button></div></header>
+  <div className="rst-ops-metrics">
+   <article><button onClick={()=>open('orders',{orderStates:'pending'})}><span className="rst-ops-metric-label"><i><SpaceIcon name="orders"/></i>{c.incoming}</span><strong>{number('pending')}</strong></button>{problem('pending')}</article>
+   <article><button onClick={()=>open('orders',{orderStates:'accepted,preparing'})}><span className="rst-ops-metric-label"><i><SpaceIcon name="restaurant"/></i>{c.preparing}</span><strong>{number('preparing')}</strong></button><button className="rst-ops-secondary-count" onClick={()=>open('orders',{orderStates:'ready'})}>{c.ready} <b>{number('ready')}</b></button>{problem('preparing')}{problem('ready')}</article>
+   {canReservations&&<article><button onClick={()=>open('reservations')}><span className="rst-ops-metric-label"><i><SpaceIcon name="requests"/></i>{c.reservations}</span><strong>{number('reservations')} <small>{c.requests}</small></strong></button><span className="rst-ops-secondary-count">{c.upcoming} {data.upcoming?data.upcoming.items.filter(r=>r.state==='accepted').length+(data.upcoming.has_more?'+':''):'—'}</span>{problem('reservations')}{problem('upcoming')}</article>}
+   {canStock&&<article><button onClick={()=>open('inventory',{stockFilter:'low'})}><span className="rst-ops-metric-label"><i><SpaceIcon name="warning"/></i>{c.lowStock}</span><strong>{number('stock')}</strong></button>{problem('stock')}</article>}
+   {canSell&&<article><button onClick={()=>open('service')}><span className="rst-ops-metric-label"><i><SpaceIcon name="people"/></i>{c.visits}</span><strong>{errors.visits?'—':data.visits?data.visits.items.filter(r=>r.state!=='closed').length+(data.visits.has_more?'+':''):'…'}</strong></button>{problem('visits')}</article>}
+  </div>
+  <div className="rst-ops-columns">
+   <section className="rst-ops-panel"><header><h3>{c.actions}</h3><button className="text-link" onClick={()=>open('orders')}>{c.all}</button></header>
+    {work.map(order=><article className="rst-ops-work" key={order.order_ref}><div><strong>{order.order_ref} · {workText(locale,order.fulfillment_method)}</strong><p>{operationTime(order.submitted_at,locale,zone,true)}</p></div><span className={`rst-ops-status ${order.state}`}>{workText(locale,order.state)}</span><button onClick={()=>open('orders',{order:order.order_ref})}>{c.order}</button></article>)}
+    {reservations.map(reservation=><article className="rst-ops-work" key={reservation.reservation_ref}><div><strong>{c.reservation.replace('{count}',String(reservation.party_size))}</strong><p>{operationTime(reservation.starts_at,locale,zone,true)}</p></div><button onClick={()=>open('reservations',{reservation:reservation.reservation_ref})}>{c.request}</button></article>)}
+    {!work.length&&!reservations.length&&<p>{allLoaded&&!errors.pending&&!errors.ready&&!errors.reservations?c.empty:busy.length?c.loading:c.unavailable}</p>}
+   </section>
+   {canSell&&canEditIntake&&<section className="rst-ops-panel rst-ops-money"><header><h3>{c.collections}</h3></header>{problem('money')}
+    {data.money?<><dl>{Object.entries(data.money.currencies).map(([currency,value])=><div key={currency}><dt>{currency}</dt><dd>{money(value.recorded_net)}</dd></div>)}</dl><h4>{c.due}</h4><dl>{Object.entries(data.money.currencies).map(([currency,value])=><div key={currency}><dt>{currency}</dt><dd>{money(value.balance_due)}</dd></div>)}</dl></>:!errors.money&&<p>{busy.includes('money')?c.loading:c.unavailable}</p>}
+    <small>{c.coverage}</small><button className="text-link" onClick={()=>open('daily')}>{c.moneyLink} →</button>
+   </section>}
+  </div>
+  {canStock&&!!data.stock?.items.length&&<aside className="rst-ops-stock"><div><strong>{data.stock.total===1?c.checkOne:c.checkMany.replace('{count}',number('stock'))}</strong><p>{data.stock.items.map(item=>item.name).join(' · ')}</p></div><button onClick={()=>open('inventory',{stockFilter:'low'})}>{c.stockLink}</button></aside>}
+  {data.intake&&!data.intake.intake_released&&<p>{c.closed} {canEditIntake&&<button className="text-link" onClick={()=>open('intake')}>{c.intake}</button>}</p>}
+  {updated&&<p className="rst-ops-updated">{c.updated.replace('{time}',operationTime(updated,locale,zone))}</p>}
+ </section>;
 }

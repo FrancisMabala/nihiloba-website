@@ -47,10 +47,11 @@ function inventoryPath(path: string): boolean { return /^RST_[A-Za-z0-9_-]+\/inv
 function validInventoryQuery(path: string, query: URLSearchParams): boolean {
   const listing = /\/inventory$/.test(path);
   const history = /\/history$/.test(path);
-  const allowed = listing ? ["language", "page", "page_size"] : history ? ["language", "page_size", "before_id", "days"] : ["language"];
+  const allowed = listing ? ["language", "page", "page_size", "low_stock"] : history ? ["language", "page_size", "before_id", "days"] : ["language"];
   for (const [key, value] of query) {
     if (!allowed.includes(key) || query.getAll(key).length !== 1) return false;
     if (key === "language" && !["fr", "en", "ln", "sw"].includes(value)) return false;
+    if (key === "low_stock") { if (!["true", "false"].includes(value)) return false; continue; }
     if (key !== "language" && (!/^[1-9]\d{0,6}$/.test(value) || key === "page_size" && Number(value) > 50 || key === "days" && Number(value) > 730)) return false;
   }
   return true;

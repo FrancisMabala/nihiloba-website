@@ -48,6 +48,7 @@ export function RestaurantReservationCalendarSeller({path,binding,locale,onSetti
  },[path,binding,month,historyPage,pendingPage,calendarPage,s.loadFailed]);
  useEffect(()=>{const currentGeneration=generation;queueMicrotask(()=>void load());const focus=()=>void load();window.addEventListener('focus',focus);const timer=window.setInterval(()=>setNow(Date.now()),60000);queueMicrotask(()=>setNow(Date.now()));return()=>{currentGeneration.current++;window.clearInterval(timer);window.removeEventListener('focus',focus);};},[load]);
  useEffect(()=>{if(choice)confirmRef.current?.focus();},[choice]);
+ useEffect(()=>{const ref=new URLSearchParams(location.search).get('reservation');if(!ref||!/^R[A-Z_0-9a-z-]+$/.test(ref))return;const controller=new AbortController();void request(`${path}/reservations/${ref}`,{signal:controller.signal},binding).then(value=>{if(!controller.signal.aborted){setDetail(value as Reservation);setView('calendar');}}).catch(()=>{if(!controller.signal.aborted)setError(s.loadFailed);});return()=>controller.abort();},[path,binding,s.loadFailed]);
  const today=localDate(new Date(now).toISOString(),zone);
  const stamp=(row:Reservation)=>new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{timeZone:row.timezone_name,dateStyle:'medium',timeStyle:'short'}).format(new Date(row.starts_at));
  const deadline=(row:Reservation)=>new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{timeZone:row.timezone_name,dateStyle:'medium',timeStyle:'short'}).format(new Date(row.response_deadline));
