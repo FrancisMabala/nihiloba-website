@@ -26,7 +26,7 @@ const keys=['name','category_ref','description','pricing_model','currency','sale
 const priceKeys=['pricing_model','currency','sale_unit_label','unit_price','allowed_amounts','minimum_amount','amount_mode','amount_step'];
 const toFields=(row:Item,currency:string)=>Object.fromEntries(keys.map(key=>[key,key==='category_ref'?row.category?.public_ref??'':Array.isArray(row[key])?(row[key] as string[]).join(';'):String(row[key]??({pricing_model:'UNIT_PRICED',currency,amount_mode:'configured',visible:'false',availability:'temporarily_unavailable',permanent:'true',presentation:'fixed_dish'} as Record<string,string>)[key]??'')]));
 
-export function RestaurantMenuWorkspace({path,binding,locale,establishmentName,onOpen,onFailure}:{path:string;binding:string;locale:RestaurantLocale;establishmentName:string;onOpen:(tab:string)=>void;onFailure:(error:unknown)=>void}){
+export function RestaurantMenuWorkspace({path,binding,locale,establishmentName,onOpen,onFailure,onComplete,createOnOpen=false}:{path:string;binding:string;locale:RestaurantLocale;establishmentName:string;onOpen:(tab:string)=>void;onFailure:(error:unknown)=>void;onComplete?:(ref?:string)=>void;createOnOpen?:boolean}){
  const m=(key:MenuCopyKey)=>menuText(locale,key),t=(key:string)=>['amount_mode','configured','flexible','amount_step'].includes(key)?basicText(locale,key):restaurantText(locale,key);
  const [data,setData]=useState<Envelope<Page<Item>>|null>(null),[parent,setParent]=useState<Establishment|null>(null),[categories,setCategories]=useState<Row[]>([]);
  const [search,setSearch]=useState(''),[category,setCategory]=useState(''),[state,setState]=useState(''),[page,setPage]=useState(1),[refresh,setRefresh]=useState(0);
@@ -50,6 +50,8 @@ export function RestaurantMenuWorkspace({path,binding,locale,establishmentName,o
    void read<Envelope<Page<Item>>>(`${path}/menu/items?${query}`).then(value=>{if(alive.current&&token===generation.current){setData(value);setFailed(false);}}).catch(e=>{if(alive.current&&token===generation.current){setFailed(true);fail(e);}}).finally(()=>{if(alive.current&&token===generation.current)setLoading(false);});
   },search?250:0);return()=>clearTimeout(timer);
  },[path,read,search,category,state,page,refresh]); // eslint-disable-line react-hooks/exhaustive-deps
+ const createStarted=useRef(false);
+ useEffect(()=>{if(createOnOpen&&parent&&!createStarted.current){createStarted.current=true;void open();}},[createOnOpen,parent]); // eslint-disable-line react-hooks/exhaustive-deps
  const [localPhoto,setLocalPhoto]=useState('');
  useEffect(()=>()=>{if(localPhoto)URL.revokeObjectURL(localPhoto);},[localPhoto]);
  const editing=!!draft,editingPhoto=!!photoTarget;
@@ -62,7 +64,7 @@ export function RestaurantMenuWorkspace({path,binding,locale,establishmentName,o
    const next={ref:row?.public_ref,revision:current?.revision??p!.revision,fields:toFields(current?.result??({public_ref:''} as Item),current?.currency??p?.menu_currency??'CDF'),changed:[],route:current?.result.preparation_station??'kitchen',oldRoute:current?.result.preparation_station??'',categoryName:'',separate:false,file:null};setDraft(next);return next;
   }catch(e){fail(e);}finally{lock.current=false;if(alive.current)setBusy(false);}
  }
- async function close(){if(lock.current||!await leaveWork())return;setDraft(null);setPhotoTarget(null);journey.current=null;setBlocked(false);setLatest(null);setMessage('');requestAnimationFrame(()=>{window.scrollTo({top:scroll.current});opener.current?.focus();});}
+ async function close(){if(lock.current||!await leaveWork())return;if(onComplete){onComplete(photoTarget?.ref);return;}setDraft(null);setPhotoTarget(null);journey.current=null;setBlocked(false);setLatest(null);setMessage('');requestAnimationFrame(()=>{window.scrollTo({top:scroll.current});opener.current?.focus();});}
  function itemFields(d:Draft,intent:Journey['intent']):Fields{
   const fields:Fields={};for(const key of d.ref?d.changed:keys){if(key==='category_ref'&&!d.ref)continue;fields[key]=['visible','permanent'].includes(key)?d.fields[key]==='true':d.fields[key]||null;}
   if(!d.ref||d.changed.some(key=>priceKeys.includes(key)))Object.assign(fields,pricing(d.fields));
@@ -100,7 +102,7 @@ export function RestaurantMenuWorkspace({path,binding,locale,establishmentName,o
    const current=await read<Envelope<Item>>(`${path}/menu/items/${j.ref}?overview=true`);
    journey.current=null;setBlocked(false);setLatest(null);setRefresh(n=>n+1);setDuplicate(false);
    if(j.draft.file){setPhotoTarget({ref:j.ref!,file:j.draft.file});setDraft(null);setMessage(m('photoContinue'));}
-   else{setDraft(null);setMessage(current.result.menu_state==='unpublished'?m('unpublished'):m('saved'));requestAnimationFrame(()=>window.scrollTo({top:scroll.current}));}
+   else{if(onComplete){setDraft(null);onComplete(j.ref);return;}setDraft(null);setMessage(current.result.menu_state==='unpublished'?m('unpublished'):m('saved'));requestAnimationFrame(()=>window.scrollTo({top:scroll.current}));}
   }catch(e){fail(e);}finally{lock.current=false;if(alive.current)setBusy(false);}
  }
  async function reload(){if(!draft||lock.current)return;lock.current=true;setBusy(true);try{const current=draft.ref?await read<Envelope<Item>>(`${path}/menu/items/${draft.ref}?overview=true`):null;const p=current?null:await read<Establishment>(path);if(!alive.current)return;setLatest(current?.result??null);setDraft(old=>old?{...old,revision:current?.revision??p!.revision,oldRoute:current?.result.preparation_station??''}:null);journey.current=null;setBlocked(true);setReviewed(false);setMessage(m('conflict'));}catch(e){fail(e);}finally{lock.current=false;if(alive.current)setBusy(false);}}

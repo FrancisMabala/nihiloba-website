@@ -1,0 +1,9 @@
+# Restaurant daily specials — 15 November 2026
+
+Selected-day management now uses restaurant-local dates and the existing dated-offer commands and availability resolver. The form chooses a saved menu item, day and either opening periods or explicit hours. Split hours become separate, idempotent schedules. Exceptional closures are subtracted. Missing/closed opening hours never imply 24-hour service. Saved periods retain their original hours; DST ambiguity requires a different explicit time. Overnight service requires an explicit next-day choice.
+
+Schedules apply start-inclusive/end-exclusive on the server. Schedule-only dishes stop applying afterward; independently available permanent dishes remain. Sold-out changes the selected offering, never the stock ledger. Withdrawal clears confirmation, retaining the dish and existing orders. Preview/WhatsApp/POS continue to use their existing eligibility and channel restrictions; a schedule is not a promise of orderability.
+
+Web and Business share the responsive form, translated statuses, immutable retry requests, explicit concurrent-edit review, and return from menu creation. Long lists paginate; visible statuses refresh every minute and on focus. The old advanced fields remain available for existing entries. No migration or production data mutation is required.
+
+Validation: 4 new backend cases (including personal and organization scope), 7 existing interval/permanent/hidden/overlap/replay cases; 23 browser cases across FR/EN/LN/SW and 320/375/390/820/1440, split-period lost-response recovery, overnight, scoped sold-out/withdrawal, and create-menu return; 2 gateway contract cases. A broader older r2b run stopped at an unrelated SQLite fixture missing platform_test_entities (17 passed before failure). No PostgreSQL concurrency claim. Native Lingala/Swahili review remains advisable. Desktop/mobile screenshots retained outside the repository in release-evidence/restaurant-seven-20261114.

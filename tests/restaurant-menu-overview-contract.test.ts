@@ -7,3 +7,9 @@ it('permits bounded scoped menu filters and refuses duplicate or unrelated selec
  expect(validSellerQuery(path+'/RMI_test','GET',new URLSearchParams('overview=true&language=fr'))).toBe(true);
  expect(validSellerQuery(path+'/RMI_test','GET',new URLSearchParams('search=x'))).toBe(false);
 });
+
+it('permits selected-day specials without accepting unrelated or duplicate selectors',()=>{
+ const path='RST_test/menu/offerings';
+ expect(validSellerQuery(path,'GET',new URLSearchParams('overview=true&day=2027-01-04&page=1&page_size=20&language=sw'))).toBe(true);
+ for(const query of ['day=tomorrow','day=2027-01-04&day=2027-01-05','owner=other','overview=yes','page_size=100'])expect(validSellerQuery(path,'GET',new URLSearchParams(query))).toBe(false);
+});

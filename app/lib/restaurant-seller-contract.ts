@@ -56,6 +56,9 @@ export function validSellerQuery(path: string, method: string, query: URLSearchP
     const list=path.endsWith('/items');
     return [...query].every(([key,value])=>query.getAll(key).length===1 && (key==='language'?['fr','en','ln','sw'].includes(value):key==='overview'?['true','false'].includes(value):!list?false:key==='search'?value.length<=200:key==='category_ref'?/^RMC_[A-Za-z0-9_-]+$/.test(value):key==='menu_state'?['available','unavailable','hidden'].includes(value):['page','page_size'].includes(key)&&/^[1-9]\d{0,6}$/.test(value)&&(key!=='page_size'||Number(value)<=50)));
   }
+  if (/\/menu\/offerings$/.test(path) && method === 'GET') {
+    return [...query].every(([key,value])=>query.getAll(key).length===1&&(key==='day'?/^\d{4}-\d{2}-\d{2}$/.test(value):key==='overview'?['true','false'].includes(value):key==='language'?['fr','en','ln','sw'].includes(value):['page','page_size'].includes(key)&&/^[1-9]\d{0,6}$/.test(value)&&(key!=='page_size'||Number(value)<=50)));
+  }
   if (isPhotoPath(path)) return validPhotoQuery(path, query);
   if (path.includes('/reservations')) {
     const calendar=path.endsWith('/reservations/calendar'),pending=path.endsWith('/reservations/pending');
