@@ -25,6 +25,7 @@ globalThis.fetch=async(input,init)=>{
  }
  const path=privateDetail ? requested.slice(0,-5) : requested;
  if(path==='/api/public/shida/jobs/catalogs')return Response.json({job_categories:categories});
+ if(path==='/api/public/shida/jobs/travel')return Response.json({...external,slug:'travel',contract_type:'volunteer',travel_requirement:'required',travel_details:'Beni et Goma, deux fois par mois.'});
  if(path==='/api/public/shida/jobs'){
   const q=url.searchParams.get('query')||'';
   if(q==='failure')return Response.json({detail:'unavailable'},{status:503});

@@ -100,6 +100,18 @@ for (const locale of ['en', 'fr', 'ln', 'sw']) for (const width of [390, 1440]) 
   });
 }
 
+for(const [locale,contract,travel] of [['fr','Bénévolat / volontariat','Déplacements requis'],['en','Volunteering','Travel required'],['ln','Mosala ya bolingo','Esengeli kosala mibembo'],['sw','Kazi ya kujitolea','Safari zinahitajika']]) for(const width of [390,1440]) {
+  test(`volunteering and travel ${locale} ${width}`,async({page},testInfo)=>{
+    await page.setViewportSize({width,height:900});
+    await page.goto(`${locale==='en'?'':'/'+locale}/shida/emplois/travel/`);
+    await expect(page.getByText(contract,{exact:true})).toBeVisible();
+    await expect(page.locator('.job-travel')).toContainText(travel);
+    await expect(page.locator('.job-travel')).toContainText('Beni et Goma, deux fois par mois.');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    if(locale==='fr')await page.screenshot({path:testInfo.outputPath('travel-public.png'),fullPage:true});
+  });
+}
+
 test('a rejected destination closes the waiting tab and allows a retry', async ({page, context, isMobile}) => {
   await page.route('**/external-action/**', route => route.fulfill({status: 409, json: {error: 'job_unavailable'}}));
   await page.goto('/fr/shida/emplois/formatted');

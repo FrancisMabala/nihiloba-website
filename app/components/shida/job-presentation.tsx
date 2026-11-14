@@ -79,6 +79,7 @@ export function contractLabel(value: string | null, locale: Locale) {
   const key = value?.trim().toLowerCase();
   if (key === 'cdi' || key === 'cdd') return key.toUpperCase();
   if (key === 'internship' || key === 'stage') return {fr:'Stage', en:'Internship', ln:'Stage', sw:'Mafunzo kazini'}[locale];
+  if (key === 'volunteer') return {fr:'Bénévolat / volontariat',en:'Volunteering',ln:'Mosala ya bolingo',sw:'Kazi ya kujitolea'}[locale];
   return humanize(value);
 }
 function humanize(value:string|null){return value?value.replaceAll("_"," ").replace(/^./,(letter)=>letter.toUpperCase()):null;}
@@ -92,6 +93,17 @@ function hasRecruitmentContact(item: PublicJobSummary) {
 }
 function hasSupportedApplication(item:PublicJobSummary){return Boolean(hasRecruitmentContact(item)||(item.origin==="direct"&&item.offer_type==="individual"&&item.application.available&&item.application.mode==="shida"&&item.application.capability==="shida_application")||directApplicationUrl(item)||matchingExternalAction(item));}
 function StructuredJobSection({title,value}:{title:string;value:string|null}){return value?.trim()?<section><h2>{title}</h2><OfferText value={value}/></section>:null;}
+const travelCopy={
+  fr:{title:'Déplacements',required:'Déplacements requis',not_required:'Pas de déplacements requis'},
+  en:{title:'Travel',required:'Travel required',not_required:'No travel required'},
+  ln:{title:'Mibembo',required:'Esengeli kosala mibembo',not_required:'Mibembo esengami te'},
+  sw:{title:'Safari',required:'Safari zinahitajika',not_required:'Safari hazihitajiki'},
+};
+function JobTravel({item,locale}:{item:PublicJob;locale:Locale}) {
+  const t=travelCopy[locale],requirement=item.travel_requirement;
+  if(!requirement&&!item.travel_details?.trim())return null;
+  return <section className="job-travel"><h2>{t.title}</h2>{requirement&&<p>{t[requirement]}</p>}{item.travel_details&&<OfferText value={item.travel_details}/>}</section>;
+}
 function experienceText(item:PublicJob,locale:Locale){if(item.experience.text)return item.experience.text;if(item.experience.minimum_years!=null)return detailCopy[locale].years(item.experience.minimum_years);if(item.experience.requirement_kind==="not_required")return ({fr:"Aucune expérience exigée",en:"No experience required",ln:"Esɛngi boyebi ya kala te",sw:"Uzoefu hauhitajiki"})[locale];if(item.experience.requirement_kind==="preferred")return ({fr:"Expérience souhaitée",en:"Experience preferred",ln:"Boyebi ya kala ekosalisa",sw:"Uzoefu unapendelewa"})[locale];return null;}
 
 
@@ -167,6 +179,7 @@ export function JobDetailContent({locale,item,similar}:{locale:Locale;item:Publi
         <StructuredJobSection title={d.qualities} value={item.personal_qualities}/>
         <StructuredJobSection title={d.benefits} value={item.benefits}/>
         <StructuredJobSection title={d.conditions} value={item.employment_conditions}/>
+        <JobTravel item={item} locale={locale}/>
         <StructuredJobSection title={t.description} value={legacyFallback}/>
         {item.requirements_document.available&&item.origin==="direct"&&<section className="job-document-note"><h2>{t.requirements}</h2><p>{t.requirementsDocument}</p></section>}
         {social&&<section><h2>{d.social}</h2><a href={social} target="_blank" rel="noopener noreferrer">{t.external}</a></section>}

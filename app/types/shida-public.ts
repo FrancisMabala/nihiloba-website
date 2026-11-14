@@ -181,6 +181,8 @@ export type PublicJobSummary = {
 };
 
 export type PublicJob = PublicJobSummary & {
+  travel_requirement?: "required" | "not_required" | null;
+  travel_details?: string | null;
   duration_frequency?: string|null;
   optional_experience?: string|null;
   description: string | null;

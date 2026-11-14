@@ -25,6 +25,22 @@ afterEach(()=>vi.unstubAllGlobals());
 function collection(items:unknown[]){return {items,pagination:{page:1,page_size:12,total_items:items.length,total_pages:items.length?1:0}};}
 
 describe("Employment Batch 5B structured public frontend",()=>{
+  it('reads and localizes volunteering and travel without inventing missing requirements',async()=>{
+    for(const [locale,label,travel] of [['fr','Bénévolat / volontariat','Déplacements requis'],['en','Volunteering','Travel required'],['ln','Mosala ya bolingo','Esengeli kosala mibembo'],['sw','Kazi ya kujitolea','Safari zinahitajika']] as const){
+      expect(contractLabel('volunteer',locale)).toBe(label);
+      vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify({...external,contract_type:'volunteer',travel_requirement:'required',travel_details:'Beni et Goma, deux fois par mois.'}))));
+      const item=await getJob('volunteer',locale,'isolated-job-test-session');
+      const html=renderToStaticMarkup(<JobDetailContent locale={locale} item={item} similar={[]}/>);
+      expect(html).toContain(label);expect(html).toContain(travel);expect(html).toContain('Beni et Goma, deux fois par mois.');
+    }
+    for(const value of [null,undefined,'invalid','not_required']){
+      vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify({...external,travel_requirement:value}))));
+      const item=await getJob('travel','fr','isolated-job-test-session');
+      const html=renderToStaticMarkup(<JobDetailContent locale="fr" item={item} similar={[]}/>);
+      if(value==='not_required')expect(html).toContain('Pas de déplacements requis');
+      else expect(html).not.toContain('job-travel');
+    }
+  });
   it("displays legacy contract values consistently",()=>{
     expect(["cdi","Cdi","CDI","cDd","CDD","internship"].map(value => contractLabel(value,"fr"))).toEqual(["CDI","CDI","CDI","CDD","CDD","Stage"]);
   });
