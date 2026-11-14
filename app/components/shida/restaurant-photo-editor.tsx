@@ -11,7 +11,7 @@ import { useWorkDraft } from '../../lib/restaurant-work';
 import { RestaurantPhoto } from './restaurant-photo';
 
 type Selection = { target: 'establishment' | 'item'; item: Row | null; revision: string; image: string | null };
-export function RestaurantPhotoEditor({ path, binding, locale, establishmentName, target, itemRef, onFailure, onBack }: { path: string; binding: string; locale: RestaurantLocale; establishmentName: string; target: 'establishment' | 'item'; itemRef?: string; onFailure: (e: unknown) => void; onBack: () => void }) {
+export function RestaurantPhotoEditor({ path, binding, locale, establishmentName, target, itemRef, initialFile, embedded=false, onFailure, onBack }: { path: string; binding: string; locale: RestaurantLocale; establishmentName: string; target: 'establishment' | 'item'; itemRef?: string; initialFile?: File; embedded?: boolean; onFailure: (e: unknown) => void; onBack: () => void }) {
   const t = (key: PhotoCopyKey) => photoText(locale, key);
   const [items, setItems] = useState<Row[]>([]), [chosen, setChosen] = useState(itemRef ?? '');
   const [selection, setSelection] = useState<Selection | null>(null), [file, setFile] = useState<File | null>(null);
@@ -20,6 +20,7 @@ export function RestaurantPhotoEditor({ path, binding, locale, establishmentName
   const [message, setMessage] = useState<PhotoCopyKey | null>(null), [confirmed, setConfirmed] = useState(false), [removeConfirmed, setRemoveConfirmed] = useState(false);
   const [blocked, setBlocked] = useState(false), [uncertain, setUncertain] = useState(false), [started, setStarted] = useState(false), [removalPending, setRemovalPending] = useState(false);
   const operation = useRef<string | null>(null), controller = useRef<AbortController | null>(null), alive = useRef(false), lock = useRef(false), loadGeneration = useRef(0);
+  const initialTaken=useRef(false);
   useWorkDraft(Boolean(file) && upload?.status !== 'attached' || removalPending, t('discard'),locale);
   useEffect(() => { alive.current = true; return () => { alive.current = false; controller.current?.abort(); }; }, []);
   useEffect(() => () => { if (localUrl) URL.revokeObjectURL(localUrl); }, [localUrl]);
@@ -46,7 +47,7 @@ export function RestaurantPhotoEditor({ path, binding, locale, establishmentName
     const generation = ++loadGeneration.current;
     const parent = await request(path, {}, binding) as Establishment;
     let list: Row[] = [];
-    if (target === 'item') {
+    if (target === 'item' && !itemRef) {
       for (let page = 1; ; page++) {
         const result = await request(`${path}/menu/items?page=${page}&page_size=50`, {}, binding) as Envelope<Page<Row>>;
         list = [...list, ...result.result.items];
@@ -56,6 +57,7 @@ export function RestaurantPhotoEditor({ path, binding, locale, establishmentName
     const value = target === 'item' && ref ? await request(`${path}/menu/items/${encodeURIComponent(ref)}`, {}, binding) as Envelope<Row> : null;
     if (!alive.current || generation !== loadGeneration.current) return;
     setItems(list); setChosen(ref); reset();
+    if(value && initialFile && !initialTaken.current && PHOTO_TYPES.includes(initialFile.type) && initialFile.size>0 && initialFile.size<=PHOTO_MAX_BYTES){initialTaken.current=true;setFile(initialFile);setLocalUrl(URL.createObjectURL(initialFile));}
     setSelection(target === 'establishment' ? { target, item: null, revision: parent.revision, image: parent.profile.establishment_photo_url } : value ? { target, item: value.result, revision: value.revision, image: typeof value.result.image_url === 'string' ? value.result.image_url : null } : null);
   }
   useEffect(() => { let active = true; lock.current = true; void load(itemRef ?? '').catch(e => { if(active)failure(e); }).finally(() => { if(active) { lock.current = false; if(alive.current)setBusy(false); } }); return () => { active = false; }; }, [path, binding, target, itemRef]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -98,9 +100,9 @@ export function RestaurantPhotoEditor({ path, binding, locale, establishmentName
   }
   return <section className="rst-card rst-photo-editor" aria-label={t(target === 'item' ? 'item' : 'restaurant')}>
     <button type="button" className="rst-text-button" disabled={busy} onClick={onBack}>← {t('back')}</button>
-    <h2>{t(target === 'item' ? 'item' : 'restaurant')}</h2><p>{t('optional')}</p>
+    {!embedded&&<h2>{t(target === 'item' ? 'item' : 'restaurant')}</h2>}<p>{t('optional')}</p>
     <p className="rst-photo-target">{t('target')}: <strong>{establishmentName}</strong>{selection?.item && <> / <strong>{selection.item.name}</strong></>}</p>
-    {target === 'item' && <label>{t('chooseItem')}<select disabled={busy || started || !!file} value={chosen} onChange={e => { const ref = e.target.value; void run(() => load(ref)); }}><option value="">—</option>{items.map(item => <option value={item.public_ref} key={item.public_ref}>{item.name}{item.category?.name ? ` · ${item.category.name}` : ''} · {item.public_ref}</option>)}</select></label>}
+    {target === 'item' && !itemRef && <label>{t('chooseItem')}<select disabled={busy || started || !!file} value={chosen} onChange={e => { const ref = e.target.value; void run(() => load(ref)); }}><option value="">—</option>{items.map(item => <option value={item.public_ref} key={item.public_ref}>{item.name}{item.category?.name ? ` · ${item.category.name}` : ''}</option>)}</select></label>}
     <p>{t('guidance')}</p><p role="status" aria-live="polite">{!blocked && (uncertain || removalPending && !busy) ? t('uncertain') : message ? t(message) : ''}</p>
     {busy && <progress aria-label={t('uploading')} max={100} value={message === 'uploading' && percent < 100 ? percent : undefined}/>}
     {selection?.image && !file && <><div className="rst-photo-preview"><RestaurantPhoto src={selection.image} alt={t('current')}/></div>{target === 'establishment' && <p>{t('coverRemoval')}</p>}</>}

@@ -50,7 +50,7 @@ import { workText } from '@/app/lib/restaurant-work-copy';
 import { workflowText } from '@/app/lib/restaurant-workflow-copy';
 import { RestaurantToday } from './restaurant-today';
 import { RestaurantItemRouting, type RoutingPage } from './restaurant-item-routing';
-import { RestaurantPersonalMenu } from './restaurant-personal-menu';
+import { RestaurantMenuWorkspace } from './restaurant-menu-workspace';
 import { personalMenuCopy } from '@/app/lib/restaurant-personal-menu-copy';
 
 const profileKeys = ["name", "description", "food_business_type", "city", "commune", "quartier", "public_address", "landmark", "address_visibility", "timezone_name", "opening_information", "service_modes", "logo_url", "logo_secure_url"];
@@ -79,9 +79,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const [selected, setSelected] = useState<Establishment | null>(null), [tab, setTab] = useState("today"), [kitchenAvailable,setKitchenAvailable]=useState(false),[posAvailable,setPosAvailable]=useState(false);
   const [rows, setRows] = useState<Row[]>([]), [rowPage, setRowPage] = useState(1), [rowTotal, setRowTotal] = useState(0);
   const [routingPage, setRoutingPage] = useState<RoutingPage | null>(null);
-  const [menuFresh, setMenuFresh] = useState(true), [stockBindings, setStockBindings] = useState<{menu_item_ref:string;item_ref:string;active:boolean}[]|null>(null), [datedOfferings, setDatedOfferings] = useState<Row[]|null>(null);
-  const [menuLoadError, setMenuLoadError] = useState(false);
-  const [publicAvailability, setPublicAvailability] = useState<Record<string,string>|null>(null);
+  const [stockBindings] = useState<{menu_item_ref:string;item_ref:string;active:boolean}[]|null>(null), [datedOfferings] = useState<Row[]|null>(null);
   const [hours, setHours] = useState<Hours | null>(null), [preview, setPreview] = useState<Fields | null>(null);
   const [choices, setChoices] = useState<Row[]>([]), [editor, setEditor] = useState<Editor | null>(null);
   useWorkDraft(Boolean(editor && editor.kind !== 'create'), wt('discard'),locale);
@@ -92,7 +90,6 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const path = selected ? `${root}/${encodeURIComponent(selected.public_ref)}` : root;
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   useEffect(() => { if (!editor || editor.kind === 'create') return; const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); }; window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn); }, [editor]);
-  useEffect(() => { const stale = () => { if (document.visibilityState === 'hidden' || !navigator.onLine) setMenuFresh(false); }; document.addEventListener('visibilitychange', stale); window.addEventListener('offline', stale); return () => { document.removeEventListener('visibilitychange', stale); window.removeEventListener('offline', stale); }; }, []);
 
   function error(caught: unknown, mutation = false) {
     if (!alive.current) return;
@@ -146,22 +143,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     if (next === "sharing") { setTab(next); return; }
     if (next === "preview") { const value = await readRestaurant<Establishment>(`${path}/preview`, locale); if (alive.current) { setPreview(value.preview ?? {}); setTab(next); } return; }
     if (next === "hours") { const value = await readRestaurant<Envelope<Hours>>(`${path}/hours`, locale); if (alive.current) { setHours(value.result); setTab(next); } return; }
-    if (next === 'items') {
-      try {
-      const [items, routes, bindings, offerings, publicItems] = await Promise.all([
-        allChoices('items'),
-        allRoutes().catch(() => null),
-        capabilities.includes('restaurant.inventory') ? readRestaurant<{bindings:{menu_item_ref:string;item_ref:string;active:boolean}[]}>(`${path}/inventory/bindings`, locale).catch(() => null) : Promise.resolve(null),
-        allChoices('offerings').catch(() => null),
-        selected?.status === 'active' ? currentPublicMenu(selected.public_ref).catch(() => null) : Promise.resolve(null),
-      ]);
-      if (alive.current) { setRows(items); setRoutingPage(routes); setStockBindings(bindings?.bindings ?? null); setDatedOfferings(offerings); setPublicAvailability(publicItems); setRowTotal(items.length); setRowPage(1); setMenuFresh(true); setMenuLoadError(false); setTab(next); }
-      } catch (caught) {
-        if (alive.current) { setTab(next); setMenuFresh(false); setMenuLoadError(true); }
-        throw caught;
-      }
-      return;
-    }
+    if (next === 'items') { setTab(next); return; }
     const value = await readRestaurant<Envelope<Page<Row>>>(`${path}/menu/${next}?page=${nextPage}&page_size=20`, locale);
     if (alive.current) { setRows(value.result.items); setRoutingPage(null); setRowTotal(value.result.total); setRowPage(nextPage); setTab(next); }
   }
@@ -170,27 +152,6 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     for (;;) {
       const data = await readRestaurant<Envelope<Page<Row>>>(`${path}/menu/${kind}?page=${next}&page_size=50`, locale);
       result.push(...data.result.items); if (result.length >= data.result.total || !data.result.items.length) return result; next++;
-    }
-  }
-  async function allRoutes() {
-    const items: RoutingPage['items'] = []; let page = 1; let revision = '';
-    for (;;) {
-      const value = await readRestaurant<RoutingPage>(`${path}/preparation-routing?page=${page}`, locale);
-      items.push(...value.items); revision = value.revision;
-      if (!value.has_more) return { items, has_more: false, revision };
-      page++;
-    }
-  }
-  async function currentPublicMenu(ref: string) {
-    const availability: Record<string,string> = {}; let loaded = 0;
-    for (let page = 1; ; page++) {
-      const response = await fetch(`/api/shida/restaurant-menus/${encodeURIComponent(ref)}?language=${locale}&page=${page}`, {cache:'no-store',credentials:'same-origin'});
-      if (!response.ok) throw new Error('public menu');
-      const value = await response.json() as {items:{public_ref:string;availability:string}[];total:number};
-      if (!Array.isArray(value.items) || !Number.isSafeInteger(value.total) || value.total < 0 || value.items.some(item=>typeof item.public_ref!=='string' || !['available','sold_out','temporarily_unavailable'].includes(item.availability))) throw new Error('public menu');
-      for (const item of value.items) availability[item.public_ref] = item.availability;
-      loaded += value.items.length;
-      if (loaded >= value.total || !value.items.length) return availability;
     }
   }
   async function open(kind: Kind, row?: Row) {
@@ -420,7 +381,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
         {tab === "preview" && <article className="rst-card"><h2>{t("preview")}</h2><p>{t("previewNote")}</p>{preview && details(preview, ["name", "type_label", "description", "location", "opening_status", "opening_information", "service_modes"])}<PrivateMenuPreview key={`${path}:${binding}:${locale}`} path={path} binding={binding} locale={locale} onFailure={workFailure}/></article>}
         {["hours", "offerings"].includes(tab) && <p>{t("refreshed")}</p>}
         {tab === "hours" && hours && <article className="rst-card"><h2>{t("hours")}</h2><p>{t(hours.status)} · {hours.timezone_name}</p>{hours.schedule ? hours.schedule.windows.length ? hours.schedule.windows.map((w, i) => <p key={i}>{t(weekdays[w.weekday])}: {w.start}–{w.end}</p>) : <p>{t("closed")}</p> : <p>{t("unknown")}</p>}{hours.exceptional_closures.map((c, i) => <p key={i}>{t("closures")}: {localInstant(c.starts_at, c.timezone_name ?? null)} — {localInstant(c.ends_at, c.timezone_name ?? null)}</p>)}{button("edit", () => void run(() => open("hours")))}</article>}
-{tab === 'items' && <RestaurantPersonalMenu items={rows} routes={routingPage} bindings={stockBindings} offerings={datedOfferings} publicAvailability={publicAvailability} publicCheck={selected.status==='active'} locale={locale} fresh={menuFresh} loadFailed={menuLoadError} busy={busy} stockEnabled={capabilities.includes('restaurant.inventory')} onRefresh={()=>void run(()=>loadTab('items'))} onEdit={row=>void run(()=>open('items',row))} onPhoto={async row=>{if(!(await leaveWork()))return;setPhotoTarget({target:'item',itemRef:row.public_ref});setTab('photos');}} onAdd={()=>void run(()=>open('items'))} onCategories={()=>void run(()=>loadTab('categories'))} onBatch={()=>void run(()=>loadTab('batch'))} onStock={()=>void run(()=>loadTab('inventory'))} onOfferings={()=>void run(()=>loadTab('offerings'))}/>}
+{tab === 'items' && <RestaurantMenuWorkspace key={path} path={path} binding={binding} locale={locale} establishmentName={selected.profile.name || t('restaurants')} onOpen={next=>void run(()=>loadTab(next))} onFailure={workFailure}/>}
 {["categories", "offerings"].includes(tab) && <>{tab === "offerings" && <div className="rst-menu-heading"><h2>{design.daily}</h2><button type="button" className="rst-text-button" disabled={busy} onClick={() => void run(() => open("offerings"))}>+ {design.add}</button></div>}<div className="rst-menu-rows">{rows.map(row => <article className="rst-menu-row" key={row.public_ref}><div className="rst-item-identity">{tab === 'items' && <div className="rst-photo-thumb"><span>{management.noPhoto}</span><RestaurantPhoto src={typeof row.image_url === 'string' ? row.image_url : null} alt={row.name || ''} sizes="64px"/></div>}<div><h2>{row.name ?? row.item?.name}</h2>{tab === "items" && <p>{row.pricing_model === "UNIT_PRICED" ? `${design.unit} · ${display(row.sale_unit_label)}` : row.pricing_model === "AMOUNT_PRICED" ? design.amount : design.unknown}</p>}</div></div>{tab === "items" ? <><p className="rst-price">{row.pricing_model === "UNIT_PRICED" ? `${display(row.unit_price)} ${display(row.currency)} / ${display(row.sale_unit_label)}` : row.pricing_model === "AMOUNT_PRICED" ? row.amount_mode === "flexible" ? `${basicText(locale,"flexibleFrom")} ${display(row.minimum_amount)} ${display(row.currency)}` : `${display(row.allowed_amounts)} ${display(row.currency)}` : design.unknown}</p><div><p className={`rst-availability rst-state-${row.availability}`}>{t(String(row.availability ?? "unknown"))}</p>{row.visible === false && <p>{t("hidden")}</p>}</div></> : details(row, tab === "categories" ? ["visible"] : ["state", "visible", "availability"])}{tab === "offerings" && <p>{localInstant(row.starts_at, String(row.timezone_name))} — {localInstant(row.ends_at, String(row.timezone_name))}</p>}{tab === 'items' && <RestaurantItemRouting key={row.public_ref} path={path} binding={binding} locale={locale} itemRef={row.public_ref} page={rowPage} route={routingPage?.items?.find(item=>item.item_ref===row.public_ref)?.station} revision={routingPage?.revision ?? null} onSaved={()=>loadTab('items',rowPage)}/>}<div className="rst-actions">{button("edit", () => void run(() => open(tab as Kind, row)))}{tab === 'items' && <button type="button" disabled={busy} onClick={async () => { if(!(await leaveWork()))return; setPhotoTarget({target:'item',itemRef:row.public_ref}); setTab('photos'); }}>{management.photo}</button>}{tab === "offerings" && button("copy", () => void run(() => open("copy", row)))}</div></article>)}</div>{!rows.length && <p className="rst-empty">{t("empty")}</p>}<div className="rst-actions rst-pagination">{button("previous", () => void run(() => loadTab(tab, rowPage - 1)), rowPage <= 1)}<span>{design.page} {rowPage}</span>{button("next", () => void run(() => loadTab(tab, rowPage + 1)), rowPage * 20 >= rowTotal)}</div></>}
       </>}
     </>}

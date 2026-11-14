@@ -3,6 +3,8 @@ import { managementCopy } from '../../app/lib/restaurant-management-copy';
 import { sellerDesignCopy } from '../../app/lib/restaurant-seller-design-copy';
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
+import {restaurantText} from '../../app/lib/restaurant-seller-copy';
+import {menuText} from '../../app/lib/restaurant-menu-redesign-copy';
 import { photoText } from '../../app/lib/restaurant-photo-copy';
 import { guestText } from '../../app/lib/restaurant-guest-copy';
 import { checkoutCopy } from '../../app/lib/restaurant-checkout-copy';
@@ -68,16 +70,18 @@ async function sellerFixture(page:Page){
 async function openSeller(page:Page,locale:'en'|'fr'|'ln'|'sw'='en'){
  await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants/`);await managementNavigation(page,sellerDesignCopy[locale].menu);
 }
+async function openItemPhoto(page:Page){await page.locator('.rst-menu-card').first().getByRole('button',{name:restaurantText('en','edit'),exact:true}).click();await page.locator('.rst-menu-photo').getByRole('button',{name:photoText('en','item'),exact:true}).click();}
+
 test('explicit target, raw-byte retry, protected preview, uncertain attachment recovery and item removal',async({page})=>{
  const s=await sellerFixture(page);await page.setViewportSize({width:390,height:844});await openSeller(page);
- await page.locator('.rst-menu-row').first().getByRole('button',{name:managementCopy.en.photo,exact:true}).click();
- await page.getByLabel(photoText('en','chooseItem')).selectOption('RMI_24');
+ await openItemPhoto(page);
+ await expect(page.getByLabel(photoText('en','chooseItem'))).toHaveCount(0);
  await expect(page.getByLabel(photoText('en','choose'),{exact:true})).toBeEnabled();await page.getByLabel(photoText('en','choose'),{exact:true}).setInputFiles({name:'food.webp',mimeType:'image/webp',buffer:bytes});s.failUpload=true;
  await page.getByRole('button',{name:photoText('en','upload'),exact:true}).click();await expect(page.getByRole('button',{name:photoText('en','retry'),exact:true})).toBeEnabled();expect(s.attached).toBe(0);
- await page.getByRole('button',{name:photoText('en','retry'),exact:true}).click();await expect(page.getByRole('img',{name:photoText('en','processed'),exact:true})).toBeVisible();expect(s.writes[0]).toEqual(s.writes[1]);expect(s.writes[0].body).toEqual(bytes);expect(s.writes[0].url).toContain('item_ref=RMI_24');
+ await page.getByRole('button',{name:photoText('en','retry'),exact:true}).click();await expect(page.getByRole('img',{name:photoText('en','processed'),exact:true})).toBeVisible();expect(s.writes[0]).toEqual(s.writes[1]);expect(s.writes[0].body).toEqual(bytes);expect(s.writes[0].url).toContain('item_ref=RMI_0');
  const confirm=page.getByRole('button',{name:photoText('en','confirm'),exact:true});await expect(confirm).toBeDisabled();await page.getByLabel(photoText('en','consent')).check();await noOverflow(page);await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:'.s3a-local/photos/seller-confirm-390.png',fullPage:true});
  s.uncertainAttach=true;await confirm.click();await expect(page.getByText(photoText('en','uncertain'),{exact:true})).toBeVisible();await page.getByRole('button',{name:photoText('en','recover'),exact:true}).click();await expect(page.getByText(photoText('en','saved'),{exact:true})).toBeVisible();expect(s.attached).toBe(1);
- await page.getByRole('button',{name:photoText('en','back'),exact:false}).click();await page.locator('.rst-menu-row').first().getByRole('button',{name:managementCopy.en.photo,exact:true}).click();await page.getByLabel(photoText('en','removeConfirm')).check();await page.getByRole('button',{name:photoText('en','remove'),exact:true}).click();await expect(page.getByText(photoText('en','removed'),{exact:true})).toBeVisible();expect(JSON.parse(s.writes.at(-1)!.body!.toString()).fields).toEqual({image_url:null});
+ await page.getByRole('button',{name:photoText('en','back'),exact:false}).click();await openItemPhoto(page);await page.getByLabel(photoText('en','removeConfirm')).check();await page.getByRole('button',{name:photoText('en','remove'),exact:true}).click();await expect(page.getByText(photoText('en','removed'),{exact:true})).toBeVisible();expect(JSON.parse(s.writes.at(-1)!.body!.toString()).fields).toEqual({image_url:null});
 });
 test('stale upload, invalid input, discard and session loss',async({page})=>{
  const s=await sellerFixture(page);await openSeller(page);await managementNavigation(page,sellerDesignCopy.en.profile);await page.locator('.rst-profile-photo button').click();
@@ -87,7 +91,7 @@ test('stale upload, invalid input, discard and session loss',async({page})=>{
  await expect(page.getByLabel(photoText('en','choose'),{exact:true})).toBeEnabled();await page.getByLabel(photoText('en','choose'),{exact:true}).setInputFiles({name:'photo.webp',mimeType:'image/webp',buffer:bytes});s.deny=true;await page.getByRole('button',{name:photoText('en','upload'),exact:true}).click();await expect(page.locator('.rst-photo-editor')).toHaveCount(0);
 });
 test('removal retry keeps its exact revision and operation key',async({page})=>{
- const s=await sellerFixture(page);await openSeller(page);await page.locator('.rst-menu-row').first().getByRole('button',{name:managementCopy.en.photo,exact:true}).click();
+ const s=await sellerFixture(page);await openSeller(page);await openItemPhoto(page);
  await expect(page.getByLabel(photoText('en','removeConfirm'))).toBeEnabled();await page.getByLabel(photoText('en','removeConfirm')).check();s.failRemoval=true;
  await page.getByRole('button',{name:photoText('en','remove'),exact:true}).click();await expect(page.getByText(photoText('en','uncertain'),{exact:true})).toBeVisible();
  await page.getByRole('button',{name:photoText('en','retryRemoval'),exact:true}).click();await expect(page.getByText(photoText('en','removed'),{exact:true})).toBeVisible();expect(s.writes[0]).toEqual(s.writes[1]);
@@ -101,7 +105,7 @@ test('slow upload keeps target locked and shows progress without attaching',asyn
 });
 for(const [locale,width] of [['en',360],['fr',430],['ln',768],['sw',1024]] as const)test(`seller photo and existing batch layout ${locale} ${width}`,async({page})=>{
  await sellerFixture(page);await page.setViewportSize({width,height:width===1024?768:1024});await openSeller(page,locale);await managementNavigation(page,sellerDesignCopy[locale].profile);await page.locator('.rst-profile-photo button').click();await expect(page.locator('.rst-photo-pickers')).toBeVisible();await noOverflow(page);await page.screenshot({path:`.s3a-local/photos/seller-photo-${locale}-${width}.png`,fullPage:true});
- await managementNavigation(page,sellerDesignCopy[locale].menu);await page.locator('.rst-menu-heading').getByRole('button',{name:photoText(locale,'batch'),exact:true}).click();await expect(page.locator('.rst-batch-row')).toHaveCount(2);await noOverflow(page);await page.screenshot({path:`.s3a-local/photos/batch-${locale}-${width}.png`,fullPage:true});
+ await managementNavigation(page,sellerDesignCopy[locale].menu);await page.locator('.rst-menu-actions').getByRole('button',{name:menuText(locale,'batch'),exact:true}).click();await expect(page.locator('.rst-batch-row')).toHaveCount(2);await noOverflow(page);await page.screenshot({path:`.s3a-local/photos/batch-${locale}-${width}.png`,fullPage:true});
 });
 
 for(const [locale,width] of [['en',360],['fr',430],['ln',768],['sw',1024]] as const)test(`private guest menu and authority loss ${locale} ${width}`,async({page})=>{
