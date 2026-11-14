@@ -1,12 +1,14 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useConfirmation } from "./confirmation-dialog";
-import { DashboardApiError } from "@/app/lib/restaurant-seller-browser";
+import language from "./restaurant-stock-language.json";
+import {stockQuantity, stockDecimal, stockNumber} from './restaurant-stock-quantity';
+import { SpaceIcon } from "./account-space-icon";
 import "./restaurant-inventory.css";
 
 type Item = { item_ref: string; name: string; purpose: "sellable" | "ingredient"; stock_kind: "prepared" | "packaged" | "ingredient" | null; last_changed_at: string | null; unit: string; display_label: string | null; status: string; revision: number; initialized: boolean; on_hand: string | null; reserved: string | null; available: string | null; balance_revision: number | null; low_stock: boolean; low_stock_threshold: string | null; tracking_active: boolean };
-type InventoryPage = { tracking_active: boolean; total: number; items: Item[] };
+type InventoryPage = { timezone_name?: string | null; tracking_active: boolean; total: number; items: Item[] };
 type Binding = { menu_item_ref: string; item_ref: string; factor: number; revision: number; active: boolean; recount_required: boolean; reactivation_required: boolean };
 type MenuItem = { public_ref: string; name: string; pricing_model: string };
 type MenuPage = { result: { items: MenuItem[]; total: number } };
@@ -33,7 +35,7 @@ const archiveHelp = {
   sw: "Bidhaa hii haitatumika tena. Hisa na historia yake hazitafutwa. Bidhaa iliyounganishwa na menyu au iliyohifadhiwa kwa oda haiwezi kuwekwa kwenye kumbukumbu."
 } as const;
 const unitNames = { piece: "unitPiece", portion: "unitPortion", boule: "unitBoule", bottle: "unitBottle", can: "unitCan", tray: "unitTray" } as const;
-export const inventoryTitle = (locale: "fr" | "en" | "ln" | "sw") => extra[locale].title;
+export const inventoryTitle = (locale: "fr" | "en" | "ln" | "sw") => language.title[(["fr","en","ln","sw"] as const).indexOf(locale)];
 const units = ["piece", "portion", "boule", "bottle", "can", "tray", "g", "kg", "ml", "l"];
 const movementNames = {
   fr: { opening: "Ouverture", receive: "Reception", count: "Comptage", waste: "Perte", issue: "Utilisation", production: "Preparation", sale: "Vente", return: "Retour", correction: "Correction", archived: "Report historique" },
@@ -48,146 +50,140 @@ function movementLabel(locale: keyof typeof movementNames, kind: string) {
     kind === "return_to_stock" ? "return" : kind === "retention_checkpoint" ? "archived" : "correction";
   return movementNames[locale][key];
 }
-function unitLabel(unit: string, t: (typeof copy)[keyof typeof copy]) { return unit in unitNames ? t[unitNames[unit as keyof typeof unitNames]] : unit; }
-function exact(value: string | null, unit: string) { return value == null ? "?" : units.slice(0, 6).includes(unit) ? String(BigInt(value.split(".")[0])) : value; }
 
 export function RestaurantInventory({ path, locale, read, perform }: Props) {
-  const t = copy[locale];
-  const { request: confirm, confirmation } = useConfirmation(locale);
-  const x = extra[locale];
-  const [data, setData] = useState<InventoryPage | null>(null);
-  const [state, setState] = useState<"loading" | "ready" | "denied" | "unavailable">("loading");
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "attention" | "out">(()=>typeof window!=="undefined"&&new URLSearchParams(location.search).get("stockFilter")==="low"?"attention":"all");
-  const [creating, setCreating] = useState(false);
-  const [bindings, setBindings] = useState<Binding[]>([]);
-  const [menu, setMenu] = useState<MenuItem[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [history, setHistory] = useState<History | null>(null);
-  const [busy, setBusy] = useState(false);
-  const pending = useRef<Operation | null>(null);
-  const [canRetry, setCanRetry] = useState(false);
-  const [message, setMessage] = useState("");
-  const [name, setName] = useState("");
-  const [stockKind, setStockKind] = useState<"prepared" | "packaged" | "ingredient">("prepared");
-  const [kindChoice, setKindChoice] = useState<"prepared" | "packaged" | "ingredient">("prepared");
-  const [unit, setUnit] = useState("portion");
-  const [opening, setOpening] = useState("0");
-  const [threshold, setThreshold] = useState("");
-  const [action, setAction] = useState("stock_received");
-  const [quantity, setQuantity] = useState("");
-  const [menuRef, setMenuRef] = useState("");
-  const [factor, setFactor] = useState("1");
-  const base = `${path}/inventory`;
-  const current = data?.items.find(item => item.item_ref === selected) ?? null;
-  const activeBinding = bindings.find(binding => binding.menu_item_ref === menuRef);
-  const filtered = (data?.items ?? []).filter(item => item.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()) && (filter === "all" || item.status === "active" && (filter === "out" ? Number(item.available) <= 0 : item.low_stock || Number(item.available) <= 0))).sort((a,b) => Number(b.status === "active" && Number(b.available) <= 0) - Number(a.status === "active" && Number(a.available) <= 0) || Number(b.low_stock) - Number(a.low_stock) || a.name.localeCompare(b.name));
-  const itemType = (item: Item) => item.stock_kind === "prepared" ? x.prepared : item.stock_kind === "packaged" ? x.packaged : item.purpose === "ingredient" ? x.ingredient : x.unknown;
-  const when = (value: string | null) => value ? new Intl.DateTimeFormat({fr:"fr-FR",en:"en-GB",ln:"fr-CD",sw:"sw-KE"}[locale], {dateStyle:"medium",timeStyle:"short"}).format(new Date(value)) : "—";
-  function accessLost(error: unknown) {
-    const status = typeof error === "object" && error !== null && "status" in error ? Number(error.status) : 0;
-    if (![401, 403, 404].includes(status)) return false;
-    pending.current = null; setCanRetry(false); setData(null); setBindings([]); setMenu([]); setSelected(null); setHistory(null); setState("denied");
-    return true;
+  const words = Object.fromEntries(Object.entries(language).map(([key, values]) => [key, values[(['fr','en','ln','sw'] as const).indexOf(locale)]])) as Record<keyof typeof language, string>;
+  const t = {...copy[locale], ...words};
+  const x = {...extra[locale], ...words};
+  const {request: confirm, confirmation} = useConfirmation(locale);
+  const [data,setData] = useState<InventoryPage|null>(null);
+  const [state,setState] = useState<'loading'|'ready'|'denied'|'unavailable'>('loading');
+  const [page,setPage] = useState(1), [search,setSearch] = useState(''), [query,setQuery] = useState('');
+  const [kind,setKind] = useState('all');
+  const [filter,setFilter] = useState(()=>typeof window!=='undefined' && new URLSearchParams(location.search).get('stockFilter')==='low'?'attention':'all');
+  const [creating,setCreating] = useState(false), [current,setCurrent] = useState<Item|null>(null);
+  const [mode,setMode] = useState<'add'|'remove'|'count'|'details'|'history'>('details');
+  const [bindings,setBindings] = useState<Binding[]>([]), [menu,setMenu] = useState<MenuItem[]>([]);
+  const [menuPage,setMenuPage] = useState(1), [menuTotal,setMenuTotal] = useState(0);
+  const [history,setHistory] = useState<History|null>(null), [historyState,setHistoryState] = useState('idle');
+  const [name,setName] = useState(''), [stockKind,setStockKind] = useState('prepared');
+  const [unit,setUnit] = useState('portion'), [opening,setOpening] = useState('');
+  const [alertEnabled,setAlertEnabled] = useState(false), [threshold,setThreshold] = useState('');
+  const [quantity,setQuantity] = useState(''), [reason,setReason] = useState('waste');
+  const [menuRef,setMenuRef] = useState(''), [factor,setFactor] = useState('1');
+  const [kindChoice,setKindChoice] = useState('prepared');
+  const [matches,setMatches] = useState<Item[]>([]);
+  const [busy,setBusy] = useState(false), [canRetry,setCanRetry] = useState(false), [message,setMessage] = useState('');
+  const pending = useRef<Operation|null>(null), running = useRef(false), generation = useRef(0);
+  const detailGeneration = useRef(0), accessGeneration = useRef(0);
+  const panel = useRef<HTMLElement|null>(null), opener = useRef<HTMLButtonElement|null>(null);
+  useEffect(()=>()=>{accessGeneration.current++;detailGeneration.current++;},[path,locale]);
+  const base = `${path}/inventory`, locked = busy || canRetry;
+  const local = {fr:'fr-FR',en:'en-GB',ln:'fr-CD',sw:'sw-KE'}[locale];
+  const number = (value:string|null) => stockNumber(value,local);
+  const label = (value:string, count?:string|null) => {const forms=(value in unitNames?t[unitNames[value as keyof typeof unitNames]]:value).split('|');return forms[count!=null&&new Intl.PluralRules(local).select(Number(count))==='one'?0:1]??forms[0];};
+  const amount = (value:string|null, item:Item) => `${number(value)} ${item.display_label || label(item.unit,value)}`;
+  const when = (value:string|null) => value ? new Intl.DateTimeFormat(local,{dateStyle:'medium',timeStyle:'short', ...(data?.timezone_name?{timeZone:data.timezone_name}:{})}).format(new Date(value)) : '—';
+  const activeBinding = bindings.find(link=>link.menu_item_ref===menuRef);
+  const status = (item:Item) => item.status!=='active'?t.stateInactive:item.available===null?x.untracked:Number(item.available)<=0?x.outStatus:item.low_stock?t.low:x.normal;
+  const errorStatus = (error:unknown) => typeof error==='object'&&error!==null&&'status' in error?Number(error.status):0;
+  function lost(error:unknown) {
+    if(![401,403,404].includes(errorStatus(error))) return false;
+    generation.current++; accessGeneration.current++; detailGeneration.current++; pending.current=null; setCanRetry(false); setData(null); setCurrent(null); setHistory(null); setMenu([]); setBindings([]); setMatches([]); setCreating(false); setState('denied'); return true;
   }
   async function load() {
-    try {
-      const first = await read<InventoryPage>(`${base}?page=1&page_size=50`, locale);
-      const pages = [first];
-      for (let page = 2; (page - 1) * 50 < first.total; page++) pages.push(await read<InventoryPage>(`${base}?page=${page}&page_size=50`, locale));
-      setData({...first, items: pages.flatMap(result => result.items)}); setState("ready");
-      const [links, food] = await Promise.allSettled([
-        read<{ bindings: Binding[] }>(`${base}/bindings`, locale),
-        read<MenuPage>(`${path}/menu/items?page=1&page_size=50`, locale),
-      ]);
-      if (links.status === "fulfilled") setBindings(links.value.bindings);
-      if (food.status === "fulfilled") setMenu(food.value.result.items.filter(item => item.pricing_model === "UNIT_PRICED"));
-    } catch (error) { if (!accessLost(error)) setState("unavailable"); }
+    const token=++generation.current;
+    const params=new URLSearchParams({page:String(page),page_size:'20',search:query});
+    if(kind!=='all')params.set('stock_kind',kind);
+    if(filter!=='all')params.set('stock_state',filter);
+    try {const result=await read<InventoryPage>(`${base}?${params}`,locale); if(token===generation.current){setData(result);setState('ready');} }
+    catch(error){if(token===generation.current&&!lost(error))setState('unavailable');}
   }
-  useEffect(() => { queueMicrotask(() => { void load(); }); }, [path, locale]); // eslint-disable-line react-hooks/exhaustive-deps
-  async function run(work: () => Promise<void>) {
-    if (busy || pending.current) return;
-    setBusy(true); setMessage("");
-    try { await work(); await load(); if (selected) await openHistory(selected); setMessage(t.updated); return true; }
-    catch (error) {
-      if (!accessLost(error)) {
-        if (error instanceof DashboardApiError && error.status === 409) { pending.current = null; setCanRetry(false); await load(); setMessage(x.stale); }
-        else if (error instanceof DashboardApiError && [400,422].includes(error.status)) { pending.current = null; setCanRetry(false); setMessage(t.failed); }
-        else { setCanRetry(Boolean(pending.current)); setMessage(x.uncertain); }
-      }
-    }
-    finally { setBusy(false); }
+  async function loadMenu(next=1) {
+    const access=accessGeneration.current;
+    try {const [food,links]=await Promise.all([read<MenuPage>(`${path}/menu/items?page=${next}&page_size=50`,locale),read<{bindings:Binding[]}>(`${base}/bindings`,locale)]);
+      if(access!==accessGeneration.current)return;
+      setMenu(old=>next===1?food.result.items.filter(item=>item.pricing_model==='UNIT_PRICED'):[...old,...food.result.items.filter(item=>item.pricing_model==='UNIT_PRICED')]);setMenuPage(next);setMenuTotal(food.result.total);setBindings(links.bindings);
+    } catch(error){if(!lost(error))setMessage(t.failed);}
   }
-  function operation(method: string, suffix: string, body: Record<string, unknown>) {
-    const request = { path: `${base}${suffix}`, method, body: JSON.stringify({ ...body, operation_key: crypto.randomUUID() }) };
-    pending.current = request;
-    return perform(request).then(result => { pending.current = null; setCanRetry(false); return result; });
+  useEffect(()=>{const timer=setTimeout(()=>{setQuery(search.trim());setPage(1);},250);return()=>clearTimeout(timer);},[search]);
+  useEffect(()=>{let active=true;queueMicrotask(()=>{if(active)void load();});return()=>{active=false;generation.current++;};},[path,locale,page,query,kind,filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(()=>{
+    if(!creating||!name.trim())return;
+    let active=true;const timer=setTimeout(()=>{void read<InventoryPage>(`${base}?page=1&page_size=5&search=${encodeURIComponent(name.trim())}`,locale).then(result=>{if(active)setMatches(result.items);}).catch(()=>{if(active)setMatches([]);});},300);
+    return()=>{active=false;clearTimeout(timer);};
+  },[creating,name,base,locale,read]);
+  useEffect(()=>{if(current||creating) panel.current?.focus();},[current?.item_ref,creating,mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  function choose(item:Item, next:typeof mode, button?:HTMLButtonElement) {
+    if(locked)return;
+    detailGeneration.current++;
+    if(button)opener.current=button;
+    setCreating(false);setCurrent(item);setMode(next);setQuantity('');setHistory(null);setHistoryState('idle');setMessage('');setMenuRef('');setKindChoice(item.stock_kind??(item.purpose==='ingredient'?'ingredient':'prepared'));
+    if(next==='history')void openHistory(item.item_ref);
+    if(next==='details')void loadMenu();
   }
-  async function retry() {
-    const request = pending.current;
-    if (!request || busy) return;
-    setBusy(true); setMessage("");
-    try { await perform(request); pending.current = null; setCanRetry(false);
-      if (request.path.endsWith('/items')) { setCreating(false); setName(''); setOpening('0'); setThreshold(''); }
-      else if (request.path.endsWith('/movements')) setQuantity('');
-      else if (request.path.endsWith('/binding')) setMenuRef('');
-      else if (request.path.endsWith('/archive')) setSelected(null);
-      await load(); if (selected && !request.path.endsWith('/archive')) await openHistory(selected); setMessage(t.updated); return true; }
-    catch (error) { if (!accessLost(error)) { if (error instanceof DashboardApiError && error.status === 409) { pending.current = null; setCanRetry(false); await load(); setMessage(x.stale); } else setMessage(x.uncertain); } }
-    finally { setBusy(false); }
+  function close(){if(locked)return;detailGeneration.current++;setCurrent(null);setCreating(false);setHistory(null);setMessage('');opener.current?.focus();}
+  async function openHistory(ref:string,before?:number){const token=detailGeneration.current;setHistoryState('loading');try{const next=await read<History>(`${base}/items/${encodeURIComponent(ref)}/history${before?`?before_id=${before}`:''}`,locale);if(token!==detailGeneration.current)return;setHistory(old=>before&&old?{entries:[...old.entries,...next.entries],next_before_id:next.next_before_id}:next);setHistoryState('ready');}catch(error){if(token===detailGeneration.current&&!lost(error))setHistoryState('failed');}}
+  async function refreshCurrent(){if(current){try{setCurrent(await read<Item>(`${base}/items/${encodeURIComponent(current.item_ref)}`,locale));}catch(error){lost(error);}}}
+  async function finish(request:Operation,result:unknown){
+    pending.current=null;setCanRetry(false);setMessage(t.updated);
+    if(request.path.endsWith('/items')){setCreating(false);setName('');setOpening('');setThreshold('');setAlertEnabled(false);setCurrent(result as Item);setMode('details');void loadMenu();}
+    else if(request.path.endsWith('/movements')){setCurrent(result as Item);setQuantity('');}
+    else if(request.path.endsWith('/archive'))setCurrent(null);
+    else if(request.path.endsWith('/kind'))setCurrent(result as Item);
+    else if(request.path.endsWith('/binding'))await loadMenu();
+    await load();
   }
-  function confirmArchive(item: Item) {
-    if (busy || pending.current) return;
-    const archivePath = `${base}/items/${encodeURIComponent(item.item_ref)}/archive`;
-    confirm({ title: t.archiveConfirm, description: `${item.name}. ${archiveHelp[locale]}`, confirmLabel: t.archive, severity: "warning",
-      onConfirm: async () => {
-        // An uncertain response must replay the original envelope, not create another operation.
-        const existing = pending.current;
-        if (existing && existing.path !== archivePath) throw new Error("pending_operation");
-        const saved = existing ? await retry() : await run(async () => {
-          await operation("POST", `/items/${encodeURIComponent(item.item_ref)}/archive`, { expected_revision: item.revision });
-        });
-        if (!saved) throw new Error("archive_failed");
-        setSelected(null); setHistory(null);
-      }
-    });
+  async function fail(error:unknown){
+    if(lost(error))return;
+    const code=typeof error==='object'&&error!==null&&'detail' in error?String(error.detail):'';
+    if([400,409,422].includes(errorStatus(error))){pending.current=null;setCanRetry(false);await refreshCurrent();await load();setMessage(code==='restaurant_inventory_duplicate'?t.duplicate:code==='restaurant_inventory_insufficient'?t.insufficient:errorStatus(error)===409?x.stale:t.invalid);}
+    else{setCanRetry(Boolean(pending.current));setMessage(x.uncertain);}
   }
-  async function create(event: FormEvent) {
-    event.preventDefault();
-    await run(async () => { await operation("POST", "/items", { name, purpose: stockKind === "ingredient" ? "ingredient" : "sellable", stock_kind: stockKind, unit, opening_quantity: opening, low_stock_threshold: threshold || null }); setName(""); setOpening("0"); setThreshold(""); setCreating(false); });
+  async function execute(method:string,suffix:string,body:Record<string,unknown>){
+    if(running.current||pending.current)return false;
+    running.current=true;setBusy(true);setMessage('');
+    const request={path:`${base}${suffix}`,method,body:JSON.stringify({...body,operation_key:crypto.randomUUID()})};pending.current=request;
+    try{const result=await perform(request);await finish(request,result);return true;}catch(error){await fail(error);return false;}finally{running.current=false;setBusy(false);}
   }
-  async function change(event: FormEvent) {
-    event.preventDefault();
-    if (!current?.balance_revision) return;
-    await run(async () => { await operation("POST", `/items/${encodeURIComponent(current.item_ref)}/movements`, { action, amount: quantity, expected_revision: current.balance_revision }); setQuantity(""); });
-  }
-  async function saveBinding(active = true) {
-    const itemRef = current?.item_ref;
-    const saleFactor = active ? Number(factor) : activeBinding?.factor;
-    if (!menuRef || !itemRef || !saleFactor || activeBinding && activeBinding.item_ref !== itemRef) return;
-    await run(async () => { await operation("POST", `/menu/${encodeURIComponent(menuRef)}/binding`, { item_ref: itemRef, factor: saleFactor, expected_revision: activeBinding?.revision ?? 0, active }); });
-  }
-  async function openHistory(itemRef: string, beforeId?: number) {
-    try { const next = await read<History>(`${base}/items/${encodeURIComponent(itemRef)}/history${beforeId ? `?before_id=${beforeId}` : ""}`, locale); setHistory(previous => beforeId && previous ? {entries:[...previous.entries,...next.entries],next_before_id:next.next_before_id} : next); }
-    catch { setMessage(t.failed); }
-  }
-  return <section aria-label={x.title} className="rst-stock">{confirmation}
-    <header className="rst-stock-head"><div><h2>{x.title}</h2><p>{x.intro}</p></div><div className="rst-stock-head-actions"><button type="button" disabled={busy} onClick={() => void load()}>{t.refresh}</button>{data?.tracking_active && <button type="button" className="button-primary" onClick={() => setCreating(value => !value)}>{creating ? x.close : t.create}</button>}</div></header>
-    {state === "loading" && <p role="status">{t.refresh}…</p>}
-    {state === "denied" && <div className="rst-stock-state" role="status">{x.denied}</div>}
-    {state === "unavailable" && <div className="rst-stock-state" role="status">{x.unavailable} <button type="button" onClick={() => void load()}>{t.refresh}</button></div>}
-    {data && <>
-      {!data.tracking_active && <div className="rst-stock-notice" role="status">{t.inactive}</div>}
-      {message && <div className="rst-stock-notice" role="status">{message} {canRetry && <button type="button" disabled={busy} onClick={() => void retry()}>{t.retry}</button>}</div>}
-      {creating && <form onSubmit={create} className="rst-stock-panel"><h3>{t.create}</h3><div className="rst-stock-fields"><label>{t.name}<input required maxLength={160} value={name} onChange={event => setName(event.target.value)} /></label><label>{t.purpose}<select value={stockKind} onChange={event => { const value=event.target.value as typeof stockKind; setStockKind(value); setUnit(value === "prepared" ? "portion" : value === "packaged" ? "bottle" : "kg"); }}><option value="prepared">{x.prepared}</option><option value="packaged">{x.packaged}</option><option value="ingredient">{x.ingredient}</option></select></label><label>{t.unit}<select value={unit} onChange={event => setUnit(event.target.value)}>{(stockKind === "ingredient" ? units : units.slice(0,6)).map(value => <option key={value} value={value}>{unitLabel(value,t)}</option>)}</select></label><label>{t.opening}<input required inputMode="decimal" value={opening} onChange={event => setOpening(event.target.value)} /></label><label>{t.threshold}<input inputMode="decimal" value={threshold} onChange={event => setThreshold(event.target.value)} /></label></div><button className="button-primary" disabled={busy || canRetry} type="submit">{t.save}</button></form>}
-      {data.total === 0 ? <div className="rst-stock-state"><h3>{t.empty}</h3><p>{x.first}</p></div> : <><div className="rst-stock-toolbar"><label>{x.search}<input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder={x.search} /></label><div className="rst-stock-filters" role="group" aria-label={x.title}>{(["all","attention","out"] as const).map(value => <button type="button" key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{x[value]}</button>)}</div></div>
-      {filtered.length === 0 ? <div className="rst-stock-state">{x.noResults}</div> : <div className="rst-stock-list">{filtered.map(item => <button key={item.item_ref} type="button" disabled={canRetry} className="rst-stock-row" aria-pressed={selected === item.item_ref} onClick={() => { setSelected(item.item_ref); setKindChoice(item.stock_kind ?? (item.purpose === "ingredient" ? "ingredient" : "prepared")); setHistory(null); void openHistory(item.item_ref); }}><span className="rst-stock-identity"><strong>{item.name}</strong><small>{itemType(item)}</small></span><span className="rst-stock-quantity"><strong>{exact(item.on_hand,item.unit)} {item.display_label || unitLabel(item.unit,t)}</strong><small>{t.available}: {exact(item.available,item.unit)}{Number(item.reserved) > 0 ? ` · ${t.reserved}: ${exact(item.reserved,item.unit)}` : ""}</small></span><span className="rst-stock-threshold"><small>{x.threshold}</small><strong>{item.low_stock_threshold === null ? "—" : `${exact(item.low_stock_threshold,item.unit)} ${item.display_label || unitLabel(item.unit,t)}`}</strong></span><span className={`rst-stock-status ${Number(item.available) <= 0 ? "is-out" : item.low_stock ? "is-low" : ""}`}>{item.status !== "active" ? t.stateInactive : Number(item.available) <= 0 ? x.outStatus : item.low_stock ? t.low : x.normal}</span><span className="rst-stock-date"><small>{x.last}</small><strong>{when(item.last_changed_at)}</strong></span></button>)}</div>}</>}
-      {current && <section className="rst-stock-panel rst-stock-detail"><div className="rst-stock-detail-head"><div><h3>{current.name}</h3><p>{itemType(current)} · {t.onHand}: {exact(current.on_hand,current.unit)} {current.display_label || unitLabel(current.unit,t)} · {t.available}: {exact(current.available,current.unit)} · {t.reserved}: {exact(current.reserved,current.unit)}</p></div><button type="button" onClick={() => { setSelected(null); setHistory(null); }}>{x.close}</button></div>
-        {data.tracking_active && current.status === "active" && <div className="rst-stock-classify"><label>{t.purpose}<select value={kindChoice} onChange={event => setKindChoice(event.target.value as typeof kindChoice)}>{(current.purpose === "ingredient" ? ["ingredient"] : ["prepared", "packaged"]).map(value => <option key={value} value={value}>{x[value as typeof kindChoice]}</option>)}</select></label>{kindChoice !== current.stock_kind && <button type="button" disabled={busy || canRetry} onClick={() => void run(async () => { await operation("POST", `/items/${encodeURIComponent(current.item_ref)}/kind`, { stock_kind: kindChoice, expected_revision: current.revision }); })}>{t.save}</button>}</div>}
-        {data.tracking_active && current.status === "active" && <form onSubmit={change} className="rst-stock-action"><div className="rst-stock-filters" role="group" aria-label={x.reason}>{[["stock_received",t.receive],["waste",t.waste],["count",t.count]].map(([value,label]) => <button type="button" key={value} aria-pressed={action === value} onClick={() => { setAction(value); setQuantity(""); }}>{label}</button>)}</div><p>{action === "count" ? x.countHelp : action === "waste" ? x.wasteHelp : x.receiveHelp}</p><label>{t.quantity} ({current.display_label || unitLabel(current.unit,t)})<input inputMode="decimal" required value={quantity} onChange={event => setQuantity(event.target.value)} /></label><button className="button-primary" disabled={busy || canRetry} type="submit">{t.save}</button><small>{x.noExpense}</small></form>}
-        <div className="rst-stock-history"><h4>{t.history}</h4>{history?.entries.length === 0 && <p>{x.noHistory}</p>}{history?.entries.map(entry => <div className="rst-stock-movement" key={entry.movement_ref}><time dateTime={entry.created_at}>{when(entry.created_at)}</time><strong>{movementLabel(locale,entry.kind)}</strong><span>{x.effect}: {Number(entry.quantity_effect) > 0 ? "+" : ""}{exact(entry.quantity_effect,entry.unit)} {unitLabel(entry.unit,t)}</span><span>{x.balance}: {exact(entry.balance_after,entry.unit)} {unitLabel(entry.unit,t)}</span></div>)}{history?.next_before_id && <button type="button" onClick={() => void openHistory(current.item_ref,history.next_before_id!)}>{t.page}</button>}</div>
-        {current.purpose === "sellable" && <div className="rst-stock-menu"><h4>{t.bind}</h4><p>{x.menuHelp}</p>{bindings.filter(binding=>binding.item_ref===current.item_ref).map(binding=><p key={binding.menu_item_ref}><strong>{menu.find(item=>item.public_ref===binding.menu_item_ref)?.name ?? t.menuItem}</strong> · {binding.active ? Number(current.available) < binding.factor ? x.insufficient : t.stateActive : x.untracked}{binding.recount_required && ` · ${t.recount}`}{binding.reactivation_required && ` · ${t.reactivate}`}</p>)}{menu.length > 0 && <form onSubmit={event => { event.preventDefault(); void saveBinding(true); }} className="rst-stock-fields"><label>{t.menuItem}<select required value={menuRef} onChange={event => { const ref=event.target.value; setMenuRef(ref); const link=bindings.find(binding=>binding.menu_item_ref===ref); setFactor(String(link?.factor ?? 1)); }}><option value="">{t.select}</option>{menu.filter(item=>!bindings.some(binding=>binding.menu_item_ref===item.public_ref && binding.item_ref!==current.item_ref)).map(item=><option key={item.public_ref} value={item.public_ref}>{item.name}{!bindings.some(binding=>binding.menu_item_ref===item.public_ref && binding.active) ? ` · ${x.untracked}` : ""}</option>)}</select></label><label>{t.factor}<input required inputMode="numeric" pattern="[1-9][0-9]*" value={factor} onChange={event=>setFactor(event.target.value)} /></label><button type="submit" disabled={busy || canRetry || !menuRef}>{t.activate}</button>{activeBinding?.active && activeBinding.item_ref===current.item_ref && <button type="button" disabled={busy || canRetry} onClick={()=>void saveBinding(false)}>{t.disable}</button>}</form>}</div>}
-        {data.tracking_active && current.status === "active" && <button type="button" className="rst-stock-archive" disabled={busy || canRetry} onClick={() => confirmArchive(current)}>{t.archive}</button>}
+  async function retry(){const request=pending.current;if(!request||running.current)return false;running.current=true;setBusy(true);try{const result=await perform(request);await finish(request,result);return true;}catch(error){await fail(error);return false;}finally{running.current=false;setBusy(false);}}
+  function valid(value:string,valueUnit:string,zero=false){return stockQuantity(value,valueUnit,zero)!==null;}
+  async function create(event:FormEvent){event.preventDefault();if(!valid(opening,unit,true)||alertEnabled&&!valid(threshold,unit,true)){setMessage(t.invalid);return;}await execute('POST','/items',{name:name.trim(),purpose:['ingredient','other'].includes(stockKind)?'ingredient':'sellable',stock_kind:stockKind==='other'?null:stockKind,unit,opening_quantity:opening.replace(',','.'),low_stock_threshold:alertEnabled?threshold.replace(',','.'):null});}
+  const action=mode==='count'?'count':mode==='remove'?reason:current?.stock_kind==='prepared'?'preparation_produced':'stock_received';
+  const entered=current?stockQuantity(quantity,current.unit,mode==='count'):null;
+  const physical=current?.on_hand!=null?stockQuantity(current.on_hand,current.unit,true):null;
+  const after=physical!==null&&entered!==null?(mode==='count'?entered:physical+(mode==='remove'?-entered:entered)):null;
+  async function change(event:FormEvent){event.preventDefault();if(!current?.balance_revision||!valid(quantity,current.unit,mode==='count')||after!==null&&after>BigInt("999999999999999999")){setMessage(t.invalid);return;}if(after===null||after<(stockQuantity(current.reserved??'0',current.unit,true)??BigInt("0"))){setMessage(t.insufficient);return;}await execute('POST',`/items/${encodeURIComponent(current.item_ref)}/movements`,{action,amount:quantity.replace(',','.'),expected_revision:current.balance_revision});}
+  async function saveBinding(active=true){if(!current||!menuRef||!Number.isInteger(Number(factor))||Number(factor)<1)return;await execute('POST',`/menu/${encodeURIComponent(menuRef)}/binding`,{item_ref:current.item_ref,factor:active?Number(factor):activeBinding?.factor,expected_revision:activeBinding?.revision??0,active});}
+  function archive(item:Item){confirm({title:t.archiveConfirm,description:`${item.name}. ${archiveHelp[locale]}`,confirmLabel:t.archive,severity:'warning',onConfirm:async()=>{const saved=pending.current?await retry():await execute('POST',`/items/${encodeURIComponent(item.item_ref)}/archive`,{expected_revision:item.revision});if(!saved)throw new Error('archive_failed');}});}
+  const actions=(item:Item)=><div className="rst-stock-row-actions">{data?.tracking_active&&item.status==='active'&&<><button disabled={locked} onClick={e=>choose(item,'add',e.currentTarget)}>＋ {t.receive}</button><button disabled={locked} onClick={e=>choose(item,'remove',e.currentTarget)}>− {t.remove}</button><button className="rst-stock-link" disabled={locked} onClick={e=>choose(item,'count',e.currentTarget)}>{t.count}</button></>}<button className="rst-stock-link" disabled={locked} onClick={e=>choose(item,'history',e.currentTarget)}>{t.history}</button><button className="rst-stock-link" disabled={locked} onClick={e=>choose(item,'details',e.currentTarget)}>{t.details}</button></div>;
+  return <section aria-label={t.title} className="rst-stock">{confirmation}
+    <header className="rst-stock-head"><div><h2>{t.title}</h2><p>{t.intro}</p></div><div className="rst-stock-head-actions"><button disabled={locked} onClick={()=>void load()}>{t.refresh}</button>{data?.tracking_active&&<button className="button-primary" disabled={locked} onClick={e=>{opener.current=e.currentTarget;setCurrent(null);setCreating(true);setMessage('');void loadMenu();}}>＋ {t.create}</button>}</div></header>
+    {state==='loading'&&<p role="status">{t.loading}</p>}{state==='denied'&&<p role="alert">{x.denied}</p>}{state==='unavailable'&&<p role="alert">{x.unavailable} <button onClick={()=>void load()}>{t.refresh}</button></p>}
+    {message&&<div className="rst-stock-notice" role="status">{message}{canRetry&&<button disabled={busy} onClick={()=>void retry()}>{t.retry}</button>}</div>}
+    {data&&<>{!data.tracking_active&&<p className="rst-stock-notice">{t.inactive}</p>}
+      {creating&&<section ref={panel} tabIndex={-1} className="rst-stock-panel" aria-label={t.create}><form onSubmit={create}><h3>{t.create}</h3><fieldset disabled={locked}><legend>{t.purpose}</legend><div className="rst-stock-types">{(['prepared','packaged','ingredient','other'] as const).map(value=><label key={value}><input type="radio" name="stock-type" checked={stockKind===value} onChange={()=>{setStockKind(value);setUnit(value==='prepared'?'portion':value==='packaged'?'bottle':value==='ingredient'?'kg':'piece');}}/><SpaceIcon name={value==='prepared'?'restaurant':value==='ingredient'?'tool':'orders'}/>{t[value]}</label>)}</div>
+      {stockKind==='other'&&<p>{t.otherHelp}</p>}
+      {menu.length>0&&<details><summary>{t.pickMenu}</summary><label>{t.menuItem}<select value="" onChange={event=>{const item=menu.find(row=>row.public_ref===event.target.value);if(item){setName(item.name);setMenuRef(item.public_ref);}}}><option value="">{t.select}</option>{menu.map(item=><option key={item.public_ref} value={item.public_ref}>{item.name}</option>)}</select></label>{menuPage*50<menuTotal&&<button type="button" onClick={()=>void loadMenu(menuPage+1)}>{t.next}</button>}</details>}
+      <label>{t.name}<input required maxLength={160} value={name} onChange={event=>setName(event.target.value)}/></label>
+      {name.trim()&&matches.length>0&&<div className="rst-stock-matches"><strong>{t.matches}</strong>{matches.map(item=><button key={item.item_ref} type="button" onClick={e=>choose(item,'add',e.currentTarget)}>{item.name} · {amount(item.on_hand,item)}</button>)}</div>}
+      <div className="rst-stock-fields"><label>{t.opening}<input required inputMode={units.slice(0,6).includes(unit)?'numeric':'decimal'} value={opening} onChange={event=>setOpening(event.target.value)}/></label><label>{t.unit}<select value={unit} onChange={event=>setUnit(event.target.value)}>{(['ingredient','other'].includes(stockKind)?units:units.slice(0,6)).map(value=><option key={value} value={value}>{label(value)}</option>)}</select></label></div>
+      <label className="rst-stock-toggle"><input type="checkbox" role="switch" checked={alertEnabled} onChange={event=>setAlertEnabled(event.target.checked)}/>{t.alert}</label>
+      {alertEnabled&&<><label>{t.threshold}<span className="rst-stock-input-unit"><input aria-label={t.threshold} required inputMode="decimal" value={threshold} onChange={event=>setThreshold(event.target.value)}/><span>{label(unit)}</span></span></label><p>{t.alertHelp}</p></>}
+      <div className="rst-stock-form-actions"><button type="button" onClick={close}>{t.cancel}</button><button className="button-primary" type="submit">{t.addStock}</button></div></fieldset></form></section>}
+      {!creating&&<><div className="rst-stock-toolbar"><label className="rst-stock-search">{t.search}<input type="search" maxLength={160} value={search} onChange={event=>setSearch(event.target.value)}/></label><label>{t.stockStatus}<select value={filter} disabled={locked} onChange={event=>{setFilter(event.target.value);setPage(1);}}><option value="all">{x.all}</option><option value="attention">{x.attention}</option><option value="out">{x.out}</option></select></label></div><div className="rst-stock-filters" role="group" aria-label={t.purpose}>{(['all','prepared','packaged','ingredient','other'] as const).map(value=><button key={value} disabled={locked} aria-pressed={kind===value} onClick={()=>{setKind(value);setPage(1);}}>{value==='all'?x.all:t[value]}</button>)}</div>
+      {data.items.length===0?<div className="rst-stock-state"><h3>{query||kind!=='all'||filter!=='all'?x.noResults:t.empty}</h3>{!query&&kind==='all'&&filter==='all'&&<p>{t.first}</p>}</div>:<div className="rst-stock-list">{data.items.map(item=><article className="rst-stock-row" key={item.item_ref}><span className="rst-stock-icon"><SpaceIcon name={item.stock_kind==='prepared'?'restaurant':item.stock_kind==='ingredient'?'tool':'orders'}/></span><div className="rst-stock-identity"><h3>{item.name}</h3><strong className="rst-stock-quantity">{amount(item.on_hand,item)}</strong><span className={`rst-stock-status ${item.available!==null&&Number(item.available)<=0?'is-out':item.low_stock?'is-low':''}`}>{status(item)}</span>{Number(item.reserved)>0&&<small>{t.reserved}: {amount(item.reserved,item)} · {t.available}: {amount(item.available,item)}</small>}</div>{actions(item)}</article>)}</div>}
+      {data.total>20&&<nav className="rst-stock-pagination" aria-label={t.title}><span>{(page-1)*20+1}–{Math.min(page*20,data.total)} / {data.total}</span><button disabled={page<=1||locked} onClick={()=>setPage(value=>value-1)}>{t.previous}</button><button disabled={page*20>=data.total||locked} onClick={()=>setPage(value=>value+1)}>{t.next}</button></nav>}</>}
+      {current&&!creating&&<section ref={panel} tabIndex={-1} className="rst-stock-panel rst-stock-detail" aria-label={current.name}><header className="rst-stock-detail-head"><div><h3>{mode==='add'?t.receive:mode==='remove'?t.remove:mode==='count'?t.count:mode==='history'?t.history:t.details}</h3><p><strong>{current.name}</strong> · {amount(current.on_hand,current)}</p></div><button disabled={locked} onClick={close} aria-label={x.close}>×</button></header>
+      {['add','remove','count'].includes(mode)&&data.tracking_active&&current.status==='active'&&<form onSubmit={change}><fieldset disabled={locked}><label>{mode==='count'?t.countQuestion:mode==='remove'?t.removeQuestion:current.stock_kind==='prepared'?t.prepareQuestion:t.receiveQuestion}<span className="rst-stock-input-unit"><input aria-label={mode==='count'?t.countQuestion:mode==='remove'?t.removeQuestion:current.stock_kind==='prepared'?t.prepareQuestion:t.receiveQuestion} required inputMode={units.slice(0,6).includes(current.unit)?'numeric':'decimal'} value={quantity} onChange={event=>setQuantity(event.target.value)}/><span>{current.display_label||label(current.unit)}</span></span></label>{mode==='count'&&<p>{t.countHelp}</p>}
+      {mode==='remove'&&<><label>{x.reason}<select value={reason} onChange={event=>setReason(event.target.value)}><option value="waste">{t.damaged}</option>{current.purpose==='ingredient'&&<option value="manual_issue">{t.used}</option>}<option value="internal_use">{t.otherReason}</option></select></label><p>{t.autoHelp}</p></>}
+      <output className="rst-stock-preview" aria-live="polite">{mode==='count'?<>{t.before}: {amount(current.on_hand,current)}<br/>{t.after}: {after===null?'—':amount(stockDecimal(after),current)}</>:<>{amount(current.on_hand,current)} {mode==='remove'?'−':'+'} {quantity?number(quantity.replace(',','.')):'…'} = {after===null?'—':amount(stockDecimal(after),current)}</>}</output>
+      <div className="rst-stock-form-actions"><button type="button" onClick={close}>{t.cancel}</button><button type="submit" className="button-primary">{mode==='count'?t.saveCorrection:t.save}</button></div></fieldset></form>}
+      {mode==='history'&&<div className="rst-stock-history">{historyState==='loading'&&<p role="status">{t.loading}</p>}{historyState==='failed'&&<p role="alert">{t.historyFailed} <button onClick={()=>void openHistory(current.item_ref)}>{t.refresh}</button></p>}{historyState==='ready'&&history?.entries.length===0&&<p>{x.noHistory}</p>}{history?.entries.map(entry=><div className="rst-stock-movement" key={entry.movement_ref}><time dateTime={entry.created_at}>{when(entry.created_at)}</time><strong>{movementLabel(locale,entry.kind)}</strong><span>{Number(entry.quantity_effect)>0?'+':''}{number(entry.quantity_effect)} {label(entry.unit)}</span><span>{x.balance}: {number(entry.balance_after)}</span></div>)}{history?.next_before_id&&<button onClick={()=>void openHistory(current.item_ref,history.next_before_id!)}>{t.next}</button>}</div>}
+      {mode==='details'&&<><p>{x.last}: {when(current.last_changed_at)}</p><p>{t.linkHelp}</p><p>{t.threshold} {current.low_stock_threshold===null?'—':amount(current.low_stock_threshold,current)}</p>
+      {data.tracking_active&&current.status==='active'&&<details><summary>{t.purpose}</summary><label>{t.purpose}<select value={kindChoice} onChange={event=>setKindChoice(event.target.value)}>{(current.purpose==='ingredient'?['ingredient']:['prepared','packaged']).map(value=><option key={value} value={value}>{t[value as 'prepared'|'packaged'|'ingredient']}</option>)}</select></label>{kindChoice!==current.stock_kind&&<button disabled={locked} onClick={()=>void execute('POST',`/items/${encodeURIComponent(current.item_ref)}/kind`,{stock_kind:kindChoice,expected_revision:current.revision})}>{t.save}</button>}</details>}
+      {current.purpose==='sellable'&&<div className="rst-stock-menu"><h4>{t.bind}</h4>{bindings.filter(link=>link.item_ref===current.item_ref).map(link=><p key={link.menu_item_ref}>{menu.find(row=>row.public_ref===link.menu_item_ref)?.name??t.menuItem} · {link.active?t.stateActive:t.stateInactive}{link.recount_required&&` · ${t.recount}`}{link.reactivation_required&&` · ${t.reactivate}`}</p>)}{data.tracking_active&&current.status==='active'&&<form onSubmit={event=>{event.preventDefault();void saveBinding();}}><fieldset disabled={locked}><label>{t.menuItem}<select required value={menuRef} onChange={event=>{setMenuRef(event.target.value);setFactor(String(bindings.find(link=>link.menu_item_ref===event.target.value)?.factor??1));}}><option value="">{t.select}</option>{menu.filter(row=>!bindings.some(link=>link.menu_item_ref===row.public_ref&&link.item_ref!==current.item_ref)).map(row=><option key={row.public_ref} value={row.public_ref}>{row.name}</option>)}</select></label>{menuPage*50<menuTotal&&<button type="button" onClick={()=>void loadMenu(menuPage+1)}>{t.next}</button>}<label>{t.factor}<input inputMode="numeric" required pattern="[1-9][0-9]*" value={factor} onChange={event=>setFactor(event.target.value)}/></label><button disabled={!menuRef} type="submit">{t.activate}</button>{activeBinding?.active&&activeBinding.item_ref===current.item_ref&&<button type="button" onClick={()=>void saveBinding(false)}>{t.disable}</button>}</fieldset></form>}</div>}
+      {data.tracking_active&&current.status==='active'&&<button className="rst-stock-archive" disabled={locked} onClick={()=>archive(current)}>{t.archive}</button>}</>}
       </section>}
     </>}
   </section>;

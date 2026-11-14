@@ -1,0 +1,368 @@
+{
+  "title": [
+    "Mon stock",
+    "My stock",
+    "Stock na ngai",
+    "Hisa yangu"
+  ],
+  "intro": [
+    "Voyez ce qu’il vous reste pour préparer et servir vos clients.",
+    "See what you have left to prepare and serve your customers.",
+    "Talá oyo etikali mpo na kolamba mpe kopesa bakiliya.",
+    "Angalia kilichobaki kuandaa na kuwahudumia wateja."
+  ],
+  "create": [
+    "Ajouter un produit",
+    "Add a product",
+    "Bakisa eloko",
+    "Ongeza bidhaa"
+  ],
+  "empty": [
+    "Votre stock est vide.",
+    "Your stock is empty.",
+    "Stock na yo ezali mpamba.",
+    "Hisa yako ni tupu."
+  ],
+  "first": [
+    "Ajoutez un plat, une boisson ou un ingrédient pour noter ce qu’il vous reste.",
+    "Add a dish, drink or ingredient to record what you have left.",
+    "Bakisa bilei, masanga to eloko ya kolamba mpo na koyeba oyo etikali.",
+    "Ongeza chakula, kinywaji au kiungo kuandika kilichobaki."
+  ],
+  "search": [
+    "Chercher un produit…",
+    "Find a product…",
+    "Luka eloko…",
+    "Tafuta bidhaa…"
+  ],
+  "prepared": [
+    "Plats préparés",
+    "Prepared dishes",
+    "Bilei ebongami",
+    "Vyakula vilivyoandaliwa"
+  ],
+  "packaged": [
+    "Boissons et unités emballées",
+    "Drinks and packaged units",
+    "Masanga mpe biloko ekangami",
+    "Vinywaji na bidhaa zilizofungwa"
+  ],
+  "ingredient": [
+    "Ingrédients",
+    "Ingredients",
+    "Biloko ya kolamba",
+    "Viungo"
+  ],
+  "other": [
+    "Autre",
+    "Other",
+    "Mosusu",
+    "Nyingine"
+  ],
+  "purpose": [
+    "Qu’ajoutez-vous ?",
+    "What are you adding?",
+    "Ozali kobakisa nini?",
+    "Unaongeza nini?"
+  ],
+  "name": [
+    "Quel nom ?",
+    "What is it called?",
+    "Nkombo nini?",
+    "Jina gani?"
+  ],
+  "unit": [
+    "Vous comptez en…",
+    "You count in…",
+    "Ozali kotánga na…",
+    "Unahesabu kwa…"
+  ],
+  "opening": [
+    "Combien avez-vous maintenant ?",
+    "How much do you have now?",
+    "Ozali na boni sikoyo?",
+    "Una kiasi gani sasa?"
+  ],
+  "alert": [
+    "Me prévenir quand il en reste peu",
+    "Warn me when little remains",
+    "Yebisa ngai soki etikali moke",
+    "Nionye inapobaki kidogo"
+  ],
+  "threshold": [
+    "Me prévenir quand il reste…",
+    "Warn me when there is…",
+    "Yebisa ngai soki etikali…",
+    "Nionye inapobaki…"
+  ],
+  "alertHelp": [
+    "Un avertissement s’affiche ici quand la quantité disponible atteint ce nombre ou moins. Aucun message n’est envoyé.",
+    "A warning appears here when the available quantity reaches this number or less. No message is sent.",
+    "Elembo ekomonana awa soki motángo oyo ekoki kosalelama ekómi na ndelo oyo to na nse. Message etindamaka te.",
+    "Onyo huonekana hapa kiasi kinachopatikana kikifikia namba hii au chini. Hakuna ujumbe unaotumwa."
+  ],
+  "addStock": [
+    "Ajouter à mon stock",
+    "Add to my stock",
+    "Bakisa na stock na ngai",
+    "Ongeza kwenye hisa yangu"
+  ],
+  "cancel": [
+    "Annuler",
+    "Cancel",
+    "Tika",
+    "Ghairi"
+  ],
+  "receive": [
+    "Ajouter une quantité",
+    "Add quantity",
+    "Bakisa motángo",
+    "Ongeza kiasi"
+  ],
+  "remove": [
+    "Retirer une quantité",
+    "Remove quantity",
+    "Longola motángo",
+    "Punguza kiasi"
+  ],
+  "count": [
+    "Corriger ce qui reste",
+    "Correct what remains",
+    "Bongisa oyo etikali",
+    "Sahihisha kilichobaki"
+  ],
+  "receiveQuestion": [
+    "Combien avez-vous reçu ?",
+    "How much did you receive?",
+    "Ozwaki boni?",
+    "Umepokea kiasi gani?"
+  ],
+  "prepareQuestion": [
+    "Combien de portions avez-vous préparées ?",
+    "How many portions did you prepare?",
+    "Obongisaki biteni boni?",
+    "Umeandaa sehemu ngapi?"
+  ],
+  "removeQuestion": [
+    "Combien retirez-vous ?",
+    "How much are you removing?",
+    "Ozali kolongola boni?",
+    "Unapunguza kiasi gani?"
+  ],
+  "countQuestion": [
+    "Après avoir compté, combien reste-t-il ?",
+    "After counting, how much remains?",
+    "Nsima ya kotánga, etikali boni?",
+    "Baada ya kuhesabu, kimebaki kiasi gani?"
+  ],
+  "countHelp": [
+    "Entrez tout ce qu’il reste, pas la quantité à ajouter.",
+    "Enter everything left, not the quantity to add.",
+    "Komá nyonso oyo etikali, motángo ya kobakisa te.",
+    "Weka vyote vilivyobaki, si kiasi cha kuongeza."
+  ],
+  "saveCorrection": [
+    "Enregistrer la correction",
+    "Save correction",
+    "Bomba bobongisi",
+    "Hifadhi marekebisho"
+  ],
+  "before": [
+    "SHIDA indique",
+    "SHIDA shows",
+    "SHIDA elakisi",
+    "SHIDA inaonyesha"
+  ],
+  "after": [
+    "Après correction",
+    "After correction",
+    "Nsima ya bobongisi",
+    "Baada ya marekebisho"
+  ],
+  "normal": [
+    "Il en reste",
+    "Some remains",
+    "Etikali",
+    "Bado ipo"
+  ],
+  "low": [
+    "Il en reste peu",
+    "Little remains",
+    "Etikali moke",
+    "Imebaki kidogo"
+  ],
+  "outStatus": [
+    "Il n’en reste plus",
+    "None remains",
+    "Esili",
+    "Imeisha"
+  ],
+  "available": [
+    "Après réservations",
+    "After reservations",
+    "Nsima ya kobomba",
+    "Baada ya kuhifadhi"
+  ],
+  "history": [
+    "Voir les changements",
+    "View changes",
+    "Talá mbongwana",
+    "Ona mabadiliko"
+  ],
+  "used": [
+    "Utilisé en cuisine",
+    "Used in the kitchen",
+    "Esalelami na kolamba",
+    "Imetumika jikoni"
+  ],
+  "damaged": [
+    "Abîmé ou perdu",
+    "Damaged or lost",
+    "Ebebi to ebungi",
+    "Imeharibika au kupotea"
+  ],
+  "otherReason": [
+    "Autre utilisation",
+    "Other use",
+    "Bosaleli mosusu",
+    "Matumizi mengine"
+  ],
+  "invalid": [
+    "Entrez une quantité valide : un nombre entier pour les unités, jusqu’à trois décimales pour les poids et volumes.",
+    "Enter a valid quantity: whole units, or up to three decimals for weights and volumes.",
+    "Komá motángo ya malamu: mobimba mpo na biteni, to décimales misato mpo na kilo mpe litre.",
+    "Weka kiasi sahihi: vipimo kamili, au desimali hadi tatu kwa uzito na ujazo."
+  ],
+  "insufficient": [
+    "Cette quantité dépasse ce qui reste après les réservations.",
+    "This exceeds the quantity left after reservations.",
+    "Motángo oyo eleki oyo etikali nsima ya kobomba.",
+    "Kiasi hiki kinazidi kilichobaki baada ya kuhifadhi."
+  ],
+  "duplicate": [
+    "Un produit identique existe déjà. Retrouvez-le pour ajouter une quantité.",
+    "An identical product already exists. Find it to add quantity.",
+    "Eloko ndenge moko ezali déjà. Luká yango mpo na kobakisa motángo.",
+    "Bidhaa inayofanana tayari ipo. Itafute kuongeza kiasi."
+  ],
+  "matches": [
+    "Produits existants",
+    "Existing products",
+    "Biloko oyo ezali",
+    "Bidhaa zilizopo"
+  ],
+  "previous": [
+    "Précédent",
+    "Previous",
+    "Liboso",
+    "Iliyotangulia"
+  ],
+  "next": [
+    "Suivant",
+    "Next",
+    "Elándi",
+    "Inayofuata"
+  ],
+  "details": [
+    "Détails et lien au menu",
+    "Details and menu link",
+    "Makambo mpe boyokani na menu",
+    "Maelezo na kiungo cha menyu"
+  ],
+  "pickMenu": [
+    "Reprendre le nom d’un plat ou d’une boisson",
+    "Use a dish or drink name",
+    "Salelá nkombo ya bilei to masanga",
+    "Tumia jina la chakula au kinywaji"
+  ],
+  "linkHelp": [
+    "Ajouter du stock ne publie aucun plat. Reliez-le au menu ci-dessous pour compter les ventes. Les ingrédients ne sont pas déduits automatiquement.",
+    "Adding stock does not publish a dish. Link it to the menu below to count sales. Ingredients are not deducted automatically.",
+    "Kobakisa stock ebimisaka bilei na menu te. Kangisá yango na menu mpo na kotánga boteki. Biloko ya kolamba ekitisamaka yango moko te.",
+    "Kuongeza hisa hakuchapishi chakula. Iunganishe na menyu kuhesabu mauzo. Viungo havipunguzwi kiotomatiki."
+  ],
+  "otherHelp": [
+    "Les fournitures utilisent le suivi privé existant. Les anciens produits sans type restent dans Autre jusqu’à leur classement.",
+    "Supplies use existing private tracking. Older unclassified products stay in Other until classified.",
+    "Biloko ya mosala esalela bolandi ya sekele. Biloko ya kala ezangi lolenge etikali na Mosusu.",
+    "Vifaa vinatumia ufuatiliaji wa faragha uliopo. Bidhaa za zamani zisizoainishwa hubaki kwenye Nyingine."
+  ],
+  "historyFailed": [
+    "Les changements n’ont pas pu être chargés.",
+    "Changes could not be loaded.",
+    "Mbongwana ekoki komonisama te.",
+    "Mabadiliko hayakuweza kupakiwa."
+  ],
+  "loading": [
+    "Chargement…",
+    "Loading…",
+    "Ezali koya…",
+    "Inapakia…"
+  ],
+  "autoHelp": [
+    "Ne retirez pas une seconde fois les quantités déjà comptées par une vente liée au menu.",
+    "Do not remove quantities a second time when a linked menu sale already counted them.",
+    "Longolá lisusu te motángo oyo boteki ekangami na menu esi etángi.",
+    "Usipunguze tena kiasi kilichohesabiwa na mauzo yaliyounganishwa na menyu."
+  ],
+  "unitPiece": [
+    "pièce|pièces",
+    "piece|pieces",
+    "eteni|biteni",
+    "kipande|vipande"
+  ],
+  "unitPortion": [
+    "portion|portions",
+    "portion|portions",
+    "eteni|biteni",
+    "sehemu"
+  ],
+  "unitBoule": [
+    "boule|boules",
+    "ball|balls",
+    "liboke|maboke",
+    "donge|madonge"
+  ],
+  "unitBottle": [
+    "bouteille|bouteilles",
+    "bottle|bottles",
+    "molangi|milangi",
+    "chupa"
+  ],
+  "unitCan": [
+    "canette|canettes",
+    "can|cans",
+    "canette",
+    "kopo|makopo"
+  ],
+  "unitTray": [
+    "plateau|plateaux",
+    "tray|trays",
+    "plateau",
+    "trei"
+  ],
+  "stockStatus": [
+    "État du stock",
+    "Stock status",
+    "Ndenge stock ezali",
+    "Hali ya hisa"
+  ],
+  "retry": [
+    "Réessayer la même opération",
+    "Retry the same operation",
+    "Meka lisusu mosala kaka oyo",
+    "Rudia kitendo kilekile"
+  ],
+  "reserved": [
+    "Réservé",
+    "Reserved",
+    "Ebombami",
+    "Imehifadhiwa"
+  ],
+  "updated": [
+    "Stock mis à jour.",
+    "Stock updated.",
+    "Stock ebongwani.",
+    "Hisa imesasishwa."
+  ]
+}
