@@ -40,10 +40,14 @@ export function validOrderQuery(path: string, method: string, q: URLSearchParams
   if (isPreparationPath(path)) return validPreparationQuery(path,method,q);
   const kitchen = path.includes('/kitchen/');
   const orders = method === 'GET' && /\/orders$/.test(path), feed = /\/(?:order-feed|kitchen\/feed)$/.test(path), summary = /\/order-summary$/.test(path);
-  const allowed = ['language', ...(method==='GET'&&path.endsWith('/counter-unpaid')?['page']:[]), ...(orders || summary ? ['page','page_size'] : []), ...(orders ? kitchen ? ['completed'] : ['states','as_of'] : []), ...(feed ? kitchen ? ['cursor','limit'] : ['cursor','states','limit'] : []), ...(summary ? ['from_date','to_date','start_offset','end_offset'] : [])];
+  const allowed = ['language', ...(method==='GET'&&path.endsWith('/counter-unpaid')?['page']:[]), ...(orders || summary ? ['page','page_size'] : []), ...(orders ? kitchen ? ['completed'] : ['states','as_of','search','fulfillment','origin','date_from','date_to'] : []), ...(feed ? kitchen ? ['cursor','limit'] : ['cursor','states','limit'] : []), ...(summary ? ['from_date','to_date','start_offset','end_offset'] : [])];
   for (const [key,value] of q) {
     if (!allowed.includes(key) || (key !== 'states' && q.getAll(key).length !== 1)) return false;
     if (key === 'language' && !enumOf(value,['en','fr','ln','sw'])) return false;
+    if (key === 'search' && !/^[A-Za-z0-9_-]{0,64}$/.test(value)) return false;
+    if (key === 'fulfillment' && !['on_site','takeaway','delivery'].includes(value)) return false;
+    if (key === 'origin' && !['online','counter','assisted'].includes(value)) return false;
+    if (['date_from','date_to'].includes(key) && !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
     if (key === 'states' && (!orderStates.includes(value) || q.getAll(key).length > orderStates.length)) return false;
     if (key === 'completed' && !['true','false'].includes(value)) return false;
     if (['page','page_size','limit'].includes(key) && (!/^[1-9]\d{0,6}$/.test(value) || key !== 'page' && Number(value)>50)) return false;
