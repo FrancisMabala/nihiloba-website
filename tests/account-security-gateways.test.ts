@@ -12,6 +12,11 @@ const context=(path:string)=>({params:Promise.resolve({path:path?path.split('/')
 function req(path:string,method='POST',body:object={},headers:Record<string,string>={}){return new Request('https://nihiloba.com/api/shida/'+path,{method,headers:{Origin:'https://nihiloba.com','x-shida-session':personalSessionBinding(token),'Content-Type':'application/json',...headers},...(method==='POST'?{body:JSON.stringify(body)}:{})});}
 beforeEach(()=>{jar.clear();jar.set(PERSONAL_SESSION_COOKIE,token);saved.mockReset();vi.stubEnv('SHIDA_API_BASE_URL','https://backend.test');vi.stubGlobal('fetch',fetcher);fetcher.mockReset();fetcher.mockResolvedValue(Response.json({saved:true}));});
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
+it('preserves the profile-completion instruction for passkey setup',async()=>{
+ fetcher.mockResolvedValueOnce(Response.json({detail:'security_personal_name_required'},{status:409}));
+ const response=await POST(req('personal/security/passkeys/register/options'),context('passkeys/register/options'));
+ expect(response.status).toBe(409);expect(await response.json()).toEqual({detail:'security_personal_name_required'});
+});
 it.each(['','profile','phone','recovery','navigation','sessions'])('forwards canonical browser origin on production loopback account read: %s',async path=>{
  vi.stubEnv('NODE_ENV','production');
  const request=new Request(`http://localhost:10000/api/shida/personal/security/${path}`,{headers:{'sec-fetch-site':'same-origin','x-shida-session':personalSessionBinding(token)}});

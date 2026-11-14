@@ -12,6 +12,12 @@ const codeReq = (value: unknown = { code: "610294" }) => new Request("https://ni
 function bound() { jar.set("nihiloba_personal_challenge", `${ref}.${Date.now() + 300000}.${verifier}`); }
 beforeEach(() => { jar.clear(); set.mockClear(); vi.unstubAllGlobals(); });
 describe("Personal WhatsApp restricted gateway", () => {
+  it.each(['fr','en','ln','sw'])('forwards the selected login language %s without accepting identity input',async language=>{
+    const fetcher=vi.fn<typeof fetch>(async()=>Response.json({challenge_ref:ref,expires_at:new Date(Date.now()+300000).toISOString(),whatsapp_url:'https://wa.me/243000000000?text=fixture'},{headers:{'set-cookie':`shida_dashboard_challenge=${verifier}; HttpOnly`}}));vi.stubGlobal('fetch',fetcher);
+    const request=new Request('https://nihiloba.com/api/shida/personal/auth/whatsapp/',{method:'POST',headers:{origin:'https://nihiloba.com','X-Shida-Language':language}});
+    expect((await POST(request,ctx())).status).toBe(201);
+    expect(fetcher.mock.calls[0][1]?.headers).toMatchObject({'X-Shida-Language':language,Origin:'https://nihiloba.com'});
+  });
   it("forwards an untrusted contact only for registration and preserves mismatch rejection",async()=>{
     bound();const fetcher=vi.fn(async()=>Response.json({detail:"phone_mismatch"},{status:409}));vi.stubGlobal("fetch",fetcher);
     const body={code:"610294",expected_phone:"+243910004001"};

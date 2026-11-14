@@ -1,6 +1,15 @@
 function decode(value:string):Uint8Array<ArrayBuffer>{const raw=atob(value.replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(raw,c=>c.charCodeAt(0));}
 function encode(value:ArrayBuffer){return btoa(String.fromCharCode(...new Uint8Array(value))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 type Descriptor={id:string;type:'public-key';transports?:AuthenticatorTransport[]};
+export type PasskeyUserDetails={rpId:string;userId:string;name:string;displayName:string};
+// Only call with the authenticated security overview, never a public profile.
+// A resolved signal does not prove that an authenticator changed its saved label.
+export async function signalPasskeyUser(details:PasskeyUserDetails|null|undefined):Promise<boolean>{
+ if(!details?.name||!details.displayName||typeof window==='undefined')return false;
+ const provider=window.PublicKeyCredential as typeof PublicKeyCredential & {signalCurrentUserDetails?:(details:PasskeyUserDetails)=>Promise<void>};
+ if(!provider?.signalCurrentUserDetails)return false;
+ try{await provider.signalCurrentUserDetails(details);return true;}catch{return false;}
+}
 export async function passkeyCeremony(options:Record<string,unknown>,register:boolean,signal?:AbortSignal){
  if(!window.PublicKeyCredential||!navigator.credentials)throw new Error('passkey_unavailable');
  const descriptors=(value:unknown)=>(value as Descriptor[]|undefined)?.map(item=>({...item,id:decode(item.id)}));

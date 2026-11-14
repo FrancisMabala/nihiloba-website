@@ -46,7 +46,7 @@ async function handle(request: Request, context: Context) {
         });
       }
       const data=await response.json().catch(()=>null);
-      const codes=new Set(['security_verification_required','security_fresh_login_required','security_method_not_ready','security_verification_failed','security_email_delivery_unavailable','security_recovery_review_required','security_change_not_ready','security_number_unavailable','security_phone_delivery_unavailable','security_change_pending','security_deletion_review_required','security_deletion_obligations_changed','security_deletion_deadline']);
+      const codes=new Set(['security_personal_name_required','security_verification_required','security_fresh_login_required','security_method_not_ready','security_verification_failed','security_email_delivery_unavailable','security_recovery_review_required','security_change_not_ready','security_number_unavailable','security_phone_delivery_unavailable','security_change_pending','security_deletion_review_required','security_deletion_obligations_changed','security_deletion_deadline']);
       return Response.json({detail:codes.has(data?.detail)?data.detail:'security_unavailable'},{status:response.status>=400&&response.status<600?response.status:502,headers:PRIVATE_HEADERS});
     }
     if(path==='delete/cancel'){
