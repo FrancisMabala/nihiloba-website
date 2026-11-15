@@ -25,6 +25,8 @@ import {securityText} from '../../lib/account-security-copy';
 import {AccountSecurity} from './account-security';
 import {AccountRecoveryReview} from './account-recovery-review';
 import {AccountDeletionAdmin} from './account-deletion-admin';
+import {HelpQuestions} from './help-questions';
+import {helpText} from '../../lib/help-questions-copy';
 import {AccountSupport} from './account-support';
 import {accountSupportCopy} from '../../lib/account-support-copy';
 import {accountNavigationCopy} from '../../lib/account-navigation-copy';
@@ -70,13 +72,14 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
  return <div className={`account-space${view==='settings'?' account-settings-page':(view==='management'||view==='overview')?' account-activities-page':view==='transactions'?' account-transactions-page':''}`} lang={locale}>
   <SpaceSidebar binding={session?.binding} locale={locale} view={view==='candidate'?'job-search':view} individualOnly={individualOnly&&view!=='management'} hasListings={hasListings} onNavigate={async event=>{event.preventDefault();const destination=event.currentTarget.href;if(await leaveWork())window.location.assign(destination);}}/>
   <div className="space-content">
-   {((view!=='management'&&view!=='listings'&&(view!=='job-offer'||apply))||checking||!session)&&<h1>{view==='job-offer'?(apply?individualApplicationCopy[locale].title:missionText(locale,'title')):(view==='candidate'||view==='job-search')?jobSearchCopy[locale].title:view==='listings'?listingCopy[locale].title:view==='overview'?universalSpaceCopy[locale].overview:view==='management'?n.activities:view==='transactions'?n.transactions:view==='settings'?n.account:view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>}
+   {((view!=='management'&&view!=='listings'&&(view!=='job-offer'||apply))||checking||!session)&&<h1>{view==='job-offer'?(apply?individualApplicationCopy[locale].title:missionText(locale,'title')):(view==='candidate'||view==='job-search')?jobSearchCopy[locale].title:view==='listings'?listingCopy[locale].title:view==='overview'?universalSpaceCopy[locale].overview:view==='management'?n.activities:view==='transactions'?n.transactions:view==='settings'?n.account:view==='questions'?helpText(locale,'title'):view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>}
    {view==='job-offer'&&(checking?<p role="status">{t.loading}</p>:session?apply?<MissionApply key={session.binding+apply} locale={locale} binding={session.binding} offer={apply}/>:<PersonalOfferSpace key={session.binding} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='listings'&&(checking?<p role="status">{t.loading}</p>:session?<WenzeApiProvider key={session.binding} binding={session.binding} onUnauthorized={()=>setSession(null)}><PersonalListings locale={locale} binding={session.binding}/></WenzeApiProvider>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {(view==='candidate'||view==='job-search')&&(checking?<p role="status">{t.loading}</p>:session?<JobSearchSpace key={session.binding} initialSection={view==='candidate'?'profiles':initialSection} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='messages'&&(checking?<p role="status">{t.loading}</p>:session?<MessagesSpace key={session.binding} binding={session.binding} locale={locale}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='recovery'&&<AccountRecovery locale={locale}/>}
    {!session&&view!=='recovery'&&<p><a href={href('recovery')}>{securityText(locale,'report')}</a></p>}
+   {view==='questions'&&(checking?<p role="status">{t.loading}</p>:session?<HelpQuestions key={'questions:'+session.binding} binding={session.binding} locale={locale}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='support'&&(checking?<p role="status">{t.loading}</p>:session?<AccountSupport key={'support:'+session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {view==='support'&&session&&<AccountRecoveryReview key={'recovery-review:'+session.binding} binding={session.binding} locale={locale}/>}
    {view==='support'&&session&&<AccountDeletionAdmin key={'deletion-review:'+session.binding} binding={session.binding} locale={locale}/>}

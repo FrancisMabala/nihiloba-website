@@ -8,9 +8,10 @@ const fail = (status: number) => Response.json({ detail: "support_unavailable" }
 async function handle(request: Request, context: Context) {
   const path = ((await context.params).path ?? []).join("/");
   const reference = "SCT_[A-Za-z0-9_-]{1,100}";
-  const allowed = request.method === "GET" ? path === "" || new RegExp(`^${reference}$`).test(path)
-    : request.method === "POST" && (path === "" || path === "shop-report" || path === "apartment-report" || new RegExp(`^${reference}/(reply|close)$`).test(path));
-  if (!allowed || new URL(request.url).search) return fail(404);
+  const allowed = request.method === "GET" ? path === "" || path === "questions" || new RegExp(`^questions/${reference}$`).test(path) || new RegExp(`^${reference}$`).test(path)
+    : request.method === "POST" && (path === "" || path === "shop-report" || path === "apartment-report" || path === "questions" || new RegExp(`^questions/${reference}/(reply|close|reopen|read)$`).test(path) || new RegExp(`^${reference}/(reply|close)$`).test(path));
+  const query = new URL(request.url).searchParams;
+  if (!allowed || (query.size && (path !== "questions" || request.method !== "GET" || [...query.keys()].some(key=>key!=="page") || !/^[1-9][0-9]{0,3}$/.test(query.get("page")??"")))) return fail(404);
   if (request.headers.get("sec-fetch-site") === "cross-site") return fail(403);
   const origin = personalRequestOrigin(request);
   if (request.method !== "GET" && !origin) return fail(403);
@@ -33,7 +34,7 @@ async function handle(request: Request, context: Context) {
   try {
     const base = new URL(process.env.SHIDA_API_BASE_URL ?? "https://api.nihiloba.com");
     if (base.protocol !== "https:" || base.username || base.password) return fail(503);
-    const response = await fetch(new URL(`/api/dashboard/personal/support${path ? `/${path}` : ""}`, base.origin), {
+    const response = await fetch(new URL(`/api/dashboard/personal/support${path ? `/${path}` : ""}${query.size?`?${query}`:""}`, base.origin), {
       method: request.method, body, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(12000),
       headers: { Accept: "application/json", "Content-Type": "application/json", Cookie: `shida_dashboard_session=${token}`, ...(origin ? {Origin: origin} : {}) },
     });

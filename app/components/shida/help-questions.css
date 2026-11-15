@@ -1,0 +1,13 @@
+.help-questions{max-width:960px;min-width:0;color:var(--shida-forest,#173e32)}
+.help-tabs,.help-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:18px 0}
+.help-questions button,.help-questions select,.help-questions textarea{font:inherit;color:inherit;border:1px solid #cfc8bc;border-radius:7px;background:#fffdf9;min-height:44px;padding:10px 14px;max-width:100%}
+.help-questions button{cursor:pointer}.help-questions button:disabled{opacity:.6;cursor:wait}
+.help-questions .help-primary,.help-tabs [aria-current=page]{background:#173e32;color:#fff;border-color:#173e32}
+.help-questions :is(button,a,select,textarea,summary):focus-visible{outline:3px solid #a36c16;outline-offset:3px}
+.help-card{background:#fffdf9;border:1px solid #d9d0c3;border-radius:12px;padding:24px;margin:16px 0;min-width:0;overflow-wrap:anywhere}
+.help-card h2{font-family:var(--font-heading,Georgia,serif);font-size:1.5rem;margin:0 0 18px}.help-card h2:focus{outline:none}
+.help-card form{display:grid;gap:10px}.help-card label{font-weight:600}.help-card textarea{width:100%;resize:vertical;min-height:140px}.help-card select{width:100%;margin-bottom:10px}.help-hint{font-size:.9rem;color:#575d57;margin:0 0 12px}.help-card a{text-decoration:underline;text-underline-offset:3px}
+.help-status{display:inline-block;background:#edf2e6;border-radius:6px;padding:5px 9px;font-size:.875rem;align-self:start}
+.help-history article{padding:18px 0;border-bottom:1px solid #e1dcd4}.help-history{margin:12px 0 24px}.help-history header{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}.help-history p{white-space:pre-wrap}.help-history small{color:#575d57}
+.help-list{padding:0;list-style:none}.help-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:18px 0;border-bottom:1px solid #e1dcd4}.help-questions .help-question-link{text-align:left;border:0;background:transparent;padding:0;display:grid;gap:6px;white-space:normal;overflow-wrap:anywhere}.help-question-link span{font-size:.875rem}.help-card details{padding:16px 0;border-bottom:1px solid #e1dcd4}.help-card summary{cursor:pointer;font-weight:600}
+@media(max-width:600px){.help-card{padding:16px}.help-tabs{gap:8px}.help-tabs button{flex:1 1 130px}.help-list li{grid-template-columns:minmax(0,1fr)}.help-actions>*{max-width:100%}.help-card form button{width:100%}.help-history header{display:grid;gap:4px}}

@@ -1,3 +1,4 @@
+import {helpText} from '../../lib/help-questions-copy';
 import {usePersonalNotificationCount} from '../../lib/personal-notification-count';
 import {jobSearchCopy} from '../../lib/job-search-copy';
 import {universalSpaceCopy} from '../../lib/universal-space-copy';
@@ -11,7 +12,7 @@ export function SpaceSidebar({locale,view,onNavigate,binding,individualOnly=fals
  const n=accountNavigationCopy[locale],t=accountSpaceCopy[locale],a=marketplaceAccountCopy[locale];
  const base=`${locale==='en'?'':`/${locale}`}/shida/space`;
  const unread=usePersonalNotificationCount(binding);
- const entries:[string,string,SpaceIconName][]=[['management',n.activities,'management'],['transactions',n.transactions,'orders'],['messages',t.messages,'bell'],['settings',n.account,'settings']];
+ const entries:[string,string,SpaceIconName][]=[['management',n.activities,'management'],['transactions',n.transactions,'orders'],['messages',t.messages,'bell'],['settings',n.account,'settings'],['questions',helpText(locale,'title'),'messages']];
  if(individualOnly&&view!=='job-offer')entries[0]=['listings',listingCopy[locale].title,'orders'];
  else if(hasListings||view==='listings')entries.splice(1,0,['listings',listingCopy[locale].title,'orders']);
  entries.splice(entries.findIndex(e=>e[0]==='transactions'),0,['job-search',jobSearchCopy[locale].title,'people']);
