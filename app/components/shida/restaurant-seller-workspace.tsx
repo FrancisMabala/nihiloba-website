@@ -348,9 +348,10 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     <div className={selected ? 'rst-management-layout seller-layout' : ''}>
     {selected&&<aside className="rst-management-sidebar seller-sidebar">{identity}<SellerWorkspaceNavigation id="restaurant-navigation" className="rst-management-nav" label={t('restaurants')} items={navigation} current={tab} disabled={busy} onNavigate={key=>void run(()=>loadTab(key))}/></aside>}
     <div className="rst-management-content seller-content">
+    {selected&&<div className="management-restaurant-identity">{identity}</div>}
     {selected?.status==='draft'&&!editor&&<section className="rst-card rst-setup-checklist"><h2>{restaurantOnboardingCopy[locale].setup}</h2><p>{restaurantOnboardingCopy[locale].private}</p><ol>{restaurantOnboardingCopy[locale].checklist.map((label,index)=><li key={label}><button type="button" disabled={busy} onClick={()=>void run(()=>loadTab(['profile','items','hours','settings','settings','profile'][index]))}>{label} →</button></li>)}</ol></section>}
     {selected&&<RestaurantFocus key={path} path={path} tab={tab} locale={locale} name={selected.profile.name??t("restaurants")}/>}
-    {selected&&!editor&&<RestaurantBottomNavigation locale={locale} tab={tab} sell={posAvailable?"pos":"counter"} disabled={busy} identity={identity} items={navigation} onOpen={key=>void run(()=>loadTab(key))}/>}
+    {selected&&!editor&&<RestaurantBottomNavigation locale={locale} tab={tab} sell={posAvailable?"pos":"counter"} disabled={busy} identity={identity} items={navigation} onOpen={async key=>{if(!await leaveWork(path))return false;return run(()=>loadTab(key,1,true));}}/>}
     {!selected && <SellerWorkspaceHeading eyebrow={management.workspace} title={management.choose}/>}
     {selected&&!editor&&localItems.length>0&&<h1 className="rst-section-heading">{section==='items'?wc.menu:section==='profile'?wc.establishment:workflowText(locale,'finances')}</h1>}
     {selected&&!editor&&localItems.length>0&&<nav className="rst-local-tabs" aria-label={section==='items'?wc.menu:section==='profile'?wc.establishment:workflowText(locale,'finances')}>{localItems.map(([key,label])=><button type="button" key={key} disabled={busy} aria-current={localCurrent===key?'page':undefined} onClick={()=>void run(()=>loadTab(key))}>{label}</button>)}</nav>}

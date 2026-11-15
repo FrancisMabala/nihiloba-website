@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:'management-mobile*.browser.ts',workers:1,timeout:60000,use:{baseURL:'http://127.0.0.1:3013',channel:'chrome',headless:true,hasTouch:true,screenshot:'only-on-failure'},outputDir:process.env.SHIDA_MOBILE_OUTPUT_DIR||'test-results/web-browser-output',reporter:[['list'],['json',{outputFile:process.env.SHIDA_MOBILE_REPORT||'test-results/web-browser.json'}]]});

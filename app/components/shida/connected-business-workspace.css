@@ -17,3 +17,12 @@
 .seller-design .rst-shell[hidden]{display:none}
 
 .seller-design .rst.seller-workspace.connected-workspace,.seller-design .svc-workspace.container.connected-workspace{padding:0;margin:0;max-width:none;width:100%}.seller-design .connected-workspace .seller-heading{flex-direction:row;flex-wrap:wrap}.seller-design .connected-workspace .seller-heading>div:first-child{order:0}.seller-design .connected-workspace .seller-heading-actions{order:1}
+
+@media(max-width:1023px){
+ .seller-design .connected-workspace .connected-sidebar{display:contents!important}.connected-sidebar>.business-identity{display:none}.connected-sidebar :is(.management-desktop-navigation,.wz-desktop-navigation){display:none!important}
+ .seller-design .connected-workspace :is(.seller-content,.svc-content){padding:12px 12px calc(var(--management-nav-space,84px) + 24px)}
+ .connected-mobile-bar{padding:6px 12px}.connected-mobile-bar .business-avatar{width:34px;height:34px}.connected-mobile-bar strong{font-size:.9rem}
+ .seller-design:has(.connected-workspace) .wz-header{padding:8px 12px}.connected-workspace h1{font-size:clamp(1.5rem,6vw,2rem);overflow-wrap:anywhere}
+ .connected-workspace :is(.seller-heading,.svc-view-heading){gap:8px;margin-bottom:14px}.connected-workspace :is(.seller-heading-actions,.svc-heading-actions){margin:0;gap:8px}
+ .connected-workspace .business-local-tabs{max-width:100%;gap:6px}.connected-workspace :is(input,textarea,select){scroll-margin-block:90px}
+}
