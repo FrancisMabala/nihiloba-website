@@ -1,4 +1,5 @@
 "use client";
+import {connectedBusinessCopy} from "../../lib/connected-business-copy";
 import {useConfirmation} from "./confirmation-dialog";
 import {leaveFormConfirmation} from "../../lib/confirmation-actions";
 import {useCallback,useEffect,useRef,useState} from "react";
@@ -157,7 +158,7 @@ function TemplatePicker({base,binding,locale,kind,targetRef,targetRevision,draft
   }finally{lock.current=false;if(alive.current)setBusy(false);}
  }
  if(denied)return <p role="alert">{recovery[locale].denied}</p>;
- return <div style={{border:"1px solid #cbd5e1",borderRadius:8,padding:".8rem",margin:".8rem 0"}}><p>{t.review}</p>
+ return <div style={{border:"1px solid #cbd5e1",borderRadius:8,padding:".8rem",margin:".8rem 0"}}><p>{t.review}</p><a href={`?view=templates&tab=${kind}`} target="_blank" rel="noopener">{connectedBusinessCopy[locale].templates}</a>
   {loading&&<p role="status">{common.loading}</p>}{error&&<><p role="status">{t.failed}</p><button disabled={busy||!!pending} onClick={()=>void reload()}>{common.retry}</button></>}
   <label>{locale==="fr"?"Partir d’un modèle":t.choose}<select disabled={busy||!!pending||loading||!!error} value={selected} onChange={event=>setSelected(event.target.value)} style={{display:"block",width:"100%",padding:8}}><option value=""></option>{rows.filter(row=>!row.archived).map(row=><option key={row.template_ref} value={row.template_ref}>{row.name}</option>)}</select></label>
   <button type="button" disabled={busy||(!pending&&(!current||loading||!!error))} onClick={()=>void apply()}>{pending?common.retry:t.apply}</button>{notice&&<p role="status">{notice}</p>}</div>;

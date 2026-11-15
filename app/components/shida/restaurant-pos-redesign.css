@@ -84,3 +84,6 @@
 .rst-pos-dialog .rst-payment-recorded>h3.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 
 .rst-pos-dialog .rst-selling-basket-head{display:none!important}
+
+:is(.rst-management,.rst-business-management) .rst-selling-item-body{min-width:0;max-width:100%;word-break:normal}.rst-selling-item-body strong{overflow-wrap:anywhere}.rst-selling-line>strong{min-width:0;word-break:normal}.rst-selling-line>label{min-width:0}.rst-selling-line>label input{max-width:100%}
+@media(max-width:380px){:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-line{grid-template-columns:minmax(0,1fr)}.rst-selling-line>label{grid-column:1}.rst-payment-recorded dl>div{flex-wrap:wrap}.rst-payment-recorded dd{text-align:start}}

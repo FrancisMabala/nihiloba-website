@@ -1,4 +1,5 @@
 "use client";
+import "./shared-checkout-dialog.css";
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {calculate,checkoutText} from '@/app/lib/wenze-checkout-copy';
 import {posText} from '@/app/lib/wenze-pos-copy';
@@ -6,8 +7,8 @@ import type {WenzeLocale} from '@/app/lib/wenze-copy';
 
 export function CheckoutDialog({title,onClose,children,locale}:{title:string;onClose:()=>void;children:ReactNode;locale:WenzeLocale}){
  const ref=useRef<HTMLDialogElement>(null);
- useEffect(()=>{const dialog=ref.current,previous=document.body.style.overflow;document.body.style.overflow='hidden';dialog?.showModal();return()=>{dialog?.close();document.body.style.overflow=previous;};},[]);
- return <dialog ref={ref} className="wz-checkout-dialog" aria-label={title} onCancel={e=>{e.preventDefault();onClose();}} onClick={e=>{if(e.target===ref.current){const bounds=ref.current.getBoundingClientRect();if(e.clientX<bounds.left||e.clientX>bounds.right||e.clientY<bounds.top||e.clientY>bounds.bottom)onClose();}}}><header><h2>{title}</h2><button type="button" autoFocus onClick={onClose}>{posText(locale,'close')}</button></header>{children}</dialog>;
+ useEffect(()=>{const dialog=ref.current,previous=document.body.style.overflow,opener=document.activeElement;document.body.style.overflow='hidden';dialog?.showModal();return()=>{dialog?.close();document.body.style.overflow=previous;if(opener instanceof HTMLElement&&opener.isConnected)opener.focus();};},[]);
+ return <dialog ref={ref} className="wz-checkout-dialog" aria-label={title} onCancel={e=>{e.preventDefault();onClose();}}><header><h2>{title}</h2><button type="button" autoFocus onClick={onClose}>{posText(locale,'close')}</button></header>{children}</dialog>;
 }
 export function WenzeCalculator({locale,onClose}:{locale:WenzeLocale;onClose:()=>void}){
  const [display,setDisplay]=useState('0'),[left,setLeft]=useState<number|null>(null),[op,setOp]=useState(''),[fresh,setFresh]=useState(false);

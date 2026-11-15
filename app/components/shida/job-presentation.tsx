@@ -1,3 +1,5 @@
+import {missionText} from '../../lib/mission-copy';
+import {individualApplicationCopy} from '../../lib/individual-application-copy';
 import {jobLocation} from "../../lib/job-location";
 import {SpaceIcon} from "./account-space-icon";
 import {jobSearchCopy, jobSearchPath} from '../../lib/job-search-copy';
@@ -11,7 +13,8 @@ import {publicJobEmployerKey} from "../../lib/job-employer";
 import {safePublicActionUrl, safePublicExternalUrl, safePublicImageUrl} from "../../lib/safe-public-url";
 import type {PublicJob, PublicJobEmployerSummary, PublicJobSalary, PublicJobSummary} from "../../types/shida-public";
 import {ButtonLink} from "../button-link";
-import {MissionPresentation} from "./mission-presentation";
+import {missionTiming} from './mission-presentation';
+import {IndividualJobAction} from "./individual-job-action";
 import {listingText} from "../../lib/personal-missions-copy";
 import "./mission-management.css";
 import {RecruitmentContact} from "./recruitment-contact";
@@ -139,11 +142,20 @@ export function JobDetailContent({locale,item,similar}:{locale:Locale;item:Publi
   const location=jobLocation(item),published=displayDate(item.published_at,locale),deadline=displayDate(item.application_deadline,locale),start=displayDate(item.start_date,locale),social=safePublicExternalUrl(item.public_social_link),source=safePublicExternalUrl(item.external_source?.canonical_url),href=jobPath(locale,item),salary=cardCompensation(item,locale),experience=experienceText(item,locale),inactive=["expired","archived","closed","source_invalid"].includes(item.lifecycle_state);
   const structuredValues=[item.short_summary,item.responsibilities,item.qualifications,experience,item.education,item.skills,item.personal_qualities,item.languages,item.benefits,item.employment_conditions],hasStructuredContent=structuredValues.some((value)=>Boolean(value?.trim())),legacyFallback=hasStructuredContent?null:item.description_fallback||item.description;
   if(item.origin==='direct'&&item.offer_type==='individual'){
-    const action=marketplacePath(locale,'/shida/space?view=job-offer&kind=apply&offer='+encodeURIComponent(item.public_ref));
-    return <section className="section"><div className="container mission-public"><JobResultsLink href={marketplacePath(locale,'/shida/emplois')} locale={locale}/><p className="job-type-label">{listingText(locale,'jobType')}</p>
-    <MissionPresentation heading locale={locale} title={item.title} location={location} description={item.short_summary||item.description_fallback||item.description} frequency={item.duration_frequency||start} hours={item.work_schedule} pay={item.salary_visibility==="hidden"?null:item.salary?.period?salary:item.compensation||salary} experience={item.optional_experience||item.employment_conditions} actions={<div className="mission-actions">
-    {!inactive&&hasSupportedApplication(item)?<ButtonLink href={action}>{listingText(locale,'apply')}</ButtonLink>:<p>{listingText(locale,'unavailable')}</p>}<JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin="direct" canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save}/></div>}/>
-    <JobReportLink locale={locale} jobReference={item.public_ref} reportUrl={item.report_url}/></div></section>
+    const c=individualApplicationCopy[locale],timing=missionTiming(item.duration_frequency,locale);
+    const facts=[[t.compensation,item.salary_visibility==="hidden"?null:item.salary?.period?salary:item.compensation||salary],[missionText(locale,'frequency'),timing.condition],[missionText(locale,'daysLabel'),timing.days],[t.schedule,item.work_schedule],[c.start,start]].filter(([,value])=>value);
+    return <section className="section mission-public-section"><div className="container mission-public">
+     <JobResultsLink href={marketplacePath(locale,'/shida/emplois')} locale={locale}/>
+     <div className="mission-public-status"><span className="job-type-label">{listingText(locale,'jobType')}</span><strong>{inactive?c.closed:hasSupportedApplication(item)?c.open:t.actionUnavailable}</strong></div>
+     <h1>{item.title}</h1>{location&&<p>{location}</p>}
+     {facts.length>0&&<dl className="mission-public-facts">{facts.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
+     <section className="mission-card"><h2>{listingText(locale,'mission')}</h2><OfferText value={item.short_summary||item.description_fallback||item.description||''}/>
+     {item.responsibilities&&<StructuredJobSection title={d.responsibilities} value={item.responsibilities}/>}
+     {(item.qualifications||item.optional_experience||item.employment_conditions||item.skills||item.personal_qualities||item.education||item.languages)&&<><h2>{c.requirements}</h2><OfferText value={[item.qualifications,item.optional_experience,item.employment_conditions,item.skills,item.personal_qualities,item.education,item.languages].filter(Boolean).join('\n\n')}/></>}</section>
+     <p className="mission-publisher">{c.publisher} · {item.employer.name||t.personalEmployer}</p>
+     <div className="mission-actions"><IndividualJobAction locale={locale} reference={item.public_ref} open={!inactive&&hasSupportedApplication(item)}/><JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin="direct" canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save}/></div>
+     <JobReportLink locale={locale} jobReference={item.public_ref} reportUrl={item.report_url}/>
+    </div></section>;
   }
   const missing = factsCopy[locale].missing;
   const directAction=directApplicationUrl(item),externalAction=matchingExternalAction(item);

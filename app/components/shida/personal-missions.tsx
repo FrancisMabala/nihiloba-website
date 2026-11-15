@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
-import {useCallback,useEffect,useState} from 'react';
+import {individualApplicationCopy} from '../../lib/individual-application-copy';
+import {useCallback,useEffect,useState,useRef} from 'react';
 import {listingText,type MissionLocale} from '../../lib/personal-missions-copy';
 import {occText} from '../../lib/occasional-copy';
 import {payload,type MissionValues} from '../../lib/mission-form';
@@ -38,15 +39,40 @@ export function ProfileSummary({work,locale}:{work:Work;locale:MissionLocale}){
  <p>{[...work.days,...work.slots,...(work.frequency||[])].map(t).join(' · ')}</p>{work.example&&<p>{work.example}</p>}</div>
 }
 export function MissionApply({locale,binding,offer}:Props&{offer:string}){
- const t=(k:Parameters<typeof listingText>[1])=>listingText(locale,k),{data,set,api,error,fail,retry}=useMission(binding,'apply',offer);
- const [note,write]=useState(''),[busy,lock]=useState(false);
- const prefix=locale==='en'?'':'/'+locale,detail=prefix+'/shida/emplois/'+encodeURIComponent(offer);
- if(!data||error==='409')return <p role="status">{error==='409'?t('unavailable'):error?t('error'):t('loading')} {error&&<button onClick={retry}>{t('retry')}</button>}</p>
- if(data.application)return <section className="mission-card" role="status"><h2>{t('sent')}</h2><a href={candidateApplicationPath(locale,data.application)}>{t('specific')} →</a></section>;
- return <section className="mission-card"><p>{data.title} · {data.location}</p>{data.profile?<form onSubmit={async e=>{e.preventDefault();if(busy)return;lock(true);fail('');try{set(await api({action:'apply',confirmed:true,message:note,version:data.version}))}catch(e){if((e as Error).message==='412'){retry()}else fail((e as Error).message)}finally{lock(false)}}}>
- <h2>{t('shared')}</h2><ProfileSummary work={data.profile} locale={locale}/><label>{t('note')}<textarea maxLength={800} value={note} onChange={e=>write(e.target.value)}/></label><p>{t('consent')}</p>
- {error&&<p role="alert">{t('error')}</p>}<div className="mission-actions"><a href={detail}>{t('cancel')}</a><button disabled={busy} className="button button-primary">{error?t('retry'):t('submit')}</button></div></form>:<a className="button button-primary" href={missionQuery('job-search',{section:'profiles',profile:'occasional_work',job:offer,from:'mission'})}>{t('profile')}</a>}</section>
+ const t=(k:Parameters<typeof listingText>[1])=>listingText(locale,k),c=individualApplicationCopy[locale],{data,set,api,error,fail,retry}=useMission(binding,'apply',offer);
+ const draftKey=`shida:application-message:${binding}:${offer}`;
+ const [note,write]=useState(''),[busy,lock]=useState(false),[uncertain,setUncertain]=useState(false),[changed,setChanged]=useState(false);
+ const sending=useRef(false),alive=useRef(true);
+ useEffect(()=>{alive.current=true;try{const saved=JSON.parse(sessionStorage.getItem(draftKey)||'null');if(saved&&saved.expires>Date.now()&&typeof saved.message==='string')queueMicrotask(()=>{if(alive.current)write(saved.message.slice(0,800));});}catch{}return()=>{alive.current=false;};},[draftKey]);
+ function update(value:string){write(value);try{sessionStorage.setItem(draftKey,JSON.stringify({message:value,expires:Date.now()+86400000}));}catch{}}
+ const prefix=locale==='en'?'':'/'+locale,detail=prefix+'/shida/emplois/'+encodeURIComponent(offer),profile=missionQuery('job-search',{section:'profiles',profile:'occasional_work',job:offer,from:'mission'});
+ async function submit(){
+  if(sending.current||!data)return;sending.current=true;lock(true);fail('');setChanged(false);
+  try{
+   // Read first on every attempt: reconcile a lost success and recheck availability/profile sharing.
+   const latest=await api();if(!alive.current)return;
+   set(latest);if(latest.application){setUncertain(false);try{sessionStorage.removeItem(draftKey);}catch{}return;}
+   if(latest.version!==data.version){setChanged(true);setUncertain(false);return;}
+   setUncertain(true);
+   try{const result=await api({action:'apply',confirmed:true,message:note,version:latest.version});if(alive.current){set(result);setUncertain(false);try{sessionStorage.removeItem(draftKey);}catch{}}}
+   catch(caught){
+    const code=(caught as Error).message;
+    if(code==='412'){set(await api());setChanged(true);setUncertain(false);}
+    else if(code==='409'||code==='422'||code==='profile_required'){setUncertain(false);fail(code);}
+    else{try{const resolved=await api();if(alive.current){set(resolved);setUncertain(false);if(!resolved.application)fail(code);else try{sessionStorage.removeItem(draftKey);}catch{}}}catch{if(alive.current)fail(code);}}
+   }
+  }catch(caught){if(alive.current)fail((caught as Error).message);}
+  finally{sending.current=false;if(alive.current)lock(false);}
+ }
+ if(!data)return <section className="mission-card"><p role="status">{error==='409'?c.closed:error?t('error'):t('loading')}</p>{error&&<button onClick={retry}>{t('retry')}</button>}<a href={detail}>{c.back}</a></section>;
+ if(data.application)return <section className="mission-card" role="status"><h2>{c.sent}</h2><a href={candidateApplicationPath(locale,data.application)}>{c.application} →</a><p><a href={detail}>{c.back}</a></p></section>;
+ return <section className="mission-card mission-application"><a href={detail}>← {c.back}</a><p>{data.title} · {data.location}</p>{data.profile?<form onSubmit={e=>{e.preventDefault();void submit();}}>
+ <section className="mission-profile-summary"><h2>{c.profile}</h2><ProfileSummary work={data.profile} locale={locale}/><div className="mission-actions"><a href={profile+'&preview=1'}>{c.view}</a><a href={profile}>{c.edit}</a></div></section><p>{c.share}</p>
+ <label htmlFor="mission-message">{c.note} <small>{c.optional}</small></label><p id="mission-message-help">{c.helper}</p><textarea id="mission-message" aria-describedby="mission-message-help mission-message-limit" maxLength={800} rows={5} value={note} onChange={e=>update(e.target.value)}/><small id="mission-message-limit">{note.length}/800 · {c.limit}</small>
+ {changed&&<p role="status">{c.changed}</p>}{error&&<p role="alert">{error==='409'?c.closed:error==='profile_required'?c.required:t('error')}</p>}{uncertain&&<p role="status">{c.checking}</p>}
+ <div className="mission-actions"><button disabled={busy||error==='409'} className="button button-primary">{c.submit}</button><a href={detail}>{c.back}</a></div></form>:<><p>{c.needed}</p><a className="button button-primary" href={profile}>{t('profile')}</a></>}</section>;
 }
+
 function Manager({locale,binding,offer,kind}:Props&{offer:string;kind:string}){
  const t=(k:Parameters<typeof listingText>[1])=>listingText(locale,k),{api,data,set,error,fail,retry}=useMission(binding,'manage',offer);
  const [edit,editing]=useState(false),[form,change]=useState<MissionValues>({}),[confirm,ask]=useState<'close'|'remove'|null>(null),[busy,lock]=useState(false);

@@ -21,3 +21,5 @@
 @media(max-width:500px){.svc-workspace .svc-editor-steps button{font-size:.72rem;line-height:1.45}.svc-workspace .svc-editor-steps{gap:5px}.svc-workspace .svc-professional-service button{width:auto;min-width:0}}
 
 .svc-workspace .svc-professional-photo .marketplace-image-fallback{min-height:0;height:100%;width:100%;padding:0;display:grid;place-items:center;font:1.8rem Georgia,serif}
+
+.svc-professional-service>div,.svc-professional-summary>div{min-width:0}.svc-professional-service :is(h3,p),.svc-professional-summary h2{word-break:normal;overflow-wrap:anywhere}.svc-professional-service button{max-width:100%;white-space:normal}

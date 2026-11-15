@@ -1,24 +1,12 @@
 "use client";
-import {useRef,useState} from "react";
 import {providerCopy,type ProviderLocale,type ProviderView} from "../../lib/services-provider-copy";
-import {docWords} from "../../lib/service-document";
-import {todayCopy} from "../../lib/services-today-copy";
-import {workdayCopy} from "../../lib/services-workday-copy";
-import {SellerWorkspaceIcon} from "./seller-workspace";
-
-export function ServicesProviderNavigation({locale,items,current,counterShortcut=true,onNavigate}:{locale:ProviderLocale;items:ProviderView[];current:ProviderView;counterShortcut?:boolean;onNavigate:(view:ProviderView)=>void}){
- const trigger=useRef<HTMLButtonElement>(null);
- const [expanded,setExpanded]=useState(false),t=providerCopy[locale],w=workdayCopy[locale];
- const main:ProviderView[]=["overview","work","calendar"];
- const tools:ProviderView[]=["reports","templates"];if(!counterShortcut)tools.unshift("counter");
- const choose=(view:ProviderView)=>{onNavigate(view);setExpanded(false);};
- const button=(key:ProviderView)=><button type="button" key={key} aria-current={current===key?"page":undefined} onClick={()=>choose(key)}><SellerWorkspaceIcon name={key==="counter"?"finance":key==="share"?"document":key==="services"?"catalog":key==="available"||key==="proposals"?"work":key==="templates"?"document":key}/><span>{key==="services"?w.services:key==="templates"?docWords(locale).tools:t[key]}</span></button>;
- return <nav onKeyDown={event=>{if(event.key==="Escape"&&expanded){setExpanded(false);trigger.current?.focus();}}} className="svc-workday-nav" aria-label={t.navigation} data-expanded={expanded}>
-  <div className="svc-workday-primary">{main.filter(key=>items.includes(key)).map(button)}<button type="button" ref={trigger} className="svc-mobile-more" aria-expanded={expanded} aria-controls="svc-workday-tools" onClick={()=>setExpanded(!expanded)}><SellerWorkspaceIcon name="settings"/><span>{t.tools}</span></button></div>
-  <div className="svc-workday-tools" id="svc-workday-tools">
-   {([["groupWork",["proposals"]],["groupFind",["available"]],["groupServices",["services"]],["groupManagement",["counter","finance"]]] as const).map(([label,keys])=>keys.some(key=>items.includes(key)&&!tools.includes(key))?<div className="svc-nav-group" key={label}><p>{todayCopy[locale][label]}</p>{keys.filter(key=>items.includes(key)&&!tools.includes(key)).map(button)}</div>:null)}
-   {items.some(key=>tools.includes(key))&&<details className="svc-secondary-tools" open={tools.includes(current)||undefined}><summary>{t.tools}</summary><nav aria-label={t.tools}>{items.filter(key=>tools.includes(key)).map(button)}</nav></details>}
-   <button type="button" className="svc-mobile-close" onClick={()=>{setExpanded(false);trigger.current?.focus();}}>{w.close}</button>
-  </div>
- </nav>;
+import {connectedBusinessCopy} from '../../lib/connected-business-copy';
+import {SellerWorkspaceNavigation,type SellerNavigationItem} from './seller-workspace';
+export function ServicesProviderNavigation({locale,items,current,onNavigate}:{locale:ProviderLocale;items:ProviderView[];current:ProviderView;counterShortcut?:boolean;onNavigate:(view:ProviderView)=>void}){
+ const t=providerCopy[locale],c=connectedBusinessCopy[locale];
+ const keys:ProviderView[]=['overview','work','calendar','available','services','counter','finance','activity'];
+ const mapped=current==='proposals'?'available':['templates','reports','documents'].includes(current)?'finance':current;
+ const icon:Record<string,SellerNavigationItem['icon']>={overview:'overview',work:'work',calendar:'calendar',available:'work',services:'catalog',counter:'finance',finance:'reports',activity:'profile'};
+ const visible=keys.filter(key=>items.includes(key)||key==='finance'&&items.includes('templates'));
+ return <SellerWorkspaceNavigation label={t.navigation} items={visible.map(key=>({key,label:key==='available'?c.find:key==='activity'?c.activity:t[key as keyof typeof t],icon:icon[key]}))} current={mapped} onNavigate={key=>onNavigate((key==='finance'&&!items.includes('finance')?'templates':key) as ProviderView)}/>;
 }

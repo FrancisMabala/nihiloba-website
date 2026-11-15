@@ -1,4 +1,5 @@
 "use client";
+import {BusinessSidebar,BusinessIdentity,BusinessFullscreen} from "./connected-business-workspace";
 import bulkCopy from "@/app/lib/wenze-bulk-copy.json";
 import {WenzeBoutiqueWizard} from "./wenze-boutique-wizard";
 import {boutiquePayload} from "@/app/lib/wenze-boutique-copy";
@@ -386,18 +387,19 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
     if(created)return <main className="wc-flow"><aside>{created&&<SellerWorkspaceIdentity mark="W" title="Wenze" subtitle={t("personal")}/>}<WenzeNavigation showOrders={orderAccess.visible} physical={hasPhysicalStore(store)} locale={locale} view="catalog" onNavigate={tab=>void navigate(tab)}/></aside><div className="wc-content"><WenzeLeaveDialog locale={locale}/>{creationContent}</div></main>;
     savedContent=creationContent;
   }
-  return <main className={`rst container rst-management wz-personal seller-workspace ${displayView==="shop"?"ws-shop":""} ${editor&&product?"wz-editing-product":""}`}><div className="rst-management-layout seller-layout">
-    <aside className="rst-management-sidebar seller-sidebar"><SellerWorkspaceIdentity mark="W" title="Wenze" subtitle={t("personal")}/>
-      <WenzeNavigation showOrders={orderAccess.visible} physical={hasPhysicalStore(store)} locale={locale} view={displayView} onNavigate={tab=>void navigate(tab)}/>
-
-    </aside><div className="rst-management-content wz seller-content"><WenzeLeaveDialog locale={locale}/>
-    {!creating&&<SellerWorkspaceHeading eyebrow="Wenze" title={displayView==="orders"?ordersText(locale,"title"):["money","costs","expenses","reports","schedules","receipts"].includes(displayView)?u("money"):displayView==="shop"?u("shop"):displayView==="catalog"?u("productsStock"):displayView==="imports"?bulkCopy[locale].title:displayView==="sales"?checkoutText(locale,"counter"):displayView==="receipts"?posText(locale,"receipts"):st(displayView)} actions={store&&<>{stores.length>1?<label className="wz-store-selector"><span className="wz-visually-hidden">{t("shops")}</span><select value={store.public_ref} disabled={busy} onChange={async event=>{const ref=event.target.value;if(!await leaveWork())return;await run(async()=>{
+  const businessIdentity=<BusinessIdentity name={store?.name||t("shops")} photo={typeof store?.profile_image_url==='string'?store.profile_image_url:null}>{store&&<>{stores.length>1?<label className="wz-store-selector"><span className="wz-visually-hidden">{t("shops")}</span><select value={store.public_ref} disabled={busy} onChange={async event=>{const ref=event.target.value;if(!await leaveWork())return;await run(async()=>{
       const selected=await request(`${root}/${enc(ref)}`) as Item;
       setEditor(null);setEditorDirty(false);setProductDirty(false);setPendingCost(null);setProduct(null);setPreview(null);setPlan(null);setProducts([]);setSearch("");setFilter("active");setStore(selected);setDashboardOrder(undefined);setShopTab(view==="shop"?"shopDetails":"products");
       const destination=view==="sales"&&!hasPhysicalStore(selected)?"orders":view;setView(destination);
       const url=new URL(window.location.href);url.searchParams.set("store",ref);url.searchParams.set("view",destination);url.searchParams.delete("product");url.searchParams.delete("count");for(const key of ["search","status","offset"])url.searchParams.delete(key);window.history.replaceState(null,"",url);
       if(destination==="catalog")await loadProducts(selected,0,"active","");
-    });}}>{stores.map(row=><option key={row.public_ref} value={row.public_ref}>{row.name}</option>)}</select></label>:<span className="wz-current-shop">{store.name}</span>}</>}/>}
+    });}}>{stores.map(row=><option key={row.public_ref} value={row.public_ref}>{row.name}</option>)}</select></label>:null}</>}</BusinessIdentity>;
+  return <main className={`rst container rst-management wz-personal seller-workspace connected-workspace ${displayView==="shop"?"ws-shop":""} ${editor&&product?"wz-editing-product":""}`}><div className="rst-management-layout seller-layout">
+    <BusinessSidebar locale={locale} identity={businessIdentity} current={displayView}>
+      <WenzeNavigation showOrders={orderAccess.visible} physical={hasPhysicalStore(store)} locale={locale} view={displayView} onNavigate={tab=>void navigate(tab)}/>
+
+    </BusinessSidebar><div className="rst-management-content wz seller-content"><WenzeLeaveDialog locale={locale}/>
+    {!creating&&<SellerWorkspaceHeading eyebrow="Wenze" title={displayView==="orders"?ordersText(locale,"title"):["money","costs","expenses","reports","schedules","receipts"].includes(displayView)?u("money"):displayView==="shop"?u("shop"):displayView==="catalog"?u("productsStock"):displayView==="imports"?bulkCopy[locale].title:displayView==="sales"?checkoutText(locale,"counter"):displayView==="receipts"?posText(locale,"receipts"):st(displayView)} actions={<BusinessFullscreen locale={locale}/>}/>}
     {!creating&&<WenzeSubnavigation locale={locale} view={displayView} onNavigate={tab=>void navigate(tab)}/>}
     {savedContent ?? (displayView==="today"?<WenzeToday key={store?.public_ref??"none"} store={store} stores={stores} locale={locale} onChoose={row=>{setStore(row as Item);setProduct(null);}} onNavigate={(tab,filters)=>void navigate(tab,0,filters)} onOpenOrder={ref=>void navigate("orders").then(()=>setDashboardOrder(ref))}/>:displayView==="orders"||displayView==="imports"?<WenzeR6Workspace orderingUnavailable={store?.order_ready===false} noOrderHistory={orderAccess.empty} onCheckout={hasPhysicalStore(store)?()=>void navigate("sales"):undefined} onShop={()=>void navigate("shop")} key={`${displayView}:${store?.public_ref}:${dashboardOrder??""}`} context={context} locale={locale} initialView={displayView} onCreate={displayView==="imports"?createFromCatalogue:undefined} onProducts={()=>void navigate("catalog")} initialOrder={dashboardOrder} initialStore={store?.public_ref} ordersOnly={displayView==="orders"}/>:!["catalog","shop"].includes(displayView)?<WenzeOperations categoryOptions={productCategories} key={`${store?.public_ref}:${displayView}`} store={store} locale={locale} view={displayView==="money"?"reports":displayView} summaryOnly={displayView==="money"} onCreate={createFromCatalogue} onEditStock={(ref,option)=>void run(async()=>{
         const selected=await request(storePath+"/products/"+enc(ref)) as Item;

@@ -1,6 +1,6 @@
 # Restaurant navigation and checkout — 15 November 2026
 
-Implemented locally only. The request explicitly prohibits deployment; do not push these commits to an automatically deployed branch without a subsequent release request.
+Originally implemented locally. The subsequent connected-layout/application request explicitly authorizes release; see layout-applications-longtext-20261115.md for the release validation and remaining limitations.
 
 ## Workspace
 

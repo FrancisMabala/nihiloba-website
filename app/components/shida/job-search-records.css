@@ -28,3 +28,5 @@
 .follow-tile img{object-fit:contain}.follow-tile .marketplace-image-fallback{width:100%;height:100%;display:grid;place-items:center;font:inherit;background:transparent}
 .workspace-inline-link svg{width:18px;height:18px;margin-inline-end:8px}
 .workspace-app-status :is([data-status=withdrawn],[data-status=closed],[data-status=rejected]){background:#eeeae3;color:#4a4640}
+
+.workspace-record-body,.workspace-record-actions,.workspace-app-status{min-width:0;word-break:normal}.workspace-record-actions{max-width:20rem}.workspace-record-actions :is(a,button){max-width:100%;white-space:normal;text-align:start}.follow-tile .marketplace-image-fallback{min-height:0;padding:0;color:inherit}.job-search-workspace .workspace-records{container-type:inline-size}@container(max-width:650px){.workspace-record,.workspace-app-list .workspace-record{grid-template-columns:auto minmax(0,1fr)}.workspace-record-actions,.workspace-app-status{grid-column:1/-1;justify-items:start}}

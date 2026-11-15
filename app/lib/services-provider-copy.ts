@@ -1,7 +1,7 @@
 import {opportunityWords} from "./services-opportunity-copy";
 import {scheduleCopy} from "./services-calendar-copy";
 export type ProviderLocale = "en" | "fr" | "ln" | "sw";
-export type ProviderView = "overview" | "available" | "proposals" | "calendar" | "services" | "work" | "finance" | "reports" | "templates" | "settings" | "share" | "counter";
+export type ProviderView = "activity" | "documents" | "overview" | "available" | "proposals" | "calendar" | "services" | "work" | "finance" | "reports" | "templates" | "settings" | "share" | "counter";
 export const providerCopy = {
  en: {
   share:"Share & QR code",shareIntro:"Share your service link or download its QR code.",counter:"Counter",counterIntro:"Record walk-in services and print receipts.",

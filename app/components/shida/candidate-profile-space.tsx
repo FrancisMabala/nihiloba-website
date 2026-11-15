@@ -1,4 +1,5 @@
 'use client';
+import {individualApplicationCopy} from '../../lib/individual-application-copy';
 import {candidateWorkspaceCopy} from '../../lib/candidate-workspace-copy';
 import {SpaceIcon} from './account-space-icon';
 import {fileValidation} from '../../lib/file-validation';
@@ -101,6 +102,10 @@ export function CandidateProfileSpace({locale,binding,onUnauthorized}:{locale:Lo
   await api('',finalIntent.current);
   finalIntent.current=null;setFinalPending(false);delete keys.current.professional;
   setDraft(null);setDirty(false);setSuccess('professional');await load();
+ }
+ if(profile?.type==='occasional_work'&&typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('preview')==='1'){
+  const c=individualApplicationCopy[locale],editUrl=new URL(window.location.href);editUrl.searchParams.delete('preview');
+  return <section className="candidate-workspace"><h2>{c.profile}</h2><SavedHouseholdProfile profile={profile} communes={data?.metadata.communes??[]} locale={locale}/><a href={editUrl.pathname+editUrl.search}>{c.edit}</a>{returnRef&&<p><a href={prefix+'/shida/space?'+new URLSearchParams({view:'job-offer',kind:'apply',offer:returnRef})}>{c.title}</a></p>}</section>;
  }
  return <section className="candidate-workspace" aria-busy={busy}>
   <WenzeLeaveDialog locale={locale} title={u.leave} onSave={async()=>{if(lock.current||finalPending||conflict)throw Error();lock.current=true;try{await save();}finally{lock.current=false;}}}/>

@@ -58,3 +58,6 @@
  .seller-design .rst.seller-setup{width:calc(100% - 36px);margin:24px auto 48px;padding:24px}.seller-design .seller-setup .wz-fields{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){.seller-design *{scroll-behavior:auto!important}}
+
+/* Shared identities and controls must yield space to their text. */
+.seller-design .seller-identity>div{min-width:0;flex:1}.seller-design .seller-identity :is(strong,small){word-break:normal;overflow-wrap:anywhere}.seller-design .seller-navigation button{min-width:0;overflow-wrap:anywhere}.seller-design .seller-heading-actions>*{max-width:100%;white-space:normal}
