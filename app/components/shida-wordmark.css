@@ -1,0 +1,5 @@
+/* Exact marketplace wordmark rules from NIHILOBA Web. */
+.market-brand-group{display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex-shrink:0}
+.market-home{display:inline-flex;align-items:center;min-height:24px;color:#53665c;font:700 10px/1 Arial,sans-serif;letter-spacing:.16em;text-decoration:none}
+.market-home:is(:hover,:focus-visible){color:#082d25;text-decoration:underline;text-underline-offset:3px}
+.market-brand{color:#173e32;text-decoration:none;font:700 30px/1 Georgia,serif;letter-spacing:.01em;white-space:nowrap}
