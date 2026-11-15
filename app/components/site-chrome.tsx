@@ -12,6 +12,7 @@ import "./shida/discovery-visual.css";
 
 export function SiteChrome({ children, locale }: { children: ReactNode; locale: Locale }) {
   const pathname = usePathname();
+  if (/^\/(?:fr\/|en\/|ln\/|sw\/)?shida\/business-login\/?$/.test(pathname)) return <>{children}</>;
   const management = /^\/(?:fr\/|en\/|ln\/|sw\/)?shida\/seller\/(?:restaurants|wenze|services)(?:\/|$)/.test(pathname);
   if (management) return <main id="main-content">{children}</main>;
   const marketplace = /^\/(?:fr\/|en\/|ln\/|sw\/)?shida(?:\/|$)/.test(pathname);

@@ -21,11 +21,11 @@ async function fixture(page:Page, signedIn=false, setup=true){
 for(const method of ['email','passkey'])test(`${method} authenticates the existing account and POSTs the preserved creation intent`,async({page})=>{
  const state=await fixture(page);
  if(method==='passkey')await page.addInitScript(()=>{Object.defineProperty(window,'PublicKeyCredential',{value:class {}});Object.defineProperty(navigator.credentials,'get',{value:async()=>({id:'fixture',type:'public-key',rawId:new Uint8Array([1]).buffer,response:{clientDataJSON:new Uint8Array([1]).buffer,authenticatorData:new Uint8Array([1]).buffer,signature:new Uint8Array([1]).buffer,userHandle:null},getClientExtensionResults:()=>({})})});});
- await page.goto('/fr/shida/business-login/?returnTo=%2F%3Fcreate%3Dorganization&method='+method);
+ await page.goto('/fr/shida/business-login/?returnTo=%2Fcreate-organization&method='+method);
  if(method==='email'){
   await page.locator('.auth-email>button').click();await page.locator('input[type=email]').fill('synthetic@example.test');await page.locator('.auth-email button[type=submit]').click();await page.locator('input[autocomplete=one-time-code]').fill('12345678');await page.locator('.auth-email button[type=submit]').click();
  }else await page.locator('.auth-passkey>button').click();
- await expect.poll(()=>state.posted?.get('returnTo')).toBe('/?create=organization');expect(state.posted?.get('language')).toBe('fr');expect(state.grants).toBe(1);expect(page.url()).not.toContain('x'.repeat(43));
+ await expect.poll(()=>state.posted?.get('returnTo')).toBe('/create-organization');expect(state.posted?.get('language')).toBe('fr');expect(state.grants).toBe(1);expect(page.url()).not.toContain('x'.repeat(43));
 });
 test('cancelled passkey and failed email remain recoverable without a grant',async({page})=>{
  const state=await fixture(page);state.failed=true;
@@ -33,9 +33,10 @@ test('cancelled passkey and failed email remain recoverable without a grant',asy
  await page.goto('/fr/shida/business-login/?method=passkey');await page.locator('.auth-passkey>button').click();await expect(page.locator('.auth-passkey [role=alert]')).toBeVisible();expect(state.grants).toBe(0);
  await page.goto('/fr/shida/business-login/?method=email');await page.locator('.auth-email>button').click();await page.locator('input[type=email]').fill('synthetic@example.test');await page.locator('.auth-email button[type=submit]').click();await page.locator('input[autocomplete=one-time-code]').fill('12345678');await page.locator('.auth-email button[type=submit]').click();await expect(page.locator('.auth-email [role=alert]')).toBeVisible();expect(state.grants).toBe(0);
 });
-test('missing prerequisites offer setup and never create a grant',async({page})=>{
- const state=await fixture(page,true,false);await page.goto('/fr/shida/business-login/?returnTo=%2F%3Fcreate%3Dorganization');await page.getByRole('button',{name:'Continuer vers Business'}).click();await expect(page.getByText('Complétez votre compte SHIDA et les conditions requises avant de continuer.')).toBeVisible();await expect(page.getByRole('link',{name:'Créer ou compléter mon compte SHIDA'})).toHaveAttribute('href',/returnTo=/);expect(state.grants).toBe(0);
+test('verified incomplete creator returns automatically to native Business onboarding',async({page})=>{
+ const state=await fixture(page,true,false);await page.goto('/fr/shida/business-login/?returnTo=%2Fcreate-organization');await expect.poll(()=>state.posted?.get('returnTo')).toBe('/create-organization');expect(state.grants).toBe(1);
 });
+
 test('registration continuation retains invitation context',async({page})=>{
  const state=await fixture(page,true);await page.goto('/fr/shida/business-login/?returnTo=%2Fguardian-links');await expect(page.getByText('Synthetic Amina')).toBeVisible();await page.goto('/fr/shida/business-login/');await expect.poll(()=>state.posted?.get('returnTo')).toBe('/guardian-links');
 });

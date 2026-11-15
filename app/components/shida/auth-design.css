@@ -2,3 +2,5 @@
 @media(max-width:700px){.shida-account-content{padding:22px}.shida-account-dialog .candidate-login h2{font-size:27px}.auth-code-cells{gap:6px}.auth-code-cells span{height:46px}}
 .shida-account-dialog .candidate-login{box-shadow:none;background:transparent}.shida-account-dialog .candidate-form>label{font-size:13px;font-weight:400}.shida-account-dialog .candidate-form>button{border-radius:6px}.shida-account-dialog .candidate-login>p:last-child{margin-top:14px}.shida-account-dialog .candidate-login a{text-decoration:underline;text-underline-offset:3px}
 dialog.shida-account-dialog{width:min(460px,calc(100% - 32px))}.shida-account-dialog .candidate-login{border-radius:0}
+
+.business-auth-handoff{min-height:100vh;background:#fbf8f1;color:#163f31;overflow-wrap:anywhere}.business-auth-brand{display:flex;align-items:center;gap:18px;border-bottom:1px solid #d8d2c5;padding:8px 0 24px;margin-bottom:24px}.business-auth-brand strong{font:700 36px Georgia,serif}.business-auth-brand span{border-left:1px solid #d8d2c5;padding-left:18px;color:#785133}.business-auth-handoff .button{white-space:normal;max-width:100%}
