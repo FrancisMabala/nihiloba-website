@@ -1,11 +1,13 @@
 "use client";
 import {useEffect,useId,useRef,useState,type ReactNode} from "react";
+import {ShopIcon} from './wenze-shop-icons';
 import {SellerWorkspaceIcon} from "./services-workspace-icon";
 import "./management-mobile-navigation.css";
 
 export type MobileDestination={key:string;label:string;shortLabel?:string;href?:string;active?:boolean};
 const words={fr:{more:"Plus",close:"Fermer",navigation:"Navigation de l’activité"},en:{more:"More",close:"Close",navigation:"Activity navigation"},ln:{more:"Mosusu",close:"Kanga",navigation:"Navigation ya mosala"},sw:{more:"Zaidi",close:"Funga",navigation:"Urambazaji wa shughuli"}};
 function DestinationIcon({name}:{name:string}) {
+ if(name==='shop')return <ShopIcon name="shop"/>;
  const icon=/today|overview/.test(name)?'overview':/order|work|application/.test(name)?'work':/catalog|inventory|stock|product/.test(name)?'stock':/money|finance|daily|report/.test(name)?'finance':/calendar|agenda|reservation/.test(name)?'calendar':/item|menu|offering/.test(name)?'catalog':/shop|activity|profile|team|candidate/.test(name)?'profile':'settings';
  return <SellerWorkspaceIcon name={icon}/>;
 }
@@ -13,11 +15,26 @@ function MoreHorizontal(){return <svg width="22" height="22" viewBox="0 0 24 24"
 function X(){return <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" strokeWidth="1.5"><path d="m6 6 12 12M18 6 6 18"/></svg>;}
 export function ManagementMobileNavigation({locale,items,current,primary,onNavigate,disabled=false,extra,identity}:{locale:keyof typeof words;items:MobileDestination[];current?:string;primary:string[];onNavigate:(key:string)=>void|boolean|Promise<void|boolean>;disabled?:boolean;extra?:ReactNode;identity?:ReactNode}) {
  const copy=words[locale],id=useId(),dialog=useRef<HTMLDialogElement>(null),trigger=useRef<HTMLButtonElement>(null),nav=useRef<HTMLElement>(null),lock=useRef(false);
+ const [slots,setSlots]=useState(5);
  const [keyboard,setKeyboard]=useState(false),[busy,setBusy]=useState(false),[open,setOpen]=useState(false);
  const available=primary.map(key=>items.find(item=>item.key===key)).filter((item):item is MobileDestination=>!!item);
  const needsMore=!!extra||items.some(item=>!primary.includes(item.key));
- const main=available.slice(0,needsMore?4:5),remaining=items.filter(item=>!main.some(p=>p.key===item.key));
+ const main=available.slice(0,needsMore||available.length>slots?slots-1:slots),remaining=items.filter(item=>!main.some(p=>p.key===item.key));
  const more=!!extra||remaining.length>0;
+ const sizingLabels=available.map(item=>item.shortLabel??item.label).concat(copy.more).join(' ');
+ useEffect(()=>{
+  const element=nav.current;if(!element)return;
+  const canvas=document.createElement('canvas');
+  const measure=()=>{
+   const button=element.querySelector('button');if(!button||!element.clientWidth)return;const context=canvas.getContext('2d');if(!context)return;
+   const font=getComputedStyle(button),box=getComputedStyle(element);context.font=`${font.fontWeight} ${font.fontSize} ${font.fontFamily}`;
+   const word=Math.max(...sizingLabels.split(/\s+/).map(label=>context.measureText(label).width));
+   const width=element.clientWidth-parseFloat(box.paddingLeft)-parseFloat(box.paddingRight);
+   setSlots(Math.max(2,Math.min(5,Math.floor((width+2)/(Math.ceil(word)+10)))));
+  };
+  const observer=typeof ResizeObserver!=="undefined"?new ResizeObserver(measure):null;observer?.observe(element);measure();document.fonts?.ready.then(measure);
+  return()=>observer?.disconnect();
+ },[sizingLabels]);
  function close(){dialog.current?.close();}
  useEffect(()=>{if(!open)return;const previous=document.body.style.overflow;document.body.style.overflow="hidden";return()=>{document.body.style.overflow=previous;};},[open]);
  async function choose(key:string){if(disabled||lock.current)return;lock.current=true;setBusy(true);try{if(await onNavigate(key)!==false)close();}finally{lock.current=false;setBusy(false);}}

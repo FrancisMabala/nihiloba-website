@@ -44,3 +44,22 @@
 @media(min-width:960px){
  .seller-design .wz-personal.ws-shop .wz .ws-form-group[data-tone=purple]>.wz-fields{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,.8fr)}
 }
+
+/* The name, metadata and photo action have separate layout roles. */
+.seller-design .ws-shop .ws-upload input.wz-visually-hidden{position:absolute;width:1px;min-width:0;max-width:1px;height:1px;min-height:0;padding:0;border:0;margin:0;overflow:hidden;clip-path:inset(50%)}
+.ws-shop .ws-shop-name{flex:1 1 220px;min-width:0}.ws-shop .ws-shop-metadata{flex:1 1 240px;min-width:0}
+@media(max-width:760px){
+ .seller-design .wz-personal.ws-shop .wz .wz-shop-identity{display:grid;grid-template-columns:48px minmax(0,1fr);gap:10px 12px;align-items:start}
+ .seller-design .wz-personal.ws-shop .wz .wz-shop-identity>.ws-shop-name{grid-column:2;min-width:0}
+ .seller-design .wz-personal.ws-shop .wz .wz-shop-identity>:is(img,.wz-photo-fallback){width:48px;height:48px;max-width:100%}
+ .seller-design .wz-personal.ws-shop .wz .wz-shop-identity>.ws-shop-metadata{grid-column:1/-1;width:100%;min-width:0}
+ .seller-design .wz-personal.ws-shop .wz .wz-shop-identity>:is(details,a,button){grid-column:1/-1;justify-self:stretch;min-width:0;max-width:100%;white-space:normal;margin:0}
+ .seller-design .wz-personal.ws-shop .wz .wz-shop-identity h2{font-size:21px;line-height:1.25;word-break:normal;overflow-wrap:break-word;margin:0 0 6px}
+ .seller-design .wz-personal.ws-shop .wz .wz-shop-identity p{margin:4px 0;min-width:0;word-break:normal;overflow-wrap:break-word}
+ .seller-design .wz-personal.ws-shop .wz .wz-shop-identity .ws-upload{padding:0;border:0}
+ .ws-shop .ws-upload summary{min-height:44px;display:flex;align-items:center}
+ .ws-shop .ws-upload[open]{display:flex!important;flex-wrap:wrap;gap:8px}.ws-shop .ws-upload summary,.ws-shop .ws-upload small{flex-basis:100%}
+ .seller-design .wz-personal.ws-shop .wz .wz-shop-tabs{flex-wrap:wrap;overflow:visible;gap:6px;margin-top:14px}.seller-design .wz-personal.ws-shop .wz .wz-shop-tabs button{flex:1 1 110px;flex-direction:row;white-space:normal;overflow-wrap:normal;word-break:normal}
+ .ws-shop .ws-information>header{flex-wrap:wrap}.ws-shop .ws-information h3{flex:1 1 150px;min-width:0}
+ .seller-design .ws-shop .wz-editor .ws-modes label{min-width:0;width:100%}
+}

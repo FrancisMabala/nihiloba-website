@@ -37,7 +37,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,3
 
  await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/wenze/?store=WNZ_fixture`);
  const nav=page.locator('.management-mobile-nav');await expect(nav).toHaveCount(1);
- if(width<1024){await expect(nav).toBeVisible();await expect(nav.locator('button')).toHaveCount(5);for(const index of [1,2,3,4,0]){await nav.locator('button').nth(index).click();await expect(nav.locator('button').nth(index)).toHaveAttribute('aria-current','page');}
+ if(width<1024){await expect(nav).toBeVisible();expect(await nav.locator('button').count()).toBeLessThanOrEqual(5);for(const index of Array.from({length:await nav.locator('button:not([aria-haspopup])').count()},(_,i)=>i)){await nav.locator('button').nth(index).click();await expect(nav.locator('button').nth(index)).toHaveAttribute('aria-current','page');}
  }else {await expect(nav).toBeHidden();await expect(page.locator('.wz-desktop-navigation')).toBeVisible();}
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(errors).toEqual([]);expect(writes).toBe(0);
  if(locale==='fr')await page.screenshot({path:`${process.env.SHIDA_MOBILE_EVIDENCE_DIR||'test-results/management-mobile/evidence'}/web-wenze-${width}.png`,fullPage:true});

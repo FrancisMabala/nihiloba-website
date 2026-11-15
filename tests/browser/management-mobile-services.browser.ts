@@ -25,7 +25,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,3
  await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/services?offering=SVC_personal`);
  const nav=page.locator('.management-mobile-nav');await expect(nav).toHaveCount(1);
  if(width<1024){await expect(nav).toBeVisible();const more=nav.locator('[aria-haspopup=dialog]');await more.click();const sheet=page.locator('.management-more-sheet');await expect(sheet).toBeVisible();await page.keyboard.press('Escape');await expect(more).toBeFocused();
-  for(const index of [1,2,3,0]){await nav.locator('button').nth(index).click();await expect(nav.locator('button').nth(index)).toHaveAttribute('aria-current','page');}
+  for(const index of Array.from({length:await nav.locator('button:not([aria-haspopup])').count()},(_,i)=>i)){await nav.locator('button').nth(index).click();await expect(nav.locator('button').nth(index)).toHaveAttribute('aria-current','page');}
  } else await expect(nav).toBeHidden();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(writes).toEqual([]);
  if(locale==='fr')await page.screenshot({path:`${process.env.SHIDA_MOBILE_EVIDENCE_DIR||'test-results/management-mobile/evidence'}/web-services-${width}.png`,fullPage:true});

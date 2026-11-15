@@ -12,3 +12,10 @@
 }
 
 .management-restaurant-identity{display:none}@media(max-width:1023px){.management-restaurant-identity{display:block;margin:0 0 12px}.seller-design .rst-management .management-restaurant-identity .rst-restaurant-identity{display:flex;align-items:center;gap:10px;border:1px solid #ded8ce;border-radius:8px;padding:8px;margin:0}.management-restaurant-identity strong{flex:1;min-width:0;overflow-wrap:anywhere;font-size:.9rem}.management-restaurant-identity .rst-identity-photo{flex:none;width:36px;height:36px}.management-restaurant-identity button{min-width:44px;min-height:44px}}
+
+/* Keep words intact; measured overflow destinations remain available in More. */
+@media(max-width:1023px){
+ :is(.seller-design,.app-frame) .management-mobile-nav.management-mobile-nav button{display:grid;grid-template-rows:22px minmax(1.2em,auto);align-content:center;justify-items:center;align-items:start;font-size:12px;line-height:1.2;word-break:normal;overflow-wrap:normal;hyphens:none;padding:5px 3px}
+ .management-mobile-nav button>span{max-width:100%;word-break:normal;overflow-wrap:normal;hyphens:none}
+ .management-mobile-nav svg{width:21px;height:21px;align-self:center}
+}

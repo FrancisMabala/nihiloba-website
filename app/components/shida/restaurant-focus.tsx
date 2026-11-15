@@ -1,12 +1,14 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {operationsCopy} from '../../lib/restaurant-operations-copy';
 import './restaurant-counter-ux.css';
 import './restaurant-operations.css';
+const subscribeFullscreen=(notify:()=>void)=>{document.addEventListener('fullscreenchange',notify);return()=>document.removeEventListener('fullscreenchange',notify);};
 export function restaurantStart(path:string){try{return localStorage.getItem('shida:restaurant:start:'+path)==='sell'?'sell':'today';}catch{return 'today';}}
 export function RestaurantFocus({path,tab,locale,name}:{path:string;tab:string;locale:'fr'|'en'|'ln'|'sw';name:string}){
  const c=operationsCopy[locale],host=useRef<HTMLDivElement>(null),menu=useRef<HTMLDetailsElement>(null);
  const [focus,setFocus]=useState(false),[fallback,setFallback]=useState(false),[pinned,setPinned]=useState(false),[saved,setSaved]=useState(false);
+ const supported=useSyncExternalStore(subscribeFullscreen,()=>!!document.fullscreenEnabled,()=>false);
  const screen=['pos','counter'].includes(tab)?'sell':'today';
  useEffect(()=>{const timer=setTimeout(()=>{try{setPinned(localStorage.getItem('shida:restaurant:start:'+path)===screen);}catch{setPinned(false);}},0);return()=>clearTimeout(timer);},[path,screen]);
  useEffect(()=>{const element=host.current?.closest('.rst-management-content,.rst-business-content') as HTMLElement|null;if(!element)return;
@@ -18,5 +20,5 @@ export function RestaurantFocus({path,tab,locale,name}:{path:string;tab:string;l
   return()=>{element.classList.remove('rst-focus-mode');window.removeEventListener('keydown',key);document.removeEventListener('fullscreenchange',exited);window.removeEventListener('shida-signout',logout);};
  },[focus]);
  async function toggle(){if(menu.current)menu.current.open=false;if(focus){setFocus(false);setFallback(false);if(document.fullscreenElement)await document.exitFullscreen().catch(()=>{});}else{setFocus(true);const element=host.current?.closest('.rst-management-content,.rst-business-content') as HTMLElement|null;try{if(!element?.requestFullscreen)throw new Error('unsupported');await element.requestFullscreen();}catch{setFallback(true);}}}
- return <><div ref={host} className="rst-focus-toolbar">{focus&&<strong>SHIDA · {name}</strong>}<div><button className={focus||tab==='orders'?'':'rst-desktop-fullscreen'} type="button" aria-pressed={focus} onClick={()=>void toggle()}>{focus?c.exit:c.fullscreen}</button><details ref={menu}><summary aria-label={c.more}>⋮</summary><div>{!focus&&<button className="rst-mobile-fullscreen" onClick={()=>void toggle()}>{c.fullscreen}</button>}{['today','pos','counter'].includes(tab)&&<button type="button" aria-pressed={pinned} onClick={()=>{try{if(pinned)localStorage.removeItem('shida:restaurant:start:'+path);else localStorage.setItem('shida:restaurant:start:'+path,screen);setPinned(!pinned);setSaved(true);if(menu.current)menu.current.open=false;}catch{setSaved(false);}}}>{pinned?c.unpin:c.pin}</button>}</div></details></div></div>{fallback&&<p className="rst-focus-notice" role="status">{c.expanded}</p>}{saved&&<span className="sr-only" role="status">{c.saved}</span>}</>;
+ return <><div ref={host} className="rst-focus-toolbar">{focus&&<strong>SHIDA · {name}</strong>}<div>{supported&&<button className="rst-desktop-fullscreen" type="button" aria-pressed={focus} onClick={()=>void toggle()}>{focus?c.exit:c.fullscreen}</button>}{(supported||['today','pos','counter'].includes(tab))&&<details ref={menu} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))event.currentTarget.open=false;}} onKeyDown={event=>{if(event.key==='Escape'){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus();}}}><summary aria-label={c.more}>⋮</summary><div>{supported&&<button className="rst-mobile-fullscreen" onClick={()=>void toggle()}>{focus?c.exit:c.fullscreen}</button>}{['today','pos','counter'].includes(tab)&&<button type="button" aria-pressed={pinned} onClick={()=>{try{if(pinned)localStorage.removeItem('shida:restaurant:start:'+path);else localStorage.setItem('shida:restaurant:start:'+path,screen);setPinned(!pinned);setSaved(true);if(menu.current)menu.current.open=false;}catch{setSaved(false);}}}>{pinned?c.unpin:c.pin}</button>}</div></details>}</div></div>{fallback&&<p className="rst-focus-notice" role="status">{c.expanded}</p>}{saved&&<span className="sr-only" role="status">{c.saved}</span>}</>;
 }

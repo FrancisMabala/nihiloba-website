@@ -21,7 +21,7 @@
 .seller-design .wz-personal .wz .wz-new-sale{display:flex;align-items:center;justify-content:center;gap:8px;margin:16px 0 0 auto;padding:10px 24px;min-height:44px;background:#123b30;color:#fffefa}
 .seller-design .wz-personal .wz-today-columns>div{min-width:0}
 @media(max-width:760px){
- .seller-design .rst.wz-personal.seller-workspace{padding:16px 16px calc(88px + env(safe-area-inset-bottom));}
+ .seller-design .rst.wz-personal.seller-workspace:not(.connected-workspace){padding:16px 16px calc(88px + env(safe-area-inset-bottom));}
  .seller-design .wz-personal .seller-heading{display:flex;flex-direction:column;align-items:stretch;gap:16px;border-bottom:0;padding-bottom:0;margin-bottom:20px}
  .seller-design .wz-personal .seller-heading-actions{order:-1;width:100%;max-width:none;margin:0}
  .seller-design .wz-personal .wz-change-shop{width:100%;max-width:none;background:#fffefa;font-size:14px;font-weight:400;padding:10px 12px}

@@ -32,7 +32,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,3
  await fixture(page);await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants/`);
  const nav=page.locator('.management-mobile-nav');await expect(nav).toHaveCount(1);
  if(width<1024){await expect(nav).toBeVisible();const more=nav.locator('[aria-haspopup=dialog]');await more.click();const sheet=page.locator('.management-more-sheet');await expect(sheet).toBeVisible();await page.keyboard.press('Escape');await expect(more).toBeFocused();
-  for(const index of [1,2,3,0]){await nav.locator('button').nth(index).click();await expect(nav.locator('button').nth(index)).toHaveAttribute('aria-current','page');}
+  for(const index of Array.from({length:await nav.locator('button:not([aria-haspopup])').count()},(_,i)=>i)){await nav.locator('button').nth(index).click();await expect(nav.locator('button').nth(index)).toHaveAttribute('aria-current','page');}
   if(locale==='fr'&&width===390){
    await more.click();await expect(page.locator('body')).toHaveCSS('overflow','hidden');await page.locator('.management-more-sheet').getByRole('button',{name:'Mon stock',exact:true}).click();await expect(page.locator('.management-more-sheet')).not.toBeVisible();await expect(more).toHaveAttribute('aria-current','page');
    await nav.locator('button').nth(2).click();const search=page.locator('.rst-management-content input:visible').first();await search.focus();
