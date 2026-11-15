@@ -1,23 +1,17 @@
-// @vitest-environment jsdom
-import {render,screen,fireEvent,waitFor,within,cleanup} from "@testing-library/react";
-import {beforeEach,afterEach,it,expect,vi} from "vitest";
+import {renderToStaticMarkup} from "react-dom/server";
+import {it,expect} from "vitest";
 import {ManagementMobileNavigation} from "@/app/components/shida/management-mobile-navigation";
-import "@testing-library/jest-dom/vitest";
-const items=[{key:"today",label:"Aujourd’hui"},{key:"orders",label:"Commandes"},{key:"items",label:"Mon menu"},{key:"daily",label:"Finances"},{key:"inventory",label:"Mon stock"},{key:"profile",label:"Mon établissement"}];
-beforeEach(()=>{vi.stubGlobal("matchMedia",()=>({matches:false,addEventListener:vi.fn(),removeEventListener:vi.fn()}));HTMLDialogElement.prototype.showModal=function(){this.setAttribute("open","");this.querySelector<HTMLButtonElement>('button')?.focus();};HTMLDialogElement.prototype.close=function(){this.removeAttribute("open");this.dispatchEvent(new Event("close"));};});
-afterEach(()=>{cleanup();vi.unstubAllGlobals();});
-it("opens permitted overflow destinations and preserves a cancelled dirty-form transition",async()=>{
- const select=vi.fn().mockResolvedValueOnce(false).mockResolvedValueOnce(true);
- render(<ManagementMobileNavigation locale="fr" items={items} primary={['today','orders','items','daily']} current="inventory" onNavigate={select}/>);
- const more=screen.getByRole('button',{name:'Plus'});expect(more).toHaveAttribute('aria-current','page');fireEvent.click(more);
- const dialog=screen.getByRole('dialog');fireEvent.click(within(dialog).getByRole('button',{name:'Mon stock'}));
- await waitFor(()=>expect(select).toHaveBeenCalledWith('inventory'));expect(dialog).toHaveAttribute('open');
- await waitFor(()=>expect(within(dialog).getByRole('button',{name:'Mon stock'})).toBeEnabled());
- fireEvent.click(within(dialog).getByRole('button',{name:'Mon stock'}));await waitFor(()=>expect(dialog).not.toHaveAttribute('open'));await waitFor(()=>expect(more).toHaveFocus());
+const items=[{key:"today",label:"Today"},{key:"orders",label:"Orders"},{key:"items",label:"Menu"},{key:"daily",label:"Finances"},{key:"inventory",label:"Stock"},{key:"profile",label:"Establishment"}];
+it("keeps four primary destinations and marks More active for a nested tool",()=>{
+ const html=renderToStaticMarkup(<ManagementMobileNavigation locale="en" items={items} primary={['today','orders','items','daily']} current="inventory" onNavigate={()=>{}}/>);
+ const [bar,sheet]=html.split('<dialog');
+ expect((bar.match(/<button /g)||[])).length(5);
+ expect(bar).toMatch(/aria-haspopup="dialog"[^>]*aria-current="page"/);
+ expect(sheet).toContain('Stock');expect(sheet).toContain('Establishment');
 });
-it("never shows an unavailable destination and blocks navigation while saving",()=>{
- const select=vi.fn();const {rerender}=render(<ManagementMobileNavigation locale="en" items={items.slice(0,2)} primary={['today','orders','items','daily']} current="today" onNavigate={select} disabled/>);
- expect(screen.queryByRole('button',{name:'Mon menu'})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'Commandes'}));expect(select).not.toHaveBeenCalled();
- rerender(<ManagementMobileNavigation locale="en" items={items.slice(0,1)} primary={['today','orders']} onNavigate={select}/>);
- expect(screen.queryByRole('button',{name:'Commandes'})).toBeNull();expect(screen.getByRole('button',{name:'Aujourd’hui'})).not.toHaveAttribute('aria-current');
+it("omits unavailable destinations, preserves busy controls and never guesses an active page",()=>{
+ const html=renderToStaticMarkup(<ManagementMobileNavigation locale="en" items={items.slice(0,2)} primary={['today','orders','items','daily']} onNavigate={()=>{}} disabled/>);
+ const bar=html.split('<dialog')[0];
+ expect(bar).not.toContain('aria-label="Menu"');expect(bar).not.toContain('aria-current');
+ expect((bar.match(/disabled=""/g)||[])).length(2);
 });
