@@ -13,3 +13,5 @@
 .rst-settings-jump a {display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-underline-offset:4px}
 .rst-settings section[id] {scroll-margin-top:6rem}
 @media(max-width:600px){.rst-settings .rst-card{padding:1rem}.rst-settings .rst-card .rst-card{padding:.75rem}.rst-settings .rst-row{flex-wrap:wrap}.rst-settings fieldset{min-width:0}.rst-settings .rst-row label{min-width:0;width:100%}.rst-settings input,.rst-settings select{max-width:100%}}
+
+.rst-settings h3 svg{width:22px;height:22px;display:inline-block;vertical-align:middle;margin-right:.4rem}.rst-settings summary:focus-visible{outline:2px solid #173e32;outline-offset:3px}

@@ -20,3 +20,20 @@
 :is(.rst-management,.rst-business-management) .rst-operations .rst-ops-money h4{margin:.5rem 0;padding-top:.5rem}
 :is(.rst-management,.rst-business-management) .rst-operations .rst-ops-money small{margin:.5rem 0}
 :is(.rst-management,.rst-business-management) .rst-operations .rst-ops-panel{min-height:0;height:auto}
+
+/* Full surfaces convey context; text and states remain authoritative. */
+.rst-today .rst-ops-columns{align-items:start}
+.rst-today .rst-ops-metrics .rst-metric-incoming{background:#edf5fd;border-color:#c6dcef}
+.rst-today .rst-ops-metrics .rst-metric-preparing{background:#fff5df;border-color:#ebd5a6}
+.rst-today .rst-ops-metrics .rst-metric-stock{background:#fffefa;border-color:#dedad0}
+.rst-today .rst-ops-metrics .rst-metric-stock-attention{background:#fff0e2;border-color:#e8c7a2}
+.rst-today .rst-ops-metrics .rst-metric-visits{background:#f3effa;border-color:#d9ceea}
+.rst-today .rst-ops-metrics .rst-metric-incoming i{background:#deedfa;color:#235780}
+.rst-today .rst-ops-metrics .rst-metric-preparing i{background:#fbe9c5;color:#875809}
+.rst-today .rst-ops-metrics .rst-metric-stock i{background:#efefea;color:#58605a}
+.rst-today .rst-ops-metrics .rst-metric-stock-attention i{background:#fce2c8;color:#874c13}
+.rst-today .rst-ops-metrics .rst-metric-visits i{background:#e9e0f5;color:#624187}
+.rst-today .rst-ops-money{background:#eef5ee;border-color:#cfdfcf}
+.rst-money-explanation{margin:.5rem 0;font-size:.85rem;line-height:1.5}
+.rst-money-explanation summary{cursor:pointer;min-height:44px;display:flex;align-items:center;text-decoration:underline}
+.rst-money-explanation summary:focus-visible{outline:2px solid #173e32;outline-offset:3px}
