@@ -86,12 +86,12 @@ test('empty expenses, saved totals, download and refresh at phone width',async({
   await expect(form).toHaveCount(0);await expect(page.locator('.wm-expense-summary')).toBeVisible();
  }
  await page.reload();await expect(page.locator('.wm-expense-summary')).toContainText(/40\s000 CDF/);
- await expect(page.locator('.wm-expense-summary')).toContainText('10 USD');await expect(page.locator('.wm-ledger tbody tr')).toHaveCount(3);
+ await expect(page.locator('.wm-expense-summary')).toContainText('10 USD');await expect(page.locator('.we-row')).toHaveCount(3);
  await page.route(/\/reports\/expenses\.csv/,route=>{
   const url=new URL(route.request().url());expect(url.searchParams.get('timezone')).toBe('Africa/Kinshasa');expect(url.searchParams.get('language')).toBe('fr');
   return route.fulfill({contentType:'text/csv',headers:{'Content-Disposition':'attachment; filename="depenses-WNZ_fixture-last_30_days.csv"'},body:'\ufeffMontant;Devise\r\n35000,00;CDF'});
  });
- const downloaded=page.waitForEvent('download');await downloadAction.click();expect((await downloaded).suggestedFilename()).toBe('depenses-WNZ_fixture-last_30_days.csv');
+ await page.locator('.we-secondary summary').click();const downloaded=page.waitForEvent('download');await downloadAction.click();expect((await downloaded).suggestedFilename()).toBe('depenses-WNZ_fixture-last_30_days.csv');
  await page.route(/\/reports\/expenses\.csv/,route=>route.fulfill({status:204}));
  await downloadAction.click();await expect(page.locator('.wm-workspace')).toContainText('Aucune dépense à exporter');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
@@ -165,7 +165,7 @@ test('only requested ten-sale pages load and the CSV covers the period',async({p
  expect(csv.split('\n')).toHaveLength(241);expect(csv).toContain('WPS_230,125');expect(csv).toContain('WPS_1,125');
  await nav.getByRole('button',{name:'Précédent'}).click();await expect(nav).toContainText('1–10 sur 240 ventes');
  await nav.getByRole('button',{name:'Suivant'}).click();await expect(nav).toContainText('11–20 sur 240 ventes');
- await page.locator('.wm-filters select').first().selectOption('last_7_days');
+ await page.locator('.we-filters summary').click();await page.locator('.wm-filters select').first().selectOption('last_7_days');
  await expect(nav).toHaveCount(0);await expect(rows.first()).toContainText('Article 10');
  expect(requested).toEqual(['','WPS_230','','WPS_230','']);
 });

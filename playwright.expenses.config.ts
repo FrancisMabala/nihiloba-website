@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:['wenze-expenses-mobile.browser.ts','wenze-money.browser.ts'],workers:1,timeout:45000,use:{baseURL:'http://127.0.0.1:3013',channel:'chrome',headless:true,hasTouch:true,screenshot:'only-on-failure'},outputDir:process.env.SHIDA_MOBILE_OUTPUT_DIR!,reporter:[['list'],['json',{outputFile:process.env.SHIDA_MOBILE_REPORT!}]]});

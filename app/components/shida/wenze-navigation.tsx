@@ -1,4 +1,6 @@
 "use client";
+import "./wenze-expense-list.css";
+import {expenseText} from "@/app/lib/wenze-expense-copy";
 import {SellerWorkspaceNavigation, type SellerNavigationItem} from "./seller-workspace";
 import {ManagementMobileNavigation} from "./management-mobile-navigation";
 import {ordersText} from '@/app/lib/wenze-orders-copy';
@@ -19,5 +21,5 @@ export function WenzeNavigation({locale,view,onNavigate,physical=false,showOrder
 }
 export function WenzeSubnavigation({locale,view,onNavigate,physical=false}:{physical?:boolean;locale:WenzeLocale;view:string;onNavigate:(view:string)=>void}){
  const group=wenzeGroup(view),tabs=group==="today"&&physical?["today","sales"]:group==="catalog"?["catalog","inventory","imports"]:group==="money"?["money","costs","expenses","reports","schedules","receipts"]:[];
- return tabs.length?<nav className="wz-section-tabs" aria-label={group==="today"?sellerText(locale,"today"):wenzeUX(locale,group==="catalog"?"productsStock":group==="shop"?"shop":"money")}>{tabs.map(tab=><button key={tab} aria-current={view===tab?"page":undefined} onClick={()=>onNavigate(tab)}>{tab==="sales"?checkoutText(locale,"counter"):tab==="money"?moneyText(locale,"overview"):tab==="catalog"?sellerText(locale,"products"):tab==="receipts"?posText(locale,"receipts"):sellerText(locale,tab)}</button>)}</nav>:null;
+ return tabs.length?<><label className="we-section-select" hidden={!(group==="money")}><span>{expenseText(locale,"sections")}</span><select aria-label={expenseText(locale,"sections")} value={view} onChange={e=>onNavigate(e.target.value)}>{tabs.map(tab=><option key={tab} value={tab}>{tab==="sales"?checkoutText(locale,"counter"):tab==="money"?moneyText(locale,"overview"):tab==="catalog"?sellerText(locale,"products"):tab==="receipts"?posText(locale,"receipts"):sellerText(locale,tab)}</option>)}</select></label><nav className={`wz-section-tabs ${group==="money"?"we-section-tabs":""}`} aria-label={group==="today"?sellerText(locale,"today"):wenzeUX(locale,group==="catalog"?"productsStock":group==="shop"?"shop":"money")}>{tabs.map(tab=><button key={tab} aria-current={view===tab?"page":undefined} onClick={()=>onNavigate(tab)}>{tab==="sales"?checkoutText(locale,"counter"):tab==="money"?moneyText(locale,"overview"):tab==="catalog"?sellerText(locale,"products"):tab==="receipts"?posText(locale,"receipts"):sellerText(locale,tab)}</button>)}</nav></>:null;
 }

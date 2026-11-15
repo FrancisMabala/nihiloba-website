@@ -1,4 +1,6 @@
 "use client";
+import {WenzeExpenseList,ExpenseFilters} from "./wenze-expense-list";
+import {expenseText} from "@/app/lib/wenze-expense-copy";
 import {loadInventoryCatalogue} from "@/app/lib/wenze-inventory-catalogue";
 import {messagesText} from '../../lib/messages-design-copy';
 import {wenzeActionConfirmation} from "@/app/lib/wenze-action-confirmation";
@@ -64,7 +66,7 @@ export function WenzeOperations({store,locale,view,onChoose,onEditStock,onCreate
  useEffect(()=>{if(!count||!store)return;const url=new URL(window.location.href);url.searchParams.set('store',store.public_ref);url.searchParams.set('view','inventory');url.searchParams.set('count',str(count.count_ref));url.searchParams.delete('product');window.history.replaceState(null,'',url);},[count,store]);
  const range=()=>`timezone=${enc(reportZone)}&period=${enc(period)}${period==='custom'?`&date_from=${enc(from)}&date_to=${enc(to)}`:''}`;
  async function read(path:string){return obj(await request(`${base}/${path}`));}
- async function guard(work:()=>Promise<void>){if(lock.current)return;lock.current=true;setBusy(true);setMessage('');try{await work();}catch(error){if(error instanceof DashboardApiError&&error.detail==='wenze_sale_reversal_variant_required'){setMessage('historicalReturn');return;}if(error instanceof DashboardApiError&&[401,403,404].includes(error.status)){setLoaded(false);setData({});setHistory({});setProducts([]);setProduct(null);setStock([]);setCount(null);setCodeResult(null);setCodeState('');setExpenseSummary({});}if(error instanceof DashboardApiError&&error.status===409)setConflict(true);if(alive.current)setMessage(error instanceof DashboardApiError&&error.status===403?'accessDenied':error instanceof DashboardApiError&&error.status===409?'conflict':error instanceof DashboardApiError&&error.status===422?'validation':'unavailable');}finally{lock.current=false;if(alive.current)setBusy(false);}}
+ async function guard(work:()=>Promise<void>,propagate=false){if(lock.current)return;lock.current=true;setBusy(true);setMessage('');try{await work();}catch(error){if(error instanceof DashboardApiError&&error.detail==='wenze_sale_reversal_variant_required'){setMessage('historicalReturn');return;}if(error instanceof DashboardApiError&&[401,403,404].includes(error.status)){setLoaded(false);setData({});setHistory({});setProducts([]);setProduct(null);setStock([]);setCount(null);setCodeResult(null);setCodeState('');setExpenseSummary({});}if(error instanceof DashboardApiError&&error.status===409)setConflict(true);if(alive.current)setMessage(error instanceof DashboardApiError&&error.status===403?'accessDenied':error instanceof DashboardApiError&&error.status===409?'conflict':error instanceof DashboardApiError&&error.status===422?'validation':'unavailable');if(propagate)throw error;}finally{lock.current=false;if(alive.current)setBusy(false);}}
  async function loadProducts(offset=0){const result=await read(`products?status=active&search=${enc(search)}&offset=${offset}&limit=20`);if(alive.current){setProducts(rows(result.products));setProductOffset(offset);setProductTotal(Number(result.total??0));}}
  async function loadStock(){
   const all:Row[]=[];const seen=new Set<string>();let next='';
@@ -90,7 +92,7 @@ export function WenzeOperations({store,locale,view,onChoose,onEditStock,onCreate
   }
  }
  async function reload(){
-  if(view==='reports'||view==='expenses'){setData({});setExpenseSummary({});await loadFinance(range());return;}
+  if(view==='reports'||view==='expenses'){await loadFinance(range());return;}
   const route=view==='inventory'?'inventory/summary':view==='sales'?(plan==='pro'?'physical-sales/priced?limit=20':'inventory/manual-sales?limit=20'):view==='schedules'?'report-schedules':null;
   if(route){const result=await read(route);if(alive.current)setData(result);}
  }
@@ -98,11 +100,11 @@ export function WenzeOperations({store,locale,view,onChoose,onEditStock,onCreate
  async function mutate(path:string,method:string,body:Row,consume?:(result:Row)=>void,propagate=false){
   if(pending&&(pending.path!==path||pending.method!==method||JSON.stringify(pending.body)!==JSON.stringify(body))){setMessage('uncertain');if(propagate)throw new Error('409');return;}
   const operation=pending??{path,method,body};setPending(operation);
-  try{const result=obj(await request(`${base}/${operation.path}`,{method:operation.method,body:JSON.stringify(operation.body)}));if(alive.current){setPending(null);setDirty(false);setMessage('saved');consume?.(result);if(operation.path==='expenses'){
+  try{const result=obj(await request(`${base}/${operation.path}`,{method:operation.method,body:JSON.stringify(operation.body)}));if(alive.current){setPending(null);setDirty(false);setMessage('saved');consume?.(result);if(view==='expenses'&&operation.path.endsWith('/reversal'))setData(current=>({...current,expenses:rows(current.expenses).map(row=>row.expense_ref===result.expense_ref?result:row)}));if(operation.path==='expenses'){
       setFormVersion(v=>v+1);setCorrection('');setExpenseOpen(false);
       const window=obj(data.period),date=str(operation.body.occurred_on);
       setMessage(window.date_from&&(date<str(window.date_from)||date>str(window.date_to))?'outside':'expenseSaved');
-    }}try{await reload();if(view==='sales')await loadStock();if(view==='inventory')await loadInventory();}catch{setMessage('savedRefreshFailed');}}
+    }}try{if(view==='expenses'&&operation.path.endsWith('/reversal')){const summary=await read('reports/expenses?'+range());if(alive.current)setExpenseSummary(summary);}else await reload();if(view==='sales')await loadStock();if(view==='inventory')await loadInventory();}catch{setMessage('savedRefreshFailed');}}
   catch(error){if(error instanceof DashboardApiError&&error.status<500){setPending(null);
     if(error.status===409&&path.startsWith('inventory/counts/')&&count){
       setCount(await read('inventory/counts/'+enc(str(count.count_ref))));
@@ -138,11 +140,11 @@ export function WenzeOperations({store,locale,view,onChoose,onEditStock,onCreate
   if(nextPeriod==='custom'){params.set('date_from',nextFrom);params.set('date_to',nextTo);}
   void guard(()=>loadFinance(params.toString()));
  }
- function ranges(){return <form className="wz-inline wm-filters" onSubmit={e=>{e.preventDefault();void guard(reload);}}>
+ function ranges(){return <ExpenseFilters locale={locale} summary={`${period==='custom'?from+' – '+to:t(period)} · ${reportZone.replace('Africa/','')}`}><form className="wz-inline wm-filters" onSubmit={e=>{e.preventDefault();void guard(reload);}}>
  <label>{sellerImprovements[locale].period}<select value={period} onChange={e=>changeRange(e.target.value,reportZone,from,to)}>{['today','last_7_days','last_30_days','this_month','custom'].map(p=><option key={p} value={p}>{t(p)}</option>)}</select></label>
  {period==='custom'&&<><label>{t('date_from')}<input type="date" required value={from} onChange={e=>changeRange(period,reportZone,e.target.value,to)}/></label><label>{t('date_to')}<input type="date" required min={from} value={to} onChange={e=>changeRange(period,reportZone,from,e.target.value)}/></label></>}
  <label>{sellerImprovements[locale].zone}<select value={reportZone} onChange={e=>changeRange(period,e.target.value,from,to)}><option value="Africa/Kinshasa">Kinshasa</option><option value="Africa/Lubumbashi">Lubumbashi</option></select></label>
- <button disabled={busy}>{t('refresh')}</button></form>;}
+ <button disabled={busy}>{t('refresh')}</button></form></ExpenseFilters>;}
  function reverse(row:Row,kind:'sales'|'expenses'){
   const isSale=kind==='sales',path=isSale?`physical-sales/priced/${enc(str(row.sale_ref))}/reversal`:`expenses/${enc(str(row.expense_ref))}/reversal`;
   return row.status==='active'?form(<><label>{t('reason')}<select name="reason">{(isSale?['wrong_quantity','wrong_price','wrong_product_variant','duplicate_entry','entered_by_mistake','other']:['wrong_amount','wrong_category','wrong_date','wrong_currency','duplicate_entry','entered_by_mistake','other']).map(r=><option key={r} value={r}>{t(r)}</option>)}</select></label>{field('note','text',undefined,false)}</>,async f=>{await confirm(t('reverse'),wenzeActionConfirmation[locale].reverse,()=>mutate(path,'POST',{reason:value(f,'reason'),note:value(f,'note')||null},undefined,true));},'reverse'):(row.reversal_ref||obj(row.reversal).reversal_ref)&&!obj(row.reversal).replacement_sale_ref&&!row.replacement_expense_ref?<button disabled={busy} onClick={()=>{setCorrection(str(row.reversal_ref||obj(row.reversal).reversal_ref));if(kind==='expenses')setExpenseOpen(true);}}>{t('correction')}</button>:null;
@@ -201,8 +203,8 @@ export function WenzeOperations({store,locale,view,onChoose,onEditStock,onCreate
  {view==='costs'&&plan==='pro'&&<PurchaseCosts base={base} locale={locale} initialFilter={query.get('costFilter')==='missing'} initialCurrency={['USD','CDF'].includes(query.get('costCurrency')??'')?query.get('costCurrency')!:''}/>}
  {view==='expenses'&&<>{ranges()}
  {Array.isArray(data.expenses)&&<>{rows(data.expenses).length>0&&<><div className="wm-expense-summary"><h3>{mc('expenseTotal')}</h3>{rows(expenseSummary.currency_summaries).filter(row=>Number(row.expense_count)>0||rows(data.expenses).some(e=>e.currency===row.currency)).map(row=><strong key={str(row.currency)}>{moneyValue(row.total_expenses,locale)} {str(row.currency)}</strong>)}</div>
- <div className="wz-actions">{expenseSummary.can_edit===true&&!expenseOpen&&<button className="seller-primary" onClick={()=>setExpenseOpen(true)}>＋ {mc('addExpense')}</button>}
- <button onClick={()=>void guard(async()=>{const file=await apiFile(base+'/reports/expenses.csv?'+range()+'&language=fr');if(!file.size){setMessage('noExport');return;}const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);})}>{mc('csv')}</button></div></>}
+ <div className="wz-actions we-expense-actions">{expenseSummary.can_edit===true&&!expenseOpen&&<button className="seller-primary" onClick={()=>setExpenseOpen(true)}>＋ {mc('addExpense')}</button>}
+ <details className="we-secondary"><summary>{expenseText(locale,'more')}</summary><button onClick={()=>void guard(async()=>{const file=await apiFile(base+'/reports/expenses.csv?'+range()+'&language=fr');if(!file.size){setMessage('noExport');return;}const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);})}>{mc('csv')}</button></details></div></>}
  {!rows(data.expenses).length&&!expenseOpen&&<div className="wm-empty"><SellerWorkspaceIcon name="document"/><h3>{mc('emptyExpense')}</h3>{expenseSummary.can_edit===true&&<button className="seller-primary" onClick={()=>setExpenseOpen(true)}>＋ {mc('addExpense')}</button>}</div>}
  {expenseSummary.can_edit===true&&expenseOpen&&<section className="wm-editor" ref={editorRef} tabIndex={-1}><h3>{mc('addExpense')}</h3>{correction&&<p>{t('correction')}</p>}
  <form className="wm-expense-fields" key={formVersion} onChange={()=>setDirty(true)} onSubmit={e=>submit(e,f=>mutate('expenses','POST',{amount:value(f,'amount').replace(/\s/g,'').replace(',','.'),currency:value(f,'currency'),category:value(f,'category'),occurred_on:value(f,'occurred_on'),timezone_name:reportZone,note:value(f,'note')||null,...(correction?{correction_reversal_ref:correction}:{})}))}>
@@ -212,8 +214,8 @@ export function WenzeOperations({store,locale,view,onChoose,onEditStock,onCreate
  <label className="wm-wide">{mc('privateNote')}<textarea name="note"/></label>
  {message&&['validation','unavailable','uncertain','conflict'].includes(message)&&<p role="alert">{t(message)}</p>}
  <div className="wz-actions wm-wide"><button className="seller-primary" disabled={busy||!!pending}>{mc('expenseSave')}</button><button type="button" onClick={()=>{setDirty(false);setExpenseOpen(false);setCorrection('');}}>{t('cancel')}</button></div></form></section>}
- {!!rows(data.expenses).length&&<table className="wm-ledger"><thead><tr>{['occurred_on','category','amount','currency','note','status'].map(k=><th key={k}>{k==='note'&&locale==='fr'?'Note privée':t(k)}</th>)}<th><span className="wz-visually-hidden">{t('manage')}</span></th></tr></thead><tbody>
- {rows(data.expenses).map(row=><tr key={str(row.expense_ref)}><td data-label={t('occurred_on')}>{formatWenzeFact(row.occurred_on,'occurred_on',locale,reportZone)}</td><td data-label={t('category')}>{t(str(row.category))}</td><td data-label={t('amount')}>{moneyValue(row.amount,locale)}</td><td data-label={t('currency')}>{str(row.currency)}</td><td data-label={locale==='fr'?'Note privée':t('note')}>{str(row.note)||'—'}</td><td data-label={t('status')}>{mc(row.status==='reversed'?'reversedExpense':'registered')}</td><td>{expenseSummary.can_edit===true&&<details><summary>{t('manage')}</summary>{reverse(row,'expenses')}</details>}</td></tr>)}</tbody></table>}
+ <WenzeExpenseList items={rows(data.expenses)} locale={locale} canEdit={expenseSummary.can_edit===true} busy={busy} label={t} amount={value=>moneyValue(value,locale)} date={(value,key)=>formatWenzeFact(value,key,locale,reportZone)} onReverse={(row,reason,note)=>guard(()=>mutate(`expenses/${enc(str(row.expense_ref))}/reversal`,'POST',{reason,note:note||null},undefined,true),true)} onCorrect={row=>{setCorrection(str(row.reversal_ref));setExpenseOpen(true);}} feedback={<>{message&&<p role="status">{t(message)}</p>}{pending&&<button disabled={busy} onClick={()=>void guard(()=>mutate(pending.path,pending.method,pending.body))}>{t("retry")}</button>}</>}/>
+
  {data.next_cursor!=null&&<button onClick={()=>void guard(async()=>{const next=await read('expenses?'+range()+'&limit=20&cursor='+enc(str(data.next_cursor)));setData({...next,expenses:[...rows(data.expenses),...rows(next.expenses)]});})}>{t('next')}</button>}</>}</>}
  {view==='reports'&&<>{reportArtifact&&<button className="seller-primary" onClick={()=>void guard(()=>download(base+'/reports/artifacts/'+enc(reportArtifact)))}>{messagesText(locale,'report')}</button>}{ranges()}{summaryOnly?<><WenzeMoneyDashboard range={range()} data={data} locale={locale} storeRef={store.public_ref} busy={busy||!Array.isArray(data.currency_summaries)} error={!!message&&message!=="saved"}/><details className="wz-report-group"><summary>{mc('calculation')}</summary><p>{mc('scope')}</p><p>{m.scope}</p><p>{m.coverage}</p></details></>:Array.isArray(data.currency_summaries)?<PeriodReport key={base+range()} base={base} range={range()} data={data} locale={locale} zone={reportZone}/>:null}</>}
  {view==='schedules'&&Array.isArray(data.schedules)&&<ReportSchedules base={base} items={data.schedules as Schedule[]} locale={locale} zone={reportZone} reload={reload}/>}
