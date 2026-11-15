@@ -1,0 +1,3 @@
+import {describe,it,expect} from 'vitest';
+import {restaurantSeries} from '../app/lib/restaurant-stats-series';
+describe('covered local calendar series',()=>{it('fills known zero days without future days',()=>{expect(restaurantSeries('2026-11-01','2026-11-05','2026-11-03',[{date:'2026-11-02',count:4}]).rows.map(x=>x.count)).toEqual([0,4,0]);});it('groups long ranges without changing totals',()=>{const x=restaurantSeries('2026-10-01','2026-11-15','2026-11-14',[{date:'2026-10-01',count:4},{date:'2026-11-14',count:8}]);expect(x.weekly).toBe(true);expect(x.rows.reduce((n,r)=>n+r.count,0)).toBe(12);expect(x.rows.at(-1)?.end).toBe('2026-11-14');});});
