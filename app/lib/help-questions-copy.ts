@@ -1,4 +1,5 @@
 const copy={
+ readAnswer:['Read the answer','Lire la réponse','Tanga eyano','Soma jibu'],
  title:['Help and questions','Aide et questions','Lisalisi na mituna','Msaada na maswali'],
  intro:['A question about SHIDA?','Une question sur SHIDA ?','Motuna moko na SHIDA ?','Una swali kuhusu SHIDA?'],
  ask:['Ask a question','Poser une question','Kotuna motuna','Uliza swali'],
@@ -14,7 +15,7 @@ const copy={
  suggestion:['A suggestion','Une suggestion','Likanisi','Pendekezo'],other:['Other question','Autre question','Motuna mosusu','Swali lingine'],
  open:['To review','À traiter','Ya kotala','Ya kushughulikia'],answered:['Waiting for your reply','En attente de votre réponse','Kozela eyano na yo','Inasubiri jibu lako'],closed:['Completed','Terminée','Esili','Limekamilika'],
  reply:['Reply','Répondre','Koyanola','Jibu'],replyLabel:['Your reply','Votre réponse','Eyano na yo','Jibu lako'],saved:['Reply saved','Réponse enregistrée','Eyano ebombami','Jibu limehifadhiwa'],
- complete:['Mark as completed','Marquer comme terminée','Kotia ete esili','Weka limekamilika'],reopen:['Reopen','Rouvrir','Kofungola lisusu','Fungua tena'],
+ complete:['Thanks, understood','Merci, c’est clair','Matondi, nasosoli','Asante, nimeelewa'],reopen:['Reopen','Rouvrir','Kofungola lisusu','Fungua tena'],
  whatsapp:['Read on WhatsApp','Lire sur WhatsApp','Kotanga na WhatsApp','Soma kwenye WhatsApp'],
  prepared:['Read the answer to my question','Lire la réponse à ma question','Tanga eyano na motuna na ngai','Soma jibu la swali langu'],
  whatsappHint:['Open WhatsApp, then send the prepared message.','Ouvrez WhatsApp puis envoyez le message préparé.','Fungola WhatsApp mpe tinda nsango ebongisami.','Fungua WhatsApp kisha utume ujumbe ulioandaliwa.'],
@@ -31,3 +32,10 @@ const copy={
 } as const;
 export type HelpLocale='en'|'fr'|'ln'|'sw';
 export function helpText(locale:HelpLocale,key:keyof typeof copy){return copy[key][{en:0,fr:1,ln:2,sw:3}[locale]];}
+
+export function questionSubject(message:string){
+ const value=message.replace(/\s+/g,' ').trim();
+ if(value.length<=140)return value;
+ const excerpt=value.slice(0,140),boundary=excerpt.lastIndexOf(' ');
+ return excerpt.slice(0,boundary>=80?boundary:140).trimEnd()+'…';
+}

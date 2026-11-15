@@ -29,3 +29,19 @@ Screenshots and browser results are retained under
 
 No real user messages were sent. Production authentication and Meta delivery were
 not exercised. The paired backend migration must precede a future release.
+
+## Local continuation correction — 15 November 2026 (not deployed)
+
+Notifications show the question context and a localized “Lire la réponse” link
+to the exact existing question. They suppress technical activity references,
+including responses from an older backend. History headings use a bounded,
+word-aware excerpt; the topic remains secondary and the original question stays
+complete in the conversation. Prepared WhatsApp links retain their Q-reference
+format for compatibility. No permissions or notification settings changed.
+
+`tests/browser/question-continuation.mjs` renders the actual notification and
+question components with synthetic network fixtures in all four languages at
+320, 360, 390, 820 and 1440 CSS pixels. It checks direct links, hidden identifiers,
+long/unbroken subjects, shared-channel history, web replies and legacy prepared
+messages. These are isolated component/browser checks, not live account or
+WhatsApp verification. Evidence: `C:/NIHILOBA/release-evidence/question-continuation-20261115`.

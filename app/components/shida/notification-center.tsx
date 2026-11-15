@@ -6,6 +6,7 @@ import {mySpaceCopy} from '../../lib/my-space-refinement-copy';
 
 import {notificationCopy as copy,modules,moduleNames} from '../../lib/notification-center-copy';
 import {publishPersonalNotificationCount,usePersonalNotificationCount} from '../../lib/personal-notification-count';
+import {helpText} from '../../lib/help-questions-copy';
 import {messagesText} from '../../lib/messages-design-copy';
 import {SpaceIcon,type SpaceIconName} from './account-space-icon';
 import Image from 'next/image';
@@ -17,6 +18,7 @@ function validPage(value:unknown):value is {items:Notice[];next_cursor:string|nu
  return Array.isArray(v.items)&&(v.next_cursor===null||typeof v.next_cursor==='string'&&/^NTF_[A-Za-z0-9_-]{1,36}$/.test(v.next_cursor))&&v.items.every(r=>r&&typeof r.reference==='string'&&/^NTF_[A-Za-z0-9_-]{1,36}$/.test(r.reference)&&typeof r.marketplace==='string'&&typeof r.title==='string'&&typeof r.description==='string'&&typeof r.created_at==='string'&&Number.isFinite(Date.parse(r.created_at))&&['read','action_required','expired','acknowledged'].every(k=>typeof r[k as keyof Notice]==='boolean')&&(r.action_url===null||typeof r.action_url==='string'));
 }
 function noticeAction(item:Notice,locale:Locale){
+ if(item.event_type==='question_answered')return helpText(locale,'readAnswer');
  const path=safeActivityUrl(item.action_url)?new URL(item.action_url!).pathname:'';
  if(item.event_type==='private_report_ready'&&item.action_url?.includes('view=reports'))return messagesText(locale,'report');
  if(item.marketplace==='security')return messagesText(locale,'account');
@@ -103,9 +105,9 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
     const firstUnread=message&&!item.read&&item.reference===items.find(row=>row.event_type==='message'&&row.can_handoff&&!row.expired&&!row.read)?.reference;
     return <article key={item.reference} data-reference={item.reference} className={item.read?'notification-card':'notification-card notification-unread'}>
      <span className="notice-market-icon"><SpaceIcon name={icons[item.marketplace]??'bell'}/></span>
-     <div className="notice-content"><span className={item.read?'notice-status':'notice-status notice-new'}>{messagesText(locale,item.read?'info':'new')}</span><h3>{title}</h3><p>{[marketName,item.description,item.activity_reference].filter(Boolean).join(' · ')}</p>{item.expired&&<small>{t[16]}</small>}</div>
-     <time className="notice-meta" dateTime={item.created_at}>{new Date(item.created_at).toLocaleString(locale,{dateStyle:'medium',timeStyle:'short'})}</time>
-     <div className="notification-actions">{whatsapp&&(message||!link)?<>{ticket?.reference===item.reference?<a className="notice-primary" target="_blank" rel="noopener noreferrer" href={ticket.url} onClick={()=>setTicket(null)}>{action}</a>:<button className="notice-primary" disabled={busy} onClick={()=>void handoff(item.reference)}>{action}</button>}{firstUnread&&<small>{messagesText(locale,'sendHint')}</small>}</>:link&&<a href={link}>{noticeAction(item,locale)}</a>}
+     <div className="notice-content"><span className={item.read?'notice-status':'notice-status notice-new'}>{messagesText(locale,item.read?'info':'new')}</span><h3>{title}</h3><p>{(item.event_type==='question_answered'?[item.description]:[marketName,item.description,item.activity_reference]).filter(Boolean).join(' · ')}</p>{item.expired&&<small>{t[16]}</small>}</div>
+     <time className="notice-meta" dateTime={item.created_at}>{item.event_type==='question_answered'?helpText(locale,'title')+' · ':''}{new Date(item.created_at).toLocaleString(locale,{dateStyle:'medium',timeStyle:'short'})}</time>
+     <div className="notification-actions">{whatsapp&&(message||!link)?<>{ticket?.reference===item.reference?<a className="notice-primary" target="_blank" rel="noopener noreferrer" href={ticket.url} onClick={()=>setTicket(null)}>{action}</a>:<button className="notice-primary" disabled={busy} onClick={()=>void handoff(item.reference)}>{action}</button>}{firstUnread&&<small>{messagesText(locale,'sendHint')}</small>}</>:link&&<a className={item.event_type==='question_answered'?'notice-primary':undefined} href={link}>{noticeAction(item,locale)}</a>}
      {!item.read&&<button className="notice-read" disabled={busy} onClick={()=>void act([item.reference],'read')}>{t[8]}</button>}
      {!inline&&item.action_required&&!item.expired&&!item.acknowledged&&<button disabled={busy} onClick={()=>void act([item.reference],'acknowledge')}>{t[9]}</button>}</div>
     </article>;
