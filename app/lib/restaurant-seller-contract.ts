@@ -1,3 +1,4 @@
+import {validReservationWorkspaceQuery} from './restaurant-reservation-workspace-contract';
 import {validInventoryQuery,validInventoryBody} from './restaurant-inventory-contract';
 import { photoRoutes, isPhotoPath, validPhotoQuery, validPhotoAttachment } from './restaurant-photo-contract';
 import { onboardingBody } from './restaurant-onboarding-contract';
@@ -12,7 +13,7 @@ export const sellerRoutes: [RegExp, readonly string[]][] = [
   [/^onboarding\/RON_[a-f0-9]+\/confirm$/, ['POST']],
   [/^RST_[A-Za-z0-9_-]+\/insights$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations$/, ["GET"]],
-  [/^RST_[A-Za-z0-9_-]+\/reservations\/(calendar|pending)$/, ["GET"]],
+  [/^RST_[A-Za-z0-9_-]+\/reservations\/(calendar|pending|workspace)$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/setting$/, ["GET", "PUT"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/RRS_[A-Za-z0-9_-]+$/, ["GET"]],
   [/^RST_[A-Za-z0-9_-]+\/reservations\/RRS_[A-Za-z0-9_-]+\/(accept|reject|cancel|arrive|complete)$/, ["POST"]],
@@ -60,6 +61,7 @@ export function validSellerQuery(path: string, method: string, query: URLSearchP
     return [...query].every(([key,value])=>query.getAll(key).length===1&&(key==='day'?/^\d{4}-\d{2}-\d{2}$/.test(value):key==='overview'?['true','false'].includes(value):key==='language'?['fr','en','ln','sw'].includes(value):['page','page_size'].includes(key)&&/^[1-9]\d{0,6}$/.test(value)&&(key!=='page_size'||Number(value)<=50)));
   }
   if (isPhotoPath(path)) return validPhotoQuery(path, query);
+  if (path.endsWith('/reservations/workspace')) return method==='GET'&&validReservationWorkspaceQuery(query);
   if (path.includes('/reservations')) {
     const calendar=path.endsWith('/reservations/calendar'),pending=path.endsWith('/reservations/pending');
     if(calendar && (!/^\d{4}-\d{2}-\d{2}$/.test(query.get('date_from')||'')||!/^\d{4}-\d{2}-\d{2}$/.test(query.get('date_to')||'')))return false;

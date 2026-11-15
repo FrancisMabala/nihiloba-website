@@ -6,15 +6,15 @@ import {calendarCopy, localDate, monthBounds, shiftMonth, type CalendarEvent, ty
 import './shida-calendar.css';
 import './shida-calendar-mobile.css';
 
-type Props={locale:CalendarLocale;timeZone:string;month:string;selected:string;events:CalendarEvent[];
+type Props={dayCounts?:Record<string,number>;weekStartsOn?:number;locale:CalendarLocale;timeZone:string;month:string;selected:string;events:CalendarEvent[];
   onMonthChange:(month:string)=>void;onSelect:(date:string)=>void;onOpen?:(event:CalendarEvent)=>void;
   hasMore?:boolean;onMore?:()=>void;dateOnly?:boolean;agendaFirst?:boolean;agendaLabel?:string;zoneLabel?:string;refinedServices?:boolean};
 
-export function ShidaCalendar({locale,timeZone,month,selected,events,onMonthChange,onSelect,onOpen,hasMore,onMore,dateOnly=false,agendaFirst=false,agendaLabel,zoneLabel,refinedServices=false}:Props){
+export function ShidaCalendar({locale,timeZone,month,selected,events,onMonthChange,onSelect,onOpen,hasMore,onMore,dateOnly=false,agendaFirst=false,agendaLabel,zoneLabel,refinedServices=false,dayCounts,weekStartsOn}:Props){
   const t=calendarCopy[locale], [view,setView]=useState<'calendar'|'list'>('calendar');
   const buttons=useRef<HTMLDivElement>(null);
   const {from,to}=monthBounds(month), count=Math.round((Date.parse(to+'T00:00:00Z')-Date.parse(from+'T00:00:00Z'))/86400000);
-  const weekStart=refinedServices&&locale!=='en'?1:0;
+  const weekStart=weekStartsOn??(refinedServices&&locale!=='en'?1:0);
   const firstDay=(new Date(from+'T00:00:00Z').getUTCDay()-weekStart+7)%7;
   const today=localDate(new Date().toISOString(),timeZone);
   const monthTitle=new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(from+'T12:00:00Z'));
@@ -43,8 +43,8 @@ export function ShidaCalendar({locale,timeZone,month,selected,events,onMonthChan
     {view==='calendar'||dateOnly?<div className="shida-cal-grid" ref={buttons} role="group" aria-label={monthTitle}>
       {Array.from({length:7},(_,index)=>t.weekdays[(index+weekStart)%7]).map((label,index)=><span className="shida-cal-weekday" key={index}>{label}</span>)}
       {Array.from({length:firstDay},(_,index)=><span key={`blank-${index}`} aria-hidden="true"/>)}
-      {Array.from({length:count},(_,index)=>{const day=new Date(Date.parse(from+'T12:00:00Z')+index*86400000).toISOString().slice(0,10), matches=dayEvents(day);
-        return <button type="button" key={day} data-day={day} className="shida-cal-day" aria-current={day===today?'date':undefined} aria-pressed={selected===day} aria-label={`${new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{dateStyle:'full',timeZone:'UTC'}).format(new Date(day+'T12:00:00Z'))}${matches.length?`, ${matches.length}`:''}`} onClick={()=>choose(day)} onKeyDown={event=>arrows(event,day)}><span>{index+1}</span>{!dateOnly&&matches.length>0&&<small>{matches.length}{refinedServices?Array.from(new Set(matches.map(event=>event.tone))).map(tone=><span key={tone} className={`shida-cal-dot tone-${tone}`} aria-hidden="true"/>):<span className="shida-cal-dot"/>}</small>}</button>})}
+      {Array.from({length:count},(_,index)=>{const day=new Date(Date.parse(from+'T12:00:00Z')+index*86400000).toISOString().slice(0,10), matches=dayEvents(day),total=dayCounts?.[day]??matches.length;
+        return <button type="button" key={day} data-day={day} className="shida-cal-day" aria-current={day===today?'date':undefined} aria-pressed={selected===day} aria-label={`${new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{dateStyle:'full',timeZone:'UTC'}).format(new Date(day+'T12:00:00Z'))}${total?`, ${total}`:''}`} onClick={()=>choose(day)} onKeyDown={event=>arrows(event,day)}><span>{index+1}</span>{(!dateOnly||dayCounts)&&total>0&&<small>{total}{refinedServices?Array.from(new Set(matches.map(event=>event.tone))).map(tone=><span key={tone} className={`shida-cal-dot tone-${tone}`} aria-hidden="true"/>):<span className="shida-cal-dot"/>}</small>}</button>})}
     </div>:<ol className="shida-cal-list">{entries(events.filter(event=>{const day=localDate(event.startsAt,timeZone);return day>=from&&day<to;}).sort((a,b)=>a.startsAt.localeCompare(b.startsAt)))}</ol>}
     {refinedServices&&view==='calendar'&&<div className="svc-calendar-legend" aria-label={plannerCopy[locale].legend}><span><i className="tone-confirmed"/>{scheduleCopy[locale].statuses.confirmed}</span><span><i className="tone-pending"/>{scheduleCopy[locale].statuses.pending}</span><span><i className="tone-muted"/>{plannerCopy[locale].muted}</span></div>}
     {!agendaFirst&&agenda}
