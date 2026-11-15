@@ -35,3 +35,10 @@
 @media(max-width:700px){.space-content .space-profile,.space-delivery{padding:18px 14px}.space-profile-details>div{grid-template-columns:1fr;gap:6px}.space-security-setting>summary{flex-wrap:wrap;padding:12px}.space-security-setting small{margin-left:0}.space-category-choices>a{gap:12px}.space-transaction-page .svc-request-grid{grid-template-columns:1fr}}
 
 .space-transaction-page .svc-request h1{font-size:clamp(28px,3vw,38px)}
+
+/* One set of section destinations serves desktop and mobile. */
+.space-section-selector{display:none}.space-selected-mark{margin-left:auto}
+.management-selector-page{display:block;max-width:960px}.management-space-cards{display:grid;gap:14px;margin:24px 0}.management-space-cards>a{display:flex;gap:18px;align-items:center;padding:18px;border:1px solid #dedbd0;border-radius:10px;background:#fffefb;color:inherit;text-decoration:none;min-width:0}.management-space-cards>a>span:nth-child(2){min-width:0;flex:1;overflow-wrap:anywhere}.management-space-cards strong{display:block;font:600 23px/1.3 Georgia,serif}.management-space-cards small{display:block;margin-top:4px}.management-space-selector button{min-height:44px;font:inherit;color:inherit;border:1px solid #d7d2c5;border-radius:8px;background:#fffefa;padding:8px 14px}
+@media(max-width:700px){
+ .account-space .space-sidebar{display:block;padding:22px 18px 0;border:0}.space-sidebar h2{padding:0;margin:0 0 18px;font-size:30px}.space-sidebar .space-desktop-sections{display:none}.space-section-selector{display:block;border:1px solid #203f34;border-radius:8px;background:#fffefa}.space-section-selector>summary{display:flex;justify-content:space-between;gap:12px;list-style:none;min-height:48px;padding:12px;font-weight:600}.space-section-selector>summary::-webkit-details-marker{display:none}.space-section-selector nav{padding:6px;border-top:1px solid #dedbd0}.space-section-selector nav>a{min-width:0;overflow-wrap:anywhere}.space-section-selector nav>a[aria-current]{color:#203f34;background:#eaf0db}.management-space-cards>a{gap:12px;padding:16px}.management-space-cards strong{font-size:22px}
+}

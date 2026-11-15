@@ -3,7 +3,7 @@ import {useEffect,useState} from "react";
 import {managedActivities,dashboardActivities,activityCounts,type ActivityCountKey,type ManagedActivity} from "./personal-activities";
 import type {OverviewExtras} from "./overview-records";
 export type ActivityData={overview?:OverviewExtras;counts?:Partial<Record<ActivityCountKey,number>>;binding:string;items:ManagedActivity[];options:ManagedActivity['market'][];failed:boolean;loaded:ManagedActivity['market'][];more:boolean;markets:string[];business:boolean};
-export function usePersonalActivityData(binding:string|null,restaurantPages=1,revision=0,fullOverview=false){
+export function usePersonalActivityData(binding:string|null,restaurantPages=1,revision=0,fullOverview=false,managementOnly=false){
  const [data,setData]=useState<ActivityData|null>(null);
  useEffect(()=>{
   if(!binding)return;
@@ -11,7 +11,7 @@ export function usePersonalActivityData(binding:string|null,restaurantPages=1,re
   const read=async(path:string)=>{const response=await fetch(`/api/shida/personal/${path}`,{signal:controller.signal,cache:'no-store',credentials:'same-origin',headers:{'X-Shida-Session':binding}});if(!response.ok)throw Error('Unavailable activities');return response.json();};
   async function restaurants(){
     const pages=await Promise.all(Array.from({length:restaurantPages},(_,i)=>read(`restaurants/?page=${i+1}&page_size=20`)));
-    if(fullOverview){
+    if(fullOverview||managementOnly){
       const total=Number(pages[0].total);
       for(let page=pages.length+1;page<=Math.ceil(total/20);page++){
         pages.push(await read(`restaurants/?page=${page}&page_size=20`));
@@ -47,6 +47,6 @@ export function usePersonalActivityData(binding:string|null,restaurantPages=1,re
    setData({binding,overview:extras,counts:overview.status==='fulfilled'?activityCounts(overview.value.activity_counts):{},items:dashboardActivities(values.flatMap(r=>r.status==='fulfilled'?r.value.items:[])),loaded:values.flatMap((r,i)=>r.status==='fulfilled'?[(['wenze','restaurants','services'] as const)[i]]:[]),options:values.flatMap((r,i)=>r.status==='fulfilled'&&(r.value.setup||i===0)?[(['wenze','restaurants','services'] as const)[i]]:[]),failed:values.some(r=>r.status==='rejected')||overview.status==='rejected'||jobs.status==='rejected'||homes.status==='rejected'||(fullOverview&&!Array.isArray(hints?.travel_profiles)&&hints?.markets?.some((m:string)=>m==='hotels'||m==='wewa')),more:values.some(r=>r.status==='fulfilled'&&r.value.more),markets:overview.status==='fulfilled'?overview.value.markets:[],business:overview.status==='fulfilled'&&overview.value.organization_management});
   }).finally(()=>clearTimeout(timer));
   return()=>{active=false;controller.abort();clearTimeout(timer);};
- },[binding,revision,restaurantPages,fullOverview]);
+ },[binding,revision,restaurantPages,fullOverview,managementOnly]);
  return data?.binding===binding?data:null;
 }

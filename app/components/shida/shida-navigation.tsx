@@ -25,8 +25,8 @@ export function ShidaNavigation(){
   return()=>{viewport?.removeEventListener('resize',update);viewport?.removeEventListener('scroll',update);document.removeEventListener('focusin',update);document.removeEventListener('focusout',update);};
  },[]);
  const personal=/^\/shida\/(space|my-applications|mes-candidatures|service-requests|service-bills|restaurant-orders|restaurant-reservations|inbox)(?:\/|$)/.test(path)||path==='/shida/wenze/orders';
- const active=path==='/shida/wenze/sell'?3:path==='/shida/register'?2:path==='/shida'?(hash==='#explore'?1:0):personal?(query.get('view')==='management'?3:2):1;
- const hrefs=[base,`${base}#explore`,`${base}/space`,...(management?.can_manage?[`${base}/space?view=management`]:[])];
+ const active=path==='/shida/wenze/sell'?3:path==='/shida/register'?2:path==='/shida'?(hash==='#explore'?1:0):personal?(query.get('view')==='manage'?3:2):1;
+ const hrefs=[base,`${base}#explore`,`${base}/space`,...(management?[`${base}/space?view=manage`]:[])];
  const icons:SpaceIconName[]=['home','shop','requests','management'];
  return <nav className="shida-navigation" aria-label="SHIDA" data-keyboard={keyboard||undefined}>{hrefs.map((href,index)=><a key={href} href={href} aria-current={active===index?'page':undefined}><SpaceIcon name={icons[index]}/><span>{t[index]}</span></a>)}</nav>;
 }

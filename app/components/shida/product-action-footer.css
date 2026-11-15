@@ -1,0 +1,10 @@
+/* Only the product wizard takes over the mobile navigation edge. Other forms keep their own actions. */
+@media(max-width:1023px){
+ body:has(.wp-wizard) :is(.management-mobile-nav,.shida-navigation){display:none!important}
+ body .seller-design .wp-wizard{padding-bottom:calc(var(--product-action-space,0px) + 24px)!important}
+ body .seller-design .wp-wizard .product-action-footer{position:fixed;inset:auto 0 var(--product-viewport-inset,0px);z-index:60;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:#faf8f3;border-top:1px solid #d7d2c5;box-sizing:border-box}
+ body .seller-design .wp-wizard .product-action-footer button{min-width:0;min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere;font-size:14px;line-height:1.3;padding:8px 12px}
+ .product-action-footer>span{flex:0 1 35%;min-width:0}
+ .product-action-footer>.seller-primary{flex:0 1 auto;max-width:65%!important}
+ .wp-wizard :is(input,select,textarea,[role=alert]){scroll-margin-block:24px calc(var(--product-action-space,0px) + 24px)}
+}
