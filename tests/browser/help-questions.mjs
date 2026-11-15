@@ -43,7 +43,7 @@ try{
   fail=false;await page.locator('.help-primary').dblclick();await page.locator('#question-reply').waitFor();assert.equal(submitted,1);
   const link=page.locator('.help-actions a[target=_blank]');const href=new URL(await link.getAttribute('href'));
   assert.equal(href.hostname,'wa.me');assert.match(href.searchParams.get('text'),/Q123$/);assert(!href.href.includes('boutique'));
-  await page.locator('#question-reply').fill('Mon suivi est conservé.');await page.locator('.help-tabs button').first().click();await page.locator('.help-tabs button').nth(1).click();await page.locator('.help-question-link').click();assert.equal(await page.locator('#question-reply').inputValue(),'Mon suivi est conservé.');
+  await page.locator('#question-reply').fill('Mon suivi est conservé.');await page.locator('.help-back').click();await page.locator('.help-tabs button').first().click();await page.locator('.help-tabs button').nth(1).click();await page.locator('.help-question-link').click();assert.equal(await page.locator('#question-reply').inputValue(),'Mon suivi est conservé.');
   await page.evaluate(()=>{document.activeElement?.blur();getSelection()?.removeAllRanges();});
   if(locale==='fr'&&[390,1440].includes(width))await page.screenshot({path:`${output}/history-${width}.png`,fullPage:true});
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

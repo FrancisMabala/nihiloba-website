@@ -79,7 +79,7 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
    {view==='messages'&&(checking?<p role="status">{t.loading}</p>:session?<MessagesSpace key={session.binding} binding={session.binding} locale={locale}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='recovery'&&<AccountRecovery locale={locale}/>}
    {!session&&view!=='recovery'&&<p><a href={href('recovery')}>{securityText(locale,'report')}</a></p>}
-   {view==='questions'&&(checking?<p role="status">{t.loading}</p>:session?<HelpQuestions key={'questions:'+session.binding} binding={session.binding} locale={locale}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
+   {view==='questions'&&(checking?<p role="status">{t.loading}</p>:session?<HelpQuestions key={'questions:'+session.binding} binding={session.binding} locale={locale} displayName={session.user.display_name}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='support'&&(checking?<p role="status">{t.loading}</p>:session?<AccountSupport key={'support:'+session.binding} binding={session.binding} locale={locale}/>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {view==='support'&&session&&<AccountRecoveryReview key={'recovery-review:'+session.binding} binding={session.binding} locale={locale}/>}
    {view==='support'&&session&&<AccountDeletionAdmin key={'deletion-review:'+session.binding} binding={session.binding} locale={locale}/>}

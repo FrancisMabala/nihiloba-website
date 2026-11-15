@@ -47,7 +47,7 @@ try{
   await page.locator('#question-reply').fill('Une précision depuis le site.');await page.locator('.help-card form button').click();await page.getByText('Une précision depuis le site.',{exact:true}).waitFor();
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   if(locale==='fr'&&[390,1440].includes(width))await page.screenshot({path:`${output}/question-${width}.png`,fullPage:true});
-  await page.locator('.help-tabs button').nth(1).click();await page.locator('.help-question-link').waitFor();assert(!/SCT_|Q4/.test(await page.locator('.help-list').innerText()));
+  await page.locator('.help-back').click();await page.locator('.help-question-link').waitFor();assert(!/SCT_|Q4/.test(await page.locator('.help-list').innerText()));
   assert.deepEqual(errors,[]);results.push({locale,width,notificationLink:true,privateIdentifiersHidden:true,sharedChannelHistory:true,overflow:false});await page.close();
  }
  await fs.writeFile(path.join(output,'customer-browser-results.json'),JSON.stringify(results,null,2));console.log('Passed 20 customer notification/history checks across four languages and five widths.');

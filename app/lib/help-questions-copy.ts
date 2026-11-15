@@ -1,4 +1,12 @@
 const copy={
+ conversation:['Conversation','Conversation','Lisolo','Mazungumzo'],
+ placeholder:['Write your message…','Écrivez votre message…','Komá nsango na yo…','Andika ujumbe wako…'],
+ sendReply:['Send','Envoyer','Tinda','Tuma'],sending:['Sending…','Envoi…','Ezali kotindama…','Inatuma…'],
+ continueWhatsapp:['Continue on WhatsApp','Continuer sur WhatsApp','Koba na WhatsApp','Endelea kwenye WhatsApp'],
+ newMessages:['New messages','Nouveaux messages','Bansango ya sika','Ujumbe mpya'],earlier:['Earlier messages','Messages précédents','Bansango ya liboso','Ujumbe wa awali'],
+ noMessages:['No messages yet.','Aucun message pour le moment.','Nsango ezali naino te.','Bado hakuna ujumbe.'],unknownDate:['Date unavailable','Date indisponible','Mokolo eyebani te','Tarehe haipatikani'],
+ draftUnavailable:['Your draft is kept while this page stays open. This browser cannot restore it after a reload.','Votre brouillon reste disponible tant que cette page est ouverte. Ce navigateur ne peut pas le restaurer après un rechargement.','Makomi na yo ekotikala soki lokasa ezali polele. Navigateur ekoki kozongisa yango te nsima ya kofungola lisusu.','Rasimu yako inahifadhiwa ukurasa ukiwa wazi. Kivinjari hiki hakiwezi kuirejesha baada ya kupakia upya.'],
+
  readAnswer:['Read the answer','Lire la réponse','Tanga eyano','Soma jibu'],
  title:['Help and questions','Aide et questions','Lisalisi na mituna','Msaada na maswali'],
  intro:['A question about SHIDA?','Une question sur SHIDA ?','Motuna moko na SHIDA ?','Una swali kuhusu SHIDA?'],
