@@ -1,4 +1,14 @@
 /* Compact operational POS; shared catalog and ledger behaviors stay canonical. */
+/* Native top-layer dialogs remain inside the fullscreen workspace. */
+:is(.rst-management,.rst-business-management) dialog.rst-pos-dialog{position:fixed;inset:0;margin:auto;max-width:calc(100vw - 24px);height:fit-content}
+.rst-pos-dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.rst-pos-dialog-heading h2{margin:0}
+.rst-pos-dialog-heading>button{min-width:44px;min-height:44px}
+.rst-pos-dialog .rst-pos-payment>header{display:none}
+.rst-payment-recorded dl>div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid #deded3}
+.rst-payment-recorded dd{margin:0;font-weight:600;text-align:right}
+.rst-payment-recorded :focus-visible{outline:3px solid #597456;outline-offset:3px}
+@media(max-width:700px){:is(.rst-management,.rst-business-management) dialog.rst-pos-dialog{width:100%;max-width:100%;max-height:100dvh;height:100dvh;inset:0;margin:0;border-radius:0;padding-bottom:max(20px,env(safe-area-inset-bottom))}}
 :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-header{align-items:center;gap:12px;flex-wrap:wrap}
 :is(.rst-management,.rst-business-management) .rst-pos-queues,:is(.rst-management,.rst-business-management) .rst-pos-categories{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 :is(.rst-management,.rst-business-management) .rst-pos-categories button{min-height:44px;padding:8px 12px;border:1px solid #d8d5ca;border-radius:8px;background:#fffefa;color:#173e32}
@@ -66,3 +76,11 @@
 @media(min-width:701px){:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-basket-fields{max-height:clamp(180px,32dvh,360px);overflow:auto;padding-right:4px}:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-totals{padding:12px;margin-top:12px}:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-actions{padding:8px 0}}
 
 @media print{body:has(.rst-thermal) .rst-pos-dialog[open]{position:static!important;inset:auto!important;width:auto!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:0!important;border:0!important}body:has(.rst-thermal) .rst-pos-dialog::backdrop{display:none}}
+
+/* Compact monetary summary and persistent receipt actions. */
+:is(.rst-management,.rst-business-management) .rst-pos-dialog .rst-payment-total,
+:is(.rst-management,.rst-business-management) .rst-pos-dialog .rst-payment-change{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px}
+:is(.rst-management,.rst-business-management) .rst-pos-dialog :is(.rst-payment-total,.rst-payment-change) strong{font:600 1.5rem/1.25 Arial,sans-serif;white-space:nowrap}
+.rst-pos-dialog .rst-payment-recorded>h3.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+
+.rst-pos-dialog .rst-selling-basket-head{display:none!important}

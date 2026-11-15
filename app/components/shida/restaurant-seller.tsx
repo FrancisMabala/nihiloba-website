@@ -66,7 +66,7 @@ export function RestaurantSeller({ locale, receipt }: { locale: RestaurantLocale
  }
  return <div lang={locale} className="rst-seller seller-design">
 <WenzeHeader locale={locale} marketplace="Restaurants" name={session?.user.display_name} brandHref={restaurantPath(locale)} beforeNavigate={leaveWork} pending={pending} onLanguage={async lang=>{if((await leaveWork()))window.location.assign(sellerPath(lang)+window.location.search);}} onAccount={()=>void logout(true)} onLogout={()=>void logout()}/>
-<section className="rst container rst-shell">
+<section className="rst container rst-shell" hidden={!!session&&!message&&!connectionLost&&!loading&&!pending}>
    {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <SellerLanding marketplace="restaurants" locale={locale} design={design} browseHref={restaurantPath(locale)} onAuthenticated={() => { signedOut.current = false; }}/>)}
    {message && <p role="status">{message}</p>}
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}

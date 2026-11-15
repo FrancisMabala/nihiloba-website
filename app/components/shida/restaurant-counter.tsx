@@ -9,6 +9,8 @@ import { useWorkRequest, useWorkDraft, leaveWork, dateText, type Order, type Ter
 import { basicText } from '../../lib/restaurant-basic-copy';
 import { workText } from '../../lib/restaurant-work-copy';
 import { ReceiptCard } from './restaurant-receipt';
+import type {RecordedPayment} from './restaurant-money';
+import {workspaceCopy} from '../../lib/restaurant-workspace-copy';
 import { RestaurantMoney } from './restaurant-money';
 import { RestaurantPhoto } from './restaurant-photo';
 import { sellingCopy } from '../../lib/restaurant-selling-copy';
@@ -28,11 +30,13 @@ type Basket={selections?:{standalone:Selection[];plates:{key:string;components:S
 type CounterOrder=Order&{bill_group_ref?:string|null;balance_due?:string};
 type Line=ItemChoice&{options?:CounterOptions;key:string;item_ref:string;name:string;unitPrice?:string;amounts?:string[];flexible?:boolean;currency:string;quantity?:number;selected_amount?:string;plate:string};
 export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFreeCounter}:{onFreeCounter?:()=>void;pos?:boolean;path:string;binding:string;locale:RestaurantLocale;onFailure:(e:unknown)=>void}) {
- const pc=posCopy[locale];
+ const pc=posCopy[locale],wc=workspaceCopy[locale];
  const [editing,setEditing]=useState<string|null>(null),[paymentBusy,setPaymentBusy]=useState(false),[unpaidOpen,setUnpaidOpen]=useState(false),[unpaidTotal,setUnpaidTotal]=useState<number|null>(null),[heldTotal,setHeldTotal]=useState<number|null>(null),[heldPage,setHeldPage]=useState(1);
- const [lastSale,setLastSale]=useState<{order:CounterOrder;amount:string;change:string;currency:string;method:string}|null>(null);
+ const [lastSale,setLastSale]=useState<RecordedPayment&{order:CounterOrder}|null>(null);
  const {discard,confirmation}=useDiscardChanges(locale);
  const ux=counterCopy(locale), solo=soloCopy[locale];
+ const [paymentRecorded,setPaymentRecorded]=useState(false);
+ const [receiptTarget,setReceiptTarget]=useState<CounterOrder|null>(null);
  const [choice,setChoice]=useState<Row|null>(null),[held,setHeld]=useState<Basket[]>([]),[heldOpen,setHeldOpen]=useState(false),[heldMore,setHeldMore]=useState(false),[showPayment,setShowPayment]=useState(false);
  const simple=checkoutCopy[locale], intent=useRef<'pay'|'later'>('pay');
  const [autoPrepare,setAutoPrepare]=useState(false),[priceChanged,setPriceChanged]=useState(false),[notice,setNotice]=useState(''),[unpaid,setUnpaid]=useState<CounterOrder[]>([]),[unpaidPage,setUnpaidPage]=useState(1),[unpaidMore,setUnpaidMore]=useState(false),[loadFailed,setLoadFailed]=useState(false);
@@ -43,7 +47,8 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
  const t=(k:string)=>workText(locale,k),api=useWorkRequest(binding,failure);
  const queues=useWorkRequest(binding,()=>{});
  const [config,setConfig]=useState<Configuration|null>(null),[items,setItems]=useState<Row[]>([]),[menuPage,setMenuPage]=useState(1),[menuTotal,setMenuTotal]=useState(0),[basket,setBasket]=useState<Basket|null>(null),[lines,setLines]=useState<Line[]>([]),[method,setMethod]=useState('on_premise'),[order,setOrder]=useState<CounterOrder|null>(null),[moneyGroupRef,setMoneyGroupRef]=useState<string|null>(null),[plate,setPlate]=useState(''),[dirty,setDirty]=useState(true),[fresh,setFresh]=useState(false);
- useWorkDraft(!!basket&&!order&&dirty || !!api.pending,t('discard'),locale);
+ useWorkDraft(!!basket&&!order&&dirty,t('discard'),locale,path);
+ useWorkDraft(!!api.pending||showPayment,t('discard'),locale);
  const [basketChanged,setBasketChanged]=useState(false);
  useRestaurantReturn(`${binding}:${salesPath}:${locale}:${menuPage}:${unpaidPage}`,api.busy,()=>validate(),()=>setFresh(false));
  const locked=api.busy || !!api.pending || api.conflict || basketChanged || !api.online || !fresh;
@@ -106,7 +111,7 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
   setRecent(old=>[saved,...old.filter(v=>v.order_ref!==saved.order_ref)].slice(0,20));setUnpaid(old=>[saved,...old.filter(v=>v.order_ref!==saved.order_ref)]);
   if(intent.current==='pay'){setOrder(saved);setMoneyGroupRef(result.bill_group_ref??null);setShowPayment(true);}else{setBasket(null);setLines([]);setPlate('');setPreference('');setOrder(null);setMoneyGroupRef(null);setShowPayment(false);setNotice(simple.saved);}setUnpaidTotal(value=>value===null?null:value+1);
  }}
- async function newSale(){if(!(await leaveWork()))return;setOrder(null);setMoneyGroupRef(null);setShowPayment(false);setNotice('');setBasket(null);setLines([]);setPreference('');setPlate('');setDirty(false);void validate();}
+ async function newSale(){if(basket&&!order&&dirty&&!(await leaveWork()))return;setReceiptTarget(null);setOrder(null);setMoneyGroupRef(null);setShowPayment(false);setNotice('');setBasket(null);setLines([]);setPreference('');setPlate('');setDirty(false);void validate();}
  const c=sellingCopy(locale);
  const categories=Array.from(new Map(items.filter(i=>i.category).map(i=>[i.category!.public_ref,i.category!])).values());
  const filtered=items.filter(i=>(!category||i.category?.public_ref===category)&&(i.name??'').toLocaleLowerCase().includes(search.toLocaleLowerCase()));
@@ -135,8 +140,8 @@ export function RestaurantCounter({path,binding,locale,onFailure,pos=false,onFre
   {config&&!config.intake_released&&<p role="status" className="rst-selling-closed">{c.closed}</p>}
   {api.message&&api.message!=='saved'&&<p role="status">{t(api.message)}</p>}
   {(api.conflict||basketChanged)&&<><p role="status">{t('conflict')}</p><button type="button" disabled={api.busy||!api.online} onClick={async()=>{if(await validate(true)){setDirty(true);api.reset();}}}>{t('review')}</button></>}
-  {lastSale&&<div className="rst-pos-success" role="status"><strong>{pc.paid}</strong><span>{displayMoney(lastSale.amount,locale)} {lastSale.currency} · {lastSale.method} · {ux.change} {displayMoney(lastSale.change,locale)} {lastSale.currency}</span><button type="button" disabled={paymentBusy||!!order} onClick={()=>{setOrder(lastSale.order);setMoneyGroupRef(lastSale.order.bill_group_ref??null);setShowPayment(true);}}>{ux.receipt}</button></div>}
-  {order&&moneyGroupRef&&<RestaurantPosDialog open={showPayment} title={ux.payment} back={pc.back} busy={paymentBusy} onClose={()=>{setShowPayment(false);if(lastSale?.order.order_ref===order.order_ref){setOrder(null);setMoneyGroupRef(null);}}}><details><summary>{ux.orders} · {order.order_ref}</summary><ReceiptCard order={order} locale={locale}/></details><RestaurantMoney counter key={path+':'+moneyGroupRef} path={path} groupRef={moneyGroupRef} binding={binding} locale={locale} onBusyChange={setPaymentBusy} onPaid={lastSale?.order.order_ref===order.order_ref?undefined:value=>{setLastSale({order,...value});setShowPayment(false);setBasket(null);setLines([]);setPlate('');setPreference('');setDirty(false);setOrder(null);setMoneyGroupRef(null);setPaymentBusy(false);setUnpaid(old=>old.filter(v=>v.order_ref!==order.order_ref));setUnpaidTotal(n=>n===null?null:Math.max(0,n-1));}}/></RestaurantPosDialog>}
+  {lastSale&&<div className="rst-pos-success" role="status"><strong>{wc.recorded}</strong><span>{displayMoney(lastSale.amount,locale)} {lastSale.currency} · {lastSale.method} · {ux.change} {displayMoney(lastSale.change,locale)} {lastSale.currency}</span><button type="button" disabled={paymentBusy||!!order} onClick={()=>{setReceiptTarget(lastSale.order);setShowPayment(true);}}>{ux.receipt}</button></div>}
+  {(receiptTarget??order)?.bill_group_ref&&<RestaurantPosDialog open={showPayment} title={paymentRecorded?wc.recorded:ux.payment} close={wc.close} back={lastSale?.order.order_ref===(receiptTarget??order)?.order_ref?undefined:pc.back} busy={paymentBusy} onClose={()=>{setShowPayment(false);setReceiptTarget(null);}}><RestaurantMoney counter key={path+':'+(receiptTarget??order)!.bill_group_ref} path={path} groupRef={(receiptTarget??order)!.bill_group_ref!} binding={binding} locale={locale} onBusyChange={setPaymentBusy} onRecordedChange={setPaymentRecorded} initialRecorded={lastSale?.order.order_ref===(receiptTarget??order)?.order_ref?lastSale??undefined:undefined} onFinish={()=>{if(!basket&&!order)void newSale();else{setShowPayment(false);setReceiptTarget(null);}}} onPaid={value=>{const target=receiptTarget??order;if(!target)return;setLastSale({order:target,...value});setReceiptTarget(target);if(order?.order_ref===target.order_ref){setBasket(null);setLines([]);setPlate('');setPreference('');setDirty(false);setOrder(null);setMoneyGroupRef(null);}if(value.settled){if(unpaid.some(o=>o.order_ref===target.order_ref))setUnpaidTotal(total=>total===null?null:Math.max(0,total-1));setUnpaid(old=>old.filter(o=>o.order_ref!==target.order_ref));}}}/><details><summary>{wc.saleDetails}</summary><ReceiptCard order={(receiptTarget??order)!} locale={locale}/></details></RestaurantPosDialog>}
   {order&&!moneyGroupRef&&<p role="alert">{ux.noMethods}</p>}
   {order&&!basket&&!showPayment&&<div className="rst-actions"><button type="button" onClick={()=>setShowPayment(true)}>{ux.payment}</button><button type="button" onClick={()=>void newSale()}>{ux.newSale}</button></div>}
   <div className="rst-selling-layout">

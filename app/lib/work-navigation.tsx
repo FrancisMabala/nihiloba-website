@@ -9,17 +9,18 @@ const copy={
  ln:{title:'Kobima na formulaire oyo?',action:'Bima na formulaire',stay:'Tikala awa',help:'Mbongwana oyo ebombami te ekoki kobunga. Kobima elongolaka te demande oyo etindami. Tala mbano na yango liboso ya kotinda lisusu.'},
  sw:{title:'Ondoka kwenye fomu hii?',action:'Ondoka kwenye fomu',stay:'Baki hapa',help:'Mabadiliko ambayo hujahifadhi yanaweza kupotea. Kuondoka hakughairi ombi lililotumwa. Kagua matokeo yake kabla ya kulirudia.'}
 };
-const drafts=new Map<symbol,{message:string;locale:ConfirmationLocale}>();
+const drafts=new Map<symbol,{message:string;locale:ConfirmationLocale;scope?:string}>();
 let cancelActive:(()=>void)|null=null;
-export function useWorkDraft(dirty:boolean,message:string,locale:ConfirmationLocale){
+export function useWorkDraft(dirty:boolean,message:string,locale:ConfirmationLocale,scope?:string){
  const id=useRef(Symbol('work-draft'));
- useEffect(()=>{if(!dirty)return;const key=id.current;drafts.set(key,{message,locale});const unload=(event:BeforeUnloadEvent)=>event.preventDefault();window.addEventListener('beforeunload',unload);return()=>{drafts.delete(key);cancelActive?.();window.removeEventListener('beforeunload',unload);};},[dirty,message,locale]);
+ useEffect(()=>{if(!dirty)return;const key=id.current;drafts.set(key,{message,locale,scope});const unload=(event:BeforeUnloadEvent)=>event.preventDefault();window.addEventListener('beforeunload',unload);return()=>{drafts.delete(key);cancelActive?.();window.removeEventListener('beforeunload',unload);};},[dirty,message,locale,scope]);
 }
 /** A second navigation is rejected while the first decision is open. No saved data is removed. */
-export function leaveWork():Promise<boolean>{
+export function leaveWork(preservedScope?:string):Promise<boolean>{
  if(cancelActive)return Promise.resolve(false);
- if(!drafts.size)return Promise.resolve(true);
- const entries=[...drafts.values()],locale=entries[entries.length-1].locale,c=copy[locale];
+ const entries=[...drafts.values()].filter(entry=>!preservedScope||entry.scope!==preservedScope);
+ if(!entries.length)return Promise.resolve(true);
+ const locale=entries[entries.length-1].locale,c=copy[locale];
  return new Promise(resolve=>{
   const host=document.createElement('div');document.body.appendChild(host);const root=createRoot(host);let settled=false;
   const finish=(value:boolean)=>{if(settled)return;settled=true;cancelActive=null;resolve(value);queueMicrotask(()=>{root.unmount();host.remove();});};
