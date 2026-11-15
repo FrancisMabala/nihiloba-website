@@ -2,6 +2,7 @@ const root='RST_[A-Za-z0-9_-]+/service/';
 const day='[0-9]{4}-[0-9]{2}-[0-9]{2}';
 const currency='(?:CDF|USD)';
 export const dailyRoutes:[RegExp,readonly string[]][]=[
+ [new RegExp('^'+root+'financial/(?:invoices|activity)$'),['GET']],
  [new RegExp('^'+root+'daily/summary$'),['GET']],
  [new RegExp('^'+root+'financial/entries$'),['GET','POST']],
  [new RegExp('^'+root+'financial/recover$'),['POST']],
@@ -22,6 +23,11 @@ const amount=(value:unknown,zero=false)=>typeof value==='string'&&/^\d{1,15}(?:\
 const text=(value:unknown,max:number)=>typeof value==='string'&&value.trim().length>0&&value.length<=max&&!/[\r\n]/.test(value);
 export function validDailyQuery(path:string,method:string,query:URLSearchParams):boolean{
  if(method!=='GET')return query.size===0;
+ if(/financial\/(invoices|activity)$/.test(path)){
+  const invoice=path.endsWith('/invoices'),allowed=invoice?['status','currency','search','before','limit']:['local_date','currency','before','limit'];
+  for(const [name,value] of query){if(!allowed.includes(name)||query.getAll(name).length!==1)return false;if(name==='status'&&!['due','paid','refund','all'].includes(value))return false;if(name==='currency'&&!['CDF','USD'].includes(value))return false;if(name==='local_date'&&!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;if(['search','before'].includes(name)&&value.length>(invoice?64:110))return false;if(name==='limit'&&(!/^\d+$/.test(value)||Number(value)<1||Number(value)>(invoice?20:50)))return false;}return true;
+ }
+
  const allowed=path.endsWith('/financial/entries')?['after_revision','limit']:path.endsWith('/daily/reports')?['before','limit']:path.endsWith('/adjustments')?['after','limit']:[];
  for(const [name,value] of query){if(!allowed.includes(name)||query.getAll(name).length!==1)return false;
   if(name==='before'){if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;}

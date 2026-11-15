@@ -6,6 +6,14 @@ const root='RST_exact/service/';
 const allowed=(path:string,method:string)=>dailyRoutes.some(([pattern,methods])=>pattern.test(path)&&methods.includes(method));
 const base={operation_key:'original-key',expected_revision:0,kind:'expense',amount:'4.00',currency:'CDF',method_ref:'RPM_cash',category:'Supplies'};
 describe('exact owner daily contract',()=>{
+ it('bounds invoice and activity queries without allowing writes',()=>{
+  expect(allowed(root+'financial/invoices','GET')).toBe(true);
+  expect(allowed(root+'financial/activity','POST')).toBe(false);
+  expect(validDailyQuery(root+'financial/invoices','GET',new URLSearchParams('status=refund&currency=USD&limit=20'))).toBe(true);
+  expect(validDailyQuery(root+'financial/invoices','GET',new URLSearchParams('limit=21'))).toBe(false);
+  expect(validDailyQuery(root+'financial/invoices','GET',new URLSearchParams('status=paid&status=due'))).toBe(false);
+  expect(validDailyQuery(root+'financial/activity','GET',new URLSearchParams('local_date=2026-11-14&currency=CDF&limit=5'))).toBe(true);
+ });
  it('limits journal and closing to exact owner Service routes',()=>{
   expect(allowed(root+'financial/entries','POST')).toBe(true);
   expect(allowed(root+'daily/days/2026-10-09/close','POST')).toBe(true);

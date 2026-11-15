@@ -37,7 +37,9 @@ import { RestaurantReservationCalendarSeller } from './restaurant-reservation-ca
 import { RestaurantSellerReviews } from './restaurant-seller-reviews';
 import { restaurantReviewCopy } from '@/app/lib/restaurant-review-copy';
 import {RestaurantService} from './restaurant-service';
-import {RestaurantMoneyRecovery,RestaurantPaymentMethods} from './restaurant-money';
+import {RestaurantPaymentMethods} from './restaurant-money';
+import {RestaurantInvoices} from './restaurant-invoices';
+import {financeText} from '../../lib/restaurant-finance-design-copy';
 import {RestaurantDaily} from './restaurant-daily';
 import { RestaurantCounter } from './restaurant-counter';
 import { RestaurantInventory } from './restaurant-inventory';
@@ -315,7 +317,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     {label:management.work,entries:[["today",management.work],["orders",wt("orders")]]},
     {label:management.selling,entries:[[posAvailable ? "pos" : "counter",management.selling]]},
     {label:management.stock,entries:capabilities.includes('restaurant.inventory') ? [["inventory",management.stock]] : []},
-    {label:workflowText(locale,'finances'),entries:[...(posAvailable ? [["daily",workflowText(locale,'finances')] as [string,string]] : []),["recovery",workflowText(locale,'recovery')]]},
+    {label:workflowText(locale,'finances'),entries:[...(posAvailable ? [["daily",workflowText(locale,'finances')] as [string,string]] : []),["recovery",financeText(locale,'invoices')]]},
     {label:insightsCopy[locale].title,entries:[["activity",insightsCopy[locale].title]]},
     {label:management.reservations,entries:[["reservations",management.reservations]]},
     {label:management.menu,entries:selected?.actions.includes('menu') ? [["items",design.menu],["offerings",design.daily]] : []},
@@ -368,7 +370,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
         {tab === 'reservations' && <RestaurantReservationCalendarSeller key={`${path}:${binding}`} path={path} binding={binding} locale={locale} seated={selected.profile.service_modes?.split(',').some(mode=>mode.trim().toLowerCase()==='eat_there')??false} capable={capabilities.includes('restaurant.reservations')} onSettings={()=>void run(()=>loadTab('settings'))} onHours={()=>void run(()=>loadTab('hours'))}/>}
         {tab === 'reviews' && <RestaurantSellerReviews key={path} path={path} binding={binding} locale={locale}/>}
         {tab === 'service' && posAvailable && <RestaurantService key={path+binding} path={path} binding={binding} locale={locale}/>}
-        {tab === 'recovery' && <RestaurantMoneyRecovery key={path+binding} path={path} binding={binding} locale={locale}/>}
+        {tab === 'recovery' && <RestaurantInvoices key={path+binding} path={path} binding={binding} locale={locale} currency="CDF" zone={selected.profile.timezone_name}/>}
         {tab === 'paymentMethods' && <RestaurantPaymentMethods key={path+binding} path={path} binding={binding} locale={locale}/>}
         {tab === 'daily' && posAvailable && <RestaurantDaily key={path+binding} path={path} binding={binding} locale={locale} profileZone={selected.profile.timezone_name} onOpenBill={()=>void run(()=>loadTab('recovery'))} onOpenMethods={()=>void run(()=>loadTab('paymentMethods'))}/>}
         {tab === 'pos' && <RestaurantCounter key={`${path}/pos`} path={path} binding={binding} locale={locale} onFailure={workFailure} pos onFreeCounter={()=>{setPosAvailable(false);setTab('counter');}}/>}
