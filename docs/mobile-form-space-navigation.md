@@ -6,6 +6,8 @@ The product wizard inherited `.wp-step-actions { position: sticky; bottom: 74px 
 
 The desktop My Space sidebar was `display:none` below 700px without an alternative. The same entries and selected-state function now render the existing desktop sidebar and a mobile details selector under Mon espace. Escape closes and restores focus; leaving the selector closes it. Existing URLs, leave checks and browser history remain in use.
 
+Safari follow-up: null focus loss must not close the selector before a tapped link receives its click. Actual outside pointer presses and keyboard focus leaving to a known control dismiss it. The fix and destination-content regression checks are documented in `space-selector-safari-20261116.md`.
+
 The global Manage tab previously opened `view=management`, which is the personal Mes activités page. It now opens the dedicated `view=manage` selector. Mes activités stays in My Space, with its shortcuts and creation flow unchanged. Signed-in accounts can open the empty management state too.
 
 ## Desktop/mobile section mapping
