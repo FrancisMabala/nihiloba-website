@@ -13,6 +13,8 @@ import {JobOverview} from './job-search-overview';
 import './candidate-profile-space.css';
 import './job-search-overview.css';
 import './job-search-records.css';
+import './personal-space-mobile.css';
+import {personalSpaceMobileCopy} from '../../lib/personal-space-mobile-copy';
 import {FollowedEmployers,followListCopy} from './followed-employers';
 import {SavedOffers,savedCopy} from './saved-offers';
 
@@ -66,8 +68,8 @@ function JobSearchContents({locale,binding,initialSection='overview',onUnauthori
  const loading=['saved','following'].includes(section)?!list:section==='applications'?!applications:false;
  return <section className="candidate-workspace job-search-workspace" aria-busy={busy}>
   {confirmation}
-  <div className="search-intro"><p>{candidateWorkspaceCopy[locale].intro}</p><a className="space-primary-action" href={`${prefix}/shida/emplois`}>{t.browse} →</a></div>
-  <nav ref={tabs} className="search-tabs" aria-label={t.title}>{jobSearchSections.map(key=><a key={key} href={jobSearchPath(locale,key)} aria-current={section===key?'page':undefined} onClick={async e=>{e.preventDefault();const href=e.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{t[key]}</a>)}</nav>
+  <div className={section==='overview'?'search-intro':'search-intro search-intro-compact'}>{section==='overview'&&<p>{candidateWorkspaceCopy[locale].intro}</p>}<a className={section==='overview'?'space-primary-action':undefined} href={`${prefix}/shida/emplois`}>{t.browse} →</a></div>
+  <nav ref={tabs} className="search-tabs" aria-label={t.title}>{jobSearchSections.map(key=><a key={key} href={jobSearchPath(locale,key)} aria-label={t[key]} aria-current={section===key?'page':undefined} onClick={async e=>{e.preventDefault();const href=e.currentTarget.href;if(await leaveWork())window.location.assign(href);}}>{personalSpaceMobileCopy[locale].tabs[key]}</a>)}</nav>
   {section!=='overview'&&section!=='profiles'&&<h2 className="workspace-heading">{t[section]}{section==='applications'&&applications&&<span className="workspace-count">{applications.total}</span>}{(section==='saved'||section==='following')&&list&&<span className="workspace-count">{list.total}</span>}</h2>}
   {notice&&<p className="workspace-toast" role="status">{notice}</p>}
   {error&&<div role="alert"><p>{t.error}</p><button onClick={reload} disabled={busy}>{t.retry}</button></div>}

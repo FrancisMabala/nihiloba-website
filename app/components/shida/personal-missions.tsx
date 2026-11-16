@@ -18,6 +18,8 @@ import {QuickSell} from './quick-sell';
 import {listingCopy} from '../../lib/wenze-listings-copy';
 import './mission-management.css';
 import './personal-listings.css';
+import './personal-space-mobile.css';
+import {personalSpaceMobileCopy} from '../../lib/personal-space-mobile-copy';
 
 type Status='draft'|'closed'|'open'|'available'|'online'|'hidden'|'sold'|'pending'|'archived';
 type Kind='article'|'job'|'service';
@@ -106,11 +108,7 @@ function Manager({locale,binding,offer,kind}:Props&{offer:string;kind:string}){
 export function PersonalListings(props:Props) {
  const query = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
  const offer = query.get('offer');
- const article = query.get('tab') === 'article' && query.has('item');
  if (offer) return <Manager {...props} offer={offer} kind={query.get('kind') || 'manage'}/>;
- if (article) return <><h1>{listingCopy[props.locale].title}</h1>
-   <QuickSell locale={props.locale} embedded/>
- </>;
  const initial = query.get('tab');
  return <Catalogue {...props} initial={filters.find(key => key === initial) || 'all'}/>;
 }
@@ -132,12 +130,13 @@ function ListingThumbnail({row}:{row:Row}) {
 function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[number]}) {
  const {data,error,retry} = useMission(binding,'catalogue','');
  const [tab,choose] = useState(initial);
+ const [articleCount,setArticleCount]=useState<number|null>(null);
  const [menu,open] = useState(false);
  const strip=useRef<HTMLDivElement>(null),restored=useRef(false);
  useEffect(()=>{const sync=()=>{const value=new URLSearchParams(location.search).get('tab');choose(filters.find(k=>k===value)||'all')};window.addEventListener('popstate',sync);return()=>window.removeEventListener('popstate',sync)},[]);
  useEffect(()=>{const button=strip.current?.querySelector<HTMLButtonElement>('[aria-pressed=true]');if(button&&strip.current){const box=button.getBoundingClientRect(),parent=strip.current.getBoundingClientRect();if(box.left<parent.left)strip.current.scrollLeft-=parent.left-box.left;else if(box.right>parent.right)strip.current.scrollLeft+=box.right-parent.right;}},[tab,data]);
  useEffect(()=>{if(!data||restored.current)return;restored.current=true;const saved=history.state?.shidaListings;if(saved?.path===location.pathname+location.search)requestAnimationFrame(()=>window.scrollTo(0,Number(saved.scrollY)||0));},[data]);
- function selectTab(value:typeof filters[number]){const url=new URL(location.href);if(value==='all')url.searchParams.delete('tab');else url.searchParams.set('tab',value);history.replaceState({...history.state,shidaListings:null},'',url);choose(value);}
+ async function selectTab(value:typeof filters[number]){if(!await leaveWork())return;const url=new URL(location.href);if(value==='all')url.searchParams.delete('tab');else url.searchParams.set('tab',value);url.searchParams.delete('item');url.searchParams.delete('article_status');url.searchParams.delete('article_page');remember();window.location.assign(url.toString());}
  function remember(){history.replaceState({...history.state,shidaListings:{path:location.pathname+location.search,scrollY:window.scrollY}},'');}
 
  const t = (key:Parameters<typeof listingText>[1]) => listingText(locale,key);
@@ -178,14 +177,15 @@ function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[numb
      <div className="listing-controls"><span className="listing-status">{t(row.status)}</span><a className="button" href={manage} aria-label={`${t(manageLabels[row.type])}: ${row.title||t('untitled')}`}>{t(row.status==='draft'?'resumeDraft':'manage')} <span aria-hidden="true">›</span></a></div>
    </article>;
  }
- return <div className="my-listings" onClickCapture={event=>{if((event.target as HTMLElement).closest('a'))remember()}}><header>{title}{data.rows.length>0&&<button className="button button-primary" aria-expanded={menu} aria-controls="listing-publishing-choices" onClick={()=>open(!menu)}>+ {t('create')}</button>}</header>
-   {data.rows.length===0 ? choices : <>
+ return <div className="my-listings" onClickCapture={event=>{if((event.target as HTMLElement).closest('a'))remember()}}><header>{title}{tab!=='article'&&<button className="button button-primary" aria-expanded={menu} aria-controls="listing-publishing-choices" onClick={()=>open(!menu)}>+ {t('create')}</button>}</header>
+   {<>
      {menu&&choices}
      <div className="listing-filters" ref={strip} role="group" aria-label={t('list')}>{filters.map(key=><button className={'button'+(tab===key?' button-primary':'')} key={key} aria-pressed={key===tab} onClick={()=>selectTab(key)}>
-       {t(key)} ({key==='all'?data.rows.length:data.rows.filter(row=>row.type===key).length})
+       {personalSpaceMobileCopy[locale].listingTabs[key]} ({key==='all'?data.rows.filter(row=>row.type!=='article').length+(articleCount??data.rows.filter(row=>row.type==='article').length):key==='article'?(articleCount??data.rows.filter(row=>row.type==='article').length):data.rows.filter(row=>row.type===key).length})
      </button>)}</div>
-     {rows.map(listing)}
-     {!rows.length && tab!=='all' && <section className="listing-choices"><p>{t(tab==='job'?'nojob':tab==='service'?'noservice':'noarticle')}</p>
+     {tab==='article'?<QuickSell locale={locale} embedded onInventoryLoaded={setArticleCount}/>:rows.map(listing)}
+     {!data.rows.length&&tab==='all'&&!menu&&choices}
+     {!rows.length && tab!=='all' && tab!=='article' && <section className="listing-choices"><p>{t(tab==='job'?'nojob':tab==='service'?'noservice':'noarticle')}</p>
        <a className="button" href={forms[tab]}>{t(actionLabels[tab])}</a></section>}
    </>}
  </div>;
