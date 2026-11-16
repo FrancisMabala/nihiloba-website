@@ -4,7 +4,7 @@ import {DeliveryDetails} from './delivery-details';
 import Link from 'next/link';
 import {RestaurantMoney} from './restaurant-money';
 import {counterCopy} from '../../lib/restaurant-counter-copy';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { RestaurantLocale } from '@/app/services/shida/restaurants-client';
 import { request, DashboardApiError } from '@/app/lib/restaurant-seller-browser';
 import {soloCopy} from '../../lib/restaurant-solo-copy';
@@ -14,9 +14,11 @@ import { workText } from '@/app/lib/restaurant-work-copy';
 import { orderReasons, pickupExceptionReasons, deliveryExceptionReasons } from '@/app/lib/restaurant-orders-contract';
 import { FoodTerms } from './restaurant-receipt';
 import {RestaurantOrdersList} from './restaurant-orders-list';
-import {queueCopy,queueQuery,emptyQueueFilters,activeStates,type QueueFilters} from '../../lib/restaurant-queue-copy';
+import {queueCopy,queueQuery,queueFiltersFromSearch,queueLocation,type QueueFilters} from '../../lib/restaurant-queue-copy';
 import './restaurant-orders-redesign.css';
 import './restaurant-orders.css';
+import './restaurant-orders-mobile.css';
+const subscribeAwake=()=>()=>{};
 type PrivateDestination={fields:Record<string,string|null>;delivery_instruction?:string|null};
 type Feed={changed:Order[];removed:string[];cursor:string;as_of:string};
 type List={items:Order[];total:number;as_of:string};
@@ -24,8 +26,14 @@ export function RestaurantOrderScreen({path,binding,locale,timezone,onFailure,on
  const t=(k:string)=>k==='solo_ready'?soloCopy[locale].ready:workText(locale,k), api=useWorkRequest(binding,onFailure);
  const [preparationPending,setPreparationPending]=useState(false);
  useEffect(()=>{const dirty=(event:Event)=>setPreparationPending((event as CustomEvent<boolean>).detail);window.addEventListener('rst-work-dirty',dirty);return()=>window.removeEventListener('rst-work-dirty',dirty);},[]);
- const [filters,setFilters]=useState<QueueFilters>(()=>{const state=typeof window==='undefined'?'':new URLSearchParams(location.search).get('orderStates')??'';return {...emptyQueueFilters,state:state.split(',').every(value=>activeStates.includes(value))?state:''};}),[list,setList]=useState<List|null>(null),[detail,setDetail]=useState<Order|null>(null),[destination,setDestination]=useState<PrivateDestination|null>(null),[configuration,setConfiguration]=useState<Configuration|null>(null);
- const [status,setStatus]=useState('loading'),[checked,setChecked]=useState(''),[action,setAction]=useState(''),[reason,setReason]=useState(''),[handoffCode,setPickupCode]=useState(''),[refresh,setRefresh]=useState(0),[awake,setAwake]=useState(false),[awakeActive,setAwakeActive]=useState(false);
+ const [filters,setFilters]=useState<QueueFilters>(()=>queueFiltersFromSearch(typeof window==='undefined'?'':location.search)),[list,setList]=useState<List|null>(null),[detail,setDetail]=useState<Order|null>(null),[destination,setDestination]=useState<PrivateDestination|null>(null),[configuration,setConfiguration]=useState<Configuration|null>(null);
+ const [status,setStatus]=useState('loading'),[checked,setChecked]=useState(''),[action,setAction]=useState(''),[reason,setReason]=useState(''),[handoffCode,setPickupCode]=useState(''),[awake,setAwake]=useState(false),[awakeActive,setAwakeActive]=useState(false);
+ const awakeSupported=useSyncExternalStore(subscribeAwake,()=>!!navigator.wakeLock,()=>false);
+ const options=useRef<HTMLDetailsElement>(null);
+ const navigationBlocked=useRef(false);
+ useEffect(()=>{navigationBlocked.current=api.busy||!!api.pending||preparationPending;},[api.busy,api.pending,preparationPending]);
+ const currentLocation=useRef('');
+ const [paymentGroup,setPaymentGroup]=useState<string|null>(null);
  const detailRef=detail?.order_ref;
  const listPosition=useRef(0),opener=useRef<HTMLElement|null>(null);
  useEffect(()=>{if(detailRef){const panel=document.querySelector<HTMLElement>('.rst-order-detail');panel?.focus({preventScroll:true});if(matchMedia('(max-width: 1100px)').matches)panel?.scrollIntoView({block:'start'});}},[detailRef]);
@@ -68,22 +76,36 @@ export function RestaurantOrderScreen({path,binding,locale,timezone,onFailure,on
   const resume=()=>{setDestination(null);setStatus(navigator.onLine?'stale':'offline');if(!document.hidden && navigator.onLine)void tick(true);else clearTimeout(timer);};
   refreshNow.current=()=>void tick(true);void tick(true);document.addEventListener('visibilitychange',resume);window.addEventListener('online',resume);window.addEventListener('offline',resume);
   return()=>{alive=false;controller.abort();clearTimeout(timer);document.removeEventListener('visibilitychange',resume);window.removeEventListener('online',resume);window.removeEventListener('offline',resume);};
- },[path,binding,filters,refresh]);
- async function open(order:Order){listPosition.current=window.scrollY;opener.current=document.activeElement as HTMLElement;setPaymentGroup(null);const ticket=++selection.current;setDestination(null);setAction('');const value=await api.run<Order>(`${path}/orders/${order.order_ref}`);if(value && ticket===selection.current){setDetail(value);}}
- useEffect(()=>{const ref=new URLSearchParams(location.search).get('order');if(!ref||!/^ROD_[A-Za-z0-9_-]{1,64}$/.test(ref))return;const controller=new AbortController();void request(`${path}/orders/${ref}`,{signal:controller.signal},binding).then(value=>{if(!controller.signal.aborted)setDetail(value as Order);}).catch(error=>{if(!controller.signal.aborted)failure.current(error);});return()=>controller.abort();},[path,binding]);
- function closeDetail(){selection.current++;setDetail(null);setAction('');setDestination(null);setPaymentGroup(null);requestAnimationFrame(()=>{window.scrollTo({top:listPosition.current,behavior:'instant'});opener.current?.focus({preventScroll:true});});}
+ },[path,binding,filters]);
+ async function open(order:Order){listPosition.current=window.scrollY;opener.current=document.activeElement as HTMLElement;setPaymentGroup(null);const ticket=++selection.current;setDestination(null);setAction('');const value=await api.run<Order>(`${path}/orders/${order.order_ref}`);if(value && ticket===selection.current){const url=queueLocation(location.search,filters,value.order_ref);window.history.pushState({...window.history.state,rstOrderEntry:true},'',url);currentLocation.current=location.href;setDetail(value);}}
+ function restoreList(){selection.current++;setDetail(null);setAction('');setDestination(null);setPaymentGroup(null);requestAnimationFrame(()=>{window.scrollTo({top:listPosition.current,behavior:'instant'});opener.current?.focus({preventScroll:true});});}
+ useEffect(()=>{
+  let controller:AbortController|undefined;
+  currentLocation.current=location.href;
+  const readLocation=()=>{
+   if(navigationBlocked.current){window.history.pushState(window.history.state,'',currentLocation.current);return;}
+   currentLocation.current=location.href;controller?.abort();const ticket=++selection.current;
+   const next=queueFiltersFromSearch(location.search);setFilters(previous=>JSON.stringify(previous)===JSON.stringify(next)?previous:next);
+   const ref=new URLSearchParams(location.search).get('order');
+   if(!ref||!/^ROD_[A-Za-z0-9_-]{1,64}$/.test(ref)){restoreList();return;}
+   setDestination(null);setAction('');controller=new AbortController();const signal=controller.signal;
+   void request(`${path}/orders/${ref}`,{signal},binding).then(value=>{if(!signal.aborted&&ticket===selection.current)setDetail(value as Order);}).catch(error=>{if(!signal.aborted)failure.current(error);});
+  };
+  readLocation();window.addEventListener('popstate',readLocation);
+  return()=>{controller?.abort();window.removeEventListener('popstate',readLocation);};
+ },[path,binding]);
+ function closeDetail(){if(window.history.state?.rstOrderEntry){window.history.back();return;}window.history.replaceState(window.history.state,'',queueLocation(location.search,filters));currentLocation.current=location.href;restoreList();}
+ function changeFilters(next:QueueFilters){window.history.replaceState(window.history.state,'',queueLocation(location.search,next,detail?.order_ref));currentLocation.current=location.href;setFilters(next);setStatus('loading');}
  async function commit(){if(!detail || status || !action)return;const value=await api.run<{current_order:Order}>(`${path}/orders/${detail.order_ref}/actions/${action}`,'POST',{operation_key:crypto.randomUUID(),expected_revision:detail.revision,...(reason?{reason}:{}),...(['delivery_exception','assisted_handover','table_handover','solo_ready'].includes(action)?{confirm:true}:{}),...(action==='verify_pickup'?{pickup_code:handoffCode}:action==='verify_delivery'?{delivery_code:handoffCode}:{})});if(value){setPickupCode('');setDetail(value.current_order);setDestination(null);setAction('');refreshNow.current();}}
- const [paymentGroup,setPaymentGroup]=useState<string|null>(null);
  const blocked=!!status || api.busy || !api.online || preparationPending;
  const receiptPath=detail ? `${locale==='en'?'':`/${locale}`}/shida/seller/restaurants/${path.split('/').at(-1)}/receipts/${detail.order_ref}` : '';
  const q=queueCopy[locale];
  return <div className={'rst-work rst-orders-screen rst-orders-redesign'+(detail?' has-detail':'')}>
- <header className="rst-orders-heading"><div><h2>{q.title}</h2><p>{q.intro}</p></div><button type="button" disabled={api.busy||!!api.pending} onClick={()=>{setStatus('stale');setRefresh(n=>n+1);}}>{t('refresh')}</button></header>
- <div className="rst-orders-tools"><label><input type="checkbox" checked={awake} onChange={e=>{setAwakeActive(false);setAwake(e.target.checked);}}/>{t('awake')}</label>{checked&&<span>{t('updated')}: {dateText(checked,locale,timezone)}</span>}</div>
- {awake&&<p role="status">{t(awakeActive?'awakeOn':'awakeOff')} {!awakeActive&&t('awakeHelp')}</p>}
+ <header className="rst-orders-heading"><h2>{q.title}</h2><div className="rst-orders-heading-actions"><button type="button" className="rst-orders-refresh" aria-label={q.refresh} aria-busy={status==='loading'} disabled={status==='loading'||api.busy||!!api.pending} onClick={()=>refreshNow.current()}><svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 7a9 9 0 1 0 1 7M20 2v6h-6"/></svg></button><details ref={options} className="rst-orders-options" onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))event.currentTarget.open=false;}} onKeyDown={event=>{if(event.key==='Escape'){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus();}}}><summary aria-label={q.options}>⋮</summary><div><label><input type="checkbox" checked={awake} disabled={!awakeSupported} onChange={e=>{setAwakeActive(false);setAwake(e.target.checked);}}/>{t('awake')}</label>{!awakeSupported&&<p>{q.awakeUnsupported}</p>}{awake&&<p role="status">{t(awakeActive?'awakeOn':'awakeOff')} {!awakeActive&&t('awakeHelp')}</p>}</div></details></div></header>
+ <div className="rst-orders-tools" role="status">{checked&&<span>{q.updatedAt.replace('{time}',new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{hour:'2-digit',minute:'2-digit',timeZone:timezone||'UTC'}).format(new Date(checked)))}</span>}{status&&<span>{t(status)} {list&&status!=='loading'&&t('stale')}</span>}{status&&status!=='loading'&&<button type="button" disabled={api.busy||!!api.pending} onClick={()=>refreshNow.current()}>{q.retry}</button>}</div>
  {configuration&&!configuration.intake_released&&<p>{operationsCopy[locale].closed} {onIntake&&<button onClick={onIntake}>{t('intake')}</button>}</p>}
- {status&&<p role="status">{t(status)} {list&&t('stale')}</p>}
- <div className="rst-orders-split"><RestaurantOrdersList locale={locale} timezone={timezone} list={list} filters={filters} onFilters={value=>{setFilters(value);setStatus('loading');}} selected={detail?.order_ref} blocked={api.busy||!!api.pending||preparationPending} loading={!!status} onOpen={order=>void open(order)}/>
+ {detail&&status&&<p role="status">{t(status)} {list&&t('stale')}</p>}
+ <div className="rst-orders-split"><RestaurantOrdersList locale={locale} timezone={timezone} list={list} filters={filters} onFilters={changeFilters} selected={detail?.order_ref} blocked={api.busy||!!api.pending||preparationPending} loading={!!status} orderHref={order=>queueLocation(typeof location==='undefined'?'':location.search,filters,order.order_ref)} onOpen={order=>void open(order)}/>
  {detail && <article className="rst-card rst-order-detail" tabIndex={-1} aria-label={q.view}><div className="rst-order-detail-heading"><h2>{detail.order_ref.replace(/^ROD_/, '')}</h2><button type="button" disabled={!!api.pending} onClick={closeDetail}>{q.close}</button></div><p>{t('current')}: {t(detail.state)} · {t(detail.fulfillment_method)}</p>{detail.response_deadline && <p>{t(detail.state==='pending'?'deadline':'savedDeadline')}: {dateText(detail.response_deadline,locale,timezone)}</p>}{detail.cancellation_pending && <p>{t('cancellation')}</p>}{detail.receipt_terms && <FoodTerms terms={detail.receipt_terms} locale={locale}/>}{detail.pickup_verification && (detail.pickup_verification.required || ['verified','exceptional'].includes(detail.pickup_verification.method)) && <p>{t(detail.pickup_verification.method==='verified'?'pickupVerified':detail.pickup_verification.method==='exceptional'?'pickupExceptional':detail.pickup_verification.legacy?'pickupLegacy':'pickupRequired')}</p>}{detail.delivery_verification && (detail.delivery_verification.required || ['verified','exceptional'].includes(detail.delivery_verification.method)) && <p>{t(detail.delivery_verification.method==='verified'?'deliveryVerified':detail.delivery_verification.method==='exceptional'?'deliveryExceptional':detail.delivery_verification.legacy?'deliveryLegacy':'deliveryRequired')}</p>}<Link prefetch={false} href={receiptPath}>{t('receipt')}</Link>{['accepted','preparing','ready','completed'].includes(detail.state)&&<button type="button" disabled={blocked||!!api.pending} onClick={async()=>{const result=await api.run<{bill_group_ref:string}>(`${path}/orders/${detail.order_ref}/payment-bill`,'POST',{operation_key:crypto.randomUUID(),expected_revision:detail.revision});if(result)setPaymentGroup(result.bill_group_ref);}}>{counterCopy(locale).payment}</button>}{paymentGroup&&<RestaurantMoney counter path={path} groupRef={paymentGroup} binding={binding} locale={locale} onFinish={()=>setPaymentGroup(null)}/>}
  {!terminal(detail) && detail.fulfillment_method==='delivery' && <><button type="button" disabled={blocked} onClick={async()=>{const ticket=selection.current;const result=await api.run<{destination:PrivateDestination|null}>(`${path}/orders/${detail.order_ref}/destination`);if(result && ticket===selection.current && selected.current?.revision===detail.revision && !terminal(selected.current))setDestination(result.destination ?? null);}}>{t('destination')}</button>{destination && !status && <div><DeliveryDetails locale={locale} fields={destination.fields}/>{destination.delivery_instruction && <p><strong>{t('deliveryInstruction')}:</strong> {destination.delivery_instruction}</p>}</div>}</>}
  <p role="status">{api.message && t(api.message)}</p>

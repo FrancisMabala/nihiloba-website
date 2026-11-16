@@ -1,0 +1,52 @@
+/* Order queue only: keep shared management and detail layouts unchanged. */
+.rst-orders-redesign .rst-orders-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px}
+.rst-orders-redesign .rst-orders-heading h2{margin:0;min-width:0}
+.rst-orders-heading-actions{display:flex;align-items:center;gap:8px;flex:none}
+.rst-orders-redesign .rst-orders-refresh{display:grid;place-items:center;width:44px;min-width:44px;height:44px;padding:0}
+.rst-orders-refresh[aria-busy=true] svg{animation:rst-orders-spin 1s linear infinite}
+@keyframes rst-orders-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.rst-orders-refresh[aria-busy=true] svg{animation:none}}
+.rst-orders-options{position:relative}
+.rst-orders-options summary{display:grid;place-items:center;list-style:none;width:44px;min-height:44px;border:1px solid #d4d3c9;border-radius:8px;cursor:pointer}
+.rst-orders-options summary::-webkit-details-marker{display:none}
+.rst-orders-options>div{position:absolute;z-index:20;right:0;top:calc(100% + 4px);width:min(290px,calc(100vw - 40px));padding:12px;border:1px solid #d4d3c9;border-radius:8px;background:#fffefa;box-shadow:0 4px 12px #173e3218}
+.rst-orders-options label{display:flex;align-items:center;gap:10px;min-height:44px;white-space:normal}
+.rst-orders-options input{flex:none;width:20px;height:20px;accent-color:#173e32}
+.rst-orders-options p{font-size:.875rem;margin:8px 0 0}
+.rst-orders-redesign .rst-orders-tools{display:flex;gap:8px;margin:0 0 10px;font-size:.8125rem;min-height:0}
+.rst-orders-tools:empty{display:none}
+.rst-orders-redesign .rst-orders-row{color:inherit;text-decoration:none}
+.rst-orders-row:focus-visible,.rst-orders-options summary:focus-visible{outline:3px solid #b58a31;outline-offset:2px}
+.rst-orders-row[aria-disabled=true]{cursor:wait}
+.rst-orders-redesign .rst-orders-reference strong{overflow-wrap:anywhere}
+.rst-orders-redesign .rst-orders-amount{white-space:normal;word-break:normal;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.rst-orders-redesign .rst-orders-chevron{display:block;text-align:right;color:#476155;font-size:1.5rem}
+.rst-orders-source span{display:block}
+@media(max-width:700px){
+ .rst-orders-redesign .rst-orders-heading{flex-wrap:wrap}
+ .seller-design .rst-management-content.seller-content .rst-orders-heading h2{font-size:1.75rem;line-height:1.2;flex:1 1 auto;max-width:100%}
+ .rst-orders-redesign .rst-orders-tabs{margin:0 0 10px}
+ .rst-orders-redesign .rst-orders-filterbar{margin:0 0 12px;gap:8px}
+ .rst-orders-redesign .rst-orders-filterbar form{flex:1 1 0;min-width:0}
+ .seller-design .rst-management-content .rst-orders-redesign .rst-orders-filterbar input{font-size:16px}
+ .rst-orders-redesign .rst-orders-filterbar form:focus-within button{position:absolute;width:1px!important;height:1px!important;min-height:0!important;clip-path:inset(50%);padding:0!important}
+ .rst-orders-redesign .rst-orders-filterbar form button:focus-visible{position:static;width:auto!important;height:auto!important;min-height:44px!important;clip-path:none;padding:4px!important}
+ .rst-orders-redesign .rst-orders-row{grid-template-columns:minmax(0,1fr) minmax(0,auto);align-items:start;gap:8px 12px;padding:12px;margin:0 0 10px}
+ .rst-orders-redesign .rst-orders-reference{display:contents}
+ .rst-orders-reference strong{grid-column:1;grid-row:1;align-self:center}
+ .rst-orders-redesign .rst-orders-reference small{grid-column:1;grid-row:3;margin:0;align-self:center}
+ .rst-orders-redesign .rst-orders-row>.rst-orders-state{grid-column:2;grid-row:1;max-width:150px;text-align:right}
+ .rst-orders-redesign .rst-orders-source{grid-column:1;grid-row:2;align-self:center;font-size:.875rem}
+ .rst-orders-source span{display:inline}
+ .rst-orders-redesign .rst-orders-row>.rst-orders-amount{grid-column:2;grid-row:2;align-self:center;font-size:.875rem}
+ .rst-orders-redesign .rst-orders-chevron{grid-column:2;grid-row:3;line-height:1}
+ .rst-orders-redesign .rst-orders-empty{padding:16px}
+ .rst-orders-redesign .rst-orders-empty p{margin:0 0 8px}
+ .rst-management:has(.rst-orders-screen){padding-inline:16px!important}
+ .rst-seller.seller-design .rst-management:has(.rst-orders-screen) .seller-content{padding:8px 0 calc(var(--management-nav-space,84px) + 24px)}
+ .rst-management:has(.rst-orders-screen) .management-restaurant-context{margin-bottom:8px}
+ .rst-management:has(.rst-orders-screen) .management-restaurant-context .rst-focus-toolbar summary{width:44px;padding-inline:0;box-sizing:border-box}
+ .rst-management:has(.rst-orders-screen) .management-restaurant-identity .rst-restaurant-identity{padding:6px 8px;gap:8px}
+ .rst-management:has(.rst-orders-screen) .management-restaurant-identity .rst-identity-photo{width:32px;height:32px;flex:none}
+}
+@media(max-width:1100px){.rst-orders-redesign.has-detail .rst-orders-heading,.rst-orders-redesign.has-detail .rst-orders-tools{display:none}}
