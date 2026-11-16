@@ -101,13 +101,13 @@ export async function JobEmployerPage({locale,slug}:{locale:Locale;slug:string})
     {directory && <EmployerPageView key={employer.public_ref} reference={employer.public_ref}/>}
     <Link className="employer-back" href={jobsPath}>← {c.back}</Link>
     <header>
-      <div className="employer-title-row"><div className="employer-avatar"><MarketplaceImage src={safePublicImageUrl(employer.profile_image?.url)} alt="" fallback={Array.from(employer.name.trim())[0]?.toLocaleUpperCase(locale)||"•"} sizes="80px"/></div>
-        <h1>{employer.name}</h1>
+      <div className="employer-title-row"><div className="employer-heading"><div className="employer-avatar"><MarketplaceImage src={safePublicImageUrl(employer.profile_image?.url)} alt="" fallback={Array.from(employer.name.trim())[0]?.toLocaleUpperCase(locale)||"•"} sizes="80px"/></div>
+        <h1>{employer.name}</h1></div>
         {employer.identity_type!=="individual"&&<JobRelationshipActions locale={locale} employerReference={employer.public_ref} canFollow canSave={false}/>}
       </div>
-      {(directory||managed)&&<p>{managed?`${c.managed} ${employer.name}`:c.created}</p>}
-      {directory&&!managed&&<p>{c.intro}</p>}
-      {employer.description&&<p>{employer.description}</p>}{location&&<p>{location}</p>}
+      {(invitation||managed)&&<p className="employer-provenance">{managed?c.managedProfile:c.created}</p>}
+      {directory&&!managed&&<p className="employer-intro">{c.intro}</p>}
+      {employer.description&&<p className="employer-description">{employer.description}</p>}{location&&<p>{location}</p>}
     </header>
     <section id="vacancies" className="employer-vacancies"><h2>{employer.open_job_count?`${employer.open_job_count} ${employer.open_job_count===1?t.result:t.results}`:c.empty}</h2>
       {employer.jobs.length?<div className="job-result-list">{employer.jobs.map(item=><JobCard key={item.public_ref} item={item} locale={locale} forEmployer/>)}</div>:<Link href={jobsPath}>{c.back} →</Link>}

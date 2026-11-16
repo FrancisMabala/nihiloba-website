@@ -78,7 +78,9 @@ function employerPath(locale:Locale,item:PublicJobEmployerSummary){const key=pub
 export function employerLocation(item:PublicJobEmployerSummary){return publicLocation(item.area,item.city);}
 function initials(name:string){return name.split(/\s+/).filter(Boolean).slice(0,2).map((part)=>part[0]?.toUpperCase()).join("")||"SH";}
 function displayDate(value:string|null,locale:Locale){if(!value)return null;const date=new Date(value);return Number.isNaN(date.getTime())?null:new Intl.DateTimeFormat(locale,{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(date);}
-function originLabel(item:PublicJobSummary,locale:Locale){if(item.origin!=="external")return ({en:"Published on SHIDA",fr:"Publié sur SHIDA",ln:"Epesami na SHIDA",sw:"Imechapishwa kwenye SHIDA"})[locale];if(!item.external_verified)return ({fr:"Offre externe",en:"External offer",ln:"Mosala ya libándá",sw:"Nafasi kutoka nje"})[locale];return item.external_verified_label||(({fr:"Offre externe vérifiée",en:"Verified external offer",ln:"Mosala ya libándá oyo endimami",sw:"Nafasi ya nje iliyothibitishwa"})[locale]);}
+// The public API's external_verified flag reflects metadata presence, not an
+// independent verification of the employer or vacancy.
+function originLabel(item:PublicJobSummary,locale:Locale){return item.origin==="external"?({fr:"Offre externe",en:"External offer",ln:"Mosala ya libándá",sw:"Nafasi kutoka nje"})[locale]:({en:"Published on SHIDA",fr:"Publié sur SHIDA",ln:"Epesami na SHIDA",sw:"Imechapishwa kwenye SHIDA"})[locale];}
 function organizationLabel(item:PublicJobSummary,locale:Locale){if(item.origin!=="direct"||!item.organization_verified)return null;return item.organization_verified_label||(({fr:"Organisation vérifiée",en:"Verified organization",ln:"Ebongiseli oyo endimami",sw:"Shirika lililothibitishwa"})[locale]);}
 export function contractLabel(value: string | null, locale: Locale) {
   const key = value?.trim().toLowerCase();
@@ -118,6 +120,7 @@ function JobFacts({item,locale}:{item:PublicJobSummary;locale:Locale}){const t=c
 
 export function JobCard({item,locale,forEmployer=false}:{item:PublicJobSummary;locale:Locale;forEmployer?:boolean}) {
  const u=jobDiscoveryCopy[locale],href=jobPath(locale,item),location=jobLocation(item),salary=cardCompensation(item,locale),summary=plainOfferText(item.summary_preview||item.description_preview||""),category=item.professional_category||item.category,organization=organizationLabel(item,locale);
+ if(forEmployer)return <article className="job-result employer-job-card"><JobAccessLink href={href} className="employer-job-link"><div>{item.origin==="external"&&<span className="job-origin-label job-origin-external">{originLabel(item,locale)}</span>}<h3>{item.title}</h3>{location&&<p className="job-result-location">{location}</p>}</div><span className="employer-job-arrow" aria-hidden="true">→</span></JobAccessLink></article>;
  return <article className={`job-result job-result-${item.offer_type}${forEmployer?" employer-job-card":""}`}>
   <div className="job-card-identity"><JobCategoryIcon category={category} individual={item.offer_type==="individual"}/><div>{!forEmployer&&<span className={`job-type-label job-type-${item.offer_type}`}>{item.offer_type==="individual"?compactMarketplaceCopy[locale].individualOffer:compactMarketplaceCopy[locale].professionalOffer}</span>}<h3><JobAccessLink href={href}>{item.title}</JobAccessLink></h3>{location&&<p className="job-result-location">{location}</p>}</div></div>
   {!forEmployer&&item.relationship_capabilities.can_save&&<JobAccessLink href={`${href}?job-action=save`} className="job-card-save" label={`${jobSearchCopy[locale].save}: ${item.title}`}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg></JobAccessLink>}
@@ -180,7 +183,7 @@ export function JobDetailContent({locale,item,similar}:{locale:Locale;item:Publi
         <DetailItem label={t.mode} value={jobFactText(item.work_mode || item.work_mode_raw || '', locale) || missing}/>
         <DetailItem label={factsCopy[locale].deadline} value={deadline || (locale === 'fr' ? 'Non précisée' : missing)}/>
       </dl>
-      <div className="job-detail-primary-actions"><JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin={item.origin} canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save} canFollow={item.relationship_capabilities.can_follow_employer}/>{published && <span>{t.published} {published}</span>}</div>
+      <div className="job-detail-primary-actions"><JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin={item.origin} canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save} canFollow={item.relationship_capabilities.can_follow_employer} showFollow={!employerOffers}/>{published && <span>{t.published} {published}</span>}</div>
     </div></section>
     <section className="section"><div className="container job-detail-layout">
       <main className="job-detail-content">

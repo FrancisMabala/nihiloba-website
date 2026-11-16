@@ -323,7 +323,7 @@ for(const width of [390,1440])test('followed organizations stay in SHIDA and syn
  const url=overview.replace('section=overview','section=following'),job='/fr/shida/emplois/JOB_fixture';
  await page.goto(job);await page.getByRole('button',{name:jobSearchCopy.fr.follow,exact:true}).click();
  await expect(page).toHaveURL(/section=following$/);
- await expect(page.locator('.workspace-count')).toHaveText('1');await expect(page.getByText('Fiche créée par SHIDA')).toBeVisible();
+ await expect(page.locator('.workspace-count')).toHaveText('1');await expect(page.getByText('Profil créé par SHIDA')).toBeVisible();
  expect(await page.locator('.search-tabs [aria-current]').evaluate(a=>a.getBoundingClientRect().right<=a.parentElement!.getBoundingClientRect().right+1)).toBe(true);
  const profile='/fr/shida/emplois/employeurs/DIR_fixture';
  await expect(page.getByRole('link',{name:'1 offre ouverte →'})).toHaveAttribute('href',profile+'#vacancies');

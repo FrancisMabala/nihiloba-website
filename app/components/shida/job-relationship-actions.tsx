@@ -11,7 +11,7 @@ import {useConfirmation} from './confirmation-dialog';
 // The detail header and its portal target mount together and keep the same DOM identity.
 const subscribeToHeader = () => () => {};
 type Action='save'|'follow'|'unsave'|'unfollow';
-export function JobRelationshipActions({locale,jobReference,canSave,canFollow,detail=false,employerReference}:{locale:keyof typeof jobSearchCopy;jobReference?:string;employerReference?:string;canSave:boolean;canFollow:boolean;detail?:boolean}){
+export function JobRelationshipActions({locale,jobReference,canSave,canFollow,detail=false,employerReference,showFollow=true}:{locale:keyof typeof jobSearchCopy;jobReference?:string;employerReference?:string;canSave:boolean;canFollow:boolean;detail?:boolean;showFollow?:boolean}){
  const t=jobSearchCopy[locale];
  const path=employerReference ? `employers/${encodeURIComponent(employerReference)}` : `jobs/${encodeURIComponent(jobReference ?? "")}`;
  const [session,setSession]=useState<PersonalSession|null>(null),[state,setState]=useState<JobRelationshipState|null>(null),[phase,setPhase]=useState<'loading'|'guest'|'ready'|'error'>('loading');
@@ -48,7 +48,7 @@ export function JobRelationshipActions({locale,jobReference,canSave,canFollow,de
  const mount = useSyncExternalStore(subscribeToHeader, () => detail ? document.getElementById('detail-follow-control') : null, () => null);
  useEffect(()=>{if(!notice||hover||focus)return;const timer=setTimeout(()=>setNotice(null),8000);return()=>clearTimeout(timer);},[notice,hover,focus]);
  const labels={fr:{saved:'Enregistrée',followed:'Suivi',close:'Fermer'},en:{saved:'Saved',followed:'Following',close:'Close'},ln:{saved:'Ebombami',followed:'Olandi',close:'Kanga'},sw:{saved:'Imehifadhiwa',followed:'Unafuata',close:'Funga'}}[locale];
- const followButton=(canFollow||state?.employer)&&<button type="button" className="job-action-button" disabled={busy||phase==='loading'||phase==='error'||phase==='ready'&&!state?.employer} aria-label={state?.employer?.following?t.unfollow:t.follow} aria-pressed={!!state?.employer?.following} onClick={()=>click('follow')}>{state?.employer?.following?labels.followed+" ✓":t.follow}</button>;
+ const followButton=showFollow&&(canFollow||state?.employer)&&<button type="button" className="job-action-button" disabled={busy||phase==='loading'||phase==='error'||phase==='ready'&&!state?.employer} aria-label={state?.employer?.following?t.unfollow:t.follow} aria-pressed={!!state?.employer?.following} onClick={()=>click('follow')}>{state?.employer?.following?labels.followed+" ✓":t.follow}</button>;
  return <div className="job-relationship-actions" aria-busy={busy||phase==='loading'}>
   {confirmation}
   {(canSave||state?.saved)&&<button type="button" className="job-action-button" disabled={busy||phase==='loading'||phase==='error'||phase==='ready'&&!state?.saved&&!state?.can_save} aria-label={state?.saved?t.unsave:t.save} aria-pressed={!!state?.saved} onClick={()=>click('save')}><span aria-hidden="true">⚑ </span>{state?.saved?labels.saved+" ✓":t.save}</button>}

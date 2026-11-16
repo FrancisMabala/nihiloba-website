@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { JobCard, JobCollectionPage, jobMetadata } from "../app/components/shida/jobs";
+import { JobCard, JobCollectionPage, JobEmployerPage, jobMetadata } from "../app/components/shida/jobs";
 import { JobPromotionLabel } from "../app/components/shida/job-promotion-label";
 import { ExternalJobAction } from "../app/components/shida/job-public-actions";
 import type { PublicJob, PublicJobSummary } from "../app/types/shida-public";
@@ -70,11 +70,11 @@ describe("Employment Batch 5B structured public frontend",()=>{
 
   it("renders the historical description fallback only when structured sections are absent",async()=>{const legacy={...detail,short_summary:null,responsibilities:null,qualifications:null,experience:{text:null,minimum_years:null,requirement_kind:"unspecified"},education:null,skills:null,personal_qualities:null,languages:null,benefits:null,employment_conditions:null,description:"Legacy description",description_fallback:"Readable historical vacancy details."};vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify(legacy))));const html=renderToStaticMarkup(await authenticatedDetail({locale:"en",slug:"legacy"}));expect(html).toContain("Readable historical vacancy details.");expect(html).not.toContain("Legacy description");expect(html).not.toContain("Responsibilities</h2>");expect(html).not.toContain("Skills</h2>");});
 
-  it("renders authenticated Save and Follow controls without fetching WhatsApp continuations",async()=>{
+  it("keeps saving on the offer and directs following to its organization without WhatsApp continuations",async()=>{
     const fetchMock=vi.fn().mockImplementation(()=>Promise.resolve(Response.json(external)));
     vi.stubGlobal("fetch",fetchMock);
     const html=renderToStaticMarkup(await authenticatedDetail({locale:"en",slug:"actions"}));
-    expect(html).toContain("Save in SHIDA");expect(html).toContain("Follow the organisation");
+    expect(html).toContain("Save in SHIDA");expect(html).toContain("View organisation offers");expect(html).not.toContain("Follow the organisation");
     expect(html).toContain('class="job-relationship-actions"');
     expect(fetchMock.mock.calls.every(([url])=>!String(url).includes("entity-actions"))).toBe(true);
     expect(html).not.toContain("save_job_opaque");expect(html).not.toContain("follow_org_opaque");
@@ -94,7 +94,7 @@ describe("Employment Batch 5B structured public frontend",()=>{
     expect(html).not.toContain("wa.me");
   });
 
-  it("keeps external and organization verification claims independent",()=>{const verified=renderToStaticMarkup(<JobCard item={external} locale="en"/>),neutral=renderToStaticMarkup(<JobCard item={{...external,external_verified:false}} locale="en"/>),missing=renderToStaticMarkup(<JobCard item={{...external,external_verified:undefined} as unknown as PublicJobSummary} locale="en"/>),unlabelled=renderToStaticMarkup(<JobCard item={{...external,external_verified_label:null}} locale="en"/>),direct=renderToStaticMarkup(<JobCard item={{...professional,organization_verified:true,organization_verified_label:"Backend verified organization"}} locale="en"/>);expect(verified).toContain("Verified external offer");expect(neutral).toContain("External offer");expect(neutral).not.toContain("Verified external offer");expect(missing).toContain("External offer");expect(missing).not.toContain("Verified external offer");expect(unlabelled).toContain("Verified external offer");expect(direct).toContain("Backend verified organization");expect(direct).not.toContain("external");});
+  it("keeps external and organization verification claims independent",()=>{const verified=renderToStaticMarkup(<JobCard item={external} locale="en"/>),neutral=renderToStaticMarkup(<JobCard item={{...external,external_verified:false}} locale="en"/>),missing=renderToStaticMarkup(<JobCard item={{...external,external_verified:undefined} as unknown as PublicJobSummary} locale="en"/>),unlabelled=renderToStaticMarkup(<JobCard item={{...external,external_verified_label:null}} locale="en"/>),direct=renderToStaticMarkup(<JobCard item={{...professional,organization_verified:true,organization_verified_label:"Backend verified organization"}} locale="en"/>);expect(verified).toContain("External offer");expect(verified).not.toContain("Verified external offer");expect(neutral).toContain("External offer");expect(neutral).not.toContain("Verified external offer");expect(missing).toContain("External offer");expect(missing).not.toContain("Verified external offer");expect(unlabelled).toContain("External offer");expect(unlabelled).not.toContain("Verified external offer");expect(direct).toContain("Backend verified organization");expect(direct).not.toContain("external");});
 
   it("hides legacy and structured compensation whenever salary visibility is hidden",()=>{const privateIndividual=renderToStaticMarkup(<JobCard item={{...individual,salary:null,salary_visibility:"hidden",compensation:"1,250 USD"}} locale="en"/>),privateProfessional=renderToStaticMarkup(<JobCard item={{...professional,salary_visibility:"hidden"}} locale="en"/>),visibleIndividual=renderToStaticMarkup(<JobCard item={{...individual,salary:{minimum:"1250",maximum:null,currency:"USD",period:"month"},salary_visibility:"visible"}} locale="en"/>);expect(privateIndividual).not.toContain("1,250 USD");expect(privateProfessional).not.toContain("500");expect(visibleIndividual).toContain("1,250 USD / month");});
 
@@ -118,11 +118,38 @@ describe("Employment Batch 5B structured public frontend",()=>{
 
   it("keeps apply tokens out of SEO metadata and canonicalizes the existing route",async()=>{vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify(detail))));const metadata=await jobMetadata("en","metadata"),serialized=JSON.stringify(metadata);expect(metadata.alternates?.canonical).toBe("/shida/emplois/it-support-rawbank");expect(serialized).not.toContain("opaque-token");expect(serialized).not.toContain("apply_url");});
 
-  it("renders active external jobs with controlled application, source and authenticated web actions",async()=>{const fetchMock=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(external))).mockResolvedValueOnce(new Response(JSON.stringify({target_type:"job",public_ref:"JOB_airtel",can_save_in_shida:true,can_follow_in_shida:false,save_url:"https://api.nihiloba.com/go/save_job_opaque",follow_url:null}))).mockResolvedValueOnce(new Response(JSON.stringify({target_type:"organization_directory",public_ref:"ORG_airtel",can_save_in_shida:false,can_follow_in_shida:true,save_url:null,follow_url:"https://api.nihiloba.com/go/follow_org_opaque"})));vi.stubGlobal("fetch",fetchMock);const html=renderToStaticMarkup(await authenticatedDetail({locale:"en",slug:"network-engineer"}));for(const value of ["External offer","Apply on the official website","Originally published by the employer","View official source","Save in SHIDA","Follow the organisation"]){expect(html).toContain(value);}expect(html).not.toContain("Apply on SHIDA");expect(html).not.toContain("recruiter");expect(html).not.toContain("application status");});
+  it("renders active external jobs with controlled application, source and authenticated web actions",async()=>{const fetchMock=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(external))).mockResolvedValueOnce(new Response(JSON.stringify({target_type:"job",public_ref:"JOB_airtel",can_save_in_shida:true,can_follow_in_shida:false,save_url:"https://api.nihiloba.com/go/save_job_opaque",follow_url:null}))).mockResolvedValueOnce(new Response(JSON.stringify({target_type:"organization_directory",public_ref:"ORG_airtel",can_save_in_shida:false,can_follow_in_shida:true,save_url:null,follow_url:"https://api.nihiloba.com/go/follow_org_opaque"})));vi.stubGlobal("fetch",fetchMock);const html=renderToStaticMarkup(await authenticatedDetail({locale:"en",slug:"network-engineer"}));for(const value of ["External offer","Apply on the official website","Originally published by the employer","View official source","Save in SHIDA","View organisation offers"]){expect(html).toContain(value);}expect(html).not.toContain("Apply on SHIDA");expect(html).not.toContain("recruiter");expect(html).not.toContain("application status");});
 
   it("renders backend expired and archived projections without an application CTA",async()=>{for(const status of ["expired","archived","source_invalid"] as const){const historical={...external,status,lifecycle_state:status,application:{...external.application,available:false,capability:"none",external_action:null},application_available:false,external_application_action:null,application_deadline:status==="expired"?"2026-08-31":null,deadline_label:status==="expired"?"Applications closed":"Deadline not provided",relationship_capabilities:{...external.relationship_capabilities,can_save:false,can_follow_employer:false,follow_target_type:null,follow_target_ref:null}};vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify(historical))));const html=renderToStaticMarkup(await authenticatedDetail({locale:"en",slug:status}));expect(html).toContain(status==="expired"?"Expired offer":"No longer available");expect(html).not.toContain("Apply on employer website");expect(html).not.toContain("Invalid Date");expect(html).toContain("View similar jobs");}});
 
   it("uses the backend label for external instructions and keeps unavailable applications off cards",()=>{const instructions=renderToStaticMarkup(<ExternalJobAction locale="en" jobReference="JOB_airtel" action={{mode:"instructions",action:"instructions",endpoint:"/api/public/shida/jobs/JOB_airtel/external-action"}} label="Backend application label"/>),disabled=renderToStaticMarkup(<JobCard item={{...external,application:{...external.application,available:false,capability:"none",external_action:null},application_available:false,external_application_action:null}} locale="en"/>);expect(instructions).toContain("Backend application label");expect(disabled).not.toContain("Apply on employer website");});
 
   it("provides EN/FR collection, detail and accessible loading routes",()=>{for(const path of ["app/(default)/shida/emplois/page.tsx","app/(default)/shida/emplois/[job]/page.tsx","app/(default)/shida/emplois/loading.tsx","app/(localized)/[lang]/shida/emplois/page.tsx","app/(localized)/[lang]/shida/emplois/[job]/page.tsx","app/(localized)/[lang]/shida/emplois/loading.tsx"])expect(existsSync(resolve(path)),path).toBe(true);});
+});
+
+
+describe('Compact employer profile',()=>{
+ it('uses a single accessible card link with full title and no redundant employer or decorative icon',()=>{
+  const title='Responsable de la coordination des systèmes informatiques et des opérations régionales';
+  const html=renderToStaticMarkup(<JobCard item={{...external,title}} locale="fr" forEmployer/>);
+  expect(html).toContain(title);expect(html.match(/<a /g)).toHaveLength(1);
+  expect(html).toContain('href="/fr/shida/emplois/network-engineer-airtel"');
+  expect(html).toContain('Gombe, Kinshasa');expect(html).toContain('Offre externe');
+  for(const text of ['job-category-icon','button-primary','Airtel RDC','vérifiée'])expect(html).not.toContain(text);
+ });
+ it('localizes neutral external labels without trusting a metadata-presence flag',()=>{
+  for(const [locale,label] of [['fr','Offre externe'],['en','External offer'],['ln','Mosala ya libándá'],['sw','Nafasi kutoka nje']] as const){
+   const html=renderToStaticMarkup(<JobCard item={{...external,external_verified_label:'UNSUPPORTED VERIFICATION CLAIM'}} locale={locale} forEmployer/>);
+   expect(html).toContain(label);expect(html).not.toContain('UNSUPPORTED');
+  }
+ });
+ it('distinguishes created, managed and unknown provenance while preserving attribution and open counts',async()=>{
+  for(const status of ['shida_created','managed',undefined]){
+   vi.stubGlobal('fetch',vi.fn().mockImplementation(()=>Promise.resolve(Response.json({...external.employer,name:'ITM SARL — client non communiqué',management_status:status,open_job_count:1,jobs:[external]}))));
+   const html=renderToStaticMarkup(await JobEmployerPage({locale:'fr',slug:'ORG_test'}));
+   expect(html).toContain('ITM SARL — client non communiqué');expect(html).toContain('1 offre ouverte');expect(html).toContain('Suivre');
+   expect(html.includes('Profil créé par SHIDA')).toBe(status==='shida_created');
+   expect(html.includes('Page gérée par l’organisation')).toBe(status==='managed');
+  }
+ });
 });

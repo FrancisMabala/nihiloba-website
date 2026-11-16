@@ -92,12 +92,12 @@ export function ExternalJobAction({ locale, jobReference, action, label }: { loc
   </div>;
 }
 
-export function JobPublicActions({ locale, jobReference, title, path, origin, canShare=true, canSave=false, canFollow=false, compact=false }: { locale:Locale; jobReference:string; title:string; path:string; origin:"direct"|"external"; canShare?:boolean; canSave?:boolean; canFollow?:boolean; compact?:boolean }) {
+export function JobPublicActions({ locale, jobReference, title, path, origin, canShare=true, canSave=false, canFollow=false, compact=false, showFollow=true }: { locale:Locale; jobReference:string; title:string; path:string; origin:"direct"|"external"; canShare?:boolean; canSave?:boolean; canFollow?:boolean; compact?:boolean; showFollow?:boolean }) {
   const t=copy[locale], [shared,setShared]=useState(false);
   async function share(){const url=new URL(path,window.location.origin).toString();try{if(navigator.share)await navigator.share({title,url});else await navigator.clipboard.writeText(url);if(origin==="external")void recordEvent(jobReference,"share");setShared(true);}catch{/* Cancellation leaves the page unchanged. */}}
   // Report links live alongside the applicant safety information.
   return <div className={compact?"job-public-actions job-public-actions-compact":"job-public-actions"}>
-    <JobRelationshipActions key={`${locale}:${jobReference}`} locale={locale} jobReference={jobReference} canSave={canSave} canFollow={canFollow} detail={!compact}/>
+    <JobRelationshipActions key={`${locale}:${jobReference}`} locale={locale} jobReference={jobReference} canSave={canSave} canFollow={canFollow} detail={!compact} showFollow={showFollow}/>
     {canShare&&<button type="button" className="job-action-button" onClick={()=>void share()}>{shared?t.shared:t.share}</button>}
 
     <span className="sr-only" role="status" aria-live="polite">{shared?t.shared:""}</span>
