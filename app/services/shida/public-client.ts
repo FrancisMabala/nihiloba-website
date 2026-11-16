@@ -1,5 +1,8 @@
 import { hotelSearchQuery, type HotelSearch } from "../../lib/hotel-search";
 import { cache } from "react";
+import {testMarketplaceRequest} from "./test-marketplace-server";
+import {jobSearchQuery} from "../../lib/marketplace-query";
+export {jobSearchQuery} from "../../lib/marketplace-query";
 import { wenzeDiscoveryQuery, type WenzeDiscoverySearch } from "../../lib/wenze-discovery";
 import type {
   ApartmentCollection,
@@ -222,14 +225,16 @@ function wenzeStoreType(value:unknown):WenzeStoreType|null { if(value==null)retu
 function wenzeStore(value:unknown, detail=false):WenzeStore { const item=record(value); const products=item.products??[]; if(!Array.isArray(products)) throw new ShidaApiError("malformed"); const base:WenzeStoreSummary={business_contact_url:text(item.business_contact_url),profile_image:optionalImage(item.profile_image),selling_mode:item.selling_mode==="individual"?"individual":"shop",public_ref:text(item.public_ref,true)!,slug:text(item.slug),name:text(item.name,true)!,description:text(item.description),category:text(item.category),store_type:wenzeStoreType(item.store_type),country_code:text(item.country_code),city:text(item.city),area:text(item.area),commune:text(item.commune),quartier:text(item.quartier),address:text(item.address),landmark:text(item.landmark),public_detail_url:text(item.public_detail_url,true)!,whatsapp_url:text(item.whatsapp_url),order_url:text(item.order_url),fulfillment:wenzeFulfillment(item.fulfillment)}; return {...base,products:detail?products.map((p)=>wenzeProduct(p)):[]}; }
 function wenzeProduct(value:unknown):WenzeProduct { const item=record(value),variants=item.variants??[]; if(!Array.isArray(item.images)||!Array.isArray(variants)) throw new ShidaApiError("malformed"); return {business_contact_url:text(item.business_contact_url),condition:typeof item.condition==="string"&&["new","like_new","used","other"].includes(item.condition)?item.condition:null,public_ref:text(item.public_ref,true)!,slug:text(item.slug),name:text(item.name,true)!,description:text(item.description),category:text(item.category),price:text(item.price),currency:text(item.currency),price_negotiable:flag(item.price_negotiable),available_stock:integer(item.available_stock),has_variants:item.has_variants===undefined?variants.length>0:flag(item.has_variants),variant_type:text(item.variant_type),variants:variants.map(wenzeVariant),images:item.images.map(wenzeImage).sort((a,b)=>a.display_order-b.display_order),public_detail_url:text(item.public_detail_url,true)!,buy_url:text(item.buy_url),store:item.store==null?null:wenzeStore(item.store),fulfillment:wenzeFulfillment(item.fulfillment)}; }
 
-export async function request(path: string, revalidate: number | false, sessionToken?: string): Promise<unknown> {
+export async function request(path: string, revalidate: number | false, sessionToken?: string, audience: "current" | "public" = "current"): Promise<unknown> {
   let response: Response;
   // Public account content must disappear on the next read after deactivation,
   // including when confirmation originated in another browser or channel.
   // Only identity-free catalog metadata can use time-based response caching.
   const cacheable=/^\/api\/public\/shida\/jobs\/catalogs(?:\?|$)/.test(path);
   try {
-    response = await fetch(`${apiBaseUrl()}${path}`, {
+    const target = audience === "public" ? {path, headers:{}} : await testMarketplaceRequest(path);
+    response = await fetch(`${apiBaseUrl()}${target.path}`, {
+      headers: target.headers, redirect: "error",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       ...(sessionToken ? {headers:{Cookie:`shida_dashboard_session=${sessionToken}`},redirect:"error" as const} : {}),
       ...(revalidate === false || !cacheable ? { cache: "no-store" as const } : { next: { revalidate } }),
@@ -330,8 +335,8 @@ export async function getApartments(search: ApartmentSearch = {}): Promise<Apart
   return apartmentCollection(await request(`/api/public/shida/apartments${apartmentSearchQuery(search)}`, 60));
 }
 
-export async function getHotels(search:HotelSearch={}): Promise<PublicCollection<HotelListing>> {
-  return collection(await request(`/api/public/shida/hotels${hotelSearchQuery(search)?`?${hotelSearchQuery(search)}`:""}`, 60), hotel);
+export async function getHotels(search:HotelSearch={}, audience: "current" | "public" = "current"): Promise<PublicCollection<HotelListing>> {
+  return collection(await request(`/api/public/shida/hotels${hotelSearchQuery(search)?`?${hotelSearchQuery(search)}`:""}`, 60, undefined, audience), hotel);
 }
 
 export const getApartment = cache(async (slug: string): Promise<ApartmentListing> =>
@@ -346,12 +351,12 @@ export const getHotel = cache(async (slug: string): Promise<HotelListing> =>
   hotel(await request(`/api/public/shida/hotels/${encodeURIComponent(slug)}`, false)),
 );
 
-export async function getWenzeStores(search:WenzeSearch={}):Promise<PublicCollection<WenzeStore>&{next_cursor:string|null}> {
+export async function getWenzeStores(search:WenzeSearch={}, audience: "current" | "public" = "current"):Promise<PublicCollection<WenzeStore>&{next_cursor:string|null}> {
  const params=new URLSearchParams();
  for(const key of ["query","city","area","category"] as const){const value=search[key]?.trim();if(value)params.set(key,value.slice(0,120));}
  if(search.limit&&Number.isInteger(search.limit)&&search.limit>0&&search.limit<=50)params.set("limit",String(search.limit));
  if(search.cursor)params.set("cursor",search.cursor.slice(0,512));
- const data=record(await request(`/api/public/shida/wenze/stores${params.size?`?${params}`:""}`,60));
+ const data=record(await request(`/api/public/shida/wenze/stores${params.size?`?${params}`:""}`,60,undefined,audience));
  return {...collection(data,v=>wenzeStore(v)),next_cursor:text(data.next_cursor)};
 }
 
@@ -369,7 +374,7 @@ const serviceSearchKeys = ["mode", "query", "city", "area", "commune", "category
 export function parseServiceSearchParams(value:ApartmentRawSearchParams):ServiceSearch { const result:ServiceSearch={}; for(const key of serviceSearchKeys){const parsed=firstQueryValue(value[key]);if(parsed)result[key]=parsed;} const rating=numericQuery(value.min_rating,{min:0,max:5}),page=numericQuery(value.page,{integer:true,min:1,max:100_000}),size=numericQuery(value.page_size,{integer:true,min:1,max:50}); if(rating!=null)result.min_rating=rating;if(page!=null)result.page=page;if(size!=null)result.page_size=size;return result; }
 export function serviceSearchQuery(search:ServiceSearch):string { const params=new URLSearchParams();for(const key of serviceSearchKeys){const value=search[key]?.trim();if(value)params.set(key,value.slice(0,120));} if(search.min_rating!=null&&search.min_rating>=0&&search.min_rating<=5)params.set("min_rating",String(search.min_rating));if(search.page&&Number.isInteger(search.page)&&search.page>0)params.set("page",String(search.page));if(search.page_size&&Number.isInteger(search.page_size)&&search.page_size>0&&search.page_size<=50)params.set("page_size",String(search.page_size));return params.size?`?${params}`:""; }
 function serviceCollection(value:unknown):ServiceCollection { const data=record(value),base=collection(value,serviceSummary),page=integer(data.page,true)!,size=integer(data.page_size,true)!;if(page<1||size<1||size>50)throw new ShidaApiError("malformed");return {...base,total:integer(data.total,true)!,page,page_size:size}; }
-export async function getServices(search:ServiceSearch={}):Promise<ServiceCollection> { return serviceCollection(await request(`/api/public/shida/services${serviceSearchQuery(search)}`,60)); }
+export async function getServices(search:ServiceSearch={}, audience: "current" | "public" = "current"):Promise<ServiceCollection> { return serviceCollection(await request(`/api/public/shida/services${serviceSearchQuery(search)}`,60,undefined,audience)); }
 export const getService=cache(async(key:string):Promise<PublicService>=>service(await request(`/api/public/shida/services/${encodeURIComponent(key)}`,false)));
 export const getServiceProvider=cache(async(key:string):Promise<PublicServiceProvider>=>serviceProvider(await request(`/api/public/shida/services/providers/${encodeURIComponent(key)}`,false)));
 export async function getServiceAvailability(key:string,from:string,to:string,offeringRef?:string):Promise<ServiceAvailability> { const params=new URLSearchParams({from,to});if(offeringRef)params.set("offering",offeringRef);return serviceAvailability(await request(`/api/public/shida/services/${encodeURIComponent(key)}/availability?${params}`,false)); }
@@ -377,7 +382,7 @@ export async function getServiceReviews(key:string,page=1,pageSize=10):Promise<S
 
 const jobSearchKeys=["query","city","area","commune","category","contract"] as const;
 export function parseJobSearchParams(value:ApartmentRawSearchParams):JobSearch { const result:JobSearch={};for(const key of jobSearchKeys){const parsed=firstQueryValue(value[key]);if(parsed)result[key]=parsed;}const view=firstQueryValue(value.view);if(view==="professional"||view==="individual")result.view=view;const page=numericQuery(value.page,{integer:true,min:1,max:100_000}),size=numericQuery(value.page_size,{integer:true,min:1,max:50});if(page!=null)result.page=page;if(size!=null)result.page_size=size;return result; }
-export function jobSearchQuery(search:JobSearch):string { const params=new URLSearchParams();for(const key of jobSearchKeys){const value=search[key]?.trim();if(value)params.set(key,value.slice(0,120));}if(search.view==="professional"||search.view==="individual")params.set("view",search.view);if(search.page&&Number.isInteger(search.page)&&search.page>0)params.set("page",String(search.page));if(search.page_size&&Number.isInteger(search.page_size)&&search.page_size>0&&search.page_size<=50)params.set("page_size",String(search.page_size));return params.size?`?${params}`:""; }
+
 function jobCollection(value:unknown):JobCollection { const item=record(value),pagination=record(item.pagination);if(!Array.isArray(item.items))throw new ShidaApiError("malformed");const page=integer(pagination.page,true)!,pageSize=integer(pagination.page_size,true)!,totalItems=integer(pagination.total_items,true)!,totalPages=integer(pagination.total_pages,true)!;if(page<1||pageSize<1||pageSize>50)throw new ShidaApiError("malformed");return {items:item.items.map(jobSummary),pagination:{page,page_size:pageSize,total_items:totalItems,total_pages:totalPages}}; }
 export async function getRegistrationCatalogs() {
   const data = record(await request('/api/public/shida/jobs/catalogs', 60));

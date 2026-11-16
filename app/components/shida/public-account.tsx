@@ -16,6 +16,7 @@ import {refinementCopy} from "../../lib/registration/refinement-copy";
 import './public-account.css';
 import NotificationCenter from './notification-center';
 import {testDataCopy} from '../../lib/test-data-copy';
+import {TestMarketplaceControl} from './test-marketplace-control';
 
 
 export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCopy}) {
@@ -113,6 +114,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
 
   return <div className="shida-public-account" lang={locale}>
     {session?.user.test_data && <span className="shida-test-account-label">{testDataCopy[locale]}</span>}
+    <TestMarketplaceControl locale={locale} eligible={session?.user.test_data===true} binding={session?.binding} checked={!checking&&!failed}/>
     {session&&<NotificationCenter key={'bell:'+session.binding} binding={session.binding} apiBase="/api/shida/personal/notifications" locale={locale} destination={`${spaceHref}?view=messages`}/>}
     <MarketplaceControls key={session?.binding||"guest"} locale={locale} name={session?.user.display_name} spaceHref={spaceHref} guestLabel={t.signIn}
       registrationLink={!checking&&!session&&process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED==="true"?{label:r.create,href:`${prefix}/shida/register/?returnTo=${encodeURIComponent(pathname)}`}:undefined}

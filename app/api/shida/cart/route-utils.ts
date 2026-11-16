@@ -1,17 +1,19 @@
 import { cookies } from "next/headers";
 import { CommerceApiError } from "../../../services/shida/commerce-client";
+import {TEST_MARKETPLACE_COOKIE} from "../../../lib/test-marketplace";
 
 const CART_COOKIE = "nihiloba_shida_cart";
+async function cartCookie() { return (await cookies()).get(TEST_MARKETPLACE_COOKIE)?.value ? "nihiloba_shida_test_cart" : CART_COOKIE; }
 const REFERENCE = /^[A-Za-z0-9_-]{4,80}$/;
 const PRODUCTION_WEBSITE_ORIGIN = "https://nihiloba.com";
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store, max-age=0", Pragma: "no-cache" };
 
 export async function cartToken(): Promise<string | null> {
-  return (await cookies()).get(CART_COOKIE)?.value ?? null;
+  return (await cookies()).get(await cartCookie())?.value ?? null;
 }
 
 export async function setCartToken(token: string): Promise<void> {
-  (await cookies()).set(CART_COOKIE, token, {
+  (await cookies()).set(await cartCookie(), token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -22,7 +24,7 @@ export async function setCartToken(token: string): Promise<void> {
 }
 
 export async function clearCartToken(): Promise<void> {
-  (await cookies()).set(CART_COOKIE, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/shida/cart", maxAge: 0 });
+  (await cookies()).set(await cartCookie(), "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/shida/cart", maxAge: 0 });
 }
 
 export function privateJson(value: unknown, status = 200): Response {

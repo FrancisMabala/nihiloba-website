@@ -1,3 +1,5 @@
+import {restaurantQuery} from "../../lib/marketplace-query";
+export {restaurantQuery} from "../../lib/marketplace-query";
 import { restaurantPhotoUrl } from '../../lib/restaurant-photo-public';
 import { request, ShidaApiError } from "./public-client";
 import { safePublicActionUrl, safePublicImageUrl } from "../../lib/safe-public-url";
@@ -85,17 +87,7 @@ function envelope<T>(value: unknown, parser: (value: unknown) => T) {
   if (page < 1 || page_size < 1 || page_size > 50) throw new ShidaApiError("malformed");
   return { items: array(data.items).map(parser), total: integer(data.total), page, page_size };
 }
-export function restaurantQuery(raw: RestaurantSearch): URLSearchParams {
-  const result = new URLSearchParams();
-  for (const key of ["query", "name", "city", "area", "food_type", "service_mode", "dish"]) {
-    const value = raw[key], first = Array.isArray(value) ? value[0] : value;
-    if (first?.trim()) result.set(key, first.trim().slice(0, 200));
-  }
-  if (raw.open_now === "true") result.set("open_now", "true");
-  const page = Array.isArray(raw.page) ? raw.page[0] : raw.page;
-  if (page && /^\d+$/.test(page) && Number.isSafeInteger(Number(page)) && Number(page) > 0) result.set("page", String(Number(page)));
-  return result;
-}
+
 function query(locale: RestaurantLocale, params = new URLSearchParams()) { const result = new URLSearchParams(params); result.set("language", locale); return `?${result}`; }
 export async function getRestaurants(locale: RestaurantLocale, raw: RestaurantSearch, pageSize?: number) {
   const params = restaurantQuery(raw);

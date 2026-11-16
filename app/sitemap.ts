@@ -60,7 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dynamicRoutes.add("/shida/wenze");
   dynamicRoutes.add("/fr/shida/wenze");
   try {
-    const [firstApartments, hotels, wenze, firstServices] = await Promise.all([getApartments({ page: 1, page_size: 50 }), getHotels(), getWenzeStores({ limit: 50 }), getServices({ page: 1, page_size: 50 })]);
+    const [firstApartments, hotels, wenze, firstServices] = await Promise.all([getApartments({ page: 1, page_size: 50 }), getHotels({}, "public"), getWenzeStores({ limit: 50 }, "public"), getServices({ page: 1, page_size: 50 }, "public")]);
     const apartmentPages = [firstApartments];
     const totalPages = Math.ceil(firstApartments.total / firstApartments.page_size);
     for (let page = 2; page <= totalPages; page += 1) apartmentPages.push(await getApartments({ page, page_size: 50 }));
@@ -84,7 +84,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
     const servicePages=[firstServices];
     const servicePageCount=Math.ceil(firstServices.total/firstServices.page_size);
-    for(let page=2;page<=servicePageCount;page+=1)servicePages.push(await getServices({page,page_size:50}));
+    for(let page=2;page<=servicePageCount;page+=1)servicePages.push(await getServices({page,page_size:50}, "public"));
     for(const service of servicePages.flatMap((collection)=>collection.items)){
       dynamicRoutes.add(`/shida/services/${service.slug}`);
       dynamicRoutes.add(`/fr/shida/services/${service.slug}`);

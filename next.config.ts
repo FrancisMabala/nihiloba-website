@@ -61,6 +61,11 @@ const nextConfig: NextConfig = {
       { source: "/en/shida/my-applications/:path*", headers: privatePageHeaders },
       { source: "/fr/shida/mes-candidatures/:path*", headers: privatePageHeaders },
       { source: "/:path*", headers: securityHeaders },
+      ...["/shida/:path*", "/:lang(en|fr|ln|sw)/shida/:path*", "/api/shida/:path*"].map(source => ({
+        source,
+        has: [{ type: "cookie" as const, key: "nihiloba_test_marketplace_session" }],
+        headers: [...privatePageHeaders, {key:"Vary",value:"Cookie"}, {key:"Referrer-Policy",value:"no-referrer"}],
+      })),
       ...["/shida/business-login/:path*", "/:lang(en|fr|ln|sw)/shida/business-login/:path*"].map(source=>({source,headers:[...privatePageHeaders,{key:"Referrer-Policy",value:"no-referrer"},{key:"Content-Security-Policy",value:contentSecurityPolicy.replace("form-action 'self'","form-action 'self' https://business.nihiloba.com")}]})),
       { source: "/shida/register/:path*", headers: [...privatePageHeaders, { key: "Referrer-Policy", value: "strict-origin" }, { key: "Content-Security-Policy", value: contentSecurityPolicy.replace("form-action 'self'", "form-action 'self' https://business.nihiloba.com") }] },
       { source: "/:lang(en|fr|ln|sw)/shida/register/:path*", headers: [...privatePageHeaders, { key: "Referrer-Policy", value: "strict-origin" }, { key: "Content-Security-Policy", value: contentSecurityPolicy.replace("form-action 'self'", "form-action 'self' https://business.nihiloba.com") }] },

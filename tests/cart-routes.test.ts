@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 let storedToken: string | null = null;
 const setCookie = vi.fn((name: string, value: string) => { storedToken = value || null; });
-vi.mock("next/headers", () => ({ cookies: vi.fn(async () => ({ get: () => storedToken ? { value: storedToken } : undefined, set: setCookie })) }));
+vi.mock("next/headers", () => ({ cookies: vi.fn(async () => ({ get: (key:string) => key==='nihiloba_shida_cart'&&storedToken ? { value: storedToken } : undefined, set: setCookie })) }));
 
 import { POST as addItem } from "../app/api/shida/cart/items/route";
 import { GET as restoreRoute } from "../app/api/shida/cart/route";

@@ -33,3 +33,15 @@
 
 .market-register{font-size:.82rem;color:var(--forest);text-underline-offset:4px;min-height:44px;display:flex;align-items:center;white-space:nowrap}.shida-account-actions{display:grid;grid-template-columns:1fr;gap:4px}.shida-account-actions a{display:block;padding:12px;border-bottom:1px solid var(--line)}.shida-account-dialog .candidate-login{margin-top:8px;border-top:0;padding:12px 0}.shida-account-dialog .candidate-login h2{font:500 1.75rem/1.2 Georgia,serif}.login-register{margin-top:18px}
 @media(max-width:700px){.market-register{display:none}}
+
+.shida-test-marketplace-control{position:relative;color:var(--forest);font-size:.8rem;max-width:180px}
+.shida-test-marketplace-control summary{cursor:pointer;padding:9px 12px;border:1px solid var(--forest);border-radius:8px;background:#eef3e9;font-weight:700}
+.shida-test-marketplace-panel{position:absolute;top:calc(100% + 8px);right:0;z-index:130;width:min(300px,calc(100vw - 32px));background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px;box-shadow:0 8px 24px #12362a20}
+.shida-test-marketplace-control p{font-size:.85rem;line-height:1.5;margin:10px 0}
+.shida-test-marketplace-control button{cursor:pointer;border:0;border-radius:6px;background:var(--forest);color:#fff;padding:10px;min-height:44px;width:100%;font-weight:700}
+.shida-test-marketplace-control button:disabled{opacity:.65;cursor:wait}
+.shida-test-marketplace-control :focus-visible{outline:3px solid #ab8441;outline-offset:3px}
+@media(max-width:700px){.shida-test-marketplace-control{max-width:130px;font-size:.7rem}.shida-test-marketplace-control summary{padding:7px}}
+.market-header-actions:has(.shida-test-marketplace-control){max-width:100%;min-width:0}
+.shida-public-account:has(.shida-test-marketplace-control){flex-shrink:1;min-width:0;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:700px){.shida-test-marketplace-panel{position:fixed;top:130px;right:16px}}
