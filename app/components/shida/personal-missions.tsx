@@ -9,6 +9,8 @@ import {candidateApplicationPath} from './candidate-employment';
 import {MissionPresentation} from './mission-presentation';
 import {missionText} from '../../lib/mission-copy';
 import {MissionWizard} from './mission-wizard';
+import {FinanceSheet} from './finance-sheet';
+import {useWorkDraft,WenzeLeaveDialog,leaveWork} from '../../lib/wenze-work';
 import {MissionPeople} from './mission-people';
 import {SpaceIcon} from './account-space-icon';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
@@ -76,19 +78,26 @@ export function MissionApply({locale,binding,offer}:Props&{offer:string}){
 function Manager({locale,binding,offer,kind}:Props&{offer:string;kind:string}){
  const t=(k:Parameters<typeof listingText>[1])=>listingText(locale,k),{api,data,set,error,fail,retry}=useMission(binding,'manage',offer);
  const [edit,editing]=useState(false),[form,change]=useState<MissionValues>({}),[confirm,ask]=useState<'close'|'remove'|null>(null),[busy,lock]=useState(false);
- const list=missionQuery('listings',{}),dest=(k:string)=>missionQuery('listings',{offer,kind:k});
- async function send(action:string){if(!data||busy)return;lock(true);fail('');try{const d=await api({action,confirmed:true,version:data.version,language:locale,...(action==='edit'?{values:payload(form)}:{})});if(d.removed){window.location.assign(list);return}set(d);editing(false);ask(null)}catch(e){fail((e as Error).message)}finally{lock(false)}}
+ const [actions,showActions]=useState(false),cancelAction=useRef<HTMLButtonElement>(null);
+ const listingTab=typeof window==='undefined'?'':new URLSearchParams(window.location.search).get('listing_tab')||'';
+ const returnTab=['article','job','service'].includes(listingTab)?listingTab:'';
+ const list=missionQuery('listings',returnTab?{tab:returnTab}:{}),dest=(k:string)=>missionQuery('listings',{offer,kind:k,...(returnTab?{listing_tab:returnTab}:{})});
+ useWorkDraft(edit&&JSON.stringify(form)!==JSON.stringify(data?.values),t('error'));
+ useEffect(()=>{if(confirm)cancelAction.current?.focus();},[confirm]);
+ async function send(action:string){if(!data||busy)return;lock(true);fail('');try{const d=await api({action,confirmed:true,version:data.version,language:locale,...(action==='edit'?{values:payload(form)}:{})});if(d.removed){window.location.assign(list);return}set(d);editing(false);ask(null);showActions(false)}catch(e){fail((e as Error).message)}finally{lock(false)}}
  if(!data)return <p role="status">{error?t('error'):t('loading')} {error&&<button onClick={retry}>{t('retry')}</button>}</p>;
  const mt=(k:string)=>missionText(locale,k),v=data.values,open=data.status==='open',tab=kind==='candidates'&&open?'candidates':'applications';
- const stopEdit=()=>{editing(false);fail('')};
- return <section className="mission-manager">
- {edit?<><button className="mission-link" onClick={stopEdit}>← {mt('backListing')}</button><h1>{mt('editTitle')}</h1><p>{data.title}</p></>:<><a href={list}>← {t('list')}</a><h1>{data.title}</h1></>}
+ const stopEdit=async()=>{if(await leaveWork()){editing(false);fail('')}};
+ return <section className="mission-manager"><WenzeLeaveDialog locale={locale}/>
+ {edit?<><button className="mission-link" disabled={busy} onClick={()=>void stopEdit()}>← {mt('backListing')}</button><h1>{mt('editTitle')}</h1><p>{data.title}</p></>:<><a href={list} onClick={event=>{if(document.referrer){const previous=new URL(document.referrer);if(previous.origin===location.origin&&previous.pathname===location.pathname&&previous.searchParams.get('view')==='listings'&&!previous.searchParams.has('offer')&&!previous.searchParams.has('item')){event.preventDefault();history.back();}}}}>← {t('list')}</a><h1>{data.title}</h1></>}
  {error&&<p role="alert">{t('error')}</p>}
- {edit?<MissionWizard locations={data.locations} locale={locale} values={form} change={change} busy={busy} pending={false} editLabel={t('save')} preview={v=>api({action:'preview_edit',version:data.version,language:locale,values:v})} cancel={stopEdit} publish={()=>void send('edit')}/>:<>
+ {edit?<MissionWizard locations={data.locations} locale={locale} values={form} change={change} busy={busy} pending={false} editLabel={t('save')} preview={v=>api({action:'preview_edit',version:data.version,language:locale,values:v})} cancel={()=>void stopEdit()} publish={()=>void send('edit')}/>:<>
  <div className="mission-toolbar"><div><span className="mission-status">{t(data.status)}</span> {data.location}</div><div className="mission-actions">
- {open&&<><a className="button" href={(locale==='en'?'':'/'+locale)+'/shida/emplois/'+encodeURIComponent(offer)}>{t('view')}</a><button className="button button-primary" onClick={()=>{change(data.values);editing(true);fail('')}}>{mt('editTitle')}</button></>}
- <details><summary>{mt('more')}</summary><div>{open&&<button onClick={()=>ask('close')}>{mt('closeListing')}</button>}<button onClick={()=>ask('remove')}>{t('remove')}</button></div></details></div></div>
- {confirm&&<section aria-label={t(confirm)} className="mission-confirm"><p>{t(confirm==='remove'?'removeHelp':'closeHelp')}</p><button disabled={busy} onClick={()=>ask(null)}>{t('cancel')}</button> <button disabled={busy} onClick={()=>void send(confirm)}>{confirm==='close'?mt('closeListing'):t(confirm)}</button></section>}
+ {open&&<><button className="button button-primary" onClick={()=>{change(data.values);editing(true);fail('')}}>{mt('editTitle')}</button><a className="button" href={(locale==='en'?'':'/'+locale)+'/shida/emplois/'+encodeURIComponent(offer)}>{t('view')}</a></>}
+ <button type="button" aria-haspopup="dialog" aria-expanded={actions} onClick={()=>showActions(true)}>{mt('more')}</button></div></div>
+ {actions&&<FinanceSheet title={confirm?t(confirm):mt('more')} locale={locale} onClose={()=>{if(!busy){showActions(false);ask(null)}}}><div className="listing-action-sheet">
+ {confirm?<><p>{t(confirm==='remove'?'removeHelp':'closeHelp')}</p><button ref={cancelAction} disabled={busy} onClick={()=>ask(null)}>{t('cancel')}</button><button className="listing-danger" disabled={busy} onClick={()=>void send(confirm)}>{confirm==='close'?mt('closeListing'):t(confirm)}</button>{error&&<p role="alert">{t('error')}</p>}</>:<>{open&&<button onClick={()=>ask('close')}>{mt('closeListing')}</button>}<button className="listing-danger" onClick={()=>ask('remove')}>{t('remove')}</button></>}
+ </div></FinanceSheet>}
  <section className="mission-card"><MissionPresentation locale={locale} title="" description={v.short_summary} frequency={v.duration_frequency} hours={v.work_schedule} pay={v.budget} experience={v.optional_experience}/></section>
  <section className="mission-card"><nav className="mission-tabs"><a aria-current={tab==='applications'?'page':undefined} href={dest('applications')}>{t('applications')} ({data.count})</a>{open&&<a aria-current={tab==='candidates'?'page':undefined} href={dest('candidates')}>{t('find')}</a>}</nav>
  <MissionPeople locale={locale} binding={binding} defaultKind={tab} discovery={open}/></section></>}</section>
@@ -124,6 +133,13 @@ function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[numb
  const {data,error,retry} = useMission(binding,'catalogue','');
  const [tab,choose] = useState(initial);
  const [menu,open] = useState(false);
+ const strip=useRef<HTMLDivElement>(null),restored=useRef(false);
+ useEffect(()=>{const sync=()=>{const value=new URLSearchParams(location.search).get('tab');choose(filters.find(k=>k===value)||'all')};window.addEventListener('popstate',sync);return()=>window.removeEventListener('popstate',sync)},[]);
+ useEffect(()=>{const button=strip.current?.querySelector<HTMLButtonElement>('[aria-pressed=true]');if(button&&strip.current){const box=button.getBoundingClientRect(),parent=strip.current.getBoundingClientRect();if(box.left<parent.left)strip.current.scrollLeft-=parent.left-box.left;else if(box.right>parent.right)strip.current.scrollLeft+=box.right-parent.right;}},[tab,data]);
+ useEffect(()=>{if(!data||restored.current)return;restored.current=true;const saved=history.state?.shidaListings;if(saved?.path===location.pathname+location.search)requestAnimationFrame(()=>window.scrollTo(0,Number(saved.scrollY)||0));},[data]);
+ function selectTab(value:typeof filters[number]){const url=new URL(location.href);if(value==='all')url.searchParams.delete('tab');else url.searchParams.set('tab',value);history.replaceState({...history.state,shidaListings:null},'',url);choose(value);}
+ function remember(){history.replaceState({...history.state,shidaListings:{path:location.pathname+location.search,scrollY:window.scrollY}},'');}
+
  const t = (key:Parameters<typeof listingText>[1]) => listingText(locale,key);
  const service = (locale==='en'?'':'/'+locale)+'/shida/seller/services/';
  const forms = {
@@ -146,27 +162,26 @@ function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[numb
  const rows = data.rows.filter(row=>tab==='all'||row.type===tab);
  function listing(row:Row) {
    const ref = encodeURIComponent(row.reference);
-   const manage = row.type==='job' ? row.status==='draft' ? missionQuery('job-offer',{intent:'mission',draft:row.reference}) : missionQuery('listings',{kind:'manage',offer:row.reference})
+   const manage = row.type==='job' ? row.status==='draft' ? missionQuery('job-offer',{intent:'mission',draft:row.reference}) : missionQuery('listings',{kind:'manage',offer:row.reference,...(tab!=='all'?{listing_tab:tab}:{})})
      : row.type==='article' ? missionQuery('listings',{tab:'article',item:row.reference})
      : row.status==='draft' ? forms.service : service+'?offering='+ref;
    const job = row.type==='job';
    const count = row.count;
-   const responses = count===undefined ? null : count===0 ? t(job?'noApplications':'noRequests')
-     : <a href={job?missionQuery('listings',{kind:'applications',offer:row.reference}):service+'?view=work&offering='+ref}>
+   const responses = row.type==='article'||typeof count!=='number' ? null : count===0 ? t(job?'noApplications':'noRequests')
+     : <a href={job?missionQuery('listings',{kind:'applications',offer:row.reference,...(tab!=='all'?{listing_tab:tab}:{})}):service+'?view=work&offering='+ref}>
        {t(job?(count===1?'viewApplication':'viewApplications'):(count===1?'viewRequest':'viewRequests')).replace('{n}',String(count))}
      </a>;
    return <article className="personal-listing" key={row.type+row.reference}>
      <ListingThumbnail key={row.photo} row={row}/>
-     <div className="listing-identity"><small>{t(typeLabels[row.type])}</small><h2>{row.title||t('draft')}</h2>
-       <div className="listing-meta">{row.location&&<span>{row.location}</span>}{row.price&&<span>{row.price} {row.currency}</span>}{responses&&<span>{responses}</span>}</div>
-     </div>
-     <div className="listing-controls"><span>{t(row.status)}</span><a className="button" href={manage}>{t(manageLabels[row.type])}</a></div>
+     <div className="listing-identity"><small>{t(typeLabels[row.type])}</small><h2>{row.title||t('untitled')}</h2></div>
+     <div className="listing-meta">{row.location&&<span>{row.location}</span>}{row.price&&<span>{row.price} {row.currency}</span>}{responses&&<span>{responses}</span>}</div>
+     <div className="listing-controls"><span className="listing-status">{t(row.status)}</span><a className="button" href={manage} aria-label={`${t(manageLabels[row.type])}: ${row.title||t('untitled')}`}>{t(row.status==='draft'?'resumeDraft':'manage')} <span aria-hidden="true">›</span></a></div>
    </article>;
  }
- return <div className="my-listings"><header>{title}{data.rows.length>0&&<button className="button button-primary" aria-expanded={menu} aria-controls="listing-publishing-choices" onClick={()=>open(!menu)}>+ {t('create')}</button>}</header>
+ return <div className="my-listings" onClickCapture={event=>{if((event.target as HTMLElement).closest('a'))remember()}}><header>{title}{data.rows.length>0&&<button className="button button-primary" aria-expanded={menu} aria-controls="listing-publishing-choices" onClick={()=>open(!menu)}>+ {t('create')}</button>}</header>
    {data.rows.length===0 ? choices : <>
      {menu&&choices}
-     <div className="listing-filters">{filters.map(key=><button className={'button'+(tab===key?' button-primary':'')} key={key} aria-pressed={key===tab} onClick={()=>choose(key)}>
+     <div className="listing-filters" ref={strip} role="group" aria-label={t('list')}>{filters.map(key=><button className={'button'+(tab===key?' button-primary':'')} key={key} aria-pressed={key===tab} onClick={()=>selectTab(key)}>
        {t(key)} ({key==='all'?data.rows.length:data.rows.filter(row=>row.type===key).length})
      </button>)}</div>
      {rows.map(listing)}

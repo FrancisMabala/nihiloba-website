@@ -26,7 +26,7 @@ export function missionTerms(v:MissionValues):Terms {
 }
 export function missionProblem(v:MissionValues,m:Terms,step:number,communes:string[]){
  if(step===0){
- if(!m.category)return 'category';if(m.category==='custom'&&!validText(m.custom))return 'custom';
+ if(![...candidateMissions,'custom'].includes(m.category))return 'category';if(m.category==='custom'&&!validText(m.custom))return 'custom';
  for(const k of ['job','short_summary','work_city'])if(!validText(v[k]||''))return k;
  if(v.work_city?.trim().toLowerCase()==='kinshasa'&&!communes.includes(v.commune??''))return 'commune';
  for(const k of ['commune','quartier'])if(v[k]?.trim()&&!validText(v[k]!))return k;

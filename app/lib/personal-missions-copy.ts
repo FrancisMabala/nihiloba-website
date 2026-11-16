@@ -1,4 +1,10 @@
 const words = {
+ "untitled": ["Annonce sans titre", "Untitled listing", "Liyebisi ezangi titre", "Tangazo lisilo na kichwa"],
+ "manage": ["Gérer", "Manage", "Tambwisa", "Simamia"],
+ "resumeDraft": ["Continuer le brouillon", "Continue draft", "Koba brouillon", "Endelea na rasimu"],
+ "stepProgress": ["Étape {n} sur 3", "Step {n} of 3", "Etape {n} kati na 3", "Hatua {n} kati ya 3"],
+ "chooseWorkType": ["Choisissez le type de travail. Aucun type reconnu n’est enregistré pour cette annonce.", "Choose the type of work. No recognized type is saved for this listing.", "Pona lolenge ya mosala. Lolenge oyo eyebani ebombami te mpo na liyebisi oyo.", "Chagua aina ya kazi. Hakuna aina inayotambulika iliyohifadhiwa kwa tangazo hili."],
+ "savedWorkType": ["Valeur enregistrée", "Saved value", "Valɛrɛ ebombami", "Thamani iliyohifadhiwa"],
  "workExample": ["Garde d’enfants, ménage, conduite d’une moto-taxi (wewa)…", "Childcare, housekeeping, driving a motorcycle taxi (wewa)…", "Kobatela bana, kosala misala ya ndako, kotambwisa moto-taxi (wewa)…", "Kulea watoto, kazi za nyumbani, kuendesha pikipiki ya abiria (wewa)…"],
  "viewRequests": ["Voir les {n} demandes", "View {n} requests", "Tala bosɛngi {n}", "Angalia maombi {n}"],
  "viewRequest": ["Voir la demande", "View request", "Tala bosɛngi", "Angalia ombi"],

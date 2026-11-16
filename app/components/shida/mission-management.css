@@ -57,3 +57,18 @@
 @media(max-width:600px){.mission-public-facts{grid-template-columns:minmax(0,1fr)}.mission-public .mission-actions,.mission-application .mission-actions{align-items:stretch}.mission-public .mission-actions>.button-primary,.mission-application .mission-actions>*{width:100%;text-align:center}.mission-profile-summary{padding:.75rem}.mission-application{padding:1rem}}
 
 .mission-public .mission-card h2{font:500 1.45rem/1.25 var(--font-heading,Georgia,serif);margin:0 0 .65rem}.mission-public .mission-card h2:not(:first-child){margin-top:1.25rem}
+
+/* Owner listing views: do not change the public offer or application layout. */
+.mission-progress{display:none}.listing-action-sheet{display:grid;gap:12px}.listing-action-sheet button{text-align:left;width:100%;overflow-wrap:anywhere}.listing-action-sheet .listing-danger{color:#8a2b20;border-color:#cda89f;background:#fff8f5}.listing-action-sheet p{margin:0;white-space:pre-line}
+.mission-progress progress{appearance:none;border:0;background:#e4e3d9}.mission-progress progress::-webkit-progress-bar{background:#e4e3d9}.mission-progress progress::-webkit-progress-value{background:#164331}.mission-progress progress::-moz-progress-bar{background:#164331}
+@media(max-width:700px){
+ .mission-manager h1,.personal-offer-workspace h1{font-size:1.75rem;line-height:1.2;margin:12px 0;overflow-wrap:anywhere}
+ .mission-manager>a,.mission-manager>button.mission-link{display:inline-flex;align-items:center;min-height:44px}
+ .mission-manager .mission-toolbar{display:grid;gap:10px}.mission-manager .mission-toolbar>.mission-actions{gap:8px;margin:0}.mission-manager .mission-toolbar .button{min-height:44px;padding:8px 12px}
+ .mission-manager>.mission-card{padding:12px;margin:12px 0;border-radius:10px}.mission-manager .personal-mission section{margin:12px 0}.mission-manager .personal-mission section:first-child{margin-top:0}.mission-manager .personal-mission section:last-child{margin-bottom:0}.mission-manager .personal-mission h2{margin:0 0 8px;font-size:1.25rem}.mission-manager .personal-mission p{margin:0;white-space:pre-line}
+ .mission-manager .mission-card .mission-terms{display:grid;gap:0}.mission-manager .mission-card .mission-terms>div{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px;padding:8px 0;border-bottom:1px solid #e4dfd4}.mission-manager .mission-terms dt,.mission-manager .mission-terms dd{min-width:0;overflow-wrap:anywhere;white-space:pre-line}
+ .mission-manager .mission-tabs{flex-wrap:nowrap;gap:8px;overflow-x:auto;max-width:100%}.mission-manager .mission-tabs a{flex:none;min-height:44px;padding:10px 4px}
+ .mission-wizard .mission-progress{display:grid;gap:8px;margin:12px 0;font-size:1rem}.mission-progress progress{width:100%;height:5px;accent-color:#164331}
+ .occ-wizard.mission-wizard .candidate-steps{display:none}.mission-wizard .candidate-form{padding:12px}.mission-wizard .candidate-form>h2{display:none}.mission-wizard .occ-body{padding:0;margin:0}.mission-wizard .mission-field{margin:0 0 18px}.mission-wizard .mission-field :is(input,select),.mission-wizard .occ-inline select{min-height:44px;font-size:1rem}.mission-wizard textarea{min-height:96px;font-size:1rem}.mission-wizard .occ-inline{gap:0}.mission-wizard .candidate-actions{position:static;flex-wrap:wrap;padding:12px 0 0;margin-top:16px}.mission-wizard .candidate-actions .button{min-height:44px}.mission-wizard .occ-body>h3{font-size:1.25rem;margin:12px 0 8px}.mission-wizard .mission-condition-grid{gap:16px}
+ .mission-manager,.personal-offer-workspace,.my-listings{scroll-margin-bottom:calc(80px + env(safe-area-inset-bottom))}
+}

@@ -10,7 +10,8 @@
 .listing-choices > div .button { min-height: 70px; display: flex; align-items: center; justify-content: center; gap: .85rem; }
 .listing-choices svg, .listing-thumbnail svg { width: 2rem; height: 2rem; flex-shrink: 0; }
 .listing-filters { margin: .25rem 0 .7rem; }
-.personal-listing { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: clamp(.8rem, 2vw, 1.7rem); overflow-wrap: anywhere; }
+.personal-listing { display: grid; grid-template-columns: auto minmax(0,1fr) auto; grid-template-areas: 'photo identity controls' 'photo meta controls'; align-items: center; gap: .65rem 1.25rem; overflow-wrap: anywhere; }
+.personal-listing .listing-thumbnail{grid-area:photo}.listing-identity{grid-area:identity;min-width:0}.personal-listing .listing-meta{grid-area:meta;min-width:0;margin:0}.listing-status{justify-self:end;background:#eaf0e2;border-radius:6px;padding:.2rem .65rem;font-size:.9rem}.personal-listing .listing-controls{grid-area:controls}
 .listing-thumbnail { background: #f2f0e6; width: 64px; height: 64px; border-radius: 10px; display: grid; place-items: center; overflow: hidden; }
 .listing-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
 .personal-listing h2 { font-size: clamp(1.25rem, 2vw, 1.65rem); }
@@ -23,8 +24,13 @@
  .listing-choices > div { grid-template-columns: 1fr; gap: .65rem; }
  .listing-choices > div .button { min-height: 52px; }
  .my-listings > header { margin-bottom: .45rem; }
- .personal-listing { grid-template-columns: auto minmax(0,1fr); align-items: start; }
- .listing-controls { grid-column: 2; justify-items: start; }
- .listing-thumbnail { width: 44px; height: 44px; }
- .listing-filters { gap: .45rem; }
+ .my-listings{gap:10px}.my-listings>header{gap:8px;margin:0}.my-listings>header h1{font-size:1.75rem}.my-listings>header>.button{padding:8px 12px}
+ .personal-listing { padding:12px;grid-template-columns:32px minmax(0,1fr);grid-template-areas:'photo identity' 'meta meta' 'controls controls';gap:8px;align-items:start;border-radius:10px; }
+ .account-space .my-listings .personal-listing h2{font-size:1.2rem;line-height:1.3;margin:0}.listing-identity>small{font-size:.875rem}.personal-listing .listing-meta{font-size:.95rem;gap:4px 8px}.personal-listing .listing-meta>span{min-width:0;max-width:100%}.listing-meta span+span::before{content:none}
+ .personal-listing .listing-controls{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:space-between;align-items:center;min-width:0}.personal-listing .listing-status{max-width:100%;margin:0;grid-area:auto}
+ .personal-listing .listing-controls>.button{padding:8px 0;border:0;background:transparent;text-align:right;text-decoration:underline;max-width:100%;margin-left:auto}
+ .listing-thumbnail { width:32px;height:32px;background:transparent;border-radius:5px }.listing-thumbnail svg{width:26px;height:26px}
+ .listing-filters { flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;gap:8px;margin:2px 0 6px;padding:2px 2px 6px;max-width:100%;scrollbar-width:thin; }
+ .listing-filters>.button{flex:none;white-space:nowrap;padding:8px 12px;min-height:44px;font-size:1rem}
+ .account-space:has(.my-listings,.mission-manager,.personal-offer-workspace) .space-sidebar>h2{display:none}
 }
