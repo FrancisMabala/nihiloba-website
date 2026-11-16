@@ -349,7 +349,7 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
     setEditor(null);setEditorDirty(false);setProductDirty(false);setPendingCost(null);setPreview(null);setPlan(null);
     setInventoryOrigin(false);setFocusOption("");setView(tab);setDashboardOrder(undefined);setProduct(null);if(tab==="shop"){setShopTab("shopDetails");setProduct(null);}else if(tab==="catalog")setShopTab("products");
     if(tab==="catalog"&&store)void run(()=>loadProducts(store,page));
-    const url=new URL(window.location.href);url.searchParams.set("view",tab);for(const key of ["bucket","stockFilter","stockSearch","costFilter","costCurrency","reportZone","period","openExpense"])url.searchParams.delete(key);for(const [key,value] of Object.entries(filters))url.searchParams.set(key,value);url.searchParams.delete("product");if(store)url.searchParams.set("store",store.public_ref);window.history.replaceState(null,"",url);
+    const url=new URL(window.location.href);url.searchParams.set("view",tab);for(const key of ["bucket","order","orderSearch","orderOffset","stockFilter","stockSearch","costFilter","costCurrency","reportZone","period","openExpense"])url.searchParams.delete(key);for(const [key,value] of Object.entries(filters))url.searchParams.set(key,value);url.searchParams.delete("product");if(store)url.searchParams.set("store",store.public_ref);window.history.replaceState(null,"",url);
   }
   function navigateInventoryReturn(){
     setProduct(null);setProductTab("details");setInventoryOrigin(false);setFocusOption("");setView("inventory");
@@ -391,7 +391,7 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
       const selected=await request(`${root}/${enc(ref)}`) as Item;
       setEditor(null);setEditorDirty(false);setProductDirty(false);setPendingCost(null);setProduct(null);setPreview(null);setPlan(null);setProducts([]);setSearch("");setFilter("active");setStore(selected);setDashboardOrder(undefined);setShopTab(view==="shop"?"shopDetails":"products");
       const destination=view==="sales"&&!hasPhysicalStore(selected)?"orders":view;setView(destination);
-      const url=new URL(window.location.href);url.searchParams.set("store",ref);url.searchParams.set("view",destination);url.searchParams.delete("product");url.searchParams.delete("count");for(const key of ["search","status","offset"])url.searchParams.delete(key);window.history.replaceState(null,"",url);
+      const url=new URL(window.location.href);url.searchParams.set("store",ref);url.searchParams.set("view",destination);url.searchParams.delete("product");url.searchParams.delete("count");for(const key of ["search","status","offset","order","bucket","orderSearch","orderOffset"])url.searchParams.delete(key);window.history.replaceState(null,"",url);
       if(destination==="catalog")await loadProducts(selected,0,"active","");
     });}}>{stores.map(row=><option key={row.public_ref} value={row.public_ref}>{row.name}</option>)}</select></label>:null}</>}</BusinessIdentity>;
   return <main className={`rst container rst-management wz-personal seller-workspace connected-workspace ${displayView==="shop"?"ws-shop":""} ${editor&&product?"wz-editing-product":""}`}><div className="rst-management-layout seller-layout">

@@ -1,7 +1,9 @@
 import type {WenzeLocale} from './wenze-copy';
 const words:Record<string,readonly [string,string,string,string]>={
  title:['Online orders','Commandes en ligne','Bakomande na internet','Maagizo ya mtandaoni'],
- intro:['Manage orders placed by customers through your SHIDA shop.','Gérez les commandes passées par vos clients sur SHIDA.','Tala bakomande oyo basombi batindi na butiki na yo ya SHIDA.','Simamia maagizo ya wateja kupitia duka lako la SHIDA.'],
+ intro:['Orders received on SHIDA','Commandes reçues sur SHIDA','Bakomande oyo eyambami na SHIDA','Maagizo yaliyopokelewa kwenye SHIDA'],
+ about:['About these orders','À propos de ces commandes','Mpo na bakomande oyo','Kuhusu maagizo haya'],
+ moreFilters:['Scroll order filters','Faire défiler les filtres','Tambwisa ba filtre','Sogeza vichujio'],
  onlineNotice:['These are online orders from the SHIDA marketplace.','Ce sont les commandes passées en ligne sur SHIDA.','Oyo ezali bakomande ya zando SHIDA na internet.','Haya ni maagizo ya mtandaoni kutoka soko la SHIDA.'],
  salesNotice:['In-store sales are recorded in Checkout and can be reviewed in your sales history.','Les ventes en boutique sont enregistrées dans la caisse et consultables dans l’historique des ventes.','Boteki na butiki ekomamaka na caisse mpe emonanaka na lisolo ya boteki.','Mauzo ya dukani hurekodiwa kwenye malipo na yanaonekana katika historia ya mauzo.'],
  notReady:['Online ordering is not configured for this shop.','Les commandes en ligne ne sont pas configurées pour cette boutique.','Bakomande na internet ebongisami te mpo na butiki oyo.','Maagizo ya mtandaoni hayajasanidiwa kwa duka hili.'],

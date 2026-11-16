@@ -91,3 +91,16 @@
 .wt-dashboard .wt-metric strong{grid-column:1}
 .wt-tools{justify-content:flex-start}.wt-tools .seller-primary{order:-1}.wt-refresh span:last-child{display:none}
 }
+
+/* Keep the local day and its controls together without changing dashboard calculations. */
+.wt-date-short{display:none}
+@media(max-width:600px){
+ .wt-dashboard .wt-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;margin-bottom:12px}
+ .wt-toolbar .wt-date,.wt-toolbar .wt-tools{display:contents}
+ .wt-toolbar .wt-date>p{grid-column:1;grid-row:1;align-self:center;font-size:.9rem}
+ .wt-toolbar .wt-date>span,.wt-date-full{display:none}.wt-date-short{display:inline}
+ .wt-toolbar .wt-refresh{grid-column:2;grid-row:1;min-width:44px;min-height:44px;padding:8px}
+ .seller-design .wt-toolbar .wt-date>label{grid-column:1/-1;grid-row:2;justify-self:start;min-width:0;max-width:100%}
+ .seller-design .wt-toolbar .wt-date select{min-height:44px;max-width:100%;padding:6px 22px 6px 0;font-size:.85rem;text-decoration:underline;color:#173c34}
+ .wt-toolbar .wt-tools>.seller-primary{grid-column:1/-1;grid-row:3;justify-self:start;margin-top:4px}
+}

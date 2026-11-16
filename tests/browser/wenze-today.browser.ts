@@ -58,7 +58,7 @@ for(const scenario of ['new','zero','active','attention','error','partial','rest
  }
  if(scenario==='zero')await expect(page.locator('.wt-sold')).toContainText('No products sold today');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`test-results/wenze-today/${scenario}-${width}.png`,fullPage:true});expect(errors).toEqual([]);
+ await page.screenshot({path:`${process.env.WENZE_EVIDENCE??'test-results/wenze-today'}/${scenario}-${width}.png`,fullPage:true});expect(errors).toEqual([]);
 });
 for(const locale of ['fr','ln','sw'] as const)test(`localized dashboard ${locale}`,async({page})=>{
  await fixture(page,'new',locale);await page.setViewportSize({width:390,height:844});await page.goto(`/${locale}/shida/seller/wenze?store=WNZ_demo`);
@@ -69,22 +69,22 @@ test('shop switching, order detail and new sale destinations',async({page})=>{
  await fixture(page,'active');await page.goto('/shida/seller/wenze?store=WNZ_demo');await expect(page.locator('.wt-order').first()).toBeVisible();
  await page.locator('.wt-order').first().click();await expect(page).toHaveURL(/view=orders/);await expect(page.getByRole('heading',{name:/WOR_review/})).toBeVisible();
  await page.goto('/shida/seller/wenze?store=WNZ_demo');await expect(page.locator('.wt-dashboard')).toHaveAttribute('aria-busy','false');
- await page.locator('.wz-store-selector select').selectOption('WNZ_second');await expect(page.locator('.wt-followers-stat').first()).toContainText('73');await expect(page.locator('.wt-order')).toHaveCount(0);await expect(page.locator('.wt-toolbar select')).toHaveValue('Africa/Lubumbashi');
- await page.screenshot({path:'test-results/wenze-today/shop-switch.png',fullPage:true});
+ await page.locator('.wz-store-selector select:visible').selectOption('WNZ_second');await expect(page.locator('.wt-followers-stat').first()).toContainText('73');await expect(page.locator('.wt-order')).toHaveCount(0);await expect(page.locator('.wt-toolbar select')).toHaveValue('Africa/Lubumbashi');
+ await page.screenshot({path:`${process.env.WENZE_EVIDENCE??'test-results/wenze-today'}/shop-switch.png`,fullPage:true});
  await page.locator('.wt-tools .seller-primary').click();await expect(page).toHaveURL(/view=sales/);
 });
 test('loading is not an all-clear and setup links keep the shop',async({page})=>{
  await fixture(page,'new');let release!:()=>void;const held=new Promise<void>(resolve=>release=resolve);
  await page.route(/\/today\/?\?/,async route=>{await held;await route.fallback();});
  await page.goto('/shida/seller/wenze?store=WNZ_demo');await expect(page.locator('.wt-dashboard')).toHaveAttribute('aria-busy','true');await expect(page.locator('.wt-clear')).toHaveCount(0);
- await page.screenshot({path:'test-results/wenze-today/loading-1440.png',fullPage:true});await page.setViewportSize({width:390,height:844});await page.screenshot({path:'test-results/wenze-today/loading-390.png',fullPage:true});release();await expect(page.locator('.wt-dashboard')).toHaveAttribute('aria-busy','false');
+ await page.screenshot({path:`${process.env.WENZE_EVIDENCE??'test-results/wenze-today'}/loading-1440.png`,fullPage:true});await page.setViewportSize({width:390,height:844});await page.screenshot({path:`${process.env.WENZE_EVIDENCE??'test-results/wenze-today'}/loading-390.png`,fullPage:true});release();await expect(page.locator('.wt-dashboard')).toHaveAttribute('aria-busy','false');
  await page.getByRole('button',{name:'Complete shop setup',exact:true}).click();await expect(page).toHaveURL(/view=shop/);await expect(page).toHaveURL(/store=WNZ_demo/);
 });
 test('late responses cannot restore data from the previous shop',async({page})=>{
  await fixture(page,'active');let release!:()=>void;const held=new Promise<void>(resolve=>release=resolve);
  await page.route(/\/WNZ_demo\/today\/?\?/,async route=>{await held;await route.fallback();});
  await page.goto('/shida/seller/wenze?store=WNZ_demo');await expect(page.locator('.wt-dashboard')).toHaveAttribute('aria-busy','true');
- await page.locator('.wz-store-selector select').selectOption('WNZ_second');await expect(page.locator('.wt-followers-stat').first()).toContainText('73');
+ await page.locator('.wz-store-selector select:visible').selectOption('WNZ_second');await expect(page.locator('.wt-followers-stat').first()).toContainText('73');
  const finished=page.waitForResponse(/\/WNZ_demo\/today\/?\?/);release();await finished;await expect(page.locator('.wt-followers-stat').first()).toContainText('73');await expect(page.locator('.wt-order')).toHaveCount(0);
 });
 
@@ -123,4 +123,12 @@ test('low stock opens the matching catalogue product once for two low variants',
  await page.goto('/fr/shida/seller/wenze?store=WNZ_demo');
  await page.locator('.wt-attention').getByRole('button',{name:/1 article en stock bas/i}).click();await expect(page).toHaveURL(/stockFilter=low/);
  const products=page.locator('.wi-page article');await expect(products).toHaveCount(1);await expect(products.getByRole('heading',{name:'Chemise verte'})).toBeVisible();
+});
+
+for(const width of [320,375,390,430])test(`compact day controls and touch refresh ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:850});await fixture(page,'active','fr');await page.goto('/fr/shida/seller/wenze?store=WNZ_demo');await expect(page.locator('.wt-dashboard')).toHaveAttribute('aria-busy','false');
+ const date=await page.locator('.wt-date>p').boundingBox(),refresh=await page.locator('.wt-refresh').boundingBox();expect(Math.abs(date!.y-refresh!.y)).toBeLessThan(20);
+ await page.locator('.wt-toolbar select').selectOption('Africa/Lubumbashi');await expect(page.locator('.wt-dashboard')).toHaveAttribute('aria-busy','false');await expect(page.locator('.wt-toolbar select')).toHaveValue('Africa/Lubumbashi');
+ await page.locator('.wt-refresh').tap();await expect(page.locator('.wt-dashboard')).toHaveAttribute('aria-busy','false');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`${process.env.WENZE_EVIDENCE}/today-${width}.png`,fullPage:true});
 });

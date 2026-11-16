@@ -1,4 +1,5 @@
 "use client";
+import {readOrderLocation,writeOrderLocation} from "@/app/lib/wenze-order-location";
 import {wenzeActionConfirmation} from "@/app/lib/wenze-action-confirmation";
 import bulkCopy from "@/app/lib/wenze-bulk-copy.json";
 
@@ -46,7 +47,11 @@ export function WenzeR6Workspace({ context, locale, initialView, initialStore, i
   const [view, setView] = useState(""), [shops, setShops] = useState<Shop[]>([]), [shop, setShop] = useState(initialStore??"");
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [stale, setStale] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]), [counts, setCounts] = useState<Record<string, number>>({}), [order, setOrder] = useState<Order | null>(null);
-  const [bucket, setBucket] = useState(()=>{const value=typeof window==='undefined'?null:new URLSearchParams(location.search).get('bucket');return value==='action_required'||value==='in_progress'?value:'all';}), [search, setSearch] = useState(""), [offset, setOffset] = useState(0), [total, setTotal] = useState(0), [action, setAction] = useState("");
+  const [initialLocation]=useState(()=>readOrderLocation(typeof window==='undefined'?'':location.search));
+  const listScroll=useRef(0);
+  const [bucket, setBucket] = useState(initialLocation.bucket), [search, setSearch] = useState(initialLocation.search), [offset, setOffset] = useState(initialLocation.offset), [total, setTotal] = useState(0), [action, setAction] = useState("");
+  function rememberOrders(page=offset,group=bucket,needle=search,reference?:string){const url=new URL(window.location.href);if(url.searchParams.get('view')==='orders')window.history.replaceState(window.history.state,'',writeOrderLocation(url,group,needle,page,reference));}
+
   const [fields, setFields] = useState<Record<string, string>>({});
   const [jobs, setJobs] = useState<Job[]>([]), [job, setJob] = useState<Job | null>(null), [item, setItem] = useState<ImportItem | null>(null), [draft, setDraft] = useState<Payload | null>(null);
   const [options, setOptions] = useState<{categories: {code: string; label: string}[]; currencies: string[]; issues: Record<string, string>; support_url: string | null}>({categories: [], currencies: ["CDF", "USD"], issues: {}, support_url: null});
@@ -77,7 +82,7 @@ export function WenzeR6Workspace({ context, locale, initialView, initialStore, i
   async function loadOrders(page = offset, group = bucket, store = shop, needle=search) {
     const data = await request(`${base}/orders?language=${locale}&bucket=${enc(group)}&store_ref=${enc(store)}&search=${enc(needle)}&offset=${page}&limit=20`) as { orders: Order[]; counts: Record<string, number>; total: number };
     if (!alive.current) return;
-    setAppliedSearch(needle);setOrders(data.orders); setCounts(data.counts); setTotal(data.total); setOffset(page);
+    rememberOrders(page,group,needle);setAppliedSearch(needle);setOrders(data.orders); setCounts(data.counts); setTotal(data.total); setOffset(page);
   }
   async function loadJobs(page = 0, store = shop) {
     const data = await request(`${base}/catalog-imports?store_ref=${enc(store)}&offset=${page}&limit=20`) as { jobs: Job[]; total: number };
@@ -91,10 +96,11 @@ export function WenzeR6Workspace({ context, locale, initialView, initialStore, i
       if (!alive.current) return;
       setShops(data.stores); setOptions({ ...data, currencies: data.currencies?.length ? data.currencies : ["CDF", "USD"] });
       if (which === "orders") {
-        await loadOrders(0);
-        if(initialOrder){
-          const selected=await request(`${base}/orders/${enc(initialOrder)}?language=${locale}`) as Order;
-          if(alive.current&&selected.shop_reference===initialStore)setOrder(selected);
+        await loadOrders(initialLocation.offset);
+        const reference=initialOrder??initialLocation.order;
+        if(reference){
+          const selected=await request(`${base}/orders/${enc(reference)}?language=${locale}`) as Order;
+          if(alive.current&&selected.shop_reference===initialStore){setOrder(selected);rememberOrders(initialLocation.offset,bucket,search,reference);}
         }
       } else await loadJobs();
     });
@@ -147,8 +153,8 @@ export function WenzeR6Workspace({ context, locale, initialView, initialStore, i
       onClear={()=>{setSearch("");void guarded(()=>loadOrders(0,bucket,shop,""));}}
       onFilter={key=>{setBucket(key);void guarded(()=>loadOrders(0,key));}}
       onRetry={()=>void guarded(()=>loadOrders())}
-      onOpen={row=>void guarded(async()=>{const selected=await request(`${base}/orders/${enc(row.reference)}?language=${locale}`) as Order;if(shop&&selected.shop_reference!==shop)throw new DashboardApiError('unavailable',404);if(alive.current){setOrder(selected);setAction("");setFields({});setStale(false);}})}
-      onBack={()=>void guarded(async()=>{setReceipt(null);setOrder(null);setAction("");setFields({});setStale(false);await loadOrders();})}
+      onOpen={row=>void guarded(async()=>{listScroll.current=window.scrollY;const selected=await request(`${base}/orders/${enc(row.reference)}?language=${locale}`) as Order;if(shop&&selected.shop_reference!==shop)throw new DashboardApiError('unavailable',404);if(alive.current){rememberOrders(offset,bucket,appliedSearch,selected.reference);setOrder(selected);setAction("");setFields({});setStale(false);}})}
+      onBack={()=>void guarded(async()=>{setReceipt(null);setOrder(null);setAction("");setFields({});setStale(false);await loadOrders(offset,bucket,shop,appliedSearch);requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,listScroll.current)));})}
       onAction={key=>{setAction(key);setFields({});}} onCancelAction={()=>{setAction("");setFields({});}}
       onReceipt={()=>{if(order)void guarded(async()=>setReceipt(await send(`${base}/orders/${enc(order.reference)}/receipt`,{}) as Receipt));}} onCloseReceipt={()=>setReceipt(null)}
       updates={order&&<WenzeOrderUpdates key={`${base}:${order.reference}`} locale={locale} identity={`${base}:${order.reference}`} load={()=>request(`${base}/orders/${enc(order.reference)}/updates`)} read={()=>send(`${base}/orders/${enc(order.reference)}/updates/read`,{})}/>}

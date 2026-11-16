@@ -35,3 +35,19 @@
 .wo-orders.wo-orders.wo-orders .wo-unavailable{max-width:640px;margin:0 auto;padding:36px 24px}
 @media(max-width:760px){.wo-orders.wo-orders.wo-orders .wo-info{padding:12px;gap:9px}.wo-orders.wo-orders.wo-orders .wo-info p{font-size:12px}.wo-orders.wo-orders.wo-orders .wo-empty{padding:24px 16px}.wo-orders.wo-orders.wo-orders .wo-empty h3{font-size:20px}.wo-orders.wo-orders.wo-orders button.wo-row{padding:13px 10px;gap:7px}.wo-orders.wo-orders.wo-orders .wo-order-item small{line-height:1.5}.wo-orders.wo-orders.wo-orders .wo-customer{display:block;grid-column:1;color:var(--wo-muted);font-size:12px}.wo-orders.wo-orders.wo-orders .wo-row-status{max-width:110px}}
 @media(max-width:760px){.wo-orders.wo-orders.wo-orders .wo-customer{grid-row:2;grid-column:1}.wo-orders.wo-orders.wo-orders .wo-amount{grid-row:2;grid-column:2;text-align:right}.wo-orders.wo-orders.wo-orders .wo-fulfillment{display:none}.wo-orders.wo-orders.wo-orders .wo-payment{grid-row:3;grid-column:1}.wo-orders.wo-orders.wo-orders .wo-date{grid-row:3;grid-column:2;text-align:right;font-size:11px}}
+
+/* One explanation disclosure and a bounded, keyboard/touch scrollable filter rail. */
+.wo-orders.wo-orders.wo-orders .wo-intro{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.wo-orders.wo-orders.wo-orders .wo-information{background:transparent;border:0;min-width:44px;min-height:44px;font-size:20px;padding:6px;color:#173c34}
+.wo-orders.wo-orders.wo-orders .wo-filter-rail{display:flex;min-width:0;max-width:100%;align-items:flex-start;gap:4px}
+.wo-orders.wo-orders.wo-orders .wo-tabs{position:relative;flex:1;min-width:0;max-width:100%;margin:0;scroll-padding:8px;scrollbar-width:thin}
+.wo-orders.wo-orders.wo-orders .wo-scroll-filters{flex:0 0 44px;min-height:44px;padding:6px;border:0;background:transparent;color:#173c34;font-size:26px}
+.wo-orders.wo-orders.wo-orders .wo-search label{min-width:0}.wo-orders.wo-orders.wo-orders .wo-search input{min-width:0}
+.wo-explanation{line-height:1.6;overflow-wrap:anywhere}
+@media(min-width:1101px){.wo-orders.wo-orders.wo-orders .wo-scroll-filters{display:none}}
+@media(max-width:760px){
+ .wo-orders.wo-orders.wo-orders .wo-search label{flex-basis:100%}
+ .wo-orders.wo-orders.wo-orders .wo-search button{min-height:44px;padding:8px 12px}
+ .wo-orders.wo-orders.wo-orders .wo-empty{padding:20px 14px}
+ .wo-orders.wo-orders.wo-orders .wo-mobile-actions{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+}
