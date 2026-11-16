@@ -19,7 +19,7 @@ export async function DiscoveryListings({ locale }: { locale: DiscoveryLocale })
   const t = discoveryCopy[locale], jobLocale = locale === "en" ? "en" : "fr";
   const [jobs, services] = await Promise.all([
     available(() => getJobs({ page: 1, page_size: 3 }, jobLocale)),
-    available(() => getServices({ page: 1, page_size: 3 })),
+    available(() => getServices({ page: 1, page_size: 3 }, "public")),
   ]);
   return <div className="discovery-feed">
     <DiscoveryListingGroup locale={locale} label={t.labels[0]} href={discoveryPath(jobLocale, "/shida/emplois")} state={!jobs ? "error" : jobs.items.length ? "ready" : "empty"}>

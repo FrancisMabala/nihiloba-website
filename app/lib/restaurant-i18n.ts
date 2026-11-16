@@ -1,5 +1,5 @@
 import type { RestaurantLocale, RestaurantSearch } from "../services/shida/restaurants-client";
-import { restaurantQuery } from "../services/shida/restaurants-client";
+import { restaurantQuery } from "./marketplace-query";
 
 export const restaurantLocales = ["en", "fr", "ln", "sw"] as const;
 export function isRestaurantLocale(value: string): value is RestaurantLocale { return restaurantLocales.includes(value as RestaurantLocale); }

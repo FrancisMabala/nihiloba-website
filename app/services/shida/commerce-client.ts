@@ -1,4 +1,5 @@
 import { safePublicImageUrl, safePublicWebsiteUrl } from "../../lib/safe-public-url";
+import {testMarketplaceRequest} from "./test-marketplace-server";
 import type { CommerceCart, CommerceCartConflict, CommerceCartValidation, CommerceErrorCode, CommerceHandoff, CommerceSellerGroup } from "../../types/shida-commerce";
 
 const DEFAULT_API_BASE_URL = "https://api.nihiloba.com";
@@ -78,10 +79,12 @@ function parseCart(value: unknown): CommerceCart {
 async function backendRequest(path: string, init: RequestInit = {}): Promise<unknown> {
   let response: Response;
   try {
-    response = await fetch(`${apiBaseUrl()}${path}`, {
+    const target = await testMarketplaceRequest(path, path.startsWith('/api/v1/carts'));
+    response = await fetch(`${apiBaseUrl()}${target.path}`, {
       ...init,
       cache: "no-store",
-      headers: { Accept: "application/json", ...(init.body ? { "Content-Type": "application/json" } : {}), ...init.headers },
+      headers: { Accept: "application/json", ...(init.body ? { "Content-Type": "application/json" } : {}), ...target.headers, ...init.headers },
+      redirect: "error",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch {

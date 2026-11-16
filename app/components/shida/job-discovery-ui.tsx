@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type {ServiceLocale} from '../../lib/services-i18n';
 import type {JobSearch} from '../../types/shida-public';
 import {OFFICIAL_CHANNELS} from '../../lib/brand';
-import {jobSearchQuery} from '../../services/shida/public-client';
+import {jobSearchQuery} from '../../lib/marketplace-query';
 import {marketplacePath} from './marketplace';
 import {SpaceIcon, type SpaceIconName} from './account-space-icon';
 

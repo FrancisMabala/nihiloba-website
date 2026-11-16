@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createHash } from "node:crypto";
 import { personalRequestOrigin } from "../../../lib/personal-request-origin";
 import { EmploymentApiError } from "../../../services/shida/employment-client";
+import {TEST_MARKETPLACE_COOKIE, TEST_MARKETPLACE_MODE} from "../../../lib/test-marketplace";
 
 export const EMPLOYMENT_SESSION_COOKIE = "shida_dashboard_session";
 export const PERSONAL_SESSION_COOKIE = "nihiloba_personal_session";
@@ -23,6 +24,7 @@ export async function migrateEmploymentToken(token: string): Promise<void> {
 
 export async function setEmploymentToken(token: string): Promise<void> {
   const jar = await cookies();
+  for (const name of [TEST_MARKETPLACE_COOKIE, TEST_MARKETPLACE_MODE]) jar.set(name, "", {httpOnly:name===TEST_MARKETPLACE_COOKIE, secure:process.env.NODE_ENV==="production", sameSite:"strict", path:"/", maxAge:0});
   jar.set(PERSONAL_SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -35,6 +37,7 @@ export async function setEmploymentToken(token: string): Promise<void> {
 }
 
 export async function clearEmploymentToken(): Promise<void> {
+  for (const name of [TEST_MARKETPLACE_COOKIE, TEST_MARKETPLACE_MODE]) (await cookies()).set(name, "", {httpOnly:name===TEST_MARKETPLACE_COOKIE, secure:process.env.NODE_ENV==="production", sameSite:"strict", path:"/", maxAge:0});
   (await cookies()).set(PERSONAL_SESSION_COOKIE, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/shida", maxAge: 0 });
   (await cookies()).set(EMPLOYMENT_SESSION_COOKIE, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/shida/employment", maxAge: 0 });
 }

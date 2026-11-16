@@ -1,4 +1,5 @@
 import { guestSetCookie } from "../../../../lib/restaurant-guest-cookie";
+import {testMarketplaceRequest} from "../../../../services/shida/test-marketplace-server";
 import { personalRequestOrigin } from "../../../../lib/personal-request-origin";
 import { sellerErrorCodes } from "../../../../lib/restaurant-seller-contract";
 import { GUEST_BACKEND, GUEST_COOKIE, guestBody, guestReference, guestRoute } from "../../../../lib/restaurant-guest-contract";
@@ -46,7 +47,8 @@ async function handle(request: Request, context: Context) {
   }
   const visit = parts[2] === "visits" ? parts[3] : undefined;
   const tokens = (request.headers.get("cookie") ?? "").split(";").map(s=>s.trim()).filter(s=>s.startsWith(`${GUEST_COOKIE}=`));
-  // Personal/Business cookies and Authorization are deliberately never forwarded.
+  // Forward only the canonical Personal session for test-population admission;
+  // Business cookies, arbitrary cookies and Authorization are never forwarded.
   if (visit && (tokens.length !== 1 || !/^[A-Za-z0-9_-]{20,256}$/.test(tokens[0].slice(GUEST_COOKIE.length+1)))) return fail(404);
   try {
     const base = new URL(process.env.SHIDA_API_BASE_URL ?? "https://api.nihiloba.com");
@@ -54,7 +56,9 @@ async function handle(request: Request, context: Context) {
     const browser = process.env.RESTAURANT_GUEST_PROXY_SECRET
       ? guestProxyIdentity(request, process.env.RESTAURANT_GUEST_PROXY_SECRET) : null;
     const target = new URL(`${GUEST_BACKEND}/${path}`,base.origin); target.search = query.toString();
-    const upstream = await fetch(target,{method:request.method,body,cache:"no-store",redirect:"manual",signal:AbortSignal.timeout(12000),headers:{Accept:"application/json",...(body ? {"Content-Type":"application/json"} : {}),...(origin ? {Origin:origin} : {}),...(visit ? {Cookie:tokens[0]} : {}),...(browser ? {[GUEST_PROXY_HEADER]:browser.header} : {})}});
+    const test = await testMarketplaceRequest(target.pathname, true);
+    const cookie = [test.headers.Cookie, visit ? tokens[0] : null].filter(Boolean).join('; ');
+    const upstream = await fetch(target,{method:request.method,body,cache:"no-store",redirect:"manual",signal:AbortSignal.timeout(12000),headers:{Accept:"application/json",...test.headers,...(body ? {"Content-Type":"application/json"} : {}),...(origin ? {Origin:origin} : {}),...(cookie ? {Cookie:cookie} : {}),...(browser ? {[GUEST_PROXY_HEADER]:browser.header} : {})}});
     const value = await upstream.json().catch(()=>null);
     if (value && typeof value === "object" && Object.hasOwn(value,"authority")) return fail(502);
     const headers = new Headers(PRIVATE);
