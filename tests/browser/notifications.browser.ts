@@ -1,6 +1,6 @@
 import {expect,test} from '@playwright/test';
 import {messagesText} from '../../app/lib/messages-design-copy';
-import {notificationCopy} from '../../app/lib/notification-center-copy';
+import {notificationCopy,notificationLayoutCopy} from '../../app/lib/notification-center-copy';
 
 for(const width of [360,1440])for(const locale of ['fr','en','ln','sw'] as const)test(`notification history and saved preferences ${locale} ${width}`,async({page})=>{
  const prefix=locale==='en'?'':'/'+locale, t=notificationCopy[locale];
@@ -43,8 +43,8 @@ for(const width of [360,1440])for(const locale of ['fr','en','ln','sw'] as const
  await expect(page).toHaveURL(/view=messages/);
  const panel=page.locator('.notification-panel'),row=(ref:string)=>panel.locator('[data-reference="'+ref+'"]');
  await expect(panel.locator('article')).toHaveCount(4);await expect(panel.getByText(messagesText(locale,'sendHint'))).toHaveCount(1);
- await expect(row('NTF_second')).toContainText(messagesText(locale,'info'));
- await expect(page.locator('.space-notice-count')).toHaveText('1');
+ await expect(row('NTF_second').locator('.notice-unread-dot')).toHaveCount(0);
+ for(const badge of await page.locator('.space-notice-count').all())await expect(badge).toHaveText('1');
  const report=row('NTF_report').getByRole('link');await expect(report).toHaveAttribute('href',/store=WS_test&artifact=WRA_test/);
  await expect(row('NTF_account').getByRole('link')).toHaveAttribute('href',/view=settings/);
  await expect(page.locator('button.market-avatar:visible').first()).toBeVisible();
@@ -55,17 +55,18 @@ for(const width of [360,1440])for(const locale of ['fr','en','ln','sw'] as const
   const link=row(ref).getByRole('link');await expect(link).toHaveAttribute('href',new RegExp(ref+'$'));
  }
  expect(handoffs).toEqual(['NTF_first','NTF_second']);expect(actions).not.toContain('read');expect(records[0].read).toBe(false);
- await row('NTF_first').getByRole('button',{name:t[8]}).click();await expect(row('NTF_first')).toContainText(messagesText(locale,'info'));
+ await row('NTF_first').getByRole('button',{name:new RegExp(notificationLayoutCopy[locale].actions)}).click();await row('NTF_first').getByRole('menuitem',{name:t[8]}).click();await expect(row('NTF_first').locator('.notice-unread-dot')).toHaveCount(0);
  await expect(page.locator('.notification-bell:visible').first().locator('strong')).toHaveCount(0);
  if(locale==='fr'&&width===1440){
   // Resolve production-shaped destinations against this local test server.
-  await page.route('https://nihiloba.com/**',r=>{const u=new URL(r.request().url());return r.fulfill({status:302,headers:{Location:'http://127.0.0.1:3047'+u.pathname+u.search}});});
+  const localOrigin=new URL(page.url()).origin;
+  await page.route('https://nihiloba.com/**',r=>{const u=new URL(r.request().url());return r.fulfill({status:302,headers:{Location:localOrigin+u.pathname+u.search}});});
   await row('NTF_account').getByRole('link').click();await expect(page).toHaveURL(/view=settings/);
-  await expect(page.locator('.space-sidebar a[aria-current=page]')).toHaveAttribute('href',/view=settings/);
+  await expect(page.locator('.space-sidebar a[aria-current=page]:visible')).toHaveAttribute('href',/view=settings/);
   await page.goBack();await row('NTF_report').getByRole('link').click();await expect(page).toHaveURL(/seller\/wenze.*store=WS_test&artifact=WRA_test/);
   await page.goBack();
  }
- await panel.getByRole('combobox').first().selectOption('unread');await expect(panel.getByText(t[6])).toBeVisible();
+ await panel.getByRole('button',{name:new RegExp('^'+t[3])}).click();await expect(panel.getByText(t[6])).toBeVisible();
  await page.getByRole('button',{name:messagesText(locale,'preferences'),exact:true}).click();
  const form=page.locator('.messages-preferences'),save=form.getByRole('button',{name:locale==='fr'?'Enregistrer':locale==='sw'?'Hifadhi':locale==='ln'?'Bomba':'Save',exact:true});
  await expect(form.locator('[value=two_hour]')).toBeChecked();await expect(save).toBeDisabled();
@@ -76,5 +77,5 @@ for(const width of [360,1440])for(const locale of ['fr','en','ln','sw'] as const
  await page.reload();await page.getByRole('button',{name:messagesText(locale,'preferences'),exact:true}).click();await expect(form.locator('[value=inbox_only]')).toBeChecked();
  if(locale==='fr')await page.screenshot({path:`test-results/messages-evidence/preferences-${width}.png`,fullPage:true});
  failLoad=true;await page.reload();await expect(panel.getByRole('alert')).toBeVisible();await expect(panel.locator('.messages-empty')).toHaveCount(0);
- failLoad=false;empty=true;await panel.getByRole('alert').getByRole('button').click();await expect(panel.locator('.messages-empty')).toBeVisible();
+ failLoad=false;empty=true;await panel.getByRole('alert').getByRole('button').click();await panel.getByRole('button',{name:notificationLayoutCopy[locale].all,exact:true}).click();await expect(panel.locator('.messages-empty')).toBeVisible();
 });

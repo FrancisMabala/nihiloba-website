@@ -12,3 +12,18 @@ export const moduleNames: Record<Locale,string[]> = {
  ln:['Wenze','Misala','Mosala','Bandako','Baotɛlɛ','Restaurants & Malewa','Bobateli ya konte','Eteyelo','Lisalisi na mituna'],
  sw:['Wenze','Huduma','Ajira','Makazi','Hoteli','Restaurants & Malewa','Usalama wa akaunti','Shule','Msaada na maswali'],
 };
+
+export const notificationLayoutCopy = {
+ fr:{all:'Toutes',filters:'Filtres',clear:'Effacer les filtres',actions:'Autres actions',today:'Aujourd’hui',yesterday:'Hier',unread:'Notification non lue'},
+ en:{all:'All',filters:'Filters',clear:'Clear filters',actions:'More actions',today:'Today',yesterday:'Yesterday',unread:'Unread notification'},
+ ln:{all:'Nyonso',filters:'Baponi',clear:'Longola baponi',actions:'Makambo mosusu',today:'Lelo',yesterday:'Lobi eleki',unread:'Liyebisi etángami naino te'},
+ sw:{all:'Zote',filters:'Vichujio',clear:'Ondoa vichujio',actions:'Vitendo vingine',today:'Leo',yesterday:'Jana',unread:'Arifa haijasomwa'},
+} as const;
+
+// Keep the existing browser-local timezone, including its daylight-saving rules.
+export function notificationTimestamp(value:string,locale:Locale,now=new Date()) {
+ const date=new Date(value),yesterday=new Date(now);yesterday.setDate(now.getDate()-1);
+ const sameDay=(a:Date,b:Date)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+ const label=sameDay(date,now)?notificationLayoutCopy[locale].today:sameDay(date,yesterday)?notificationLayoutCopy[locale].yesterday:null;
+ return {short:label?`${label}, ${date.toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'})}`:date.toLocaleDateString(locale,{day:'numeric',month:'short',...(date.getFullYear()!==now.getFullYear()?{year:'numeric' as const}:{})}),full:date.toLocaleString(locale,{dateStyle:'full',timeStyle:'long'})};
+}
