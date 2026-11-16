@@ -14,3 +14,10 @@ it('preserves the local selling destination after registration',()=>{
 it.each(['https://outside.invalid','//outside.invalid','/shida/../../outside','/shida/%2f%2foutside','/shida/register/','/shida/space?token=secret','/shida\\outside',null])('rejects unsafe or recursive return %s',value=>{
  expect(registrationReturnPath(value,'/shida/space')).toBe('/shida/space');
 });
+
+import {safeRestaurantReturn} from '../app/lib/business-auth/restaurant-return';
+it('retains exact recipient invitation paths through shared authentication only',()=>{
+ expect(safeRestaurantReturn('/invitations/BMR_fixture')).toBe('/invitations/BMR_fixture');
+ for(const path of ['/invitations/BMR_fixture?role=owner','/invitations/BMR_fixture/../admin','//outside.invalid/invitations/BMR_fixture'])expect(safeRestaurantReturn(path)).toBe('/');
+ expect(registrationReturnPath('/fr/shida/business-login/','/shida/space')).toBe('/fr/shida/business-login/');
+});

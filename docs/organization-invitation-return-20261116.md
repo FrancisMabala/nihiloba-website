@@ -1,0 +1,7 @@
+# Organization invitation authentication return
+
+Business invitation destinations now use a narrow BMR route allowlist. Existing verified users return automatically through the canonical Business handoff. New recipients enter the existing Personal registration with a safe local return; the invitation target is retained in the existing one-hour session-storage intent. An incomplete account can resume registration without losing the invitation. Opening the URL does not grant membership: the backend checks the verified actor and current invitation independently.
+
+Validation: 13 registration-return/reference unit tests, five actual Next browser checks for central email/passkey continuation, existing Guardian continuation, automatic invitation return and registration intent; scoped lint, TypeScript and production build. The local reusable runtime initially lacked static legal documents; copying the unchanged canonical content fixed that workspace-only build failure.
+
+No credentials, API contracts, dependencies, migrations, public marketplace navigation or Personal registration options were changed. Deploy with backend 40a39e4 and the paired Business invitation screen. Browser authentication is synthetic; live account creation and real WhatsApp delivery were not exercised. The broader route checklist and visual evidence are in the paired Business report `docs/organization-mobile-20261116.md`.

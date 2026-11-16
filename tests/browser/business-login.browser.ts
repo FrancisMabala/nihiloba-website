@@ -47,3 +47,10 @@ for(const width of [320,390,1440])for(const lang of ['fr','en','ln','sw'])test(`
 test('external destination becomes the safe Business home',async({page})=>{
  const state=await fixture(page,true);await page.goto('/fr/shida/business-login/?returnTo=https%3A%2F%2Fevil.test');await page.getByRole('button',{name:'Continuer vers Business'}).click();await expect.poll(()=>state.posted?.get('returnTo')).toBe('/');
 });
+
+test('verified invitation recipient returns automatically to the exact Business invitation',async({page})=>{
+ const state=await fixture(page,true);await page.goto('/fr/shida/business-login/?returnTo=%2Finvitations%2FBMR_fixture');await expect.poll(()=>state.posted?.get('returnTo')).toBe('/invitations/BMR_fixture');expect(state.grants).toBe(1);
+});
+test('invitation registration retains its destination through canonical personal registration',async({page})=>{
+ await fixture(page);await page.goto('/fr/shida/business-login/?returnTo=%2Finvitations%2FBMR_fixture&register=1');await expect(page).toHaveURL(/fr\/shida\/register\/\?returnTo=/);expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('shida-business-return')||'null'))).toBeTruthy();
+});
