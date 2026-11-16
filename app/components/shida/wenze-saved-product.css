@@ -35,3 +35,65 @@
 .seller-content .wd-details .wd-stock-table{margin:12px 0 0}
 .seller-content .wd-details .wd-stock-table :is(th,td){padding:6px 8px;font-size:inherit}
 @media(max-width:760px){.wd-details section.wd-hero{grid-template-columns:80px minmax(0,1fr)}.seller-content .wd-details .wd-stock-table :is(th,td){padding:6px 3px}}
+
+/* Product identity stays compact; actions and supporting information get their own width. */
+.wd-details section.wd-hero{row-gap:8px}
+.wd-details .wd-cover{grid-column:1;grid-row:1/4}
+.wd-details :is(.wd-identity,.wd-metadata,.wd-actions){grid-column:2;min-width:0}
+.wd-details .wd-photo{display:block;width:100%;padding:0!important;border:0!important;background:transparent!important}
+.wd-details .wd-photo .wz-photo-fallback{display:grid;place-items:center}
+.wd-details .wd-price strong{white-space:normal;overflow-wrap:anywhere}
+.wd-details .wd-metadata{overflow-wrap:anywhere}
+.wd-details .wd-description{margin-top:12px;overflow-wrap:anywhere}
+.wd-details .wd-description p{white-space:pre-wrap}
+.wd-details :is(.wd-description,.wd-prices)>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;list-style:none}
+.wd-details :is(.wd-description,.wd-prices)>summary::after{content:'⌄';margin-left:auto}
+.wd-details :is(.wd-description,.wd-prices)[open]>summary::after{content:'⌃'}
+.wd-details .wd-prices>summary small{font-size:.8rem;overflow-wrap:anywhere}
+.wd-details .wd-prices>summary::-webkit-details-marker,.wd-details .wd-description>summary::-webkit-details-marker{display:none}
+.wd-details .wd-prices{min-width:0;align-self:start}
+.wd-details .wd-prices summary{font-weight:700;font-family:var(--font-heading,Georgia,serif);font-size:1.2rem}
+.wd-details .wd-mobile-option,.wd-details .wd-mobile-reserved,.wd-details .wd-stock-toggle{display:none}
+@media(max-width:760px){
+ .wd-details section.wd-hero{grid-template-columns:72px minmax(0,1fr);gap:10px 12px;padding-bottom:14px}
+ .wd-details .wd-cover{grid-row:1;grid-column:1}
+ .seller-content .wd-details .wd-identity h2{font-size:1.35rem;line-height:1.2;margin:0 0 8px;word-break:normal}
+ .wd-details .wd-price{gap:6px;font-size:1rem}
+ .wd-details :is(.wd-metadata,.wd-actions){grid-column:1/-1}
+ .wd-details .wd-metadata p{margin:6px 0 0;font-size:.85rem}
+ .wd-details .wd-stock-count{display:block;background:#edf3e5;border-radius:6px;padding:6px 8px}
+ .wd-details .wd-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+ .wd-details .wd-actions>.seller-primary{grid-column:1/-1}
+ .wd-details .wd-actions>button,.wd-details .wd-menu summary{min-height:44px;width:100%;justify-content:center;white-space:normal;overflow-wrap:anywhere;line-height:1.3}
+ .wd-details .wd-actions>.wd-menu{display:block;min-width:0}
+ .wd-details .wd-menu summary{display:flex;align-items:center;padding:8px}
+ .wd-details .wd-menu>div{left:auto;right:0;max-width:calc(100vw - 40px);width:230px}
+ .wd-details .wd-columns{margin-top:14px;gap:10px}
+ .seller-content .wd-details .wd-back,.seller-content .wd-details .wd-link{min-height:44px}
+ .wd-details .wd-back{margin-bottom:6px}
+ .wd-details .wd-stock-table,.wd-details .wd-stock-table tbody{display:block;width:100%}
+ .wd-details .wd-stock-table thead,.wd-details .wd-stock-table .wd-axis{display:none}
+ .wd-details .wd-stock-table tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(64px,auto);gap:0 12px;padding:6px 0;border-bottom:1px solid #dedbd1}
+ .seller-content .wd-details .wd-stock-table td{padding:2px 0;border:0;min-width:0}
+ .wd-details .wd-stock-table .wd-mobile-option{display:block;grid-column:1;grid-row:1/3;align-self:center;overflow-wrap:anywhere;word-break:normal}
+ .wd-details .wd-available{grid-column:2;text-align:end;font-weight:700}
+ .wd-details .wd-reserved{grid-column:2;text-align:end;font-size:.8rem!important;color:#52635e}
+ .wd-details .wd-mobile-reserved{display:inline}
+ .wd-details .wd-stock-card[data-expanded=false] tbody tr:nth-child(n+6){display:none}
+ .wd-details .wd-stock-toggle{display:block;margin-top:6px}
+ .wd-details .wd-prices{padding:8px 12px!important}
+ .wd-details .wd-prices summary{font-size:1rem}
+ .wd-details .wd-description{padding:8px 12px;border:1px solid #dedbd1;border-radius:8px}
+}
+
+.wd-import-menu{display:none}
+@media(max-width:760px){
+ .seller-workspace .wd-catalog-tabs{display:flex;min-width:0;gap:6px;overflow:visible}
+ .seller-workspace .wd-catalog-tabs>button{flex:1;min-width:0;padding:8px;white-space:normal}
+ .seller-workspace .wd-catalog-tabs>.wd-import-desktop{display:none}
+ .wd-catalog-tabs .wd-import-menu{display:block;position:relative;margin:0;border:0;padding:0;flex:0 0 44px;background:transparent}
+ .wd-import-menu>summary{display:grid;place-items:center;min-width:44px;min-height:44px;border:1px solid #dedbd1;border-radius:6px;cursor:pointer;list-style:none}
+ .wd-import-menu>summary::-webkit-details-marker{display:none}
+ .wd-import-menu>div{position:absolute;right:0;top:100%;z-index:8;min-width:200px;max-width:calc(100vw - 40px);padding:6px;border:1px solid #dedbd1;border-radius:6px;background:#fffefa;box-shadow:0 4px 14px #1232}
+ .wd-import-menu>div>button{width:100%;min-height:44px;white-space:normal;text-align:left}
+}

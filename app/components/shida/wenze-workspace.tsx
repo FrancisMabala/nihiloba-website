@@ -205,6 +205,7 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
   async function reloadStores() { const data = await request(`${root}?archived=${archived}`) as { stores: Item[] }; data.stores=data.stores.filter(row=>row.selling_mode!=="individual");setStores(data.stores); }
   const [labelSelection,setLabelSelection]=useState<string[]>([]),[batchLabels,setBatchLabels]=useState(false);
   const catalogueCriteria=useRef({status:"active",query:""});
+  const catalogueScroll=useRef(0),restoreCatalogueScroll=useRef(false);
   async function loadProducts(selected = store, page = offset, status = filter, query = search) {
     if (!selected) return;
     const data = await request(`${root}/${enc(selected.public_ref)}/products?status=${enc(status)}&search=${enc(query)}&offset=${page}&limit=20`) as { products: Item[]; total: number };
@@ -215,9 +216,11 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
       window.history.replaceState(null,"",url);
     }
     setProducts(data.products); setTotal(data.total); setOffset(page);setLabelSelection([]);setBatchLabels(false);
+    if(restoreCatalogueScroll.current){restoreCatalogueScroll.current=false;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,catalogueScroll.current)));}
   }
   async function manageProduct(row:Item){
     if(!store)return;
+    catalogueScroll.current=window.scrollY;
     const selected=await request(`${storePath}/products/${enc(row.public_ref)}`) as Item;
     const {query,status}=catalogueCriteria.current;
     const url=new URL(window.location.href);
@@ -367,7 +370,7 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
     savedContent=<div className="wd-flow">{confirmation}{error&&<p role="alert">{error.startsWith("choices:")?choiceCopy[locale][error.slice(8) as keyof typeof choiceCopy.en]:t(error)}</p>}
     {productTab==="options"?<SavedStock initialFocus={focusOption} key={product.public_ref} locale={locale} product={product} path={productPath} onDone={detail} onUpdate={p=>setProduct(p as Item)} onConvert={()=>void run(()=>openEditor("conversion"))}/>:
     productTab==="labels"||productTab==="photos"?<><button className="wd-back" onClick={detail}>← {savedText(locale,"backProduct")}</button>{productTab==="labels"?<WenzeProductLabels storeRef={store.public_ref} productRefs={[product.public_ref]} locale={locale}/>:<section className="wc-card"><h3>{t("photos")}</h3><p>{t("photoHint")}</p><label>{t("upload")}<input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={event => void files(event.target.files)} /></label><p>{product.photos?.length??0} / 5</p><div className="wp-gallery">{product.photos?.map((photo,index) => <article className="wz-card" key={photo.photo_ref}>{/* Hosted URLs come only from the protected backend. */}<Image unoptimized src={photo.url} alt={product.name} width="220" height="180" />{index===0&&<span className="wp-cover">{pc("mainPhoto")}</span>}<details><summary>{pc("photoActions")}</summary><div className="wz-actions">{["cover", "earlier", "later", "remove"].map(action => <button key={action} disabled={busy} onClick={() => void run(async () => setProduct(await send(`${productPath}/photos`, "POST", { expected_revision: product.revision, action, photo_ref: photo.photo_ref }) as Item))}>{t(action)}</button>)}</div><label>{t("replace")}<input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" onChange={event => void files(event.target.files, photo.photo_ref)} /></label></details></article>)}</div></section>}</>:
-    <SavedProductPage key={productPath} locale={locale} product={product} category={category} path={productPath} pending={!!pendingCost&&pendingCost.productRef===product.public_ref&&costAllowed} retry={()=>run(async()=>{if(pendingCost)await savePurchaseCost(pendingCost);})} onBack={()=>void navigate("catalog",offset)} onStock={()=>void selectProductTab("options")} onLabels={()=>void selectProductTab("labels")} onPhotos={()=>void selectProductTab("photos")} onEdit={()=>void run(()=>openEditor("product"))} onShare={()=>void run(async()=>setPreview(await request(productPath+"/preview") as Record<string,unknown>))}
+    <SavedProductPage key={productPath} locale={locale} product={product} category={category} path={productPath} pending={!!pendingCost&&pendingCost.productRef===product.public_ref&&costAllowed} retry={()=>run(async()=>{if(pendingCost)await savePurchaseCost(pendingCost);})} onBack={()=>{restoreCatalogueScroll.current=true;void navigate("catalog",offset);}} onStock={()=>void selectProductTab("options")} onLabels={()=>void selectProductTab("labels")} onPhotos={()=>void selectProductTab("photos")} onEdit={()=>void run(()=>openEditor("product"))} onShare={()=>void run(async()=>setPreview(await request(productPath+"/preview") as Record<string,unknown>))}
       actions={<>{product.status==="active"&&button("duplicate",()=>void run(()=>openEditor("duplicate")))}{button(product.status!=="active"?"restore":product.visible==="true"?"hide":"show",()=>void lifecycle(product.status!=="active"?"restore":product.visible==="true"?"hide":"show",product,productPath))}{product.status==="active"&&button("archive",()=>void lifecycle("archive",product,productPath))}</>}/>}
     {preview&&<WenzeProductShare locale={locale} data={preview} visible={canShare} onClose={()=>setPreview(null)}/>}</div>;
   }

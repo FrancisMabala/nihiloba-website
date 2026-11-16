@@ -40,7 +40,11 @@
     "managePhotos": "Gérer les photos",
     "viewPhotos": "Voir les photos",
     "unitCost": "Prix d’achat par pièce",
-    "beforeExpenses": "Ce qu’il vous reste avant les frais"
+    "beforeExpenses": "Ce qu’il vous reste avant les frais",
+    "availableCount": "{n} disponibles",
+    "allVersions": "Voir toutes les versions ({n})",
+    "fewerVersions": "Réduire la liste",
+    "pricesCosts": "Prix et coûts"
   },
   "en": {
     "backList": "Back to products",
@@ -83,7 +87,11 @@
     "managePhotos": "Manage photos",
     "viewPhotos": "View photos",
     "unitCost": "Purchase price per item",
-    "beforeExpenses": "What remains before expenses"
+    "beforeExpenses": "What remains before expenses",
+    "availableCount": "{n} available",
+    "allVersions": "View all variants ({n})",
+    "fewerVersions": "Show fewer variants",
+    "pricesCosts": "Prices and costs"
   },
   "ln": {
     "backList": "Zonga na biloko",
@@ -126,7 +134,11 @@
     "managePhotos": "Kamba bafɔtɔ",
     "viewPhotos": "Talá bafɔtɔ",
     "unitCost": "Ntalo ya kosomba eteni moko",
-    "beforeExpenses": "Oyo etikali liboso ya bafrais"
+    "beforeExpenses": "Oyo etikali liboso ya bafrais",
+    "availableCount": "{n} ezali",
+    "allVersions": "Tala ba version nyonso ({n})",
+    "fewerVersions": "Lakisa moke",
+    "pricesCosts": "Ntalo mpe motuya"
   },
   "sw": {
     "backList": "Rudi kwenye bidhaa",
@@ -169,6 +181,10 @@
     "managePhotos": "Simamia picha",
     "viewPhotos": "Angalia picha",
     "unitCost": "Bei ya ununuzi kwa kipande",
-    "beforeExpenses": "Kinachobaki kabla ya gharama"
+    "beforeExpenses": "Kinachobaki kabla ya gharama",
+    "availableCount": "{n} zinapatikana",
+    "allVersions": "Ona aina zote ({n})",
+    "fewerVersions": "Onyesha aina chache",
+    "pricesCosts": "Bei na gharama"
   }
 }
