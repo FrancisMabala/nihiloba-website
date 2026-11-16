@@ -17,6 +17,7 @@ import type {PublicJob, PublicJobEmployerSummary, PublicJobSalary, PublicJobSumm
 import {ButtonLink} from "../button-link";
 import {missionTiming} from './mission-presentation';
 import {IndividualJobAction} from "./individual-job-action";
+import {individualEligibilityCopy} from '../../lib/individual-job-eligibility';
 import {listingText} from "../../lib/personal-missions-copy";
 import "./mission-management.css";
 import {RecruitmentContact} from "./recruitment-contact";
@@ -149,17 +150,18 @@ export function JobDetailContent({locale,item,similar}:{locale:Locale;item:Publi
   const structuredValues=[item.short_summary,item.responsibilities,item.qualifications,experience,item.education,item.skills,item.personal_qualities,item.languages,item.benefits,item.employment_conditions],hasStructuredContent=structuredValues.some((value)=>Boolean(value?.trim())),legacyFallback=hasStructuredContent?null:item.description_fallback||item.description;
   if(item.origin==='direct'&&item.offer_type==='individual'){
     const c=individualApplicationCopy[locale],timing=missionTiming(item.duration_frequency,locale);
-    const facts=[[t.compensation,item.salary_visibility==="hidden"?null:item.salary?.period?salary:item.compensation||salary],[missionText(locale,'frequency'),timing.condition],[missionText(locale,'daysLabel'),timing.days],[t.schedule,item.work_schedule],[c.start,start]].filter(([,value])=>value);
+    const facts=[[t.compensation,item.salary_visibility==="hidden"?null:item.salary?.period?salary:item.compensation||salary],[missionText(locale,'frequency'),timing.condition],[missionText(locale,'daysLabel'),timing.days],[individualEligibilityCopy[locale].schedule,item.work_schedule],[individualEligibilityCopy[locale].start,start]].filter(([,value])=>value);
     return <section className="section mission-public-section"><div className="container mission-public">
      <JobResultsLink href={marketplacePath(locale,'/shida/emplois')} locale={locale}/>
-     <div className="mission-public-status"><span className="job-type-label">{listingText(locale,'jobType')}</span><strong>{inactive?c.closed:hasSupportedApplication(item)?c.open:t.actionUnavailable}</strong></div>
+     <div className="mission-public-status"><span className="job-type-label">{listingText(locale,'jobType')}</span></div>
      <h1>{item.title}</h1>{location&&<p>{location}</p>}
+     <IndividualJobAction key={`${item.public_ref}:${item.lifecycle_state}:${hasSupportedApplication(item)}`} locale={locale} reference={item.public_ref} available={hasSupportedApplication(item)} lifecycle={item.lifecycle_state}/>
      {facts.length>0&&<dl className="mission-public-facts">{facts.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
      <section className="mission-card"><h2>{listingText(locale,'mission')}</h2><OfferText value={item.short_summary||item.description_fallback||item.description||''}/>
      {item.responsibilities&&<StructuredJobSection title={d.responsibilities} value={item.responsibilities}/>}
      {(item.qualifications||item.optional_experience||item.employment_conditions||item.skills||item.personal_qualities||item.education||item.languages)&&<><h2>{c.requirements}</h2><OfferText value={[item.qualifications,item.optional_experience,item.employment_conditions,item.skills,item.personal_qualities,item.education,item.languages].filter(Boolean).join('\n\n')}/></>}</section>
      <p className="mission-publisher">{c.publisher} · {item.employer.name||t.personalEmployer}</p>
-     <div className="mission-actions"><IndividualJobAction locale={locale} reference={item.public_ref} open={!inactive&&hasSupportedApplication(item)}/><JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin="direct" canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save}/></div>
+     <div className="mission-actions"><JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin="direct" canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save}/></div>
      <JobReportLink locale={locale} jobReference={item.public_ref} reportUrl={item.report_url}/>
     </div></section>;
   }

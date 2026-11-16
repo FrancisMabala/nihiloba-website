@@ -86,11 +86,11 @@ describe("Employment Batch 5B structured public frontend",()=>{
 
   it("does not reconstruct hidden salary from legacy compensation",async()=>{vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({...detail,salary:null,salary_visibility:"hidden",compensation:"PRIVATE SALARY",requirements_document:{available:false,url:null}}))));const html=renderToStaticMarkup(await authenticatedDetail({locale:"en",slug:"hidden-salary"}));expect(html).not.toContain("500–700");expect(html).not.toContain("PRIVATE SALARY");expect(html).not.toContain("Verified");expect(html).not.toContain("Requirements document");});
 
-  it("puts the overnight schedule, pay and same-tab application on the public Personal mission",async()=>{
+  it("preserves overnight schedule and pay while checking Personal application eligibility",async()=>{
     const payload={...detail,...individual,work_schedule:"De 18 h à 1 h le lendemain",duration_frequency:"Une seule fois · 2026-11-21",optional_experience:"Débutant accepté",salary:null,salary_visibility:"visible",compensation:"30000 CDF par mission"};
     vi.stubGlobal("fetch",vi.fn().mockImplementation(()=>Promise.resolve(new Response(JSON.stringify(payload)))));
     const html=renderToStaticMarkup(await authenticatedDetail({locale:"fr",slug:"home-helper"}));
-    for(const value of ["Postuler à cette mission","kind=apply&amp;offer=JOB_home","novembre","lendemain","CDF par mission","Débutant accepté"])expect(html).toContain(value);
+    for(const value of ["Vérification des candidatures…","novembre","lendemain","CDF par mission","Débutant accepté"])expect(html).toContain(value);
     expect(html).not.toContain("wa.me");
   });
 

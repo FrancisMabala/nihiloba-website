@@ -58,6 +58,33 @@
 
 .mission-public .mission-card h2{font:500 1.45rem/1.25 var(--font-heading,Georgia,serif);margin:0 0 .65rem}.mission-public .mission-card h2:not(:first-child){margin-top:1.25rem}
 
+/* Public individual offers: no changes to shared marketplace headers or owner forms. */
+.mission-eligibility{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0}
+.mission-eligibility p{flex:1 1 16rem;margin:0;font-size:.95rem}
+.mission-eligibility .button{min-height:44px;white-space:normal;text-align:center}
+.mission-eligibility[data-state=error] p{color:#873b29}
+@media(max-width:700px){
+ .section.mission-public-section{padding-block:8px 24px}
+ .mission-public{width:100%;padding-inline:16px}
+ .mission-public>a:first-child{display:inline-flex;align-items:center;min-height:44px;font-size:.9rem}
+ .mission-public-status{margin:4px 0 8px}
+ .mission-public .job-type-label{font-size:.75rem;letter-spacing:.02em;padding:4px 8px}
+ .mission-public>h1{font-size:1.75rem;line-height:1.2;margin:0 0 4px}
+ .mission-public>h1+p{margin:0;line-height:1.4}
+ .mission-public-facts{display:grid;grid-template-columns:minmax(0,1fr);gap:0;margin:12px 0;padding:4px 12px;border:1px solid #ded9ce;border-radius:10px;background:#f6f3e9}
+ .mission-public-facts>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr));gap:4px 12px;padding:8px 0;border:0;border-radius:0;background:none}
+ .mission-public-facts>div+div{border-top:1px solid #ded9ce}
+ .mission-public-facts :is(dt,dd){min-width:0;line-height:1.4;overflow-wrap:anywhere}
+ .mission-public-facts dt{font-size:.9rem}
+ .mission-public .mission-card{padding:12px;border-radius:10px}
+ .mission-public .mission-card p{margin:8px 0;line-height:1.45}
+ .mission-public .mission-card h2{margin-bottom:8px}
+ .mission-public .mission-publisher{margin:12px 0;padding:8px 12px}
+ .mission-public .mission-actions{margin:12px 0;gap:8px}
+ .mission-public .job-public-actions{flex-wrap:wrap;gap:8px}
+ .mission-public :is(button,.button){min-height:44px}
+}
+
 /* Owner listing views: do not change the public offer or application layout. */
 .mission-progress{display:none}.listing-action-sheet{display:grid;gap:12px}.listing-action-sheet button{text-align:left;width:100%;overflow-wrap:anywhere}.listing-action-sheet .listing-danger{color:#8a2b20;border-color:#cda89f;background:#fff8f5}.listing-action-sheet p{margin:0;white-space:pre-line}
 .mission-progress progress{appearance:none;border:0;background:#e4e3d9}.mission-progress progress::-webkit-progress-bar{background:#e4e3d9}.mission-progress progress::-webkit-progress-value{background:#164331}.mission-progress progress::-moz-progress-bar{background:#164331}

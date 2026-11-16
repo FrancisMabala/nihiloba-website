@@ -8,6 +8,22 @@ const request = (method = 'GET', body?: string, headers: Record<string, string> 
 beforeEach(() => {jar.set(PERSONAL_SESSION_COOKIE, token); vi.stubGlobal('fetch', upstream); vi.stubEnv('SHIDA_API_BASE_URL', 'https://backend.test'); upstream.mockReset().mockResolvedValue(Response.json({progress: []}));});
 afterEach(() => {vi.unstubAllGlobals(); vi.unstubAllEnvs();});
 
+it.each(['mission_self_application','mission_application_closed','mission_application_expired','mission_application_disabled'])('forwards only safe application reason %s',async code=>{
+  upstream.mockResolvedValueOnce(Response.json({detail:code},{status:409}));
+  const response=await GET(request('GET',undefined,{},'?kind=apply&offer=JOB_test'));
+  expect(response.status).toBe(409);
+  expect(await response.json()).toEqual({code});
+  expect(response.headers.get('Cache-Control')).toContain('private, no-store');
+});
+it('does not interpret legacy or private conflicts as closed applications',async()=>{
+  for(const detail of ['mission_closed','private content']){
+    upstream.mockResolvedValueOnce(Response.json({detail},{status:409}));
+    const response=await GET(request('GET',undefined,{},'?kind=apply&offer=JOB_test'));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({detail:'personal_offer_unavailable'});
+  }
+});
+
 it('requires bound session and same-site origin before forwarding', async () => {
   expect((await GET(request('GET', undefined, {'X-Shida-Session': 'wrong'}))).status).toBe(401);
   expect((await POST(request('POST', '{}', {Origin: 'https://evil.test'}))).status).toBe(403);
