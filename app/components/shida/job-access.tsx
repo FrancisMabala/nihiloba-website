@@ -12,9 +12,9 @@ const words = {
   sw:["Ingia kusoma tangazo lote","Angalia majukumu, sifa zinazohitajika na jinsi ya kutuma ombi.","Ingia","Fungua akaunti","Funga","Imeshindikana kukagua kipindi chako. Jaribu tena."],
 } as const;
 const SelectOffer = createContext<((event:MouseEvent<HTMLAnchorElement>)=>void)|null>(null);
-export function JobAccessLink({href,children,primary=false}:{href:string;children:ReactNode;primary?:boolean}) {
+export function JobAccessLink({href,children,primary=false,className,label}:{href:string;children:ReactNode;primary?:boolean;className?:string;label?:string}) {
   const select = useContext(SelectOffer);
-  return <a href={href} onClick={select || undefined} className={primary ? "button button-primary" : undefined}>{children}{primary && <span aria-hidden="true"> →</span>}</a>;
+  return <a href={href} onClick={select || undefined} aria-label={label} className={className || (primary ? "button button-primary" : undefined)}>{children}{primary && <span aria-hidden="true"> →</span>}</a>;
 }
 export function JobAccess({locale,initialOffer,children}:{locale:ServiceLocale;initialOffer?:string;children:ReactNode}) {
   const base = (locale==="en"?"":"/"+locale)+"/shida";

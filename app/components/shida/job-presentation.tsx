@@ -1,4 +1,5 @@
 import {JobMobileApplication} from './job-mobile-application';
+import {compactMarketplaceCopy} from '../../lib/compact-marketplace-copy';
 import {missionText} from '../../lib/mission-copy';
 import {individualApplicationCopy} from '../../lib/individual-application-copy';
 import {jobLocation} from "../../lib/job-location";
@@ -118,7 +119,8 @@ function JobFacts({item,locale}:{item:PublicJobSummary;locale:Locale}){const t=c
 export function JobCard({item,locale,forEmployer=false}:{item:PublicJobSummary;locale:Locale;forEmployer?:boolean}) {
  const u=jobDiscoveryCopy[locale],href=jobPath(locale,item),location=jobLocation(item),salary=cardCompensation(item,locale),summary=plainOfferText(item.summary_preview||item.description_preview||""),category=item.professional_category||item.category,organization=organizationLabel(item,locale);
  return <article className={`job-result job-result-${item.offer_type}${forEmployer?" employer-job-card":""}`}>
-  <div className="job-card-identity"><JobCategoryIcon category={category} individual={item.offer_type==="individual"}/><div>{!forEmployer&&<span className={`job-type-label job-type-${item.offer_type}`}>{item.offer_type==="individual"?listingText(locale,'jobType'):u.company}</span>}<h3><JobAccessLink href={href}>{item.title}</JobAccessLink></h3>{location&&<p className="job-result-location">{location}</p>}</div></div>
+  <div className="job-card-identity"><JobCategoryIcon category={category} individual={item.offer_type==="individual"}/><div>{!forEmployer&&<span className={`job-type-label job-type-${item.offer_type}`}>{item.offer_type==="individual"?compactMarketplaceCopy[locale].individualOffer:compactMarketplaceCopy[locale].professionalOffer}</span>}<h3><JobAccessLink href={href}>{item.title}</JobAccessLink></h3>{location&&<p className="job-result-location">{location}</p>}</div></div>
+  {!forEmployer&&item.relationship_capabilities.can_save&&<JobAccessLink href={`${href}?job-action=save`} className="job-card-save" label={`${jobSearchCopy[locale].save}: ${item.title}`}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg></JobAccessLink>}
   {!forEmployer&&item.offer_type==="enterprise"&&<EmployerIdentity employer={item.employer} locale={locale}/>}
   {(item.origin==="external"||forEmployer)&&<span className="job-origin-label job-origin-external">{originLabel(item,locale)}</span>}{!forEmployer&&organization&&<span className="job-origin-label">{organization}</span>}
   {!forEmployer&&salary&&<p className="job-result-salary">{salary}</p>}

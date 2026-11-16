@@ -1,3 +1,5 @@
+import {compactMarketplaceCopy} from "../../lib/compact-marketplace-copy";
+import {MarketplaceSearchSubmit} from "./marketplace-search-submit";
 import { EmployerPageView } from "./employer-page-view";
 import {MarketplaceWelcome} from "./marketplace-welcome";
 import {SpaceIcon} from "./account-space-icon";
@@ -7,7 +9,7 @@ import {JobCategories, JobCategoryIcon, jobDiscoveryCopy, type JobCategory} from
 import {ActiveSearchFilters} from "./active-search-filters";
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
 import type {Metadata} from "next";
-import {JobsDiscoveryHero, JobsInvitations, jobsFinalCopy} from "./jobs-discovery-final";
+import {JobsDiscoveryHero, JobsInvitations} from "./jobs-discovery-final";
 import Link from "next/link";
 import "./jobs-public.css";
 import type {ServiceLocale as Locale} from "../../lib/services-i18n";
@@ -15,28 +17,27 @@ import {safePublicImageUrl} from "../../lib/safe-public-url";
 import {getJobPreview, getJobEmployer, getJobs, getJobCategories, jobSearchQuery, ShidaApiError} from "../../services/shida/public-client";
 import type {JobCollection, JobSearch, PublicJobEmployer} from "../../types/shida-public";
 import {ButtonLink} from "../button-link";
-import {listingText} from "../../lib/personal-missions-copy";
 import "./mission-management.css";
 import {MarketplaceImage} from "./marketplace-image";
 import {marketplacePath, MarketplaceState} from "./marketplace";
 import {JobAccess} from "./job-access";
-import {copy, discoveryCopy, employerLocation, contractLabel, JobCard, JobUnavailable} from "./job-presentation";
+import {copy, employerLocation, contractLabel, JobCard, JobUnavailable} from "./job-presentation";
 export {JobDetailPage} from "./job-detail-reader";
 function viewHref(locale:Locale,search:JobSearch,view:"professional"|"individual"){return `${marketplacePath(locale,"/shida/emplois")}${jobSearchQuery({...search,view,page:1})}`;}
 function pageHref(locale:Locale,search:JobSearch,page:number){return `${marketplacePath(locale,"/shida/emplois")}${jobSearchQuery({...search,page})}`;}
-function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
+function JobFilters({locale,search,categories}:{locale:Locale;search:JobSearch;categories:JobCategory[]}) {
   const t=copy[locale];
   return <form className="jobs-public-filters mp-search" action={marketplacePath(locale,"/shida/emplois")} method="get" role="search" aria-label={t.search}>
-    {search.category&&<input type="hidden" name="category" value={search.category}/>}{search.view&&<input type="hidden" name="view" value={search.view}/>}
+    {search.view&&<input type="hidden" name="view" value={search.view}/>}
     <div className="jobs-search-primary mp-search-primary">
-      <label><span>{t.search}</span><input type="search" name="query" defaultValue={search.query} placeholder={jobsFinalCopy[locale].placeholder} maxLength={120}/></label>
+      <label><span>{t.search}</span><input type="search" name="query" defaultValue={search.query} placeholder={compactMarketplaceCopy[locale].jobSearch} maxLength={120}/></label>
       <label><span>{t.city}</span><input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label>
-      <button className="button button-primary" type="submit">{marketplaceDiscoveryCopy[locale].search}<span aria-hidden="true">→</span></button>
+      <MarketplaceSearchSubmit label={marketplaceDiscoveryCopy[locale].search}/>
     </div>
     <div className="jobs-search-secondary">
       <details open={Boolean(search.area||search.commune||search.contract)||undefined}>
-        <summary>{t.filters}</summary>
-        <div className="jobs-search-advanced">
+        <summary>{compactMarketplaceCopy[locale].filters}</summary>
+        <div className="jobs-search-advanced"><label>{jobDiscoveryCopy[locale].categories}<select name="category" defaultValue={search.category||""}><option value="">{jobDiscoveryCopy[locale].all}</option>{search.category&&!categories.some(c=>c.id===search.category)&&<option value={search.category}>{search.category}</option>}{categories.map(c=><option value={c.id} key={c.id}>{c.label}</option>)}</select></label>
           <label>{t.contract}<select name="contract" defaultValue={search.contract?.toLowerCase()||""}><option value="">—</option>{Array.from(new Set(["cdi","cdd","stage",...(search.contract?[search.contract.toLowerCase()]:[])])).map(key=><option key={key} value={key}>{contractLabel(key,locale)}</option>)}</select></label>
           <label>{t.area}<input name="area" defaultValue={search.area} maxLength={120}/></label>
           <label>{t.commune}<input name="commune" defaultValue={search.commune} maxLength={120}/></label>
@@ -49,7 +50,7 @@ function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
 }
 function JobPagination({locale,search,collection}:{locale:Locale;search:JobSearch;collection:JobCollection}){const t=copy[locale],p=collection.pagination;if(p.total_pages<=1)return null;return <nav className="marketplace-pagination" aria-label={`${t.page} ${p.page} ${t.of} ${p.total_pages}`}><span>{p.page>1?<Link href={pageHref(locale,search,p.page-1)}>{t.previous}</Link>:t.previous}</span><span>{t.page} {p.page} {t.of} {p.total_pages}</span><span>{p.page<p.total_pages?<Link href={pageHref(locale,search,p.page+1)}>{t.next}</Link>:t.next}</span></nav>;}
 export async function JobCollectionPage({locale,search,initialOffer}:{locale:Locale;search:JobSearch;initialOffer?:string}) {
-  const t=copy[locale],d=discoveryCopy[locale],u=jobDiscoveryCopy[locale];
+  const t=copy[locale],u=jobDiscoveryCopy[locale];
   let collection:JobCollection|undefined;
   try { collection=await getJobs({...search,page:search.page??1,page_size:search.page_size??12},locale); }
   catch(error){if(!(error instanceof ShidaApiError)||error.kind==="not-found")throw error;}
@@ -63,13 +64,13 @@ export async function JobCollectionPage({locale,search,initialOffer}:{locale:Loc
     <div className="container">
       <JobsDiscoveryHero locale={locale}/>
     <section id="job-discovery" className="jobs-public-discovery" aria-labelledby="job-discovery-title">
-      <JobFilters locale={locale} search={search}/>
+      <JobFilters locale={locale} search={search} categories={categories}/>
       <JobCategories locale={locale} search={search} categories={categories}/><nav className="job-offer-tabs mp-chips" aria-label={t.jobs}>
-        <Link href={pageHref(locale,{...search,view:undefined},1)} className={!search.view?"job-offer-tab-active":undefined} aria-current={!search.view?"page":undefined}>{d.all}</Link>
-        <Link href={viewHref(locale,search,"professional")} className={search.view==="professional"?"job-offer-tab-active":undefined} aria-current={search.view==="professional"?"page":undefined}>{t.professional}</Link>
-        <Link href={viewHref(locale,search,"individual")} className={search.view==="individual"?"job-offer-tab-active":undefined} aria-current={search.view==="individual"?"page":undefined}>{listingText(locale,'job')}</Link>
+        <Link href={pageHref(locale,{...search,view:undefined},1)} className={!search.view?"job-offer-tab-active":undefined} aria-current={!search.view?"page":undefined}>{compactMarketplaceCopy[locale].all}</Link>
+        <Link href={viewHref(locale,search,"professional")} className={search.view==="professional"?"job-offer-tab-active":undefined} aria-current={search.view==="professional"?"page":undefined}>{compactMarketplaceCopy[locale].professional}</Link>
+        <Link href={viewHref(locale,search,"individual")} className={search.view==="individual"?"job-offer-tab-active":undefined} aria-current={search.view==="individual"?"page":undefined}>{compactMarketplaceCopy[locale].individual}</Link>
       </nav>
-      <div className="jobs-results-heading mp-results-heading"><h2 id="job-discovery-title">{d.opportunities}</h2>{collection&&<p className="marketplace-result-count" role="status">{collection.pagination.total_items} {collection.pagination.total_items===1?t.result:t.results}</p>}</div>
+      <div className="jobs-results-heading mp-results-heading"><h2 id="job-discovery-title">{compactMarketplaceCopy[locale].jobs}</h2>{collection&&<p className="marketplace-result-count" role="status">{collection.pagination.total_items} {collection.pagination.total_items===1?t.result:t.results}</p>}</div>
       <div className="job-results" id="job-results">
         {collection?<>
           {activeItems.length?<div className="job-result-list">{activeItems.map(item=><JobCard key={item.public_ref} item={item} locale={locale}/>)}</div>:welcome?<MarketplaceWelcome market="emplois" locale={locale}><ButtonLink href={marketplacePath(locale,"/shida/space?view=job-search")}>{({fr:"Ma recherche d’emploi",en:"My job search",ln:"Boluki mosala na ngai",sw:"Utafutaji wangu wa kazi"})[locale]}</ButtonLink><ButtonLink variant="secondary" href={marketplacePath(locale,"/shida/space?view=job-offer")}>{({fr:"Publier une offre",en:"Post a job",ln:"Tia mosala",sw:"Chapisha nafasi ya kazi"})[locale]}</ButtonLink></MarketplaceWelcome>:<div className="job-view-empty"><JobCategoryIcon category={null}/><MarketplaceState>{emptyMessage}</MarketplaceState>{filtered&&<ButtonLink href={marketplacePath(locale,"/shida/emplois")} variant="secondary">{u.clear}</ButtonLink>}<ButtonLink href={marketplacePath(locale,"/shida")} variant="text">{t.exploreMarketplaces}</ButtonLink></div>}

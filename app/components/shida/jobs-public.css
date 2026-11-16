@@ -155,8 +155,6 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip>a[aria-
 body .market-surface .jobs-public.marketplace-public .job-category-strip .job-category-icon{width:30px;height:30px;flex:0 0 30px;border-radius:50%}
 body .market-surface .jobs-public.marketplace-public .job-category-strip .job-category-icon svg{width:18px;height:18px}
 @media(max-width:600px){
- body .market-surface .jobs-public.marketplace-public .jobs-search-primary{display:flex;flex-direction:column;align-items:stretch}
- body .market-surface .jobs-public.marketplace-public .jobs-search-primary>label,body .market-surface .jobs-public.marketplace-public .jobs-search-primary>button{width:100%;max-width:none}
  body .market-surface .jobs-public.marketplace-public .job-result h3{font-size:1rem;margin:3px 0}
  body .market-surface .jobs-public.marketplace-public .job-result .job-result-salary{font-size:.95rem}
  body .market-surface .jobs-public.marketplace-public .job-result .job-result-actions .button{background:transparent;color:var(--forest);border:1px solid #c5d0c9;min-height:40px;padding:6px 12px;width:auto}

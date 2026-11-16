@@ -1,3 +1,4 @@
+import {MarketplaceSearchSubmit} from "./marketplace-search-submit";
 import {RestaurantRetry} from "./restaurant-retry";
 import {MarketplaceWelcome} from "./marketplace-welcome";
 import {WenzeSellingInvitations} from "./wenze-selling-invitations";
@@ -63,7 +64,7 @@ export async function WenzeCollection({l,search}:{l:Locale;search:WenzeSearch & 
  return <WenzeBuyerProvider locale={l}><div className="marketplace-public"><div className="wenze-public wzp-landing container">
 
   <WenzeDiscoveryHero locale={l}/>
-  <WenzePublicTabs locale={l} shops/><form className="marketplace-filters wzp-filters mp-search"><input type="hidden" name="view" value="shops"/><div className="wzp-search mp-search-primary"><label><span>{t.search}</span><input type="search" name="query" placeholder={t.search} defaultValue={search.query}/></label><label><span>{t.city}</span><input name="city" placeholder={t.city} defaultValue={search.city}/></label><button className="button button-primary">{t.apply}</button></div>
+  <WenzePublicTabs locale={l} shops/><form className="marketplace-filters wzp-filters mp-search"><input type="hidden" name="view" value="shops"/><div className="wzp-search mp-search-primary"><label><span>{t.search}</span><input type="search" name="query" placeholder={t.search} defaultValue={search.query}/></label><label><span>{t.city}</span><input name="city" placeholder={t.city} defaultValue={search.city}/></label><MarketplaceSearchSubmit label={t.apply}/></div>
    <div className="wzp-filter-bottom"><details open={Boolean(search.area||search.category)||undefined}><summary>{u.filters}</summary><div className="marketplace-filter-grid"><label>{t.area}<input name="area" defaultValue={search.area}/></label><label>{t.category}<select name="category" defaultValue={search.category||""}><option value="">{t.all}</option>{Object.keys(categories).map(c=><option key={c} value={c}>{label(c,l)}</option>)}</select></label></div></details><Link href={marketplacePath(l,"/shida/wenze")+"?view=shops"}>{u.clear}</Link></div>
   </form>
   <section className="wz-category-browser"><h2>{wenzeRefinementCopy[l].categories}</h2><nav className="mp-chips" aria-label={t.category}>{["","fashion_clothing","phones_electronics","home_equipment","beauty_cosmetics","food_drinks"].map(category=><Link key={category} href={categoryHref(category)} aria-current={(search.category||"")===category?"page":undefined}>{category?label(category,l):t.all}</Link>)}</nav><details><summary>{wenzeRefinementCopy[l].all}</summary><div className="wz-all-categories">{Object.keys(categories).map(category=><Link key={category} href={categoryHref(category)}>{label(category,l)}</Link>)}</div></details></section>

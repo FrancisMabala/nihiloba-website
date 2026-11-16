@@ -18,7 +18,7 @@ it('uses accurate discovery wording and keeps child categories inside the collap
  const categorySection=html.slice(html.indexOf('class="wz-category-browser"'));
  const primary=categorySection.slice(0,categorySection.indexOf('<details>'));
  for(const child of categories.filter(row=>row.parent))expect(primary).not.toContain(`category=${encodeURIComponent(child.code)}`);
- expect(categorySection).toContain('Voir toutes les catégories');
+ expect(categorySection).toContain('Toutes les catégories');
 });
 it('shows only the selected family of subcategories and retains search context',async()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify({items:[],count:0,has_more:false,next_cursor:null}))));

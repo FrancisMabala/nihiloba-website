@@ -1,3 +1,5 @@
+import {compactMarketplaceCopy} from "../../lib/compact-marketplace-copy";
+import {MarketplaceSearchSubmit} from "./marketplace-search-submit";
 import {apartmentSearchQuery} from "../../services/shida/public-client";
 import {ActiveSearchFilters} from "./active-search-filters";
 import Link from "next/link";
@@ -35,10 +37,10 @@ export function ApartmentFilters({ locale, search, propertyTypes }: {
     <div className="marketplace-search-row mp-search-primary">
       <label><span>{t.searchLabel}</span><input type="search" name="query" defaultValue={search.query} placeholder={t.searchPlaceholder} maxLength={120}/></label>
       <label><span>{t.city}</span><input name="city" placeholder={t.city} defaultValue={search.city} maxLength={120}/></label>
-      <button className="button button-primary" type="submit">{t.search}</button>
+      <MarketplaceSearchSubmit label={t.search}/>
     </div>
     <details className="marketplace-advanced-filters" open={hasAdvancedFilters(search) || undefined}>
-      <summary>{t.filters}</summary>
+      <summary>{compactMarketplaceCopy[locale].filters}</summary>
       <div className="marketplace-filter-grid">
         <label><span>{t.area}</span><input name="area" defaultValue={search.area} maxLength={120}/></label>
         <label><span>{t.propertyType}</span><select name="property_type" defaultValue={search.property_type ?? ""}>

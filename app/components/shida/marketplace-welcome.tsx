@@ -14,7 +14,8 @@ const copy = {
 };
 export function MarketplaceWelcome({market,locale,children}:{market:Market;locale:ServiceLocale;children:ReactNode}) {
  const t=copy[locale];
+ const empty={fr:"Aucune annonce disponible pour le moment.",en:"No listings are available yet.",ln:"Piblisite ezali naino te awa.",sw:"Bado hakuna matangazo yanayopatikana."}[locale];
  return <section className={`market-welcome welcome-${market}`}><span className="market-welcome-icon" aria-hidden="true">{market==="wenze"||market==="shops"?<svg viewBox="0 0 64 56" fill="none" aria-hidden="true"><ellipse cx="32" cy="49" rx="24" ry="4" fill="#d3dfbf"/><path d="m16 21-4 27h40l-4-27H16Z" fill="#fffaf0" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"/><path d="M24 25V15a8 8 0 0 1 16 0v10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>:market==="restaurants"?<svg viewBox="0 0 64 56" fill="none" aria-hidden="true"><path d="M7 29c1 25 48 25 50 0Z" fill="#fff3d5" stroke="currentColor" strokeWidth="2.5"/><ellipse cx="32" cy="29" rx="25" ry="7" fill="#e1a545" stroke="currentColor" strokeWidth="2"/><path d="M28 30q1-11 9-6 7-5 12 5" fill="#457446"/><path d="M22 17c5-6-5-7 0-13m10 13c5-6-5-7 0-13m10 13c5-6-5-7 0-13" stroke="#bc7c27" strokeWidth="2.5" strokeLinecap="round"/></svg>:<SpaceIcon name={icons[market]}/>}</span>
    <h2>{t.welcome} {marketName(locale,market==="shops"?"wenze":market)}{locale==="fr"?" !":"!"}</h2>
-   <p>{t[market]}</p><div className="market-welcome-actions">{children}</div></section>;
+   <p className="market-empty-status" role="status">{empty}</p><p>{t[market]}</p><div className="market-welcome-actions">{children}</div></section>;
 }

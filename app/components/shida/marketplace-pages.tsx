@@ -1,3 +1,5 @@
+import {compactMarketplaceCopy} from "../../lib/compact-marketplace-copy";
+import {MarketplaceSearchSubmit} from "./marketplace-search-submit";
 import {MarketplaceWelcome} from "./marketplace-welcome";
 import {stayTravelOnboarding} from "../../lib/stay-travel-onboarding";
 import {stayTravelCommand} from "./stay-travel-discovery";
@@ -75,12 +77,12 @@ export async function HotelCollectionPage({ locale, search = {} }: { locale: Loc
     <StayTravelHero kind="hotels" title={t.hotels} locale={locale}/>
     <section id="hotel-discovery" aria-labelledby="hotel-results-title">
       <form className="mp-search" action={path} method="get" role="search" aria-label={d.search}>
-        <div className="mp-search-primary"><label><span>{d.search}</span><input type="search" name="query" defaultValue={search.query} placeholder={d.placeholder} maxLength={120}/></label><label><span>{t.city}</span><input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label><button className="button button-primary" type="submit">{t.search}</button></div>
-        <details open={Boolean(search.area||search.rooms||search.rental_period)||undefined}><summary>{t.filters}</summary><div className="marketplace-filter-grid">
+        <div className="mp-search-primary"><label><span>{d.search}</span><input type="search" name="query" defaultValue={search.query} placeholder={compactMarketplaceCopy[locale].hotelSearch} maxLength={120}/></label><label><span>{t.city}</span><input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label><MarketplaceSearchSubmit label={t.search}/></div>
+        <details open={Boolean(search.area||search.rooms||search.rental_period)||undefined}><summary>{compactMarketplaceCopy[locale].filters}</summary><div className="marketplace-filter-grid">
           <label>{t.area}<input name="area" defaultValue={search.area} maxLength={120}/></label>
           <label>{words.rooms}<input type="number" name="rooms" min="1" max="100" defaultValue={search.rooms}/></label>
           <label>{words.period}<select name="rental_period" defaultValue={search.rental_period||""}><option value="">{t.any}</option><option value="night">{words.night}</option><option value="day">{words.day}</option><option value="hourly">{words.hourly}</option></select></label>
-        </div><button className="button button-secondary" type="submit">{t.applyFilters}</button></details><p className="mp-help">{words.inventory}</p>
+        </div><button className="button button-secondary" type="submit">{t.applyFilters}</button></details><details className="mp-inventory-help"><summary>{compactMarketplaceCopy[locale].inventory}</summary><p>{words.inventory}</p></details>
         <ActiveSearchFilters locale={locale} path={path} query={hotelSearchQuery(search)} labels={{query:d.search,city:t.city,area:t.area,rooms:words.rooms,rental_period:words.period}} values={{rental_period:{night:words.night,day:words.day,hourly:words.hourly}}}/>
       </form>
 

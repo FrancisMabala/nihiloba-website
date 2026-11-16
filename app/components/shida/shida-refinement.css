@@ -64,7 +64,7 @@ body .market-surface .mp-search .mp-food-search>label{align-self:stretch;align-c
 body .market-surface .wzp-discovery .mp-search details:not([open]){padding-block:0;margin-top:4px}
 body .market-surface .wzp-discovery .mp-search{margin-bottom:4px}
 
-body .market-surface .marketplace-public .wzp-discovery .mp-search{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:4px 12px}
+@media(min-width:761px){body .market-surface .marketplace-public .wzp-discovery .mp-search{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:4px 12px}}
 body .market-surface .wzp-discovery .mp-search-primary{grid-column:1/-1}
 body .market-surface .wzp-discovery .mp-search details{margin:0}
 body .market-surface .wzp-discovery .mp-search details[open]{grid-column:1/-1}

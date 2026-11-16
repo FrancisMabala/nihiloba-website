@@ -1,11 +1,155 @@
-/* Collection-only corrections; detail, editing and management layouts are separate. */
-@media(max-width:760px){
-body .market-surface .marketplace-public{padding-top:4px;padding-bottom:calc(90px + env(safe-area-inset-bottom))}body .market-surface .marketplace-public .container{width:calc(100% - 24px)}body .market-surface .marketplace-public .container .container{width:100%}body .market-surface .illustrated-marketplace-hero{display:block;min-height:0;margin:8px 0 12px;padding:0;border-radius:0;background:transparent}body .market-surface .illustrated-marketplace-hero .marketplace-hero-art{display:none}body .market-surface .illustrated-marketplace-hero h1{font-size:clamp(1.55rem,6.4vw,1.9rem);margin:0 0 4px}body .market-surface .illustrated-marketplace-hero .marketplace-permanent-slogan{font-size:1.05rem;line-height:1.3;margin:0 0 6px;color:var(--forest,#173e32)}body .market-surface .illustrated-marketplace-hero .marketplace-hero-description{font-size:.85rem;line-height:1.4;margin:0}body .market-surface .illustrated-marketplace-hero:not(.illustrated-transport) .marketplace-hero-description{display:none}
-body .market-surface .marketplace-public .mp-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:0;margin:12px 0;border:0;background:transparent;border-radius:0}body .market-surface .marketplace-public .mp-search .mp-search-primary,body .market-surface .marketplace-public .jobs-search-secondary{display:contents}body .market-surface .marketplace-public .mp-search .mp-search-primary>label{min-width:0;min-height:46px;gap:0;margin:0;padding:0;border:0}body .market-surface .marketplace-public .mp-search .mp-search-primary>label:first-of-type{grid-column:1;grid-row:1;border:0}body .market-surface .marketplace-public .mp-search .mp-search-primary>label:nth-of-type(2){grid-column:1;grid-row:2;border:0}body .market-surface .marketplace-public .mp-search .mp-search-primary>label>span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}body .market-surface .marketplace-public .mp-search .mp-search-primary>button{grid-column:2;grid-row:1;min-height:46px;padding:8px 12px;min-width:44px;white-space:normal;font-size:.85rem}body .market-surface .marketplace-public .mp-search .mp-search-primary :is(input:not([type=checkbox]):not([type=radio]),select){min-height:46px;padding:10px 10px 10px 36px;font-size:1rem;border:1px solid #cfcfc1;border-radius:6px;background:#fffefb}body .market-surface .marketplace-public :is(.mp-search>details,.mp-search .jobs-search-secondary>details){grid-column:2;grid-row:2;margin:0;padding:0;border:0}body .market-surface .marketplace-public :is(.mp-search>details,.mp-search .jobs-search-secondary>details)>summary{padding:10px;border:1px solid #cfcfc1;border-radius:6px;min-height:46px;box-sizing:border-box;font-size:.85rem;display:flex;align-items:center;gap:6px}body .market-surface .marketplace-public :is(.mp-search>details,.mp-search .jobs-search-secondary>details)>summary:after{content:'⌄';margin-left:auto}body .market-surface .marketplace-public :is(.mp-search>details,.mp-search .jobs-search-secondary>details)[open]{grid-column:1/-1;grid-row:3}body .market-surface .marketplace-public :is(.mp-search>details,.mp-search .jobs-search-secondary>details)[open]>summary{margin-bottom:10px}body .market-surface .marketplace-public .mp-search :is(.active-search-filters,.rd-types){grid-column:1/-1}body .market-surface .marketplace-public .mp-search .rd-types{grid-row:4}body .market-surface .marketplace-public .mp-search .marketplace-filter-grid{grid-template-columns:1fr;gap:10px}body .market-surface .marketplace-public .mp-chips{display:flex;flex-wrap:nowrap;overflow-x:auto;max-width:100%;gap:8px;scrollbar-width:thin;padding-bottom:6px;margin-block:10px}body .market-surface .marketplace-public .mp-chips>a{flex:none;white-space:nowrap;min-height:44px;padding:8px 14px;box-sizing:border-box}body .market-surface .marketplace-public .rd-types{display:flex;flex-wrap:nowrap;overflow-x:auto;min-width:0;padding:0 0 6px;margin:0}body .market-surface .marketplace-public .rd-chip{flex:none;white-space:nowrap}.rd-filter-explanation{font-size:.8rem;margin:8px 0}
-body .market-surface .market-welcome{padding:16px 12px;margin:14px 0;border-radius:8px;text-align:left}body .market-surface .market-welcome-icon{display:none}body .market-surface .market-welcome h2{font-size:1.35rem;line-height:1.25}body .market-surface .market-welcome p{margin:8px 0 12px;font-size:.95rem}body .market-surface .market-welcome-actions{justify-content:flex-start;gap:8px}body .market-surface .market-welcome-actions .button{flex:1 1 150px;padding:10px;min-height:44px}.market-welcome.welcome-services h2{display:none}body .market-surface .marketplace-public .svc-discovery-invitations{gap:12px;margin:16px 0}body .market-surface .marketplace-public .svc-discovery-invitations article{padding:14px}.svc-discovery-invitations article>svg{display:none}body .market-surface .marketplace-public .svc-discovery-invitations h2{font-size:1.25rem}body .market-surface .marketplace-public .st-invitation{padding:14px;margin:14px 0;gap:10px}body .market-surface .marketplace-public .st-invitation-icon{display:none}
-body .market-surface .marketplace-public .wenze-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}body .market-surface .marketplace-public .wenze-product-grid article{min-width:0}body .market-surface .marketplace-public .wenze-product-grid :is(h2,h3){font-size:.95rem;line-height:1.25;overflow-wrap:anywhere}body .market-surface .marketplace-public .wz-category-browser{margin:10px 0}body .market-surface .marketplace-public .wz-category-browser>h2{font-size:1.1rem;margin:8px 0}body .market-surface .marketplace-public .mp-results-heading{margin:14px 0 10px}body .market-surface .marketplace-public .mp-results-heading h2{font-size:1.35rem}body .market-surface .marketplace-public .rd-grid{display:grid;grid-template-columns:1fr;gap:12px}body .market-surface .marketplace-public .rd-card{display:grid;grid-template-columns:86px minmax(0,1fr);gap:12px;padding:10px;border-radius:8px}body .market-surface .marketplace-public .rd-card .rd-photo{width:86px;height:86px;min-height:0;aspect-ratio:1;border-radius:7px}body .market-surface .marketplace-public .rd-card-body{padding:0;min-width:0}body .market-surface .marketplace-public .rd-card h3{font-size:1.1rem;margin:0 0 4px}body .market-surface .marketplace-public .rd-card p{font-size:.85rem;margin:4px 0}body .market-surface .marketplace-public .job-result-list{grid-template-columns:1fr;gap:10px}body .market-surface .marketplace-public .job-result{padding:12px;gap:8px;min-height:0}body .market-surface .marketplace-public .job-card-identity{gap:8px}body .market-surface .marketplace-public .job-card-identity>svg{display:none}body .market-surface .marketplace-public .job-result h3{font-size:1.1rem;line-height:1.25}body .market-surface .marketplace-public .job-result-summary{font-size:.9rem;margin:0}body .market-surface .marketplace-public .job-result .job-employer-image{width:32px;height:32px;flex:none}body .market-surface .marketplace-public .job-result .job-employer-name{font-size:.9rem}body .market-surface .marketplace-public .job-result-actions{margin-top:4px}body .market-surface .marketplace-public .job-result-actions .button{padding:8px 12px;min-height:44px}body .market-surface .marketplace-public .jobs-invitations{margin-top:20px;gap:12px}body .market-surface .marketplace-public .jobs-invitation{padding:16px}body .market-surface .marketplace-public .jobs-invitation>svg{display:none}
-}
-
+/* Public collections only; detail, editing and management remain independent. */
+.marketplace-search-submit svg{width:22px;height:22px;flex:none}
 .rd-fields .rd-filter-explanation{grid-column:1/-1}
-
-@media(max-width:760px){body .market-surface .marketplace-public .mp-results-heading{flex-wrap:wrap;gap:8px}body .market-surface .marketplace-public .mp-results-heading>h2{min-width:0;flex:1 1 170px}body .market-surface .marketplace-public .mp-results-heading>a{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;min-height:44px;display:flex;align-items:center}}
+@media(min-width:761px){.marketplace-search-submit svg,.job-card-save{display:none}}
+@media(max-width:760px){
+ body .market-surface .marketplace-public{padding-top:0;padding-bottom:calc(80px + env(safe-area-inset-bottom));font-family:Arial,sans-serif}
+ body .market-surface .marketplace-public .container{width:calc(100% - 32px);min-width:0}
+ body .market-surface .marketplace-public .container .container{width:100%}
+ body .market-surface .marketplace-public :is(input,select,button,summary,.button){font-family:Arial,sans-serif}
+ body .market-surface .illustrated-marketplace-hero{display:block;min-height:0;margin:10px 0 12px;padding:0;border:0;border-radius:0;background:transparent}
+ body .market-surface .illustrated-marketplace-hero .marketplace-hero-art{display:none}
+ body .market-surface .illustrated-marketplace-hero h1{font:600 1.75rem/1.15 Georgia,serif;margin:0 0 4px}
+ body .market-surface .illustrated-marketplace-hero .marketplace-permanent-slogan{font:400 .9375rem/1.35 Arial,sans-serif;margin:0;color:var(--forest,#173e32)}
+ body .market-surface .illustrated-marketplace-hero .marketplace-hero-description{font-size:.875rem;line-height:1.4;margin:6px 0 0}
+ body .market-surface .illustrated-marketplace-hero:not(.illustrated-transport) .marketplace-hero-description{display:none}
+ /* One full-width query cell, with an integrated submit; location and filters below. */
+ body .market-surface .marketplace-public .mp-search{display:grid;--filter-width:min(40%,6.5rem);grid-template-columns:minmax(0,1fr) var(--filter-width);gap:8px;padding:0;margin:12px 0;border:0;background:transparent;border-radius:0;min-width:0;width:100%;max-width:none}
+ body .market-surface .marketplace-public .mp-search :is(.mp-search-primary,.jobs-search-secondary){display:contents}
+ body .market-surface .marketplace-public .mp-search .mp-search-primary>label{min-width:0;min-height:44px;gap:0;margin:0;padding:0;border:0;align-content:stretch}
+ body .market-surface .marketplace-public .mp-search .mp-search-primary>label:first-of-type{grid-column:1/-1;grid-row:1;border:0}
+ body .market-surface .marketplace-public .mp-search .mp-search-primary>label:nth-of-type(2){grid-column:1;grid-row:2;border:0;align-self:start;min-height:44px;height:2.75rem;z-index:1}
+ body .market-surface .marketplace-public .mp-search .mp-search-primary>label>span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ body .market-surface .marketplace-public .mp-search .mp-search-primary>button{grid-column:1/-1;grid-row:1;justify-self:end;z-index:1;width:46px;min-width:44px;min-height:44px;height:100%;padding:10px;border-radius:0 6px 6px 0}
+ body .market-surface .marketplace-public .marketplace-search-submit>span{display:none}
+ body .market-surface .marketplace-public .mp-search .mp-search-primary :is(input:not([type=checkbox]):not([type=radio]),select){box-sizing:border-box;min-height:44px;width:100%;max-width:100%;padding:10px 10px 10px 36px;font-size:1rem;line-height:1.25;height:100%;border:1px solid #bcbcaf;border-radius:6px;background:#fffefb}
+ body .market-surface .marketplace-public .mp-search .mp-search-primary input[name=query]{padding-right:54px}
+ body .market-surface .marketplace-public .mp-search details:not(.mp-inventory-help){display:block;grid-column:2;grid-row:2;padding:0;margin:0;border:0;background:transparent;min-width:0}
+ body .market-surface .marketplace-public .mp-search details:not(.mp-inventory-help)>summary{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;min-height:44px;padding:8px 10px;margin:0 0 8px auto;border:1px solid #bcbcaf;border-radius:6px;font-size:.875rem;font-weight:500;height:2.75rem;background:#fffefb;cursor:pointer}
+ body .market-surface .marketplace-public .mp-search details:not(.mp-inventory-help)[open]{grid-column:1/-1}
+ body .market-surface .marketplace-public .mp-search details:not(.mp-inventory-help)[open]>summary{width:var(--filter-width)}
+ body .market-surface .marketplace-public .mp-search details:not(.mp-inventory-help)>summary:after{content:'\2304';margin-left:2px}
+ body .market-surface .marketplace-public .mp-search details:not(.mp-inventory-help)>:not(summary){min-width:0;width:100%;box-sizing:border-box}
+ body .market-surface .marketplace-public .mp-search :is(.active-search-filters,.rd-types,.mp-inventory-help){grid-column:1/-1}
+ body .market-surface .marketplace-public .mp-search :is(.marketplace-filter-grid,.jobs-search-advanced,.rd-fields){grid-template-columns:minmax(0,1fr);gap:10px}
+ body .market-surface .marketplace-public .mp-search .mp-inventory-help{padding:0;margin:0;border:0;background:none;font-size:.8125rem}
+ body .market-surface .marketplace-public .mp-inventory-help summary{min-height:44px;display:flex;align-items:center;text-decoration:underline;cursor:pointer}
+ body .market-surface .marketplace-public .mp-inventory-help p{margin:6px 0}
+ body .market-surface .marketplace-public :is(.mp-chips,.rd-types){display:flex;flex-wrap:nowrap;overflow-x:auto;max-width:100%;min-width:0;gap:8px;scrollbar-width:thin;padding:0 0 4px;margin:8px 0}
+ body .market-surface .marketplace-public :is(.mp-chips>a,.rd-chip){flex:none;white-space:nowrap;min-height:44px;padding:8px 12px;box-sizing:border-box;font:500 .875rem/1.2 Arial,sans-serif;display:flex;align-items:center;justify-content:center}
+ body .market-surface .marketplace-public .mp-results-heading{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0 8px}
+ body .market-surface .marketplace-public .mp-results-heading h2{flex:1 1 auto;min-width:0;font:600 1.375rem/1.2 Georgia,serif;margin:0}
+ body .market-surface .marketplace-public .mp-results-heading :is(p,a){margin:0;font-size:.8125rem;max-width:100%}
+ body .market-surface .marketplace-public .mp-results-heading>a{min-height:44px;display:flex;align-items:center;white-space:normal}
+ body .market-surface .marketplace-public .rd-chip{padding:0}
+ body .market-surface .marketplace-public .rd-fields fieldset{min-width:0;max-width:100%;display:flex;flex-wrap:wrap;gap:8px;box-sizing:border-box}
+ body .market-surface .marketplace-public .rd-fields .rd-chip{white-space:normal;max-width:100%}
+ /* Jobs retain full titles and truthful employer/verification data. */
+ body .market-surface .jobs-public.marketplace-public .job-categories{display:none}
+ body .market-surface .jobs-public.marketplace-public .job-offer-tabs{gap:4px;margin:8px 0}
+ body .market-surface .jobs-public.marketplace-public .job-offer-tabs>a{border-radius:8px;font-size:.875rem;padding:8px 10px}
+ body .market-surface .jobs-public.marketplace-public .job-result-list{grid-template-columns:minmax(0,1fr);gap:8px}
+ body .market-surface .jobs-public.marketplace-public .job-result{position:relative;padding:10px;gap:4px;min-height:0}
+ body .market-surface .jobs-public.marketplace-public .job-card-identity{min-width:0;gap:0}
+ body .market-surface .jobs-public.marketplace-public .job-card-identity .job-category-icon{display:none}
+ body .market-surface .jobs-public.marketplace-public .job-result h3{display:block;-webkit-line-clamp:unset;overflow:visible;font:600 1rem/1.25 Arial,sans-serif;margin:4px 0;overflow-wrap:anywhere;letter-spacing:normal}
+ body .market-surface .jobs-public.marketplace-public .job-type-label{font:400 .75rem/1.25 Arial,sans-serif;padding:2px 6px;border-radius:5px;text-transform:none;letter-spacing:normal;background:#e0ebd1;color:#173e32}
+ body .market-surface .jobs-public.marketplace-public .job-result :is(.job-result-location,.job-employer-name,.job-result-summary,.job-card-deadline){font-size:.875rem;line-height:1.3;margin:0}
+ body .market-surface .jobs-public.marketplace-public .job-result .job-employer-image{width:24px;height:24px;flex:none}
+ body .market-surface .jobs-public.marketplace-public .job-facts{gap:4px 8px;font-size:.8125rem;margin:0}
+ body .market-surface .jobs-public.marketplace-public .job-facts b{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ body .market-surface .jobs-public.marketplace-public .job-result-actions{display:none}
+ body .market-surface .jobs-public.marketplace-public .job-result:has(.job-card-save) .job-card-identity{padding-right:36px}
+ body .market-surface .marketplace-public .job-card-save{position:absolute;right:2px;top:8px;display:grid;place-items:center;width:44px;height:44px;color:#173e32}
+ body .market-surface .marketplace-public .job-card-save svg{width:21px;height:21px}
+ body .market-surface .marketplace-public .wzp-discovery{padding-top:0}
+ body .market-surface .marketplace-public .wz-products-heading{font:600 1.375rem/1.2 Georgia,serif;margin:12px 0 8px}
+ body .market-surface .marketplace-public .wzp-discovery .wenze-product-grid{margin-top:0}
+ body .market-surface .marketplace-public .wenze-public .wenze-product-card .marketplace-card-body>*{margin-top:0;margin-bottom:0}
+ body .market-surface .marketplace-public .wenze-public .wenze-product-card .wzp-product-facts{padding:0;display:flex;gap:4px;flex-wrap:wrap}
+ body .market-surface .marketplace-public .wenze-public .wenze-product-card .wzp-product-facts>div{padding:0}
+ body .market-surface .marketplace-public .wenze-public .wenze-product-card .marketplace-card-body>.button{margin-top:auto}
+ /* Category disclosure alongside the scrollable strip. */
+ body .market-surface .marketplace-public .wz-public-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:8px 0;gap:0;padding:0}
+ body .market-surface .marketplace-public .wz-public-tabs>a{min-width:0;min-height:44px;display:flex;align-items:center;justify-content:center;font:500 1rem/1.2 Arial,sans-serif;border-radius:6px}
+ body .market-surface .marketplace-public .wz-category-browser{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:4px 8px;margin:8px 0}
+ body .market-surface .marketplace-public .wz-category-browser>h2{display:none}
+ body .market-surface .marketplace-public .wz-category-browser>nav:first-of-type{grid-column:1;grid-row:1;margin:0;align-self:start;z-index:1}
+ body .market-surface .marketplace-public .wz-category-browser>details{display:block;grid-column:1/-1;grid-row:1;margin:0;padding:0;min-width:0}
+ body .market-surface .marketplace-public .wz-category-browser>details>summary{width:110px;max-width:110px;margin-left:auto;min-height:44px;display:flex;align-items:center;padding:0;font-size:.8125rem;cursor:pointer}
+ body .market-surface .marketplace-public .wz-category-browser>details>div,body .market-surface .marketplace-public .wz-category-browser>nav:not(:first-of-type){grid-column:1/-1}
+ body .market-surface .marketplace-public .wz-category-browser .mp-chips svg{display:none}
+ body .market-surface .marketplace-public .wenze-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-columns:repeat(auto-fit,minmax(min(100%,max(8rem,calc((100% - 8px)/2))),1fr));gap:8px}
+ body .market-surface .marketplace-public .wenze-public .wenze-product-card{min-width:0;border-radius:6px}
+ body .market-surface .marketplace-public .wenze-public .wenze-product-card .marketplace-card-image{height:112px;min-height:0;aspect-ratio:auto}
+ body .market-surface .marketplace-public .wenze-public .wenze-product-card .marketplace-card-body{display:flex;flex-direction:column;justify-content:flex-start;padding:6px;gap:4px;min-width:0}
+ body .market-surface .marketplace-public .wenze-public .wenze-product-card :is(h2,h3){display:block;-webkit-line-clamp:unset;overflow:visible;min-height:0;font:600 .9375rem/1.2 Arial,sans-serif;margin:0;overflow-wrap:anywhere;letter-spacing:normal}
+ body .market-surface .marketplace-public .wenze-public .wenze-product-card :is(p,dl){margin:0;font-size:.75rem;line-height:1.3}
+ body .market-surface .marketplace-public .wenze-public .wenze-card-price{font:700 .875rem/1.3 Arial,sans-serif;overflow-wrap:anywhere}
+ body .market-surface .marketplace-public .wenze-public .wenze-product-card .button{font-size:.8125rem;padding:8px;min-height:44px;white-space:normal}
+ body .market-surface .marketplace-public .wenze-public .wzp-product-seller{font-size:.75rem;overflow-wrap:anywhere}
+ body .market-surface .marketplace-public .rd-grid{display:grid;grid-template-columns:1fr;gap:12px}
+ body .market-surface .marketplace-public .rd-card{display:grid;grid-template-columns:86px minmax(0,1fr);gap:12px;padding:10px;border-radius:8px}
+ body .market-surface .marketplace-public .rd-card .rd-photo{width:86px;height:86px;min-height:0;aspect-ratio:1;border-radius:7px}
+ body .market-surface .marketplace-public .rd-card-body{padding:0;min-width:0}
+ body .market-surface .marketplace-public .rd-card h3{font:600 1rem/1.25 Arial,sans-serif;margin:0 0 4px}
+ body .market-surface .marketplace-public .rd-card p{font-size:.875rem;margin:4px 0}
+ body .market-surface .marketplace-public :is(.market-welcome,.st-invitation,.jobs-invitation,.svc-discovery-invitations article){padding:12px;margin:12px 0;border-radius:8px;text-align:left;background:transparent}
+ body .market-surface .marketplace-public :is(.market-welcome-icon,.st-invitation-icon,.jobs-invitation>svg,.svc-discovery-invitations article>svg){display:none}
+ body .market-surface .marketplace-public :is(.market-welcome,.st-invitation,.jobs-invitation,.svc-discovery-invitations) h2{font:600 1.125rem/1.3 Georgia,serif;margin:0 0 6px}
+ body .market-surface .marketplace-public :is(.market-welcome,.st-invitation,.jobs-invitation,.svc-discovery-invitations) p{font-size:.875rem;margin:6px 0 10px}
+ body .market-surface .marketplace-public .market-welcome-actions{justify-content:flex-start;gap:8px}
+ body .market-surface .marketplace-public .market-welcome-actions .button{min-height:44px;padding:8px 12px;font-size:.875rem}
+ body .market-surface .marketplace-public :is(.jobs-invitations,.svc-discovery-invitations){gap:8px;margin-top:16px}
+ body .market-surface .marketplace-public .jobs-invitation{border:1px solid var(--mp-line);margin:0}
+ body .market-surface .marketplace-public .st-transport-layout{display:block;margin:12px 0;padding:0}
+ body .market-surface .marketplace-public .transport-request{padding:0;background:transparent;border:0}
+ body .market-surface .marketplace-public .transport-request>h2{display:none}
+ body .market-surface .marketplace-public .st-steps{padding:10px 0;margin:8px 0}
+ body .market-surface .marketplace-public .jobs-invitation{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+ body .market-surface .marketplace-public .jobs-invitation :is(h2,p,small){margin:0;max-width:100%;width:auto}
+ body .market-surface .marketplace-public .jobs-invitation .button{font:500 .875rem/1.3 Arial,sans-serif;min-height:44px;padding:8px 12px}
+ body .market-surface .marketplace-public .st-steps summary{font:500 1rem/1.3 Arial,sans-serif;min-height:44px;padding:8px;display:flex;align-items:center}
+ body .market-surface .marketplace-public .st-ride-type{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}
+ body .market-surface .marketplace-public .st-ride-type h2{font:500 .875rem/1.3 Arial,sans-serif;margin:0}
+ body .market-surface .marketplace-public .market-welcome>h2{display:none}
+ body .market-surface .marketplace-public .market-welcome .market-empty-status{font-weight:600;margin-top:0}
+ body .market-surface .marketplace-public .rd-owner-invite{display:block;padding:12px;margin:12px 0}
+ body .market-surface .marketplace-public .rd-owner-invite>svg{display:none}
+ body .market-surface .marketplace-public .rd-owner-invite h2{font:600 1.125rem/1.3 Georgia,serif;margin:0 0 6px}
+ body .market-surface .marketplace-public .rd-owner-invite p{font-size:.875rem;margin:6px 0}
+ body .market-surface .marketplace-public .rd-owner-invite nav{display:flex;flex-wrap:wrap;gap:8px}
+ body .market-surface .marketplace-public .rd-owner-invite a{min-height:44px;display:flex;align-items:center}
+ body .market-surface .marketplace-public :is(.marketplace-card,.service-card,.rd-dish-card) :is(h2,h3){font:600 1rem/1.25 Arial,sans-serif;letter-spacing:normal;overflow-wrap:anywhere}
+ body .market-surface .marketplace-public:not(:has(.wenze-public)) .marketplace-card-image{height:160px;min-height:0;aspect-ratio:auto}
+ body .market-surface .marketplace-public :is(.rd-results-heading,.svc-results-heading){display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0 8px}
+ body .market-surface .marketplace-public :is(.rd-results-heading,.svc-results-heading) h2{font:600 1.375rem/1.2 Georgia,serif;margin:0}
+ body .market-surface .marketplace-public .rd-results-heading>a{font-size:.8125rem;min-height:44px;display:flex;align-items:center;margin-left:auto}
+ body .market-surface .marketplace-public .rd-empty{padding:12px;margin:8px 0;font-size:.875rem}
+ body .market-surface .marketplace-public .rd-empty p{margin:0 0 8px}
+ body .market-surface .marketplace-public .rd-selection-note{margin:4px 0 8px}
+ /* Creation invitations remain secondary, with their existing labelled destinations. */
+ body .market-surface .marketplace-public :is(.jobs-invitation,.svc-discovery-invitations article,.st-invitation){border:0;padding:0;background:transparent}
+ body .market-surface .marketplace-public :is(.jobs-invitation,.svc-discovery-invitations article) :is(h2,p),body .market-surface .marketplace-public .st-invitation>div{display:none}
+ body .market-surface .marketplace-public :is(.jobs-invitation,.svc-discovery-invitations,.st-invitation,.market-welcome-actions) .button{background:transparent;color:#173e32;border:1px solid #bcbcaf;min-height:44px;padding:8px 12px;font:500 .875rem/1.3 Arial,sans-serif}
+ body .market-surface .marketplace-public .svc-discovery-invitations article{display:block;margin:0}
+ body .market-surface .marketplace-public .svc-discovery-invitations{display:flex;flex-wrap:wrap;gap:8px}
+ body .market-surface .marketplace-public .st-invitation{display:block}
+ /* Compact collection chrome retains account, language, cart and all markets. */
+ body .market-surface:has(.marketplace-public) .market-header-inner{padding:6px 16px 0;gap:0 4px;flex-wrap:wrap}
+ body .market-surface:has(.marketplace-public) .market-brand-group{gap:2px;min-height:50px;justify-content:center}
+ body .market-surface:has(.marketplace-public) .market-home{min-height:0;font-size:8px}
+ body .market-surface:has(.marketplace-public) .market-brand{font-size:26px}
+ body .market-surface:has(.marketplace-public) .market-header-actions{gap:2px;min-width:0}
+ body .market-surface:has(.marketplace-public) .market-header-actions>.shida-public-account{padding:0;border:0}
+ body .market-surface:has(.marketplace-public) .market-controls{gap:4px}
+ body .market-surface:has(.marketplace-public) .market-header .market-cart{padding:4px;gap:2px;min-width:44px;border-color:transparent;background:transparent}
+ body .market-surface:has(.marketplace-public) .market-controls .market-language{min-width:44px;min-height:44px;padding:6px;background:transparent;color:#173e32;border-color:#bcbcaf;border-radius:6px}
+ body .market-surface:has(.marketplace-public) .market-controls .market-avatar{width:44px;min-width:44px;height:44px}
+ body .market-surface:has(.marketplace-public) .market-primary-nav{flex-basis:100%;order:3;gap:20px;min-width:0;max-width:100%;height:44px;margin:0;overflow-x:auto;scrollbar-width:thin}
+ body .market-surface:has(.marketplace-public) .market-primary-nav a{display:flex;align-items:center;min-height:44px;padding:0;font-size:.875rem;box-sizing:border-box}
+ body .market-surface:has(.marketplace-public) .market-primary-nav a[aria-current]{border-color:#173e32;border-bottom-width:3px;font-weight:700}
+ body .market-surface:has(.marketplace-public) .shida-navigation{padding:4px 6px calc(4px + env(safe-area-inset-bottom));gap:4px}
+ body .market-surface:has(.marketplace-public) .shida-navigation :is(a,button){min-height:52px;padding:4px 2px;font-size:.75rem;font-weight:400;gap:3px;overflow-wrap:normal;word-break:normal}
+ body .market-surface:has(.marketplace-public) .shida-navigation [aria-current=page]{background:#e0ebd1;color:#173e32;border-radius:10px}
+}

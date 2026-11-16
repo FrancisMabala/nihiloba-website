@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Locale } from "../lib/i18n";
 import { localizedPath, nav } from "../lib/i18n";
 import { ShidaWordmark } from "./shida-wordmark";
@@ -10,7 +10,6 @@ import { BrandLogo } from "./brand-logo";
 import { CartIcon } from "./icons";
 import { useCart } from "./shida/cart-provider";
 import { wenzeCartCopy, wenzeCartPath } from "./shida/wenze-cart-copy";
-import {marketplaceAccountCopy} from "./shida/marketplace-account-copy";
 import { PublicShidaAccount } from "./shida/public-account";
 import { discoveryCopy } from "../lib/discovery-copy";
 
@@ -26,6 +25,22 @@ const links = [
 export function Header({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const marketNav = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const nav = marketNav.current;
+    if (!nav) return;
+    // Scroll this strip only; navigating markets must not move the page vertically.
+    const reveal = () => {
+      const active = nav.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!active) return;
+      const item = active.getBoundingClientRect(), strip = nav.getBoundingClientRect();
+      if (item.left < strip.left) nav.scrollLeft += item.left - strip.left;
+      else if (item.right > strip.right) nav.scrollLeft += item.right - strip.right;
+    };
+    reveal();
+    window.addEventListener('resize', reveal);
+    return () => window.removeEventListener('resize', reveal);
+  }, [pathname]);
   const { cart, loading: cartLoading } = useCart();
 
   const t = nav[locale];
@@ -71,7 +86,7 @@ export function Header({ locale }: { locale: Locale }) {
     const prefix=accountLocale==="en"?"":`/${accountLocale}`;
     const labels=discoveryCopy[accountLocale].labels;
     const markets=[[labels[2],"wenze"],[labels[5],"restaurants"],[labels[1],"services"],[labels[0],"emplois"],[labels[3],"appartements"],[labels[4],"hotels"],[labels[6],"transport"]];
-    return <header className="market-header"><div className="market-header-inner"><ShidaWordmark home={localizedPath(locale)} shida={`${prefix}/shida`}/><nav className="market-primary-nav" aria-label={{fr:"Marchés",en:"Marketplaces",ln:"Bazando",sw:"Masoko"}[accountLocale]}>{markets.map(([label,path])=><Link key={path} href={`${prefix}/shida/${path}`} aria-current={suffix.startsWith(`/shida/${path}`)?"page":undefined}>{label}</Link>)}</nav><div className="market-header-actions"><Link className="market-cart" data-contextual={suffix.startsWith("/shida/wenze")||Boolean(cart?.item_count)||undefined} href={wenzeCartPath(accountLocale)} aria-label={`${wenzeCartCopy[accountLocale].cart}: ${cart?.item_count??0}`}><CartIcon/><span className="market-cart-label">{wenzeCartCopy[accountLocale].cart} · </span><span aria-live="polite" aria-busy={cartLoading}>{cartLoading?"·":cart?.item_count??0}</span></Link><PublicShidaAccount key={`${pathname}:${accountLocale}`} locale={accountLocale}/></div></div></header>;
+    return <header className="market-header"><div className="market-header-inner"><ShidaWordmark home={localizedPath(locale)} shida={`${prefix}/shida`}/><nav ref={marketNav} className="market-primary-nav" aria-label={{fr:"Marchés",en:"Marketplaces",ln:"Bazando",sw:"Masoko"}[accountLocale]}>{markets.map(([label,path])=><Link key={path} href={`${prefix}/shida/${path}`} aria-current={suffix.startsWith(`/shida/${path}`)?"page":undefined}>{label}</Link>)}</nav><div className="market-header-actions"><Link className="market-cart" data-contextual={suffix.startsWith("/shida/wenze")||Boolean(cart?.item_count)||undefined} href={wenzeCartPath(accountLocale)} aria-label={`${wenzeCartCopy[accountLocale].cart}: ${cart?.item_count??0}`}><CartIcon/><span className="market-cart-label">{wenzeCartCopy[accountLocale].cart} · </span><span aria-live="polite" aria-busy={cartLoading}>{cartLoading?"·":cart?.item_count??0}</span></Link><PublicShidaAccount key={`${pathname}:${accountLocale}`} locale={accountLocale}/></div></div></header>;
   }
 
   return (
