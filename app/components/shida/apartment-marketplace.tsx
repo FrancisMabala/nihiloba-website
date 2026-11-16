@@ -34,7 +34,7 @@ export function ApartmentFilters({ locale, search, propertyTypes }: {
   return <form className="marketplace-filters mp-search" action={action} method="get">
     <div className="marketplace-search-row mp-search-primary">
       <label><span>{t.searchLabel}</span><input type="search" name="query" defaultValue={search.query} placeholder={t.searchPlaceholder} maxLength={120}/></label>
-      <label><span>{t.city}</span><input name="city" defaultValue={search.city} maxLength={120}/></label>
+      <label><span>{t.city}</span><input name="city" placeholder={t.city} defaultValue={search.city} maxLength={120}/></label>
       <button className="button button-primary" type="submit">{t.search}</button>
     </div>
     <details className="marketplace-advanced-filters" open={hasAdvancedFilters(search) || undefined}>

@@ -3,6 +3,7 @@ import {createContext, useContext, useEffect, useRef, useState, type ReactNode, 
 import type {ServiceLocale} from "../../lib/services-i18n";
 import {restorePersonalSession, PersonalSessionError} from "../../lib/personal-session-browser";
 import {PersonalWhatsAppLogin} from "./personal-whatsapp-login";
+import {rememberJobResults,restoreJobResults} from '../../lib/job-results-return';
 
 const words = {
   fr:["Connectez-vous pour lire l’offre complète","Retrouvez les missions, le profil recherché et les informations pour postuler.","Se connecter","Créer un compte","Fermer","Impossible de vérifier votre connexion. Réessayez."],
@@ -22,6 +23,7 @@ export function JobAccess({locale,initialOffer,children}:{locale:ServiceLocale;i
   const dialog=useRef<HTMLDialogElement>(null), opener=useRef<HTMLElement|null>(null), sequence=useRef(0);
   const [heading,message,signIn,register,close,unavailable]=words[locale];
   useEffect(()=>{const pending=sequence;return ()=>{pending.current++;};},[]);
+  useEffect(()=>restoreJobResults(),[]);
   useEffect(()=>{if(offer && !dialog.current?.open) dialog.current?.showModal();},[offer]);
   function dismiss() {
     sequence.current++; dialog.current?.close();setOffer("");setLogin(false);setError(false);
@@ -33,6 +35,7 @@ export function JobAccess({locale,initialOffer,children}:{locale:ServiceLocale;i
     event.preventDefault();
     const target=event.currentTarget;opener.current=target;
     const path=target.pathname+target.search, current=++sequence.current;
+    rememberJobResults(path);
     try {
       await restorePersonalSession(AbortSignal.timeout(10000));
       if(sequence.current===current)location.assign(path);

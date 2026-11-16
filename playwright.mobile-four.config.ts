@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:['mobile-finance-four.browser.ts','mobile-public-four.browser.ts'],outputDir:process.env.SHIDA_TEST_OUTPUT,workers:1,timeout:90000,expect:{timeout:10000},use:{baseURL:'http://127.0.0.1:3013',channel:'chrome',headless:true,bypassCSP:true,hasTouch:true,serviceWorkers:'block',screenshot:'only-on-failure'},reporter:'list'});

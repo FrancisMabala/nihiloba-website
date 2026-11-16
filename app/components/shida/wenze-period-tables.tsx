@@ -63,7 +63,7 @@ export function PagedShopSales({base,range,locale,zone}:{base:string;range:strin
     return n+' '+t(key+(n===1?'One':'Many'));
   };
   return <><p>{count('active',page.recorded,'saleRecorded')} · {count('reversed',page.cancelled,'saleCancelled')}</p>
-    <ShopSalesTable key={cursor} sales={page.sales} locale={locale} zone={zone}/>
+    {page.sales.length?<ShopSalesTable key={cursor} sales={page.sales} locale={locale} zone={zone}/>:<p>{t('empty')}</p>}
     {(page.total>pageSize||cursor||page.next_cursor)?<nav className="wr-pages" aria-label={t('physical_sales')}>
       <span aria-live="polite">{t('salePageRange').replace('{start}',String(start)).replace('{end}',String(start+page.sales.length-1)).replace('{total}',String(page.total??'…'))}</span>
       <button disabled={cursors.length===1} onClick={()=>move(cursors.slice(0,-1))}>{t('previous')}</button>
@@ -103,6 +103,7 @@ function ShopSalesTable({sales,locale,zone}:{sales:Row[]}&Display){
 
 export function ReportHistoryTable({history,locale,zone,busy,download}:{history:Row[];busy:boolean;download:(ref:string)=>void}&Display){
   const t=(key:string)=>sellerText(locale,key);
+  if(!history.length)return <p>{t('empty')}</p>;
   return <section className="wr-list"><header><h3>{t('reportArchive')}</h3></header><table className="wr-table wr-history"><thead><tr>
     <th>{t('reportCoverage')}</th><th>{t('reportGenerated')}</th><th>{t('saleStatus')}</th><th>{t('reportDownload')}</th></tr></thead>
     <tbody>{history.map(h=>{

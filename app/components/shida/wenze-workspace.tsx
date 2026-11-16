@@ -172,6 +172,20 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
     }).catch(() => { if (ticket === generation.current) {setError("unavailable");setSellerCheckFailed(true);} }).finally(()=>{if(ticket===generation.current)setCheckingSeller(false);});
   }, [context, archived, checkAttempt]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Keep history content in sync, including the non-finance page we entered from.
+  const historyIndex=useRef(0);
+  useEffect(()=>{historyIndex.current=Number(history.state?.wenzePageIndex??0);history.replaceState({...history.state,wenzePageIndex:historyIndex.current},'',location.href);},[]);
+  useEffect(()=>{const restore=()=>{const params=new URLSearchParams(location.search),next=params.get("view")??"today";
+    if(params.get("store")!==store?.public_ref||next===view)return;
+    if(!["today","catalog","orders","imports","inventory","sales","costs","expenses","money","reports","schedules","receipts","shop"].includes(next))return;
+    const index=Number(history.state?.wenzePageIndex??0),delta=historyIndex.current-index;
+    void leaveWork().then(ok=>{if(!ok){if(delta)history.go(delta);return;}historyIndex.current=index;
+      setEditor(null);setEditorDirty(false);setProductDirty(false);setPendingCost(null);setProduct(null);setPlan(null);setView(next);
+      // Reuse canonical initialization for product/order/shop destinations.
+      if(!["money","costs","expenses","reports","schedules","receipts"].includes(next))setCheckAttempt(value=>value+1);
+    });
+  };window.addEventListener("popstate",restore);return()=>window.removeEventListener("popstate",restore);},[store?.public_ref,view]);
+
   async function run(work: () => Promise<void>) {
     if(writeLock.current)return;writeLock.current=true;
     setBusy(true); setError(""); setNotice(""); const ticket = generation.current;
@@ -352,7 +366,7 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
     setEditor(null);setEditorDirty(false);setProductDirty(false);setPendingCost(null);setPreview(null);setPlan(null);
     setInventoryOrigin(false);setFocusOption("");setView(tab);setDashboardOrder(undefined);setProduct(null);if(tab==="shop"){setShopTab("shopDetails");setProduct(null);}else if(tab==="catalog")setShopTab("products");
     if(tab==="catalog"&&store)void run(()=>loadProducts(store,page));
-    const url=new URL(window.location.href);url.searchParams.set("view",tab);for(const key of ["bucket","order","orderSearch","orderOffset","stockFilter","stockSearch","costFilter","costCurrency","reportZone","period","openExpense"])url.searchParams.delete(key);for(const [key,value] of Object.entries(filters))url.searchParams.set(key,value);url.searchParams.delete("product");if(store)url.searchParams.set("store",store.public_ref);window.history.replaceState(null,"",url);
+    const url=new URL(window.location.href);url.searchParams.set("view",tab);for(const key of ["bucket","order","orderSearch","orderOffset","stockFilter","stockSearch","costFilter","costCurrency","reportZone","period","openExpense"])url.searchParams.delete(key);for(const [key,value] of Object.entries(filters))url.searchParams.set(key,value);url.searchParams.delete("product");if(store)url.searchParams.set("store",store.public_ref);if(["money","costs","expenses","reports","schedules","receipts"].includes(tab)||["money","costs","expenses","reports","schedules","receipts"].includes(view))window.history.pushState({...window.history.state,wenzePageIndex:++historyIndex.current},"",url);else window.history.replaceState(window.history.state,"",url);
   }
   function navigateInventoryReturn(){
     setProduct(null);setProductTab("details");setInventoryOrigin(false);setFocusOption("");setView("inventory");

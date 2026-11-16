@@ -29,8 +29,8 @@ function JobFilters({locale,search}:{locale:Locale;search:JobSearch}) {
   return <form className="jobs-public-filters mp-search" action={marketplacePath(locale,"/shida/emplois")} method="get" role="search" aria-label={t.search}>
     {search.category&&<input type="hidden" name="category" value={search.category}/>}{search.view&&<input type="hidden" name="view" value={search.view}/>}
     <div className="jobs-search-primary mp-search-primary">
-      <label>{t.search}<input type="search" name="query" defaultValue={search.query} placeholder={jobsFinalCopy[locale].placeholder} maxLength={120}/></label>
-      <label>{t.city}<input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label>
+      <label><span>{t.search}</span><input type="search" name="query" defaultValue={search.query} placeholder={jobsFinalCopy[locale].placeholder} maxLength={120}/></label>
+      <label><span>{t.city}</span><input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label>
       <button className="button button-primary" type="submit">{marketplaceDiscoveryCopy[locale].search}<span aria-hidden="true">→</span></button>
     </div>
     <div className="jobs-search-secondary">

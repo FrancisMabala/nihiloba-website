@@ -1,4 +1,5 @@
 "use client";
+import {jobResultsReturn,markJobResultsReturn} from '../../lib/job-results-return';
 
 import {jobReportUrl} from "../../lib/job-report-url";
 import {candidateWorkspaceCopy} from '../../lib/candidate-workspace-copy';
@@ -110,7 +111,7 @@ export function JobReportLink({locale,jobReference,reportUrl}:{locale:Locale;job
 }
 export function JobResultsLink({locale,href}:{locale:Locale;href:string}){
  const anchor = useRef<HTMLAnchorElement>(null);
- useEffect(()=>{if(!anchor.current || !document.referrer)return;const previous=new URL(document.referrer);
+ useEffect(()=>{if(!anchor.current)return;const saved=jobResultsReturn(href);if(saved){anchor.current.href=saved;return;}if(!document.referrer)return;const previous=new URL(document.referrer);
  if(previous.origin===location.origin&&previous.pathname.replace(/\/$/,'')===href.replace(/\/$/,''))anchor.current.href=previous.pathname+previous.search;},[href]);
- return <a ref={anchor} href={href}>← {{fr:'Toutes les offres',en:'All jobs',ln:'Misala nyonso',sw:'Kazi zote'}[locale]}</a>;
+ return <a ref={anchor} href={href} onClick={()=>markJobResultsReturn()}>← {{fr:'Toutes les offres',en:'All jobs',ln:'Misala nyonso',sw:'Kazi zote'}[locale]}</a>;
 }

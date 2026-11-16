@@ -75,7 +75,7 @@ export async function HotelCollectionPage({ locale, search = {} }: { locale: Loc
     <StayTravelHero kind="hotels" title={t.hotels} locale={locale}/>
     <section id="hotel-discovery" aria-labelledby="hotel-results-title">
       <form className="mp-search" action={path} method="get" role="search" aria-label={d.search}>
-        <div className="mp-search-primary"><label>{d.search}<input type="search" name="query" defaultValue={search.query} placeholder={d.placeholder} maxLength={120}/></label><label>{t.city}<input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label><button className="button button-primary" type="submit">{t.search}</button></div>
+        <div className="mp-search-primary"><label><span>{d.search}</span><input type="search" name="query" defaultValue={search.query} placeholder={d.placeholder} maxLength={120}/></label><label><span>{t.city}</span><input name="city" defaultValue={search.city} placeholder={t.city} maxLength={120}/></label><button className="button button-primary" type="submit">{t.search}</button></div>
         <details open={Boolean(search.area||search.rooms||search.rental_period)||undefined}><summary>{t.filters}</summary><div className="marketplace-filter-grid">
           <label>{t.area}<input name="area" defaultValue={search.area} maxLength={120}/></label>
           <label>{words.rooms}<input type="number" name="rooms" min="1" max="100" defaultValue={search.rooms}/></label>

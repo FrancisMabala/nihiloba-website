@@ -1,5 +1,6 @@
 "use client";
 import {Fragment,useEffect,useRef,useState} from 'react';
+import {FinanceSheet} from './finance-sheet';
 import Image from 'next/image';
 import {useWenzeApi,DashboardApiError} from '@/app/lib/wenze-seller-api';
 import {moneyText} from '@/app/lib/wenze-money-copy';
@@ -30,6 +31,10 @@ export function PurchaseCosts({base,locale,initialFilter,initialCurrency}:{base:
  const [currencyFilter,setCurrencyFilter]=useState(initialCurrency),[page,setPage]=useState<{key:string;items:Target[];total:number}|null>(null);
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[edit,setEdit]=useState<Target|null>(null),[amount,setAmount]=useState(''),[currency,setCurrency]=useState('CDF');
  const [saving,setSaving]=useState(false),[saveError,setSaveError]=useState(''),[history,setHistory]=useState<Revision[]|null>(null),[historyOpen,setHistoryOpen]=useState(false),[historyError,setHistoryError]=useState(false);
+ const [mobile,setMobile]=useState(false),[detail,setDetail]=useState<Target|null>(null);
+ useEffect(()=>{const media=matchMedia('(max-width:760px)'),update=()=>setMobile(media.matches);update();media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
+ const listScroll=useRef(0);
+ useEffect(()=>{if(!detail)return;const back=()=>{if(window.history.state?.wenzeCost===detail.target_ref)return;if(saving){window.history.forward();return;}void leaveWork().then(ok=>{if(ok){setEdit(null);setDetail(null);requestAnimationFrame(()=>window.scrollTo(0,listScroll.current));}else window.history.forward();});};window.addEventListener('popstate',back);return()=>window.removeEventListener('popstate',back);},[detail,saving]);
  const lock=useRef(false),editSequence=useRef(0);
  const path=(row:Target,history=false)=>base+'/products/'+encodeURIComponent(row.product_ref)+'/private-cost'+(history?'/history':'')+(row.target_type==='variant'?'?variant_ref='+encodeURIComponent(row.target_ref):'');
  const key=JSON.stringify([base,missing,currencyFilter,search,offset,refresh]);
@@ -38,7 +43,7 @@ export function PurchaseCosts({base,locale,initialFilter,initialCurrency}:{base:
  useEffect(()=>{let current=true;
   const params=new URLSearchParams({missing:String(missing),search,offset:String(offset),limit:'30'});
   if(currencyFilter)params.set('currency',currencyFilter);
-  request(base+'/purchase-costs?'+params).then(raw=>{if(!current)return;setError('');const data=raw as {items:Target[];total:number};if(offset>0&&offset>=data.total){setOffset(Math.max(0,offset-30));return;}setPage({...data,key});}).catch(e=>{if(current){setPage(null);setEdit(null);setError(e instanceof DashboardApiError&&[403,404].includes(e.status)?'accessDenied':'unavailable');}});
+  request(base+'/purchase-costs?'+params).then(raw=>{if(!current)return;setError('');const data=raw as {items:Target[];total:number};if(offset>0&&offset>=data.total){setOffset(Math.max(0,offset-30));return;}setPage({...data,key});setDetail(current=>current?data.items.find(row=>row.target_ref===current.target_ref)??null:null);}).catch(e=>{if(current){setPage(null);setEdit(null);setDetail(null);setError(e instanceof DashboardApiError&&[403,404].includes(e.status)?'accessDenied':'unavailable');}});
   return()=>{current=false;};
  },[request,base,missing,currencyFilter,search,offset,refresh,key]);
  async function start(row:Target){if(!await leaveWork())return;editSequence.current++;setEdit(row);setAmount(row.unit_cost??'');setCurrency(row.currency??row.sale_currency);setHistory(null);setHistoryError(false);setHistoryOpen(false);setSaveError('');}
@@ -49,31 +54,38 @@ export function PurchaseCosts({base,locale,initialFilter,initialCurrency}:{base:
  }
  async function save(row:Target,remove=false){
   if(lock.current)return;lock.current=true;setSaving(true);setSaveError('');setNotice('');
-  try{await request(path(row),{method:remove?'DELETE':'PUT',body:JSON.stringify({expected_revision:row.revision,...(remove?{}:{amount:value,currency})})});
-   setEdit(null);setNotice(c(remove?'costRemoved':'costSaved'));setRefresh(v=>v+1);
-  }catch(e){if(e instanceof DashboardApiError&&[401,403,404].includes(e.status)){setPage(null);setEdit(null);setError('accessDenied');}else setSaveError(t(e instanceof DashboardApiError&&e.status===409?'conflict':'unavailable'));}
+  try{const saved=await request(path(row),{method:remove?'DELETE':'PUT',body:JSON.stringify({expected_revision:row.revision,...(remove?{}:{amount:value,currency})})}) as Pick<Target,"unit_cost"|"currency"|"revision">;
+   setEdit(null);setDetail(current=>current?{...row,...saved}:null);setNotice(c(remove?'costRemoved':'costSaved'));setRefresh(v=>v+1);
+  }catch(e){if(e instanceof DashboardApiError&&[401,403,404].includes(e.status)){setPage(null);setEdit(null);setDetail(null);setError('accessDenied');}else setSaveError(t(e instanceof DashboardApiError&&e.status===409?'conflict':'unavailable'));}
   finally{lock.current=false;setSaving(false);}
  }
  const shown=page?.key===key?page:null;
  const columns=[t('product'),c('sellingPrice'),c('unitCost'),c('unitMargin'),t('manage')];
+ const row=edit;
+ const editor=row&&<section className="wm-editor"><h3>{c(row.unit_cost===null?'addHeading':'editHeading')}</h3>
+ <form onSubmit={e=>{e.preventDefault();if(changed&&valid(value)&&currency===row.sale_currency)void save(row);}}><div className="wm-edit-grid">
+ <label>{c('costField')}<input name="amount" autoFocus inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)} disabled={saving}/></label>
+ <label>{t('currency')}<select value={currency} disabled={saving} onChange={e=>setCurrency(e.target.value)}><option>CDF</option><option>USD</option></select></label>
+ <div className="wm-preview-margin" aria-live="polite">{c('previewMargin')}<strong>{currency!==row.sale_currency?'—':margin(row.price,value,locale,currency)}</strong></div></div>
+ {currency!==row.sale_currency&&<p>{c('different')}</p>}<p>{c('privateFuture')}</p>{saveError&&<p role="alert">{saveError} {saveError===t('conflict')&&<button type="button" onClick={()=>{setEdit(null);setRefresh(v=>v+1);}}>{t('refresh')}</button>}</p>}<div className="wz-actions"><button className="seller-primary" disabled={saving||!changed||!valid(value)||currency!==row.sale_currency}>{t('save')}</button><button type="button" disabled={saving} onClick={async()=>{if(await leaveWork())setEdit(null);}}>{t('cancel')}</button></div></form>
+ {row.unit_cost!==null&&<button disabled={saving} onClick={()=>void confirm(c('removeCost'),wenzeActionConfirmation[locale].removeCost,()=>save(row,true))}>{c('removeCost')}</button>}
+ <details open={historyOpen} onToggle={e=>{const open=e.currentTarget.open;setHistoryOpen(open);if(open&&!history)void showHistory(row);}}><summary>{c('costHistory')}</summary>{historyError?<button onClick={()=>void showHistory(row)}>{t('retry')}</button>:!history?t('loading'):history.map(h=><p key={h.revision}>{h.unit_cost===null?c('costRemoved'):moneyValue(h.unit_cost,locale)+' '+h.currency} · {new Date(h.changed_at).toLocaleString(locale)}</p>)}</details>
+ </section>;
+ function openDetail(row:Target){listScroll.current=window.scrollY;window.history.pushState({...window.history.state,wenzeCost:row.target_ref},'',location.href);setEdit(null);setDetail(row);}
+ async function closeDetail(){if(!saving&&await leaveWork()){setEdit(null);setDetail(null);if(window.history.state?.wenzeCost)window.history.back();requestAnimationFrame(()=>window.scrollTo(0,listScroll.current));}}
+ const groups=new Map<string,Target[]>();for(const row of shown?.items??[]){const group=groups.get(row.product_ref)??[];group.push(row);groups.set(row.product_ref,group);}
+ const identity=(row:Target)=><div className="finance-cost-identity">{row.image_url&&<Image unoptimized src={row.image_url} alt="" width={56} height={56}/>}<span><strong>{row.name}</strong>{row.option&&<small>{row.option}</small>}</span></div>;
  return <div className="wm-purchase">{confirmation}<div className="wm-cost-tools">
  <label><span className="wz-visually-hidden">{c('searchProduct')}</span><input type="search" placeholder={c('searchProduct')} value={search} disabled={saving} maxLength={180} onChange={async e=>{const next=e.target.value;if(!await leaveWork())return;setEdit(null);setOffset(0);setSearch(next);}}/></label>
  {[false,true].map(filter=><button key={String(filter)} disabled={saving} aria-pressed={missing===filter} onClick={async()=>{if(!await leaveWork())return;setEdit(null);setMissing(filter);setCurrencyFilter('');setOffset(0);const url=new URL(location.href);if(filter)url.searchParams.set('costFilter','missing');else url.searchParams.delete('costFilter');url.searchParams.delete('costCurrency');window.history.replaceState(window.history.state,'',url);}}>{c(filter?'missingFilter':'allProducts')}</button>)}{currencyFilter&&<small>{currencyFilter}</small>}</div>
  {notice&&<p role="status">{notice}</p>}{error?<p role="alert">{t(error)} <button onClick={()=>{setError('');setRefresh(v=>v+1);}}>{t('retry')}</button></p>:!shown?<p role="status">{t('loading')}</p>:!shown.items.length?<p>{search?c('noProducts'):missing?c('costComplete'):t('empty')}</p>:
- <table className="wm-cost-list wm-ledger"><thead><tr>{columns.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{shown.items.map(row=><Fragment key={row.target_ref}><tr>
+ <><div className="finance-cost-mobile">{Array.from(groups,([ref,items])=><div className="finance-cost-group" key={ref}>{identity({...items[0],option:null})}{items.length>1&&<small className="finance-cost-count">{c("listedVariants").replace("{n}",String(items.length))}</small>}{items.map(row=><button key={row.target_ref} className="finance-cost-row" onClick={()=>openDetail(row)}><span>{row.option??c('standardTarget')}</span><span className={row.unit_cost===null?'wm-partial':undefined}>{row.unit_cost===null?c('missing'):moneyValue(row.unit_cost,locale)+' '+row.currency}</span><span aria-hidden="true">›</span></button>)}</div>)}</div><table className="wm-cost-list wm-ledger finance-cost-desktop"><thead><tr>{columns.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{shown.items.map(row=><Fragment key={row.target_ref}><tr>
  <th scope="row"><div className="wm-product-name">{row.image_url&&<Image unoptimized src={row.image_url} alt="" width={52} height={56}/>}<span>{row.name}{row.option&&<small>{row.option}</small>}</span></div></th>
  <td data-label={columns[1]}>{row.price===null?'—':moneyValue(row.price,locale)+' '+row.sale_currency}</td>
  <td data-label={columns[2]}>{row.unit_cost===null?<span className="wm-partial">{c('missing')}</span>:moneyValue(row.unit_cost,locale)+' '+row.currency}</td>
  <td data-label={columns[3]}>{row.currency===row.sale_currency&&row.unit_cost!==null?margin(row.price,row.unit_cost,locale,row.sale_currency):'—'}</td>
  <td><button disabled={saving} onClick={()=>void start(row)}>{c(row.unit_cost===null?'addCost':'editCost')}</button></td></tr>
- {edit?.target_ref===row.target_ref&&<tr className="wm-edit-row"><td colSpan={5}><section className="wm-editor"><h3>{c(edit.unit_cost===null?'addHeading':'editHeading')}</h3>
- <form onSubmit={e=>{e.preventDefault();if(changed&&valid(value)&&currency===row.sale_currency)void save(row);}}><div className="wm-edit-grid">
- <label>{c('costField')}<input name="amount" autoFocus inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)} disabled={saving}/></label>
- <label>{t('currency')}<select value={currency} disabled={saving} onChange={e=>setCurrency(e.target.value)}><option>CDF</option><option>USD</option></select></label>
- <div className="wm-preview-margin" aria-live="polite">{c('previewMargin')}<strong>{currency!==row.sale_currency?'—':margin(row.price,value,locale,currency)}</strong></div></div>
- {currency!==row.sale_currency&&<p>{c('different')}</p>}<p>{c('privateFuture')}</p>{saveError&&<p role="alert">{saveError} {saveError===t('conflict')&&<button type="button" onClick={()=>{setEdit(null);setRefresh(v=>v+1);}}>{t('refresh')}</button>}</p>}<div className="wz-actions"><button className="seller-primary" disabled={saving||!changed||!valid(value)||currency!==row.sale_currency}>{t('save')}</button><button type="button" disabled={saving} onClick={()=>setEdit(null)}>{t('cancel')}</button></div></form>
- {edit.unit_cost!==null&&<button disabled={saving} onClick={()=>void confirm(c('removeCost'),wenzeActionConfirmation[locale].removeCost,()=>save(row,true))}>{c('removeCost')}</button>}
- <details open={historyOpen} onToggle={e=>{const open=e.currentTarget.open;setHistoryOpen(open);if(open&&!history)void showHistory(row);}}><summary>{c('costHistory')}</summary>{historyError?<button onClick={()=>void showHistory(row)}>{t('retry')}</button>:!history?t('loading'):history.map(h=><p key={h.revision}>{h.unit_cost===null?c('costRemoved'):moneyValue(h.unit_cost,locale)+' '+h.currency} · {new Date(h.changed_at).toLocaleString(locale)}</p>)}</details>
- </section></td></tr>}</Fragment>)}</tbody></table>}
+ {!mobile&&edit?.target_ref===row.target_ref&&<tr className="wm-edit-row"><td colSpan={5}>{editor}</td></tr>}</Fragment>)}</tbody></table></>}
+ {mobile&&detail&&<FinanceSheet title={c(edit?'editHeading':'costDetail')} locale={locale} onClose={()=>void closeDetail()}>{identity(detail)}{edit?editor:<><dl className="finance-cost-facts"><div><dt>{c('sellingPrice')}</dt><dd>{detail.price===null?'—':moneyValue(detail.price,locale)+' '+detail.sale_currency}</dd></div><div><dt>{c('costUnit')}</dt><dd>{detail.unit_cost===null?c('missing'):moneyValue(detail.unit_cost,locale)+' '+detail.currency}</dd></div><div><dt>{c('unitMargin')}</dt><dd>{detail.currency===detail.sale_currency&&detail.unit_cost!==null?margin(detail.price,detail.unit_cost,locale,detail.sale_currency):'—'}</dd></div></dl><p className="finance-cost-note">{c('costScope')}</p><button className="seller-primary" onClick={()=>void start(detail)}>{c(detail.unit_cost===null?'addCost':'editCost')}</button></>}</FinanceSheet>}
  {shown&&shown.total>30&&<div className="wz-actions">{[-30,30].map(delta=><button key={delta} disabled={saving||offset+delta<0||offset+delta>=shown.total} onClick={async()=>{if(await leaveWork()){setEdit(null);setOffset(offset+delta);}}}>{t(delta<0?'previous':'next')}</button>)}</div>}</div>;
 }

@@ -134,6 +134,7 @@ export function WenzeOperations({store,locale,view,onChoose,onEditStock,onCreate
  function table(items:Row[],keys:string[]){return items.length?<div className="wz-table"><table><thead><tr>{keys.map(key=><th key={key}>{t(key)}</th>)}</tr></thead><tbody>{items.map((row,i)=><tr key={i}>{keys.map(key=><td key={key} data-label={t(key)}>{row[key]===null||row[key]===undefined?'—':typeof row[key]==='object'?'—':['status','category'].includes(key)?t(str(row[key])):formatWenzeFact(row[key],key,locale,reportZone)}</td>)}</tr>)}</tbody></table></div>:<p>{t('empty')}</p>;}
  function changeRange(nextPeriod:string,nextZone:string,nextFrom:string,nextTo:string){
   setPeriod(nextPeriod);setReportZone(nextZone);setFrom(nextFrom);setTo(nextTo);
+  const url=new URL(location.href);url.searchParams.set('period',nextPeriod);url.searchParams.set('reportZone',nextZone);for(const [key,value] of [['date_from',nextFrom],['date_to',nextTo]]){if(nextPeriod==='custom'&&value)url.searchParams.set(key,value);else url.searchParams.delete(key);}window.history.replaceState(window.history.state,'',url);
   setData({});setExpenseSummary({});
   if(nextPeriod==='custom'&&(!nextFrom||!nextTo||nextFrom>nextTo))return;
   const params=new URLSearchParams({period:nextPeriod,timezone:nextZone});
@@ -141,9 +142,9 @@ export function WenzeOperations({store,locale,view,onChoose,onEditStock,onCreate
   void guard(()=>loadFinance(params.toString()));
  }
  function ranges(){return <ExpenseFilters locale={locale} summary={`${period==='custom'?from+' – '+to:t(period)} · ${reportZone.replace('Africa/','')}`}><form className="wz-inline wm-filters" onSubmit={e=>{e.preventDefault();void guard(reload);}}>
- <label>{sellerImprovements[locale].period}<select value={period} onChange={e=>changeRange(e.target.value,reportZone,from,to)}>{['today','last_7_days','last_30_days','this_month','custom'].map(p=><option key={p} value={p}>{t(p)}</option>)}</select></label>
- {period==='custom'&&<><label>{t('date_from')}<input type="date" required value={from} onChange={e=>changeRange(period,reportZone,e.target.value,to)}/></label><label>{t('date_to')}<input type="date" required min={from} value={to} onChange={e=>changeRange(period,reportZone,from,e.target.value)}/></label></>}
- <label>{sellerImprovements[locale].zone}<select value={reportZone} onChange={e=>changeRange(period,e.target.value,from,to)}><option value="Africa/Kinshasa">Kinshasa</option><option value="Africa/Lubumbashi">Lubumbashi</option></select></label>
+ <label>{sellerImprovements[locale].period}<select disabled={busy} value={period} onChange={e=>changeRange(e.target.value,reportZone,from,to)}>{['today','last_7_days','last_30_days','this_month','custom'].map(p=><option key={p} value={p}>{t(p)}</option>)}</select></label>
+ {period==='custom'&&<><label>{t('date_from')}<input type="date" disabled={busy} required value={from} onChange={e=>changeRange(period,reportZone,e.target.value,to)}/></label><label>{t('date_to')}<input type="date" disabled={busy} required min={from} value={to} onChange={e=>changeRange(period,reportZone,from,e.target.value)}/></label></>}
+ <label>{sellerImprovements[locale].zone}<select disabled={busy} value={reportZone} onChange={e=>changeRange(period,e.target.value,from,to)}><option value="Africa/Kinshasa">Kinshasa</option><option value="Africa/Lubumbashi">Lubumbashi</option></select></label>
  <button disabled={busy}>{t('refresh')}</button></form></ExpenseFilters>;}
  function reverse(row:Row,kind:'sales'|'expenses'){
   const isSale=kind==='sales',path=isSale?`physical-sales/priced/${enc(str(row.sale_ref))}/reversal`:`expenses/${enc(str(row.expense_ref))}/reversal`;

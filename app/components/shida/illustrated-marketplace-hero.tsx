@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import './illustrated-marketplace-hero.css';
+import './marketplace-mobile.css';
 
 /** Presentation only: each marketplace retains its own data and journeys. */
 export function IllustratedMarketplaceHero({title,slogan,intro,art,tone,className='',sloganClassName=''}:{title:string;slogan:string;intro:string;art:ReactNode;tone:'shop'|'food'|'services'|'jobs'|'apartments'|'hotels'|'transport';className?:string;sloganClassName?:string}) {

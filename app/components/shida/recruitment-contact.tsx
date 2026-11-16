@@ -7,10 +7,10 @@ import {PERSONAL_SESSION_EVENT, PersonalSessionError, restorePersonalSession} fr
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 
 const labels = {
-  fr: {apply:'Postuler auprès du recruteur', signIn:'Connectez-vous pour voir les coordonnées de recrutement.', email:'Envoyer un e-mail', phone:'Appeler', busy:'Chargement…', closed:'Les coordonnées ne sont plus disponibles pour cette offre.', error:'Impossible de charger les coordonnées. Réessayez.'},
-  en: {apply:'Apply with the recruiter', signIn:'Sign in to see the recruitment contact details.', email:'Send an email', phone:'Call', busy:'Loading…', closed:'Recruitment contacts are no longer available for this offer.', error:'Could not load the recruitment contacts. Please try again.'},
-  ln: {apply:'Sɛngá mosala epai ya mopesi mosala', signIn:'Kɔtá na konti na yo mpo na komona ndenge ya kosolola na mopesi mosala.', email:'Tindá e-mail', phone:'Bengá', busy:'Ezali kofungwama…', closed:'Okoki lisusu te kozwa e-mail to telefone mpo na mosala oyo.', error:'E-mail mpe telefone emonani te. Meká lisusu.'},
-  sw: {apply:'Omba kazi kwa mwajiri', signIn:'Ingia ili uone mawasiliano ya mwajiri.', email:'Tuma barua pepe', phone:'Piga simu', busy:'Inapakia…', closed:'Mawasiliano hayapatikani tena kwa nafasi hii.', error:'Mawasiliano hayakuweza kupakiwa. Jaribu tena.'},
+  fr: {apply:'Postuler auprès du recruteur', signIn:'Connectez-vous pour voir les coordonnées de recrutement.', email:'Postuler par e-mail', phone:'Appeler', busy:'Chargement…', closed:'Les coordonnées ne sont plus disponibles pour cette offre.', error:'Impossible de charger les coordonnées. Réessayez.'},
+  en: {apply:'Apply with the recruiter', signIn:'Sign in to see the recruitment contact details.', email:'Apply by email', phone:'Call', busy:'Loading…', closed:'Recruitment contacts are no longer available for this offer.', error:'Could not load the recruitment contacts. Please try again.'},
+  ln: {apply:'Sɛngá mosala epai ya mopesi mosala', signIn:'Kɔtá na konti na yo mpo na komona ndenge ya kosolola na mopesi mosala.', email:'Sɛngá mosala na e-mail', phone:'Bengá', busy:'Ezali kofungwama…', closed:'Okoki lisusu te kozwa e-mail to telefone mpo na mosala oyo.', error:'E-mail mpe telefone emonani te. Meká lisusu.'},
+  sw: {apply:'Omba kazi kwa mwajiri', signIn:'Ingia ili uone mawasiliano ya mwajiri.', email:'Omba kwa barua pepe', phone:'Piga simu', busy:'Inapakia…', closed:'Mawasiliano hayapatikani tena kwa nafasi hii.', error:'Mawasiliano hayakuweza kupakiwa. Jaribu tena.'},
 };
 
 type Contact = {email: string | null; phone: string | null};

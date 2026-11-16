@@ -1,5 +1,15 @@
 import type {WenzeLocale} from './wenze-copy';
 const copy:Record<string,readonly string[]>={
+ listedVariants:["{n} variants shown","{n} variantes affichées","Ba variantes {n} emonisami","Aina {n} zimeonyeshwa"],
+ costDetail:["Cost details","Détail du coût","Ndimbola ya ntalo","Maelezo ya gharama"],
+ costScope:["Selling price minus purchase cost, before other expenses.","Prix de vente moins coût d’achat, avant les autres frais.","Ntalo ya koteka longola ntalo ya kosomba, liboso ya ba frais mosusu.","Bei ya kuuza ukiondoa gharama ya ununuzi, kabla ya matumizi mengine."],
+ costUnit:["Cost per selling unit","Coût par unité de vente","Ntalo ya unité ya koteka","Gharama kwa kipimo cha mauzo"],
+ standardTarget:["Standard product","Produit standard","Eloko ya momeseno","Bidhaa ya kawaida"],
+ unitSold:["unit sold","unité vendue","eloko etekami","bidhaa iliyouzwa"],
+ exportReport:["Export","Exporter","Bimisa","Hamisha"],
+ total_expenses:["Total expenses","Total des dépenses","Ba dépenses nyonso","Jumla ya matumizi"],
+ expense_count:["Number of expenses","Nombre de dépenses","Motango ya ba dépenses","Idadi ya matumizi"],
+
 referenceSearch:["Search by reference","Rechercher par référence","Luka na référence","Tafuta kwa rejeleo"],receiptCount:["receipt","reçu","reçu","risiti"],receiptCounts:["receipts","reçus","reçus","risiti"],noStoreReceipts:["No receipts for this shop","Aucun reçu pour cette boutique","Reçu ezali te mpo na boutique oyo","Hakuna risiti za duka hili"],noReceiptResults:["No receipts match your search","Aucun reçu ne correspond à votre recherche","Reçu moko te ekokani na boluki","Hakuna risiti zinazolingana na utafutaji"],resetFilters:["Reset filters","Réinitialiser les filtres","Longola filtres","Ondoa vichujio"],allStates:["All statuses","Tous les statuts","Ba état nyonso","Hali zote"],receiptsAvailable:["Available","Disponibles","Ezali","Zinapatikana"],receiptsCancelled:["Cancelled","Annulés","Elongolami","Zilizofutwa"],cancelledTicket:["CANCELLED RECEIPT","REÇU ANNULÉ","REÇU ELONGOLAMI","RISITI IMEFUTWA"],
 amounts:["Amounts in","Montants en","Mbongo na","Kiasi kwa"],
 covered:["Purchase costs are recorded for {n} % of sales revenue in this period.","Les coûts d’achat sont renseignés pour {n} % du chiffre d’affaires de cette période.","Ntalo ya kosomba eyebani mpo na {n} % ya mosolo ya boteki na eleko oyo.","Gharama za ununuzi zimerekodiwa kwa {n} % ya mapato ya kipindi hiki."],

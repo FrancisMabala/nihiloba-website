@@ -34,7 +34,7 @@ export async function WenzeCatalog({locale,raw,landing=false}:{
       {search.store&&<input type="hidden" name="store" value={search.store}/>}
       <div className="mp-search-primary">
         <label><span>{t.productSearch}</span><input name="query" type="search" placeholder={t.productSearch} defaultValue={search.query}/></label>
-        <label><span>{t.city}</span><input name="city" defaultValue={search.city}/></label>
+        <label><span>{t.city}</span><input name="city" placeholder={t.city} defaultValue={search.city}/></label>
         <button className="button button-primary">{t.search}</button>
       </div>
       {search.category&&<input type="hidden" name="category" value={search.category}/>}
