@@ -9,9 +9,14 @@ async function handle(request: Request, context: Context) {
   const path = ((await context.params).path ?? []).join("/");
   const reference = "SCT_[A-Za-z0-9_-]{1,100}";
   const allowed = request.method === "GET" ? path === "" || path === "questions" || new RegExp(`^questions/${reference}$`).test(path) || new RegExp(`^${reference}$`).test(path)
-    : request.method === "POST" && (path === "" || path === "shop-report" || path === "apartment-report" || path === "questions" || new RegExp(`^questions/${reference}/(reply|close|reopen|read)$`).test(path) || new RegExp(`^${reference}/(reply|close)$`).test(path));
+    : request.method === "POST" && (path === "" || path === "shop-report" || path === "apartment-report" || path === "questions" || new RegExp(`^questions/${reference}/(reply|close|reopen|read)$`).test(path) || new RegExp(`^${reference}/(reply|close|reopen|read)$`).test(path));
   const query = new URL(request.url).searchParams;
-  if (!allowed || (query.size && (path !== "questions" || request.method !== "GET" || [...query.keys()].some(key=>key!=="page") || !/^[1-9][0-9]{0,3}$/.test(query.get("page")??"")))) return fail(404);
+  const validQuery = !query.size || (request.method === "GET" && ["", "questions"].includes(path)
+    && [...query.keys()].every(key=>key==="page" || (path==="" && key==="status"))
+    && (!query.has("page") || /^[1-9][0-9]{0,3}$/.test(query.get("page")??""))
+    && (!query.has("status") || ["all","active","closed"].includes(query.get("status")??""))
+    && [...new Set(query.keys())].every(key=>query.getAll(key).length===1));
+  if (!allowed || !validQuery) return fail(404);
   if (request.headers.get("sec-fetch-site") === "cross-site") return fail(403);
   const origin = personalRequestOrigin(request);
   if (request.method !== "GET" && !origin) return fail(403);
