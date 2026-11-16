@@ -44,6 +44,8 @@ for(const width of [360,1440])for(const locale of ['fr','en','ln','sw'] as const
  const panel=page.locator('.notification-panel'),row=(ref:string)=>panel.locator('[data-reference="'+ref+'"]');
  await expect(panel.locator('article')).toHaveCount(4);await expect(panel.getByText(messagesText(locale,'sendHint'))).toHaveCount(1);
  await expect(row('NTF_second').locator('.notice-unread-dot')).toHaveCount(0);
+ await expect(row('NTF_second').locator('.sr-only')).toContainText(notificationLayoutCopy[locale].read);
+ await expect(row('NTF_report').getByRole('link')).toHaveAccessibleName(new RegExp(notificationLayoutCopy[locale].read));
  for(const badge of await page.locator('.space-notice-count').all())await expect(badge).toHaveText('1');
  const report=row('NTF_report').getByRole('link');await expect(report).toHaveAttribute('href',/store=WS_test&artifact=WRA_test/);
  await expect(row('NTF_account').getByRole('link')).toHaveAttribute('href',/view=settings/);

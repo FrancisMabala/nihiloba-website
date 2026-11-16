@@ -14,10 +14,10 @@ export const moduleNames: Record<Locale,string[]> = {
 };
 
 export const notificationLayoutCopy = {
- fr:{all:'Toutes',filters:'Filtres',clear:'Effacer les filtres',actions:'Autres actions',today:'Aujourd’hui',yesterday:'Hier',unread:'Notification non lue'},
- en:{all:'All',filters:'Filters',clear:'Clear filters',actions:'More actions',today:'Today',yesterday:'Yesterday',unread:'Unread notification'},
- ln:{all:'Nyonso',filters:'Baponi',clear:'Longola baponi',actions:'Makambo mosusu',today:'Lelo',yesterday:'Lobi eleki',unread:'Liyebisi etángami naino te'},
- sw:{all:'Zote',filters:'Vichujio',clear:'Ondoa vichujio',actions:'Vitendo vingine',today:'Leo',yesterday:'Jana',unread:'Arifa haijasomwa'},
+ fr:{all:'Toutes',filters:'Filtres',clear:'Effacer les filtres',actions:'Autres actions',today:'Aujourd’hui',yesterday:'Hier',unread:'Notification non lue',read:'Notification lue'},
+ en:{all:'All',filters:'Filters',clear:'Clear filters',actions:'More actions',today:'Today',yesterday:'Yesterday',unread:'Unread notification',read:'Read notification'},
+ ln:{all:'Nyonso',filters:'Baponi',clear:'Longola baponi',actions:'Makambo mosusu',today:'Lelo',yesterday:'Lobi eleki',unread:'Liyebisi etángami naino te',read:'Liyebisi etángami'},
+ sw:{all:'Zote',filters:'Vichujio',clear:'Ondoa vichujio',actions:'Vitendo vingine',today:'Leo',yesterday:'Jana',unread:'Arifa haijasomwa',read:'Arifa imesomwa'},
 } as const;
 
 // Keep the existing browser-local timezone, including its daylight-saving rules.

@@ -55,3 +55,13 @@ Filters use `notice_mode` and `notice_market` alongside the existing route/query
 Browser data, writes, downloads and WhatsApp handoffs were synthetic network fixtures on the reusable local Next server. Physical Safari, native screen-reader speech, actual OS sharing/WhatsApp and real browser toolbar/safe-area transitions were not tested. Automated checks cover semantic labels/roles/focus and viewport resizing, not a claim of physical-device verification.
 
 Before/after evidence at the same 390×844 viewport is retained in `C:/NIHILOBA/release-evidence/notifications-mobile-20261116/` (`before-390.png`, `after-390.png`). The shared runtime/dependencies are preserved; the local server is stopped after verification.
+
+### Release audit and follow-up correction — 16 November 2026
+
+The reported unchanged page is `/fr/shida/space/?view=messages`: the localized space page passes the view into `account-space.tsx`, then `messages-space.tsx`, which renders the shared inline `notification-center.tsx`. The compact implementation was committed locally as `e1f63f88` but was absent from remote main and Render's live commit `e8e86c2d72dfa20c160de8f4cde4b5bb648dea68` (deploy `dep-dbtdgm7f3r2c73av2obg`). A fresh browser loading public production assets with every API request intercepted reproduced the old DOM. There was no evidence of stale browser assets or a responsive override hiding the new markup: the new markup had not been deployed.
+
+Follow-up checks added explicit screen-reader read-state labels in all four languages without restoring visible redundant badges. They also exposed a filter restoration defect: copying Next's internal history marker into `replaceState` bypassed its router synchronization. Passing only SHIDA's own history fields lets Next merge its internal state and preserves filtered URLs when returning from the actual report page.
+
+The updated local checks passed: 13 notification browser scenarios, six notification unit tests, targeted ESLint and TypeScript no-emit. The 390×844 comparison uses identical synthetic records: the first card is approximately 119px high instead of 242px. Evidence is retained under `C:/NIHILOBA/release-evidence/notifications-release-audit-20261116/` (`before-live-list-390.png`, `after-local-list-390.png`, and JSON asset/layout records). These are rendered Chrome checks; physical Safari and real account/API behavior remain outside this synthetic verification.
+
+The user subsequently authorized pushing and deploying all completed unpublished changes, including this follow-up and the restaurant queue batch. Deployment success must be verified against the resulting remote commit and Render deploy, not inferred from this pre-release report.

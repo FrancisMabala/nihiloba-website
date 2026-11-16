@@ -48,9 +48,11 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
   };
   const timer=setTimeout(sync,0);window.addEventListener('popstate',sync);return()=>{clearTimeout(timer);window.removeEventListener('popstate',sync);};
  },[apiBase,inline]);
- function remember(){if(inline)window.history.replaceState({...window.history.state,shidaNotificationReturn:{path:window.location.pathname+window.location.search,apiBase,pages:pages.current,scrollY:window.scrollY}},'');}
+ // Next merges its own history state. Copying its internal marker into an external
+ // update bypasses router synchronization and can restore the old unfiltered URL.
+ function remember(){if(inline)window.history.replaceState({shidaNotificationReturn:{path:window.location.pathname+window.location.search,apiBase,pages:pages.current,scrollY:window.scrollY}},'');}
  function filter(nextMode:string,nextMarket:string){
-  if(inline){const url=new URL(window.location.href);for(const [key,value] of [['notice_mode',nextMode==='all'?'':nextMode],['notice_market',nextMarket]]){if(value)url.searchParams.set(key,value);else url.searchParams.delete(key);}window.history.replaceState({...window.history.state,shidaNotificationReturn:null},'',url);}
+  if(inline){const url=new URL(window.location.href);for(const [key,value] of [['notice_mode',nextMode==='all'?'':nextMode],['notice_market',nextMarket]]){if(value)url.searchParams.set(key,value);else url.searchParams.delete(key);}window.history.replaceState({shidaNotificationReturn:null},'',url);}
   restorePages.current=1;restoreScroll.current=null;setMode(nextMode);setMarket(nextMarket);
  }
  const call=useCallback(async(path:string,body?:object,method='POST')=>{
@@ -136,10 +138,10 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
     const action=message?messagesText(locale,item.read?'openWa':'readWa'):t[10];
     const firstUnread=message&&!item.read&&item.reference===items.find(row=>row.event_type==='message'&&row.can_handoff&&!row.expired&&!row.read)?.reference;
     const waPrimary=whatsapp&&(message||!link),stamp=notificationTimestamp(item.created_at,locale);
-    const content=<><span className="notice-market-icon"><SpaceIcon name={icons[item.marketplace]??'bell'}/></span><div className="notice-content"><h3>{!item.read&&<span className="notice-unread-dot"><span className="sr-only">{layout.unread}. </span></span>}{title}</h3><p>{item.description}</p><div className="notice-context">{marketName}{item.activity_reference&&<> · {item.activity_reference}</>}</div><time className="notice-meta" dateTime={item.created_at} title={stamp.full} aria-label={stamp.full}>{stamp.short}</time>{item.expired&&<small>{t[16]}</small>}</div></>;
+    const content=<><span className="notice-market-icon"><SpaceIcon name={icons[item.marketplace]??'bell'}/></span><div className="notice-content"><h3><span className="sr-only">{item.read?layout.read:layout.unread}. </span>{!item.read&&<span className="notice-unread-dot" aria-hidden="true"/>}{title}</h3><p>{item.description}</p><div className="notice-context">{marketName}{item.activity_reference&&<> · {item.activity_reference}</>}</div><time className="notice-meta" dateTime={item.created_at} title={stamp.full} aria-label={stamp.full}>{stamp.short}</time>{item.expired&&<small>{t[16]}</small>}</div></>;
     const menuActions=[...(!item.read?[t[8]]:[]),...(!inline&&item.action_required&&!item.expired&&!item.acknowledged?[t[9]]:[])];
     return <article key={item.reference} data-reference={item.reference} className={item.read?'notification-card':'notification-card notification-unread'}>
-     {link&&!waPrimary?<a className="notice-main" href={link} aria-label={`${item.read?'':layout.unread+'. '}${noticeAction(item,locale)}: ${title}`} onClick={async e=>{
+     {link&&!waPrimary?<a className="notice-main" href={link} aria-label={`${item.read?layout.read:layout.unread}. ${noticeAction(item,locale)}: ${title}`} onClick={async e=>{
       remember();if(item.read)return;if(busy){e.preventDefault();return;}
       if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey){void act([item.reference],'read');return;}
       e.preventDefault();if(await act([item.reference],'read')){remember();window.location.assign(link);}
