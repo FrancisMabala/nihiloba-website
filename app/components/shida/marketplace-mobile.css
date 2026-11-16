@@ -42,6 +42,12 @@
  body .market-surface .marketplace-public .mp-results-heading :is(p,a){margin:0;font-size:.8125rem;max-width:100%}
  body .market-surface .marketplace-public .mp-results-heading>a{min-height:44px;display:flex;align-items:center;white-space:normal}
  body .market-surface .marketplace-public .rd-chip{padding:0}
+ /* Restaurant chips already have padded, 44px spans. Avoid adding a second
+    padded wrapper and stacking the closed filter's margin with the grid gap. */
+ body .market-surface .restaurant-discovery .rd-search{margin-bottom:16px}
+ body .market-surface .restaurant-discovery .rd-search>.rd-advanced:not([open])>summary{margin-bottom:0}
+ body .market-surface .restaurant-discovery .rd-search>.rd-types{justify-content:flex-start;gap:8px;margin:8px 0 0;padding:0}
+ body .market-surface .restaurant-discovery .rd-search>.rd-types>.rd-chip{flex:0 0 auto;padding:0}
  body .market-surface .marketplace-public .rd-fields fieldset{min-width:0;max-width:100%;display:flex;flex-wrap:wrap;gap:8px;box-sizing:border-box}
  body .market-surface .marketplace-public .rd-fields .rd-chip{white-space:normal;max-width:100%}
  /* Jobs retain full titles and truthful employer/verification data. */
