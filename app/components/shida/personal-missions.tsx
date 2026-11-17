@@ -1,9 +1,10 @@
 'use client';
 import Image from 'next/image';
 import {medaCopy} from '../../lib/meda-copy';
+import {medaDiscoveryCopy} from '../../lib/meda-discovery-copy';
+import {MedaListingRow} from './meda-discovery';
 import type {MedaListing} from './meda-listing-form';
 import {MedaMarketplace} from './meda-marketplace';
-import {medaParticipationCopy} from '../../lib/meda-participation-copy';
 import {individualApplicationCopy} from '../../lib/individual-application-copy';
 import {useCallback,useEffect,useState,useRef} from 'react';
 import {listingText,type MissionLocale} from '../../lib/personal-missions-copy';
@@ -111,14 +112,14 @@ function Manager({locale,binding,offer,kind}:Props&{offer:string;kind:string}){
 }
 export function PersonalListings(props:Props) {
  const query = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
- if(query.get('tab')==='meda')return <><a href={missionQuery('listings',{})}>{listingCopy[props.locale].all}</a><MedaMarketplace locale={props.locale} embedded/></>;
+ if(query.get('tab')==='meda'&&query.has('meda_view')&&query.get('meda_view')!=='mine')return <><a href={missionQuery('listings',{})}>{listingCopy[props.locale].all}</a><MedaMarketplace locale={props.locale} embedded/></>;
  const offer = query.get('offer');
  if (offer) return <Manager {...props} offer={offer} kind={query.get('kind') || 'manage'}/>;
  const initial = query.get('tab');
  return <Catalogue {...props} initial={filters.find(key => key === initial) || 'all'}/>;
 }
 
-const filters = ['all','article','job','service'] as const;
+const filters = ['all','article','job','service','meda'] as const;
 const icons = {article:'orders',job:'management',service:'tool'} as const;
 const actionLabels = {article:'sell',job:'post',service:'provide'} as const;
 const typeLabels = {article:'articleType',job:'jobType',service:'serviceType'} as const;
@@ -135,10 +136,11 @@ function ListingThumbnail({row}:{row:Row}) {
 function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[number]}) {
  const {data,error,retry} = useMission(binding,'catalogue','');
  const [tab,choose] = useState(initial);
- const [meda,setMeda]=useState<{items:MedaListing[];has_more:boolean}|null>(null);
- useEffect(()=>{const controller=new AbortController();void fetch('/api/shida/personal/meda/listings/',{headers:{'x-shida-session':binding},cache:'no-store',signal:controller.signal}).then(async response=>{if(response.ok)setMeda(await response.json())}).catch(()=>{});return()=>controller.abort()},[binding]);
+ const [meda,setMeda]=useState<{items:MedaListing[];has_more:boolean;total?:number}|null>(null);
+ const [medaPage,setMedaPage]=useState(1),[medaError,setMedaError]=useState(false),[medaAttempt,setMedaAttempt]=useState(0);
+ useEffect(()=>{const controller=new AbortController();void fetch(`/api/shida/personal/meda/listings/?page=${medaPage}`,{headers:{'x-shida-session':binding},cache:'no-store',signal:controller.signal}).then(async response=>{if(!response.ok)throw Error();const result=await response.json();if(!controller.signal.aborted){setMeda(result);setMedaError(false)}}).catch(()=>{if(!controller.signal.aborted)setMedaError(true)});return()=>controller.abort()},[binding,medaPage,medaAttempt]);
  const [articleCount,setArticleCount]=useState<number|null>(null);
- const [menu,open] = useState(false);
+ const [menu,open] = useState(initial==='meda');
  const strip=useRef<HTMLDivElement>(null),restored=useRef(false);
  useEffect(()=>{const sync=()=>{const value=new URLSearchParams(location.search).get('tab');choose(filters.find(k=>k===value)||'all')};window.addEventListener('popstate',sync);return()=>window.removeEventListener('popstate',sync)},[]);
  useEffect(()=>{const button=strip.current?.querySelector<HTMLButtonElement>('[aria-pressed=true]');if(button&&strip.current){const box=button.getBoundingClientRect(),parent=strip.current.getBoundingClientRect();if(box.left<parent.left)strip.current.scrollLeft-=parent.left-box.left;else if(box.right>parent.right)strip.current.scrollLeft+=box.right-parent.right;}},[tab,data]);
@@ -154,11 +156,11 @@ function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[numb
    service:service+'?view=services&intent=create'
  };
  const choices = <section className="listing-choices" id="listing-publishing-choices">
-   {!data?.rows.length && <p>{t('none')}</p>}
+   {!data?.rows.length&&!meda?.items.length && <p>{t('none')}</p>}
    <h2>{t('publishWhat')}</h2>
    <div>{(['article','job','service'] as const).map(key=><a className="button" key={key} href={forms[key]}>
-     <SpaceIcon name={icons[key]}/>{t(actionLabels[key])}
-   </a>)}<a className="button" href={missionQuery('listings',{tab:'meda',meda_view:'create'})}>{medaParticipationCopy[locale].home}</a></div>
+     <SpaceIcon name={icons[key]}/><span>{t(actionLabels[key])}</span>
+   </a>)}<a className="button listing-choice-meda" href={missionQuery('listings',{tab:'meda',meda_view:'create'})}><SpaceIcon name="meda"/><span><strong>{medaDiscoveryCopy[locale].creation}</strong><small>{medaDiscoveryCopy[locale].categories}</small></span></a></div>
  </section>;
  const title = <h1 className="space-page-title">{listingCopy[locale].title}</h1>;
  if (error === '401' || error === 'personal_sign_in_required') return <>{title}<section className="space-sign-in">
@@ -188,13 +190,14 @@ function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[numb
    {<>
      {menu&&choices}
      <div className="listing-filters" ref={strip} role="group" aria-label={t('list')}>{filters.map(key=><button className={'button'+(tab===key?' button-primary':'')} key={key} aria-pressed={key===tab} onClick={()=>selectTab(key)}>
-       {personalSpaceMobileCopy[locale].listingTabs[key]} ({key==='all'?data.rows.filter(row=>row.type!=='article').length+(articleCount??data.rows.filter(row=>row.type==='article').length):key==='article'?(articleCount??data.rows.filter(row=>row.type==='article').length):data.rows.filter(row=>row.type===key).length})
-     </button>)}<a className="button" href={missionQuery('listings',{tab:'meda'})}>Meda{meda?` (${meda.items.length}${meda.has_more?'+':''})`:''}</a></div>
+       {key==='meda'?'Meda':personalSpaceMobileCopy[locale].listingTabs[key]} ({key==='meda'?(meda?.total??(meda?`${meda.items.length}${meda.has_more?'+':''}`:'…')):key==='all'?`${data.rows.filter(row=>row.type!=='article').length+(articleCount??data.rows.filter(row=>row.type==='article').length)+(meda?.total??meda?.items.length??0)}${!meda||meda.total===undefined&&meda.has_more?'+':''}`:key==='article'?(articleCount??data.rows.filter(row=>row.type==='article').length):data.rows.filter(row=>row.type===key).length})
+     </button>)}</div>
      {tab==='article'?<QuickSell locale={locale} embedded onInventoryLoaded={setArticleCount}/>:rows.map(listing)}
-     {tab==='all'&&meda?.items.map(row=><article className="personal-listing" key={row.reference}><SpaceIcon name="orders"/><div className="listing-identity"><small>Meda · {medaCopy[locale][row.category]}</small><h2>{row.title}</h2><p>{row.origin_city} → {row.destination_city}</p></div><span className="listing-status">{medaCopy[locale][row.status]}</span><a className="button" href={missionQuery('listings',{tab:'meda',meda_view:'review',ref:row.reference})}>{medaCopy[locale].details}</a></article>)}
+     {(tab==='all'||tab==='meda')&&<>{medaError?<p role="alert">{medaCopy[locale].error} <button onClick={()=>setMedaAttempt(n=>n+1)}>{t('retry')}</button></p>:!meda?<p role="status">{t('loading')}</p>:meda.items.map(row=><MedaListingRow key={row.reference} row={row} locale={locale}/>)}
      {tab==='all'&&meda?.has_more&&<a href={missionQuery('listings',{tab:'meda'})}>{medaCopy[locale].mine} →</a>}
+     {tab==='meda'&&meda&&<nav className="meda-owner-pagination" aria-label={medaCopy[locale].mine}>{medaPage>1&&<button onClick={()=>{setMeda(null);setMedaPage(p=>p-1)}}>{medaCopy[locale].previous}</button>}{meda.has_more&&<button onClick={()=>{setMeda(null);setMedaPage(p=>p+1)}}>{medaCopy[locale].next}</button>}</nav>}</>}
      {!data.rows.length&&tab==='all'&&!menu&&choices}
-     {!rows.length && tab!=='all' && tab!=='article' && <section className="listing-choices"><p>{t(tab==='job'?'nojob':tab==='service'?'noservice':'noarticle')}</p>
+     {!rows.length && tab!=='all' && tab!=='article' && tab!=='meda' && <section className="listing-choices"><p>{t(tab==='job'?'nojob':tab==='service'?'noservice':'noarticle')}</p>
        <a className="button" href={forms[tab]}>{t(actionLabels[tab])}</a></section>}
    </>}
  </div>;

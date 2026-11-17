@@ -1,3 +1,4 @@
+export const discoveryCities=['Kinshasa','Lubumbashi','Goma','Bukavu','Kisangani','Matadi'] as const;
 export type DiscoveryLocale = "en" | "fr" | "ln" | "sw";
 export const discoveryLocales: DiscoveryLocale[] = ["en", "fr", "ln", "sw"];
 export const discoveryPath = (locale: DiscoveryLocale, path: string) => `${locale === "en" ? "" : `/${locale}`}${path}`;

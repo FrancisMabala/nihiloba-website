@@ -14,7 +14,7 @@ import {SpaceIcon,type SpaceIconName} from './account-space-icon';
 import Image from 'next/image';
 type Notice = {reference:string; marketplace:string; title:string; description:string; created_at:string; read:boolean; action_required:boolean; expired:boolean; acknowledged:boolean; action_url:string|null;event_type?:string;activity_reference?:string|null;can_handoff?:boolean};
 type Locale=keyof typeof copy;
-const icons:Record<string,SpaceIconName>={meda:'orders',wenze:'shop',services:'tool',employment:'management',restaurants:'restaurant',security:'shield',apartments:'home',hotels:'home',school:'business'};
+const icons:Record<string,SpaceIconName>={meda:'meda',wenze:'shop',services:'tool',employment:'management',restaurants:'restaurant',security:'shield',apartments:'home',hotels:'home',school:'business'};
 function validPage(value:unknown):value is {items:Notice[];next_cursor:string|null}{
  if(!value||typeof value!=='object')return false;const v=value as {items:Notice[];next_cursor:string|null};
  return Array.isArray(v.items)&&(v.next_cursor===null||typeof v.next_cursor==='string'&&/^NTF_[A-Za-z0-9_-]{1,36}$/.test(v.next_cursor))&&v.items.every(r=>r&&typeof r.reference==='string'&&/^NTF_[A-Za-z0-9_-]{1,36}$/.test(r.reference)&&typeof r.marketplace==='string'&&typeof r.title==='string'&&typeof r.description==='string'&&typeof r.created_at==='string'&&Number.isFinite(Date.parse(r.created_at))&&['read','action_required','expired','acknowledged'].every(k=>typeof r[k as keyof Notice]==='boolean')&&(r.action_url===null||typeof r.action_url==='string'));

@@ -34,3 +34,11 @@
  .listing-filters>.button{flex:none;white-space:nowrap;padding:8px 12px;min-height:44px;font-size:1rem}
  .account-space:has(.my-listings,.mission-manager,.personal-offer-workspace) .space-sidebar>h2{display:none}
 }
+
+/* The existing publishing choice panel now offers four equal actions. */
+.my-listings .listing-choices>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.my-listings .listing-choices>div>.button{display:flex;align-items:center;justify-content:flex-start;gap:16px;padding:14px 18px;min-height:76px;text-align:left;min-width:0}
+.my-listings .listing-choices .button svg{width:26px;height:26px;flex-shrink:0}.listing-choices .button span{min-width:0;overflow-wrap:anywhere}.listing-choices .button small{display:block;font-size:.8rem;font-weight:400;margin-top:4px}.my-listings .listing-choices .listing-choice-meda{background:#eef2e6;border-color:#d6ddcc;color:var(--forest)}
+.meda-listing-row .listing-thumbnail{background:#eef2e6}.meda-listing-row .listing-thumbnail svg{width:32px;height:32px}.meda-listing-row .listing-identity small{display:block;margin-top:5px}.meda-owner-pagination{display:flex;gap:12px}.meda-owner-pagination button{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:8px}
+.messages-tabs a{display:flex;align-items:center;min-height:44px;padding:10px 14px;border-radius:8px}.messages-tabs a[aria-current=page]{background:var(--green);color:#fff}
+@media(max-width:640px){.my-listings .listing-choices>div{grid-template-columns:1fr}.my-listings .listing-choices>div>.button{min-height:62px;padding:12px}.my-listings .listing-filters{flex-wrap:wrap;overflow:visible}.my-listings .listing-filters .button{min-width:0;white-space:normal;flex-shrink:1}.meda-listing-row .listing-controls{flex-wrap:wrap}.meda-listing-row .listing-identity{min-width:0}}

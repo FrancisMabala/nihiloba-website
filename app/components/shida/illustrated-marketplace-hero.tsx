@@ -3,7 +3,7 @@ import './illustrated-marketplace-hero.css';
 import './marketplace-mobile.css';
 
 /** Presentation only: each marketplace retains its own data and journeys. */
-export function IllustratedMarketplaceHero({title,slogan,intro,art,tone,className='',sloganClassName=''}:{title:string;slogan:string;intro:string;art:ReactNode;tone:'shop'|'food'|'services'|'jobs'|'apartments'|'hotels'|'transport';className?:string;sloganClassName?:string}) {
+export function IllustratedMarketplaceHero({title,slogan,intro,art,tone,className='',sloganClassName=''}:{title:string;slogan:string;intro:string;art:ReactNode;tone:'meda'|'shop'|'food'|'services'|'jobs'|'apartments'|'hotels'|'transport';className?:string;sloganClassName?:string}) {
  return <header className={`illustrated-marketplace-hero illustrated-${tone} ${className}`}><div><h1>{title}</h1><p className={`marketplace-permanent-slogan ${sloganClassName}`} lang="ln">{slogan}</p><p className="marketplace-hero-description">{intro}</p></div><div className="marketplace-hero-art" aria-hidden="true">{art}</div></header>;
 }
 

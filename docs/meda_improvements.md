@@ -92,3 +92,8 @@ snapshot and validation logs/screenshots remain for reuse and evidence. Existing
 worktrees and unrelated unfinished SHIDA work remain intact.
 
 Final real-backend browser repeat after the upload-state fix: 3 passed (37.4 seconds).
+
+The subsequent approved visual release is documented separately in
+[Meda visual refinement](meda_visual_refinement.md), including shared design reuse,
+account navigation, owner enquiry counts and desktop/mobile evidence. It supersedes
+the earlier discovery presentation without changing the participation policy.

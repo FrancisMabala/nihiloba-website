@@ -1,4 +1,5 @@
 import {test,expect,type BrowserContext,type Page} from '@playwright/test';
+import {medaDiscoveryCopy} from '../../app/lib/meda-discovery-copy';
 import {medaCopy} from '../../app/lib/meda-copy';
 import {medaParticipationCopy} from '../../app/lib/meda-participation-copy';
 import {mkdirSync} from 'node:fs';
@@ -16,7 +17,7 @@ test('real two-user photos, agreement, intake closure, privacy and account switc
  await b.locator('input[type=file]').setInputFiles({name:'books.png',mimeType:'image/png',buffer:png});
  const photoResponse=await uploaded;expect(photoResponse.status(),JSON.stringify(await photoResponse.json())).toBe(200);await expect(b.getByRole('button',{name:x.send,exact:true})).toBeEnabled();
  await b.getByLabel(x.contents,{exact:true}).fill('Printed books shown in the photo');await b.getByLabel(x.weight,{exact:true}).fill('2');await b.getByLabel(x.packages,{exact:true}).fill('1');
- await b.getByRole('button',{name:x.send,exact:true}).click();await expect(b.locator('.meda-conversation')).toBeVisible();const enquiry=new URL(b.url()).searchParams.get('ref')!;
+ await b.getByRole('button',{name:x.send,exact:true}).click();await expect(b.locator('.meda-conversation')).toBeVisible();await expect(b).toHaveURL(/view=messages.*market=meda.*meda_view=conversation/);const enquiry=new URL(b.url()).searchParams.get('ref')!;await expect(b.locator('.meda-hero')).toHaveCount(0);
  await a.goto('/shida/meda/');await a.getByRole('button',{name:t.details}).click();await expect(a.getByRole('button',{name:t.close,exact:true})).toBeVisible();await expect(a.getByRole('button',{name:x.send,exact:true})).toHaveCount(0);
  await a.goto('/shida/meda/?view=conversation&ref='+enquiry);await expect(a.getByText('Printed books shown in the photo').first()).toBeVisible();
  await a.getByRole('button',{name:x.propose,exact:true}).click();await a.locator('input[name=price]').fill('12');await a.locator('textarea[name=collection]').fill('Collect at the station');await a.locator('textarea[name=destination]').fill('Collect on arrival');await a.locator('textarea[name=conditions]').fill('Inspect the contents together');await a.locator('.meda-agreement form').getByRole('button',{name:x.propose,exact:true}).click();
@@ -31,7 +32,7 @@ test('real two-user photos, agreement, intake closure, privacy and account switc
  const unauthorizedPhoto=await b.evaluate(async(ref)=>{const session=await fetch('/api/shida/employment/session/').then(r=>r.json());return (await fetch('/api/shida/personal/meda/photos/'+ref+'/',{headers:{'x-shida-session':session.binding}})).status},photo);expect(unauthorizedPhoto).toBe(404);
  await owner.close();await sender.close();
 });
-test('real anonymous gateway blocks listings and preserves explanation',async({page})=>{await page.goto('/shida/meda/');await expect(page.getByText(t.login).last()).toBeVisible();expect((await page.request.get('/api/shida/meda/listings/')).status()).toBe(401)});
+test('real anonymous gateway blocks listings and preserves explanation',async({page})=>{await page.goto('/shida/meda/');await expect(page.getByRole('heading',{name:medaDiscoveryCopy.en.access})).toBeVisible();expect((await page.request.get('/api/shida/meda/listings/')).status()).toBe(401)});
 
 test('real Mes annonces container draft, back navigation and explicit publication',async({page,context})=>{
  await identity(context,'owner');await origin(page);await page.goto('/shida/space/?view=listings&tab=meda&meda_view=create');

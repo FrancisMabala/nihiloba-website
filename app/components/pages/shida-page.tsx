@@ -1,7 +1,9 @@
 import Link from "next/link";
+import {SpaceIcon} from '../shida/account-space-icon';
+import {medaDiscoveryCopy} from '../../lib/meda-discovery-copy';
 import { Suspense } from "react";
 import { OFFICIAL_CHANNELS, SHIDA_SLOGAN } from "../../lib/brand";
-import { discoveryCopy, discoveryMarkets, discoveryPath, type DiscoveryLocale } from "../../lib/discovery-copy";
+import { discoveryCities, discoveryCopy, discoveryMarkets, discoveryPath, type DiscoveryLocale } from "../../lib/discovery-copy";
 import { ArrowRightIcon, BookIcon, BriefcaseIcon, CarIcon, HomeIcon, StoreIcon, ToolsIcon } from "../icons";
 import { DiscoveryIllustration } from "./discovery-illustration";
 import { DiscoveryListings } from "./shida-discovery-listings";
@@ -19,12 +21,12 @@ export function ShidaPage({ locale }: { locale: DiscoveryLocale }) {
         <label><span>{t.market}</span><select name="market" defaultValue="emplois">{discoveryMarkets.slice(0, 6).map((market, i) => <option value={market} key={market}>{t.labels[i]}</option>)}</select></label>
         <label className="discovery-query"><span>{t.query}</span><input name="query" type="search" maxLength={120}/></label>
         <label><span>{t.city}</span><input name="city" list="discovery-cities" placeholder={t.anywhere} maxLength={120}/></label>
-        <datalist id="discovery-cities">{["Kinshasa", "Lubumbashi", "Goma", "Bukavu", "Kisangani", "Matadi"].map(city => <option key={city} value={city}/>)}</datalist>
+        <datalist id="discovery-cities">{discoveryCities.map(city => <option key={city} value={city}/>)}</datalist>
         <button type="submit">{t.search}<ArrowRightIcon/></button>
       </form><p className="discovery-search-note" id="discovery-search-note">{t.searchNote}</p>
     </section>
     <section id="explore" aria-labelledby="discovery-markets"><h2 id="discovery-markets">{t.explore}</h2>
-      <nav className="discovery-categories" aria-label={t.explore}>{discoveryMarkets.map((market, i) => { const Icon = icons[i]; return <Link data-market={market} id={market === "emplois" ? "employment" : market === "appartements" ? "housing" : market} href={discoveryPath(locale, `/shida/${market}`)} key={market}><span className="discovery-icon"><Icon/></span><strong>{t.labels[i]}</strong><small>{t.hints[i]}</small><span className="discovery-category-arrow" aria-hidden="true"><ArrowRightIcon/></span></Link>; })}</nav>
+      <nav className="discovery-categories" aria-label={t.explore}>{discoveryMarkets.map((market, i) => { const Icon = icons[i]; return <Link data-market={market} id={market === "emplois" ? "employment" : market === "appartements" ? "housing" : market} href={discoveryPath(locale, `/shida/${market}`)} key={market}><span className="discovery-icon"><Icon/></span><strong>{t.labels[i]}</strong><small>{t.hints[i]}</small><span className="discovery-category-arrow" aria-hidden="true"><ArrowRightIcon/></span></Link>; })}<Link data-market="meda" href={discoveryPath(locale,'/shida/meda')}><span className="discovery-icon"><SpaceIcon name="meda"/></span><strong>Meda</strong><small>{medaDiscoveryCopy[locale].home}</small><span className="discovery-category-arrow" aria-hidden="true"><ArrowRightIcon/></span></Link></nav>
     </section>
     <section className="discovery-listings" aria-labelledby="discovery-listings-title" id="stories"><h2 id="discovery-listings-title">{t.recent}</h2><p className="discovery-muted">{t.recentNote}</p>
       <Suspense fallback={<div className="discovery-loading" role="status">{t.loading}</div>}><DiscoveryListings locale={locale}/></Suspense>
