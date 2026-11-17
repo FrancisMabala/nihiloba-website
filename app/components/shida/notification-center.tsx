@@ -1,5 +1,6 @@
 "use client";
 
+import {medaParticipationCopy} from '../../lib/meda-participation-copy';
 import {useCallback, useEffect, useId, useRef, useState} from 'react';
 import './notification-center.css';
 import {mySpaceCopy} from '../../lib/my-space-refinement-copy';
@@ -13,7 +14,7 @@ import {SpaceIcon,type SpaceIconName} from './account-space-icon';
 import Image from 'next/image';
 type Notice = {reference:string; marketplace:string; title:string; description:string; created_at:string; read:boolean; action_required:boolean; expired:boolean; acknowledged:boolean; action_url:string|null;event_type?:string;activity_reference?:string|null;can_handoff?:boolean};
 type Locale=keyof typeof copy;
-const icons:Record<string,SpaceIconName>={wenze:'shop',services:'tool',employment:'management',restaurants:'restaurant',security:'shield',apartments:'home',hotels:'home',school:'business'};
+const icons:Record<string,SpaceIconName>={meda:'orders',wenze:'shop',services:'tool',employment:'management',restaurants:'restaurant',security:'shield',apartments:'home',hotels:'home',school:'business'};
 function validPage(value:unknown):value is {items:Notice[];next_cursor:string|null}{
  if(!value||typeof value!=='object')return false;const v=value as {items:Notice[];next_cursor:string|null};
  return Array.isArray(v.items)&&(v.next_cursor===null||typeof v.next_cursor==='string'&&/^NTF_[A-Za-z0-9_-]{1,36}$/.test(v.next_cursor))&&v.items.every(r=>r&&typeof r.reference==='string'&&/^NTF_[A-Za-z0-9_-]{1,36}$/.test(r.reference)&&typeof r.marketplace==='string'&&typeof r.title==='string'&&typeof r.description==='string'&&typeof r.created_at==='string'&&Number.isFinite(Date.parse(r.created_at))&&['read','action_required','expired','acknowledged'].every(k=>typeof r[k as keyof Notice]==='boolean')&&(r.action_url===null||typeof r.action_url==='string'));
@@ -134,7 +135,7 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
    {items.map(item=>{
     const message=item.event_type==='message',whatsapp=item.can_handoff===true&&!item.expired;
     const link=safeActivityUrl(item.action_url),marketName=moduleNames[locale][modules.indexOf(item.marketplace)]??'SHIDA';
-    const title=message?messagesText(locale,item.marketplace==='services'?'reservationMessage':item.marketplace==='employment'?'applicationMessage':item.read?'orderMessage':'newOrderMessage'):item.event_type==='private_report_ready'?messagesText(locale,'reportReady'):item.title;
+    const title=item.marketplace==='meda'?medaParticipationCopy[locale].notice:message?messagesText(locale,item.marketplace==='services'?'reservationMessage':item.marketplace==='employment'?'applicationMessage':item.read?'orderMessage':'newOrderMessage'):item.event_type==='private_report_ready'?messagesText(locale,'reportReady'):item.title;
     const action=message?messagesText(locale,item.read?'openWa':'readWa'):t[10];
     const firstUnread=message&&!item.read&&item.reference===items.find(row=>row.event_type==='message'&&row.can_handoff&&!row.expired&&!row.read)?.reference;
     const waPrimary=whatsapp&&(message||!link),stamp=notificationTimestamp(item.created_at,locale);

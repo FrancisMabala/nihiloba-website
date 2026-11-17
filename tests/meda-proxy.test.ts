@@ -27,7 +27,7 @@ describe('Meda gateway',()=>{
   expect(fetch).not.toHaveBeenCalled();
  });
  it('rejects oversized bodies and duplicate query parameters',async()=>{
-  expect((await POST(request('listings','POST',{'Content-Type':'application/json',Origin:'https://nihiloba.com'},JSON.stringify({body:'x'.repeat(16001)})),context('listings'))).status).toBe(413);
+  expect((await POST(request('listings','POST',{'Content-Type':'application/json',Origin:'https://nihiloba.com'},JSON.stringify({body:'x'.repeat(24001)})),context('listings'))).status).toBe(413);
   expect((await GET(request('listings?page=1&page=2'),context('listings'))).status).toBe(422);
  });
  it('preserves known validation errors and hides arbitrary backend details',async()=>{
@@ -36,9 +36,9 @@ describe('Meda gateway',()=>{
   vi.mocked(fetch).mockResolvedValueOnce(Response.json({detail:'private backend contents'},{status:500}));
   expect(await (await GET(request('listings'),context('listings'))).json()).toEqual({detail:'meda_unavailable'});
  });
- it('public browsing never forwards cookies or user-controlled destinations',async()=>{
-  const result=await PUBLIC(new Request('https://nihiloba.com/api/shida/meda/listings?origin=Paris',{headers:{Cookie:'private=secret'}}),context('listings'));
-  expect(result.status).toBe(200);expect((vi.mocked(fetch).mock.calls[0][1]?.headers as Record<string,string>).Cookie).toBeUndefined();
+ it('anonymous browsing is blocked before any upstream request',async()=>{
+  const result=await PUBLIC();
+  expect(result.status).toBe(401);expect(fetch).not.toHaveBeenCalled();
  });
  it('has complete localized copy without raw error keys',()=>{
   const keys=Object.keys(medaCopy.en).sort();for(const copy of Object.values(medaCopy)){expect(Object.keys(copy).sort()).toEqual(keys);for(const [key,value] of Object.entries(copy)){expect(value.trim()).not.toBe('');if(key.startsWith('meda_'))expect(value).not.toBe(key);}}

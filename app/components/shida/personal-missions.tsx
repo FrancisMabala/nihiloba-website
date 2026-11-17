@@ -1,5 +1,9 @@
 'use client';
 import Image from 'next/image';
+import {medaCopy} from '../../lib/meda-copy';
+import type {MedaListing} from './meda-listing-form';
+import {MedaMarketplace} from './meda-marketplace';
+import {medaParticipationCopy} from '../../lib/meda-participation-copy';
 import {individualApplicationCopy} from '../../lib/individual-application-copy';
 import {useCallback,useEffect,useState,useRef} from 'react';
 import {listingText,type MissionLocale} from '../../lib/personal-missions-copy';
@@ -107,6 +111,7 @@ function Manager({locale,binding,offer,kind}:Props&{offer:string;kind:string}){
 }
 export function PersonalListings(props:Props) {
  const query = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
+ if(query.get('tab')==='meda')return <><a href={missionQuery('listings',{})}>{listingCopy[props.locale].all}</a><MedaMarketplace locale={props.locale} embedded/></>;
  const offer = query.get('offer');
  if (offer) return <Manager {...props} offer={offer} kind={query.get('kind') || 'manage'}/>;
  const initial = query.get('tab');
@@ -130,6 +135,8 @@ function ListingThumbnail({row}:{row:Row}) {
 function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[number]}) {
  const {data,error,retry} = useMission(binding,'catalogue','');
  const [tab,choose] = useState(initial);
+ const [meda,setMeda]=useState<{items:MedaListing[];has_more:boolean}|null>(null);
+ useEffect(()=>{const controller=new AbortController();void fetch('/api/shida/personal/meda/listings/',{headers:{'x-shida-session':binding},cache:'no-store',signal:controller.signal}).then(async response=>{if(response.ok)setMeda(await response.json())}).catch(()=>{});return()=>controller.abort()},[binding]);
  const [articleCount,setArticleCount]=useState<number|null>(null);
  const [menu,open] = useState(false);
  const strip=useRef<HTMLDivElement>(null),restored=useRef(false);
@@ -151,7 +158,7 @@ function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[numb
    <h2>{t('publishWhat')}</h2>
    <div>{(['article','job','service'] as const).map(key=><a className="button" key={key} href={forms[key]}>
      <SpaceIcon name={icons[key]}/>{t(actionLabels[key])}
-   </a>)}</div>
+   </a>)}<a className="button" href={missionQuery('listings',{tab:'meda',meda_view:'create'})}>{medaParticipationCopy[locale].home}</a></div>
  </section>;
  const title = <h1 className="space-page-title">{listingCopy[locale].title}</h1>;
  if (error === '401' || error === 'personal_sign_in_required') return <>{title}<section className="space-sign-in">
@@ -182,8 +189,10 @@ function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[numb
      {menu&&choices}
      <div className="listing-filters" ref={strip} role="group" aria-label={t('list')}>{filters.map(key=><button className={'button'+(tab===key?' button-primary':'')} key={key} aria-pressed={key===tab} onClick={()=>selectTab(key)}>
        {personalSpaceMobileCopy[locale].listingTabs[key]} ({key==='all'?data.rows.filter(row=>row.type!=='article').length+(articleCount??data.rows.filter(row=>row.type==='article').length):key==='article'?(articleCount??data.rows.filter(row=>row.type==='article').length):data.rows.filter(row=>row.type===key).length})
-     </button>)}</div>
+     </button>)}<a className="button" href={missionQuery('listings',{tab:'meda'})}>Meda{meda?` (${meda.items.length}${meda.has_more?'+':''})`:''}</a></div>
      {tab==='article'?<QuickSell locale={locale} embedded onInventoryLoaded={setArticleCount}/>:rows.map(listing)}
+     {tab==='all'&&meda?.items.map(row=><article className="personal-listing" key={row.reference}><SpaceIcon name="orders"/><div className="listing-identity"><small>Meda · {medaCopy[locale][row.category]}</small><h2>{row.title}</h2><p>{row.origin_city} → {row.destination_city}</p></div><span className="listing-status">{medaCopy[locale][row.status]}</span><a className="button" href={missionQuery('listings',{tab:'meda',meda_view:'review',ref:row.reference})}>{medaCopy[locale].details}</a></article>)}
+     {tab==='all'&&meda?.has_more&&<a href={missionQuery('listings',{tab:'meda'})}>{medaCopy[locale].mine} →</a>}
      {!data.rows.length&&tab==='all'&&!menu&&choices}
      {!rows.length && tab!=='all' && tab!=='article' && <section className="listing-choices"><p>{t(tab==='job'?'nojob':tab==='service'?'noservice':'noarticle')}</p>
        <a className="button" href={forms[tab]}>{t(actionLabels[tab])}</a></section>}

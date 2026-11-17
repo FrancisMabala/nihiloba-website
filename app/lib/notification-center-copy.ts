@@ -5,12 +5,12 @@ export const notificationCopy = {
  sw: ['Arifa','Funga','Shughuli zote','Hazijasomwa','Hatua inahitajika','Masoko yote','Hakuna arifa katika mwonekano huu.','Fungua shughuli','Weka imesomwa','Thibitisha kupokea','Endelea kwenye WhatsApp','Tuma ujumbe ulioandaliwa kwenye WhatsApp ili kuendelea.','Onyesha zaidi','Arifa hazipatikani kwa sasa. Jaribu tena.','Weka ukurasa huu umesomwa','Inapakia…','Muda umeisha','Kupokea kumethibitishwa','Arifa za hiari kwenye hesabu','Arifa muhimu zinaendelea kutumika.','Jaribu tena'],
 } as const;
 type Locale = keyof typeof notificationCopy;
-export const modules = ['wenze','services','employment','apartments','hotels','restaurants','security','school','support'];
+export const modules = ['wenze','services','employment','apartments','hotels','restaurants','security','school','support','meda'];
 export const moduleNames: Record<Locale,string[]> = {
- en:['Wenze','Services','Employment','Apartments','Hotels','Restaurants & Malewa','Account security','School','Help and questions'],
- fr:['Wenze','Services','Emploi','Logement','Hôtels','Restaurants & Malewa','Sécurité du compte','École','Aide et questions'],
- ln:['Wenze','Misala','Mosala','Bandako','Baotɛlɛ','Restaurants & Malewa','Bobateli ya konte','Eteyelo','Lisalisi na mituna'],
- sw:['Wenze','Huduma','Ajira','Makazi','Hoteli','Restaurants & Malewa','Usalama wa akaunti','Shule','Msaada na maswali'],
+ en:['Wenze','Services','Employment','Apartments','Hotels','Restaurants & Malewa','Account security','School','Help and questions','Meda'],
+ fr:['Wenze','Services','Emploi','Logement','Hôtels','Restaurants & Malewa','Sécurité du compte','École','Aide et questions','Meda'],
+ ln:['Wenze','Misala','Mosala','Bandako','Baotɛlɛ','Restaurants & Malewa','Bobateli ya konte','Eteyelo','Lisalisi na mituna','Meda'],
+ sw:['Wenze','Huduma','Ajira','Makazi','Hoteli','Restaurants & Malewa','Usalama wa akaunti','Shule','Msaada na maswali','Meda'],
 };
 
 export const notificationLayoutCopy = {

@@ -1,3 +1,5 @@
+> Historical first batch. [Participation improvements](meda_improvements.md) supersede anonymous discovery and initial channel limitations.
+
 # SHIDA Meda — first web delivery
 
 17 November 2026. Scope approved by the owner: listings and private enquiries,
