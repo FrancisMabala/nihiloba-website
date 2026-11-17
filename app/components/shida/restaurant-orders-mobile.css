@@ -23,8 +23,11 @@
 .rst-orders-redesign .rst-orders-chevron{display:block;text-align:right;color:#476155;font-size:1.5rem}
 .rst-orders-source span{display:block}
 @media(max-width:700px){
- .rst-orders-redesign .rst-orders-heading{flex-wrap:wrap}
- .seller-design .rst-management-content.seller-content .rst-orders-heading h2{font-size:1.75rem;line-height:1.2;flex:1 1 auto;max-width:100%}
+ .rst-orders-screen .rst-orders-top{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+ .rst-orders-screen .rst-orders-heading{display:contents}
+ .rst-orders-screen .rst-orders-heading h2{position:absolute;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .rst-orders-screen .rst-orders-tools{order:-1;flex:1 1 12ch;min-width:0;margin:0;overflow-wrap:anywhere}
+ .rst-orders-screen .rst-orders-heading-actions{margin-left:auto}
  .rst-orders-redesign .rst-orders-tabs{margin:0 0 10px}
  .rst-orders-redesign .rst-orders-filterbar{margin:0 0 12px;gap:8px}
  .rst-orders-redesign .rst-orders-filterbar form{flex:1 1 0;min-width:0}
@@ -49,4 +52,4 @@
  .rst-management:has(.rst-orders-screen) .management-restaurant-identity .rst-restaurant-identity{padding:6px 8px;gap:8px}
  .rst-management:has(.rst-orders-screen) .management-restaurant-identity .rst-identity-photo{width:32px;height:32px;flex:none}
 }
-@media(max-width:1100px){.rst-orders-redesign.has-detail .rst-orders-heading,.rst-orders-redesign.has-detail .rst-orders-tools{display:none}}
+@media(max-width:1100px){.rst-orders-redesign.has-detail .rst-orders-top,.rst-orders-redesign.has-detail .rst-orders-heading,.rst-orders-redesign.has-detail .rst-orders-tools{display:none}}
