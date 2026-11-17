@@ -1,11 +1,9 @@
+import {mkdirSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+const evidence=process.env.RESTAURANT_EVIDENCE_DIR??join(tmpdir(),`shida-restaurant-evidence-${Date.now()}`);mkdirSync(evidence,{recursive:true});
 import {test,expect,type Page} from '@playwright/test';
 import {managementNavigation} from './restaurant-management-navigation';
-import {sellerDesignCopy} from '../../app/lib/restaurant-seller-design-copy';
-import {restaurantText} from '../../app/lib/restaurant-seller-copy';
-import {managementCopy} from '../../app/lib/restaurant-management-copy';
-import {workText} from '../../app/lib/restaurant-work-copy';
-import {financeText} from '../../app/lib/restaurant-finance-design-copy';
-import {menuText} from '../../app/lib/restaurant-menu-redesign-copy';
 import {insightsCopy} from '../../app/lib/restaurant-insights-copy';
 import {statsText} from '../../app/lib/restaurant-stats-design-copy';
 import {shiftCalendarDate} from '../../app/lib/restaurant-statistics';
@@ -60,5 +58,15 @@ async function seed(page:Page){
 }
 
 async function enter(page:Page,locale:'fr'|'en'|'ln'|'sw'='fr'){await page.goto(`/${locale}/shida/seller/restaurants`);await managementNavigation(page,insightsCopy[locale].title);await expect(page.locator('.rst-stats-three')).toBeVisible();}
-for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,390,820,1440])test(`statistics layout ${locale} ${width}`,async({page})=>{await page.setViewportSize({width,height:1000});await seed(page);await enter(page,locale);await expect(page.getByRole('button',{name:statsText(locale,'week'),exact:true})).toHaveAttribute('aria-pressed','true');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);if(locale==='fr'&&[375,1440].includes(width))await page.screenshot({path:`C:/NIHILOBA/release-evidence/restaurant-seven-20261114/statistics-${width}.png`,fullPage:true});});
+for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,390,430,820,1440])test(`statistics layout ${locale} ${width}`,async({page})=>{await page.setViewportSize({width,height:width===390?844:1000});await seed(page);await enter(page,locale);await expect(page.getByRole('button',{name:statsText(locale,'week'),exact:true})).toHaveAttribute('aria-pressed','true');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);if(locale==='fr'&&[375,390,1440].includes(width))await page.screenshot({path:`${evidence}/statistics-${width}.png`,fullPage:true});});
 test('cohort cards and chart reconcile, unavailable stays distinct, details and period persist',async({page})=>{const s=await seed(page);await enter(page);await expect(page.locator('.rst-stats-three strong')).toHaveText(['48','40','3']);expect((await page.locator('.rst-stats-chart b').allTextContents()).map(Number).reduce((a,b)=>a+b,0)).toBe(48);await expect(page.locator('.rst-followers')).toContainText('126');await expect(page.locator('.rst-stats-visibility')).toContainText('Données pas encore disponibles');await page.getByRole('button',{name:'Aujourd’hui',exact:true}).last().click();await expect(page.locator('.rst-stats-chart b')).toHaveCount(1);expect(s.queries.at(-1)?.get('to_date')).toBe(shiftCalendarDate(s.queries.at(-1)!.get('from_date')!,1));await page.getByRole('button',{name:'30 jours',exact:true}).click();await expect(page.locator('.rst-stats-chart b')).toHaveCount(30);await page.locator('.rst-statistics-design>header button').click();await expect(page.getByRole('button',{name:'30 jours',exact:true})).toHaveAttribute('aria-pressed','true');await page.locator('.rst-stats-explanation>summary').click();await expect(page.locator('.rst-stats-explanation')).toContainText('USD');});
+
+test('first summary failure is retryable and custom final day is inclusive',async({page})=>{
+ await page.setViewportSize({width:390,height:844});const state=await seed(page);let fail=true;
+ await page.route(/\/order-summary\/?\?/,route=>fail?route.fulfill({status:503,json:{}}):route.fallback());
+ await page.goto('/fr/shida/seller/restaurants');await managementNavigation(page,insightsCopy.fr.title);
+ await expect(page.locator('.rst-statistics-design').getByRole('alert').getByRole('button',{name:'Actualiser',exact:true})).toBeVisible();
+ await expect(page.locator('.rst-followers')).toContainText('126');await page.screenshot({path:`${evidence}/after-statistics-error-390.png`,fullPage:true});fail=false;await page.locator('.rst-statistics-design').getByRole('alert').getByRole('button',{name:'Actualiser',exact:true}).click();await expect(page.locator('.rst-stats-three strong')).toHaveText(['48','40','3']);
+ await page.locator('.rst-stats-presets button').last().click();const dialog=page.locator('.rst-statistics-design dialog');await dialog.locator('input').first().fill('2026-11-01');await dialog.locator('input').last().fill('2026-11-05');await dialog.getByRole('button',{name:'Annuler',exact:true}).first().click();await expect(page.locator('.rst-stats-presets button').nth(1)).toHaveAttribute('aria-pressed','true');
+ await page.locator('.rst-stats-presets button').last().click();await dialog.locator('input').first().fill('2026-11-01');await dialog.locator('input').last().fill('2026-11-05');await page.screenshot({path:`${evidence}/after-statistics-dates-390.png`,fullPage:true});await dialog.locator('button[type=submit]').click();await expect.poll(()=>state.queries.at(-1)?.get('to_date')).toBe('2026-11-06');await expect(page.locator('.rst-stats-chart b')).toHaveCount(5);
+});

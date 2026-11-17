@@ -1,11 +1,10 @@
+import {mkdirSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+const evidence=process.env.RESTAURANT_EVIDENCE_DIR??join(tmpdir(),`shida-restaurant-evidence-${Date.now()}`);mkdirSync(evidence,{recursive:true});
 import {test,expect,type Page} from '@playwright/test';
 import {managementNavigation} from './restaurant-management-navigation';
-import {sellerDesignCopy} from '../../app/lib/restaurant-seller-design-copy';
-import {restaurantText} from '../../app/lib/restaurant-seller-copy';
-import {managementCopy} from '../../app/lib/restaurant-management-copy';
-import {workText} from '../../app/lib/restaurant-work-copy';
 import {financeText} from '../../app/lib/restaurant-finance-design-copy';
-import {menuText} from '../../app/lib/restaurant-menu-redesign-copy';
 const stamp='2026-11-14T09:00:00Z';
 async function seed(page:Page){
  const category={public_ref:'RMC_one',name:'Plats',visible:true};
@@ -55,6 +54,43 @@ async function seed(page:Page){
 }
 
 async function enter(page:Page,locale:'fr'|'en'|'ln'|'sw'='fr'){await page.goto(`/${locale}/shida/seller/restaurants`);await managementNavigation(page,financeText(locale,'title'));await expect(page.locator('.rst-finance-redesign')).toBeVisible();await expect(page.locator('[data-metric=received] strong')).not.toContainText('—');}
-for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,390,820,1440])test(`finance layout ${locale} ${width}`,async({page})=>{await page.setViewportSize({width,height:1000});await seed(page);await enter(page,locale);await expect(page.locator('.rst-finance-tabs button')).toHaveCount(4);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);if(locale==='fr'&&[375,1440].includes(width))await page.screenshot({path:`C:/NIHILOBA/release-evidence/restaurant-seven-20261114/finance-${width}.png`,fullPage:true});});
-test('day totals, currency and current invoices are separate',async({page})=>{const s=await seed(page);await enter(page);await expect(page.locator('[data-metric=received] strong')).toContainText('85');await page.getByRole('button',{name:'Hier',exact:true}).click();await expect(page.locator('.rst-finance-outstanding').getByText(/14.*000/)).toBeVisible();await page.getByRole('button',{name:'USD',exact:true}).click();await expect(page.locator('[data-metric=received] strong')).toContainText('25');await page.getByRole('button',{name:'CDF',exact:true}).click();await page.locator('.rst-finance-outstanding button').last().click();await expect(page.locator('.rst-invoice-list')).toContainText('RSG_test');expect(s.queries.at(-1)?.get('status')).toBe('refund');});
-test('cash missing values stay unknown and failed expense preserves fields',async({page})=>{const s=await seed(page);await enter(page);await page.locator('.rst-finance-tabs').getByRole('button',{name:'Caisse',exact:true}).click();await expect(page.locator('.rst-daily-grid')).toContainText('À compléter');await page.locator('.rst-finance-tabs').getByRole('button',{name:'Dépenses',exact:true}).click();await page.getByLabel('Pour quoi ?',{exact:true}).fill('Riz');await page.getByLabel('Combien ?',{exact:true}).fill('12000');await page.getByRole('combobox',{name:'Comment avez-vous payé ?',exact:true}).selectOption('PM_cash');s.lost='expense';await page.locator('.rst-daily-task fieldset').getByRole('button').last().click();await page.getByRole('dialog').getByRole('button').last().click();await expect(page.getByLabel('Combien ?',{exact:true})).toHaveValue('12000');expect(s.writes).toHaveLength(1);expect(s.writes[0].body.kind).toBe('expense');expect(s.writes[0].body.declared_occurred_at).toBeTruthy();});
+for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,390,430,820,1440])test(`finance layout ${locale} ${width}`,async({page})=>{await page.setViewportSize({width,height:width===390?844:1000});await seed(page);await enter(page,locale);await expect(page.locator('.rst-finance-tabs button')).toHaveCount(4);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);if(locale==='fr'&&[375,390,1440].includes(width))await page.screenshot({path:`${evidence}/finance-${width}.png`,fullPage:true});});
+test('day totals, currency and current invoices are separate',async({page})=>{const s=await seed(page);await enter(page);await expect(page.locator('[data-metric=received] strong')).toContainText('85');await page.locator('.rst-finance-filters>details>summary').click();await page.getByRole('button',{name:'Hier',exact:true}).click();await expect(page.locator('.rst-finance-outstanding').getByText(/14.*000/)).toBeVisible();await page.getByRole('button',{name:'USD',exact:true}).click();await expect(page.locator('[data-metric=received] strong')).toContainText('25');await page.getByRole('button',{name:'CDF',exact:true}).click();await page.locator('.rst-finance-outstanding button').last().click();await expect(page.locator('.rst-invoice-list')).toContainText('RSG_test');expect(s.queries.at(-1)?.get('status')).toBe('refund');});
+test('cash missing values stay unknown and failed expense preserves fields',async({page})=>{await page.setViewportSize({width:390,height:844});const s=await seed(page);await enter(page);await page.locator('.rst-finance-tabs').getByRole('button',{name:'Caisse',exact:true}).click();await expect(page.locator('.rst-daily-grid')).toContainText('À compléter');await page.locator('.rst-finance-tabs').getByRole('button',{name:'Dépenses',exact:true}).click();await page.screenshot({path:`${evidence}/after-expense-390.png`,fullPage:true});await page.getByLabel('Motif',{exact:true}).fill('Riz');await page.getByLabel('Montant',{exact:true}).fill('12000');await page.getByRole('combobox',{name:'Mode de paiement',exact:true}).selectOption('PM_cash');s.lost='expense';await page.locator('.rst-daily-task fieldset').getByRole('button',{name:'Enregistrer',exact:true}).click();await page.getByRole('dialog').getByRole('button').last().click();await expect(page.getByLabel('Montant',{exact:true})).toHaveValue('12000');expect(s.writes).toHaveLength(1);expect(s.writes[0].body.kind).toBe('expense');expect(s.writes[0].body.declared_occurred_at).toBeTruthy();});
+
+for(const width of [320,375,390,430,820,1440])test(`numbered invoice detail and return ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:844});const state=await seed(page);
+ const order={order_ref:'ROD_full_reference_kept',order_number:42,order_local_date:'2026-11-17',order_timezone:'Africa/Kinshasa',submitted_at:'2026-11-17T15:04:00Z',entry_source:'counter',fulfillment_method:'takeaway',state:'completed',currency:'CDF',amount:'40000.00',food_subtotal:'40000.00',delivery_fee:null,items:[{name:'Pondu et accompagnement avec un nom très long',quantity:2,unit_price:'20000.00',subtotal:'40000.00',sale_unit_label:'portion'}]};
+ const values={chargeable:'40000.00',net_allocated:'26000.00',balance_due:'14000.00',refund_owed:'0.00'};
+ await page.route(/\/financial\/invoices\/?\?/,route=>route.fulfill({json:{items:[{orders:[order],group_ref:'RSG_test',created_at:stamp,invoice_state:'checkout',payment_status:'due',currency:'CDF',...values}],next_before:null}}));
+ await page.route(/\/groups\/RSG_test\/bill\/?$/,route=>route.fulfill({json:{group_ref:'RSG_test',group_revision:1,payment_revision:1,bill_revision:'revision-1',state:'checkout',chargeable_rounds:[order],pending_rounds:[],excluded_rounds:[],currencies:{CDF:values,USD:{chargeable:'0',net_allocated:'0',balance_due:'0',refund_owed:'0'}},entries:[]}}));
+ await enter(page);await page.locator('.rst-finance-tabs').getByRole('button',{name:'Factures',exact:true}).click();
+ const row=page.locator('.rst-invoice-row');await expect(row).toContainText('Commande n° 042');await expect(row).toContainText('Partiellement payée');
+ await page.getByRole('searchbox',{name:'N° de commande ou de facture'}).fill('042');await page.getByRole('searchbox',{name:'N° de commande ou de facture'}).press('Enter');
+ if(width===390)await page.screenshot({path:`${evidence}/after-invoices-390.png`,fullPage:true});
+ await row.click();const dialog=page.getByRole('dialog',{name:'Commande n° 042',exact:true});await expect(dialog.getByText('Pondu et accompagnement avec un nom très long')).toBeVisible();await expect(dialog).toContainText('Comptoir');await expect(dialog).toContainText('RSG_test');await expect(dialog.locator('fieldset')).toHaveCount(0);expect(state.writes).toHaveLength(0);
+ await expect(dialog.getByRole('button',{name:'Retour à la liste',exact:true})).toBeEnabled();
+ if(width===390)await page.screenshot({path:`${evidence}/after-invoice-detail-390.png`,fullPage:true});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.goBack();await expect(dialog).not.toBeVisible();await expect(page.getByRole('searchbox',{name:'N° de commande ou de facture'})).toHaveValue('042');await expect(row).toBeVisible();expect(state.writes).toHaveLength(0);
+ await page.goForward();await expect(dialog).toBeVisible();
+ if(width===390){
+  await dialog.getByRole('button',{name:'Encaisser',exact:true}).click();const form=dialog.locator('fieldset');await expect(form).toBeVisible();
+  await form.getByRole('combobox',{name:'Mode',exact:true}).first().selectOption('PM_cash');await form.getByRole('combobox',{name:'Devise',exact:true}).selectOption('CDF');await form.getByLabel('Montant réel',{exact:true}).fill('14000');
+  const submit=form.getByRole('button',{name:'Confirmer l’argent effectivement reçu',exact:true});await submit.click();await page.locator('.shida-confirmation').getByRole('button',{name:'Revenir',exact:true}).click();expect(state.writes).toHaveLength(0);
+  let attempts=0;await page.route(/\/money\/receipts\/?$/,route=>{attempts++;return route.abort();});await submit.click();await page.locator('.shida-confirmation-submit').click();await expect(page.locator('.shida-confirmation-error')).toBeVisible();await page.locator('.shida-confirmation').getByRole('button',{name:'Revenir',exact:true}).click();
+  await expect(dialog.getByRole('button',{name:'Retour à la liste',exact:true})).toBeDisabled();await page.goBack();await expect(dialog).toBeVisible();expect(attempts).toBe(1);
+  await dialog.getByRole('button',{name:'Abandonner la recherche en attente',exact:true}).click();await expect(dialog.getByRole('button',{name:'Retour à la liste',exact:true})).toBeEnabled();
+ }
+ await dialog.getByRole('button',{name:'Retour à la liste',exact:true}).click();await expect(dialog).not.toBeVisible();
+});
+
+
+test('finance enlarged text and payment-method failure are explicit',async({page})=>{
+ await page.setViewportSize({width:320,height:844});await seed(page);await enter(page);await page.addStyleTag({content:'html{font-size:200% !important}'});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.locator('.rst-daily-settings>summary').click();await expect(page.locator('.rst-daily-settings')).toContainText('Espèces');
+ await page.route(/\/service\/payment-methods\/?$/,route=>route.fulfill({status:503,json:{}}));await page.locator('.rst-finance-refresh').click();
+ await expect(page.locator('.rst-daily-settings').getByRole('alert')).toContainText('Impossible de charger cette section');await expect(page.locator('.rst-daily-settings').getByRole('button',{name:'Réessayer',exact:true})).toBeVisible();
+ await page.locator('.rst-finance-tabs').getByRole('button',{name:'Dépenses',exact:true}).click();await expect(page.getByLabel('Montant',{exact:true})).toBeDisabled();
+});

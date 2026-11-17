@@ -1,3 +1,4 @@
+import {intakeDesignText} from '../../app/lib/restaurant-intake-design-copy';
 import {soloCopy} from '../../app/lib/restaurant-solo-copy';
 import {receivingCopy} from '../../app/lib/restaurant-receiving';
 import {test,expect,type Page} from '@playwright/test';
@@ -16,11 +17,14 @@ async function seed(page:Page,kind='malewa',paid=true) {
  await page.route('**/RST_fixture/**',async route=>{
   const p=new URL(route.request().url()).pathname.replace(/\/$/,'');
   const reply=(json:unknown,status=200)=>route.fulfill({json,status});
+  if(p.endsWith('/service/daily/summary'))return reply({currencies:{CDF:{recorded_net:'0',balance_due:'0'},USD:{recorded_net:'0',balance_due:'0'}}});
+  if(p.endsWith('/reservations/pending')||p.endsWith('/reservations/calendar'))return reply({items:[],total:0,has_more:false});
+  if(p.endsWith('/visits')||p.endsWith('/groups')||p.endsWith('/reservations')||p.endsWith('/inventory'))return reply({items:[],total:0,has_more:false});
   if(p.endsWith('/capabilities'))return reply({capabilities:['restaurant.reservations',...(paid?['restaurant.pos']:[])].map(capability=>({capability,available:true}))});
   if(p.endsWith('/hours'))return reply({revision:'hours-1',result:{schedule:{windows:[{weekday:3,start:'08:00',end:'20:00'}]},exceptional_closures:[],status:'open',confirmed_at:'2026-10-15T08:00:00Z',timezone_name:'Africa/Kinshasa'}});
   if(p.endsWith('/service/payment-methods'))return reply({items:[{method_ref:'cash',label:'Cash CDF',enabled:true,currencies:['CDF']},{method_ref:'mobile',label:'Mobile USD',enabled:false,currencies:['USD']}]});
   if(p.endsWith('/guest-auto-accept'))return reply({enabled:false,revision:'auto-1'});
-  if(p.endsWith('/order-configuration'))return state.failRead?reply({},503):reply({revision:String(state.revision),intake_released:true,pickup:{enabled:state.enabled,windows:[{starts_at:'2026-10-16T09:00:00+00:00',ends_at:'2026-10-16T12:00:00+00:00'}]},delivery:null});
+  if(p.endsWith('/order-configuration'))return state.failRead?reply({},503):reply({revision:String(state.revision),intake_released:true,receiving:{evaluated_at:'2026-10-16T08:00:00Z',pickup:{web:{available:state.enabled,reasons:[]},whatsapp:{available:state.enabled,reasons:[]},activation_blockers:[]},delivery:{web:{available:false,reasons:[]},whatsapp:{available:false,reasons:[]},activation_blockers:[]}},pickup:{enabled:state.enabled,windows:[{starts_at:'2026-10-16T09:00:00+00:00',ends_at:'2026-10-16T12:00:00+00:00'}]},delivery:null});
   if(p.endsWith('/pickup-intake')){
    state.writes.push(route.request().postData()!);
    if(state.stale){state.stale=false;state.revision++;return reply({detail:'restaurant_stale'},409);}
@@ -49,29 +53,20 @@ async function open(page:Page,locale:keyof typeof settingsCopy='en'){
 for(const locale of ['en','fr','ln','sw'] as const)for(const width of [360,820,1440])test(`Settings ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000});await seed(page,width===360?'malewa':width===820?'fast_food':'cafe');await open(page,locale);
  const c=settingsCopy[locale],root=page.locator('.rst-settings');await expect(root.getByText('Cash CDF',{exact:true})).toBeVisible();await expect(root.getByText('Mobile USD',{exact:true})).toBeVisible();
- await expect(root.getByRole('heading',{name:soloCopy[locale].reservation,exact:true})).toBeVisible();await expect(root.getByText(c.preserved,{exact:true})).toBeVisible();
+ await expect(root.getByRole('heading',{name:settingsCopy[locale].reservations,exact:true})).toBeVisible();await expect(root.getByText(c.preserved,{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await expect(root.locator('.rst-settings-reservation').getByText(''+c.saved+': '+c.off,{exact:true})).toBeVisible();
- if(locale==='en')await root.locator('#settings-intake').screenshot({path:`docs/evidence/seller-workspace/restaurant-settings-intake-${width}.png`});
+ if(locale==='en')await root.locator('#settings-intake').screenshot({path:`C:/NIHILOBA/release-evidence/restaurant-five-batches-20261117/restaurant-settings-intake-${width}.png`});
  await page.evaluate(()=>{window.scrollTo({top:0,behavior:'instant'});(document.activeElement as HTMLElement)?.blur();});
- await page.screenshot({path:`docs/evidence/seller-workspace/restaurant-settings-after-${locale}-${width}.png`,fullPage:true});
+ await page.screenshot({path:`C:/NIHILOBA/release-evidence/restaurant-five-batches-20261117/restaurant-settings-after-${locale}-${width}.png`,fullPage:true});
 });
-for(const width of [360,820,1440])test(`intake confirmation, save/reload, stale recovery, exact uncertain retry and offline ${width}`,async({page,context})=>{
- await page.setViewportSize({width,height:1000});
- const state=await seed(page,'restaurant');page.on('dialog',d=>d.accept());await open(page);
- const form=page.locator('#settings-intake .rst-intake'),toggle=form.getByRole('checkbox',{name:receivingCopy.en.enable,exact:true});
- const saved=()=>form.locator('[data-service=pickup]').getByText(state.enabled?receivingCopy.en.savedOn:receivingCopy.en.savedOff,{exact:true});
- await expect(saved()).toBeVisible();await form.getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await toggle.check();expect(state.writes).toHaveLength(0);await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOff,{exact:true})).toBeVisible();
- await form.getByRole('button',{name:receivingCopy.en.reviewPickup,exact:true}).click();expect(state.writes).toHaveLength(0);
- await form.getByRole('button',{name:receivingCopy.en.confirm,exact:true}).click();await expect(saved()).toBeVisible();expect(state.enabled).toBe(true);
- await open(page);await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOn,{exact:true})).toBeVisible();
- state.stale=true;await form.getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await toggle.uncheck();await form.getByRole('button',{name:receivingCopy.en.reviewPickup,exact:true}).click();await form.getByRole('button',{name:receivingCopy.en.confirm,exact:true}).click();
- await expect(form.getByRole('button',{name:workText('en','retry'),exact:true})).toBeDisabled();await form.getByRole('button',{name:receivingCopy.en.refresh,exact:true}).click();await expect(toggle).not.toBeChecked();
- await form.getByRole('button',{name:receivingCopy.en.reviewPickup,exact:true}).click();await form.getByRole('button',{name:receivingCopy.en.confirm,exact:true}).click();await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOff,{exact:true})).toBeVisible();
- state.uncertain=true;await form.getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await toggle.check();await form.getByRole('button',{name:receivingCopy.en.reviewPickup,exact:true}).click();await form.getByRole('button',{name:receivingCopy.en.confirm,exact:true}).click();await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOff,{exact:true})).toBeVisible();
- const original=state.writes.at(-1);await form.getByRole('button',{name:workText('en','retry'),exact:true}).click();await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOn,{exact:true})).toBeVisible();expect(state.writes.at(-1)).toBe(original);
- await form.getByRole('button',{name:receivingCopy.en.editPickup,exact:true}).click();await context.setOffline(true);await expect(toggle).toBeDisabled();await context.setOffline(false);await form.getByRole('button',{name:receivingCopy.en.refresh,exact:true}).click();await expect(toggle).toBeEnabled();
- await open(page);await expect(form.locator('[data-service=pickup]').getByText(receivingCopy.en.savedOn,{exact:true})).toBeVisible();
+for(const width of [360,820,1440])test(`intake save reload stale recovery exact retry offline ${width}`,async({page,context})=>{
+ await page.setViewportSize({width,height:1000});const state=await seed(page,'restaurant');await open(page);
+ const form=page.locator('#settings-intake .rst-intake'),pickup=form.locator('[data-service=pickup]'),d=(key:Parameters<typeof intakeDesignText>[1])=>intakeDesignText('en',key);
+ await expect(pickup.getByText(d('paused'),{exact:true})).toBeVisible();await pickup.getByRole('button',{name:d('resume'),exact:true}).click();await expect(pickup.getByText(d('ready'),{exact:true})).toBeVisible();expect(state.enabled).toBe(true);
+ await open(page);await expect(pickup.getByText(d('ready'),{exact:true})).toBeVisible();state.stale=true;await pickup.getByRole('button',{name:d('pause'),exact:true}).click();await expect(pickup.getByRole('button',{name:d('pause'),exact:true})).toBeDisabled();await form.locator('header').getByRole('button').click();await expect(pickup.getByRole('button',{name:d('pause'),exact:true})).toBeEnabled();
+ state.uncertain=true;await pickup.getByRole('button',{name:d('pause'),exact:true}).click();await expect(form.getByRole('button',{name:workText('en','retry'),exact:true})).toBeEnabled();const original=state.writes.at(-1);await form.getByRole('button',{name:workText('en','retry'),exact:true}).click();await expect(pickup.getByText(d('paused'),{exact:true})).toBeVisible();expect(state.writes.at(-1)).toBe(original);
+ await context.setOffline(true);await expect(pickup.getByRole('button',{name:d('resume'),exact:true})).toBeDisabled();await context.setOffline(false);await form.locator('header').getByRole('button').click();await expect(pickup.getByRole('button',{name:d('resume'),exact:true})).toBeEnabled();
 });
 test('reservation requests require confirmation and show saved authority after reload',async({page})=>{
  const state=await seed(page,'restaurant');await open(page);const scope=page.locator('.rst-settings-reservation'),c=settingsCopy.en;

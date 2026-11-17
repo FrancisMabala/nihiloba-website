@@ -1,5 +1,11 @@
+import {managementCopy} from '../../app/lib/restaurant-management-copy';
+import {sellerDesignCopy} from '../../app/lib/restaurant-seller-design-copy';
+import {workspaceCopy} from '../../app/lib/restaurant-workspace-copy';
 import {expect,type Page} from '@playwright/test';
 export async function managementNavigation(page:Page,name:string){
+ const locale=(Object.keys(managementCopy) as (keyof typeof managementCopy)[]).find(l=>[managementCopy[l].settings,sellerDesignCopy[l].hours,sellerDesignCopy[l].sharing].includes(name));
+ if(locale){await managementNavigation(page,sellerDesignCopy[locale].profile);const label=name===managementCopy[locale].settings?workspaceCopy[locale].configuration:name===sellerDesignCopy[locale].hours?workspaceCopy[locale].hours:workspaceCopy[locale].sharing;await page.locator('.rst-local-tabs').getByRole('button',{name:label,exact:true}).click();return;}
+ const profileLocale=(Object.keys(sellerDesignCopy) as (keyof typeof sellerDesignCopy)[]).find(l=>sellerDesignCopy[l].profile===name);if(profileLocale)name=workspaceCopy[profileLocale].establishment;
  await expect(page.locator('.management-mobile-nav')).toBeAttached();
  if(await page.locator('.management-mobile-nav').isVisible()){
   const direct=page.locator('.management-mobile-nav').getByRole('button',{name,exact:true});

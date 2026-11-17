@@ -1,3 +1,7 @@
+import {mkdirSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+const evidence=process.env.RESTAURANT_EVIDENCE_DIR??join(tmpdir(),`shida-restaurant-evidence-${Date.now()}`);mkdirSync(evidence,{recursive:true});
 import { test, expect, type Page } from '@playwright/test';
 import { managementNavigation } from './restaurant-management-navigation';
 import { managementCopy } from '../../app/lib/restaurant-management-copy';
@@ -31,13 +35,13 @@ async function fixture(page:Page, kind:'malewa'|'restaurant'|'fast_food'|'cafe'=
  return {stock,writes,makeStale:()=>{stale=true;},makeUncertain:()=>{uncertain=true;}};
 }
 
-for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,390,820,1440])test(`simple stock ${locale} ${width}`,async({page})=>{
+for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,390,430,820,1440])test(`simple stock ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:950});await fixture(page,'cafe');await page.goto(`/${locale}/shida/seller/restaurants`);await managementNavigation(page,managementCopy[locale].stock);
  const stock=page.locator('.rst-stock');await expect(stock.locator('.rst-stock-row')).toHaveCount(1);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- if(locale==='fr'&&[375,1440].includes(width))await page.screenshot({path:`C:/NIHILOBA/release-evidence/restaurant-seven-20261114/stock-${width}.png`,fullPage:true});
+ if(locale==='fr'&&[375,390,1440].includes(width))await page.screenshot({path:`${evidence}/stock-${width}.png`,fullPage:true});
  await stock.locator('.rst-stock-head .button-primary').click();await expect(stock.locator('.rst-stock-types')).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- if(locale==='fr'&&[375,1440].includes(width))await page.screenshot({path:`C:/NIHILOBA/release-evidence/restaurant-seven-20261114/stock-create-${width}.png`,fullPage:true});
+ if(locale==='fr'&&[375,390,1440].includes(width))await page.screenshot({path:`${evidence}/stock-create-${width}.png`,fullPage:true});
 });
 
 test('distinct quantity actions, history, stale correction and immutable uncertain retry',async({page})=>{
@@ -51,6 +55,18 @@ test('distinct quantity actions, history, stale correction and immutable uncerta
 
 test('blank quantity stays blank; zero, decimals, optional warning and bounded pages',async({page})=>{
  const state=await fixture(page,'malewa',true);await page.goto('/en/shida/seller/restaurants');await managementNavigation(page,managementCopy.en.stock);const stock=page.locator('.rst-stock');
- await stock.getByRole('button',{name:'Add a product'}).click();await expect(stock.getByLabel('How much do you have now?')).toHaveValue('');await stock.getByLabel('What is it called?').fill('Rice');await stock.getByRole('radio',{name:'Ingredients',exact:true}).check();await stock.getByLabel('How much do you have now?').fill('0.250');await stock.getByRole('switch').check();await stock.getByLabel('Warn me when there is…').fill('0.500');await expect(stock.getByText(/No message is sent/)).toBeVisible();await stock.getByRole('button',{name:'Add to my stock'}).click();await expect(stock.locator('.rst-stock-row')).toContainText('0.25 kg');expect(state.writes[0].body).toMatchObject({opening_quantity:'0.250',purpose:'ingredient',low_stock_threshold:'0.500'});
+ await stock.getByRole('button',{name:'Add a product'}).click();await expect(stock.getByLabel('How much do you have now?')).toHaveValue('');await stock.getByLabel('What is it called?').fill('Rice');await stock.locator('.rst-stock-types select').selectOption('ingredient');await stock.getByLabel('How much do you have now?').fill('0.250');await stock.getByRole('switch').check();await stock.getByLabel('Warn me when there is…').fill('0.500');await expect(stock.getByText(/No message is sent/)).toBeVisible();await stock.getByRole('button',{name:'Add to my stock'}).click();await expect(stock.locator('.rst-stock-row')).toContainText('0.25 kg');expect(state.writes[0].body).toMatchObject({opening_quantity:'0.250',purpose:'ingredient',low_stock_threshold:'0.500'});
  for(let i=0;i<24;i++)state.stock.push(item(`RII_${i}`,`Water ${i}`,'packaged','bottle',0,null));await stock.getByRole('button',{name:'Refresh',exact:true}).click();await expect(stock.locator('.rst-stock-row')).toHaveCount(20);await stock.locator('.rst-stock-pagination').getByRole('button',{name:'Next'}).click();await expect(stock.locator('.rst-stock-row')).toHaveCount(5);await stock.getByRole('searchbox').fill('Rice');await expect(stock.locator('.rst-stock-row')).toHaveCount(1);await expect(stock.locator('.rst-stock-pagination')).toHaveCount(0);
+});
+
+
+test('stock touch navigation with enlarged text retains reachable controls',async({browser})=>{
+ const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,deviceScaleFactor:1});const page=await context.newPage();
+ try{await fixture(page,'cafe');await page.goto('/fr/shida/seller/restaurants');await managementNavigation(page,managementCopy.fr.stock);
+ await page.addStyleTag({content:'html {font-size:200% !important}'});const stock=page.locator('.rst-stock');await stock.getByRole('searchbox').fill('');
+ await stock.locator('.rst-stock-head .button-primary').tap();await expect(stock.locator('.rst-stock-types select')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await stock.locator('.rst-stock-types select').selectOption('ingredient');await expect(stock.locator('.rst-stock-types select')).toHaveValue('ingredient');
+ await stock.getByRole('button',{name:'Annuler',exact:true}).tap();await expect(stock.locator('.rst-stock-types select')).toHaveCount(0);
+ }finally{await context.close();}
 });

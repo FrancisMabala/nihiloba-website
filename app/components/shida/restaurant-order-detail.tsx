@@ -1,3 +1,4 @@
+import {restaurantOrderLabel} from '../../lib/restaurant-order-number';
 import type {ReactNode} from 'react';
 import {OrderDetailLayout} from './order-detail-layout';
 import {FoodTerms} from './restaurant-receipt';
@@ -12,7 +13,7 @@ export function RestaurantOrderDetail({order,locale,receiptHref,children}:{order
  const t=checkoutCopy[locale];
  const labels=orderDetailCopy[locale], evidence=orderEvidenceCopy[locale];
  const zone=order.receipt_terms?.timezone_name??'UTC';
- return <OrderDetailLayout name={order.receipt_terms?.establishment_name||labels.restaurant} reference={order.order_ref} status={workText(locale,order.state)} date={dateText(order.submitted_at,locale,zone)}
+ return <OrderDetailLayout name={order.receipt_terms?.establishment_name||labels.restaurant} reference={restaurantOrderLabel(order,locale)} status={workText(locale,order.state)} date={dateText(order.submitted_at,locale,zone)}
   progress={<section><h2>{labels.tracking}</h2><ol className="shida-order-timeline"><li><strong>{t.ordered}</strong><time>{dateText(order.submitted_at,locale,zone)}</time></li><li aria-current="step"><strong>{t.current}: {workText(locale,order.state)}</strong></li></ol><p className="shida-order-note">{evidence.history}</p>{order.cancellation_pending&&<p role="status">{evidence.pending}</p>}</section>}
   documents={<section><h2>{labels.documents}</h2><a href={receiptHref}>{t.receipt} →</a><p>{t.notPaid}</p></section>}
   summary={<section><h2>{labels.summary}</h2>{order.receipt_terms?<FoodTerms terms={order.receipt_terms} locale={locale}/>:<p>{t.total}: {order.order_total??'—'} {order.currency}</p>}</section>}>

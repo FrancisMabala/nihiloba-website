@@ -18,7 +18,7 @@
     "Ongeza bidhaa"
   ],
   "empty": [
-    "Votre stock est vide.",
+    "Aucun produit en stock",
     "Your stock is empty.",
     "Stock na yo ezali mpamba.",
     "Hisa yako ni tupu."
@@ -60,37 +60,37 @@
     "Nyingine"
   ],
   "purpose": [
-    "Qu’ajoutez-vous ?",
+    "Type de produit",
     "What are you adding?",
     "Ozali kobakisa nini?",
     "Unaongeza nini?"
   ],
   "name": [
-    "Quel nom ?",
+    "Nom du produit",
     "What is it called?",
     "Nkombo nini?",
     "Jina gani?"
   ],
   "unit": [
-    "Vous comptez en…",
+    "Unité",
     "You count in…",
     "Ozali kotánga na…",
     "Unahesabu kwa…"
   ],
   "opening": [
-    "Combien avez-vous maintenant ?",
+    "Quantité actuelle",
     "How much do you have now?",
     "Ozali na boni sikoyo?",
     "Una kiasi gani sasa?"
   ],
   "alert": [
-    "Me prévenir quand il en reste peu",
+    "Alerte de stock bas",
     "Warn me when little remains",
     "Yebisa ngai soki etikali moke",
     "Nionye inapobaki kidogo"
   ],
   "threshold": [
-    "Me prévenir quand il reste…",
+    "Seuil d’alerte",
     "Warn me when there is…",
     "Yebisa ngai soki etikali…",
     "Nionye inapobaki…"
@@ -270,7 +270,7 @@
     "Maelezo na kiungo cha menyu"
   ],
   "pickMenu": [
-    "Reprendre le nom d’un plat ou d’une boisson",
+    "Reprendre un nom du menu",
     "Use a dish or drink name",
     "Salelá nkombo ya bilei to masanga",
     "Tumia jina la chakula au kinywaji"

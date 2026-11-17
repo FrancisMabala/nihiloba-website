@@ -1,4 +1,5 @@
 'use client';
+import {restaurantOrderLabel} from '../../lib/restaurant-order-number';
 import './restaurant-counter-ux.css';
 import {soloCopy} from '../../lib/restaurant-solo-copy';
 import type { RestaurantLocale } from '@/app/services/shida/restaurants-client';
@@ -49,7 +50,7 @@ export function RestaurantOrderQueue({locale,timezone,lists,pages,configuration,
    return <section className="rst-order-section" key={key} aria-label={c[key]}>
     <div className="rst-order-section-heading"><div><h3>{c[key]}</h3><p>{c[`${key}Help` as keyof typeof c]}</p></div><strong>{list.total}</strong></div>
     {!list.total && <p className="rst-order-section-empty">{c.noHistory}</p>}
-    <div className="rst-order-columns" aria-hidden="true"><span>{c.placed}</span><span>{c.source} / {c.fulfillment}</span><span>{t("total")}</span><span>{t("current")}</span></div><div className="rst-order-rows">{list.items.map(order=><button type="button" className="rst-compact-order" key={order.order_ref} disabled={blocked} onClick={()=>onOpen(order)}><span><strong>{order.order_ref.replace(/^ROD_/, '')}</strong><small>{dateText(order.submitted_at,locale,timezone)}</small></span><span>{source(order,locale)}<small>{t(order.fulfillment_method)}</small></span><span>{order.order_total} {order.currency}</span><span className="rst-order-state">{t(order.state)}{order.cancellation_pending&&<small>{t('cancellation')}</small>}</span></button>)}</div>
+    <div className="rst-order-columns" aria-hidden="true"><span>{c.placed}</span><span>{c.source} / {c.fulfillment}</span><span>{t("total")}</span><span>{t("current")}</span></div><div className="rst-order-rows">{list.items.map(order=><button type="button" className="rst-compact-order" key={order.order_ref} disabled={blocked} onClick={()=>onOpen(order)}><span><strong>{restaurantOrderLabel(order,locale)}</strong><small>{dateText(order.submitted_at,locale,timezone)}</small></span><span>{source(order,locale)}<small>{t(order.fulfillment_method)}</small></span><span>{order.order_total} {order.currency}</span><span className="rst-order-state">{t(order.state)}{order.cancellation_pending&&<small>{t('cancellation')}</small>}</span></button>)}</div>
     {list.total>pageSize && <div className="rst-order-pages"><span>{c.showing} {(pages[key]-1)*pageSize+1}–{Math.min(pages[key]*pageSize,list.total)} {c.of} {list.total}</span><button type="button" disabled={blocked||pages[key]===1} onClick={()=>onPage(key,pages[key]-1)}>{t('previous')}</button><button type="button" disabled={blocked||pages[key]*pageSize>=list.total} onClick={()=>onPage(key,pages[key]+1)}>{t('next')}</button></div>}
    </section>;
   })}
