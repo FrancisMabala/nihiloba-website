@@ -26,7 +26,7 @@ for(const locale of ['en','fr','ln','sw'] as const)for(const width of [390,1440]
  await page.getByRole('button',{name:t.send,exact:true}).click();await expect(page.getByText(t.persisted,{exact:true})).toBeVisible();
  expect(writes.at(-1)?.body.body).toBe('Could you carry a small box of books?');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- if(locale==='fr'){mkdirSync('docs/evidence/meda',{recursive:true});await page.screenshot({path:`docs/evidence/meda/enquiry-${width}.png`,fullPage:true});}
+ if(locale==='fr'){mkdirSync('docs/evidence/meda',{recursive:true});await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:`docs/evidence/meda/enquiry-${width}.png`,fullPage:true});}
 });
 test('private draft requires explicit publication',async({page})=>{
  const writes=await fixtures(page);const t=medaCopy.en;await page.goto('/shida/meda/');

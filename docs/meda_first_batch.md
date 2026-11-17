@@ -30,20 +30,21 @@ global inbox aggregation and Organization management are deferred.
 
 ## Validation
 
-- 1,087 website unit tests across 151 files pass, including 11 new gateway/copy
-  checks. Typecheck and lint pass with the existing Node 24.22.1 runtime.
-- Production Webpack build passes using `npm run build -- --webpack` with an
-  isolated synthetic API target and no dotenv files.
-- Default Turbopack build could not resolve Next through the reused dependency
-  junction outside the worktree. This is an environment limitation; CI retains
-  the normal build command with its own installed dependencies.
+- Final validation: 1,088 website unit tests across 151 files pass, including
+  11 new gateway/copy checks. Typecheck and lint pass with Node 24.22.1;
+  lint reports 41 existing warnings and no errors.
+- After merging current main, including assistance and the Next.js 16.4.6 security
+  patch, the normal production Turbopack build passes in a disposable source copy
+  with matching patched dependencies, a synthetic API target and no dotenv files.
+  Initial dependency-junction resolution limits were confined to the first local
+  checkout; the final validation uses a physical dependency copy.
 - Ten production-build Playwright checks pass: discovery/private enquiry in four
   languages at 390px and 1440px, explicit draft publication, and anonymous access.
   Browser HTTP responses are synthetic fixtures, not live backend acceptance.
 - [Mobile enquiry](evidence/meda/enquiry-390.png) and
   [desktop enquiry](evidence/meda/enquiry-1440.png) are synthetic visual evidence.
-- Next tooling flagged an advisory for the existing 16.4.3 dependency. This batch
-  does not modify dependencies or claim to resolve that pre-existing advisory.
+- The upstream [Next.js security patch](next-security-20261117.md) is preserved;
+  Meda introduces no additional dependency changes.
 
 ## Release dependency
 
@@ -53,6 +54,7 @@ has not been requested. Backend deployment runs migrations and needs explicit
 production database authorization. No new env variable, secret, dependency,
 worker, cron or external message delivery is introduced.
 
-Reusable dependencies remain linked to the existing
-`support-assistance-web-release-20261117/node_modules`. The task's source,
-build and visual evidence are retained in `C:/NIHILOBA/meda-website`.
+The original checkout's dependency junction is preserved. Final patched validation
+uses `C:/Users/mabal/AppData/Local/Temp/shida-meda-final-lrezq0u1`; it must not be
+confused with the earlier dependency installation. Source and visual evidence are
+retained in `C:/NIHILOBA/meda-website`.
