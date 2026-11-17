@@ -1,6 +1,11 @@
 const copy = {
+ options:['Menu options','Options du menu','Boponi ya menu','Chaguo za menyu'],
+ filters:['Filters','Filtres','Biponi','Vichujio'],reset:['Reset filters','Effacer les filtres','Longola biponi','Ondoa vichujio'],
+ refresh:['Refresh the menu','Actualiser le menu','Zongisa menu','Pakia menyu upya'],
+ toggleConflict:['Availability changed. Check the refreshed item before trying again.','La disponibilité a changé. Vérifiez l’article actualisé avant de réessayer.','Ezalela ebongwani. Tala eloko ya sika liboso ya komeka lisusu.','Upatikanaji umebadilika. Kagua bidhaa iliyopakiwa kabla ya kujaribu tena.'],
+ toggleError:['The change could not be confirmed. Retry to check the same operation.','La modification n’a pas pu être confirmée. Réessayez pour vérifier la même opération.','Tokoki kondimisa mbongwana te. Meka lisusu mpo na kotala mosala yango moko.','Mabadiliko hayajathibitishwa. Jaribu tena kukagua tendo hilo hilo.'],
  title:['My menu','Mon menu','Menu na ngai','Menyu yangu'],
- intro:['Add dishes and drinks. Choose what customers can order.','Ajoutez vos plats et boissons. Choisissez ce que vos clients peuvent commander.','Bakisa bilei mpe masanga. Pona oyo bakiliya bakoki kosenga.','Ongeza vyakula na vinywaji. Chagua wanavyoweza kuagiza wateja.'],
+ intro:['Manage dishes and availability.','Gérez vos plats et disponibilités.','Bakisa bilei mpe masanga. Pona oyo bakiliya bakoki kosenga.','Ongeza vyakula na vinywaji. Chagua wanavyoweza kuagiza wateja.'],
  add:['Add a dish or drink','Ajouter un plat ou une boisson','Bakisa bilei to masanga','Ongeza chakula au kinywaji'],
  batch:['Add several dishes','Ajouter plusieurs plats','Bakisa bilei mingi','Ongeza vyakula kadhaa'],
  public:['View customer menu','Voir le menu client','Tala menu ya bakiliya','Tazama menyu ya wateja'],

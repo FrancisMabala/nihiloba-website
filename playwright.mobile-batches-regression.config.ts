@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/browser',testMatch:['restaurant-personal-menu.browser.ts','restaurant-pos-redesign.browser.ts','personal-space-mobile.browser.ts','quick-sell.browser.ts','restaurant-orders-mobile.browser.ts'],workers:1,timeout:45000,use:{baseURL:'http://127.0.0.1:3000',channel:'chrome',headless:true,hasTouch:true,serviceWorkers:'block',bypassCSP:true,permissions:['local-network-access']},reporter:'list'});

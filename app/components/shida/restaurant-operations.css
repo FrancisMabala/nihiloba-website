@@ -37,3 +37,30 @@
 .rst-money-explanation{margin:.5rem 0;font-size:.85rem;line-height:1.5}
 .rst-money-explanation summary{cursor:pointer;min-height:44px;display:flex;align-items:center;text-decoration:underline}
 .rst-money-explanation summary:focus-visible{outline:2px solid #173e32;outline-offset:3px}
+.rst-today-refresh{display:flex;align-items:center;justify-content:center;gap:8px}.rst-today-refresh[aria-busy=true] svg{animation:rst-today-spin 1s linear infinite}@keyframes rst-today-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.rst-today-refresh[aria-busy=true] svg{animation:none}}
+@media(max-width:700px){
+ :is(.rst-management,.rst-business-management) .rst-today .rst-ops-heading{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
+ .rst-today .rst-ops-date{flex:1;min-width:0}
+ .rst-today .rst-ops-date p{margin:0;font-size:1rem}
+ .rst-today .rst-ops-date h2,.rst-menu-page-heading{position:absolute;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .rst-today .rst-ops-heading .rst-ops-actions{display:contents}
+ .rst-today .rst-ops-actions .primary{order:2;flex:1 0 100%;width:100%;margin:0}
+ .rst-today .rst-ops-actions .rst-today-refresh{width:44px;height:44px;min-width:44px;padding:0}
+ .rst-today-refresh>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ .rst-today .rst-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:10px;margin-bottom:12px}
+ .rst-today .rst-ops-metrics article{padding:12px;min-height:0;height:auto}
+ .rst-today .rst-ops-metric-label{font-size:.875rem;gap:6px;align-items:start}
+ .rst-today .rst-ops-metric-label i{flex-basis:24px;height:24px}
+ :is(.rst-management,.rst-business-management) .rst-today .rst-ops-metrics article>button strong{margin:6px 0 0 30px;font-size:1.5rem}
+ .rst-today .rst-ops-metrics article:last-child:nth-child(odd){grid-column:auto}
+ .rst-today .rst-ops-metrics article:last-child:nth-child(odd)>button{flex-direction:column;align-items:start}
+ .rst-today .rst-ops-partial,.rst-today .rst-ops-incomplete{font-size:.875rem;margin:8px 0}
+ .rst-today .rst-ops-panel{padding:12px}
+ :is(.rst-management,.rst-business-management) .rst-today h3{font:400 1.25rem/1.25 Georgia,serif}
+ .rst-today .rst-ops-panel>header{gap:8px;align-items:center;padding-bottom:8px}
+ .rst-today .rst-ops-work{padding:8px 0;gap:8px}
+ .rst-today .rst-ops-work>button{width:auto;margin-left:auto}
+ .rst-today .rst-ops-work p{font-size:.8125rem}
+ .rst-today .rst-ops-work strong{font-size:.875rem}
+}

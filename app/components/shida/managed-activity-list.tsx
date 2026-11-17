@@ -82,7 +82,7 @@ export function ManagedActivityList({locale,current,creation,onRetry}:{locale:Ma
  const [creating,setCreating]=useState(false),t=managedActivityCopy[locale],c=mySpaceCopy[locale],d=activitiesDesignCopy[locale];
  const entries=current?.overview?overviewEntries(locale,current.items,current.overview):[];
  return <section className="managed-activities activities-dashboard">
-  <header className="managed-heading"><h1>{accountNavigationCopy[locale].activities}</h1>
+  <header className="managed-heading"><h1 className="space-page-title">{accountNavigationCopy[locale].activities}</h1>
    {current?.overview&&<button className="button button-primary" type="button" aria-expanded={creating} aria-controls="new-activity-options" onClick={()=>setCreating(!creating)}>{creating?d.close:'+ '+d.newActivity}</button>}</header>
   {creating&&<div id="new-activity-options">{creation}</div>}
   {!current?.overview?<p role="status">{accountSpaceCopy[locale].loading}</p>:<>

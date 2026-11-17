@@ -87,3 +87,26 @@
 
 :is(.rst-management,.rst-business-management) .rst-selling-item-body{min-width:0;max-width:100%;word-break:normal}.rst-selling-item-body strong{overflow-wrap:anywhere}.rst-selling-line>strong{min-width:0;word-break:normal}.rst-selling-line>label{min-width:0}.rst-selling-line>label input{max-width:100%}
 @media(max-width:380px){:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-line{grid-template-columns:minmax(0,1fr)}.rst-selling-line>label{grid-column:1}.rst-payment-recorded dl>div{flex-wrap:wrap}.rst-payment-recorded dd{text-align:start}}
+
+.rst-tile-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:2px;width:100%;margin-top:auto}.rst-selling .rst-tile-controls button{min-width:44px;min-height:44px;margin:0;padding:6px}.rst-tile-controls>span{min-width:16px;text-align:center;font-variant-numeric:tabular-nums}.rst-pos-search-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.rst-pos-empty{display:none}
+@media(max-width:700px){
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-header h2{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-header{margin:0 0 10px}.rst-selling-header .rst-pos-queues{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0!important;gap:8px}.rst-pos-queues button{padding:8px!important;min-height:44px;min-width:0}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-filters{margin-bottom:8px}.rst-selling-filters input{font-size:16px!important}
+ :is(.rst-management,.rst-business-management) .rst-selling-menu>.rst-pos-categories{flex-wrap:nowrap;overflow-x:auto;max-width:100%;margin-bottom:8px;padding-bottom:4px;justify-content:flex-start}.rst-selling-menu>.rst-pos-categories button{flex:none;white-space:nowrap}
+ :is(.rst-management,.rst-business-management) .rst-plate-tools{margin:8px 0}.rst-plate-tools>button{width:100%;min-height:44px}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-items{grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr));gap:8px}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:start;gap:6px;padding:8px;border-radius:8px}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item.is-selected{padding:7px}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-photo,:is(.rst-management,.rst-business-management) .rst-selling .rst-selling-photo img{width:32px;height:32px}
+ .rst-selling-photo svg{width:26px;height:26px}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item-body{text-align:left;min-height:0;gap:2px;font-size:.875rem}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-item-body strong{font-size:1rem;line-height:1.2}
+ .rst-selling .rst-tile-controls{grid-column:1/-1}.rst-pos-empty{display:block;margin:12px 0;font-size:.875rem;color:#596a61}
+ :is(.rst-management,.rst-business-management) .rst-selling .rst-selling-mobile-summary{flex-wrap:wrap;min-height:48px;margin-top:8px;border-radius:8px;box-shadow:none}
+ body:has(.management-mobile-nav[data-keyboard=true]) .rst-selling-mobile-summary{position:static}
+ .management-more-sheet:has(.rst-more-identity) .rst-more-identity{font-size:.875rem;margin-bottom:12px}.rst-more-identity .rst-restaurant-identity{padding:0;border:0;margin:0;gap:8px}.rst-more-identity .rst-identity-photo{width:32px;height:32px}.rst-more-identity .rst-restaurant-identity details{display:none}
+ :is(.seller-design,.app-frame) .management-more-sheet:has(.rst-more-identity) nav{gap:0}
+ :is(.seller-design,.app-frame) .management-more-sheet:has(.rst-more-identity) nav button{border:0;border-bottom:1px solid #ded8ce;border-radius:0;padding:10px 4px;min-height:48px;gap:12px}.management-more-sheet:has(.rst-more-identity) nav button:after{content:'›';margin-left:auto}
+ .rst-more-return{display:flex;align-items:center;min-height:48px;padding:10px 4px;color:inherit;font:inherit}
+}

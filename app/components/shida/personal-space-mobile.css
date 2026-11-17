@@ -2,8 +2,6 @@
 .followed-companies .workspace-record{grid-template-columns:48px minmax(0,1fr) auto;gap:12px}.followed-companies .record-actions{grid-column:3;grid-row:1}.followed-companies .workspace-record-body{grid-column:2;grid-row:1}.followed-companies .workspace-record-actions{grid-column:2/-1;max-width:none;border-top:1px solid #d9d3c6;padding-top:8px}.followed-companies .workspace-record-actions a{min-height:44px;display:flex;align-items:center}.followed-companies .follow-tile{width:48px;height:48px}.followed-companies .workspace-record:has(.record-actions[open]) .record-actions{grid-row:2;grid-column:1/-1}.followed-companies .workspace-record:has(.record-actions[open]) .workspace-record-actions{grid-row:3}
 .search-intro.search-intro-compact{justify-content:flex-end}.search-intro-compact>a{font-weight:600;min-height:44px;display:inline-flex;align-items:center}
 @media(max-width:700px){
- .account-space:has(.my-listings,.job-search-workspace) .space-sidebar>h2{display:none}
- .account-space:has(.my-listings,.job-search-workspace) .space-section-selector>summary{font:600 24px/1.25 Georgia,serif;min-height:48px}
  /* The selector provides the visible title; retain the real heading for assistive technology. */
  .account-space:has(.job-search-workspace) .space-content>h1,.my-listings>header>h1{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
  .account-space:has(.my-listings,.job-search-workspace) .space-content{padding-top:12px}
@@ -19,4 +17,20 @@
 }
 
 .my-listings>.qs{min-width:0;width:100%}.qs-workspace{min-width:0;max-width:100%}
+/* One title treatment shared by every account section, including loading/errors. */
+@media(max-width:700px){
+ .account-space .space-sidebar{padding:16px 16px 0}
+ .account-space .space-sidebar>h2{display:none}
+ .account-space .space-section-selector>summary{font:400 26px/1.25 Georgia,serif;min-height:48px;padding:10px 12px;gap:10px}
+ .account-space .space-section-selector>summary>span:first-child{min-width:0;overflow-wrap:anywhere}
+ .account-space .space-section-selector>summary>span[aria-hidden]{font:400 20px/1 Arial,sans-serif;flex:none}
+ .account-space .space-page-title{position:absolute;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .account-space .space-content{padding:12px 16px calc(var(--shida-bottom-nav-height,80px) + env(safe-area-inset-bottom) + 24px)}
+ .account-space .personal-selling-shortcut{border:0;border-top:1px solid #dedbd0;border-radius:0;padding:12px 0;margin-top:20px}
+ .account-space .personal-selling-shortcut>h2{font:400 16px/1.4 var(--space-font-sans);margin:0 0 4px}
+ .account-space .personal-selling-shortcut .management-space-cards{margin:0}
+ .account-space .personal-selling-shortcut .management-space-cards>a{border:0;padding:8px 0;min-height:44px;gap:10px}
+ .account-space .personal-selling-shortcut strong{font:600 16px/1.4 var(--space-font-sans)}
+ .account-space .personal-selling-shortcut svg{width:24px;height:24px}
+}
 @media(max-width:700px){.job-profile-cards .candidate-profile-panel{position:relative}.job-profile-cards .candidate-profile-panel:has(.record-actions) h3{padding-inline-end:36px}.job-profile-cards .record-actions{position:absolute;inset:8px 8px auto auto;margin:0}.job-profile-cards .record-actions[open]{z-index:2;width:calc(100% - 16px)}.job-profile-cards .record-actions>summary{justify-content:flex-end;padding:8px}.job-profile-cards .record-actions>div{box-shadow:0 4px 12px #203f3420}.job-search-workspace>.workspace-heading{margin:12px 0}.job-profile-cards{margin-top:16px}}

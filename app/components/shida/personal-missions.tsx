@@ -153,7 +153,7 @@ function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[numb
      <SpaceIcon name={icons[key]}/>{t(actionLabels[key])}
    </a>)}</div>
  </section>;
- const title = <h1>{listingCopy[locale].title}</h1>;
+ const title = <h1 className="space-page-title">{listingCopy[locale].title}</h1>;
  if (error === '401' || error === 'personal_sign_in_required') return <>{title}<section className="space-sign-in">
    <p>{t('signInForListings')}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>window.location.reload()}/>
  </section></>;

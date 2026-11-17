@@ -7,6 +7,7 @@ import "./management-mobile-navigation.css";
 export type MobileDestination={key:string;label:string;shortLabel?:string;href?:string;active?:boolean};
 const words={fr:{more:"Plus",close:"Fermer",navigation:"Navigation de l’activité"},en:{more:"More",close:"Close",navigation:"Activity navigation"},ln:{more:"Mosusu",close:"Kanga",navigation:"Navigation ya mosala"},sw:{more:"Zaidi",close:"Funga",navigation:"Urambazaji wa shughuli"}};
 function DestinationIcon({name}:{name:string}) {
+ if(name==='pos'||name==='counter')return <ShopIcon name="shop"/>;
  if(name==='shop')return <ShopIcon name="shop"/>;
  const icon=/today|overview/.test(name)?'overview':/order|work|application/.test(name)?'work':/catalog|inventory|stock|product/.test(name)?'stock':/money|finance|daily|report/.test(name)?'finance':/calendar|agenda|reservation/.test(name)?'calendar':/item|menu|offering/.test(name)?'catalog':/shop|activity|profile|team|candidate/.test(name)?'profile':'settings';
  return <SellerWorkspaceIcon name={icon}/>;
@@ -60,7 +61,7 @@ export function ManagementMobileNavigation({locale,items,current,primary,onNavig
    </nav>
    <dialog ref={dialog} id={id} className="management-more-sheet" aria-labelledby={`${id}-title`} onClose={()=>{setOpen(false);requestAnimationFrame(()=>trigger.current?.focus());}} onClick={event=>{if(event.target===dialog.current)close();}}>
      <div className="management-sheet-content"><header><h2 id={`${id}-title`}>{copy.more}</h2><button type="button" aria-label={copy.close} onClick={close}><X/></button></header>{identity}
-       <nav aria-label={copy.navigation}>{remaining.map(item=><button type="button" key={item.key} disabled={disabled||busy} aria-current={selected(item)?"page":undefined} onClick={()=>void choose(item.key)}><DestinationIcon name={item.key}/><span>{item.label}</span></button>)}</nav>{extra}
+       <nav aria-label={copy.navigation}>{remaining.map(item=><button type="button" key={item.key} aria-label={item.label} disabled={disabled||busy} aria-current={selected(item)?"page":undefined} onClick={()=>void choose(item.key)}><DestinationIcon name={item.key}/><span>{item.label}</span></button>)}</nav>{extra}
      </div>
    </dialog>
  </>;
