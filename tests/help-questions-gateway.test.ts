@@ -23,3 +23,11 @@ it('keeps session binding, CSRF and private responses on question mutations',asy
  const result=await GET(request('questions'),context);expect(result.headers.get('cache-control')).toContain('private, no-store');
  jar.clear();expect((await GET(request('questions'),context)).status).toBe(401);
 });
+it('allows bounded assistance filters and read/reopen actions without extra authority',async()=>{
+ const context={params:Promise.resolve({path:[]})};
+ expect((await GET(request('?page=2&status=active'),context)).status).toBe(200);
+ expect(String(fetcher.mock.calls[0][0])).toContain('status=active');
+ for(const query of ['?status=all&status=closed','?page=-1','?status=secret','?account=another'])expect((await GET(request(query),context)).status).toBe(404);
+ for(const action of ['read','reopen'])expect((await POST(request('SCT_test/'+action,'POST'),{params:Promise.resolve({path:['SCT_test',action]})})).status).toBe(200);
+ expect((await POST(request('SCT_test/assign','POST'),{params:Promise.resolve({path:['SCT_test','assign']})})).status).toBe(404);
+});

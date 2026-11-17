@@ -1,4 +1,4 @@
-import {helpText} from '../../lib/help-questions-copy';
+import {accountSupportCopy} from '../../lib/account-support-copy';
 import {usePersonalNotificationCount} from '../../lib/personal-notification-count';
 import {jobSearchCopy} from '../../lib/job-search-copy';
 import {universalSpaceCopy} from '../../lib/universal-space-copy';
@@ -22,12 +22,12 @@ export function SpaceSidebar({locale,view,onNavigate,binding,individualOnly=fals
   document.addEventListener('pointerdown',outside);
   return()=>document.removeEventListener('pointerdown',outside);
  },[]);
- const entries:[string,string,SpaceIconName][]=[['management',n.activities,'management'],['transactions',n.transactions,'orders'],['messages',t.messages,'bell'],['settings',n.account,'settings'],['questions',helpText(locale,'title'),'messages']];
+ const entries:[string,string,SpaceIconName][]=[['management',n.activities,'management'],['transactions',n.transactions,'orders'],['messages',t.messages,'bell'],['settings',n.account,'settings'],['support',accountSupportCopy[locale].title,'messages']];
  if(individualOnly&&view!=='job-offer')entries[0]=['listings',listingCopy[locale].title,'orders'];
  else if(hasListings||view==='listings')entries.splice(1,0,['listings',listingCopy[locale].title,'orders']);
  entries.splice(entries.findIndex(e=>e[0]==='transactions'),0,['job-search',jobSearchCopy[locale].title,'people']);
  entries.unshift(['overview',universalSpaceCopy[locale].overview,'home']);
- const selected=(key:string)=>key===view||key==='listings'&&view==='job-offer'||key==='job-search'&&view==='candidate'||key==='settings'&&['support','recovery'].includes(view)||key==='transactions'&&['orders','requests','receipts'].includes(view);
+ const selected=(key:string)=>key===view||key==='listings'&&view==='job-offer'||key==='job-search'&&view==='candidate'||key==='settings'&&view==='recovery'||key==='support'&&view==='questions'||key==='transactions'&&['orders','requests','receipts'].includes(view);
  const links=()=>entries.map(([key,label,icon])=><a key={key} onClick={event=>{if(selector.current)selector.current.open=false;onNavigate?.(event);}} href={`${base}?view=${key}`} aria-current={selected(key)?'page':undefined}><SpaceIcon name={icon}/><span>{label}{key==='messages'&&unread!=null&&unread>0&&<strong className="space-notice-count"> {unread>99?'99+':unread}</strong>}</span>{selected(key)&&<span className="space-selected-mark" aria-hidden="true">✓</span>}</a>);
  return <aside className="space-sidebar"><h2>{a.space}</h2><nav className="space-desktop-sections" aria-label={a.space}>{links()}</nav><details ref={selector} className="space-section-selector" onBlur={event=>{if(event.relatedTarget&&!event.currentTarget.contains(event.relatedTarget))event.currentTarget.open=false;}} onKeyDown={event=>{if(event.key==='Escape'){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus();}}}><summary aria-label={`${a.space}: ${entries.find(([key])=>selected(key))?.[1]||a.space}`}><span>{entries.find(([key])=>selected(key))?.[1]||a.space}</span><span aria-hidden="true">⌄</span></summary><nav aria-label={a.space}>{links()}</nav></details></aside>;
 }
