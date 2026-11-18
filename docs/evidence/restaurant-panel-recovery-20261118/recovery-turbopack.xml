@@ -1,0 +1,93 @@
+<testsuites id="" name="" tests="21" failures="1" skipped="0" errors="0" time="62.538915">
+<testsuite name="restaurant-panel-recovery.browser.ts" timestamp="2026-11-18T22:08:00.748Z" hostname="" tests="21" failures="1" skipped="0" time="56.911" errors="0">
+<testcase name="failed orders download retries in place 390" classname="restaurant-panel-recovery.browser.ts" time="3.023">
+</testcase>
+<testcase name="failed items download retries in place 390" classname="restaurant-panel-recovery.browser.ts" time="3.374">
+</testcase>
+<testcase name="failed daily download retries in place 390" classname="restaurant-panel-recovery.browser.ts" time="3.431">
+</testcase>
+<testcase name="failed orders download retries in place 1440" classname="restaurant-panel-recovery.browser.ts" time="3.294">
+</testcase>
+<testcase name="failed items download retries in place 1440" classname="restaurant-panel-recovery.browser.ts" time="2.836">
+</testcase>
+<testcase name="failed daily download retries in place 1440" classname="restaurant-panel-recovery.browser.ts" time="3.226">
+</testcase>
+<testcase name="localized keyboard recovery en 390" classname="restaurant-panel-recovery.browser.ts" time="2.934">
+</testcase>
+<testcase name="localized keyboard recovery en 1440" classname="restaurant-panel-recovery.browser.ts" time="2.933">
+</testcase>
+<testcase name="localized keyboard recovery ln 390" classname="restaurant-panel-recovery.browser.ts" time="2.373">
+</testcase>
+<testcase name="localized keyboard recovery ln 1440" classname="restaurant-panel-recovery.browser.ts" time="2.916">
+</testcase>
+<testcase name="localized keyboard recovery sw 390" classname="restaurant-panel-recovery.browser.ts" time="2.98">
+</testcase>
+<testcase name="localized keyboard recovery sw 1440" classname="restaurant-panel-recovery.browser.ts" time="1.903">
+</testcase>
+<testcase name="repeated unavailable asset has no request storm and offers deliberate reload" classname="restaurant-panel-recovery.browser.ts" time="4.413">
+</testcase>
+<testcase name="leave a failed destination without downloading it again" classname="restaurant-panel-recovery.browser.ts" time="1.808">
+</testcase>
+<testcase name="counter basket survives another panel failure and cancelled full reload" classname="restaurant-panel-recovery.browser.ts" time="4.301">
+</testcase>
+<testcase name="late download completion cannot undo navigate" classname="restaurant-panel-recovery.browser.ts" time="2.284">
+</testcase>
+<testcase name="late download completion cannot undo switch" classname="restaurant-panel-recovery.browser.ts" time="1.706">
+</testcase>
+<testcase name="late download completion cannot undo logout" classname="restaurant-panel-recovery.browser.ts" time="2.223">
+</testcase>
+<testcase name="narrow enlarged-text recovery controls remain reachable" classname="restaurant-panel-recovery.browser.ts" time="1.5">
+</testcase>
+<testcase name="application rendering defects are not disguised as recoverable downloads" classname="restaurant-panel-recovery.browser.ts" time="0.857">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\..\..\..\Users\mabal\AppData\Local\Temp\shida-panel-turbo-final-3a9fa6e5d8e24c24b183a666d0d71a08\restaurant-panel-recovery.-24cfd-ed-as-recoverable-downloads\error-context.md]]
+]]>
+</system-out>
+<failure message="expect(received).toHaveLength(expected)" type="expect.toHaveLength">
+<![CDATA[  restaurant-panel-recovery.browser.ts:204:6 › application rendering defects are not disguised as recoverable downloads
+
+    TypeError: expect(received).toHaveLength(expected)
+
+    Matcher error: received value must have a length property whose value must be a number
+
+    Received has value: null
+
+      210 |    // successful script download. This is deliberately not an API-error fixture.
+      211 |    const signature=/function [\w$]+\(\{path:[^}]+onIntake:[^}]+\}\)\{/g;
+    > 212 |    expect(body.match(signature)).toHaveLength(1);
+          |                                  ^
+      213 |    await route.fulfill({response,body:body.replace(signature,'$&throw new Error("Synthetic panel render defect");')});
+      214 |   });
+      215 |   await managementNavigation(page,'Commandes');
+        at C:\NIHILOBA\release-mobile-batches-20261117\tests\browser\restaurant-panel-recovery.browser.ts:212:34
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: /This page couldn.t load/ })
+    Expected: visible
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: /This page couldn.t load/ }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: /This page couldn.t load/ })
+      - Test ended.
+
+
+      214 |   });
+      215 |   await managementNavigation(page,'Commandes');
+    > 216 |   await expect(page.getByRole('heading',{name:/This page couldn.t load/})).toBeVisible();
+          |                                                                            ^
+      217 |   await expect(page.locator('.rst-panel-recovery')).toHaveCount(0);
+      218 |   expect(errors).toContain('Synthetic panel render defect');
+      219 |  });
+        at C:\NIHILOBA\release-mobile-batches-20261117\tests\browser\restaurant-panel-recovery.browser.ts:216:76
+
+    Error Context: ..\..\..\..\Users\mabal\AppData\Local\Temp\shida-panel-turbo-final-3a9fa6e5d8e24c24b183a666d0d71a08\restaurant-panel-recovery.-24cfd-ed-as-recoverable-downloads\error-context.md
+]]>
+</failure>
+</testcase>
+<testcase name="shared editor remains mounted when its hours module fails" classname="restaurant-panel-recovery.browser.ts" time="2.596">
+</testcase>
+</testsuite>
+</testsuites>

@@ -1,0 +1,630 @@
+{
+  "samples_per_visit": 3,
+  "comparison": "current startup baseline versus scoped download recovery; webpack production builds; serial local Chrome runs",
+  "real": {
+    "before": {
+      "cold": {
+        "usefulMs": {
+          "median": 4891,
+          "min": 4828,
+          "max": 5383
+        },
+        "actionMs": {
+          "median": 4906,
+          "min": 4850,
+          "max": 5402
+        },
+        "settlementMs": {
+          "median": 5719,
+          "min": 5638,
+          "max": 5775
+        },
+        "requestCount": {
+          "median": 43,
+          "min": 43,
+          "max": 43
+        },
+        "networkBytes": {
+          "median": 438486,
+          "min": 438486,
+          "max": 438486
+        },
+        "javascript": {
+          "requests": 18,
+          "networkBytes": 331882,
+          "cached": 0
+        },
+        "css": {
+          "requests": 15,
+          "networkBytes": 75673,
+          "cached": 0
+        }
+      },
+      "http-cached-repeat": {
+        "usefulMs": {
+          "median": 2451,
+          "min": 2400,
+          "max": 2538
+        },
+        "actionMs": {
+          "median": 2481,
+          "min": 2413,
+          "max": 2558
+        },
+        "settlementMs": {
+          "median": 2778,
+          "min": 2719,
+          "max": 2925
+        },
+        "requestCount": {
+          "median": 43,
+          "min": 43,
+          "max": 43
+        },
+        "networkBytes": {
+          "median": 30931,
+          "min": 30931,
+          "max": 30931
+        },
+        "javascript": {
+          "requests": 18,
+          "networkBytes": 0,
+          "cached": 18
+        },
+        "css": {
+          "requests": 15,
+          "networkBytes": 0,
+          "cached": 15
+        }
+      },
+      "first-orders-open": {
+        "settlementMs": {
+          "median": 2485,
+          "min": 1941,
+          "max": 2517
+        }
+      }
+    },
+    "after": {
+      "cold": {
+        "usefulMs": {
+          "median": 4978,
+          "min": 4874,
+          "max": 5067
+        },
+        "actionMs": {
+          "median": 4999,
+          "min": 4887,
+          "max": 5085
+        },
+        "settlementMs": {
+          "median": 5880,
+          "min": 5774,
+          "max": 5971
+        },
+        "requestCount": {
+          "median": 44,
+          "min": 44,
+          "max": 44
+        },
+        "networkBytes": {
+          "median": 442042,
+          "min": 442042,
+          "max": 442042
+        },
+        "javascript": {
+          "requests": 18,
+          "networkBytes": 333580,
+          "cached": 0
+        },
+        "css": {
+          "requests": 16,
+          "networkBytes": 77496,
+          "cached": 0
+        }
+      },
+      "http-cached-repeat": {
+        "usefulMs": {
+          "median": 2392,
+          "min": 2388,
+          "max": 2556
+        },
+        "actionMs": {
+          "median": 2404,
+          "min": 2404,
+          "max": 2568
+        },
+        "settlementMs": {
+          "median": 2765,
+          "min": 2757,
+          "max": 2821
+        },
+        "requestCount": {
+          "median": 44,
+          "min": 44,
+          "max": 44
+        },
+        "networkBytes": {
+          "median": 30966,
+          "min": 30966,
+          "max": 30966
+        },
+        "javascript": {
+          "requests": 18,
+          "networkBytes": 0,
+          "cached": 18
+        },
+        "css": {
+          "requests": 16,
+          "networkBytes": 0,
+          "cached": 16
+        }
+      },
+      "first-orders-open": {
+        "settlementMs": {
+          "median": 2448,
+          "min": 2391,
+          "max": 2471
+        }
+      }
+    }
+  },
+  "routed": {
+    "normal": {
+      "before": {
+        "cold": {
+          "usefulMs": {
+            "median": 1168,
+            "min": 1146,
+            "max": 1232
+          },
+          "actionMs": {
+            "median": 1176,
+            "min": 1155,
+            "max": 1246
+          },
+          "settledMs": {
+            "median": 1178,
+            "min": 1159,
+            "max": 1250
+          },
+          "requests": {
+            "median": 43,
+            "min": 43,
+            "max": 43
+          },
+          "bytes": {
+            "median": 376743,
+            "min": 376743,
+            "max": 376743
+          },
+          "javascriptBytes": {
+            "median": 306075,
+            "min": 306075,
+            "max": 306075
+          },
+          "cssBytes": {
+            "median": 54334,
+            "min": 54334,
+            "max": 54334
+          }
+        },
+        "routed-reload-cache-disabled": {
+          "usefulMs": {
+            "median": 1033,
+            "min": 1009,
+            "max": 1054
+          },
+          "actionMs": {
+            "median": 1042,
+            "min": 1019,
+            "max": 1061
+          },
+          "settledMs": {
+            "median": 1045,
+            "min": 1023,
+            "max": 1064
+          },
+          "requests": {
+            "median": 43,
+            "min": 43,
+            "max": 43
+          },
+          "bytes": {
+            "median": 376743,
+            "min": 376743,
+            "max": 376743
+          },
+          "javascriptBytes": {
+            "median": 306075,
+            "min": 306075,
+            "max": 306075
+          },
+          "cssBytes": {
+            "median": 54334,
+            "min": 54334,
+            "max": 54334
+          }
+        },
+        "first-orders-opening": {
+          "usefulMs": {
+            "median": 99,
+            "min": 96,
+            "max": 357
+          },
+          "actionMs": {
+            "median": 951,
+            "min": 918,
+            "max": 1207
+          },
+          "settledMs": {
+            "median": 951,
+            "min": 918,
+            "max": 1207
+          },
+          "requests": {
+            "median": 13,
+            "min": 13,
+            "max": 13
+          },
+          "bytes": {
+            "median": 55872,
+            "min": 55872,
+            "max": 55872
+          },
+          "javascriptBytes": {
+            "median": 40545,
+            "min": 40545,
+            "max": 40545
+          },
+          "cssBytes": {
+            "median": 5022,
+            "min": 5022,
+            "max": 5022
+          }
+        }
+      },
+      "after": {
+        "cold": {
+          "usefulMs": {
+            "median": 1155,
+            "min": 1100,
+            "max": 1164
+          },
+          "actionMs": {
+            "median": 1172,
+            "min": 1114,
+            "max": 1183
+          },
+          "settledMs": {
+            "median": 1176,
+            "min": 1117,
+            "max": 1187
+          },
+          "requests": {
+            "median": 44,
+            "min": 44,
+            "max": 44
+          },
+          "bytes": {
+            "median": 378907,
+            "min": 378907,
+            "max": 378907
+          },
+          "javascriptBytes": {
+            "median": 307773,
+            "min": 307773,
+            "max": 307773
+          },
+          "cssBytes": {
+            "median": 54764,
+            "min": 54764,
+            "max": 54764
+          }
+        },
+        "routed-reload-cache-disabled": {
+          "usefulMs": {
+            "median": 1032,
+            "min": 1031,
+            "max": 1067
+          },
+          "actionMs": {
+            "median": 1041,
+            "min": 1040,
+            "max": 1075
+          },
+          "settledMs": {
+            "median": 1043,
+            "min": 1043,
+            "max": 1084
+          },
+          "requests": {
+            "median": 44,
+            "min": 44,
+            "max": 44
+          },
+          "bytes": {
+            "median": 378907,
+            "min": 378907,
+            "max": 378907
+          },
+          "javascriptBytes": {
+            "median": 307773,
+            "min": 307773,
+            "max": 307773
+          },
+          "cssBytes": {
+            "median": 54764,
+            "min": 54764,
+            "max": 54764
+          }
+        },
+        "first-orders-opening": {
+          "usefulMs": {
+            "median": 137,
+            "min": 126,
+            "max": 155
+          },
+          "actionMs": {
+            "median": 1002,
+            "min": 967,
+            "max": 1024
+          },
+          "settledMs": {
+            "median": 1002,
+            "min": 967,
+            "max": 1024
+          },
+          "requests": {
+            "median": 13,
+            "min": 13,
+            "max": 13
+          },
+          "bytes": {
+            "median": 55872,
+            "min": 55872,
+            "max": 55872
+          },
+          "javascriptBytes": {
+            "median": 40545,
+            "min": 40545,
+            "max": 40545
+          },
+          "cssBytes": {
+            "median": 5022,
+            "min": 5022,
+            "max": 5022
+          }
+        }
+      }
+    },
+    "mobile": {
+      "before": {
+        "cold": {
+          "usefulMs": {
+            "median": 6673,
+            "min": 6671,
+            "max": 6802
+          },
+          "actionMs": {
+            "median": 6692,
+            "min": 6691,
+            "max": 6823
+          },
+          "settledMs": {
+            "median": 8632,
+            "min": 8585,
+            "max": 8718
+          },
+          "requests": {
+            "median": 43,
+            "min": 43,
+            "max": 43
+          },
+          "bytes": {
+            "median": 376743,
+            "min": 376743,
+            "max": 376743
+          },
+          "javascriptBytes": {
+            "median": 306075,
+            "min": 306075,
+            "max": 306075
+          },
+          "cssBytes": {
+            "median": 54334,
+            "min": 54334,
+            "max": 54334
+          }
+        },
+        "routed-reload-cache-disabled": {
+          "usefulMs": {
+            "median": 6343,
+            "min": 6243,
+            "max": 6374
+          },
+          "actionMs": {
+            "median": 6366,
+            "min": 6265,
+            "max": 6395
+          },
+          "settledMs": {
+            "median": 8288,
+            "min": 8161,
+            "max": 8320
+          },
+          "requests": {
+            "median": 43,
+            "min": 43,
+            "max": 43
+          },
+          "bytes": {
+            "median": 376743,
+            "min": 376743,
+            "max": 376743
+          },
+          "javascriptBytes": {
+            "median": 306075,
+            "min": 306075,
+            "max": 306075
+          },
+          "cssBytes": {
+            "median": 54334,
+            "min": 54334,
+            "max": 54334
+          }
+        },
+        "first-orders-opening": {
+          "usefulMs": {
+            "median": 1079,
+            "min": 1058,
+            "max": 1103
+          },
+          "actionMs": {
+            "median": 3566,
+            "min": 3514,
+            "max": 3575
+          },
+          "settledMs": {
+            "median": 3566,
+            "min": 3514,
+            "max": 3575
+          },
+          "requests": {
+            "median": 13,
+            "min": 13,
+            "max": 13
+          },
+          "bytes": {
+            "median": 55872,
+            "min": 55872,
+            "max": 55872
+          },
+          "javascriptBytes": {
+            "median": 40545,
+            "min": 40545,
+            "max": 40545
+          },
+          "cssBytes": {
+            "median": 5022,
+            "min": 5022,
+            "max": 5022
+          }
+        }
+      },
+      "after": {
+        "cold": {
+          "usefulMs": {
+            "median": 6535,
+            "min": 6347,
+            "max": 6781
+          },
+          "actionMs": {
+            "median": 6570,
+            "min": 6363,
+            "max": 6825
+          },
+          "settledMs": {
+            "median": 8462,
+            "min": 8249,
+            "max": 8739
+          },
+          "requests": {
+            "median": 44,
+            "min": 44,
+            "max": 44
+          },
+          "bytes": {
+            "median": 378907,
+            "min": 378907,
+            "max": 378907
+          },
+          "javascriptBytes": {
+            "median": 307773,
+            "min": 307773,
+            "max": 307773
+          },
+          "cssBytes": {
+            "median": 54764,
+            "min": 54764,
+            "max": 54764
+          }
+        },
+        "routed-reload-cache-disabled": {
+          "usefulMs": {
+            "median": 6410,
+            "min": 6359,
+            "max": 6430
+          },
+          "actionMs": {
+            "median": 6430,
+            "min": 6381,
+            "max": 6450
+          },
+          "settledMs": {
+            "median": 8308,
+            "min": 8269,
+            "max": 8334
+          },
+          "requests": {
+            "median": 44,
+            "min": 44,
+            "max": 44
+          },
+          "bytes": {
+            "median": 378907,
+            "min": 378907,
+            "max": 378907
+          },
+          "javascriptBytes": {
+            "median": 307773,
+            "min": 307773,
+            "max": 307773
+          },
+          "cssBytes": {
+            "median": 54764,
+            "min": 54764,
+            "max": 54764
+          }
+        },
+        "first-orders-opening": {
+          "usefulMs": {
+            "median": 1009,
+            "min": 723,
+            "max": 1047
+          },
+          "actionMs": {
+            "median": 3545,
+            "min": 3467,
+            "max": 3696
+          },
+          "settledMs": {
+            "median": 3545,
+            "min": 3467,
+            "max": 3696
+          },
+          "requests": {
+            "median": 13,
+            "min": 13,
+            "max": 13
+          },
+          "bytes": {
+            "median": 55872,
+            "min": 55872,
+            "max": 55872
+          },
+          "javascriptBytes": {
+            "median": 40545,
+            "min": 40545,
+            "max": 40545
+          },
+          "cssBytes": {
+            "median": 5022,
+            "min": 5022,
+            "max": 5022
+          }
+        }
+      }
+    }
+  }
+}

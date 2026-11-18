@@ -1,0 +1,78 @@
+{
+  "preserved": "Shared dependencies, all worktrees, final build and unique diagnostic/evidence files",
+  "totalBytes": 48581915.0,
+  "removed": [
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-after-c1aa80ca040c4c17a3d1b12b7997fd82"
+    },
+    {
+      "bytes": 7104.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-baseline-5786250d4912471a9f61e76192f3c932"
+    },
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-baseline-5f171ce4d9bf429da061a3a36c4e2bec"
+    },
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-editor-fcef0b04bab0462ab89b3da8397620cd"
+    },
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-final-recovery-4ddeb0bbb8f04608ba9697cace8e3b76"
+    },
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-lazy-final-b8a3818ea93c4befaa9553cbfb3465ef"
+    },
+    {
+      "bytes": 10586.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-lazy-regression-3668190997c447608423b5ba9f07adc3"
+    },
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-perf-after-1f211c215faf482ea9f663a76f2d8b5d"
+    },
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-perf-before-92a27b11b9c54b488f2342bef17dc5dc"
+    },
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-real-after-265473774c884d9ebfe69258555c86ee"
+    },
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-real-before-2f5b68d7d3f345c8aa2ab7d6321ae27c"
+    },
+    {
+      "bytes": 31776.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-settings-check-041392d7125549bfa42e6f4c3b6a1627"
+    },
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-today-final-bb85cf9440e0485795020f0ea6f27532"
+    },
+    {
+      "bytes": 12196.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-turbo-final-3a9fa6e5d8e24c24b183a666d0d71a08"
+    },
+    {
+      "bytes": 45.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-turbo-probe-1c0f56ecfd0b429798e2ca83316db33e"
+    },
+    {
+      "bytes": 17151.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-turbo-probe-746d3c0975b54161b9c1c2a9c03cb34a"
+    },
+    {
+      "bytes": 5740.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-panel-webpack-b5e6e4f060b141a094fd7a8f96c2bd67"
+    },
+    {
+      "bytes": 48496867.0,
+      "path": "C:\\Users\\mabal\\AppData\\Local\\Temp\\shida-startup-integration-recovery-20261118"
+    }
+  ]
+}

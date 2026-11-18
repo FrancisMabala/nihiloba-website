@@ -1,0 +1,81 @@
+<testsuites id="" name="" tests="21" failures="1" skipped="0" errors="0" time="55.054835000000004">
+<testsuite name="restaurant-panel-recovery.browser.ts" timestamp="2026-11-18T22:01:36.131Z" hostname="" tests="21" failures="1" skipped="0" time="50.769" errors="0">
+<testcase name="failed orders download retries in place 390" classname="restaurant-panel-recovery.browser.ts" time="3.113">
+</testcase>
+<testcase name="failed items download retries in place 390" classname="restaurant-panel-recovery.browser.ts" time="2.802">
+</testcase>
+<testcase name="failed daily download retries in place 390" classname="restaurant-panel-recovery.browser.ts" time="2.916">
+</testcase>
+<testcase name="failed orders download retries in place 1440" classname="restaurant-panel-recovery.browser.ts" time="2.73">
+</testcase>
+<testcase name="failed items download retries in place 1440" classname="restaurant-panel-recovery.browser.ts" time="2.533">
+</testcase>
+<testcase name="failed daily download retries in place 1440" classname="restaurant-panel-recovery.browser.ts" time="2.64">
+</testcase>
+<testcase name="localized keyboard recovery en 390" classname="restaurant-panel-recovery.browser.ts" time="1.66">
+</testcase>
+<testcase name="localized keyboard recovery en 1440" classname="restaurant-panel-recovery.browser.ts" time="1.762">
+</testcase>
+<testcase name="localized keyboard recovery ln 390" classname="restaurant-panel-recovery.browser.ts" time="1.647">
+</testcase>
+<testcase name="localized keyboard recovery ln 1440" classname="restaurant-panel-recovery.browser.ts" time="1.67">
+</testcase>
+<testcase name="localized keyboard recovery sw 390" classname="restaurant-panel-recovery.browser.ts" time="1.663">
+</testcase>
+<testcase name="localized keyboard recovery sw 1440" classname="restaurant-panel-recovery.browser.ts" time="1.597">
+</testcase>
+<testcase name="repeated unavailable asset has no request storm and offers deliberate reload" classname="restaurant-panel-recovery.browser.ts" time="3.599">
+</testcase>
+<testcase name="leave a failed destination without downloading it again" classname="restaurant-panel-recovery.browser.ts" time="1.663">
+</testcase>
+<testcase name="counter basket survives another panel failure and cancelled full reload" classname="restaurant-panel-recovery.browser.ts" time="3.381">
+</testcase>
+<testcase name="late download completion cannot undo navigate" classname="restaurant-panel-recovery.browser.ts" time="2.48">
+</testcase>
+<testcase name="late download completion cannot undo switch" classname="restaurant-panel-recovery.browser.ts" time="1.554">
+</testcase>
+<testcase name="late download completion cannot undo logout" classname="restaurant-panel-recovery.browser.ts" time="1.507">
+</testcase>
+<testcase name="narrow enlarged-text recovery controls remain reachable" classname="restaurant-panel-recovery.browser.ts" time="1.614">
+</testcase>
+<testcase name="application rendering defects are not disguised as recoverable downloads" classname="restaurant-panel-recovery.browser.ts" time="1.381">
+</testcase>
+<testcase name="shared editor remains mounted when its hours module fails" classname="restaurant-panel-recovery.browser.ts" time="6.857">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\..\..\..\Users\mabal\AppData\Local\Temp\shida-panel-webpack-b5e6e4f060b141a094fd7a8f96c2bd67\restaurant-panel-recovery.-40b0c-when-its-hours-module-fails\error-context.md]]
+]]>
+</system-out>
+<failure message="expect(locator).toBeAttached() failed" type="expect.toBeAttached">
+<![CDATA[  restaurant-panel-recovery.browser.ts:218:6 › shared editor remains mounted when its hours module fails
+
+    Error: expect(locator).toBeAttached() failed
+
+    Locator: locator('.management-mobile-nav')
+    Expected: attached
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeAttached" locator('.management-mobile-nav') with timeout 5000ms
+      - waiting for locator('.management-mobile-nav')
+
+
+       at restaurant-management-navigation.ts:9
+
+       7 |  if(locale){await managementNavigation(page,sellerDesignCopy[locale].profile);const label=name===managementCopy[locale].settings?workspaceCopy[locale].configuration:name===sellerDesignCopy[locale].hours?workspaceCopy[locale].hours:workspaceCopy[locale].sharing;await page.locator('.rst-local-tabs').getByRole('button',{name:label,exact:true}).click();return;}
+       8 |  const profileLocale=(Object.keys(sellerDesignCopy) as (keyof typeof sellerDesignCopy)[]).find(l=>sellerDesignCopy[l].profile===name);if(profileLocale)name=workspaceCopy[profileLocale].establishment;
+    >  9 |  await expect(page.locator('.management-mobile-nav')).toBeAttached();
+         |                                                       ^
+      10 |  if(await page.locator('.management-mobile-nav').isVisible()){
+      11 |   const direct=page.locator('.management-mobile-nav').getByRole('button',{name,exact:true});
+      12 |   if(await direct.count()){await direct.click();return;}
+        at managementNavigation (C:\NIHILOBA\release-mobile-batches-20261117\tests\browser\restaurant-management-navigation.ts:9:55)
+        at C:\NIHILOBA\release-mobile-batches-20261117\tests\browser\restaurant-panel-recovery.browser.ts:232:29
+
+    Error Context: ..\..\..\..\Users\mabal\AppData\Local\Temp\shida-panel-webpack-b5e6e4f060b141a094fd7a8f96c2bd67\restaurant-panel-recovery.-40b0c-when-its-hours-module-fails\error-context.md
+]]>
+</failure>
+</testcase>
+</testsuite>
+</testsuites>

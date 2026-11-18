@@ -1,0 +1,46 @@
+<testsuites id="" name="" tests="21" failures="0" skipped="0" errors="0" time="18.680451">
+<testsuite name="restaurant-today-recovery.browser.ts" timestamp="2026-11-18T22:17:17.661Z" hostname="" tests="21" failures="0" skipped="0" time="14.492" errors="0">
+<testcase name="summary intake true never loads full configuration" classname="restaurant-today-recovery.browser.ts" time="0.851">
+</testcase>
+<testcase name="summary intake false never loads full configuration" classname="restaurant-today-recovery.browser.ts" time="0.61">
+</testcase>
+<testcase name="summary intake undefined never loads full configuration" classname="restaurant-today-recovery.browser.ts" time="0.659">
+</testcase>
+<testcase name="401 restaurant_unavailable has no legacy fanout or false empty state" classname="restaurant-today-recovery.browser.ts" time="0.639">
+</testcase>
+<testcase name="403 restaurant_unavailable has no legacy fanout or false empty state" classname="restaurant-today-recovery.browser.ts" time="0.626">
+</testcase>
+<testcase name="404 restaurant_unavailable has no legacy fanout or false empty state" classname="restaurant-today-recovery.browser.ts" time="0.67">
+</testcase>
+<testcase name="409 restaurant_today_limit has no legacy fanout or false empty state" classname="restaurant-today-recovery.browser.ts" time="0.619">
+</testcase>
+<testcase name="429 restaurant_unavailable has no legacy fanout or false empty state" classname="restaurant-today-recovery.browser.ts" time="0.63">
+</testcase>
+<testcase name="503 restaurant_unavailable has no legacy fanout or false empty state" classname="restaurant-today-recovery.browser.ts" time="0.701">
+</testcase>
+<testcase name="malformed summary leaves the three order sections unavailable while independent sections render" classname="restaurant-today-recovery.browser.ts" time="0.606">
+</testcase>
+<testcase name="only typed unsupported 404 enables three legacy reads" classname="restaurant-today-recovery.browser.ts" time="0.63">
+</testcase>
+<testcase name="only typed unsupported 405 enables three legacy reads" classname="restaurant-today-recovery.browser.ts" time="0.595">
+</testcase>
+<testcase name="explicit grouped retry respects cooldown with no automatic retry in fr" classname="restaurant-today-recovery.browser.ts" time="0.749">
+</testcase>
+<testcase name="explicit grouped retry respects cooldown with no automatic retry in en" classname="restaurant-today-recovery.browser.ts" time="0.671">
+</testcase>
+<testcase name="explicit grouped retry respects cooldown with no automatic retry in ln" classname="restaurant-today-recovery.browser.ts" time="0.656">
+</testcase>
+<testcase name="explicit grouped retry respects cooldown with no automatic retry in sw" classname="restaurant-today-recovery.browser.ts" time="0.659">
+</testcase>
+<testcase name="group retry queues once behind a held stock read without overlapping requests" classname="restaurant-today-recovery.browser.ts" time="0.811">
+</testcase>
+<testcase name="failed refresh preserves stale valid orders and independent totals until explicit retry" classname="restaurant-today-recovery.browser.ts" time="0.75">
+</testcase>
+<testcase name="summary deadline does not fan out or accept a late response" classname="restaurant-today-recovery.browser.ts" time="0.739">
+</testcase>
+<testcase name="restaurant switch rejects the held prior context result" classname="restaurant-today-recovery.browser.ts" time="0.745">
+</testcase>
+<testcase name="logout removes the private dashboard while a summary is held" classname="restaurant-today-recovery.browser.ts" time="0.876">
+</testcase>
+</testsuite>
+</testsuites>

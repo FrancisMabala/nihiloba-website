@@ -1,0 +1,102 @@
+<testsuites id="" name="" tests="33" failures="1" skipped="0" errors="0" time="37.883724">
+<testsuite name="restaurant-lazy-panels.browser.ts" timestamp="2026-11-18T22:09:50.747Z" hostname="" tests="33" failures="1" skipped="0" time="32.278" errors="0">
+<testcase name="deferred direct destination orders 390" classname="restaurant-lazy-panels.browser.ts" time="0.764">
+</testcase>
+<testcase name="deferred direct destination items 390" classname="restaurant-lazy-panels.browser.ts" time="0.57">
+</testcase>
+<testcase name="deferred direct destination reservations 390" classname="restaurant-lazy-panels.browser.ts" time="0.561">
+</testcase>
+<testcase name="deferred direct destination inventory 390" classname="restaurant-lazy-panels.browser.ts" time="0.539">
+</testcase>
+<testcase name="deferred direct destination activity 390" classname="restaurant-lazy-panels.browser.ts" time="0.571">
+</testcase>
+<testcase name="deferred direct destination recovery 390" classname="restaurant-lazy-panels.browser.ts" time="0.558">
+</testcase>
+<testcase name="deferred direct destination daily 390" classname="restaurant-lazy-panels.browser.ts" time="0.625">
+</testcase>
+<testcase name="deferred direct destination profile 390" classname="restaurant-lazy-panels.browser.ts" time="0.613">
+</testcase>
+<testcase name="deferred direct destination hours 390" classname="restaurant-lazy-panels.browser.ts" time="0.567">
+</testcase>
+<testcase name="deferred direct destination settings 390" classname="restaurant-lazy-panels.browser.ts" time="0.562">
+</testcase>
+<testcase name="deferred direct destination photos 390" classname="restaurant-lazy-panels.browser.ts" time="0.534">
+</testcase>
+<testcase name="deferred direct destination reviews 390" classname="restaurant-lazy-panels.browser.ts" time="0.542">
+</testcase>
+<testcase name="deferred direct destination orders 1440" classname="restaurant-lazy-panels.browser.ts" time="1.277">
+</testcase>
+<testcase name="deferred direct destination items 1440" classname="restaurant-lazy-panels.browser.ts" time="1.332">
+</testcase>
+<testcase name="deferred direct destination reservations 1440" classname="restaurant-lazy-panels.browser.ts" time="0.679">
+</testcase>
+<testcase name="deferred direct destination inventory 1440" classname="restaurant-lazy-panels.browser.ts" time="0.553">
+</testcase>
+<testcase name="deferred direct destination activity 1440" classname="restaurant-lazy-panels.browser.ts" time="0.557">
+</testcase>
+<testcase name="deferred direct destination recovery 1440" classname="restaurant-lazy-panels.browser.ts" time="0.519">
+</testcase>
+<testcase name="deferred direct destination daily 1440" classname="restaurant-lazy-panels.browser.ts" time="0.65">
+</testcase>
+<testcase name="deferred direct destination profile 1440" classname="restaurant-lazy-panels.browser.ts" time="0.589">
+</testcase>
+<testcase name="deferred direct destination hours 1440" classname="restaurant-lazy-panels.browser.ts" time="0.605">
+</testcase>
+<testcase name="deferred direct destination settings 1440" classname="restaurant-lazy-panels.browser.ts" time="5.403">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\..\..\..\Users\mabal\AppData\Local\Temp\shida-panel-lazy-regression-3668190997c447608423b5ba9f07adc3\restaurant-lazy-panels.bro-d4991-t-destination-settings-1440\error-context.md]]
+]]>
+</system-out>
+<failure message="expect(locator).toBeVisible() failed" type="expect.toBeVisible">
+<![CDATA[  restaurant-lazy-panels.browser.ts:20:6 › deferred direct destination settings 1440 ───────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.rst-settings')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.rst-settings') with timeout 5000ms
+      - waiting for locator('.rst-settings')
+
+
+      21 |   await fixture(page);await page.setViewportSize({width,height:900});
+      22 |   await page.goto(`/fr/shida/seller/restaurants/?establishment=RST_0&tab=${tab}`);
+    > 23 |   await expect(page.locator(selector)).toBeVisible();
+         |                                        ^
+      24 |   await expect(page.locator('.rst-panel-loading')).toHaveCount(0);
+      25 |   await expect(page.locator('.rst-today')).toHaveCount(0);
+      26 |   await expect(page.locator('.rst-restaurant-identity:visible strong').first()).toContainText('Chez maman');
+        at C:\NIHILOBA\release-mobile-batches-20261117\tests\browser\restaurant-lazy-panels.browser.ts:23:40
+
+    Error Context: ..\..\..\..\Users\mabal\AppData\Local\Temp\shida-panel-lazy-regression-3668190997c447608423b5ba9f07adc3\restaurant-lazy-panels.bro-d4991-t-destination-settings-1440\error-context.md
+]]>
+</failure>
+</testcase>
+<testcase name="deferred direct destination photos 1440" classname="restaurant-lazy-panels.browser.ts" time="0.724">
+</testcase>
+<testcase name="deferred direct destination reviews 1440" classname="restaurant-lazy-panels.browser.ts" time="0.551">
+</testcase>
+<testcase name="deferred loading preserves navigation and locale fr" classname="restaurant-lazy-panels.browser.ts" time="1.059">
+</testcase>
+<testcase name="deferred loading preserves navigation and locale en" classname="restaurant-lazy-panels.browser.ts" time="1.118">
+</testcase>
+<testcase name="deferred loading preserves navigation and locale ln" classname="restaurant-lazy-panels.browser.ts" time="1.06">
+</testcase>
+<testcase name="deferred loading preserves navigation and locale sw" classname="restaurant-lazy-panels.browser.ts" time="1.055">
+</testcase>
+<testcase name="first menu and finance openings render useful content 390" classname="restaurant-lazy-panels.browser.ts" time="2.043">
+</testcase>
+<testcase name="first menu and finance openings render useful content 1440" classname="restaurant-lazy-panels.browser.ts" time="1.914">
+</testcase>
+<testcase name="counter draft survives lazy panel navigation and keeps leave protection" classname="restaurant-lazy-panels.browser.ts" time="2.011">
+</testcase>
+<testcase name="deferred signed-out entry preserves login and marketplace links" classname="restaurant-lazy-panels.browser.ts" time="0.781">
+</testcase>
+<testcase name="deferred protected receipt keeps its canonical destination and terms" classname="restaurant-lazy-panels.browser.ts" time="0.792">
+</testcase>
+</testsuite>
+</testsuites>

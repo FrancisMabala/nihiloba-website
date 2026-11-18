@@ -1,0 +1,46 @@
+<testsuites id="" name="" tests="21" failures="0" skipped="0" errors="0" time="61.202347">
+<testsuite name="restaurant-panel-recovery.browser.ts" timestamp="2026-11-18T22:14:40.751Z" hostname="" tests="21" failures="0" skipped="0" time="56.779" errors="0">
+<testcase name="failed orders download retries in place 390" classname="restaurant-panel-recovery.browser.ts" time="3.45">
+</testcase>
+<testcase name="failed items download retries in place 390" classname="restaurant-panel-recovery.browser.ts" time="2.797">
+</testcase>
+<testcase name="failed daily download retries in place 390" classname="restaurant-panel-recovery.browser.ts" time="3.294">
+</testcase>
+<testcase name="failed orders download retries in place 1440" classname="restaurant-panel-recovery.browser.ts" time="3.279">
+</testcase>
+<testcase name="failed items download retries in place 1440" classname="restaurant-panel-recovery.browser.ts" time="3.118">
+</testcase>
+<testcase name="failed daily download retries in place 1440" classname="restaurant-panel-recovery.browser.ts" time="2.641">
+</testcase>
+<testcase name="localized keyboard recovery en 390" classname="restaurant-panel-recovery.browser.ts" time="2.878">
+</testcase>
+<testcase name="localized keyboard recovery en 1440" classname="restaurant-panel-recovery.browser.ts" time="3.009">
+</testcase>
+<testcase name="localized keyboard recovery ln 390" classname="restaurant-panel-recovery.browser.ts" time="2.393">
+</testcase>
+<testcase name="localized keyboard recovery ln 1440" classname="restaurant-panel-recovery.browser.ts" time="2.343">
+</testcase>
+<testcase name="localized keyboard recovery sw 390" classname="restaurant-panel-recovery.browser.ts" time="2.884">
+</testcase>
+<testcase name="localized keyboard recovery sw 1440" classname="restaurant-panel-recovery.browser.ts" time="2.361">
+</testcase>
+<testcase name="repeated unavailable asset has no request storm and offers deliberate reload" classname="restaurant-panel-recovery.browser.ts" time="4.796">
+</testcase>
+<testcase name="leave a failed destination without downloading it again" classname="restaurant-panel-recovery.browser.ts" time="2.239">
+</testcase>
+<testcase name="counter basket survives another panel failure and cancelled full reload" classname="restaurant-panel-recovery.browser.ts" time="4.226">
+</testcase>
+<testcase name="late download completion cannot undo navigate" classname="restaurant-panel-recovery.browser.ts" time="2.041">
+</testcase>
+<testcase name="late download completion cannot undo switch" classname="restaurant-panel-recovery.browser.ts" time="1.577">
+</testcase>
+<testcase name="late download completion cannot undo logout" classname="restaurant-panel-recovery.browser.ts" time="2.24">
+</testcase>
+<testcase name="narrow enlarged-text recovery controls remain reachable" classname="restaurant-panel-recovery.browser.ts" time="1.819">
+</testcase>
+<testcase name="application rendering defects are not disguised as recoverable downloads" classname="restaurant-panel-recovery.browser.ts" time="1.04">
+</testcase>
+<testcase name="shared editor remains mounted when its hours module fails" classname="restaurant-panel-recovery.browser.ts" time="2.354">
+</testcase>
+</testsuite>
+</testsuites>

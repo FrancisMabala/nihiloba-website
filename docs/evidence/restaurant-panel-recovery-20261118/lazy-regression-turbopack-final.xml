@@ -1,0 +1,70 @@
+<testsuites id="" name="" tests="33" failures="0" skipped="0" errors="0" time="37.16668">
+<testsuite name="restaurant-lazy-panels.browser.ts" timestamp="2026-11-18T22:15:53.547Z" hostname="" tests="33" failures="0" skipped="0" time="32.737" errors="0">
+<testcase name="deferred direct destination orders 390" classname="restaurant-lazy-panels.browser.ts" time="0.746">
+</testcase>
+<testcase name="deferred direct destination items 390" classname="restaurant-lazy-panels.browser.ts" time="0.559">
+</testcase>
+<testcase name="deferred direct destination reservations 390" classname="restaurant-lazy-panels.browser.ts" time="0.548">
+</testcase>
+<testcase name="deferred direct destination inventory 390" classname="restaurant-lazy-panels.browser.ts" time="0.59">
+</testcase>
+<testcase name="deferred direct destination activity 390" classname="restaurant-lazy-panels.browser.ts" time="0.568">
+</testcase>
+<testcase name="deferred direct destination recovery 390" classname="restaurant-lazy-panels.browser.ts" time="0.542">
+</testcase>
+<testcase name="deferred direct destination daily 390" classname="restaurant-lazy-panels.browser.ts" time="0.623">
+</testcase>
+<testcase name="deferred direct destination profile 390" classname="restaurant-lazy-panels.browser.ts" time="0.542">
+</testcase>
+<testcase name="deferred direct destination hours 390" classname="restaurant-lazy-panels.browser.ts" time="0.564">
+</testcase>
+<testcase name="deferred direct destination settings 390" classname="restaurant-lazy-panels.browser.ts" time="0.68">
+</testcase>
+<testcase name="deferred direct destination photos 390" classname="restaurant-lazy-panels.browser.ts" time="0.552">
+</testcase>
+<testcase name="deferred direct destination reviews 390" classname="restaurant-lazy-panels.browser.ts" time="0.538">
+</testcase>
+<testcase name="deferred direct destination orders 1440" classname="restaurant-lazy-panels.browser.ts" time="0.558">
+</testcase>
+<testcase name="deferred direct destination items 1440" classname="restaurant-lazy-panels.browser.ts" time="1.31">
+</testcase>
+<testcase name="deferred direct destination reservations 1440" classname="restaurant-lazy-panels.browser.ts" time="1.291">
+</testcase>
+<testcase name="deferred direct destination inventory 1440" classname="restaurant-lazy-panels.browser.ts" time="1.333">
+</testcase>
+<testcase name="deferred direct destination activity 1440" classname="restaurant-lazy-panels.browser.ts" time="0.678">
+</testcase>
+<testcase name="deferred direct destination recovery 1440" classname="restaurant-lazy-panels.browser.ts" time="1.274">
+</testcase>
+<testcase name="deferred direct destination daily 1440" classname="restaurant-lazy-panels.browser.ts" time="1.324">
+</testcase>
+<testcase name="deferred direct destination profile 1440" classname="restaurant-lazy-panels.browser.ts" time="1.303">
+</testcase>
+<testcase name="deferred direct destination hours 1440" classname="restaurant-lazy-panels.browser.ts" time="0.539">
+</testcase>
+<testcase name="deferred direct destination settings 1440" classname="restaurant-lazy-panels.browser.ts" time="1.294">
+</testcase>
+<testcase name="deferred direct destination photos 1440" classname="restaurant-lazy-panels.browser.ts" time="1.389">
+</testcase>
+<testcase name="deferred direct destination reviews 1440" classname="restaurant-lazy-panels.browser.ts" time="0.564">
+</testcase>
+<testcase name="deferred loading preserves navigation and locale fr" classname="restaurant-lazy-panels.browser.ts" time="1.039">
+</testcase>
+<testcase name="deferred loading preserves navigation and locale en" classname="restaurant-lazy-panels.browser.ts" time="1.08">
+</testcase>
+<testcase name="deferred loading preserves navigation and locale ln" classname="restaurant-lazy-panels.browser.ts" time="1.029">
+</testcase>
+<testcase name="deferred loading preserves navigation and locale sw" classname="restaurant-lazy-panels.browser.ts" time="1.052">
+</testcase>
+<testcase name="first menu and finance openings render useful content 390" classname="restaurant-lazy-panels.browser.ts" time="2.112">
+</testcase>
+<testcase name="first menu and finance openings render useful content 1440" classname="restaurant-lazy-panels.browser.ts" time="2.46">
+</testcase>
+<testcase name="counter draft survives lazy panel navigation and keeps leave protection" classname="restaurant-lazy-panels.browser.ts" time="1.98">
+</testcase>
+<testcase name="deferred signed-out entry preserves login and marketplace links" classname="restaurant-lazy-panels.browser.ts" time="0.762">
+</testcase>
+<testcase name="deferred protected receipt keeps its canonical destination and terms" classname="restaurant-lazy-panels.browser.ts" time="1.314">
+</testcase>
+</testsuite>
+</testsuites>

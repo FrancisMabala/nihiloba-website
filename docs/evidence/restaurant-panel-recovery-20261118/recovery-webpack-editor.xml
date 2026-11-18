@@ -1,0 +1,6 @@
+<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="6.647289">
+<testsuite name="restaurant-panel-recovery.browser.ts" timestamp="2026-11-18T22:03:12.689Z" hostname="" tests="1" failures="0" skipped="0" time="2.424" errors="0">
+<testcase name="shared editor remains mounted when its hours module fails" classname="restaurant-panel-recovery.browser.ts" time="2.424">
+</testcase>
+</testsuite>
+</testsuites>

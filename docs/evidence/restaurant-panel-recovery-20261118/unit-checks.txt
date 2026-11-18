@@ -1,0 +1,8 @@
+
+ RUN  v4.1.12 C:/NIHILOBA/release-mobile-batches-20261117
+
+
+ Test Files  4 passed (4)
+      Tests  35 passed (35)
+   Start at  23:03:38
+   Duration  719ms (transform 491ms, setup 199ms, import 580ms, tests 139ms, environment 0ms)
