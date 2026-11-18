@@ -1,0 +1,254 @@
+RUN  v4.1.12 C:/NIHILOBA/next-security-business-20261117
+
+ ❯ tests/organization-creation.test.tsx (11 tests | 1 failed) 2058ms
+   × completes once, promotes the verified session and opens the exact organization 1056ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/organization-creation.test.tsx > completes once, promotes the verified session and opens the exact organization
+Error: expect(element).toBeEnabled()
+
+Received element is not enabled:
+  <button
+  aria-describedby="onboarding-incomplete"
+  class="button button-primary"
+  disabled=""
+/>
+
+Ignored nodes: comments, script, style
+<html
+  lang="en"
+>
+  <head />
+  <body>
+    <div>
+      <dialog
+        aria-labelledby="auth-title"
+        class="modal onboarding-dialog onboarding-page"
+        open=""
+      >
+        <div
+          class="onboarding-progress"
+        >
+          <p>
+            Step
+
+            5
+
+            of
+             5 ·
+            Review
+          </p>
+          <progress
+            aria-label="Step 5 of 5"
+            max="5"
+            value="5"
+          />
+          <details>
+            <summary>
+              Edit
+            </summary>
+            <nav
+              aria-label="Create your organization"
+            >
+              <button
+                type="button"
+              >
+                1
+                .
+                Organization
+              </button>
+              <button
+                type="button"
+              >
+                2
+                .
+                Organization details
+              </button>
+              <button
+                type="button"
+              >
+                3
+                .
+                Organization address
+              </button>
+              <button
+                type="button"
+              >
+                4
+                .
+                Terms
+              </button>
+              <button
+                aria-current="step"
+                type="button"
+              >
+                5
+                .
+                Review
+              </button>
+            </nav>
+          </details>
+        </div>
+        <h3
+          tabindex="-1"
+        >
+          Review
+        </h3>
+        <form
+          class="form"
+          novalidate=""
+        >
+          <fieldset
+            class="onboarding-fields"
+          >
+            <div
+              class="onboarding-review-groups"
+            >
+              <section>
+                <header>
+                  <h4>
+                    Organization
+                  </h4>
+                  <button
+                    class="button button-secondary"
+                    type="button"
+                  >
+                    Edit
+                  </button>
+                </header>
+                <dl
+                  class="onboarding-review"
+                >
+                  <div>
+                    <dt>
+                      Organization name
+                    </dt>
+                    <dd>
+                      Verified organization
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+              <section>
+                <header>
+                  <h4>
+                    Responsible person
+                  </h4>
+                  <button
+                    class="button button-secondary"
+                    type="button"
+                  >
+                    Edit
+                  </button>
+                </header>
+                <dl
+                  class="onboarding-review"
+                >
+                  <div>
+                    <dt>
+                      Your name
+                    </dt>
+                    <dd>
+                      Creator
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+              <section>
+                <header>
+                  <h4>
+                    Organization address
+                  </h4>
+                  <button
+                    class="button button-secondary"
+                    type="button"
+                  >
+                    Edit
+                  </button>
+                </header>
+                <dl
+                  class="onboarding-review"
+                />
+              </section>
+              <section>
+                <header>
+                  <h4>
+                    Terms
+                  </h4>
+                  <button
+                    class="button button-secondary"
+                    type="button"
+                  >
+                    Edit
+                  </button>
+                </header>
+              </section>
+            </div>
+            <p
+              id="onboarding-incomplete"
+            >
+              Complete the items below before creating your organization.
+            </p>
+          </fieldset>
+          <div
+            class="form-actions"
+          >
+            <button
+              class="button button-secondary"
+              type="button"
+            >
+              Back
+            </button>
+            <button
+              aria-describedby="onboarding-incomplete"
+              class="button button-primary"
+              disabled=""
+            >
+              Create organization
+            </button>
+          </div>
+        </form>
+        <p
+          class="onboarding-hint"
+        >
+          Saved steps remain available. Current edits are kept temporarily in this tab.
+        </p>
+        <div
+          class="form-actions"
+        >
+          <button
+            class="button button-secondary"
+            type="button"
+          >
+            Continue later
+          </button>
+          <button
+            class="button button-danger"
+            type="button"
+          >
+            Cancel this attempt
+          </button>
+        </div>
+        <a
+          href="/"
+        >
+          Return to your organizations
+        </a>
+      </dialog>
+    </div>
+  </body>
+</html>
+ ❯ tests/organization-creation.test.tsx:90:111
+
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../Users/mabal/AppData/Local/Temp/shida-business-next-security-20261117-sdgqwxcn/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../Users/mabal/AppData/Local/Temp/shida-business-next-security-20261117-sdgqwxcn/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../Users/mabal/AppData/Local/Temp/shida-business-next-security-20261117-sdgqwxcn/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 16 passed (17)
+   Start at  17:30:36
+   Duration  5.58s (transform 746ms, setup 1.79s, import 1.04s, tests 2.08s, environment 4.96s)

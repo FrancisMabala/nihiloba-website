@@ -1,0 +1,33 @@
+{
+  "baseline": false,
+  "postgres": false,
+  "reverse": false,
+  "fast_sqlite": false,
+  "single_process": true,
+  "balanced_migrations": false,
+  "trace_logging": false,
+  "max_workers": 1,
+  "revision": "f3248d7780f2d8659d3c1f4012fa04330e4e5774",
+  "test_files": 798,
+  "shards": [
+    {
+      "shard": 0,
+      "exit_code": 1,
+      "selection": [
+        "tests/test_registration_countries.py",
+        "tests/test_registration_locations.py",
+        "tests/test_web_registration.py",
+        "tests/test_meda.py"
+      ],
+      "counts": {
+        "tests": 65,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "failed_nodes": [
+        "tests/test_registration_locations.py::test_whatsapp_and_legacy_profile_remain_lightweight"
+      ]
+    }
+  ]
+}
