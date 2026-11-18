@@ -1,4 +1,5 @@
 "use client";
+import {ServicesRefreshIcon} from "./services-mobile-controls";
 import {ServicesHoursEditor} from './services-hours-editor';
 import {ServicesBookingPreview} from './services-booking-preview';
 import {plannerCopy} from '../../lib/services-planner-copy';
@@ -6,7 +7,7 @@ import {validWorkingHours} from '../../lib/services-hours-model';
 import './services-planner.css';
 import Image from 'next/image';
 import {workdayCopy} from '../../lib/services-workday-copy';
-import {serviceCalendarLabel,calendarStateCopy} from '../../lib/services-calendar-labels';
+import {calendarStateCopy} from '../../lib/services-calendar-labels';
 import {PersonalAvailability,type CalendarSchedule,type PersonalPolicy} from './services-personal-availability';
 import {PersonalAgenda,type AgendaOffering,type AgendaRow,type Unscheduled} from './services-personal-agenda';
 import {personalCalendarCopy} from '../../lib/services-personal-calendar-copy';
@@ -24,7 +25,8 @@ type Share={name:string;url:string;qr_image:string};
 const nowDay=()=>localDate(new Date().toISOString(),'Africa/Kinshasa');
 export function ServicesCalendar({base,binding,locale,offerings,initialService,initialTab="calendar",sharingOnly=false,onSaved,onOpen,onDenied,onEditDuration,refreshToken=0,onBusy}:{base:string;binding:string;locale:ProviderLocale;offerings:Offering[];initialService?:string|null;sharingOnly?:boolean;initialTab?:"calendar"|"hours"|"share";refreshToken?:number;onBusy?:(busy:boolean)=>void;onSaved:()=>void;onOpen:(ref:string)=>void;onDenied:()=>void;onEditDuration?:(ref:string)=>void}){
  const t=scheduleCopy[locale],p=plannerCopy[locale];
- const [monthOpen,setMonthOpen]=useState(false);
+ const [timeZone,setTimeZone]=useState("Africa/Kinshasa");
+ const [calendarView,setCalendarView]=useState<"day"|"month"|"list">("day");
  const [reload,setReload]=useState(0),[hoursEditing,setHoursEditing]=useState(false);
  const lastRefresh=useRef(refreshToken);
  const [tab,setTab]=useState<'calendar'|'hours'|'share'>(initialTab),[service,setService]=useState(initialService??offerings.find(row=>row.is_active==='yes')?.public_ref??'');
@@ -47,8 +49,8 @@ export function ServicesCalendar({base,binding,locale,offerings,initialService,i
   const range=monthBounds(month),params=new URLSearchParams({date_from:range.from,date_to:range.to,page:String(page)});if(filter)params.set('offering_ref',filter);
   try{const all:AgendaRow[]=[];let currentPage=1,waiting:Unscheduled[]=[];
    for(;;){params.set('page',String(currentPage));const result=await request('/calendar?'+params);if(ticket!==epoch.current)return;
-    if(!Array.isArray(result.items))throw new Error('invalid');all.push(...result.items);if(currentPage===1)waiting=result.unscheduled??[];
-    if(!result.has_more)break;currentPage++;
+    if(!Array.isArray(result.items)||!Array.isArray(result.unscheduled??[]))throw new Error('invalid');if(result.timezone)setTimeZone(result.timezone);all.push(...result.items);if(currentPage===1)waiting=result.unscheduled??[];
+    if(!result.has_more)break;if(currentPage>=10000)throw Error("Pagination limit");currentPage++;
    }setEvents(all);setUnscheduled(waiting);setMore(false);
   }catch{if(ticket===epoch.current){setEvents([]);setMore(false);setError(t.failed);}}finally{if(ticket===epoch.current)setLoading(false);}
  },[filter,month,page,request,t.failed]);
@@ -63,14 +65,14 @@ export function ServicesCalendar({base,binding,locale,offerings,initialService,i
   setBusy(true);
   void request(`/${service}/${tab==='hours'?'schedule':`share?language=${locale}`}`).then(result=>{
    if(ticket!==saveEpoch.current)return;
-   if(tab==='hours'){setSchedule(result);setSaved(JSON.stringify(result));}
+   if(tab==='hours'){if(!Array.isArray(result.hours)||!validWorkingHours(result.hours)||result.personal_calendar&&(!Array.isArray(result.personal_calendar.week)||!Array.isArray(result.personal_calendar.absences)))throw Error('invalid');setSchedule(result);setSaved(JSON.stringify(result));}
    else if(typeof result.url==='string'&&/^https?:\/\//.test(result.url)&&typeof result.qr_image==='string'&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(result.qr_image)){setShare(result);}else throw new Error('invalid');
   }).catch(caught=>{if(ticket===saveEpoch.current)setNotice(caught instanceof Error&&caught.message==='409'?t.publish:t.failed);}).finally(()=>{if(ticket===saveEpoch.current)setBusy(false);});
   });
  },[service,tab,request,locale,t.failed,t.publish,reload]);
  useEffect(()=>{if(lastRefresh.current===refreshToken)return;lastRefresh.current=refreshToken;let active=true;queueMicrotask(async()=>{if(busyRef.current||pending||!await leaveWork()||!active)return;setReload(value=>value+1);if(page===1)void loadCalendar();else setPage(1);});return()=>{active=false;};},[refreshToken,pending,page,loadCalendar]);
- async function switchTab(next:typeof tab){if(busy||pending||(dirty||hoursEditing)&&!(await leaveWork()))return;setTab(next);}
- async function selectService(next:string){if(busy||pending||(dirty||hoursEditing)&&!(await leaveWork()))return;setService(next);}
+ async function switchTab(next:typeof tab){if(busy||pending||!(await leaveWork()))return;setTab(next);}
+ async function selectService(next:string){if(busy||pending||!(await leaveWork()))return;setService(next);}
  function update(values:Partial<Schedule>){if(schedule){setSchedule({...schedule,...values});setNotice('');}}
  async function save(candidate=schedule){
   if(!candidate||busyRef.current||hoursEditing)return false;
@@ -91,15 +93,15 @@ export function ServicesCalendar({base,binding,locale,offerings,initialService,i
  const calendarText=personalCalendarCopy(locale);
  function selectDay(value:string){setDay(value);setMonth(value.slice(0,7));setPage(1);}
  const viewKey='shida-personal-calendar:'+(offerings[0]?.public_ref??'');
- function openRecord(ref:string){try{sessionStorage.setItem(viewKey,JSON.stringify({day,filter}));}catch{}onOpen(ref);}
+ function openRecord(ref:string){try{sessionStorage.setItem(viewKey,JSON.stringify({day,filter,view:calendarView}));}catch{}onOpen(ref);}
  useEffect(()=>{try{const value=sessionStorage.getItem(viewKey);if(!value)return;sessionStorage.removeItem(viewKey);
- const state=JSON.parse(value);if(/^\d{4}-\d{2}-\d{2}$/.test(state.day)&&typeof state.filter==='string')queueMicrotask(()=>{selectDay(state.day);setFilter(state.filter);});}catch{}},[viewKey]);
+ const state=JSON.parse(value);if(/^\d{4}-\d{2}-\d{2}$/.test(state.day)&&typeof state.filter==='string')queueMicrotask(()=>{selectDay(state.day);setFilter(state.filter);if(["day","month","list"].includes(state.view))setCalendarView(state.view);});}catch{}},[viewKey]);
  return <section className="svc-planner" aria-label={t.calendar}>
   {!sharingOnly&&<div className="svc-planner-tabs" role="group" aria-label={t.calendar}>{(['calendar','hours'] as const).map(item=><button type="button" key={item} aria-pressed={tab===item} disabled={busy||!!pending} onClick={()=>switchTab(item)}>{item==='calendar'?calendarText.planning:calendarText.availability}</button>)}</div>}
-  {tab==='calendar'?<div className="svc-editor-card"><div className="svc-planner-toolbar"><label>{t.service}<select value={filter} onChange={event=>{setFilter(event.target.value);setPage(1);setEvents([]);}}><option value="">{t.all}</option>{active.map(row=><option key={row.public_ref} value={row.public_ref}>{row.service_name}</option>)}</select></label><span>{t.zone}</span>{!onBusy&&<button type="button" disabled={loading} onClick={()=>{if(page===1)void loadCalendar();else setPage(1);}}>{t.refresh}</button>}</div>{loading&&<p role="status">{calendarStateCopy[locale].loading}</p>}{error&&<p role="alert">{error}</p>}
-   {!error&&!loading&&<><PersonalAgenda day={day} select={selectDay} locale={locale} events={events} unscheduled={unscheduled} services={bookable} request={request} onOpen={openRecord} onSaved={()=>void loadCalendar()}/><details className="svc-cal-month" open={monthOpen} onToggle={event=>setMonthOpen(event.currentTarget.open)}><summary>{calendarText.month}</summary><ShidaCalendar zoneLabel={t.zone} refinedServices agendaLabel={serviceCalendarLabel(offerings.find(row=>row.public_ref===filter)?.category,locale)} locale={locale} timeZone="Africa/Kinshasa" month={month} selected={day} events={events.map(row=>servicesEvent({...row,status:(t.statuses as Record<string,string>)[row.status]??t.statusOther}))} onMonthChange={value=>{setMonth(value);setDay(`${value}-01`);setPage(1);setEvents([]);}} onSelect={selectDay} onOpen={event=>openRecord(event.reference)} hasMore={more} onMore={()=>setPage(value=>value+1)}/></details></>}
-  </div>:<div className="svc-editor-card"><div className="svc-planner-toolbar"><label>{t.service}<select disabled={busy||!!pending} value={service} onChange={event=>selectService(event.target.value)}>{active.map(row=><option key={row.public_ref} value={row.public_ref}>{row.service_name}</option>)}</select></label><span>{t.zone}</span></div>{!active.length&&<p>{t.noServices}</p>}{notice&&<p role="status" className="svc-notice">{notice}</p>}
-   {tab==='hours'&&busy&&!schedule&&<p role="status">{calendarStateCopy[locale].loading}</p>}{tab==='hours'&&!schedule&&!busy&&active.length>0&&<button type="button" onClick={()=>setReload(value=>value+1)}>{t.retry}</button>}{tab==='hours'&&schedule?.personal_calendar&&<PersonalAvailability schedule={schedule as Schedule & {personal_calendar:PersonalPolicy}} offering={active.find(row=>row.public_ref===service)} locale={locale} request={request} save={save} edit={onEditDuration?()=>onEditDuration(service):undefined}/>}
+  {tab==='calendar'?<div className="svc-editor-card"><div className="svc-planner-toolbar"><label>{t.service}<select value={filter} onChange={async event=>{const next=event.target.value;if(!await leaveWork())return;setFilter(next);if(next)setService(next);setPage(1);setEvents([]);}}><option value="">{t.all}</option>{active.map(row=><option key={row.public_ref} value={row.public_ref}>{row.service_name}</option>)}</select></label><span>{timeZone==="Africa/Kinshasa"?t.zone:timeZone}</span>{<button type="button" className="svc-icon-button" aria-label={t.refresh} aria-busy={loading} disabled={loading} onClick={async()=>{if(!await leaveWork())return;if(page===1)void loadCalendar();else setPage(1);}}><ServicesRefreshIcon/></button>}</div>{loading&&<p role="status">{calendarStateCopy[locale].loading}</p>}{error&&<p role="alert">{error}</p>}
+   {!error&&!loading&&<><PersonalAgenda day={day} select={selectDay} locale={locale} events={events} unscheduled={unscheduled} services={bookable} request={request} onOpen={openRecord} onSaved={()=>void loadCalendar()} timeZone={timeZone} view={calendarView} onViewChange={setCalendarView} monthGrid={<ShidaCalendar gridOnly zoneLabel={t.zone} refinedServices locale={locale} timeZone={timeZone} month={month} selected={day} events={events.map(row=>servicesEvent({...row,status:(t.statuses as Record<string,string>)[row.status]??t.statusOther}))} onMonthChange={value=>{setMonth(value);setDay(`${value}-01`);setPage(1);setEvents([]);}} onSelect={async value=>{if(await leaveWork())selectDay(value);}} onOpen={event=>openRecord(event.reference)} hasMore={more} onMore={()=>setPage(value=>value+1)}/>}/></>}
+  </div>:<div className="svc-editor-card"><div className="svc-planner-toolbar"><label>{t.service}<select disabled={busy||!!pending} value={service} onChange={event=>selectService(event.target.value)}>{active.map(row=><option key={row.public_ref} value={row.public_ref}>{row.service_name}</option>)}</select></label><span>{!schedule?.timezone||schedule.timezone==="Africa/Kinshasa"?t.zone:schedule.timezone}</span></div>{!active.length&&<p>{t.noServices}</p>}{notice&&<p role="status" className="svc-notice">{notice}</p>}
+   {tab==='hours'&&busy&&!schedule&&<p role="status">{calendarStateCopy[locale].loading}</p>}{tab==='hours'&&!schedule&&!busy&&active.length>0&&<button type="button" onClick={()=>setReload(value=>value+1)}>{t.retry}</button>}{tab==='hours'&&schedule?.personal_calendar&&<PersonalAvailability schedule={schedule as Schedule & {personal_calendar:PersonalPolicy}} offering={active.find(row=>row.public_ref===service)} locale={locale} request={request} save={save} pending={!!pending} saveNotice={notice} edit={onEditDuration?()=>onEditDuration(service):undefined}/>}
    {tab==='hours'&&schedule&&!schedule.personal_calendar&&<form onSubmit={event=>{event.preventDefault();void save();}}><fieldset disabled={busy||!!pending} className="svc-hours-fields">
     {schedule.mode==='appointments'?<><p>{t.hoursHelp}</p>{!schedule.duration_minutes&&<div role="alert"><p>{t.duration}</p>{onEditDuration&&<button type="button" onClick={async ()=>{if(!(dirty||hoursEditing)||(await leaveWork()))onEditDuration(service);}}>{t.editDuration}</button>}</div>}<ServicesHoursEditor key={`${service}-${schedule.revision}`} locale={locale} hours={schedule.hours} onChange={hours=>update({hours})} onEditing={setHoursEditing}/></>:<p>{t.flexibleHelp}</p>}
 <h3>{p.settings}</h3><div className="svc-form-grid svc-booking-settings"><label>{t.mode}<select disabled={hoursEditing} value={schedule.mode} onChange={event=>update({mode:event.target.value as Schedule['mode']})}><option value="flexible">{t.flexible}</option><option value="appointments">{t.appointments}</option></select></label>{schedule.mode==='appointments'&&<label>{t.confirmation}<select value={schedule.confirmation} onChange={event=>update({confirmation:event.target.value as Schedule['confirmation']})}><option value="provider_approval">{t.approval}</option><option value="automatic">{t.instant}</option></select></label>}</div>

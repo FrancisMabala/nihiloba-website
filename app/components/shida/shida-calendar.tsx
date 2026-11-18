@@ -6,11 +6,11 @@ import {calendarCopy, localDate, monthBounds, shiftMonth, type CalendarEvent, ty
 import './shida-calendar.css';
 import './shida-calendar-mobile.css';
 
-type Props={dayCounts?:Record<string,number>;weekStartsOn?:number;locale:CalendarLocale;timeZone:string;month:string;selected:string;events:CalendarEvent[];
+type Props={gridOnly?:boolean;dayCounts?:Record<string,number>;weekStartsOn?:number;locale:CalendarLocale;timeZone:string;month:string;selected:string;events:CalendarEvent[];
   onMonthChange:(month:string)=>void;onSelect:(date:string)=>void;onOpen?:(event:CalendarEvent)=>void;
   hasMore?:boolean;onMore?:()=>void;dateOnly?:boolean;agendaFirst?:boolean;agendaLabel?:string;zoneLabel?:string;refinedServices?:boolean};
 
-export function ShidaCalendar({locale,timeZone,month,selected,events,onMonthChange,onSelect,onOpen,hasMore,onMore,dateOnly=false,agendaFirst=false,agendaLabel,zoneLabel,refinedServices=false,dayCounts,weekStartsOn}:Props){
+export function ShidaCalendar({locale,timeZone,month,selected,events,onMonthChange,onSelect,onOpen,hasMore,onMore,dateOnly=false,agendaFirst=false,agendaLabel,zoneLabel,refinedServices=false,gridOnly=false,dayCounts,weekStartsOn}:Props){
   const t=calendarCopy[locale], [view,setView]=useState<'calendar'|'list'>('calendar');
   const buttons=useRef<HTMLDivElement>(null);
   const {from,to}=monthBounds(month), count=Math.round((Date.parse(to+'T00:00:00Z')-Date.parse(from+'T00:00:00Z'))/86400000);
@@ -32,13 +32,13 @@ export function ShidaCalendar({locale,timeZone,month,selected,events,onMonthChan
     <strong>{event.title}</strong><span className="shida-cal-status">{event.status}</span>
     {onOpen&&<button type="button" onClick={()=>onOpen(event)}>{t.open}</button>}
   </li>);}
-  const agenda=!dateOnly&&<div className="shida-cal-agenda"><h4>{agendaLabel??t.agenda} · {new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{dateStyle:'full',timeZone:'UTC'}).format(new Date(selected+'T12:00:00Z'))}</h4>{refinedServices&&<p className="svc-agenda-count">{dayEvents(selected).length} {plannerCopy[locale].count}</p>}{dayEvents(selected).length?<ol className="shida-cal-list">{entries(dayEvents(selected).sort((a,b)=>a.startsAt.localeCompare(b.startsAt)))}</ol>:<p>{t.empty}</p>}</div>;
+  const agenda=!gridOnly&&!dateOnly&&<div className="shida-cal-agenda"><h4>{agendaLabel??t.agenda} · {new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{dateStyle:'full',timeZone:'UTC'}).format(new Date(selected+'T12:00:00Z'))}</h4>{refinedServices&&<p className="svc-agenda-count">{dayEvents(selected).length} {plannerCopy[locale].count}</p>}{dayEvents(selected).length?<ol className="shida-cal-list">{entries(dayEvents(selected).sort((a,b)=>a.startsAt.localeCompare(b.startsAt)))}</ol>:<p>{t.empty}</p>}</div>;
   return <section className={`shida-calendar ${refinedServices?`svc-calendar-refined is-${view}`:''}`} lang={locale} aria-label={t.calendar}>
-    <div className="shida-cal-toolbar"><button type="button" onClick={()=>onMonthChange(shiftMonth(month,-1))} aria-label={t.previous}>‹</button>
+    {!gridOnly&&<div className="shida-cal-toolbar"><button type="button" onClick={()=>onMonthChange(shiftMonth(month,-1))} aria-label={t.previous}>‹</button>
       <h3 aria-live="polite">{monthTitle}</h3><button type="button" onClick={()=>onMonthChange(shiftMonth(month,1))} aria-label={t.next}>›</button>
       <button type="button" onClick={()=>choose(today)}>{t.today}</button>
       {!dateOnly&&<div className="shida-cal-view"><button type="button" aria-pressed={view==='calendar'} onClick={()=>setView('calendar')}>{t.calendar}</button><button type="button" aria-pressed={view==='list'} onClick={()=>setView('list')}>{t.list}</button></div>}
-    </div>
+    </div>}
     {agendaFirst&&agenda}
     {view==='calendar'||dateOnly?<div className="shida-cal-grid" ref={buttons} role="group" aria-label={monthTitle}>
       {Array.from({length:7},(_,index)=>t.weekdays[(index+weekStart)%7]).map((label,index)=><span className="shida-cal-weekday" key={index}>{label}</span>)}

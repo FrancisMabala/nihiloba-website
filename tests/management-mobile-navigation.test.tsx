@@ -15,3 +15,7 @@ it("omits unavailable destinations, preserves busy controls and never guesses an
  expect(bar).not.toContain('aria-label="Menu"');expect(bar).not.toContain('aria-current');
  expect((bar.match(/disabled=""/g)||[])).length(2);
 });
+it('keeps Services work, calendar and More with provider identity and a separate return action',()=>{
+ const html=renderToStaticMarkup(<ManagementMobileNavigation variant="services" locale="fr" identity={<strong>Cabinet</strong>} items={[{key:'overview',label:'Aujourd’hui'},{key:'work',label:'Demandes et missions'},{key:'calendar',label:'Calendrier'},{key:'available',label:'Trouver des missions'},{key:'finance',label:'Finances'}]} primary={['overview','work','calendar']} current="available" onNavigate={()=>{}} extra={<button>Retour à mon espace</button>}/>);
+ const [bar,sheet]=html.split('<dialog');expect((bar.match(/<button /g)||[])).length(4);expect(bar).toContain('aria-label="Calendrier"');expect(bar).toMatch(/aria-haspopup="dialog"[^>]*aria-current="page"/);expect(sheet).toContain('Cabinet');expect(sheet).toContain('Retour à mon espace');
+});

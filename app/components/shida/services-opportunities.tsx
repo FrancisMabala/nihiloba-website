@@ -1,4 +1,9 @@
 "use client";
+import {ShopIcon} from "./wenze-shop-icons";
+import {scheduleCopy} from "../../lib/services-calendar-copy";
+import {ServicesRefreshIcon} from "./services-mobile-controls";
+import {servicesMobileCopy} from "../../lib/services-mobile-copy";
+import type {ProviderView} from "../../lib/services-provider-copy";
 import {ServiceProviderSummary} from "./service-provider-summary";
 import {useEffect, useRef, useState} from "react";
 import type {PostedRequest, PrivateProposal, ProposalVersion, QuoteTerms} from "../../lib/services-request-browser";
@@ -11,9 +16,9 @@ import {serviceAmount, serviceLocalInput, serviceUtcInput} from "../../lib/servi
 import {dateText, useWorkDraft, leaveWork} from "../../lib/restaurant-work";
 import "./service-request-workspace.css";
 
-type Offering = {public_ref: string; service_name: string; category: string; commune: string | null; is_active: string; requests_enabled: boolean};
+type Offering = {public_ref: string; service_name: string; category: string; commune: string | null; is_active: string; requests_enabled: boolean;visible_to_customers?:boolean;offer_terms?:{delivery?:{communes?:string[]}}};
 type Props = {base: string; binding: string; locale: ServiceLocale; services: Offering[]; mine?: boolean; onDenied: () => void;
-  initialRequest?: string; initialProposal?: string; initialOffering?: string};
+  onNavigate?:(view:ProviderView)=>void; initialRequest?: string; initialProposal?: string; initialOffering?: string};
 type Form = {amount: string; currency: string; pricing_description: string; duration_minutes: string; start: string; terms: string; expires: string};
 const formFor = (terms?: QuoteTerms): Form => ({amount: terms?.amount ?? "", currency: terms?.currency ?? "CDF",
   pricing_description: terms?.pricing_description ?? "", duration_minutes: terms?.duration_minutes ? String(terms.duration_minutes) : "",
@@ -24,15 +29,18 @@ class Failure extends Error {constructor(public status: number) {super(String(st
 export function ServicesOpportunities(props: Props) {
   return <Opportunities key={`${props.base}:${props.binding}:${props.mine ? "mine" : "available"}`} {...props}/>;
 }
-function Opportunities({base, binding, locale, services, mine, onDenied, initialRequest, initialProposal, initialOffering}: Props) {
+function Opportunities({base, binding, locale, services, mine, onDenied, initialRequest, initialProposal, initialOffering,onNavigate}: Props) {
+  const mobile=servicesMobileCopy(locale);
+  const eligible=services.filter(row=>row.is_active==="yes"&&row.requests_enabled&&row.visible_to_customers!==false);
   const t = opportunityWords(locale), common = requestWords(locale), c = comparisonWords(locale);
-  const [offering, setOffering] = useState(initialOffering ?? services.find(row => row.is_active === "yes" && row.requests_enabled)?.public_ref ?? services[0]?.public_ref ?? "");
+  const [offering, setOffering] = useState(initialOffering ?? eligible[0]?.public_ref ?? services[0]?.public_ref ?? "");
   const [requests, setRequests] = useState<PostedRequest[]>([]), [proposals, setProposals] = useState<PrivateProposal[]>([]);
   const [cursor, setCursor] = useState<string | null>(null), [proposal, setProposal] = useState<PrivateProposal | null>(null);
   const [form, setForm] = useState<Form>(formFor()), [question, setQuestion] = useState("");
   const [review, setReview] = useState(false), [withdraw, setWithdraw] = useState(false);
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [message, setMessage] = useState("");
   const [pending, setPending] = useState<Operation | null>(null), [conflict, setConflict] = useState(false), [reload, setReload] = useState(0);
+  const [listFailed,setListFailed]=useState(false);
   const [denied, setDenied] = useState(false);
   const [history, setHistory] = useState<ProposalVersion[] | null>(null), [historyCursor, setHistoryCursor] = useState<string | null>(null);
   const entryConsumed = useRef(false);
@@ -57,30 +65,32 @@ function Opportunities({base, binding, locale, services, mine, onDenied, initial
   }
   useEffect(() => {
     alive.current = true; let active = true; const controller = new AbortController();
-    if (!offering) return () => {alive.current = false;};
+    queueMicrotask(()=>{if(active){setLoading(true);setListFailed(false);}});
     const entry = new URLSearchParams(window.location.search);
     const exact = (value: string | null | undefined, prefix: string) => value && new RegExp(`^${prefix}_[A-Za-z0-9_-]{1,28}$`).test(value) ? value : undefined;
     const entryProposal = !entryConsumed.current ? exact(initialProposal ?? entry.get("proposal"), "SPF") : undefined;
     const entryRequest = !entryConsumed.current ? exact(initialRequest ?? entry.get("request"), "SPR") : undefined;
     const entryOffering = !entryConsumed.current ? exact(initialOffering ?? entry.get("offering"), "SVC") : undefined;
+    if (!offering||(!mine&&!entryProposal&&!eligible.some(row=>row.public_ref===offering))) {queueMicrotask(()=>{if(active)setLoading(false);});return () => {active=false;alive.current = false;};}
     const selected = entryOffering && services.some(row => row.public_ref === entryOffering) ? entryOffering : offering;
     if (selected !== offering) {queueMicrotask(() => {if (active) setOffering(selected);}); return () => {active = false; controller.abort();};}
-    entryConsumed.current = true;
     const path = mine ? `proposals?offering_ref=${offering}` : `postings/available?offering_ref=${offering}`;
     const listing = entryProposal ? Promise.resolve({}) :
       api<{requests?: PostedRequest[]; proposals?: PrivateProposal[]; next_cursor?: string; next_ref?: string}>(path, {signal: controller.signal});
     void (listing as Promise<{requests?: PostedRequest[]; proposals?: PrivateProposal[]; next_cursor?: string; next_ref?: string}>)
       .then(async value => {
         if (!active) return;
+        if(!entryProposal&&!(mine?Array.isArray(value.proposals):Array.isArray(value.requests)))throw Error("Invalid list");
         setRequests(value.requests ?? []); setProposals(value.proposals ?? []); setCursor(value.next_cursor ?? value.next_ref ?? null);
         if (entryProposal) {
           const detail = await api<PrivateProposal>(`proposals/${entryProposal}`, {signal: controller.signal});
-          if (active) apply(detail);
+          if (active) {entryConsumed.current = true; apply(detail);}
         } else if (entryRequest && !mine) {
           const detail = await api<PostedRequest>(`postings/${entryRequest}?offering_ref=${offering}`, {signal: controller.signal});
           if (active) setRequests(current => [detail, ...current.filter(row => row.posted_ref !== detail.posted_ref)]);
         }
-      }).catch(error => {if (active) {if (error instanceof Failure && [401, 403].includes(error.status)) deny(); else setMessage(common.unavailable);}})
+        if(active)entryConsumed.current=true;
+      }).catch(error => {if (active) {if (error instanceof Failure && [401, 403].includes(error.status)) deny(); else {setListFailed(true);setMessage(common.unavailable);}}})
       .finally(() => {if (active) setLoading(false);});
     return () => {active = false; alive.current = false; controller.abort();};
     // Changes to context remount this component; the selected catalogue item is
@@ -158,17 +168,20 @@ function Opportunities({base, binding, locale, services, mine, onDenied, initial
   }
   if (denied) return <p role="alert">{common.denied}</p>;
   const disabled = busy || !!pending || conflict;
+  async function refreshList(){if(loading||lock.current||pending||!await leaveWork())return;setLoading(true);setMessage("");setListFailed(false);setReload(value=>value+1);}
+  const selectedService=services.find(row=>row.public_ref===offering);
+  const areas=selectedService?.offer_terms?.delivery?.communes??(selectedService?.commune?[selectedService.commune]:[]);
   const writable = proposal?.request_status === "OPEN" && !["ACCEPTED", "NOT_SELECTED"].includes(proposal.status);
   return <section className="svc-request" lang={locale} aria-label={mine ? t.mine : t.available}>
-    <header><h1>{mine ? t.mine : t.available}</h1><p>{mine ? t.mineIntro : t.matching}</p></header>
+    <header className="svc-discovery-heading"><h2>{mine ? t.mine : t.available}</h2></header>
     {message && <p className="svc-request-notice" role="status">{message}</p>}
     {pending && !busy && <button onClick={() => void run(pending)}>{common.retry}</button>}
     {conflict && proposal && <button disabled={busy} onClick={() => void open(proposal.proposal_ref)}>{common.reload}</button>}
-    {!services.length ? <p>{t.noServices}</p> : <>
-      {!mine && <label>{t.service}<select disabled={disabled} value={offering} onChange={async event => {
-        if (!(await leaveWork())) return; setOffering(event.target.value); setProposal(null); setForm(formFor()); setQuestion(""); setLoading(true); setMessage("");
-      }}>{services.map(row => <option value={row.public_ref} key={row.public_ref}>{row.service_name} · {row.commune}</option>)}</select></label>}
-      {loading ? <p role="status">{common.loading}</p> : proposal ? <>
+    {(!services.length||!mine&&!proposal&&!loading&&!listFailed&&!eligible.some(row=>row.public_ref===offering)) ? <div className="svc-discovery-empty"><p>{mobile.noEligible}</p>{onNavigate&&<button onClick={()=>onNavigate("services")}>{mobile.manage} →</button>}</div> : <>
+      <div className="svc-discovery-controls">{!mine && !proposal && <label>{scheduleCopy[locale].service}<select id="svc-discovery-service" disabled={disabled||loading} value={offering} onChange={async event => {
+        const next=event.target.value;if (!(await leaveWork())) return; setOffering(next); setProposal(null); setForm(formFor()); setQuestion(""); setLoading(true); setMessage("");
+      }}>{eligible.map(row => <option value={row.public_ref} key={row.public_ref}>{row.service_name}</option>)}</select></label>}{!proposal&&<button className="svc-icon-button" aria-label={scheduleCopy[locale].refresh} aria-busy={loading} disabled={disabled||loading} onClick={()=>void refreshList()}><ServicesRefreshIcon/></button>}</div>{!mine&&areas.length>0&&<p className="svc-discovery-areas"><ShopIcon name="pin"/>{areas.join(", ")}</p>}
+      {loading ? <p role="status">{common.loading}</p> : listFailed ? <div role="alert"><p>{common.unavailable}</p><button onClick={()=>void refreshList()}>{common.retry}</button></div> : proposal ? <>
         <button disabled={disabled} onClick={async () => {if ((await leaveWork())) {
           setProposal(null); setForm(formFor()); setQuestion(""); setLoading(true); setReload(value => value + 1);
           const url = new URL(window.location.href); url.searchParams.delete("proposal"); url.searchParams.delete("request"); window.history.replaceState(null, "", url);
@@ -219,13 +232,12 @@ function Opportunities({base, binding, locale, services, mine, onDenied, initial
         {mine ? proposals.length ? proposals.map(row => <article className="svc-brief-card" key={row.proposal_ref}>
           <span className="svc-request-tag">{c[row.status]}</span>{row.request && summary(row.request)}
           <button disabled={disabled} onClick={() => void open(row.proposal_ref)}>{t.open}</button>
-        </article>) : <p>{common.empty}</p> : requests.length ? requests.map(row => <article className="svc-brief-card" key={row.posted_ref}>
+        </article>) : <div className="svc-discovery-empty"><p>{mobile.noProposals}</p><p>{mobile.proposalsHelp}</p>{onNavigate&&<button onClick={()=>onNavigate("available")}>{t.available} →</button>}</div> : requests.length ? requests.map(row => <article className="svc-brief-card" key={row.posted_ref}>
           {summary(row)}<button className="button button-primary" disabled={disabled} onClick={() => void run({kind: "start",
             path: `postings/${row.posted_ref}/proposals`, body: JSON.stringify({operation_id: crypto.randomUUID(), offering_ref: offering})})}>{t.prepare}</button>
           <ServicesRequestSupport reference={row.posted_ref} url={row.support_url} locale={locale}/>
-        </article>) : <p>{t.empty}</p>}
+        </article>) : <div className="svc-discovery-empty"><ShopIcon name="search"/><h3>{mobile.availableEmpty}</h3><p>{mobile.matching}</p>{eligible.length>1&&<button onClick={()=>document.getElementById("svc-discovery-service")?.focus()}>{mobile.changeService}</button>}</div>}
         {cursor && <button disabled={disabled} onClick={() => void more()}>{common.more}</button>}
-        <button disabled={disabled} onClick={() => {setLoading(true); setMessage(""); setReload(value => value + 1);}}>{common.reload}</button>
       </>}
     </>}
   </section>;

@@ -1,4 +1,5 @@
 "use client";
+import {ServicesRefreshIcon} from "./services-mobile-controls";
 import {readWorkList} from "../../lib/services-work-list";
 import {ServicesWorkSummary} from './services-work-summary';
 import {workText} from '../../lib/services-work-copy';
@@ -124,7 +125,8 @@ function BoundTransactions({issuer,accent,base,binding,locale,initialKind='reque
   const result=await command.run<Row>();
   if(result&&alive.current&&ticket===generation.current){await open(current,true);setNotice(t(action==='reply'?'reply_saved':'saved'));}
  }
- async function refresh(){if(!pendingCommand.current&&(await leaveWork())){command.clear();void load();}}
+ const refreshGuard=useRef(false);
+ async function refresh(){if(refreshGuard.current)return;refreshGuard.current=true;try{if(!pendingCommand.current&&(await leaveWork())){command.clear();await load();}}finally{refreshGuard.current=false;}}
  useEffect(()=>{if(refreshToken)refresh();},[refreshToken]); // eslint-disable-line react-hooks/exhaustive-deps
  async function choose(next:Kind,nextFilter:WorkFilter='all',missions=nextFilter==='jobs'){
   if(pendingCommand.current||!(await leaveWork()))return;
@@ -151,7 +153,7 @@ function BoundTransactions({issuer,accent,base,binding,locale,initialKind='reque
   {!detail&&<><ServicesWorkSummary requests={scoped('requests')} reservations={scoped('reservations')} locale={locale} onSelect={choose} failed={readFailed} disabled={busy||command.busy||!!command.pending}/>
   <fieldset disabled={busy||command.busy||!!command.pending}><div className="svc-work-toolbar"><div className="svc-work-tabs" role="group" aria-label={t('workspace')}>{(['requests','reservations','missions','messages'] as const).map(tab=><button type="button" key={tab} aria-pressed={missionTab?tab==='missions':kind===tab} onClick={()=>choose(tab==='missions'?'reservations':tab,tab==='missions'?'jobs':'all',tab==='missions')}>{tab==='missions'?wt('missions'):tab==='requests'?wt('requestList'):t(tab)}</button>)}</div></div>
   <div className="svc-work-filters">{offerings.length>1&&<label>{wt('service')}<select value={service} onChange={e=>{setService(e.target.value);setOffset(0);}}><option value="">{wt('allServices')}</option>{offerings.map(row=><option key={row.public_ref} value={row.public_ref}>{row.service_name}</option>)}</select></label>}
-  {kind!=='messages'&&<label>{wt('status')}<select value={filter} onChange={e=>{setFilter(e.target.value as WorkFilter);setOffset(0);}}>{(kind==='requests'?['all','new','quotes','sent','closed']:missionTab?['all','jobs','closed']:['all','bookings','closed']).map(value=><option key={value} value={value}>{wt(value)}</option>)}</select></label>}</div></fieldset></>}
+  {kind!=='messages'&&<label>{wt('status')}<select value={filter} onChange={e=>{setFilter(e.target.value as WorkFilter);setOffset(0);}}>{(kind==='requests'?['all','new','quotes','sent','closed']:missionTab?['all','jobs','closed']:['all','bookings','closed']).map(value=><option key={value} value={value}>{wt(value)}</option>)}</select></label>}<button type="button" className="svc-icon-button" aria-label={t("refresh")} aria-busy={busy} disabled={busy||command.busy} onClick={()=>void refresh()}><ServicesRefreshIcon/></button></div></fieldset></>}
   {(busy||command.busy)&&<p role="status" aria-live="polite">{t('loading')}</p>}{notice&&<p role="status">{notice}</p>}
   {command.status&&command.status!=='saved'&&<p role="status">{t(command.status)}</p>}
   {command.pending&&<button type="button" disabled={busy||command.busy} onClick={()=>void retry()}>{t('retry')}</button>}
@@ -159,7 +161,7 @@ function BoundTransactions({issuer,accent,base,binding,locale,initialKind='reque
    {!busy&&!readFailed&&sources&&!visibleRows.length&&<div className="svc-work-empty"><SellerWorkspaceIcon name={kind==='reservations'?'calendar':'work'}/><h3>{wt(filteredEmpty?(filter==='bookings'&&!service?'noPending':'noMatch'):kind==='requests'?'empty':kind==='messages'?'noMessages':missionTab?'noJobs':'noBookings')}</h3>{filteredEmpty?<button onClick={()=>{setFilter('all');setService('');setOffset(0);}}>{wt('reset')}</button>:kind==='requests'&&<><p>{wt('emptyHelp')}</p>{onNavigate&&<button className="svc-primary" onClick={()=>onNavigate('share')}>{wt('share')}</button>}</>}</div>}
    {!!visibleRows.length&&<table className="svc-client-work"><thead><tr>{['client','service','status','date','action'].map(key=><th scope="col" key={key}>{wt(key)}</th>)}</tr></thead><tbody>{visibleRows.map(row=>{
     const stage=requestStage(row),action=kind==='messages'?'viewThread':kind==='requests'?stage==='quotes'?'prepare':'viewRequest':missionTab?'viewJob':'viewBooking';
-    return <tr key={transactionRef(row)}><td>{str(row,'requester')||str(row,'requester_name')||'—'}</td><td>{title(row)}{kind==='messages'&&<small>{str(row,'activity_ref')}</small>}</td><td><span className={`svc-work-status ${workTone(row)}`}>{kind==='requests'&&['new','quotes','sent'].includes(stage)?wt(stage):t(str(row,'status'))}</span></td><td>{str(row,'requested_datetime')||stamp(row.created_at||row.last_message_at)||'—'}</td><td><button type="button" onClick={()=>void open(row)}>{wt(action)}</button></td></tr>;
+    return <tr key={transactionRef(row)}><td>{str(row,'requester')||str(row,'requester_name')||'—'}</td><td>{title(row)}<small>{kind==='messages'?str(row,'activity_ref'):transactionRef(row)}</small></td><td><span className={`svc-work-status ${workTone(row)}`}>{kind==='requests'&&['new','quotes','sent'].includes(stage)?wt(stage):t(str(row,'status'))}</span></td><td>{str(row,'requested_datetime')||stamp(row.created_at||row.last_message_at)||'—'}</td><td><button type="button" onClick={()=>void open(row)}>{wt(action)}</button></td></tr>;
    })}</tbody></table>}
    <div className="transaction-actions">{start>0&&<button onClick={()=>setOffset(start-pageSize)}>{t('previous')}</button>}{start+pageSize<filtered.length&&<button onClick={()=>setOffset(start+pageSize)}>{t('more')}</button>}</div></fieldset>:
    <fieldset className="svc-work-detail" disabled={busy||command.busy||!!command.pending}><button type="button" onClick={refresh}>{t('back')}</button><h3>{title(detail)}</h3><p>{t(str(detail,'status'))}</p><p>{str(detail,'description')}</p><ServiceReviewedBrief value={detail.reviewed_brief} locale={locale}/>{branchLabel(detail)&&<p>📍 {branchLabel(detail)}</p>}

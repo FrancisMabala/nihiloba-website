@@ -21,3 +21,8 @@ it.each(["en","fr","ln","sw"] as const)("names all seven category schedules in %
  expect(serviceCalendarLabel(undefined,locale)).toBeUndefined();
  expect(serviceCalendarLabel("__proto__",locale)).toBeUndefined();
 });
+it('embeds a single month grid without a second toolbar or agenda, retaining accessible event counts',()=>{
+ const html=renderToStaticMarkup(<ShidaCalendar gridOnly refinedServices locale="fr" timeZone="Africa/Kinshasa" month="2030-01" selected="2030-01-02" events={[{marketplace:'services',reference:'RSV_test',destination:{kind:'detail',reference:'RSV_test'},title:'Consultation',startsAt:'2030-01-02T09:00:00+01:00',status:'Confirmé',timeZone:'Africa/Kinshasa',tone:'confirmed'}]} onMonthChange={()=>{}} onSelect={()=>{}}/>);
+ expect(html).not.toContain('class="shida-cal-toolbar"');expect(html).not.toContain('class="shida-cal-agenda"');
+ expect(html).toContain('data-day="2030-01-02"');expect(html).toContain('aria-pressed="true"');expect(html).toContain('janvier 2030, 1');expect(html).toContain('tone-confirmed');
+});

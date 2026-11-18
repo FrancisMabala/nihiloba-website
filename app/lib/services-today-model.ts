@@ -5,7 +5,7 @@ export type TodayItem={request_ref?:string;reservation_ref?:string;thread_ref?:s
 export type TodayQueue={items:TodayItem[];has_more:boolean};
 export type TodayData={date:string;timezone:string;requests:TodayQueue;pending:TodayQueue;upcoming:TodayQueue;messages:TodayQueue};
 export type TodayOffering={public_ref:string;service_name:string;category:string;is_active:string;visible_to_customers?:boolean;requests_enabled:boolean;booking_mode:string|null};
-export type TodayAppointment={reference:string;title:string;startsAt:string;status:string};
+export type TodayAppointment={client?:string;reference:string;title:string;startsAt:string;status:string};
 export const activeWorkStatuses=new Set(["accepted","confirmed","in_progress"]);
 export function uniqueTasks(items:TodayItem[]){return [...new Map(items.filter(item=>item.request_ref||item.reservation_ref||item.thread_ref).map(item=>[item.request_ref||item.reservation_ref||item.thread_ref,item])).values()];}
 export function appointmentsForDay(items:TodayAppointment[],day:string){

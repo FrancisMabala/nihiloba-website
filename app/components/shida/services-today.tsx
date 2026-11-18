@@ -10,6 +10,7 @@ import {scheduleCopy} from "../../lib/services-calendar-copy";
 import {appointmentsForDay,previewCount,uniqueTasks,type TodayData,type TodayItem,type TodayOffering,type TodayAppointment} from "../../lib/services-today-model";
 import {SellerWorkspaceIcon} from "./services-workspace-icon";
 import "./services-today.css";
+import {ServicesRefreshIcon} from "./services-mobile-controls";
 export type ServiceTaskLink={kind:"requests"|"reservations"|"messages";ref:string};
 type Result<T>={value:T|null;failed:boolean};
 type Props={base:string;binding:string;locale:ProviderLocale;onOpen:(task:ServiceTaskLink)=>void;onAll:(kind:ServiceTaskLink["kind"],filter?:WorkFilter)=>void;onDenied:()=>void;actions?:ReactNode;offerings?:TodayOffering[];capabilities?:string[];onNavigate?:(view:ProviderView)=>void;onRefresh?:()=>void;loadAppointments?:(day:string,signal:AbortSignal)=>Promise<{items:TodayAppointment[];more:boolean}>};
@@ -22,28 +23,32 @@ function Today({base,binding,locale,onOpen,onAll,onDenied,actions,offerings=[],c
  const [calendar,setCalendar]=useState<Result<{items:TodayAppointment[];more:boolean}>>({value:null,failed:false});
  const [newCount,setNewCount]=useState<number|null>(null);
  const [refresh,setRefresh]=useState(0);
+ const calendarRefreshing=useRef(false);const [calendarBusy,setCalendarBusy]=useState(false);
+ const refreshing=useRef(false),outstanding=useRef(0);const [refreshBusy,setRefreshBusy]=useState(true);
  const canCalendar=!!loadAppointments||capabilities.includes("structured_availability"),canWork=capabilities.includes("reservations")&&capabilities.includes("messages");
  const active=offerings.filter(row=>row.is_active==="yes");
  const day=data.value?.date??localDate(new Date().toISOString(),SERVICE_TIME_ZONE);
- const retry=()=>{setRefresh(value=>value+1);onRefresh?.();};
+ const retry=()=>{if(refreshing.current||calendarRefreshing.current)return;refreshing.current=true;setRefreshBusy(true);setRefresh(value=>value+1);onRefresh?.();};
  useEffect(()=>{
   const controller=new AbortController();let alive=true;
+  refreshing.current=true;outstanding.current=canWork?2:0;
+  const settled=()=>{if(alive&&--outstanding.current<=0){refreshing.current=false;setRefreshBusy(false);}};
   async function get(path:string){const response=await fetch(`${base}${path}`,{credentials:"include",cache:"no-store",signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)]),headers:{Accept:"application/json","X-Shida-Session":binding}});if(!response.ok){if(alive&&[401,403].includes(response.status))denied.current();throw Error();}return response.json();}
-  queueMicrotask(()=>{if(alive){setData({value:null,failed:false});setJobs({value:null,failed:false});setNewCount(null);}});
+  queueMicrotask(()=>{if(alive){setData({value:null,failed:false});setJobs({value:null,failed:false});setNewCount(null);if(!canWork){refreshing.current=false;setRefreshBusy(false);}}});
   if(canWork){
-   void get(`/today?language=${locale}`).then(value=>{if(!["requests","pending","upcoming","messages"].every(key=>Array.isArray(value[key]?.items)))throw Error();if(alive)setData({value,failed:false});}).catch(()=>{if(alive)setData({value:null,failed:true});});
+   void get(`/today?language=${locale}`).then(value=>{if(!["requests","pending","upcoming","messages"].every(key=>Array.isArray(value[key]?.items)))throw Error();if(alive)setData({value,failed:false});}).catch(()=>{if(alive)setData({value:null,failed:true});}).finally(settled);
    void Promise.all((["requests","reservations"] as const).map(source=>readWorkList(base,binding,source,()=>alive))).then(([requests,reservations])=>{
     if(alive){setNewCount(requests.filter(row=>workMatches(row,"new","requests")).length);setJobs({value:{items:reservations.filter(row=>workMatches(row,"jobs","reservations")),more:false},failed:false});}
-   }).catch(error=>{if(alive){if(["401","403"].includes(error.message))denied.current();setJobs({value:null,failed:true});}});
+   }).catch(error=>{if(alive){if(["401","403"].includes(error.message))denied.current();setJobs({value:null,failed:true});}}).finally(settled);
 
   }
-  const focus=()=>setRefresh(value=>value+1);window.addEventListener("focus",focus);
+  const focus=()=>{if(!refreshing.current&&!calendarRefreshing.current){refreshing.current=true;setRefreshBusy(true);setRefresh(value=>value+1);}};window.addEventListener("focus",focus);
   return()=>{alive=false;controller.abort();window.removeEventListener("focus",focus);};
  },[base,binding,locale,refresh,canWork]);
  useEffect(()=>{
   if(!canCalendar)return;
-  let alive=true;const controller=new AbortController();
-  queueMicrotask(()=>{if(alive)setCalendar({value:null,failed:false});});
+  let alive=true;const controller=new AbortController();calendarRefreshing.current=true;
+  queueMicrotask(()=>{if(alive){setCalendarBusy(true);setCalendar({value:null,failed:false});}});
   const signal=AbortSignal.any([controller.signal,AbortSignal.timeout(20000)]);
   const request=loadAppointments?loadAppointments(day,signal):(async()=>{
    const items:TodayAppointment[]=[];
@@ -58,7 +63,7 @@ function Today({base,binding,locale,onOpen,onAll,onDenied,actions,offerings=[],c
     if(page>=10000)throw Error();
    }
   })();
-  void request.then(value=>{if(!Array.isArray(value.items))throw Error();if(alive)setCalendar({value:{items:appointmentsForDay(value.items,day),more:value.more},failed:false});}).catch(error=>{if(alive){if(["401","403"].includes(error.message))denied.current();setCalendar({value:null,failed:true});}});
+  void request.then(value=>{if(!Array.isArray(value.items))throw Error();if(alive)setCalendar({value:{items:appointmentsForDay(value.items,day),more:value.more},failed:false});}).catch(error=>{if(alive){if(["401","403"].includes(error.message))denied.current();setCalendar({value:null,failed:true});}}).finally(()=>{if(alive){calendarRefreshing.current=false;setCalendarBusy(false);}});
   return()=>{alive=false;controller.abort();};
  },[base,binding,day,refresh,canCalendar,loadAppointments]);
  const showCalendar=canCalendar;
@@ -70,7 +75,7 @@ function Today({base,binding,locale,onOpen,onAll,onDenied,actions,offerings=[],c
  const task=(item:TodayItem,kind:ServiceTaskLink["kind"],label:string,action:string)=>{const ref=item.request_ref||item.reservation_ref||item.thread_ref;return ref?<li key={`${kind}:${ref}`}><span className="svc-daily-icon blue"><SellerWorkspaceIcon name={kind==="reservations"?"calendar":"work"}/></span><div><small>{label}</small><h4>{item.offering||item.title||item.selected_offering_name||item.service_name||label}</h4>{item.requester&&<p>{item.requester}</p>}{item.starts_at&&<p>{serviceTimestamp(item.starts_at,locale)}</p>}{item.expires_at&&<p>{t.expires}: {serviceTimestamp(item.expires_at,locale)}</p>}<button className="svc-primary" onClick={()=>onOpen({kind,ref})}>{action}<span className="sr-only"> {item.offering||item.title||item.service_name}</span></button></div></li>:null;};
  const queues=data.value?[data.value.requests,data.value.pending,data.value.messages]:[];
  return <section aria-label={ui.overview} className="svc-today svc-daily">
-  <header className="svc-daily-date"><p>{new Intl.DateTimeFormat(locale,{dateStyle:"full",timeZone:data.value?.timezone||SERVICE_TIME_ZONE}).format(new Date(`${day}T12:00:00Z`))} · {(data.value?.timezone||SERVICE_TIME_ZONE).split("/").pop()?.replaceAll("_"," ")}</p><button onClick={retry}>{ui.refresh}</button></header>
+  <header className="svc-daily-date"><p>{new Intl.DateTimeFormat(locale,{dateStyle:"full",timeZone:data.value?.timezone||SERVICE_TIME_ZONE}).format(new Date(`${day}T12:00:00Z`))} · {(data.value?.timezone||SERVICE_TIME_ZONE).split("/").pop()?.replaceAll("_"," ")}</p><button className="svc-icon-button" disabled={refreshBusy||calendarBusy} aria-label={ui.refresh} aria-busy={refreshBusy||calendarBusy} onClick={retry}><ServicesRefreshIcon/></button></header>
   <div className="svc-daily-kpis">
    {capabilities.includes("profile")&&card(ui.published,active.filter(row=>row.visible_to_customers===true).length,"catalog","green",()=>navigate("services"),ui.manage)}
    {canWork&&card(t.requests,jobs.failed?t.unavailable:newCount??"…","work","blue",()=>onAll("requests","new"),ui.requests)}
@@ -80,9 +85,8 @@ function Today({base,binding,locale,onOpen,onAll,onDenied,actions,offerings=[],c
   <div className="svc-daily-columns">
    {canWork&&<section className="svc-daily-panel svc-daily-attention"><header><h3>{t.attention}</h3><button onClick={()=>onAll("requests")}>{t.all} →</button></header>{state(data)}{data.value&&<>{queues.every(queue=>!queue.items.length&&!queue.has_more)?<div className="svc-daily-clear"><span aria-hidden="true">✓</span><div><strong>{t.clear}</strong><p>{t.clearHelp}</p></div></div>:<ul>{uniqueTasks(data.value.requests.items).map(item=>task(item,"requests",t.requests,t.reply))}{uniqueTasks(data.value.pending.items).map(item=>task(item,"reservations",t.pending,t.booking))}{uniqueTasks(data.value.messages.items).map(item=>task(item,"messages",t.messages,t.open))}</ul>}{queues.some(queue=>queue.has_more)&&<p className="svc-daily-note">{t.limited}</p>}</>}
    </section>}
-   {showCalendar&&<section className="svc-daily-panel svc-daily-schedule"><header><h3>{t.schedule}</h3><button onClick={()=>navigate("calendar")}>{ui.calendar} →</button></header>{state(calendar)}{calendar.value&&<>{calendar.value.items.length===0?<p className="svc-daily-empty">{t.noSchedule}</p>:<ol>{calendar.value.items.map(item=><li key={item.reference}><time dateTime={item.startsAt}>{new Intl.DateTimeFormat(locale,{hour:"numeric",minute:"2-digit",timeZone:SERVICE_TIME_ZONE}).format(new Date(item.startsAt))}</time><button onClick={()=>onOpen({kind:"reservations",ref:item.reference})}><strong>{item.title}</strong><small>{status(item.status)}</small></button></li>)}</ol>}{calendar.value.more&&<p className="svc-daily-note">{t.limited}</p>}</>}</section>}
+   {showCalendar&&<section className="svc-daily-panel svc-daily-schedule"><header><h3>{t.schedule}</h3><button onClick={()=>navigate("calendar")}>{ui.calendar} →</button></header>{state(calendar)}{calendar.value&&<>{calendar.value.items.length===0?<p className="svc-daily-empty">{t.noSchedule}</p>:<ol>{calendar.value.items.map(item=><li key={item.reference}><time dateTime={item.startsAt}>{new Intl.DateTimeFormat(locale,{hour:"numeric",minute:"2-digit",timeZone:SERVICE_TIME_ZONE}).format(new Date(item.startsAt))}</time><button onClick={()=>onOpen({kind:"reservations",ref:item.reference})}><strong>{item.title}</strong>{item.client&&<small>{item.client}</small>}<small>{status(item.status)}</small></button></li>)}</ol>}{calendar.value.more&&<p className="svc-daily-note">{t.limited}</p>}</>}</section>}
   </div>
-  {capabilities.includes("profile")&&<button type="button" onClick={()=>navigate("share")}>{{fr:"Partager mon profil",en:"Share my profile",ln:"Kabola profil na ngai",sw:"Shiriki wasifu wangu"}[locale]}</button>}
   {actions}
  </section>;
 }

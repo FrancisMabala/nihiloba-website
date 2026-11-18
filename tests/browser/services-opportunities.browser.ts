@@ -56,7 +56,7 @@ test(`Provider private quotation review, exact retry and history ${locale}`, asy
   await expect(panel.getByRole("link",{name:support.open,exact:false})).toHaveAttribute("href",posted.support_url);
   await expect(panel.getByText(support.help,{exact:true})).toBeVisible();
   expect(saves).toHaveLength(0);expect(submits).toHaveLength(0);
-  if(locale==="fr")await panel.screenshot({path:"test-results/services-request-report-fr.png"});
+  if(locale==="fr")await panel.screenshot({path:`${process.env.SERVICES_TEST_OUTPUT??"test-results"}/services-request-report-fr.png`});
   await panel.getByRole("button", {name:t.prepare,exact:true}).click();
   await expect(page).toHaveURL(url=>url.searchParams.get("view")==="available" && url.searchParams.get("request")==="SPR_one" && url.searchParams.get("proposal")==="SPF_one");
   await page.locator(".wz-header button[aria-controls$='-languages']").click();
@@ -77,7 +77,7 @@ test(`Provider private quotation review, exact retry and history ${locale}`, asy
   const reviewCard=panel.locator(".svc-brief-card").filter({has:page.getByRole("button",{name:t.submit,exact:true})});
   expect(await reviewCard.evaluate(node=>getComputedStyle(node).display)).not.toBe("flex");
   expect(await reviewCard.getByRole("definition").first().evaluate(node=>node.getBoundingClientRect().width)).toBeGreaterThan(150);
-  await page.screenshot({path:`test-results/proposal-review-${locale}.png`,fullPage:true});
+  await page.screenshot({path:`${process.env.SERVICES_TEST_OUTPUT??"test-results"}/proposal-review-${locale}.png`,fullPage:true});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await panel.getByRole("button",{name:t.submit,exact:true}).click();
   await expect(panel.getByText(t.sent,{exact:true})).toBeVisible();
@@ -86,6 +86,7 @@ test(`Provider private quotation review, exact retry and history ${locale}`, asy
   await panel.getByRole("button",{name:c.history,exact:true}).click();
   await expect(panel.locator("details")).toHaveCount(2);
   await expect(page).toHaveURL(/proposal=SPF_one/);
+  offering.requests_enabled=false; // Saved proposal history remains authorized independently of new discovery.
   await page.reload();
   await expect(panel.getByText(t.sentVersion,{exact:false})).toBeVisible();
   denied=true;

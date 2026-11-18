@@ -1,0 +1,125 @@
+/* Personal Services only. Shared marketplace and Business consumers keep their layouts. */
+.svc-workspace[data-services-view] .svc-icon-button{display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;min-height:44px;padding:10px}
+.svc-workspace[data-services-view] .svc-icon-button[aria-busy=true] svg{opacity:.5}
+.svc-workspace[data-services-view] .svc-profile-share{display:flex;align-items:center;justify-content:center;gap:10px;background:transparent;color:var(--color-forest,#163f32);margin-top:16px;min-height:44px}
+.svc-workspace[data-services-view] .svc-discovery-controls{display:flex;align-items:end;gap:10px}
+.svc-workspace[data-services-view] .svc-discovery-controls label{flex:1;min-width:0;margin:0}
+.svc-workspace[data-services-view] .svc-discovery-areas{margin:8px 0 16px}
+.svc-workspace[data-services-view] .svc-discovery-empty{padding:20px 12px;text-align:center;border:1px solid #d9d9cd;border-radius:10px}
+.svc-workspace[data-services-view] .svc-discovery-empty h3{font-size:1.15rem;margin:0 0 8px}
+.svc-workspace[data-services-view] .svc-discovery-empty p{margin:8px 0}
+.svc-workspace[data-services-view] .svc-calendar-views{display:flex;border:1px solid #c9c8b8;border-radius:8px;overflow:hidden;margin:12px 0}
+.svc-workspace[data-services-view] .svc-calendar-views button{flex:1;min-width:0;min-height:44px;border:0;border-radius:0}
+.svc-workspace[data-services-view] .svc-calendar-views button[aria-pressed=true]{background:#164d37;color:#fff}
+.svc-workspace[data-services-view] .svc-cal-settings{margin:12px 0}
+.svc-workspace[data-services-view] .svc-cal-settings>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 14px;padding:8px 0;border-bottom:1px solid #deddd1}
+.svc-workspace[data-services-view] .svc-cal-settings dt{font-weight:600}
+.svc-workspace[data-services-view] .svc-cal-settings dd{margin:0;overflow-wrap:anywhere}
+.svc-workspace[data-services-view] .svc-hours-explanation{font-size:.875rem;line-height:1.45;color:#56655d}
+.svc-workspace[data-services-view] .svc-customer-preview{align-self:start}
+.svc-workspace[data-services-view] .svc-customer-preview summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:600}
+.management-services-sheet .management-sheet-content>nav{display:block}
+.management-services-sheet .management-sheet-content>nav>button,.management-services-sheet .svc-return-space{display:flex;align-items:center;gap:14px;width:100%;min-height:52px;border:0;border-bottom:1px solid #d4d6ca;border-radius:0;background:transparent;text-align:left;padding:12px 4px}
+.management-services-sheet .management-sheet-content>nav>button::after{content:'›';margin-left:auto;font-size:1.3rem}
+.management-services-sheet .management-sheet-content>nav>button[aria-current=page]{background:#e5eed8}
+.management-services-sheet .business-identity{margin:8px 0 16px}
+.management-services-sheet .svc-return-space{margin-top:16px}
+.management-services-sheet .svc-return-space>span:last-child{margin-left:auto}
+.management-services-nav>button{display:grid;grid-template-rows:24px auto;align-content:start;justify-items:center;gap:5px}
+.management-services-nav>button>span{min-height:2.6em;line-height:1.3;white-space:normal;word-break:normal;overflow-wrap:normal}
+@media(max-width:1023px){
+ .svc-workspace[data-services-view=overview] .svc-view-heading,.svc-workspace[data-services-view=work] .svc-view-heading,.svc-workspace[data-services-view=calendar] .svc-view-heading,.svc-workspace[data-services-view=available] .svc-view-heading,.svc-workspace[data-services-view=proposals] .svc-view-heading{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+ /* Fullscreen remains in the existing identity-row options menu. Hidden duplicate is not focusable. */
+ .svc-workspace[data-services-view=overview] .svc-view-heading .svc-heading-actions,.svc-workspace[data-services-view=work] .svc-view-heading .svc-heading-actions,.svc-workspace[data-services-view=calendar] .svc-view-heading .svc-heading-actions,.svc-workspace[data-services-view=available] .svc-view-heading .svc-heading-actions,.svc-workspace[data-services-view=proposals] .svc-view-heading .svc-heading-actions{display:none}
+ .svc-workspace[data-services-view] .svc-content{min-width:0}
+ .svc-workspace[data-services-view] .svc-content :is(select,input,textarea){min-width:0;max-width:100%;font-size:16px}
+ .svc-workspace[data-services-view] .svc-content :is(button,a){overflow-wrap:normal;word-break:normal}
+ .svc-workspace[data-services-view] .svc-daily{gap:14px}
+ .svc-workspace[data-services-view] .svc-daily-date{gap:8px;flex-wrap:wrap}
+ .svc-workspace[data-services-view] .svc-daily-date p{flex:1 1 180px;font-size:1rem}
+ .svc-workspace[data-services-view] .svc-daily-kpis,.svc-workspace[data-services-view] .svc-work-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .svc-workspace[data-services-view] .svc-daily-kpi,.svc-workspace[data-services-view] .svc-work-kpi{display:flex;flex-direction:column;gap:8px;padding:14px!important;min-width:0;border:0;border-radius:10px}
+ .svc-workspace[data-services-view] .svc-work-kpi.blue{background:#e6f2ff!important;color:#175b92}
+ .svc-workspace[data-services-view] .svc-work-kpi.amber{background:#fff0d2!important;color:#754d13}
+ .svc-workspace[data-services-view] .svc-work-kpi.green{background:#e5f3e6!important;color:#194d36}
+ .svc-workspace[data-services-view] .svc-work-kpi.purple{background:#eee7fa!important;color:#51346f}
+ .svc-workspace[data-services-view] .svc-work-kpi>svg{padding:0;width:24px;height:24px;background:none}
+ .svc-workspace[data-services-view] .svc-daily-kpi span,.svc-workspace[data-services-view] .svc-work-kpi span{font-size:1rem;line-height:1.35;background:transparent;white-space:normal;word-break:normal;overflow-wrap:normal;min-width:0;padding:0;margin:0}
+ .svc-workspace[data-services-view] .svc-daily-kpi strong,.svc-workspace[data-services-view] .svc-work-kpi strong{font-size:1.8rem;margin:4px 0 0}
+ .svc-workspace[data-services-view] .svc-daily-columns{gap:14px;grid-template-columns:1fr}
+ .svc-workspace[data-services-view] .svc-daily-panel{padding:14px;border-radius:10px}
+ .svc-workspace[data-services-view] .svc-daily-panel>header{gap:4px 12px;margin-bottom:8px;flex-wrap:wrap}
+ .svc-workspace[data-services-view] .svc-daily-panel h3{font-size:1.15rem}
+ .svc-workspace[data-services-view] .svc-daily-panel>header button{min-height:44px;font-size:.95rem}
+ .svc-workspace[data-services-view] .svc-daily-panel p{font-size:1rem}
+ .svc-workspace[data-services-view] .svc-daily-empty{padding:0;text-align:left;margin:0}
+ .svc-workspace[data-services-view] .svc-daily-clear{padding:12px}
+ .svc-workspace[data-services-view] .svc-daily-skeleton{min-height:48px;background:#eef0e7}
+ .svc-workspace[data-services-view] .svc-daily-schedule li{gap:8px;margin-bottom:8px}
+ .svc-workspace[data-services-view] .svc-daily-schedule li button{padding:10px;gap:4px}
+ .svc-workspace[data-services-view] .svc-profile-share{width:100%}
+ .svc-workspace[data-services-view] .svc-work-summary{margin-bottom:14px}
+ .svc-workspace[data-services-view] .svc-work-filters{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:8px;margin:10px 0;align-items:end}
+ .svc-workspace[data-services-view] .svc-work-filters label{min-width:0;max-width:none}
+ .svc-workspace[data-services-view] .svc-work-filters:has(>label:nth-of-type(2))>label:first-child{grid-column:1/-1}
+ .svc-workspace[data-services-view] .svc-work-tabs{scrollbar-width:thin}
+ .svc-workspace[data-services-view] .svc-work-tabs button{font-size:.95rem;min-height:44px}
+ .svc-workspace[data-services-view] .svc-work-empty{padding:16px 8px}
+ .svc-workspace[data-services-view] .svc-work-empty>svg{width:32px;height:32px;padding:10px;box-sizing:content-box}
+ .svc-workspace[data-services-view] .svc-work-empty h3{font-size:1.15rem;margin:12px 0 8px}
+ .svc-workspace[data-services-view] .svc-work-empty p{font-size:1rem;margin:8px 0}
+ .svc-workspace[data-services-view] .svc-discovery-heading>h2{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
+ .svc-workspace[data-services-view] .svc-request{padding:0;border:0;background:transparent}
+ .svc-workspace[data-services-view] .business-local-tabs{display:flex;min-width:0;margin:0 0 12px;gap:0}
+ .svc-workspace[data-services-view] .business-local-tabs>button{flex:1;min-width:0;white-space:normal;font-size:1rem;min-height:44px}
+ .svc-workspace[data-services-view] .svc-planner-tabs{margin:0 0 12px}
+ .svc-workspace[data-services-view] .svc-editor-card:has(.svc-planner-toolbar){padding:0;border:0;background:transparent}
+ .svc-workspace[data-services-view] .svc-planner-toolbar{gap:8px;margin:0 0 12px;display:flex;flex-wrap:wrap;align-items:end}
+ .svc-workspace[data-services-view] .svc-planner-toolbar>label{flex:1 1 180px;min-width:0}
+ .svc-workspace[data-services-view] .svc-planner-toolbar>span{order:3;flex-basis:100%;font-size:.875rem}
+ .svc-workspace[data-services-view] .svc-cal-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+ .svc-workspace[data-services-view] .svc-cal-panel{min-width:0;padding:12px;margin-bottom:12px}
+ .svc-workspace[data-services-view] .svc-cal-layout>.svc-cal-panel:first-child{border:0;background:transparent;padding:0}
+ .svc-workspace[data-services-view] .svc-cal-panel header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+ .svc-workspace[data-services-view] .svc-cal-panel h3{font-size:1.15rem;margin:8px 0 12px}
+ .svc-workspace[data-services-view] .svc-manual-add{width:100%}
+ .svc-workspace[data-services-view] .svc-cal-date{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+ .svc-workspace[data-services-view] .svc-cal-date input{flex:1 1 140px;width:0}
+ .svc-workspace[data-services-view] .svc-cal-date button{min-width:44px;min-height:44px}
+ .svc-workspace[data-services-view] .svc-cal-event{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:12px;margin-bottom:8px}
+ .svc-workspace[data-services-view] .svc-cal-event>div{min-width:0}
+ .svc-workspace[data-services-view] .svc-cal-event>div:last-child{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+ .svc-workspace[data-services-view] .svc-cal-event small{display:block;white-space:normal}
+ .svc-workspace[data-services-view] .svc-cal-week>div{gap:8px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .svc-workspace[data-services-view] .svc-cal-drawer{max-height:calc(100dvh - 16px);overflow:auto;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom)}
+ .svc-workspace[data-services-view] .svc-hours-range{flex-wrap:wrap}
+ .svc-workspace[data-services-view] .svc-hours-range label{min-width:0;flex:1 1 100px}
+}
+
+.svc-workspace[data-services-view] .svc-discovery-areas{display:flex;align-items:flex-start;gap:6px}
+.svc-workspace[data-services-view] .svc-discovery-areas svg{flex:none}
+.svc-workspace[data-services-view] .svc-calendar-refined{display:block}
+.svc-workspace[data-services-view] .svc-list-date{font-size:1rem;margin:16px 0 8px}
+@media(max-width:1023px){
+ .svc-workspace[data-services-view=work] .svc-financial-panel{padding:0!important;border:0!important;background:transparent!important}
+ .svc-workspace[data-services-view] .svc-client-work td{padding:0;border:0;min-width:0;overflow-wrap:anywhere}
+ .svc-workspace[data-services-view] .svc-client-work tr{padding:12px 0}
+ .svc-workspace[data-services-view] .svc-work-list{padding:12px!important}
+ .svc-workspace[data-services-view] .svc-planner-tabs>button{flex:1;min-width:0;min-height:44px;font-size:1rem}
+ .svc-workspace[data-services-view] .svc-planner-toolbar{padding-bottom:0;border-bottom:0}
+ .svc-workspace[data-services-view] .svc-cal-layout{margin-block:0}
+ .svc-workspace[data-services-view] .svc-cal-week{margin-block:8px}
+ .svc-workspace[data-services-view] .svc-cal-week>div{padding-block:8px}
+ .svc-workspace[data-services-view] .svc-cal-panel>strong{font-size:1rem}
+ .svc-workspace[data-services-view] .svc-cal-panel p{margin-block:8px}
+ .svc-workspace[data-services-view] .svc-calendar-refined .shida-cal-grid{gap:2px;padding:0}
+ .svc-workspace[data-services-view] .svc-calendar-refined .shida-cal-day{padding:4px 0;min-width:0;min-height:48px}
+ .svc-workspace[data-services-view] .svc-cal-drawer footer{bottom:0}
+}
+
+@media(max-width:1023px){
+ .svc-workspace[data-services-view] .svc-planner-tabs{flex-wrap:wrap;gap:6px}
+ .svc-workspace[data-services-view] .svc-planner-tabs>button{flex:1 1 9em;white-space:normal}
+ .svc-workspace[data-services-view] .svc-cal-event{grid-template-columns:repeat(auto-fit,minmax(min(100%,8em),1fr));overflow-wrap:normal;word-break:normal}
+ .svc-workspace[data-services-view] .management-mobile-nav.management-services-nav>button{display:grid;grid-template-rows:24px auto;align-content:start;justify-items:center;gap:5px}
+}
