@@ -34,3 +34,15 @@ it('expires the browser cookie on upstream authentication failure',async()=>{
  fetcher.mockResolvedValueOnce(Response.json({detail:'expired'},{status:401}));expect((await GET(req(),context)).status).toBe(401);
  expect(jar.has(PERSONAL_SESSION_COOKIE)).toBe(false);
 });
+it('distinguishes unsupported endpoints from protected 404s and preserves bounded recovery metadata',async()=>{
+ for(const [status,detail] of [[404,'Not Found'],[405,'Method Not Allowed']] as const){
+  fetcher.mockResolvedValueOnce(Response.json({detail},{status}));const response=await GET(req(),context);
+  expect(response.status).toBe(status);expect(await response.json()).toEqual({detail:'restaurant_today_unsupported'});
+ }
+ fetcher.mockResolvedValueOnce(Response.json({detail:'restaurant_unavailable'},{status:404}));
+ expect(await (await GET(req(),context)).json()).toEqual({detail:'restaurant_unavailable'});
+ fetcher.mockResolvedValueOnce(Response.json({detail:'restaurant_today_limit'},{status:409,headers:{'Retry-After':'30'}}));
+ const limit=await GET(req(),context);expect(await limit.json()).toEqual({detail:'restaurant_today_limit'});expect(limit.headers.get('retry-after')).toBe('30');
+ fetcher.mockResolvedValueOnce(Response.json({detail:'busy'},{status:429,headers:{'Retry-After':'15'}}));
+ const busy=await GET(req(),context);expect(busy.status).toBe(429);expect(busy.headers.get('retry-after')).toBe('15');expect(busy.headers.get('cache-control')).toContain('no-store');
+});

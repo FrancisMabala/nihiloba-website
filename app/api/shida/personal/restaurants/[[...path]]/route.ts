@@ -2,13 +2,17 @@ import { isPhotoPath, isPhotoUpload, PHOTO_MAX_BYTES, PHOTO_TYPES, validPhotoEnv
 import {isPreparationPath,validPreparationResponse} from '../../../../../lib/restaurant-preparation-contract';
 import { validMenuPreview, validOrderProjections } from "../../../../../lib/restaurant-projections";
 import {validTodayOrders} from '../../../../../lib/restaurant-today-contract';
+import {retryAfterMilliseconds} from '../../../../../lib/restaurant-retry-after';
 import { cookies } from "next/headers";
 import { personalRequestOrigin } from "../../../../../lib/personal-request-origin";
 import { allowedSellerRoute, validSellerBody, validSellerQuery, validShare, sellerErrorCodes } from "../../../../../lib/restaurant-seller-contract";
 import { PERSONAL_SESSION_COOKIE, PRIVATE_HEADERS, personalSessionBinding, clearEmploymentToken } from "../../../employment/route-utils";
 
 export const dynamic = "force-dynamic";
-const fail = (status: number, detail = "restaurant_unavailable") => Response.json({ detail }, { status, headers: PRIVATE_HEADERS });
+const fail = (status: number, detail = "restaurant_unavailable", retryAfter?:string|null) => {
+  const delay=retryAfterMilliseconds(retryAfter??null);
+  return Response.json({ detail }, { status, headers: {...PRIVATE_HEADERS,...(delay===undefined?{}:{'Retry-After':String(Math.ceil(delay/1000))})} });
+};
 type Context = { params: Promise<{ path?: string[] }> };
 
 async function handle(request: Request, context: Context) {
@@ -61,7 +65,15 @@ async function handle(request: Request, context: Context) {
       return new Response(Buffer.concat(chunks), { headers: { ...PRIVATE_HEADERS, 'Content-Type': 'image/jpeg', 'X-Content-Type-Options': 'nosniff' } });
     }
     const value = await response.json().catch(() => null);
-    if (!response.ok) return fail(response.status >= 400 && response.status < 600 ? response.status : 502, sellerErrorCodes.has(value?.detail) ? value.detail : "restaurant_unavailable");
+    if (!response.ok) {
+      const today=path.endsWith('/today-orders');
+      // Protected 404s deliberately conceal ownership. Only the framework's
+      // missing-route/method response means an older backend lacks this endpoint.
+      if(today&&((response.status===404&&value?.detail==='Not Found')||(response.status===405&&value?.detail==='Method Not Allowed')))
+        return fail(response.status,'restaurant_today_unsupported');
+      const detail=today&&response.status===409&&value?.detail==='restaurant_today_limit'?'restaurant_today_limit':sellerErrorCodes.has(value?.detail)?value.detail:'restaurant_unavailable';
+      return fail(response.status >= 400 && response.status < 600 ? response.status : 502, detail, today?response.headers.get('retry-after'):undefined);
+    }
     if (!value || typeof value !== "object" || Array.isArray(value)) return fail(502);
     if (path.endsWith('/today-orders') && !validTodayOrders(value)) return fail(502);
     if (photo && !validPhotoEnvelope(value)) return fail(502);

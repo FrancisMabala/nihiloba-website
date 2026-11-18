@@ -1,66 +1,70 @@
 "use client";
 import './restaurant-mobile-pages.css';
 import {refinementCopy} from '../../lib/restaurant-refinement-copy';
-import {RestaurantWeekHours} from './restaurant-week-hours';
-import {RestaurantProfileOverview} from './restaurant-profile-overview';
-import {RestaurantSpecialsWorkspace} from './restaurant-specials-workspace';
+import './restaurant-refinements.css';
 import {useConfirmation} from "./confirmation-dialog";
-import {RestaurantCreationWizard} from './restaurant-creation-wizard';
 import {restaurantOnboardingCopy} from '@/app/lib/restaurant-onboarding-copy';
 import {restaurantSection,restaurantDestination} from '../../lib/restaurant-workspace-navigation';
 import {workspaceCopy} from '../../lib/restaurant-workspace-copy';
 import './restaurant-connected-workspace.css';
 import {RestaurantFocus,restaurantStart} from "./restaurant-focus";
-import {RestaurantCounterOptions} from "./restaurant-counter-options";
 import {RestaurantBottomNavigation} from "./restaurant-bottom-navigation";
 import {SellerWorkspaceNavigation, SellerWorkspaceHeading, type SellerNavigationItem} from "./seller-workspace";
-import { RestaurantInsights } from './restaurant-insights';
 import { insightsCopy } from '../../lib/restaurant-insights-copy';
-import './restaurant-insights.css';
-import { RestaurantSettings } from './restaurant-settings';
 import { settingsCopy } from '../../lib/restaurant-settings-copy';
 import { managementCopy } from "../../lib/restaurant-management-copy";
 import { RestaurantPhoto } from "./restaurant-photo";
-import { RestaurantPhotoEditor } from "./restaurant-photo-editor";
 import { photoText } from "../../lib/restaurant-photo-copy";
-import { PrivateMenuPreview } from './restaurant-projection';
 
 import Link from "next/link";
 import {marketplaceEntryCopy} from "@/app/lib/marketplace-entry-copy";
 import {restaurantPath} from "@/app/lib/restaurant-i18n";
-import { useEffect, useRef, useState, useCallback, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, useCallback, type FormEvent } from "react";
 import { DashboardApiError } from "@/app/lib/restaurant-seller-browser";
 import type { RestaurantLocale } from "@/app/services/shida/restaurants-client";
-import { RestaurantSharing } from "./restaurant-sharing-panel";
 import { restaurantText } from "@/app/lib/restaurant-seller-copy";
 import { sellerDesignCopy } from "@/app/lib/restaurant-seller-design-copy";
 import { basicText } from "@/app/lib/restaurant-basic-copy";
 import { localInstant, performRestaurant as perform, pricing, readRestaurant as read, rootPath, type Closure, type Envelope, type Establishment, type Fields, type Hours, type Kind, type Operation, type Page, type Row, type Window } from "@/app/lib/restaurant-seller";
 import "./restaurant-seller.css";
-import { RestaurantOrderScreen } from './restaurant-order-screen';
-import { RestaurantReservationCalendarSeller } from './restaurant-reservation-calendar-seller';
 
-import { RestaurantSellerReviews } from './restaurant-reviews-panel';
 import { restaurantReviewCopy } from '@/app/lib/restaurant-review-copy';
-import {RestaurantService} from './restaurant-service';
-import {RestaurantPaymentMethods} from './restaurant-money';
-import {RestaurantInvoices} from './restaurant-invoices';
 import {financeText} from '../../lib/restaurant-finance-design-copy';
-import {RestaurantDaily} from './restaurant-daily';
-import { RestaurantCounter } from './restaurant-counter';
-import { RestaurantInventory } from './restaurant-inventory';
-import { RestaurantIntake } from './restaurant-intake';
-import { RestaurantGuestAutoAccept } from './restaurant-guest-auto-accept';
 
-import { RestaurantMenuBatch } from './restaurant-menu-batch';
 import { leaveWork, useWorkDraft } from '@/app/lib/restaurant-work';
 import { LocalTime } from './restaurant-local-time';
 import { workText } from '@/app/lib/restaurant-work-copy';
 import { workflowText } from '@/app/lib/restaurant-workflow-copy';
 import { RestaurantToday } from './restaurant-today';
-import { RestaurantItemRouting, type RoutingPage } from './restaurant-item-routing';
-import { RestaurantMenuWorkspace } from './restaurant-menu-workspace';
+import type { RoutingPage } from './restaurant-item-routing';
 import { personalMenuCopy } from '@/app/lib/restaurant-personal-menu-copy';
+
+// Keep the identity, navigation and Today shell available while an inactive
+// destination loads. These imports start only when its panel is first rendered.
+const RestaurantWeekHours = lazy(() => import('./restaurant-week-hours').then(module => ({default: module.RestaurantWeekHours})));
+const RestaurantProfileOverview = lazy(() => import('./restaurant-profile-overview').then(module => ({default: module.RestaurantProfileOverview})));
+const RestaurantSpecialsWorkspace = lazy(() => import('./restaurant-specials-workspace').then(module => ({default: module.RestaurantSpecialsWorkspace})));
+const RestaurantCreationWizard = lazy(() => import('./restaurant-creation-wizard').then(module => ({default: module.RestaurantCreationWizard})));
+const RestaurantCounterOptions = lazy(() => import('./restaurant-counter-options').then(module => ({default: module.RestaurantCounterOptions})));
+const RestaurantInsights = lazy(() => import('./restaurant-insights').then(module => ({default: module.RestaurantInsights})));
+const RestaurantSettings = lazy(() => import('./restaurant-settings').then(module => ({default: module.RestaurantSettings})));
+const RestaurantPhotoEditor = lazy(() => import('./restaurant-photo-editor').then(module => ({default: module.RestaurantPhotoEditor})));
+const PrivateMenuPreview = lazy(() => import('./restaurant-projection').then(module => ({default: module.PrivateMenuPreview})));
+const RestaurantSharing = lazy(() => import('./restaurant-sharing-panel').then(module => ({default: module.RestaurantSharing})));
+const RestaurantOrderScreen = lazy(() => import('./restaurant-order-screen').then(module => ({default: module.RestaurantOrderScreen})));
+const RestaurantReservationCalendarSeller = lazy(() => import('./restaurant-reservation-calendar-seller').then(module => ({default: module.RestaurantReservationCalendarSeller})));
+const RestaurantSellerReviews = lazy(() => import('./restaurant-reviews-panel').then(module => ({default: module.RestaurantSellerReviews})));
+const RestaurantService = lazy(() => import('./restaurant-service').then(module => ({default: module.RestaurantService})));
+const RestaurantPaymentMethods = lazy(() => import('./restaurant-money').then(module => ({default: module.RestaurantPaymentMethods})));
+const RestaurantInvoices = lazy(() => import('./restaurant-invoices').then(module => ({default: module.RestaurantInvoices})));
+const RestaurantDaily = lazy(() => import('./restaurant-daily').then(module => ({default: module.RestaurantDaily})));
+const RestaurantCounter = lazy(() => import('./restaurant-counter').then(module => ({default: module.RestaurantCounter})));
+const RestaurantInventory = lazy(() => import('./restaurant-inventory').then(module => ({default: module.RestaurantInventory})));
+const RestaurantIntake = lazy(() => import('./restaurant-intake').then(module => ({default: module.RestaurantIntake})));
+const RestaurantGuestAutoAccept = lazy(() => import('./restaurant-guest-auto-accept').then(module => ({default: module.RestaurantGuestAutoAccept})));
+const RestaurantMenuBatch = lazy(() => import('./restaurant-menu-batch').then(module => ({default: module.RestaurantMenuBatch})));
+const RestaurantItemRouting = lazy(() => import('./restaurant-item-routing').then(module => ({default: module.RestaurantItemRouting})));
+const RestaurantMenuWorkspace = lazy(() => import('./restaurant-menu-workspace').then(module => ({default: module.RestaurantMenuWorkspace})));
 
 const profileKeys = ["name", "description", "food_business_type", "city", "commune", "quartier", "public_address", "landmark", "address_visibility", "timezone_name", "opening_information", "service_modes", "logo_url", "logo_secure_url"];
 const itemKeys = ["name", "description", "image_url", "category_ref", "presentation", "pricing_model", "currency", "sale_unit_label", "unit_price", "allowed_amounts", "minimum_amount", "amount_mode", "amount_step", "visible", "availability", "permanent"];
@@ -320,7 +324,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
   const button = (label: string, action: () => void, disabled = false) => <button type="button" className="button button-secondary" disabled={busy || disabled} onClick={action}>{t(label)}</button>;
   if (denied) return <section className="rst container section"><p role="alert">{t(message)}</p><Link href={`${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`}>{t("review")}</Link></section>;
   if (!list && !selected) return <section className="rst container section"><p role={message ? "alert" : "status"}>{t(message || "loading")}</p>{message && <button disabled={busy} onClick={()=>void run(()=>loadList(1,"",true))}>{t("reload")}</button>}</section>;
-  if (editor?.kind === 'create') return <RestaurantCreationWizard key={`${binding}:${editor.operationKey}`} binding={binding} locale={locale} operationKey={editor.operationKey} onClose={()=>{setEditor(null);setMessage('');}} onCreated={async ref=>{await select(ref,'profile');await loadList(1,'');setEditor(null);setMessage('saved');}}/>;
+  if (editor?.kind === 'create') return <Suspense fallback={<p className="rst-panel-loading" role="status">{t('loading')}</p>}><RestaurantCreationWizard key={`${binding}:${editor.operationKey}`} binding={binding} locale={locale} operationKey={editor.operationKey} onClose={()=>{setEditor(null);setMessage('');}} onCreated={async ref=>{await select(ref,'profile');await loadList(1,'');setEditor(null);setMessage('saved');}}/></Suspense>;
   if (list?.total === 0 && !filter && !selected) return <section className="rst container section rst-seller-setup seller-setup">
     <h1>{setup.title}</h1><p>{setup.note}</p><p>{entry.separate}</p>
     {(busy || message) && <p role={message && message !== "saved" ? "alert" : "status"}>{t(busy ? "loading" : message)}</p>}
@@ -358,6 +362,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     {selected&&!editor&&localItems.length>0&&<h1 data-heading-visibility={section==="items"?"accessible":"visible"} tabIndex={-1} className={`rst-section-heading${section==='items'?' rst-menu-page-heading':''}`}>{section==='items'?wc.menu:section==='profile'?wc.establishment:workflowText(locale,'finances')}</h1>}
     {selected&&!editor&&localItems.length>0&&<nav className="rst-local-tabs" aria-label={section==='items'?wc.menu:section==='profile'?wc.establishment:workflowText(locale,'finances')}>{localItems.map(([key,label])=><button type="button" key={key} disabled={busy} aria-current={localCurrent===key?'page':undefined} onClick={()=>void run(()=>loadTab(key))}>{label}</button>)}</nav>}
     <p role={message && message !== "saved" && message !== "unsaved" ? "alert" : "status"} aria-live="polite">{busy ? t(editor?.operation ? "saving" : "loading") : message ? t(message) === "—" ? t("validation") : t(message) : editor ? t("unsaved") : ""}</p>
+    <Suspense fallback={<p className="rst-panel-loading" role="status">{t('loading')}</p>}>
     {editor ? <form onSubmit={submit} className={`rst-card rst-editor${editor.kind === "items" ? " rst-portion-editor" : ""}`} aria-label={t(editor.kind)}>
       <div className="rst-editor-main"><h2>{editor.kind === "items" ? editor.fields.name || t(editor.kind) : editor.kind==="hours"?refinement.hours:t(editor.kind)}</h2>
       <p>{t("editingScope")}</p>
@@ -411,6 +416,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
       </>}
     </>}
     {selected&&counterScope===path&&<div hidden={!!editor||!['pos','counter'].includes(tab)}><RestaurantCounter key={`${path}:${binding}:${posAvailable}`} path={path} binding={binding} locale={locale} onFailure={workFailure} pos={posAvailable} onFreeCounter={()=>{setPosAvailable(false);setTab('counter');}}/></div>}
+    </Suspense>
     </div></div>
   </section>;
 }

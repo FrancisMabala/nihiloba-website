@@ -1,0 +1,15 @@
+[WebServer] (node:36380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+  ok 1 tests\browser\waiting2-regression.browser.ts:4:86 › Today prioritized serial reads and retry fr 390 (1.4s)
+  ok 2 tests\browser\waiting2-regression.browser.ts:4:86 › Today prioritized serial reads and retry fr 1440 (1.2s)
+  ok 3 tests\browser\waiting2-regression.browser.ts:4:86 › Today prioritized serial reads and retry en 390 (1.2s)
+  ok 4 tests\browser\waiting2-regression.browser.ts:4:86 › Today prioritized serial reads and retry en 1440 (1.2s)
+  ok 5 tests\browser\waiting2-regression.browser.ts:4:86 › Today prioritized serial reads and retry ln 390 (1.2s)
+  ok 6 tests\browser\waiting2-regression.browser.ts:4:86 › Today prioritized serial reads and retry ln 1440 (1.2s)
+  ok 7 tests\browser\waiting2-regression.browser.ts:4:86 › Today prioritized serial reads and retry sw 390 (1.2s)
+  ok 8 tests\browser\waiting2-regression.browser.ts:4:86 › Today prioritized serial reads and retry sw 1440 (1.2s)
+
+  8 passed (13.8s)

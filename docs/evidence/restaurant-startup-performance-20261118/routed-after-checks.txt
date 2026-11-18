@@ -1,0 +1,9 @@
+[WebServer] (node:40252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+  ok 1 tests\browser\restaurant-startup-performance.browser.ts:19:55 › populated startup normal (12.3s)
+  ok 2 tests\browser\restaurant-startup-performance.browser.ts:19:55 › populated startup mobile (1.1m)
+
+  2 passed (1.4m)

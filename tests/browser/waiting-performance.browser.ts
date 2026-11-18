@@ -14,7 +14,7 @@ async function fixture(page:Page,journey:string){
  else if(journey==='restaurant'){
   await restaurantFixture(page);
   // Same empty orders and timestamps as the legacy fixture; only transport differs.
-  await page.route('**/today-orders/**',route=>route.fulfill({json:{version:1,sections:Object.fromEntries(['pending','ready','preparing'].map(key=>[key,{items:[],total:0,as_of:'2026-10-13T08:00:00+00:00'}]))}}));
+  await page.route('**/today-orders/**',route=>route.fulfill({json:{version:1,intake_released:true,sections:Object.fromEntries(['pending','ready','preparing'].map(key=>[key,{items:[],total:0,as_of:'2026-10-13T08:00:00+00:00'}]))}}));
  }
  else await page.route('**/api/shida/**',route=>{
   const path=new URL(route.request().url()).pathname.replace(/\/$/,'');

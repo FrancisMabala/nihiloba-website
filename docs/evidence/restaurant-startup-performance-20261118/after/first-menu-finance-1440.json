@@ -1,0 +1,16 @@
+{
+  "width": 1440,
+  "network": "local routed synthetic responses; HTTP cache disabled by routing",
+  "costs": [
+    {
+      "name": "Mon menu",
+      "firstUsefulMs": 389,
+      "asyncScripts": 3
+    },
+    {
+      "name": "Finances",
+      "firstUsefulMs": 184,
+      "asyncScripts": 4
+    }
+  ]
+}

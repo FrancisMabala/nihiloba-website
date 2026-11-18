@@ -1,0 +1,21 @@
+[WebServer] (node:42276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 14 tests using 1 worker
+
+  ok  1 tests\browser\restaurant-today-followup.browser.ts:17:35 › paired Today screenshot 390 (938ms)
+  ok  2 tests\browser\restaurant-today-followup.browser.ts:17:35 › paired Today screenshot 1440 (721ms)
+  ok  3 tests\browser\restaurant-today-followup.browser.ts:25:86 › summary partial errors and retries fr 390 (1.1s)
+  ok  4 tests\browser\restaurant-today-followup.browser.ts:25:86 › summary partial errors and retries fr 1440 (1.1s)
+  ok  5 tests\browser\restaurant-today-followup.browser.ts:25:86 › summary partial errors and retries en 390 (1.1s)
+  ok  6 tests\browser\restaurant-today-followup.browser.ts:25:86 › summary partial errors and retries en 1440 (1.2s)
+  ok  7 tests\browser\restaurant-today-followup.browser.ts:25:86 › summary partial errors and retries ln 390 (1.2s)
+  ok  8 tests\browser\restaurant-today-followup.browser.ts:25:86 › summary partial errors and retries ln 1440 (1.2s)
+  ok  9 tests\browser\restaurant-today-followup.browser.ts:25:86 › summary partial errors and retries sw 390 (1.2s)
+  ok 10 tests\browser\restaurant-today-followup.browser.ts:25:86 › summary partial errors and retries sw 1440 (1.1s)
+  ok 11 tests\browser\restaurant-today-followup.browser.ts:48:39 › summary 404 preserves bounded recovery and retry (879ms)
+  ok 12 tests\browser\restaurant-today-followup.browser.ts:48:39 › summary 409 preserves bounded recovery and retry (790ms)
+  ok 13 tests\browser\restaurant-today-followup.browser.ts:48:39 › summary 503 preserves bounded recovery and retry (788ms)
+  ok 14 tests\browser\restaurant-today-followup.browser.ts:72:5 › leaving during a held summary aborts the old context (1.1s)
+
+  14 passed (18.7s)

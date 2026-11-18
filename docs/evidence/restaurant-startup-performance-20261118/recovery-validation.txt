@@ -1,0 +1,102 @@
+Restaurant Today recovery validation — 2026-11-18
+Sanitized command results retained from tool stdout; synthetic fixtures only.
+No production accounts, messaging, database, or deployed frontend used.
+
+1. Browser transport unit tests
+
+Command:
+node node_modules/vitest/vitest.mjs run tests/restaurant-today-recovery.test.tsx
+
+Reported stdout:
+ RUN  v4.1.12 C:/NIHILOBA/release-mobile-batches-20261117
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  22:06:17
+   Duration  481ms (transform 71ms, setup 57ms, import 64ms, tests 67ms, environment 0ms)
+Exit code: 0
+
+These test the actual request() transport with explicit fetch mocks, not React
+component rendering: typed errors, numeric/HTTP-date Retry-After, missing/invalid
+headers, protected statuses versus unsupported status, cancellation, malformed
+successful JSON, network failure, and no automatic second fetch.
+
+2. Production-page browser recovery interactions
+
+Command:
+ROLLOUT_BASE_URL=http://127.0.0.1:3044
+TODAY_RECOVERY_OUTPUT=<unique disposable operating-system temporary directory>
+node node_modules/@playwright/test/cli.js test --config playwright.today-recovery.config.ts
+
+Environment: existing final Next production build, Chrome headless, one worker,
+touch capability enabled, API responses intercepted with synthetic fixtures.
+Desktop default viewport except the three intake tests at 390 x 844 CSS pixels.
+No physical-device or Safari verification is claimed by this suite.
+Countdown checks use a paused browser clock and explicit time advancement.
+
+Reported stdout:
+ Running 21 tests using 1 worker
+ 20 passed (1.3m)
+ 1 failed
+   restaurant switch rejects the held prior context result
+Exit code: 1
+
+The failed test selected the mobile identity chooser while the page was at the
+default desktop viewport. Playwright resolved the expected button but correctly
+reported that it was not visible. No application failure or source change was
+involved. The test now selects the existing visible identity chooser, shared by
+the desktop and mobile identity rendering.
+
+Focused corrected-test command:
+node node_modules/@playwright/test/cli.js test --config playwright.today-recovery.config.ts -g "restaurant switch"
+
+Reported stdout:
+ Running 1 test using 1 worker
+ ok 1 restaurant switch rejects the held prior context result (947ms)
+ 1 passed (4.7s)
+Exit code: 0
+
+Final coverage: all 21 distinct browser cases passed across the initial 20
+successful cases and the corrected single-case rerun. The whole suite was not
+repeated after the selector-only correction.
+
+Verified cases:
+- intake_released true, false, and absent; no full order-configuration request;
+- 401, 403, protected 404, typed 409 limit, 429, 503: no legacy fanout, no false
+  empty/zero order sections, independent stock/money remain usable, no automatic
+  summary retry after 35 seconds of browser-clock advancement;
+- malformed summary: all three order sections unavailable, independent money;
+- typed unsupported 404 and 405 only: exactly three serial legacy reads;
+- FR/EN/LN/SW: numeric or HTTP-date cooldown, disabled retry until due, no
+  automatic retry after expiry, explicit retry makes one summary request and
+  does not re-fetch independent stock/money;
+- retry queued behind held stock: no overlapping summary request, one grouped
+  retry, independent money resumes;
+- failed refresh retains stale prior order data and last successful timestamp;
+- 12-second client deadline: no legacy fanout or acceptance of late response;
+- establishment switch: prior held response cannot overwrite the new context;
+- logout: held summary cannot restore private dashboard content.
+
+The initial default-sandbox attempt could not access localhost sockets and was
+stopped before tests ran. The successful runs used the approved elevated local
+socket path; this was an environment restriction, not a frontend test failure.
+
+Playwright temporary output retained for the initial failure context and run
+metadata (no production data):
+- shida-today-recovery-5f5e577f719d42cbbc1b8b80bc5d2cbd
+- shida-today-recovery-context-438471ca47084482b0026047c43daaa8
+
+All Playwright-owned preview servers stopped on runner completion; port 3044
+released to the coordinating agent for separate performance checks.
+
+3. Focused static checks
+
+node node_modules/eslint/bin/eslint.js tests/restaurant-today-recovery.test.tsx tests/browser/restaurant-today-recovery.browser.ts playwright.today-recovery.config.ts
+Exit code: 0
+
+node node_modules/typescript/bin/tsc --noEmit --incremental false
+Exit code: 0
+
+The coordinating agent owns the final combined frontend validation, production
+build, paired performance measurements and consolidated report. This file does
+not present routed synthetic browser results as real PostgreSQL integration or
+cache-enabled transfer evidence.

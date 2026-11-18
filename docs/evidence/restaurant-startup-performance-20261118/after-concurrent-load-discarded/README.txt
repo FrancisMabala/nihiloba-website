@@ -1,0 +1,1 @@
+Excluded from paired before/after conclusions: this otherwise passing run overlapped a separate browser regression suite. Three cold, three cached repeats and three first Orders opens were recorded. Final after samples are in ../after/.

@@ -1,0 +1,48 @@
+[WebServer] (node:38344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+  x  1 tests\browser\restaurant-startup-performance.browser.ts:19:55 › populated startup normal (262ms)
+  x  2 tests\browser\restaurant-startup-performance.browser.ts:19:55 › populated startup mobile (276ms)
+
+
+  1) tests\browser\restaurant-startup-performance.browser.ts:19:55 › populated startup normal ──────
+
+    Error: page.goto: net::ERR_FAILED at http://127.0.0.1:3044/fr/shida/seller/restaurants/?establishment=RST_0&tab=today
+    Call log:
+      - navigating to "http://127.0.0.1:3044/fr/shida/seller/restaurants/?establishment=RST_0&tab=today", waiting until "load"
+
+
+      36 |   for(const visit of ['cold','routed-reload-cache-disabled','first-orders-opening']){
+      37 |    const first=reads.length,start=Date.now();
+    > 38 |    if(visit==='cold')await page.goto('/fr/shida/seller/restaurants/?establishment=RST_0&tab=today');
+         |                                 ^
+      39 |    else if(visit==='routed-reload-cache-disabled')await page.reload();
+      40 |    else await page.locator('.management-mobile-nav').getByRole('button',{name:'Commandes',exact:true}).click();
+      41 |    let usefulMs:number,actionMs:number;
+        at C:\NIHILOBA\release-mobile-batches-20261117\tests\browser\restaurant-startup-performance.browser.ts:38:33
+
+    Error Context: ..\..\Users\mabal\AppData\Local\Temp\shida-startup-after-db836b91d6e64cc080ed77152b5b1e82\restaurant-startup-perform-271bf-ts-populated-startup-normal\error-context.md
+
+  2) tests\browser\restaurant-startup-performance.browser.ts:19:55 › populated startup mobile ──────
+
+    Error: page.goto: net::ERR_FAILED at http://127.0.0.1:3044/fr/shida/seller/restaurants/?establishment=RST_0&tab=today
+    Call log:
+      - navigating to "http://127.0.0.1:3044/fr/shida/seller/restaurants/?establishment=RST_0&tab=today", waiting until "load"
+
+
+      36 |   for(const visit of ['cold','routed-reload-cache-disabled','first-orders-opening']){
+      37 |    const first=reads.length,start=Date.now();
+    > 38 |    if(visit==='cold')await page.goto('/fr/shida/seller/restaurants/?establishment=RST_0&tab=today');
+         |                                 ^
+      39 |    else if(visit==='routed-reload-cache-disabled')await page.reload();
+      40 |    else await page.locator('.management-mobile-nav').getByRole('button',{name:'Commandes',exact:true}).click();
+      41 |    let usefulMs:number,actionMs:number;
+        at C:\NIHILOBA\release-mobile-batches-20261117\tests\browser\restaurant-startup-performance.browser.ts:38:33
+
+    Error Context: ..\..\Users\mabal\AppData\Local\Temp\shida-startup-after-db836b91d6e64cc080ed77152b5b1e82\restaurant-startup-perform-75a4c-ts-populated-startup-mobile\error-context.md
+
+  2 failed
+    tests\browser\restaurant-startup-performance.browser.ts:19:55 › populated startup normal ───────
+    tests\browser\restaurant-startup-performance.browser.ts:19:55 › populated startup mobile ───────

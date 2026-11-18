@@ -1,0 +1,2522 @@
+{
+  "profile": "mobile",
+  "samples": 3,
+  "httpCache": "disabled by Playwright routing; reload is not a cached visit",
+  "apiFixtureDelay": 600,
+  "results": [
+    {
+      "sample": 0,
+      "visit": "cold",
+      "usefulMs": 6367,
+      "actionMs": 6381,
+      "settledMs": 8266,
+      "failedSections": [],
+      "firstSessionRequestMs": 2915,
+      "summaryRequestMs": 5651,
+      "requests": 43,
+      "bytes": 376743,
+      "javascriptBytes": 306075,
+      "cssBytes": 54334,
+      "reads": [
+        {
+          "path": "/fr/shida/seller/restaurants/",
+          "start": 8,
+          "type": "document",
+          "status": 200,
+          "end": 228,
+          "bytes": 4512
+        },
+        {
+          "path": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 212,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 395,
+          "bytes": 227
+        },
+        {
+          "path": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 214,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 449,
+          "bytes": 1012
+        },
+        {
+          "path": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 215,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 479,
+          "bytes": 1725
+        },
+        {
+          "path": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 216,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 466,
+          "bytes": 1943
+        },
+        {
+          "path": "/_next/static/css/9589be668d657f82.css",
+          "start": 216,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 449,
+          "bytes": 1032
+        },
+        {
+          "path": "/_next/static/css/7723a1347018e758.css",
+          "start": 217,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 465,
+          "bytes": 859
+        },
+        {
+          "path": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 219,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 568,
+          "bytes": 1670
+        },
+        {
+          "path": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 219,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 698,
+          "bytes": 1698
+        },
+        {
+          "path": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 220,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 764,
+          "bytes": 5940
+        },
+        {
+          "path": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 220,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 918,
+          "bytes": 18602
+        },
+        {
+          "path": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 221,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 681,
+          "bytes": 1183
+        },
+        {
+          "path": "/_next/static/css/4a803ee0ef4eabab.css",
+          "start": 221,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 832,
+          "bytes": 9368
+        },
+        {
+          "path": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 222,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 782,
+          "bytes": 1381
+        },
+        {
+          "path": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 225,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 884,
+          "bytes": 2114
+        },
+        {
+          "path": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 225,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 950,
+          "bytes": 5580
+        },
+        {
+          "path": "/_next/static/chunks/webpack-478ae5f8decd8bb3.js",
+          "start": 228,
+          "type": "script",
+          "status": 200,
+          "end": 1072,
+          "bytes": 4861
+        },
+        {
+          "path": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 229,
+          "type": "script",
+          "status": 200,
+          "end": 2251,
+          "bytes": 64120
+        },
+        {
+          "path": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 230,
+          "type": "script",
+          "status": 200,
+          "end": 2416,
+          "bytes": 67193
+        },
+        {
+          "path": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 230,
+          "type": "script",
+          "status": 200,
+          "end": 1098,
+          "bytes": 528
+        },
+        {
+          "path": "/_next/static/chunks/803-cebf2362e9efc6a2.js",
+          "start": 231,
+          "type": "script",
+          "status": 200,
+          "end": 1184,
+          "bytes": 3142
+        },
+        {
+          "path": "/_next/static/chunks/6596-30d68af94080aa10.js",
+          "start": 231,
+          "type": "script",
+          "status": 200,
+          "end": 1269,
+          "bytes": 5711
+        },
+        {
+          "path": "/_next/static/chunks/1707-b26edc0d1c7832c0.js",
+          "start": 232,
+          "type": "script",
+          "status": 200,
+          "end": 1618,
+          "bytes": 16658
+        },
+        {
+          "path": "/_next/static/chunks/6424-112de531b917e27a.js",
+          "start": 232,
+          "type": "script",
+          "status": 200,
+          "end": 1612,
+          "bytes": 13061
+        },
+        {
+          "path": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 233,
+          "type": "script",
+          "status": 200,
+          "end": 1536,
+          "bytes": 5073
+        },
+        {
+          "path": "/_next/static/chunks/4218-878fb4b76c8b4058.js",
+          "start": 234,
+          "type": "script",
+          "status": 200,
+          "end": 1681,
+          "bytes": 8262
+        },
+        {
+          "path": "/_next/static/chunks/4511-9b05caf2783e71a9.js",
+          "start": 234,
+          "type": "script",
+          "status": 200,
+          "end": 1881,
+          "bytes": 9026
+        },
+        {
+          "path": "/_next/static/chunks/3755-cabc512d19657e96.js",
+          "start": 237,
+          "type": "script",
+          "status": 200,
+          "end": 2316,
+          "bytes": 22190
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-ccf011165448149c.js",
+          "start": 237,
+          "type": "script",
+          "status": 200,
+          "end": 1848,
+          "bytes": 212
+        },
+        {
+          "path": "/_next/static/chunks/7075-a5a1c885e0fd28d7.js",
+          "start": 238,
+          "type": "script",
+          "status": 200,
+          "end": 2032,
+          "bytes": 7282
+        },
+        {
+          "path": "/_next/static/chunks/3664-9fbb57fdebf95d4f.js",
+          "start": 238,
+          "type": "script",
+          "status": 200,
+          "end": 2227,
+          "bytes": 6866
+        },
+        {
+          "path": "/_next/static/chunks/2103-fcae5529ab069ff3.js",
+          "start": 238,
+          "type": "script",
+          "status": 200,
+          "end": 2652,
+          "bytes": 22853
+        },
+        {
+          "path": "/_next/static/chunks/3221-c82c1167fef9238d.js",
+          "start": 239,
+          "type": "script",
+          "status": 200,
+          "end": 2676,
+          "bytes": 48843
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/restaurants/page-e3535df65a476898.js",
+          "start": 239,
+          "type": "script",
+          "status": 200,
+          "end": 2650,
+          "bytes": 194
+        },
+        {
+          "path": "/favicon.ico",
+          "start": 2805,
+          "type": "other",
+          "status": 200,
+          "end": 3031,
+          "bytes": 9321
+        },
+        {
+          "path": "/api/shida/employment/session/",
+          "start": 2915,
+          "type": "fetch",
+          "status": 200,
+          "end": 3543,
+          "bytes": 113
+        },
+        {
+          "path": "/api/shida/personal/restaurants/",
+          "start": 3584,
+          "type": "fetch",
+          "status": 200,
+          "end": 4199,
+          "bytes": 503
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/",
+          "start": 4202,
+          "type": "fetch",
+          "status": 200,
+          "end": 4817,
+          "bytes": 436
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/capabilities/",
+          "start": 4818,
+          "type": "fetch",
+          "status": 200,
+          "end": 5444,
+          "bytes": 169
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/today-orders/",
+          "start": 5651,
+          "type": "fetch",
+          "status": 200,
+          "end": 6270,
+          "bytes": 1047
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/inventory/",
+          "start": 6274,
+          "type": "fetch",
+          "status": 200,
+          "end": 6894,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/groups/",
+          "start": 6895,
+          "type": "fetch",
+          "status": 200,
+          "end": 7515,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/daily/summary/",
+          "start": 7518,
+          "type": "fetch",
+          "status": 200,
+          "end": 8135,
+          "bytes": 167
+        }
+      ]
+    },
+    {
+      "sample": 0,
+      "visit": "routed-reload-cache-disabled",
+      "usefulMs": 6342,
+      "actionMs": 6368,
+      "settledMs": 8269,
+      "failedSections": [],
+      "firstSessionRequestMs": 2808,
+      "summaryRequestMs": 5331,
+      "requests": 43,
+      "bytes": 376743,
+      "javascriptBytes": 306075,
+      "cssBytes": 54334,
+      "reads": [
+        {
+          "path": "/fr/shida/seller/restaurants/",
+          "start": 12,
+          "type": "document",
+          "status": 200,
+          "end": 258,
+          "bytes": 4512
+        },
+        {
+          "path": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 242,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 485,
+          "bytes": 227
+        },
+        {
+          "path": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 244,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 497,
+          "bytes": 1012
+        },
+        {
+          "path": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 245,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 534,
+          "bytes": 1725
+        },
+        {
+          "path": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 246,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 518,
+          "bytes": 1943
+        },
+        {
+          "path": "/_next/static/css/9589be668d657f82.css",
+          "start": 248,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 513,
+          "bytes": 1032
+        },
+        {
+          "path": "/_next/static/css/7723a1347018e758.css",
+          "start": 249,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 486,
+          "bytes": 859
+        },
+        {
+          "path": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 250,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 751,
+          "bytes": 1670
+        },
+        {
+          "path": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 251,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 719,
+          "bytes": 1698
+        },
+        {
+          "path": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 251,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 817,
+          "bytes": 5940
+        },
+        {
+          "path": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 252,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 966,
+          "bytes": 18602
+        },
+        {
+          "path": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 252,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 732,
+          "bytes": 1183
+        },
+        {
+          "path": "/_next/static/css/4a803ee0ef4eabab.css",
+          "start": 254,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 880,
+          "bytes": 9368
+        },
+        {
+          "path": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 254,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 900,
+          "bytes": 1381
+        },
+        {
+          "path": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 255,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 950,
+          "bytes": 2114
+        },
+        {
+          "path": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 255,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 1003,
+          "bytes": 5580
+        },
+        {
+          "path": "/_next/static/chunks/webpack-478ae5f8decd8bb3.js",
+          "start": 258,
+          "type": "script",
+          "status": 200,
+          "end": 1045,
+          "bytes": 4861
+        },
+        {
+          "path": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 259,
+          "type": "script",
+          "status": 200,
+          "end": 2336,
+          "bytes": 64120
+        },
+        {
+          "path": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 259,
+          "type": "script",
+          "status": 200,
+          "end": 2509,
+          "bytes": 67193
+        },
+        {
+          "path": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 260,
+          "type": "script",
+          "status": 200,
+          "end": 1152,
+          "bytes": 528
+        },
+        {
+          "path": "/_next/static/chunks/803-cebf2362e9efc6a2.js",
+          "start": 260,
+          "type": "script",
+          "status": 200,
+          "end": 1239,
+          "bytes": 3142
+        },
+        {
+          "path": "/_next/static/chunks/6596-30d68af94080aa10.js",
+          "start": 260,
+          "type": "script",
+          "status": 200,
+          "end": 1319,
+          "bytes": 5711
+        },
+        {
+          "path": "/_next/static/chunks/1707-b26edc0d1c7832c0.js",
+          "start": 261,
+          "type": "script",
+          "status": 200,
+          "end": 1671,
+          "bytes": 16658
+        },
+        {
+          "path": "/_next/static/chunks/6424-112de531b917e27a.js",
+          "start": 261,
+          "type": "script",
+          "status": 200,
+          "end": 1704,
+          "bytes": 13061
+        },
+        {
+          "path": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 262,
+          "type": "script",
+          "status": 200,
+          "end": 1589,
+          "bytes": 5073
+        },
+        {
+          "path": "/_next/static/chunks/4218-878fb4b76c8b4058.js",
+          "start": 262,
+          "type": "script",
+          "status": 200,
+          "end": 1752,
+          "bytes": 8262
+        },
+        {
+          "path": "/_next/static/chunks/4511-9b05caf2783e71a9.js",
+          "start": 263,
+          "type": "script",
+          "status": 200,
+          "end": 1922,
+          "bytes": 9026
+        },
+        {
+          "path": "/_next/static/chunks/3755-cabc512d19657e96.js",
+          "start": 263,
+          "type": "script",
+          "status": 200,
+          "end": 2369,
+          "bytes": 22190
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-ccf011165448149c.js",
+          "start": 264,
+          "type": "script",
+          "status": 200,
+          "end": 1921,
+          "bytes": 212
+        },
+        {
+          "path": "/_next/static/chunks/7075-a5a1c885e0fd28d7.js",
+          "start": 265,
+          "type": "script",
+          "status": 200,
+          "end": 2087,
+          "bytes": 7282
+        },
+        {
+          "path": "/_next/static/chunks/3664-9fbb57fdebf95d4f.js",
+          "start": 265,
+          "type": "script",
+          "status": 200,
+          "end": 2313,
+          "bytes": 6866
+        },
+        {
+          "path": "/_next/static/chunks/2103-fcae5529ab069ff3.js",
+          "start": 266,
+          "type": "script",
+          "status": 200,
+          "end": 2571,
+          "bytes": 22853
+        },
+        {
+          "path": "/_next/static/chunks/3221-c82c1167fef9238d.js",
+          "start": 267,
+          "type": "script",
+          "status": 200,
+          "end": 2737,
+          "bytes": 48843
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/restaurants/page-e3535df65a476898.js",
+          "start": 267,
+          "type": "script",
+          "status": 200,
+          "end": 2540,
+          "bytes": 194
+        },
+        {
+          "path": "/favicon.ico",
+          "start": 2768,
+          "type": "other",
+          "status": 200,
+          "end": 2997,
+          "bytes": 9321
+        },
+        {
+          "path": "/api/shida/employment/session/",
+          "start": 2808,
+          "type": "fetch",
+          "status": 200,
+          "end": 3428,
+          "bytes": 113
+        },
+        {
+          "path": "/api/shida/personal/restaurants/",
+          "start": 3439,
+          "type": "fetch",
+          "status": 200,
+          "end": 4053,
+          "bytes": 503
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/",
+          "start": 4056,
+          "type": "fetch",
+          "status": 200,
+          "end": 4670,
+          "bytes": 436
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/capabilities/",
+          "start": 4671,
+          "type": "fetch",
+          "status": 200,
+          "end": 5288,
+          "bytes": 169
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/today-orders/",
+          "start": 5331,
+          "type": "fetch",
+          "status": 200,
+          "end": 5941,
+          "bytes": 1047
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/inventory/",
+          "start": 5944,
+          "type": "fetch",
+          "status": 200,
+          "end": 6568,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/groups/",
+          "start": 6569,
+          "type": "fetch",
+          "status": 200,
+          "end": 7189,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/daily/summary/",
+          "start": 7191,
+          "type": "fetch",
+          "status": 200,
+          "end": 7803,
+          "bytes": 167
+        }
+      ]
+    },
+    {
+      "sample": 0,
+      "visit": "first-orders-opening",
+      "usefulMs": 997,
+      "actionMs": 3416,
+      "settledMs": 3416,
+      "failedSections": [],
+      "requests": 13,
+      "bytes": 55872,
+      "javascriptBytes": 40545,
+      "cssBytes": 5022,
+      "reads": [
+        {
+          "path": "/_next/static/chunks/9023-052c9af0d5c6063a.js",
+          "start": 85,
+          "type": "script",
+          "status": 200,
+          "end": 421,
+          "bytes": 5700
+        },
+        {
+          "path": "/_next/static/chunks/7532-449b59f749ef90a9.js",
+          "start": 86,
+          "type": "script",
+          "status": 200,
+          "end": 424,
+          "bytes": 6934
+        },
+        {
+          "path": "/_next/static/chunks/3453.c182e5dbd4727524.js",
+          "start": 86,
+          "type": "script",
+          "status": 200,
+          "end": 469,
+          "bytes": 12241
+        },
+        {
+          "path": "/_next/static/chunks/7284.c20f6b6f53742fa5.js",
+          "start": 88,
+          "type": "script",
+          "status": 200,
+          "end": 403,
+          "bytes": 3561
+        },
+        {
+          "path": "/_next/static/chunks/8532.d93b677f36a79b1c.js",
+          "start": 89,
+          "type": "script",
+          "status": 200,
+          "end": 620,
+          "bytes": 12109
+        },
+        {
+          "path": "/_next/static/css/89c664db0ab12197.css",
+          "start": 89,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 339,
+          "bytes": 585
+        },
+        {
+          "path": "/_next/static/css/d95abd67a88e148e.css",
+          "start": 90,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 338,
+          "bytes": 646
+        },
+        {
+          "path": "/_next/static/css/9b3b8f65834f7071.css",
+          "start": 90,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 552,
+          "bytes": 3791
+        },
+        {
+          "path": "/favicon.ico",
+          "start": 577,
+          "type": "other",
+          "status": 200,
+          "end": 794,
+          "bytes": 9321
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/order-feed/",
+          "start": 662,
+          "type": "fetch",
+          "status": 200,
+          "end": 1272,
+          "bytes": 75
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/order-configuration/",
+          "start": 1274,
+          "type": "fetch",
+          "status": 200,
+          "end": 1887,
+          "bytes": 18
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/orders/",
+          "start": 1892,
+          "type": "fetch",
+          "status": 200,
+          "end": 2505,
+          "bytes": 816
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/order-feed/",
+          "start": 2508,
+          "type": "fetch",
+          "status": 200,
+          "end": 3124,
+          "bytes": 75
+        }
+      ]
+    },
+    {
+      "sample": 1,
+      "visit": "cold",
+      "usefulMs": 6459,
+      "actionMs": 6487,
+      "settledMs": 8368,
+      "failedSections": [],
+      "firstSessionRequestMs": 2861,
+      "summaryRequestMs": 5768,
+      "requests": 43,
+      "bytes": 376743,
+      "javascriptBytes": 306075,
+      "cssBytes": 54334,
+      "reads": [
+        {
+          "path": "/fr/shida/seller/restaurants/",
+          "start": 10,
+          "type": "document",
+          "status": 200,
+          "end": 225,
+          "bytes": 4512
+        },
+        {
+          "path": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 221,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 424,
+          "bytes": 227
+        },
+        {
+          "path": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 225,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 487,
+          "bytes": 1012
+        },
+        {
+          "path": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 226,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 503,
+          "bytes": 1725
+        },
+        {
+          "path": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 226,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 504,
+          "bytes": 1943
+        },
+        {
+          "path": "/_next/static/css/9589be668d657f82.css",
+          "start": 227,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 472,
+          "bytes": 1032
+        },
+        {
+          "path": "/_next/static/css/7723a1347018e758.css",
+          "start": 227,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 488,
+          "bytes": 859
+        },
+        {
+          "path": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 228,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 608,
+          "bytes": 1670
+        },
+        {
+          "path": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 228,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 708,
+          "bytes": 1698
+        },
+        {
+          "path": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 228,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 777,
+          "bytes": 5940
+        },
+        {
+          "path": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 229,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 942,
+          "bytes": 18602
+        },
+        {
+          "path": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 229,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 708,
+          "bytes": 1183
+        },
+        {
+          "path": "/_next/static/css/4a803ee0ef4eabab.css",
+          "start": 230,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 860,
+          "bytes": 9368
+        },
+        {
+          "path": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 230,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 805,
+          "bytes": 1381
+        },
+        {
+          "path": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 231,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 908,
+          "bytes": 2114
+        },
+        {
+          "path": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 231,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 971,
+          "bytes": 5580
+        },
+        {
+          "path": "/_next/static/chunks/webpack-478ae5f8decd8bb3.js",
+          "start": 233,
+          "type": "script",
+          "status": 200,
+          "end": 1086,
+          "bytes": 4861
+        },
+        {
+          "path": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 234,
+          "type": "script",
+          "status": 200,
+          "end": 2255,
+          "bytes": 64120
+        },
+        {
+          "path": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 234,
+          "type": "script",
+          "status": 200,
+          "end": 2375,
+          "bytes": 67193
+        },
+        {
+          "path": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 235,
+          "type": "script",
+          "status": 200,
+          "end": 1113,
+          "bytes": 528
+        },
+        {
+          "path": "/_next/static/chunks/803-cebf2362e9efc6a2.js",
+          "start": 235,
+          "type": "script",
+          "status": 200,
+          "end": 1205,
+          "bytes": 3142
+        },
+        {
+          "path": "/_next/static/chunks/6596-30d68af94080aa10.js",
+          "start": 236,
+          "type": "script",
+          "status": 200,
+          "end": 1286,
+          "bytes": 5711
+        },
+        {
+          "path": "/_next/static/chunks/1707-b26edc0d1c7832c0.js",
+          "start": 237,
+          "type": "script",
+          "status": 200,
+          "end": 1635,
+          "bytes": 16658
+        },
+        {
+          "path": "/_next/static/chunks/6424-112de531b917e27a.js",
+          "start": 237,
+          "type": "script",
+          "status": 200,
+          "end": 1650,
+          "bytes": 13061
+        },
+        {
+          "path": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 238,
+          "type": "script",
+          "status": 200,
+          "end": 1569,
+          "bytes": 5073
+        },
+        {
+          "path": "/_next/static/chunks/4218-878fb4b76c8b4058.js",
+          "start": 238,
+          "type": "script",
+          "status": 200,
+          "end": 1702,
+          "bytes": 8262
+        },
+        {
+          "path": "/_next/static/chunks/4511-9b05caf2783e71a9.js",
+          "start": 239,
+          "type": "script",
+          "status": 200,
+          "end": 1954,
+          "bytes": 9026
+        },
+        {
+          "path": "/_next/static/chunks/3755-cabc512d19657e96.js",
+          "start": 240,
+          "type": "script",
+          "status": 200,
+          "end": 2341,
+          "bytes": 22190
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-ccf011165448149c.js",
+          "start": 240,
+          "type": "script",
+          "status": 200,
+          "end": 1888,
+          "bytes": 212
+        },
+        {
+          "path": "/_next/static/chunks/7075-a5a1c885e0fd28d7.js",
+          "start": 241,
+          "type": "script",
+          "status": 200,
+          "end": 2057,
+          "bytes": 7282
+        },
+        {
+          "path": "/_next/static/chunks/3664-9fbb57fdebf95d4f.js",
+          "start": 241,
+          "type": "script",
+          "status": 200,
+          "end": 2266,
+          "bytes": 6866
+        },
+        {
+          "path": "/_next/static/chunks/2103-fcae5529ab069ff3.js",
+          "start": 241,
+          "type": "script",
+          "status": 200,
+          "end": 2618,
+          "bytes": 22853
+        },
+        {
+          "path": "/_next/static/chunks/3221-c82c1167fef9238d.js",
+          "start": 242,
+          "type": "script",
+          "status": 200,
+          "end": 2691,
+          "bytes": 48843
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/restaurants/page-e3535df65a476898.js",
+          "start": 245,
+          "type": "script",
+          "status": 200,
+          "end": 2613,
+          "bytes": 194
+        },
+        {
+          "path": "/favicon.ico",
+          "start": 2827,
+          "type": "other",
+          "status": 200,
+          "end": 3056,
+          "bytes": 9321
+        },
+        {
+          "path": "/api/shida/employment/session/",
+          "start": 2861,
+          "type": "fetch",
+          "status": 200,
+          "end": 3471,
+          "bytes": 113
+        },
+        {
+          "path": "/api/shida/personal/restaurants/",
+          "start": 3535,
+          "type": "fetch",
+          "status": 200,
+          "end": 4143,
+          "bytes": 503
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/",
+          "start": 4148,
+          "type": "fetch",
+          "status": 200,
+          "end": 4757,
+          "bytes": 436
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/capabilities/",
+          "start": 4757,
+          "type": "fetch",
+          "status": 200,
+          "end": 5384,
+          "bytes": 169
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/today-orders/",
+          "start": 5768,
+          "type": "fetch",
+          "status": 200,
+          "end": 6375,
+          "bytes": 1047
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/inventory/",
+          "start": 6381,
+          "type": "fetch",
+          "status": 200,
+          "end": 6996,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/groups/",
+          "start": 6997,
+          "type": "fetch",
+          "status": 200,
+          "end": 7608,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/daily/summary/",
+          "start": 7609,
+          "type": "fetch",
+          "status": 200,
+          "end": 8226,
+          "bytes": 167
+        }
+      ]
+    },
+    {
+      "sample": 1,
+      "visit": "routed-reload-cache-disabled",
+      "usefulMs": 6303,
+      "actionMs": 6327,
+      "settledMs": 8244,
+      "failedSections": [],
+      "firstSessionRequestMs": 2783,
+      "summaryRequestMs": 5388,
+      "requests": 43,
+      "bytes": 376743,
+      "javascriptBytes": 306075,
+      "cssBytes": 54334,
+      "reads": [
+        {
+          "path": "/fr/shida/seller/restaurants/",
+          "start": 20,
+          "type": "document",
+          "status": 200,
+          "end": 247,
+          "bytes": 4512
+        },
+        {
+          "path": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 246,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 471,
+          "bytes": 227
+        },
+        {
+          "path": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 253,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 484,
+          "bytes": 1012
+        },
+        {
+          "path": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 254,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 517,
+          "bytes": 1725
+        },
+        {
+          "path": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 256,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 518,
+          "bytes": 1943
+        },
+        {
+          "path": "/_next/static/css/9589be668d657f82.css",
+          "start": 257,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 499,
+          "bytes": 1032
+        },
+        {
+          "path": "/_next/static/css/7723a1347018e758.css",
+          "start": 257,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 501,
+          "bytes": 859
+        },
+        {
+          "path": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 258,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 652,
+          "bytes": 1670
+        },
+        {
+          "path": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 258,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 685,
+          "bytes": 1698
+        },
+        {
+          "path": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 258,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 767,
+          "bytes": 5940
+        },
+        {
+          "path": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 261,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 960,
+          "bytes": 18602
+        },
+        {
+          "path": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 261,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 720,
+          "bytes": 1183
+        },
+        {
+          "path": "/_next/static/css/4a803ee0ef4eabab.css",
+          "start": 262,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 850,
+          "bytes": 9368
+        },
+        {
+          "path": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 262,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 835,
+          "bytes": 1381
+        },
+        {
+          "path": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 263,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 901,
+          "bytes": 2114
+        },
+        {
+          "path": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 264,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 969,
+          "bytes": 5580
+        },
+        {
+          "path": "/_next/static/chunks/webpack-478ae5f8decd8bb3.js",
+          "start": 265,
+          "type": "script",
+          "status": 200,
+          "end": 1013,
+          "bytes": 4861
+        },
+        {
+          "path": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 265,
+          "type": "script",
+          "status": 200,
+          "end": 2290,
+          "bytes": 64120
+        },
+        {
+          "path": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 266,
+          "type": "script",
+          "status": 200,
+          "end": 2336,
+          "bytes": 67193
+        },
+        {
+          "path": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 266,
+          "type": "script",
+          "status": 200,
+          "end": 1104,
+          "bytes": 528
+        },
+        {
+          "path": "/_next/static/chunks/803-cebf2362e9efc6a2.js",
+          "start": 267,
+          "type": "script",
+          "status": 200,
+          "end": 1255,
+          "bytes": 3142
+        },
+        {
+          "path": "/_next/static/chunks/6596-30d68af94080aa10.js",
+          "start": 268,
+          "type": "script",
+          "status": 200,
+          "end": 1286,
+          "bytes": 5711
+        },
+        {
+          "path": "/_next/static/chunks/1707-b26edc0d1c7832c0.js",
+          "start": 268,
+          "type": "script",
+          "status": 200,
+          "end": 1635,
+          "bytes": 16658
+        },
+        {
+          "path": "/_next/static/chunks/6424-112de531b917e27a.js",
+          "start": 269,
+          "type": "script",
+          "status": 200,
+          "end": 1619,
+          "bytes": 13061
+        },
+        {
+          "path": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 269,
+          "type": "script",
+          "status": 200,
+          "end": 1637,
+          "bytes": 5073
+        },
+        {
+          "path": "/_next/static/chunks/4218-878fb4b76c8b4058.js",
+          "start": 270,
+          "type": "script",
+          "status": 200,
+          "end": 1728,
+          "bytes": 8262
+        },
+        {
+          "path": "/_next/static/chunks/4511-9b05caf2783e71a9.js",
+          "start": 270,
+          "type": "script",
+          "status": 200,
+          "end": 2002,
+          "bytes": 9026
+        },
+        {
+          "path": "/_next/static/chunks/3755-cabc512d19657e96.js",
+          "start": 272,
+          "type": "script",
+          "status": 200,
+          "end": 2379,
+          "bytes": 22190
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-ccf011165448149c.js",
+          "start": 273,
+          "type": "script",
+          "status": 200,
+          "end": 1873,
+          "bytes": 212
+        },
+        {
+          "path": "/_next/static/chunks/7075-a5a1c885e0fd28d7.js",
+          "start": 273,
+          "type": "script",
+          "status": 200,
+          "end": 2106,
+          "bytes": 7282
+        },
+        {
+          "path": "/_next/static/chunks/3664-9fbb57fdebf95d4f.js",
+          "start": 274,
+          "type": "script",
+          "status": 200,
+          "end": 2248,
+          "bytes": 6866
+        },
+        {
+          "path": "/_next/static/chunks/2103-fcae5529ab069ff3.js",
+          "start": 274,
+          "type": "script",
+          "status": 200,
+          "end": 2539,
+          "bytes": 22853
+        },
+        {
+          "path": "/_next/static/chunks/3221-c82c1167fef9238d.js",
+          "start": 275,
+          "type": "script",
+          "status": 200,
+          "end": 2702,
+          "bytes": 48843
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/restaurants/page-e3535df65a476898.js",
+          "start": 275,
+          "type": "script",
+          "status": 200,
+          "end": 2457,
+          "bytes": 194
+        },
+        {
+          "path": "/favicon.ico",
+          "start": 2781,
+          "type": "other",
+          "status": 200,
+          "end": 3021,
+          "bytes": 9321
+        },
+        {
+          "path": "/api/shida/employment/session/",
+          "start": 2783,
+          "type": "fetch",
+          "status": 200,
+          "end": 3404,
+          "bytes": 113
+        },
+        {
+          "path": "/api/shida/personal/restaurants/",
+          "start": 3428,
+          "type": "fetch",
+          "status": 200,
+          "end": 4035,
+          "bytes": 503
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/",
+          "start": 4050,
+          "type": "fetch",
+          "status": 200,
+          "end": 4670,
+          "bytes": 436
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/capabilities/",
+          "start": 4673,
+          "type": "fetch",
+          "status": 200,
+          "end": 5283,
+          "bytes": 169
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/today-orders/",
+          "start": 5388,
+          "type": "fetch",
+          "status": 200,
+          "end": 6002,
+          "bytes": 1047
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/inventory/",
+          "start": 6006,
+          "type": "fetch",
+          "status": 200,
+          "end": 6620,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/groups/",
+          "start": 6623,
+          "type": "fetch",
+          "status": 200,
+          "end": 7233,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/daily/summary/",
+          "start": 7236,
+          "type": "fetch",
+          "status": 200,
+          "end": 7855,
+          "bytes": 167
+        }
+      ]
+    },
+    {
+      "sample": 1,
+      "visit": "first-orders-opening",
+      "usefulMs": 1071,
+      "actionMs": 3529,
+      "settledMs": 3529,
+      "failedSections": [],
+      "requests": 13,
+      "bytes": 55872,
+      "javascriptBytes": 40545,
+      "cssBytes": 5022,
+      "reads": [
+        {
+          "path": "/_next/static/chunks/9023-052c9af0d5c6063a.js",
+          "start": 138,
+          "type": "script",
+          "status": 200,
+          "end": 468,
+          "bytes": 5700
+        },
+        {
+          "path": "/_next/static/chunks/7532-449b59f749ef90a9.js",
+          "start": 142,
+          "type": "script",
+          "status": 200,
+          "end": 505,
+          "bytes": 6934
+        },
+        {
+          "path": "/_next/static/chunks/3453.c182e5dbd4727524.js",
+          "start": 142,
+          "type": "script",
+          "status": 200,
+          "end": 533,
+          "bytes": 12241
+        },
+        {
+          "path": "/_next/static/chunks/7284.c20f6b6f53742fa5.js",
+          "start": 143,
+          "type": "script",
+          "status": 200,
+          "end": 602,
+          "bytes": 3561
+        },
+        {
+          "path": "/_next/static/chunks/8532.d93b677f36a79b1c.js",
+          "start": 145,
+          "type": "script",
+          "status": 200,
+          "end": 669,
+          "bytes": 12109
+        },
+        {
+          "path": "/_next/static/css/89c664db0ab12197.css",
+          "start": 145,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 383,
+          "bytes": 585
+        },
+        {
+          "path": "/_next/static/css/d95abd67a88e148e.css",
+          "start": 145,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 386,
+          "bytes": 646
+        },
+        {
+          "path": "/_next/static/css/9b3b8f65834f7071.css",
+          "start": 146,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 466,
+          "bytes": 3791
+        },
+        {
+          "path": "/favicon.ico",
+          "start": 505,
+          "type": "other",
+          "status": 200,
+          "end": 742,
+          "bytes": 9321
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/order-feed/",
+          "start": 738,
+          "type": "fetch",
+          "status": 200,
+          "end": 1352,
+          "bytes": 75
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/order-configuration/",
+          "start": 1362,
+          "type": "fetch",
+          "status": 200,
+          "end": 1977,
+          "bytes": 18
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/orders/",
+          "start": 1982,
+          "type": "fetch",
+          "status": 200,
+          "end": 2600,
+          "bytes": 816
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/order-feed/",
+          "start": 2602,
+          "type": "fetch",
+          "status": 200,
+          "end": 3235,
+          "bytes": 75
+        }
+      ]
+    },
+    {
+      "sample": 2,
+      "visit": "cold",
+      "usefulMs": 6801,
+      "actionMs": 6829,
+      "settledMs": 8697,
+      "failedSections": [],
+      "firstSessionRequestMs": 2887,
+      "summaryRequestMs": 5824,
+      "requests": 43,
+      "bytes": 376743,
+      "javascriptBytes": 306075,
+      "cssBytes": 54334,
+      "reads": [
+        {
+          "path": "/fr/shida/seller/restaurants/",
+          "start": 9,
+          "type": "document",
+          "status": 200,
+          "end": 274,
+          "bytes": 4512
+        },
+        {
+          "path": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 254,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 491,
+          "bytes": 227
+        },
+        {
+          "path": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 256,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 513,
+          "bytes": 1012
+        },
+        {
+          "path": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 257,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 529,
+          "bytes": 1725
+        },
+        {
+          "path": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 257,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 533,
+          "bytes": 1943
+        },
+        {
+          "path": "/_next/static/css/9589be668d657f82.css",
+          "start": 258,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 528,
+          "bytes": 1032
+        },
+        {
+          "path": "/_next/static/css/7723a1347018e758.css",
+          "start": 258,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 514,
+          "bytes": 859
+        },
+        {
+          "path": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 259,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 672,
+          "bytes": 1670
+        },
+        {
+          "path": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 260,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 748,
+          "bytes": 1698
+        },
+        {
+          "path": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 261,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 787,
+          "bytes": 5940
+        },
+        {
+          "path": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 264,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 984,
+          "bytes": 18602
+        },
+        {
+          "path": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 265,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 731,
+          "bytes": 1183
+        },
+        {
+          "path": "/_next/static/css/4a803ee0ef4eabab.css",
+          "start": 265,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 889,
+          "bytes": 9368
+        },
+        {
+          "path": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 268,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 850,
+          "bytes": 1381
+        },
+        {
+          "path": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 269,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 935,
+          "bytes": 2114
+        },
+        {
+          "path": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 269,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 998,
+          "bytes": 5580
+        },
+        {
+          "path": "/_next/static/chunks/webpack-478ae5f8decd8bb3.js",
+          "start": 271,
+          "type": "script",
+          "status": 200,
+          "end": 1167,
+          "bytes": 4861
+        },
+        {
+          "path": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 272,
+          "type": "script",
+          "status": 200,
+          "end": 2250,
+          "bytes": 64120
+        },
+        {
+          "path": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 273,
+          "type": "script",
+          "status": 200,
+          "end": 2384,
+          "bytes": 67193
+        },
+        {
+          "path": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 274,
+          "type": "script",
+          "status": 200,
+          "end": 1168,
+          "bytes": 528
+        },
+        {
+          "path": "/_next/static/chunks/803-cebf2362e9efc6a2.js",
+          "start": 275,
+          "type": "script",
+          "status": 200,
+          "end": 1267,
+          "bytes": 3142
+        },
+        {
+          "path": "/_next/static/chunks/6596-30d68af94080aa10.js",
+          "start": 275,
+          "type": "script",
+          "status": 200,
+          "end": 1333,
+          "bytes": 5711
+        },
+        {
+          "path": "/_next/static/chunks/1707-b26edc0d1c7832c0.js",
+          "start": 276,
+          "type": "script",
+          "status": 200,
+          "end": 1671,
+          "bytes": 16658
+        },
+        {
+          "path": "/_next/static/chunks/6424-112de531b917e27a.js",
+          "start": 276,
+          "type": "script",
+          "status": 200,
+          "end": 1670,
+          "bytes": 13061
+        },
+        {
+          "path": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 276,
+          "type": "script",
+          "status": 200,
+          "end": 1651,
+          "bytes": 5073
+        },
+        {
+          "path": "/_next/static/chunks/4218-878fb4b76c8b4058.js",
+          "start": 277,
+          "type": "script",
+          "status": 200,
+          "end": 1736,
+          "bytes": 8262
+        },
+        {
+          "path": "/_next/static/chunks/4511-9b05caf2783e71a9.js",
+          "start": 278,
+          "type": "script",
+          "status": 200,
+          "end": 2040,
+          "bytes": 9026
+        },
+        {
+          "path": "/_next/static/chunks/3755-cabc512d19657e96.js",
+          "start": 278,
+          "type": "script",
+          "status": 200,
+          "end": 2366,
+          "bytes": 22190
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-ccf011165448149c.js",
+          "start": 279,
+          "type": "script",
+          "status": 200,
+          "end": 1888,
+          "bytes": 212
+        },
+        {
+          "path": "/_next/static/chunks/7075-a5a1c885e0fd28d7.js",
+          "start": 279,
+          "type": "script",
+          "status": 200,
+          "end": 2133,
+          "bytes": 7282
+        },
+        {
+          "path": "/_next/static/chunks/3664-9fbb57fdebf95d4f.js",
+          "start": 279,
+          "type": "script",
+          "status": 200,
+          "end": 2247,
+          "bytes": 6866
+        },
+        {
+          "path": "/_next/static/chunks/2103-fcae5529ab069ff3.js",
+          "start": 280,
+          "type": "script",
+          "status": 200,
+          "end": 2659,
+          "bytes": 22853
+        },
+        {
+          "path": "/_next/static/chunks/3221-c82c1167fef9238d.js",
+          "start": 280,
+          "type": "script",
+          "status": 200,
+          "end": 2714,
+          "bytes": 48843
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/restaurants/page-e3535df65a476898.js",
+          "start": 281,
+          "type": "script",
+          "status": 200,
+          "end": 2655,
+          "bytes": 194
+        },
+        {
+          "path": "/favicon.ico",
+          "start": 2841,
+          "type": "other",
+          "status": 200,
+          "end": 3070,
+          "bytes": 9321
+        },
+        {
+          "path": "/api/shida/employment/session/",
+          "start": 2887,
+          "type": "fetch",
+          "status": 200,
+          "end": 3500,
+          "bytes": 113
+        },
+        {
+          "path": "/api/shida/personal/restaurants/",
+          "start": 3552,
+          "type": "fetch",
+          "status": 200,
+          "end": 4171,
+          "bytes": 503
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/",
+          "start": 4173,
+          "type": "fetch",
+          "status": 200,
+          "end": 4783,
+          "bytes": 436
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/capabilities/",
+          "start": 4785,
+          "type": "fetch",
+          "status": 200,
+          "end": 5401,
+          "bytes": 169
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/today-orders/",
+          "start": 5824,
+          "type": "fetch",
+          "status": 200,
+          "end": 6434,
+          "bytes": 1047
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/inventory/",
+          "start": 6436,
+          "type": "fetch",
+          "status": 200,
+          "end": 7051,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/groups/",
+          "start": 7052,
+          "type": "fetch",
+          "status": 200,
+          "end": 7666,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/daily/summary/",
+          "start": 7673,
+          "type": "fetch",
+          "status": 200,
+          "end": 8287,
+          "bytes": 167
+        }
+      ]
+    },
+    {
+      "sample": 2,
+      "visit": "routed-reload-cache-disabled",
+      "usefulMs": 6375,
+      "actionMs": 6404,
+      "settledMs": 7793,
+      "failedSections": [],
+      "firstSessionRequestMs": 2747,
+      "summaryRequestMs": 5271,
+      "requests": 43,
+      "bytes": 376743,
+      "javascriptBytes": 306075,
+      "cssBytes": 54334,
+      "reads": [
+        {
+          "path": "/fr/shida/seller/restaurants/",
+          "start": 14,
+          "type": "document",
+          "status": 200,
+          "end": 257,
+          "bytes": 4512
+        },
+        {
+          "path": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 241,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 471,
+          "bytes": 227
+        },
+        {
+          "path": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 242,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 485,
+          "bytes": 1012
+        },
+        {
+          "path": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 243,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 520,
+          "bytes": 1725
+        },
+        {
+          "path": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 243,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 524,
+          "bytes": 1943
+        },
+        {
+          "path": "/_next/static/css/9589be668d657f82.css",
+          "start": 244,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 487,
+          "bytes": 1032
+        },
+        {
+          "path": "/_next/static/css/7723a1347018e758.css",
+          "start": 244,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 503,
+          "bytes": 859
+        },
+        {
+          "path": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 245,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 669,
+          "bytes": 1670
+        },
+        {
+          "path": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 245,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 704,
+          "bytes": 1698
+        },
+        {
+          "path": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 246,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 778,
+          "bytes": 5940
+        },
+        {
+          "path": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 246,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 941,
+          "bytes": 18602
+        },
+        {
+          "path": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 247,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 737,
+          "bytes": 1183
+        },
+        {
+          "path": "/_next/static/css/4a803ee0ef4eabab.css",
+          "start": 247,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 862,
+          "bytes": 9368
+        },
+        {
+          "path": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 248,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 867,
+          "bytes": 1381
+        },
+        {
+          "path": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 248,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 922,
+          "bytes": 2114
+        },
+        {
+          "path": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 248,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 992,
+          "bytes": 5580
+        },
+        {
+          "path": "/_next/static/chunks/webpack-478ae5f8decd8bb3.js",
+          "start": 253,
+          "type": "script",
+          "status": 200,
+          "end": 1028,
+          "bytes": 4861
+        },
+        {
+          "path": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 254,
+          "type": "script",
+          "status": 200,
+          "end": 2379,
+          "bytes": 64120
+        },
+        {
+          "path": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 255,
+          "type": "script",
+          "status": 200,
+          "end": 2462,
+          "bytes": 67193
+        },
+        {
+          "path": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 255,
+          "type": "script",
+          "status": 200,
+          "end": 1138,
+          "bytes": 528
+        },
+        {
+          "path": "/_next/static/chunks/803-cebf2362e9efc6a2.js",
+          "start": 256,
+          "type": "script",
+          "status": 200,
+          "end": 1204,
+          "bytes": 3142
+        },
+        {
+          "path": "/_next/static/chunks/6596-30d68af94080aa10.js",
+          "start": 256,
+          "type": "script",
+          "status": 200,
+          "end": 1304,
+          "bytes": 5711
+        },
+        {
+          "path": "/_next/static/chunks/1707-b26edc0d1c7832c0.js",
+          "start": 258,
+          "type": "script",
+          "status": 200,
+          "end": 1640,
+          "bytes": 16658
+        },
+        {
+          "path": "/_next/static/chunks/6424-112de531b917e27a.js",
+          "start": 258,
+          "type": "script",
+          "status": 200,
+          "end": 1674,
+          "bytes": 13061
+        },
+        {
+          "path": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 258,
+          "type": "script",
+          "status": 200,
+          "end": 1552,
+          "bytes": 5073
+        },
+        {
+          "path": "/_next/static/chunks/4218-878fb4b76c8b4058.js",
+          "start": 259,
+          "type": "script",
+          "status": 200,
+          "end": 1726,
+          "bytes": 8262
+        },
+        {
+          "path": "/_next/static/chunks/4511-9b05caf2783e71a9.js",
+          "start": 259,
+          "type": "script",
+          "status": 200,
+          "end": 1896,
+          "bytes": 9026
+        },
+        {
+          "path": "/_next/static/chunks/3755-cabc512d19657e96.js",
+          "start": 260,
+          "type": "script",
+          "status": 200,
+          "end": 2360,
+          "bytes": 22190
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-ccf011165448149c.js",
+          "start": 260,
+          "type": "script",
+          "status": 200,
+          "end": 1893,
+          "bytes": 212
+        },
+        {
+          "path": "/_next/static/chunks/7075-a5a1c885e0fd28d7.js",
+          "start": 261,
+          "type": "script",
+          "status": 200,
+          "end": 2060,
+          "bytes": 7282
+        },
+        {
+          "path": "/_next/static/chunks/3664-9fbb57fdebf95d4f.js",
+          "start": 261,
+          "type": "script",
+          "status": 200,
+          "end": 2292,
+          "bytes": 6866
+        },
+        {
+          "path": "/_next/static/chunks/2103-fcae5529ab069ff3.js",
+          "start": 261,
+          "type": "script",
+          "status": 200,
+          "end": 2563,
+          "bytes": 22853
+        },
+        {
+          "path": "/_next/static/chunks/3221-c82c1167fef9238d.js",
+          "start": 262,
+          "type": "script",
+          "status": 200,
+          "end": 2723,
+          "bytes": 48843
+        },
+        {
+          "path": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/restaurants/page-e3535df65a476898.js",
+          "start": 262,
+          "type": "script",
+          "status": 200,
+          "end": 2528,
+          "bytes": 194
+        },
+        {
+          "path": "/favicon.ico",
+          "start": 2746,
+          "type": "other",
+          "status": 200,
+          "end": 2992,
+          "bytes": 9321
+        },
+        {
+          "path": "/api/shida/employment/session/",
+          "start": 2747,
+          "type": "fetch",
+          "status": 200,
+          "end": 3358,
+          "bytes": 113
+        },
+        {
+          "path": "/api/shida/personal/restaurants/",
+          "start": 3368,
+          "type": "fetch",
+          "status": 200,
+          "end": 3975,
+          "bytes": 503
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/",
+          "start": 3980,
+          "type": "fetch",
+          "status": 200,
+          "end": 4593,
+          "bytes": 436
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/capabilities/",
+          "start": 4597,
+          "type": "fetch",
+          "status": 200,
+          "end": 5206,
+          "bytes": 169
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/today-orders/",
+          "start": 5271,
+          "type": "fetch",
+          "status": 200,
+          "end": 5891,
+          "bytes": 1047
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/inventory/",
+          "start": 5894,
+          "type": "fetch",
+          "status": 200,
+          "end": 6507,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/groups/",
+          "start": 6510,
+          "type": "fetch",
+          "status": 200,
+          "end": 7123,
+          "bytes": 33
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/service/daily/summary/",
+          "start": 7125,
+          "type": "fetch",
+          "status": 200,
+          "end": 7740,
+          "bytes": 167
+        }
+      ]
+    },
+    {
+      "sample": 2,
+      "visit": "first-orders-opening",
+      "usefulMs": 1058,
+      "actionMs": 3488,
+      "settledMs": 3488,
+      "failedSections": [],
+      "requests": 13,
+      "bytes": 55872,
+      "javascriptBytes": 40545,
+      "cssBytes": 5022,
+      "reads": [
+        {
+          "path": "/_next/static/chunks/9023-052c9af0d5c6063a.js",
+          "start": 141,
+          "type": "script",
+          "status": 200,
+          "end": 472,
+          "bytes": 5700
+        },
+        {
+          "path": "/_next/static/chunks/7532-449b59f749ef90a9.js",
+          "start": 142,
+          "type": "script",
+          "status": 200,
+          "end": 486,
+          "bytes": 6934
+        },
+        {
+          "path": "/_next/static/chunks/3453.c182e5dbd4727524.js",
+          "start": 143,
+          "type": "script",
+          "status": 200,
+          "end": 537,
+          "bytes": 12241
+        },
+        {
+          "path": "/_next/static/chunks/7284.c20f6b6f53742fa5.js",
+          "start": 143,
+          "type": "script",
+          "status": 200,
+          "end": 455,
+          "bytes": 3561
+        },
+        {
+          "path": "/_next/static/chunks/8532.d93b677f36a79b1c.js",
+          "start": 144,
+          "type": "script",
+          "status": 200,
+          "end": 638,
+          "bytes": 12109
+        },
+        {
+          "path": "/_next/static/css/89c664db0ab12197.css",
+          "start": 145,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 369,
+          "bytes": 585
+        },
+        {
+          "path": "/_next/static/css/d95abd67a88e148e.css",
+          "start": 145,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 355,
+          "bytes": 646
+        },
+        {
+          "path": "/_next/static/css/9b3b8f65834f7071.css",
+          "start": 146,
+          "type": "stylesheet",
+          "status": 200,
+          "end": 586,
+          "bytes": 3791
+        },
+        {
+          "path": "/favicon.ico",
+          "start": 607,
+          "type": "other",
+          "status": 200,
+          "end": 839,
+          "bytes": 9321
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/order-feed/",
+          "start": 735,
+          "type": "fetch",
+          "status": 200,
+          "end": 1347,
+          "bytes": 75
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/order-configuration/",
+          "start": 1349,
+          "type": "fetch",
+          "status": 200,
+          "end": 1960,
+          "bytes": 18
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/orders/",
+          "start": 1961,
+          "type": "fetch",
+          "status": 200,
+          "end": 2575,
+          "bytes": 816
+        },
+        {
+          "path": "/api/shida/personal/restaurants/RST_0/order-feed/",
+          "start": 2580,
+          "type": "fetch",
+          "status": 200,
+          "end": 3199,
+          "bytes": 75
+        }
+      ]
+    }
+  ]
+}

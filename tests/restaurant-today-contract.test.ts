@@ -11,6 +11,9 @@ it('accepts only the fixed read route with no caller-expanded work or scope',()=
 });
 it('validates totals, fixed section count, dates and bounded existing projections',()=>{
  expect(validTodayOrders(snapshot)).toBe(true);
+ expect(validTodayOrders({...snapshot,intake_released:true})).toBe(true);
+ expect(validTodayOrders({...snapshot,intake_released:false})).toBe(true);
+ expect(validTodayOrders({...snapshot,intake_released:null})).toBe(false);
  for(const value of [null,{}, {...snapshot,version:2},{...snapshot,sections:{pending:page}},
   {...snapshot,sections:{...snapshot.sections,secret:page}},
   ...[{...page,total:-1},{...page,total:null},{...page,as_of:'tomorrow'},{...page,items:Array(6).fill({}),total:6},

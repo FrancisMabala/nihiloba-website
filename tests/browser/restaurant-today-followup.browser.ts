@@ -9,7 +9,7 @@ async function fixture(page:Page,count=1){
  await page.clock.setFixedTime(new Date(at));
  const state={empty:false,moneyError:false,summaryStatus:200,legacyReadyError:false,summaryReads:0,orderReads:[] as string[]};
  const section=(key:string)=>({items:state.empty?[]:key==='pending'?[{order_ref:'ROD_TODAY_LONG_REFERENCE_12345678',state:'pending',submitted_at:at,fulfillment_method:'pickup'}]:[],total:!state.empty&&key==='pending'?1:0,as_of:at});
- await page.route('**/today-orders/**',route=>{state.summaryReads++;return route.fulfill({status:state.summaryStatus,json:state.summaryStatus===200?{version:1,sections:Object.fromEntries(['pending','ready','preparing'].map(key=>[key,section(key)]))}:{detail:'restaurant_unavailable'}});});
+ await page.route('**/today-orders/**',route=>{state.summaryReads++;return route.fulfill({status:state.summaryStatus,json:state.summaryStatus===200?{version:1,intake_released:true,sections:Object.fromEntries(['pending','ready','preparing'].map(key=>[key,section(key)]))}:{detail:state.summaryStatus===404?'restaurant_today_unsupported':state.summaryStatus===409?'restaurant_today_limit':'restaurant_unavailable'}});});
  await page.route('**/RST_0/orders/**',route=>{const states=new URL(route.request().url()).searchParams.getAll('states').join(',');state.orderReads.push(states);return route.fulfill({status:states==='ready'&&state.legacyReadyError?503:200,json:section(states==='accepted,preparing'?'preparing':states)});});
  await page.route('**/service/daily/summary/**',route=>route.fulfill({status:state.moneyError?503:200,json:state.moneyError?{detail:'restaurant_unavailable'}:{as_of:at,time_zone:'Africa/Kinshasa',currencies:{CDF:{recorded_net:'3000',balance_due:'1500'},USD:{recorded_net:'5',balance_due:'2'}}}}));
  return state;
@@ -45,9 +45,20 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [390,1440]
  await expect(page.locator('.rst-orders-screen')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
-for(const status of [404,409,503])test(`summary ${status} preserves independent fallback and retry`,async({page})=>{
+for(const status of [404,409,503])test(`summary ${status} preserves bounded recovery and retry`,async({page})=>{
  const state=await fixture(page);state.summaryStatus=status;state.legacyReadyError=true;
  await page.goto('/fr/shida/seller/restaurants/?establishment=RST_0&tab=today');
+ if(status!==404){
+  await expect(page.locator('.rst-today-summary-error')).toBeVisible();
+  await expect(page.locator('.rst-today-refresh')).toBeEnabled();
+  expect(state.orderReads).toEqual([]);expect(state.summaryReads).toBe(1);
+  await expect(page.locator('.rst-ops-work')).toHaveCount(0);
+  await expect(page.locator('.rst-ops-updated')).toHaveCount(0);
+  state.summaryStatus=200;await page.locator('.rst-today-summary-error').getByRole('button',{name:'Réessayer'}).click();
+  await expect(page.locator('.rst-today-summary-error')).toHaveCount(0);
+  await expect(page.locator('.rst-ops-work')).toHaveCount(1);
+  expect(state.summaryReads).toBe(2);expect(state.orderReads).toEqual([]);return;
+ }
  await expect.poll(()=>state.orderReads.length).toBe(3);
  await expect(page.locator('.rst-today-refresh')).toBeEnabled();
  expect(state.orderReads).toEqual(['pending','ready','accepted,preparing']);

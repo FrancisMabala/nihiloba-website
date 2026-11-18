@@ -1,4 +1,5 @@
 'use client';
+import './restaurant-insights.css';
 import {statsText} from '../../lib/restaurant-stats-design-copy';
 import {restaurantClarityCopy} from '../../lib/restaurant-clarity-copy';
 import {useEffect,useState} from 'react';

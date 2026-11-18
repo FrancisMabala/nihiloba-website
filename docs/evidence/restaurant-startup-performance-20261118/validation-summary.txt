@@ -1,0 +1,35 @@
+Final focused validation, 18 November 2026
+
+Production webpack build with isolated fixture fetch: passed.
+node node_modules/typescript/bin/tsc --noEmit --incremental false: exit 0.
+ESLint on all changed/new TypeScript source, tests and configs: exit 0.
+git diff --check: passed (only repository line-ending notices).
+
+Vitest: 92 tests / 6 files passed. See frontend-unit-checks.txt.
+Files: restaurant-today-contract, restaurant-today-gateway,
+restaurant-projections, restaurant-operations, restaurant-seller,
+restaurant-today-recovery.
+
+Browser: 76 distinct cases passed across original and affected reruns.
+- Lazy panels: 33 distinct cases. Initial31passed; two stats fixtures corrected
+  from default protected404 to intended read503, then those2 and2first-opening
+  cases passed in quiet rerun. No application change for these test corrections.
+- Recovery: 21 distinct cases. Initial20passed; hidden chooser selector corrected
+  to visible shared chooser, remainingcase passed. See recovery-validation.txt.
+- Existing Today:14passed, see today-regression-checks.txt.
+- Existing serial reads:8passed, see serial-regression-checks.txt.
+
+Controlled benchmarks:2profiles before/after, 3samples per visit and profile,
+including cold/routed-reload-cache-disabled/firstOrdersOpening.
+After:2passed, see routed-after-checks.txt. Initialsetup failure from missing
+ROLLOUT_BASE_URL is retained separately and supplies no timing evidence.
+Real API/PG browser benchmark:1case before/after with3cold,3genuinecachedrepeat,
+3firstOrdersOpening observations each. Concurrent after attempt discarded and
+repeated quietly. All final normal-path API responses200, failedsections0.
+
+Backend:32selected PostgreSQL tests passed, no failures/errors/skips.
+No full backend suite, physical device, Safari or authenticated production test.
+
+Before snapshots are the existing local summary revisions, not production.
+Benchmark and functional checks run against the same final production build.
+No further application edits occurred after that build.

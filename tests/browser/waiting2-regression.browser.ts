@@ -3,6 +3,7 @@ import {restaurantFixture} from './responsive-rollout-fixtures';
 import {operationsCopy} from '../../app/lib/restaurant-operations-copy';
 for(const locale of ['fr','en','ln','sw'] as const)for(const width of [390,1440])test(`Today prioritized serial reads and retry ${locale} ${width}`,async({page})=>{
  await restaurantFixture(page);await page.setViewportSize({width,height:900});
+ await page.route('**/today-orders/**',route=>route.fulfill({status:404,json:{detail:'restaurant_today_unsupported'}}));
  await page.route('**/RST_0/service/daily/summary/**',route=>route.fulfill({json:{as_of:'2026-11-18T12:00:00Z',time_zone:'Africa/Kinshasa',currencies:{CDF:{recorded_net:'3000',balance_due:'0'},USD:{recorded_net:'5',balance_due:'0'}}}}));
  const reads:string[]=[];let release!:()=>void,pending=0;const hold=new Promise<void>(resolve=>{release=resolve;});
  await page.route('**/RST_0/orders/**',async route=>{
@@ -21,7 +22,8 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [390,1440]
  await expect(page.locator('.rst-ops-panel').getByText(c.empty,{exact:true})).toBeVisible();
  await expect(page.locator('.rst-today-refresh')).toBeEnabled();
  await expect(page.locator('.rst-ops-updated')).toHaveCount(0); // one failed read is not a successful refresh
- await page.locator('.rst-today-refresh').click();await expect(page.locator('.rst-ops-updated')).toBeVisible();
+  await page.locator('.rst-today-refresh').click();await expect(page.locator('.rst-today-refresh')).toBeEnabled();
+  await expect(page.locator('.rst-ops-updated')).toHaveCount(0); // older backend cannot confirm intake status
  await page.locator('.rst-metric-incoming > button').click();await expect(page.locator('.rst-orders-screen')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
