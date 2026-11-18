@@ -122,3 +122,13 @@ it("publishes complete bilingual 1.1 sources while keeping 1.0 available", () =>
   expect(html).not.toContain("Pending legal review");
  }
 });
+
+
+it("publishes country-neutral 1.2 without changing current acceptance pointers yet",()=>{
+ for(const locale of ["fr","en"] as const)for(const kind of ["terms","business-terms"] as const){
+ const doc=loadShidaLegalDocument(kind,locale,"1.2")!;
+ expect(doc.metadata.status).toBe("published_update");expect(doc.metadata.publicationDate).toBe("2026-11-18");
+ const html=renderToStaticMarkup(<ShidaVersionedLegalPage kind={kind} locale={locale} version="1.2"/>);
+ expect(html).toContain("2026-11-18");expect(html).not.toContain("Prepared update");
+ }
+});
