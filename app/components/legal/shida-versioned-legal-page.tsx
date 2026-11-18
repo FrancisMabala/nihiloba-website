@@ -34,11 +34,15 @@ export function ShidaVersionedLegalPage({ kind, locale, version, historical = fa
     copy.notice = locale === "fr" ? "Exploitant : Francis Mabala Lemoya. Cette publication ne constitue pas une certification de conformité juridique." : "Operator: Francis Mabala Lemoya. Publication is not certification of legal compliance.";
   }
   const otherHref = historical ? other.versionRoute : other.canonicalRoute;
-  if (metadata.status === 'prepared_update') {
+  if (metadata.status === 'prepared_update' || metadata.status === 'published_update') {
     copy.statusValue = locale === 'fr' ? 'Mise à jour préparée' : 'Prepared update';
     copy.publicationTodo = locale === 'fr' ? 'Publication coordonnée · acceptation expresse requise' : 'Coordinated publication · explicit acceptance required';
     copy.updatedTodo = metadata.lastUpdatedDate ?? '';
     copy.notice = locale === 'fr' ? 'Cette version préserve les documents et acceptations historiques. Elle ne constitue pas une autorisation juridique mondiale ni une garantie de disponibilité de chaque service.' : 'This version preserves historical documents and acceptances. It is not worldwide legal authorization or a guarantee that every service is available.';
+  }
+  if (metadata.status === 'published_update') {
+    copy.statusValue = locale === 'fr' ? 'Mise à jour publiée' : 'Published update';
+    copy.publicationTodo = `${metadata.publicationDate} · ${locale === 'fr' ? 'applicable sur acceptation expresse' : 'applies on express acceptance'}`;
   }
   return <>
     <header className="versioned-legal-header"><div className="container"><p className="eyebrow">{copy.identity}</p><h1>{content.title}</h1><div className="versioned-legal-meta" aria-label={locale === "fr" ? "Métadonnées du document" : "Document metadata"}><span><strong>{copy.version}</strong> {metadata.version}</span><span><strong>{copy.status}</strong> {copy.statusValue}</span><span><strong>{copy.publication}</strong> {copy.publicationTodo}</span><span><strong>{copy.updated}</strong> {copy.updatedTodo}</span><span><strong>{copy.language}</strong> {metadata.languageLabel}</span><span><strong>{historical ? copy.archived : copy.current}</strong></span></div><aside className="versioned-legal-draft" role="note">{copy.notice}</aside><nav className="versioned-legal-links" aria-label={locale === "fr" ? "Liens du document" : "Document links"}><Link href={otherHref} hrefLang={other.locale}>{copy.other}</Link><Link href={locale === "fr" ? "/fr/shida" : "/shida"}>{copy.back}</Link>{!historical && <Link href={metadata.versionRoute}>{locale === "fr" ? `Lien permanent vers la version ${metadata.version}` : `Permanent link to version ${metadata.version}`}</Link>}</nav></div></header>

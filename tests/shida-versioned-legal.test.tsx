@@ -123,12 +123,14 @@ it("publishes complete bilingual 1.1 sources while keeping 1.0 available", () =>
  }
 });
 
-it('selects prepared country-neutral Terms 1.2 independently of Privacy 1.1',()=>{
+it('selects published country-neutral Terms 1.2 independently of Privacy 1.1',()=>{
  for(const locale of ['fr','en'] as const)for(const kind of ['terms','business-terms'] as const){
   const doc=loadShidaLegalDocument(kind,locale)!;
   expect(doc.metadata.version).toBe('1.2');
-  expect(doc.metadata.publicationDate).toBeNull();
-  expect(doc.metadata.status).toBe('prepared_update');
+  expect(doc.metadata.publicationDate).toBe('2026-11-18');
+  expect(doc.metadata.status).toBe('published_update');
   expect(loadShidaLegalDocument('privacy',locale)!.metadata.version).toBe('1.1');
+  const html=renderToStaticMarkup(<ShidaVersionedLegalPage kind={kind} locale={locale} version="1.2"/>);
+  expect(html).toContain('2026-11-18');expect(html).not.toContain('Prepared update');
  }
 });

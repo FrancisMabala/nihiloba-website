@@ -1,6 +1,6 @@
 # Conditions d'utilisation de SHIDA — version 1.2
 
-Version 1.2 préparée le 18 novembre 2026 pour publication coordonnée ; applicable lors de son acceptation expresse après publication. Les versions historiques et les acceptations déjà enregistrées restent inchangées.
+Version 1.2 publiée le 18 novembre 2026 ; applicable lors de son acceptation expresse. Les versions historiques et les acceptations déjà enregistrées restent inchangées.
 
 ## 1. Exploitant et contact
 

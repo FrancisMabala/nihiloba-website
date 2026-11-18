@@ -1,6 +1,6 @@
 # SHIDA Business Terms — version 1.2
 
-Version 1.2 prepared on 18 November 2026 for coordinated publication; applicable upon explicit acceptance after publication. Historical versions and recorded acceptances remain unchanged.
+Version 1.2 published on 18 November 2026; applicable upon explicit acceptance. Historical versions and recorded acceptances remain unchanged.
 
 ## 1. Parties and relationship to the Personal service
 
