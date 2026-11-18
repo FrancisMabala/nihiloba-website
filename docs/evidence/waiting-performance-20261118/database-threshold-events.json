@@ -1,0 +1,11 @@
+{
+  "source": "Render application logs; separate literal text filters",
+  "windowUTC": ["2026-11-18T17:00:00Z", "2026-11-18T17:30:00Z"],
+  "events": [
+    {"at":"2026-11-18T17:17:09.335Z","type":"db_pool_pressure","checkedout":6,"size":5,"overflow":1,"oldest_seconds":2.121,"oldest_route":"get_dashboard_business_capabilities"},
+    {"at":"2026-11-18T17:17:14.249Z","type":"db_connection_held","route":"get_dashboard_business_capabilities","seconds":7.035},
+    {"at":"2026-11-18T17:17:13.350Z","type":"db_query_duration","route":"list_profiles","seconds":1.145,"failed":false},
+    {"at":"2026-11-18T17:17:13.559Z","type":"db_query_duration","route":"notifications","seconds":1.253,"failed":false}
+  ],
+  "limits": "Threshold-only telemetry, no SQL text or parameters. This is not a complete query trace or measured connection acquisition wait. An earlier combined pipe-separated text filter returned no entries and must not be interpreted as absence of pressure."
+}

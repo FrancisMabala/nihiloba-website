@@ -1,0 +1,10 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "[{\"details\":{\"instanceID\":\"srv-d811j4ugvqtc73e0fks0-74kkl\",\"reason\":{\"evicted\":false,\"oomKilled\":{\"memoryLimit\":\"512Mi\"}}},\"id\":\"evt-dbur5sp42hec73egfmeg\",\"serviceId\":\"srv-d811j4ugvqtc73e0fks0\",\"timestamp\":\"2026-11-18T14:15:15.094322Z\",\"type\":\"server_failed\"}]\n\n cursor: YCQ_M3zt_eo1c3A0MmhlYzczZWdmbWVn"
+    }
+  ],
+  "structuredContent": null,
+  "isError": false
+}

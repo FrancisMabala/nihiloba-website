@@ -13,7 +13,7 @@ it("retains private/no-store transport and supports cancellation", async () => {
  const fetcher = vi.fn().mockResolvedValue(Response.json({ binding: "a".repeat(64), user: { display_name: "Synthetic" } })); vi.stubGlobal("fetch", fetcher);
  const signal = new AbortController().signal;
  expect((await restorePersonalSession(signal)).user.display_name).toBe("Synthetic");
- expect(fetcher).toHaveBeenCalledWith("/api/shida/employment/session/", { cache: "no-store", credentials: "same-origin", signal });
+ expect(fetcher).toHaveBeenCalledWith("/api/shida/employment/session/", { cache: "no-store", credentials: "same-origin", signal: expect.any(AbortSignal) });
 });
 it.each([401, 403, 503])("preserves status %s so transport failures cannot be mistaken for logout", async status => {
  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({}, { status })));

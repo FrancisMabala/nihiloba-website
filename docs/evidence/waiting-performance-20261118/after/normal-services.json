@@ -1,0 +1,2437 @@
+{
+  "profile": "normal",
+  "journey": "services",
+  "apiFixtureDelay": 80,
+  "results": [
+    {
+      "sample": 0,
+      "visit": "first",
+      "usefulMs": 698,
+      "usableMs": 718,
+      "requests": 55,
+      "bytes": 480643,
+      "sessionReads": 1,
+      "reads": [
+        {
+          "url": "/fr/shida/seller/services",
+          "start": 8,
+          "status": 308,
+          "end": 15,
+          "bytes": 0
+        },
+        {
+          "url": "/fr/shida/seller/services/",
+          "start": 15,
+          "status": 200,
+          "end": 112,
+          "bytes": 4745
+        },
+        {
+          "url": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 84,
+          "status": 200,
+          "end": 128,
+          "bytes": 227
+        },
+        {
+          "url": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 91,
+          "status": 200,
+          "end": 132,
+          "bytes": 1012
+        },
+        {
+          "url": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 92,
+          "status": 200,
+          "end": 138,
+          "bytes": 1725
+        },
+        {
+          "url": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 93,
+          "status": 200,
+          "end": 145,
+          "bytes": 1943
+        },
+        {
+          "url": "/_next/static/css/9589be668d657f82.css",
+          "start": 94,
+          "status": 200,
+          "end": 145,
+          "bytes": 1032
+        },
+        {
+          "url": "/_next/static/css/7723a1347018e758.css",
+          "start": 95,
+          "status": 200,
+          "end": 138,
+          "bytes": 859
+        },
+        {
+          "url": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 96,
+          "status": 200,
+          "end": 145,
+          "bytes": 1670
+        },
+        {
+          "url": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 97,
+          "status": 200,
+          "end": 146,
+          "bytes": 1698
+        },
+        {
+          "url": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 97,
+          "status": 200,
+          "end": 146,
+          "bytes": 5940
+        },
+        {
+          "url": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 98,
+          "status": 200,
+          "end": 147,
+          "bytes": 18602
+        },
+        {
+          "url": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 99,
+          "status": 200,
+          "end": 147,
+          "bytes": 1183
+        },
+        {
+          "url": "/_next/static/css/abb238d105d593a5.css",
+          "start": 99,
+          "status": 200,
+          "end": 148,
+          "bytes": 858
+        },
+        {
+          "url": "/_next/static/css/709180cc42939c18.css",
+          "start": 100,
+          "status": 200,
+          "end": 148,
+          "bytes": 951
+        },
+        {
+          "url": "/_next/static/css/85ff8566b71bf051.css",
+          "start": 100,
+          "status": 200,
+          "end": 150,
+          "bytes": 3392
+        },
+        {
+          "url": "/_next/static/css/5d1b2160122f968d.css",
+          "start": 101,
+          "status": 200,
+          "end": 167,
+          "bytes": 1551
+        },
+        {
+          "url": "/_next/static/css/318c74592afe441a.css",
+          "start": 101,
+          "status": 200,
+          "end": 167,
+          "bytes": 4786
+        },
+        {
+          "url": "/_next/static/css/79d8233eeb0eb2c9.css",
+          "start": 102,
+          "status": 200,
+          "end": 168,
+          "bytes": 968
+        },
+        {
+          "url": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 106,
+          "status": 200,
+          "end": 173,
+          "bytes": 2114
+        },
+        {
+          "url": "/_next/static/css/e3743996fcbd3986.css",
+          "start": 107,
+          "status": 200,
+          "end": 174,
+          "bytes": 2356
+        },
+        {
+          "url": "/_next/static/css/bdbf49cef51d0cdc.css",
+          "start": 108,
+          "status": 200,
+          "end": 174,
+          "bytes": 1019
+        },
+        {
+          "url": "/_next/static/css/a658ee7489a657aa.css",
+          "start": 108,
+          "status": 200,
+          "end": 174,
+          "bytes": 1501
+        },
+        {
+          "url": "/_next/static/css/bacb4bbbe268cb42.css",
+          "start": 109,
+          "status": 200,
+          "end": 173,
+          "bytes": 1149
+        },
+        {
+          "url": "/_next/static/css/84a3775e001dd40e.css",
+          "start": 110,
+          "status": 200,
+          "end": 174,
+          "bytes": 1732
+        },
+        {
+          "url": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 110,
+          "status": 200,
+          "end": 175,
+          "bytes": 1381
+        },
+        {
+          "url": "/_next/static/css/9d84d7abcb9f1b5f.css",
+          "start": 111,
+          "status": 200,
+          "end": 175,
+          "bytes": 4221
+        },
+        {
+          "url": "/_next/static/css/ce24429fa5a2f495.css",
+          "start": 112,
+          "status": 200,
+          "end": 177,
+          "bytes": 8429
+        },
+        {
+          "url": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 112,
+          "status": 200,
+          "end": 175,
+          "bytes": 5580
+        },
+        {
+          "url": "/_next/static/chunks/webpack-072cd4b3e407b898.js",
+          "start": 115,
+          "status": 200,
+          "end": 189,
+          "bytes": 3116
+        },
+        {
+          "url": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 116,
+          "status": 200,
+          "end": 190,
+          "bytes": 64120
+        },
+        {
+          "url": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 116,
+          "status": 200,
+          "end": 191,
+          "bytes": 67193
+        },
+        {
+          "url": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 117,
+          "status": 200,
+          "end": 189,
+          "bytes": 528
+        },
+        {
+          "url": "/_next/static/chunks/803-35867925ebb24279.js",
+          "start": 117,
+          "status": 200,
+          "end": 189,
+          "bytes": 3292
+        },
+        {
+          "url": "/_next/static/chunks/6596-cf3fa5db2b9b4fdf.js",
+          "start": 118,
+          "status": 200,
+          "end": 190,
+          "bytes": 5557
+        },
+        {
+          "url": "/_next/static/chunks/1707-57d4ebbe1a1549d6.js",
+          "start": 119,
+          "status": 200,
+          "end": 191,
+          "bytes": 19244
+        },
+        {
+          "url": "/_next/static/chunks/4127-67f0f19c7c670eb2.js",
+          "start": 120,
+          "status": 200,
+          "end": 190,
+          "bytes": 10038
+        },
+        {
+          "url": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 121,
+          "status": 200,
+          "end": 190,
+          "bytes": 5073
+        },
+        {
+          "url": "/_next/static/chunks/7567-861885f8660f394e.js",
+          "start": 122,
+          "status": 200,
+          "end": 192,
+          "bytes": 13194
+        },
+        {
+          "url": "/_next/static/chunks/122-79d2fd3c7a5bca93.js",
+          "start": 122,
+          "status": 200,
+          "end": 191,
+          "bytes": 26317
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-e980894792854cfb.js",
+          "start": 123,
+          "status": 200,
+          "end": 191,
+          "bytes": 206
+        },
+        {
+          "url": "/_next/static/chunks/9524-cd2a95a241fa5ec3.js",
+          "start": 123,
+          "status": 200,
+          "end": 197,
+          "bytes": 23394
+        },
+        {
+          "url": "/_next/static/chunks/2398-edb833399c85a608.js",
+          "start": 124,
+          "status": 200,
+          "end": 197,
+          "bytes": 24090
+        },
+        {
+          "url": "/_next/static/chunks/6419-c45a416975dfd7c6.js",
+          "start": 125,
+          "status": 200,
+          "end": 198,
+          "bytes": 19953
+        },
+        {
+          "url": "/_next/static/chunks/9912-def8d1f61edbfa3f.js",
+          "start": 126,
+          "status": 200,
+          "end": 229,
+          "bytes": 100253
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/services/page-fe9c436b1eb7296f.js",
+          "start": 127,
+          "status": 200,
+          "end": 197,
+          "bytes": 261
+        },
+        {
+          "url": "/favicon.ico",
+          "start": 279,
+          "status": 200,
+          "end": 290,
+          "bytes": 9321
+        },
+        {
+          "url": "/api/shida/employment/session/",
+          "start": 285,
+          "status": 200,
+          "end": 380,
+          "bytes": 115
+        },
+        {
+          "url": "/api/shida/personal/services/",
+          "start": 412,
+          "status": 200,
+          "end": 499,
+          "bytes": 1138
+        },
+        {
+          "url": "/api/shida/personal/services/capabilities/",
+          "start": 414,
+          "status": 200,
+          "end": 500,
+          "bytes": 143
+        },
+        {
+          "url": "/api/shida/personal/services/onboarding/",
+          "start": 555,
+          "status": 200,
+          "end": 675,
+          "bytes": 170
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/bill-presentation",
+          "start": 556,
+          "status": 200,
+          "end": 675,
+          "bytes": 88
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/requests",
+          "start": 559,
+          "status": 200,
+          "end": 675,
+          "bytes": 660
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/reservations",
+          "start": 559,
+          "status": 200,
+          "end": 676,
+          "bytes": 360
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/messages",
+          "start": 559,
+          "status": 200,
+          "end": 678,
+          "bytes": 195
+        }
+      ]
+    },
+    {
+      "sample": 0,
+      "visit": "repeat",
+      "usefulMs": 583,
+      "usableMs": 597,
+      "requests": 54,
+      "bytes": 480643,
+      "sessionReads": 1,
+      "reads": [
+        {
+          "url": "/fr/shida/seller/services/",
+          "start": 22,
+          "status": 200,
+          "end": 91,
+          "bytes": 4745
+        },
+        {
+          "url": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 98,
+          "status": 200,
+          "end": 142,
+          "bytes": 227
+        },
+        {
+          "url": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 103,
+          "status": 200,
+          "end": 143,
+          "bytes": 1012
+        },
+        {
+          "url": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 107,
+          "status": 200,
+          "end": 163,
+          "bytes": 1725
+        },
+        {
+          "url": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 108,
+          "status": 200,
+          "end": 161,
+          "bytes": 1943
+        },
+        {
+          "url": "/_next/static/css/9589be668d657f82.css",
+          "start": 108,
+          "status": 200,
+          "end": 161,
+          "bytes": 1032
+        },
+        {
+          "url": "/_next/static/css/7723a1347018e758.css",
+          "start": 109,
+          "status": 200,
+          "end": 162,
+          "bytes": 859
+        },
+        {
+          "url": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 109,
+          "status": 200,
+          "end": 168,
+          "bytes": 1670
+        },
+        {
+          "url": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 110,
+          "status": 200,
+          "end": 163,
+          "bytes": 1698
+        },
+        {
+          "url": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 111,
+          "status": 200,
+          "end": 169,
+          "bytes": 5940
+        },
+        {
+          "url": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 111,
+          "status": 200,
+          "end": 180,
+          "bytes": 18602
+        },
+        {
+          "url": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 112,
+          "status": 200,
+          "end": 169,
+          "bytes": 1183
+        },
+        {
+          "url": "/_next/static/css/abb238d105d593a5.css",
+          "start": 113,
+          "status": 200,
+          "end": 169,
+          "bytes": 858
+        },
+        {
+          "url": "/_next/static/css/709180cc42939c18.css",
+          "start": 114,
+          "status": 200,
+          "end": 180,
+          "bytes": 951
+        },
+        {
+          "url": "/_next/static/css/85ff8566b71bf051.css",
+          "start": 115,
+          "status": 200,
+          "end": 181,
+          "bytes": 3392
+        },
+        {
+          "url": "/_next/static/css/5d1b2160122f968d.css",
+          "start": 115,
+          "status": 200,
+          "end": 181,
+          "bytes": 1551
+        },
+        {
+          "url": "/_next/static/css/318c74592afe441a.css",
+          "start": 116,
+          "status": 200,
+          "end": 181,
+          "bytes": 4786
+        },
+        {
+          "url": "/_next/static/css/79d8233eeb0eb2c9.css",
+          "start": 117,
+          "status": 200,
+          "end": 181,
+          "bytes": 968
+        },
+        {
+          "url": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 118,
+          "status": 200,
+          "end": 181,
+          "bytes": 2114
+        },
+        {
+          "url": "/_next/static/css/e3743996fcbd3986.css",
+          "start": 118,
+          "status": 200,
+          "end": 187,
+          "bytes": 2356
+        },
+        {
+          "url": "/_next/static/css/bdbf49cef51d0cdc.css",
+          "start": 119,
+          "status": 200,
+          "end": 193,
+          "bytes": 1019
+        },
+        {
+          "url": "/_next/static/css/a658ee7489a657aa.css",
+          "start": 119,
+          "status": 200,
+          "end": 194,
+          "bytes": 1501
+        },
+        {
+          "url": "/_next/static/css/bacb4bbbe268cb42.css",
+          "start": 120,
+          "status": 200,
+          "end": 194,
+          "bytes": 1149
+        },
+        {
+          "url": "/_next/static/css/84a3775e001dd40e.css",
+          "start": 120,
+          "status": 200,
+          "end": 188,
+          "bytes": 1732
+        },
+        {
+          "url": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 121,
+          "status": 200,
+          "end": 193,
+          "bytes": 1381
+        },
+        {
+          "url": "/_next/static/css/9d84d7abcb9f1b5f.css",
+          "start": 121,
+          "status": 200,
+          "end": 194,
+          "bytes": 4221
+        },
+        {
+          "url": "/_next/static/css/ce24429fa5a2f495.css",
+          "start": 122,
+          "status": 200,
+          "end": 195,
+          "bytes": 8429
+        },
+        {
+          "url": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 122,
+          "status": 200,
+          "end": 197,
+          "bytes": 5580
+        },
+        {
+          "url": "/_next/static/chunks/webpack-072cd4b3e407b898.js",
+          "start": 122,
+          "status": 200,
+          "end": 197,
+          "bytes": 3116
+        },
+        {
+          "url": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 123,
+          "status": 200,
+          "end": 214,
+          "bytes": 64120
+        },
+        {
+          "url": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 123,
+          "status": 200,
+          "end": 215,
+          "bytes": 67193
+        },
+        {
+          "url": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 124,
+          "status": 200,
+          "end": 206,
+          "bytes": 528
+        },
+        {
+          "url": "/_next/static/chunks/803-35867925ebb24279.js",
+          "start": 132,
+          "status": 200,
+          "end": 207,
+          "bytes": 3292
+        },
+        {
+          "url": "/_next/static/chunks/6596-cf3fa5db2b9b4fdf.js",
+          "start": 133,
+          "status": 200,
+          "end": 207,
+          "bytes": 5557
+        },
+        {
+          "url": "/_next/static/chunks/1707-57d4ebbe1a1549d6.js",
+          "start": 134,
+          "status": 200,
+          "end": 207,
+          "bytes": 19244
+        },
+        {
+          "url": "/_next/static/chunks/4127-67f0f19c7c670eb2.js",
+          "start": 134,
+          "status": 200,
+          "end": 213,
+          "bytes": 10038
+        },
+        {
+          "url": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 135,
+          "status": 200,
+          "end": 214,
+          "bytes": 5073
+        },
+        {
+          "url": "/_next/static/chunks/7567-861885f8660f394e.js",
+          "start": 136,
+          "status": 200,
+          "end": 214,
+          "bytes": 13194
+        },
+        {
+          "url": "/_next/static/chunks/122-79d2fd3c7a5bca93.js",
+          "start": 136,
+          "status": 200,
+          "end": 222,
+          "bytes": 26317
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-e980894792854cfb.js",
+          "start": 137,
+          "status": 200,
+          "end": 215,
+          "bytes": 206
+        },
+        {
+          "url": "/_next/static/chunks/9524-cd2a95a241fa5ec3.js",
+          "start": 137,
+          "status": 200,
+          "end": 222,
+          "bytes": 23394
+        },
+        {
+          "url": "/_next/static/chunks/2398-edb833399c85a608.js",
+          "start": 138,
+          "status": 200,
+          "end": 223,
+          "bytes": 24090
+        },
+        {
+          "url": "/_next/static/chunks/6419-c45a416975dfd7c6.js",
+          "start": 138,
+          "status": 200,
+          "end": 223,
+          "bytes": 19953
+        },
+        {
+          "url": "/_next/static/chunks/9912-def8d1f61edbfa3f.js",
+          "start": 139,
+          "status": 200,
+          "end": 227,
+          "bytes": 100253
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/services/page-fe9c436b1eb7296f.js",
+          "start": 139,
+          "status": 200,
+          "end": 223,
+          "bytes": 261
+        },
+        {
+          "url": "/api/shida/employment/session/",
+          "start": 232,
+          "status": 200,
+          "end": 317,
+          "bytes": 115
+        },
+        {
+          "url": "/favicon.ico",
+          "start": 232,
+          "status": 200,
+          "end": 252,
+          "bytes": 9321
+        },
+        {
+          "url": "/api/shida/personal/services/",
+          "start": 324,
+          "status": 200,
+          "end": 419,
+          "bytes": 1138
+        },
+        {
+          "url": "/api/shida/personal/services/capabilities/",
+          "start": 324,
+          "status": 200,
+          "end": 419,
+          "bytes": 143
+        },
+        {
+          "url": "/api/shida/personal/services/onboarding/",
+          "start": 437,
+          "status": 200,
+          "end": 575,
+          "bytes": 170
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/bill-presentation",
+          "start": 438,
+          "status": 200,
+          "end": 575,
+          "bytes": 88
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/requests",
+          "start": 439,
+          "status": 200,
+          "end": 576,
+          "bytes": 660
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/reservations",
+          "start": 439,
+          "status": 200,
+          "end": 576,
+          "bytes": 360
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/messages",
+          "start": 440,
+          "status": 200,
+          "end": 576,
+          "bytes": 195
+        }
+      ]
+    },
+    {
+      "sample": 0,
+      "visit": "navigation",
+      "usefulMs": 85,
+      "usableMs": 196,
+      "requests": 2,
+      "bytes": 9390,
+      "sessionReads": 0,
+      "reads": [
+        {
+          "url": "/api/shida/personal/services/calendar",
+          "start": 66,
+          "status": 200,
+          "end": 166,
+          "bytes": 69
+        },
+        {
+          "url": "/favicon.ico",
+          "start": 78,
+          "status": 200,
+          "end": 91,
+          "bytes": 9321
+        }
+      ]
+    },
+    {
+      "sample": 1,
+      "visit": "first",
+      "usefulMs": 629,
+      "usableMs": 642,
+      "requests": 55,
+      "bytes": 480643,
+      "sessionReads": 1,
+      "reads": [
+        {
+          "url": "/fr/shida/seller/services",
+          "start": 11,
+          "status": 308,
+          "end": 17,
+          "bytes": 0
+        },
+        {
+          "url": "/fr/shida/seller/services/",
+          "start": 17,
+          "status": 200,
+          "end": 78,
+          "bytes": 4745
+        },
+        {
+          "url": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 59,
+          "status": 200,
+          "end": 99,
+          "bytes": 227
+        },
+        {
+          "url": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 61,
+          "status": 200,
+          "end": 102,
+          "bytes": 1012
+        },
+        {
+          "url": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 62,
+          "status": 200,
+          "end": 100,
+          "bytes": 1725
+        },
+        {
+          "url": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 64,
+          "status": 200,
+          "end": 119,
+          "bytes": 1943
+        },
+        {
+          "url": "/_next/static/css/9589be668d657f82.css",
+          "start": 65,
+          "status": 200,
+          "end": 118,
+          "bytes": 1032
+        },
+        {
+          "url": "/_next/static/css/7723a1347018e758.css",
+          "start": 68,
+          "status": 200,
+          "end": 119,
+          "bytes": 859
+        },
+        {
+          "url": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 69,
+          "status": 200,
+          "end": 120,
+          "bytes": 1670
+        },
+        {
+          "url": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 69,
+          "status": 200,
+          "end": 120,
+          "bytes": 1698
+        },
+        {
+          "url": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 70,
+          "status": 200,
+          "end": 120,
+          "bytes": 5940
+        },
+        {
+          "url": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 70,
+          "status": 200,
+          "end": 146,
+          "bytes": 18602
+        },
+        {
+          "url": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 71,
+          "status": 200,
+          "end": 134,
+          "bytes": 1183
+        },
+        {
+          "url": "/_next/static/css/abb238d105d593a5.css",
+          "start": 71,
+          "status": 200,
+          "end": 146,
+          "bytes": 858
+        },
+        {
+          "url": "/_next/static/css/709180cc42939c18.css",
+          "start": 71,
+          "status": 200,
+          "end": 145,
+          "bytes": 951
+        },
+        {
+          "url": "/_next/static/css/85ff8566b71bf051.css",
+          "start": 72,
+          "status": 200,
+          "end": 147,
+          "bytes": 3392
+        },
+        {
+          "url": "/_next/static/css/5d1b2160122f968d.css",
+          "start": 72,
+          "status": 200,
+          "end": 147,
+          "bytes": 1551
+        },
+        {
+          "url": "/_next/static/css/318c74592afe441a.css",
+          "start": 72,
+          "status": 200,
+          "end": 147,
+          "bytes": 4786
+        },
+        {
+          "url": "/_next/static/css/79d8233eeb0eb2c9.css",
+          "start": 73,
+          "status": 200,
+          "end": 153,
+          "bytes": 968
+        },
+        {
+          "url": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 73,
+          "status": 200,
+          "end": 154,
+          "bytes": 2114
+        },
+        {
+          "url": "/_next/static/css/e3743996fcbd3986.css",
+          "start": 73,
+          "status": 200,
+          "end": 154,
+          "bytes": 2356
+        },
+        {
+          "url": "/_next/static/css/bdbf49cef51d0cdc.css",
+          "start": 74,
+          "status": 200,
+          "end": 154,
+          "bytes": 1019
+        },
+        {
+          "url": "/_next/static/css/a658ee7489a657aa.css",
+          "start": 74,
+          "status": 200,
+          "end": 155,
+          "bytes": 1501
+        },
+        {
+          "url": "/_next/static/css/bacb4bbbe268cb42.css",
+          "start": 75,
+          "status": 200,
+          "end": 155,
+          "bytes": 1149
+        },
+        {
+          "url": "/_next/static/css/84a3775e001dd40e.css",
+          "start": 75,
+          "status": 200,
+          "end": 155,
+          "bytes": 1732
+        },
+        {
+          "url": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 77,
+          "status": 200,
+          "end": 163,
+          "bytes": 1381
+        },
+        {
+          "url": "/_next/static/css/9d84d7abcb9f1b5f.css",
+          "start": 77,
+          "status": 200,
+          "end": 164,
+          "bytes": 4221
+        },
+        {
+          "url": "/_next/static/css/ce24429fa5a2f495.css",
+          "start": 77,
+          "status": 200,
+          "end": 165,
+          "bytes": 8429
+        },
+        {
+          "url": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 78,
+          "status": 200,
+          "end": 164,
+          "bytes": 5580
+        },
+        {
+          "url": "/_next/static/chunks/webpack-072cd4b3e407b898.js",
+          "start": 85,
+          "status": 200,
+          "end": 174,
+          "bytes": 3116
+        },
+        {
+          "url": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 86,
+          "status": 200,
+          "end": 178,
+          "bytes": 64120
+        },
+        {
+          "url": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 86,
+          "status": 200,
+          "end": 179,
+          "bytes": 67193
+        },
+        {
+          "url": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 86,
+          "status": 200,
+          "end": 165,
+          "bytes": 528
+        },
+        {
+          "url": "/_next/static/chunks/803-35867925ebb24279.js",
+          "start": 87,
+          "status": 200,
+          "end": 174,
+          "bytes": 3292
+        },
+        {
+          "url": "/_next/static/chunks/6596-cf3fa5db2b9b4fdf.js",
+          "start": 88,
+          "status": 200,
+          "end": 174,
+          "bytes": 5557
+        },
+        {
+          "url": "/_next/static/chunks/1707-57d4ebbe1a1549d6.js",
+          "start": 88,
+          "status": 200,
+          "end": 178,
+          "bytes": 19244
+        },
+        {
+          "url": "/_next/static/chunks/4127-67f0f19c7c670eb2.js",
+          "start": 89,
+          "status": 200,
+          "end": 175,
+          "bytes": 10038
+        },
+        {
+          "url": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 89,
+          "status": 200,
+          "end": 175,
+          "bytes": 5073
+        },
+        {
+          "url": "/_next/static/chunks/7567-861885f8660f394e.js",
+          "start": 90,
+          "status": 200,
+          "end": 175,
+          "bytes": 13194
+        },
+        {
+          "url": "/_next/static/chunks/122-79d2fd3c7a5bca93.js",
+          "start": 91,
+          "status": 200,
+          "end": 178,
+          "bytes": 26317
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-e980894792854cfb.js",
+          "start": 91,
+          "status": 200,
+          "end": 175,
+          "bytes": 206
+        },
+        {
+          "url": "/_next/static/chunks/9524-cd2a95a241fa5ec3.js",
+          "start": 92,
+          "status": 200,
+          "end": 176,
+          "bytes": 23394
+        },
+        {
+          "url": "/_next/static/chunks/2398-edb833399c85a608.js",
+          "start": 92,
+          "status": 200,
+          "end": 201,
+          "bytes": 24090
+        },
+        {
+          "url": "/_next/static/chunks/6419-c45a416975dfd7c6.js",
+          "start": 94,
+          "status": 200,
+          "end": 177,
+          "bytes": 19953
+        },
+        {
+          "url": "/_next/static/chunks/9912-def8d1f61edbfa3f.js",
+          "start": 94,
+          "status": 200,
+          "end": 203,
+          "bytes": 100253
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/services/page-fe9c436b1eb7296f.js",
+          "start": 95,
+          "status": 200,
+          "end": 200,
+          "bytes": 261
+        },
+        {
+          "url": "/favicon.ico",
+          "start": 234,
+          "status": 200,
+          "end": 248,
+          "bytes": 9321
+        },
+        {
+          "url": "/api/shida/employment/session/",
+          "start": 239,
+          "status": 200,
+          "end": 331,
+          "bytes": 115
+        },
+        {
+          "url": "/api/shida/personal/services/",
+          "start": 356,
+          "status": 200,
+          "end": 448,
+          "bytes": 1138
+        },
+        {
+          "url": "/api/shida/personal/services/capabilities/",
+          "start": 357,
+          "status": 200,
+          "end": 449,
+          "bytes": 143
+        },
+        {
+          "url": "/api/shida/personal/services/onboarding/",
+          "start": 501,
+          "status": 200,
+          "end": 601,
+          "bytes": 170
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/bill-presentation",
+          "start": 501,
+          "status": 200,
+          "end": 601,
+          "bytes": 88
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/requests",
+          "start": 502,
+          "status": 200,
+          "end": 603,
+          "bytes": 660
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/reservations",
+          "start": 502,
+          "status": 200,
+          "end": 603,
+          "bytes": 360
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/messages",
+          "start": 504,
+          "status": 200,
+          "end": 603,
+          "bytes": 195
+        }
+      ]
+    },
+    {
+      "sample": 1,
+      "visit": "repeat",
+      "usefulMs": 744,
+      "usableMs": 760,
+      "requests": 54,
+      "bytes": 480643,
+      "sessionReads": 1,
+      "reads": [
+        {
+          "url": "/fr/shida/seller/services/",
+          "start": 13,
+          "status": 200,
+          "end": 47,
+          "bytes": 4745
+        },
+        {
+          "url": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 50,
+          "status": 200,
+          "end": 110,
+          "bytes": 227
+        },
+        {
+          "url": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 53,
+          "status": 200,
+          "end": 147,
+          "bytes": 1012
+        },
+        {
+          "url": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 55,
+          "status": 200,
+          "end": 209,
+          "bytes": 1725
+        },
+        {
+          "url": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 55,
+          "status": 200,
+          "end": 216,
+          "bytes": 1943
+        },
+        {
+          "url": "/_next/static/css/9589be668d657f82.css",
+          "start": 55,
+          "status": 200,
+          "end": 192,
+          "bytes": 1032
+        },
+        {
+          "url": "/_next/static/css/7723a1347018e758.css",
+          "start": 56,
+          "status": 200,
+          "end": 217,
+          "bytes": 859
+        },
+        {
+          "url": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 56,
+          "status": 200,
+          "end": 193,
+          "bytes": 1670
+        },
+        {
+          "url": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 56,
+          "status": 200,
+          "end": 220,
+          "bytes": 1698
+        },
+        {
+          "url": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 57,
+          "status": 200,
+          "end": 221,
+          "bytes": 5940
+        },
+        {
+          "url": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 59,
+          "status": 200,
+          "end": 235,
+          "bytes": 18602
+        },
+        {
+          "url": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 59,
+          "status": 200,
+          "end": 221,
+          "bytes": 1183
+        },
+        {
+          "url": "/_next/static/css/abb238d105d593a5.css",
+          "start": 60,
+          "status": 200,
+          "end": 221,
+          "bytes": 858
+        },
+        {
+          "url": "/_next/static/css/709180cc42939c18.css",
+          "start": 60,
+          "status": 200,
+          "end": 221,
+          "bytes": 951
+        },
+        {
+          "url": "/_next/static/css/85ff8566b71bf051.css",
+          "start": 61,
+          "status": 200,
+          "end": 222,
+          "bytes": 3392
+        },
+        {
+          "url": "/_next/static/css/5d1b2160122f968d.css",
+          "start": 62,
+          "status": 200,
+          "end": 236,
+          "bytes": 1551
+        },
+        {
+          "url": "/_next/static/css/318c74592afe441a.css",
+          "start": 62,
+          "status": 200,
+          "end": 236,
+          "bytes": 4786
+        },
+        {
+          "url": "/_next/static/css/79d8233eeb0eb2c9.css",
+          "start": 63,
+          "status": 200,
+          "end": 249,
+          "bytes": 968
+        },
+        {
+          "url": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 63,
+          "status": 200,
+          "end": 248,
+          "bytes": 2114
+        },
+        {
+          "url": "/_next/static/css/e3743996fcbd3986.css",
+          "start": 64,
+          "status": 200,
+          "end": 249,
+          "bytes": 2356
+        },
+        {
+          "url": "/_next/static/css/bdbf49cef51d0cdc.css",
+          "start": 64,
+          "status": 200,
+          "end": 249,
+          "bytes": 1019
+        },
+        {
+          "url": "/_next/static/css/a658ee7489a657aa.css",
+          "start": 65,
+          "status": 200,
+          "end": 250,
+          "bytes": 1501
+        },
+        {
+          "url": "/_next/static/css/bacb4bbbe268cb42.css",
+          "start": 65,
+          "status": 200,
+          "end": 254,
+          "bytes": 1149
+        },
+        {
+          "url": "/_next/static/css/84a3775e001dd40e.css",
+          "start": 66,
+          "status": 200,
+          "end": 254,
+          "bytes": 1732
+        },
+        {
+          "url": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 66,
+          "status": 200,
+          "end": 262,
+          "bytes": 1381
+        },
+        {
+          "url": "/_next/static/css/9d84d7abcb9f1b5f.css",
+          "start": 67,
+          "status": 200,
+          "end": 258,
+          "bytes": 4221
+        },
+        {
+          "url": "/_next/static/css/ce24429fa5a2f495.css",
+          "start": 67,
+          "status": 200,
+          "end": 258,
+          "bytes": 8429
+        },
+        {
+          "url": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 75,
+          "status": 200,
+          "end": 263,
+          "bytes": 5580
+        },
+        {
+          "url": "/_next/static/chunks/webpack-072cd4b3e407b898.js",
+          "start": 76,
+          "status": 200,
+          "end": 263,
+          "bytes": 3116
+        },
+        {
+          "url": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 77,
+          "status": 200,
+          "end": 285,
+          "bytes": 64120
+        },
+        {
+          "url": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 77,
+          "status": 200,
+          "end": 289,
+          "bytes": 67193
+        },
+        {
+          "url": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 78,
+          "status": 200,
+          "end": 263,
+          "bytes": 528
+        },
+        {
+          "url": "/_next/static/chunks/803-35867925ebb24279.js",
+          "start": 78,
+          "status": 200,
+          "end": 263,
+          "bytes": 3292
+        },
+        {
+          "url": "/_next/static/chunks/6596-cf3fa5db2b9b4fdf.js",
+          "start": 79,
+          "status": 200,
+          "end": 283,
+          "bytes": 5557
+        },
+        {
+          "url": "/_next/static/chunks/1707-57d4ebbe1a1549d6.js",
+          "start": 79,
+          "status": 200,
+          "end": 290,
+          "bytes": 19244
+        },
+        {
+          "url": "/_next/static/chunks/4127-67f0f19c7c670eb2.js",
+          "start": 80,
+          "status": 200,
+          "end": 289,
+          "bytes": 10038
+        },
+        {
+          "url": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 80,
+          "status": 200,
+          "end": 289,
+          "bytes": 5073
+        },
+        {
+          "url": "/_next/static/chunks/7567-861885f8660f394e.js",
+          "start": 81,
+          "status": 200,
+          "end": 307,
+          "bytes": 13194
+        },
+        {
+          "url": "/_next/static/chunks/122-79d2fd3c7a5bca93.js",
+          "start": 81,
+          "status": 200,
+          "end": 309,
+          "bytes": 26317
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-e980894792854cfb.js",
+          "start": 82,
+          "status": 200,
+          "end": 308,
+          "bytes": 206
+        },
+        {
+          "url": "/_next/static/chunks/9524-cd2a95a241fa5ec3.js",
+          "start": 82,
+          "status": 200,
+          "end": 308,
+          "bytes": 23394
+        },
+        {
+          "url": "/_next/static/chunks/2398-edb833399c85a608.js",
+          "start": 82,
+          "status": 200,
+          "end": 308,
+          "bytes": 24090
+        },
+        {
+          "url": "/_next/static/chunks/6419-c45a416975dfd7c6.js",
+          "start": 83,
+          "status": 200,
+          "end": 308,
+          "bytes": 19953
+        },
+        {
+          "url": "/_next/static/chunks/9912-def8d1f61edbfa3f.js",
+          "start": 88,
+          "status": 200,
+          "end": 327,
+          "bytes": 100253
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/services/page-fe9c436b1eb7296f.js",
+          "start": 91,
+          "status": 200,
+          "end": 326,
+          "bytes": 261
+        },
+        {
+          "url": "/favicon.ico",
+          "start": 333,
+          "status": 200,
+          "end": 395,
+          "bytes": 9321
+        },
+        {
+          "url": "/api/shida/employment/session/",
+          "start": 338,
+          "status": 200,
+          "end": 429,
+          "bytes": 115
+        },
+        {
+          "url": "/api/shida/personal/services/",
+          "start": 434,
+          "status": 200,
+          "end": 520,
+          "bytes": 1138
+        },
+        {
+          "url": "/api/shida/personal/services/capabilities/",
+          "start": 447,
+          "status": 200,
+          "end": 538,
+          "bytes": 143
+        },
+        {
+          "url": "/api/shida/personal/services/onboarding/",
+          "start": 563,
+          "status": 200,
+          "end": 657,
+          "bytes": 170
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/bill-presentation",
+          "start": 563,
+          "status": 200,
+          "end": 665,
+          "bytes": 88
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/requests",
+          "start": 563,
+          "status": 200,
+          "end": 674,
+          "bytes": 660
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/reservations",
+          "start": 563,
+          "status": 200,
+          "end": 674,
+          "bytes": 360
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/messages",
+          "start": 563,
+          "status": 200,
+          "end": 675,
+          "bytes": 195
+        }
+      ]
+    },
+    {
+      "sample": 1,
+      "visit": "navigation",
+      "usefulMs": 77,
+      "usableMs": 185,
+      "requests": 2,
+      "bytes": 9390,
+      "sessionReads": 0,
+      "reads": [
+        {
+          "url": "/api/shida/personal/services/calendar",
+          "start": 62,
+          "status": 200,
+          "end": 184,
+          "bytes": 69
+        },
+        {
+          "url": "/favicon.ico",
+          "start": 71,
+          "status": 200,
+          "end": 80,
+          "bytes": 9321
+        }
+      ]
+    },
+    {
+      "sample": 2,
+      "visit": "first",
+      "usefulMs": 730,
+      "usableMs": 747,
+      "requests": 55,
+      "bytes": 480643,
+      "sessionReads": 1,
+      "reads": [
+        {
+          "url": "/fr/shida/seller/services",
+          "start": 9,
+          "status": 308,
+          "end": 14,
+          "bytes": 0
+        },
+        {
+          "url": "/fr/shida/seller/services/",
+          "start": 15,
+          "status": 200,
+          "end": 80,
+          "bytes": 4745
+        },
+        {
+          "url": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 55,
+          "status": 200,
+          "end": 103,
+          "bytes": 227
+        },
+        {
+          "url": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 59,
+          "status": 200,
+          "end": 104,
+          "bytes": 1012
+        },
+        {
+          "url": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 63,
+          "status": 200,
+          "end": 107,
+          "bytes": 1725
+        },
+        {
+          "url": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 64,
+          "status": 200,
+          "end": 108,
+          "bytes": 1943
+        },
+        {
+          "url": "/_next/static/css/9589be668d657f82.css",
+          "start": 65,
+          "status": 200,
+          "end": 110,
+          "bytes": 1032
+        },
+        {
+          "url": "/_next/static/css/7723a1347018e758.css",
+          "start": 65,
+          "status": 200,
+          "end": 108,
+          "bytes": 859
+        },
+        {
+          "url": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 65,
+          "status": 200,
+          "end": 108,
+          "bytes": 1670
+        },
+        {
+          "url": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 67,
+          "status": 200,
+          "end": 126,
+          "bytes": 1698
+        },
+        {
+          "url": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 68,
+          "status": 200,
+          "end": 128,
+          "bytes": 5940
+        },
+        {
+          "url": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 69,
+          "status": 200,
+          "end": 133,
+          "bytes": 18602
+        },
+        {
+          "url": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 69,
+          "status": 200,
+          "end": 127,
+          "bytes": 1183
+        },
+        {
+          "url": "/_next/static/css/abb238d105d593a5.css",
+          "start": 70,
+          "status": 200,
+          "end": 127,
+          "bytes": 858
+        },
+        {
+          "url": "/_next/static/css/709180cc42939c18.css",
+          "start": 70,
+          "status": 200,
+          "end": 127,
+          "bytes": 951
+        },
+        {
+          "url": "/_next/static/css/85ff8566b71bf051.css",
+          "start": 70,
+          "status": 200,
+          "end": 160,
+          "bytes": 3392
+        },
+        {
+          "url": "/_next/static/css/5d1b2160122f968d.css",
+          "start": 71,
+          "status": 200,
+          "end": 163,
+          "bytes": 1551
+        },
+        {
+          "url": "/_next/static/css/318c74592afe441a.css",
+          "start": 71,
+          "status": 200,
+          "end": 163,
+          "bytes": 4786
+        },
+        {
+          "url": "/_next/static/css/79d8233eeb0eb2c9.css",
+          "start": 72,
+          "status": 200,
+          "end": 163,
+          "bytes": 968
+        },
+        {
+          "url": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 73,
+          "status": 200,
+          "end": 164,
+          "bytes": 2114
+        },
+        {
+          "url": "/_next/static/css/e3743996fcbd3986.css",
+          "start": 73,
+          "status": 200,
+          "end": 164,
+          "bytes": 2356
+        },
+        {
+          "url": "/_next/static/css/bdbf49cef51d0cdc.css",
+          "start": 74,
+          "status": 200,
+          "end": 164,
+          "bytes": 1019
+        },
+        {
+          "url": "/_next/static/css/a658ee7489a657aa.css",
+          "start": 74,
+          "status": 200,
+          "end": 165,
+          "bytes": 1501
+        },
+        {
+          "url": "/_next/static/css/bacb4bbbe268cb42.css",
+          "start": 74,
+          "status": 200,
+          "end": 165,
+          "bytes": 1149
+        },
+        {
+          "url": "/_next/static/css/84a3775e001dd40e.css",
+          "start": 75,
+          "status": 200,
+          "end": 189,
+          "bytes": 1732
+        },
+        {
+          "url": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 76,
+          "status": 200,
+          "end": 190,
+          "bytes": 1381
+        },
+        {
+          "url": "/_next/static/css/9d84d7abcb9f1b5f.css",
+          "start": 76,
+          "status": 200,
+          "end": 196,
+          "bytes": 4221
+        },
+        {
+          "url": "/_next/static/css/ce24429fa5a2f495.css",
+          "start": 76,
+          "status": 200,
+          "end": 190,
+          "bytes": 8429
+        },
+        {
+          "url": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 77,
+          "status": 200,
+          "end": 190,
+          "bytes": 5580
+        },
+        {
+          "url": "/_next/static/chunks/webpack-072cd4b3e407b898.js",
+          "start": 80,
+          "status": 200,
+          "end": 191,
+          "bytes": 3116
+        },
+        {
+          "url": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 80,
+          "status": 200,
+          "end": 205,
+          "bytes": 64120
+        },
+        {
+          "url": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 81,
+          "status": 200,
+          "end": 203,
+          "bytes": 67193
+        },
+        {
+          "url": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 82,
+          "status": 200,
+          "end": 191,
+          "bytes": 528
+        },
+        {
+          "url": "/_next/static/chunks/803-35867925ebb24279.js",
+          "start": 83,
+          "status": 200,
+          "end": 207,
+          "bytes": 3292
+        },
+        {
+          "url": "/_next/static/chunks/6596-cf3fa5db2b9b4fdf.js",
+          "start": 83,
+          "status": 200,
+          "end": 208,
+          "bytes": 5557
+        },
+        {
+          "url": "/_next/static/chunks/1707-57d4ebbe1a1549d6.js",
+          "start": 84,
+          "status": 200,
+          "end": 211,
+          "bytes": 19244
+        },
+        {
+          "url": "/_next/static/chunks/4127-67f0f19c7c670eb2.js",
+          "start": 85,
+          "status": 200,
+          "end": 208,
+          "bytes": 10038
+        },
+        {
+          "url": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 86,
+          "status": 200,
+          "end": 208,
+          "bytes": 5073
+        },
+        {
+          "url": "/_next/static/chunks/7567-861885f8660f394e.js",
+          "start": 86,
+          "status": 200,
+          "end": 211,
+          "bytes": 13194
+        },
+        {
+          "url": "/_next/static/chunks/122-79d2fd3c7a5bca93.js",
+          "start": 89,
+          "status": 200,
+          "end": 215,
+          "bytes": 26317
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-e980894792854cfb.js",
+          "start": 90,
+          "status": 200,
+          "end": 211,
+          "bytes": 206
+        },
+        {
+          "url": "/_next/static/chunks/9524-cd2a95a241fa5ec3.js",
+          "start": 91,
+          "status": 200,
+          "end": 215,
+          "bytes": 23394
+        },
+        {
+          "url": "/_next/static/chunks/2398-edb833399c85a608.js",
+          "start": 94,
+          "status": 200,
+          "end": 215,
+          "bytes": 24090
+        },
+        {
+          "url": "/_next/static/chunks/6419-c45a416975dfd7c6.js",
+          "start": 94,
+          "status": 200,
+          "end": 212,
+          "bytes": 19953
+        },
+        {
+          "url": "/_next/static/chunks/9912-def8d1f61edbfa3f.js",
+          "start": 97,
+          "status": 200,
+          "end": 216,
+          "bytes": 100253
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/services/page-fe9c436b1eb7296f.js",
+          "start": 97,
+          "status": 200,
+          "end": 212,
+          "bytes": 261
+        },
+        {
+          "url": "/favicon.ico",
+          "start": 314,
+          "status": 200,
+          "end": 329,
+          "bytes": 9321
+        },
+        {
+          "url": "/api/shida/employment/session/",
+          "start": 319,
+          "status": 200,
+          "end": 407,
+          "bytes": 115
+        },
+        {
+          "url": "/api/shida/personal/services/",
+          "start": 433,
+          "status": 200,
+          "end": 521,
+          "bytes": 1138
+        },
+        {
+          "url": "/api/shida/personal/services/capabilities/",
+          "start": 434,
+          "status": 200,
+          "end": 522,
+          "bytes": 143
+        },
+        {
+          "url": "/api/shida/personal/services/onboarding/",
+          "start": 579,
+          "status": 200,
+          "end": 687,
+          "bytes": 170
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/bill-presentation",
+          "start": 580,
+          "status": 200,
+          "end": 688,
+          "bytes": 88
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/requests",
+          "start": 584,
+          "status": 200,
+          "end": 696,
+          "bytes": 660
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/reservations",
+          "start": 584,
+          "status": 200,
+          "end": 703,
+          "bytes": 360
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/messages",
+          "start": 585,
+          "status": 200,
+          "end": 724,
+          "bytes": 195
+        }
+      ]
+    },
+    {
+      "sample": 2,
+      "visit": "repeat",
+      "usefulMs": 553,
+      "usableMs": 567,
+      "requests": 54,
+      "bytes": 480643,
+      "sessionReads": 1,
+      "reads": [
+        {
+          "url": "/fr/shida/seller/services/",
+          "start": 11,
+          "status": 200,
+          "end": 54,
+          "bytes": 4745
+        },
+        {
+          "url": "/_next/static/css/6572f04ed4f13825.css",
+          "start": 57,
+          "status": 200,
+          "end": 109,
+          "bytes": 227
+        },
+        {
+          "url": "/_next/static/css/8719c30a85b2bde0.css",
+          "start": 63,
+          "status": 200,
+          "end": 111,
+          "bytes": 1012
+        },
+        {
+          "url": "/_next/static/css/78be2c0723964ae1.css",
+          "start": 66,
+          "status": 200,
+          "end": 118,
+          "bytes": 1725
+        },
+        {
+          "url": "/_next/static/css/6a9dfe907654130e.css",
+          "start": 67,
+          "status": 200,
+          "end": 116,
+          "bytes": 1943
+        },
+        {
+          "url": "/_next/static/css/9589be668d657f82.css",
+          "start": 68,
+          "status": 200,
+          "end": 116,
+          "bytes": 1032
+        },
+        {
+          "url": "/_next/static/css/7723a1347018e758.css",
+          "start": 68,
+          "status": 200,
+          "end": 128,
+          "bytes": 859
+        },
+        {
+          "url": "/_next/static/css/2b0cdb54d214de63.css",
+          "start": 69,
+          "status": 200,
+          "end": 128,
+          "bytes": 1670
+        },
+        {
+          "url": "/_next/static/css/7f7dc5521a0af0da.css",
+          "start": 69,
+          "status": 200,
+          "end": 129,
+          "bytes": 1698
+        },
+        {
+          "url": "/_next/static/css/e2334578d63b2f5b.css",
+          "start": 70,
+          "status": 200,
+          "end": 129,
+          "bytes": 5940
+        },
+        {
+          "url": "/_next/static/css/7c6894c1309f145d.css",
+          "start": 71,
+          "status": 200,
+          "end": 129,
+          "bytes": 18602
+        },
+        {
+          "url": "/_next/static/css/d315a17dce1b14ef.css",
+          "start": 73,
+          "status": 200,
+          "end": 161,
+          "bytes": 1183
+        },
+        {
+          "url": "/_next/static/css/abb238d105d593a5.css",
+          "start": 74,
+          "status": 200,
+          "end": 160,
+          "bytes": 858
+        },
+        {
+          "url": "/_next/static/css/709180cc42939c18.css",
+          "start": 75,
+          "status": 200,
+          "end": 160,
+          "bytes": 951
+        },
+        {
+          "url": "/_next/static/css/85ff8566b71bf051.css",
+          "start": 75,
+          "status": 200,
+          "end": 161,
+          "bytes": 3392
+        },
+        {
+          "url": "/_next/static/css/5d1b2160122f968d.css",
+          "start": 76,
+          "status": 200,
+          "end": 161,
+          "bytes": 1551
+        },
+        {
+          "url": "/_next/static/css/318c74592afe441a.css",
+          "start": 76,
+          "status": 200,
+          "end": 161,
+          "bytes": 4786
+        },
+        {
+          "url": "/_next/static/css/79d8233eeb0eb2c9.css",
+          "start": 77,
+          "status": 200,
+          "end": 172,
+          "bytes": 968
+        },
+        {
+          "url": "/_next/static/css/25b36ce8c0ea6c46.css",
+          "start": 77,
+          "status": 200,
+          "end": 172,
+          "bytes": 2114
+        },
+        {
+          "url": "/_next/static/css/e3743996fcbd3986.css",
+          "start": 78,
+          "status": 200,
+          "end": 173,
+          "bytes": 2356
+        },
+        {
+          "url": "/_next/static/css/bdbf49cef51d0cdc.css",
+          "start": 79,
+          "status": 200,
+          "end": 173,
+          "bytes": 1019
+        },
+        {
+          "url": "/_next/static/css/a658ee7489a657aa.css",
+          "start": 79,
+          "status": 200,
+          "end": 174,
+          "bytes": 1501
+        },
+        {
+          "url": "/_next/static/css/bacb4bbbe268cb42.css",
+          "start": 80,
+          "status": 200,
+          "end": 173,
+          "bytes": 1149
+        },
+        {
+          "url": "/_next/static/css/84a3775e001dd40e.css",
+          "start": 83,
+          "status": 200,
+          "end": 174,
+          "bytes": 1732
+        },
+        {
+          "url": "/_next/static/css/e4670afa26dd46f5.css",
+          "start": 84,
+          "status": 200,
+          "end": 183,
+          "bytes": 1381
+        },
+        {
+          "url": "/_next/static/css/9d84d7abcb9f1b5f.css",
+          "start": 84,
+          "status": 200,
+          "end": 183,
+          "bytes": 4221
+        },
+        {
+          "url": "/_next/static/css/ce24429fa5a2f495.css",
+          "start": 85,
+          "status": 200,
+          "end": 184,
+          "bytes": 8429
+        },
+        {
+          "url": "/_next/static/css/0a5d23f3892a3488.css",
+          "start": 85,
+          "status": 200,
+          "end": 184,
+          "bytes": 5580
+        },
+        {
+          "url": "/_next/static/chunks/webpack-072cd4b3e407b898.js",
+          "start": 86,
+          "status": 200,
+          "end": 190,
+          "bytes": 3116
+        },
+        {
+          "url": "/_next/static/chunks/5771b53b-b2e8edfffc5e393b.js",
+          "start": 87,
+          "status": 200,
+          "end": 201,
+          "bytes": 64120
+        },
+        {
+          "url": "/_next/static/chunks/1274-e864578463d16d31.js",
+          "start": 87,
+          "status": 200,
+          "end": 200,
+          "bytes": 67193
+        },
+        {
+          "url": "/_next/static/chunks/main-app-6cb1bb55a21ede5c.js",
+          "start": 88,
+          "status": 200,
+          "end": 190,
+          "bytes": 528
+        },
+        {
+          "url": "/_next/static/chunks/803-35867925ebb24279.js",
+          "start": 88,
+          "status": 200,
+          "end": 190,
+          "bytes": 3292
+        },
+        {
+          "url": "/_next/static/chunks/6596-cf3fa5db2b9b4fdf.js",
+          "start": 89,
+          "status": 200,
+          "end": 190,
+          "bytes": 5557
+        },
+        {
+          "url": "/_next/static/chunks/1707-57d4ebbe1a1549d6.js",
+          "start": 89,
+          "status": 200,
+          "end": 191,
+          "bytes": 19244
+        },
+        {
+          "url": "/_next/static/chunks/4127-67f0f19c7c670eb2.js",
+          "start": 95,
+          "status": 200,
+          "end": 191,
+          "bytes": 10038
+        },
+        {
+          "url": "/_next/static/chunks/9234-a7e3d09ce0f0be8b.js",
+          "start": 96,
+          "status": 200,
+          "end": 191,
+          "bytes": 5073
+        },
+        {
+          "url": "/_next/static/chunks/7567-861885f8660f394e.js",
+          "start": 96,
+          "status": 200,
+          "end": 200,
+          "bytes": 13194
+        },
+        {
+          "url": "/_next/static/chunks/122-79d2fd3c7a5bca93.js",
+          "start": 97,
+          "status": 200,
+          "end": 200,
+          "bytes": 26317
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/layout-e980894792854cfb.js",
+          "start": 98,
+          "status": 200,
+          "end": 192,
+          "bytes": 206
+        },
+        {
+          "url": "/_next/static/chunks/9524-cd2a95a241fa5ec3.js",
+          "start": 100,
+          "status": 200,
+          "end": 206,
+          "bytes": 23394
+        },
+        {
+          "url": "/_next/static/chunks/2398-edb833399c85a608.js",
+          "start": 104,
+          "status": 200,
+          "end": 206,
+          "bytes": 24090
+        },
+        {
+          "url": "/_next/static/chunks/6419-c45a416975dfd7c6.js",
+          "start": 106,
+          "status": 200,
+          "end": 201,
+          "bytes": 19953
+        },
+        {
+          "url": "/_next/static/chunks/9912-def8d1f61edbfa3f.js",
+          "start": 107,
+          "status": 200,
+          "end": 207,
+          "bytes": 100253
+        },
+        {
+          "url": "/_next/static/chunks/app/(localized)/%5Blang%5D/shida/seller/services/page-fe9c436b1eb7296f.js",
+          "start": 108,
+          "status": 200,
+          "end": 201,
+          "bytes": 261
+        },
+        {
+          "url": "/api/shida/employment/session/",
+          "start": 208,
+          "status": 200,
+          "end": 307,
+          "bytes": 115
+        },
+        {
+          "url": "/favicon.ico",
+          "start": 208,
+          "status": 200,
+          "end": 237,
+          "bytes": 9321
+        },
+        {
+          "url": "/api/shida/personal/services/",
+          "start": 317,
+          "status": 200,
+          "end": 410,
+          "bytes": 1138
+        },
+        {
+          "url": "/api/shida/personal/services/capabilities/",
+          "start": 318,
+          "status": 200,
+          "end": 411,
+          "bytes": 143
+        },
+        {
+          "url": "/api/shida/personal/services/onboarding/",
+          "start": 436,
+          "status": 200,
+          "end": 523,
+          "bytes": 170
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/bill-presentation",
+          "start": 437,
+          "status": 200,
+          "end": 531,
+          "bytes": 88
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/requests",
+          "start": 438,
+          "status": 200,
+          "end": 533,
+          "bytes": 660
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/reservations",
+          "start": 439,
+          "status": 200,
+          "end": 535,
+          "bytes": 360
+        },
+        {
+          "url": "/api/shida/personal/services/transactions/messages",
+          "start": 439,
+          "status": 200,
+          "end": 535,
+          "bytes": 195
+        }
+      ]
+    },
+    {
+      "sample": 2,
+      "visit": "navigation",
+      "usefulMs": 77,
+      "usableMs": 199,
+      "requests": 2,
+      "bytes": 9390,
+      "sessionReads": 0,
+      "reads": [
+        {
+          "url": "/api/shida/personal/services/calendar",
+          "start": 64,
+          "status": 200,
+          "end": 152,
+          "bytes": 69
+        },
+        {
+          "url": "/favicon.ico",
+          "start": 72,
+          "status": 200,
+          "end": 80,
+          "bytes": 9321
+        }
+      ]
+    }
+  ]
+}

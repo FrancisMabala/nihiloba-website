@@ -43,7 +43,7 @@ for (const locale of ["en", "fr", "ln", "sw"] as const) for (const width of [390
     await expect(page.getByLabel(t.codeLabel)).toBeVisible(); expect(s.exchanges).toBe(0);
     if (locale === "en") await page.screenshot({ path: `test-results/personal-code-${width}.png`, fullPage: true });
     await page.getByLabel(t.codeLabel).fill("610294"); await page.getByRole("button", { name: authDesignCopy[locale].verify, exact: true }).click();
-    await expect(page.getByText("Synthetic Personal", { exact: false })).toBeVisible(); expect(s.exchanges).toBe(1); expect(page.url()).toContain(path);
+    await expect(page.getByRole("button", { name: /Synthetic Personal/ })).toBeVisible(); expect(s.exchanges).toBe(1); expect(page.url()).toContain(path);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect(await page.evaluate(() => Object.values(localStorage).some(v => v.includes("synthetic-not-sent") || v.includes("DWC_")))).toBe(false);
   });
@@ -96,8 +96,8 @@ test("lost exchange and failed cleanup cannot restore an uncertain account on fo
   await page.goto("/shida/seller/restaurants/"); await page.getByRole("button", { name: authDesignCopy.en.whatsapp }).click();
   await page.getByLabel(personalLoginCopy.en.codeLabel).fill("610294"); await page.getByRole("button", { name: authDesignCopy.en.verify }).click();
   await expect(page.getByText(personalLoginCopy.en.uncertain, { exact: true })).toBeVisible();
-  await page.evaluate(() => window.dispatchEvent(new Event("focus"))); await expect(page.getByText("Synthetic Personal")).toHaveCount(0);
-  await page.reload(); await expect(page.getByRole("button", { name: authDesignCopy.en.whatsapp })).toBeVisible(); await expect(page.getByText("Synthetic Personal")).toHaveCount(0);
+  await page.evaluate(() => window.dispatchEvent(new Event("focus"))); await expect(page.getByRole("button", { name: /Synthetic Personal/ })).toHaveCount(0);
+  await page.reload(); await expect(page.getByRole("button", { name: authDesignCopy.en.whatsapp })).toBeVisible(); await expect(page.getByRole("button", { name: /Synthetic Personal/ })).toHaveCount(0);
 });
 
 test("wrong code remains editable; only explicit valid submission authenticates", async ({ page }) => {
@@ -107,7 +107,7 @@ test("wrong code remains editable; only explicit valid submission authenticates"
   await field.fill("000000"); await page.getByRole("button", { name: authDesignCopy.en.verify }).click();
   await expect(page.getByRole("alert").filter({ hasText: personalLoginCopy.en.invalidCode })).toHaveText(personalLoginCopy.en.invalidCode); expect(s.loggedIn).toBe(false);
   await field.fill("610294"); await page.getByRole("button", { name: authDesignCopy.en.verify }).click();
-  await expect(page.getByText("Synthetic Personal", { exact: false })).toBeVisible(); expect(s.exchanges).toBe(2);
+  await expect(page.getByRole("button", { name: /Synthetic Personal/ })).toBeVisible(); expect(s.exchanges).toBe(2);
 });
 test("changing tabs while awaiting a code discards the old code form", async ({ page }) => {
   const s = await fixture(page); s.status = "verified";

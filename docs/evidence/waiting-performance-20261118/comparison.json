@@ -1,0 +1,2594 @@
+[
+  {
+    "profile": "mobile",
+    "journey": "meda",
+    "visit": "first",
+    "usefulMs": {
+      "before": {
+        "median": 4396,
+        "min": 4388,
+        "max": 4589
+      },
+      "after": {
+        "median": 4502,
+        "min": 4382,
+        "max": 4647
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 4467,
+        "min": 4451,
+        "max": 4679
+      },
+      "after": {
+        "median": 4541,
+        "min": 4425,
+        "max": 4740
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 75,
+        "min": 75,
+        "max": 75
+      },
+      "after": {
+        "median": 76,
+        "min": 73,
+        "max": 76
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 378200,
+        "min": 378199,
+        "max": 378202
+      },
+      "after": {
+        "median": 386531,
+        "min": 378506,
+        "max": 386531
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 711,
+      "elapsedMax": 826,
+      "httpStatuses": {
+        "200": 27
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 619,
+      "elapsedMax": 806,
+      "httpStatuses": {
+        "200": 21
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "meda",
+    "visit": "repeat",
+    "usefulMs": {
+      "before": {
+        "median": 4090,
+        "min": 3999,
+        "max": 4170
+      },
+      "after": {
+        "median": 4033,
+        "min": 4001,
+        "max": 4152
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 4120,
+        "min": 4031,
+        "max": 4207
+      },
+      "after": {
+        "median": 4052,
+        "min": 4025,
+        "max": 4182
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 75,
+        "min": 75,
+        "max": 75
+      },
+      "after": {
+        "median": 73,
+        "min": 71,
+        "max": 73
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 378201,
+        "min": 378201,
+        "max": 378206
+      },
+      "after": {
+        "median": 378502,
+        "min": 377871,
+        "max": 378505
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 617,
+      "elapsedMax": 687,
+      "httpStatuses": {
+        "200": 27
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 614,
+      "elapsedMax": 632,
+      "httpStatuses": {
+        "200": 21
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "meda",
+    "visit": "navigation",
+    "usefulMs": {
+      "before": {
+        "median": 1126,
+        "min": 1124,
+        "max": 1171
+      },
+      "after": {
+        "median": 1126,
+        "min": 1071,
+        "max": 1153
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 1149,
+        "min": 1146,
+        "max": 1198
+      },
+      "after": {
+        "median": 1145,
+        "min": 1092,
+        "max": 1179
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 9,
+        "min": 9,
+        "max": 9
+      },
+      "after": {
+        "median": 9,
+        "min": 9,
+        "max": 9
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 36945,
+        "min": 36945,
+        "max": 36945
+      },
+      "after": {
+        "median": 36926,
+        "min": 36926,
+        "max": 36926
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "after": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 617,
+      "elapsedMax": 617,
+      "httpStatuses": {
+        "200": 3
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 617,
+      "elapsedMax": 619,
+      "httpStatuses": {
+        "200": 3
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "public",
+    "visit": "first",
+    "usefulMs": {
+      "before": {
+        "median": 2987,
+        "min": 2833,
+        "max": 3028
+      },
+      "after": {
+        "median": 2899,
+        "min": 2889,
+        "max": 2904
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 3028,
+        "min": 2905,
+        "max": 3060
+      },
+      "after": {
+        "median": 2979,
+        "min": 2938,
+        "max": 3030
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 60,
+        "min": 58,
+        "max": 68
+      },
+      "after": {
+        "median": 62,
+        "min": 57,
+        "max": 67
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 364573,
+        "min": 364022,
+        "max": 373278
+      },
+      "after": {
+        "median": 367407,
+        "min": 364974,
+        "max": 374109
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 619.5,
+      "elapsedMax": 647,
+      "httpStatuses": {
+        "200": 8
+      },
+      "unfinished": 4
+    },
+    "afterAPI": {
+      "elapsedMedian": 619,
+      "elapsedMax": 621,
+      "httpStatuses": {
+        "200": 5
+      },
+      "unfinished": 5
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "public",
+    "visit": "repeat",
+    "usefulMs": {
+      "before": {
+        "median": 2862,
+        "min": 2844,
+        "max": 2918
+      },
+      "after": {
+        "median": 2846,
+        "min": 2797,
+        "max": 2971
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 2964,
+        "min": 2953,
+        "max": 2985
+      },
+      "after": {
+        "median": 2911,
+        "min": 2825,
+        "max": 3076
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 77,
+        "min": 70,
+        "max": 79
+      },
+      "after": {
+        "median": 73,
+        "min": 69,
+        "max": 78
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 376991,
+        "min": 376990,
+        "max": 376992
+      },
+      "after": {
+        "median": 377820,
+        "min": 377818,
+        "max": 378186
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 610,
+      "elapsedMax": 618,
+      "httpStatuses": {
+        "200": 9
+      },
+      "unfinished": 9
+    },
+    "afterAPI": {
+      "elapsedMedian": 613.5,
+      "elapsedMax": 620,
+      "httpStatuses": {
+        "200": 6
+      },
+      "unfinished": 8
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "public",
+    "visit": "navigation",
+    "usefulMs": {
+      "before": {
+        "median": 1735,
+        "min": 1699,
+        "max": 1952
+      },
+      "after": {
+        "median": 1738,
+        "min": 1653,
+        "max": 1866
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 1796,
+        "min": 1747,
+        "max": 2043
+      },
+      "after": {
+        "median": 1825,
+        "min": 1705,
+        "max": 1922
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 51,
+        "min": 51,
+        "max": 52
+      },
+      "after": {
+        "median": 51,
+        "min": 51,
+        "max": 52
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 88727,
+        "min": 88727,
+        "max": 92194
+      },
+      "after": {
+        "median": 88700,
+        "min": 88700,
+        "max": 88700
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "after": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": null,
+      "elapsedMax": null,
+      "httpStatuses": {},
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": null,
+      "elapsedMax": null,
+      "httpStatuses": {},
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "restaurant",
+    "visit": "first",
+    "usefulMs": {
+      "before": {
+        "median": 8053,
+        "min": 7657,
+        "max": 8164
+      },
+      "after": {
+        "median": 7827,
+        "min": 7760,
+        "max": 7839
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 11693,
+        "min": 11585,
+        "max": 11707
+      },
+      "after": {
+        "median": 11282,
+        "min": 11234,
+        "max": 11353
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 53,
+        "min": 53,
+        "max": 53
+      },
+      "after": {
+        "median": 53,
+        "min": 53,
+        "max": 53
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 542771,
+        "min": 542771,
+        "max": 542771
+      },
+      "after": {
+        "median": 543331,
+        "min": 543331,
+        "max": 543331
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 617,
+      "elapsedMax": 630,
+      "httpStatuses": {
+        "200": 30,
+        "404": 3
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 615,
+      "elapsedMax": 626,
+      "httpStatuses": {
+        "200": 30,
+        "404": 3
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "restaurant",
+    "visit": "repeat",
+    "usefulMs": {
+      "before": {
+        "median": 7459,
+        "min": 7452,
+        "max": 7516
+      },
+      "after": {
+        "median": 7434,
+        "min": 7417,
+        "max": 7512
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 10954,
+        "min": 10935,
+        "max": 11008
+      },
+      "after": {
+        "median": 10906,
+        "min": 10890,
+        "max": 11043
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 53,
+        "min": 53,
+        "max": 53
+      },
+      "after": {
+        "median": 53,
+        "min": 53,
+        "max": 53
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 542771,
+        "min": 542771,
+        "max": 542771
+      },
+      "after": {
+        "median": 543331,
+        "min": 543331,
+        "max": 543331
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 616,
+      "elapsedMax": 629,
+      "httpStatuses": {
+        "200": 30,
+        "404": 3
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 616,
+      "elapsedMax": 640,
+      "httpStatuses": {
+        "200": 30,
+        "404": 3
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "restaurant",
+    "visit": "navigation",
+    "usefulMs": {
+      "before": {
+        "median": 213,
+        "min": 196,
+        "max": 219
+      },
+      "after": {
+        "median": 189,
+        "min": 186,
+        "max": 253
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 2738,
+        "min": 2682,
+        "max": 2741
+      },
+      "after": {
+        "median": 2764,
+        "min": 2701,
+        "max": 3202
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 5,
+        "min": 5,
+        "max": 5
+      },
+      "after": {
+        "median": 5,
+        "min": 5,
+        "max": 5
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 9541,
+        "min": 9541,
+        "max": 9541
+      },
+      "after": {
+        "median": 9541,
+        "min": 9541,
+        "max": 9541
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "after": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 614.5,
+      "elapsedMax": 620,
+      "httpStatuses": {
+        "200": 12
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 614.5,
+      "elapsedMax": 638,
+      "httpStatuses": {
+        "200": 12
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "services",
+    "visit": "first",
+    "usefulMs": {
+      "before": {
+        "median": 7117,
+        "min": 7032,
+        "max": 7143
+      },
+      "after": {
+        "median": 6791,
+        "min": 6678,
+        "max": 6799
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 7161,
+        "min": 7074,
+        "max": 7194
+      },
+      "after": {
+        "median": 6844,
+        "min": 6726,
+        "max": 6860
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 59,
+        "min": 59,
+        "max": 59
+      },
+      "after": {
+        "median": 55,
+        "min": 55,
+        "max": 55
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 535176,
+        "min": 535176,
+        "max": 535176
+      },
+      "after": {
+        "median": 480643,
+        "min": 480643,
+        "max": 480643
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 622,
+      "elapsedMax": 674,
+      "httpStatuses": {
+        "200": 27
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 625.0,
+      "elapsedMax": 676,
+      "httpStatuses": {
+        "200": 24
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "services",
+    "visit": "repeat",
+    "usefulMs": {
+      "before": {
+        "median": 6114,
+        "min": 6050,
+        "max": 6514
+      },
+      "after": {
+        "median": 5809,
+        "min": 5674,
+        "max": 6236
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 6193,
+        "min": 6099,
+        "max": 6564
+      },
+      "after": {
+        "median": 5856,
+        "min": 5761,
+        "max": 6290
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 58,
+        "min": 58,
+        "max": 58
+      },
+      "after": {
+        "median": 54,
+        "min": 54,
+        "max": 54
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 535176,
+        "min": 535176,
+        "max": 535176
+      },
+      "after": {
+        "median": 480643,
+        "min": 480643,
+        "max": 480643
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 637,
+      "elapsedMax": 644,
+      "httpStatuses": {
+        "200": 27
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 626.0,
+      "elapsedMax": 635,
+      "httpStatuses": {
+        "200": 24
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "services",
+    "visit": "navigation",
+    "usefulMs": {
+      "before": {
+        "median": 267,
+        "min": 246,
+        "max": 269
+      },
+      "after": {
+        "median": 257,
+        "min": 257,
+        "max": 297
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 1144,
+        "min": 1141,
+        "max": 1192
+      },
+      "after": {
+        "median": 1191,
+        "min": 1155,
+        "max": 1195
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "after": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 9390,
+        "min": 9390,
+        "max": 9390
+      },
+      "after": {
+        "median": 9390,
+        "min": 9390,
+        "max": 9390
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "after": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 608,
+      "elapsedMax": 613,
+      "httpStatuses": {
+        "200": 3
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 611,
+      "elapsedMax": 612,
+      "httpStatuses": {
+        "200": 3
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "space",
+    "visit": "first",
+    "usefulMs": {
+      "before": {
+        "median": 6098,
+        "min": 6062,
+        "max": 6154
+      },
+      "after": {
+        "median": 6069,
+        "min": 6021,
+        "max": 6106
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 6140,
+        "min": 6092,
+        "max": 6176
+      },
+      "after": {
+        "median": 6111,
+        "min": 6075,
+        "max": 6145
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 104,
+        "min": 104,
+        "max": 104
+      },
+      "after": {
+        "median": 102,
+        "min": 101,
+        "max": 102
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 693280,
+        "min": 693279,
+        "max": 693282
+      },
+      "after": {
+        "median": 693576,
+        "min": 692834,
+        "max": 693579
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 635.5,
+      "elapsedMax": 689,
+      "httpStatuses": {
+        "200": 42
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 622.0,
+      "elapsedMax": 631,
+      "httpStatuses": {
+        "200": 36
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "space",
+    "visit": "repeat",
+    "usefulMs": {
+      "before": {
+        "median": 5912,
+        "min": 5911,
+        "max": 6043
+      },
+      "after": {
+        "median": 6052,
+        "min": 5958,
+        "max": 6059
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 5960,
+        "min": 5959,
+        "max": 6074
+      },
+      "after": {
+        "median": 6115,
+        "min": 5983,
+        "max": 6132
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 104,
+        "min": 104,
+        "max": 104
+      },
+      "after": {
+        "median": 102,
+        "min": 102,
+        "max": 102
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 693283,
+        "min": 693280,
+        "max": 693284
+      },
+      "after": {
+        "median": 693576,
+        "min": 693576,
+        "max": 693578
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 627.5,
+      "elapsedMax": 687,
+      "httpStatuses": {
+        "200": 42
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 627.5,
+      "elapsedMax": 640,
+      "httpStatuses": {
+        "200": 36
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "space",
+    "visit": "navigation",
+    "usefulMs": {
+      "before": {
+        "median": 873,
+        "min": 814,
+        "max": 1030
+      },
+      "after": {
+        "median": 871,
+        "min": 776,
+        "max": 893
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 905,
+        "min": 856,
+        "max": 1097
+      },
+      "after": {
+        "median": 921,
+        "min": 821,
+        "max": 954
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 52,
+        "min": 52,
+        "max": 52
+      },
+      "after": {
+        "median": 52,
+        "min": 52,
+        "max": 52
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 62251,
+        "min": 62251,
+        "max": 74951
+      },
+      "after": {
+        "median": 65738,
+        "min": 59123,
+        "max": 71571
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "after": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": null,
+      "elapsedMax": null,
+      "httpStatuses": {},
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": null,
+      "elapsedMax": null,
+      "httpStatuses": {},
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "mobile",
+    "journey": "space",
+    "visit": "sign-in",
+    "usefulMs": {
+      "before": {
+        "median": 2187,
+        "min": 2157,
+        "max": 2253
+      },
+      "after": {
+        "median": 2120,
+        "min": 2113,
+        "max": 2264
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 2221,
+        "min": 2184,
+        "max": 2288
+      },
+      "after": {
+        "median": 2148,
+        "min": 2133,
+        "max": 2299
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 15,
+        "min": 15,
+        "max": 15
+      },
+      "after": {
+        "median": 11,
+        "min": 11,
+        "max": 11
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 750,
+        "min": 750,
+        "max": 750
+      },
+      "after": {
+        "median": 425,
+        "min": 425,
+        "max": 425
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 4,
+        "min": 4,
+        "max": 4
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 617.0,
+      "elapsedMax": 631,
+      "httpStatuses": {
+        "200": 42
+      },
+      "unfinished": 3
+    },
+    "afterAPI": {
+      "elapsedMedian": 625,
+      "elapsedMax": 640,
+      "httpStatuses": {
+        "200": 33
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "meda",
+    "visit": "first",
+    "usefulMs": {
+      "before": {
+        "median": 495,
+        "min": 494,
+        "max": 530
+      },
+      "after": {
+        "median": 477,
+        "min": 460,
+        "max": 479
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 508,
+        "min": 504,
+        "max": 544
+      },
+      "after": {
+        "median": 486,
+        "min": 469,
+        "max": 494
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 82,
+        "min": 80,
+        "max": 82
+      },
+      "after": {
+        "median": 80,
+        "min": 75,
+        "max": 81
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 405418,
+        "min": 404788,
+        "max": 405422
+      },
+      "after": {
+        "median": 405707,
+        "min": 386056,
+        "max": 406175
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 93,
+      "elapsedMax": 117,
+      "httpStatuses": {
+        "200": 27
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 92,
+      "elapsedMax": 106,
+      "httpStatuses": {
+        "200": 21
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "meda",
+    "visit": "repeat",
+    "usefulMs": {
+      "before": {
+        "median": 392,
+        "min": 384,
+        "max": 438
+      },
+      "after": {
+        "median": 424,
+        "min": 404,
+        "max": 458
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 405,
+        "min": 403,
+        "max": 449
+      },
+      "after": {
+        "median": 439,
+        "min": 419,
+        "max": 473
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 80,
+        "min": 80,
+        "max": 80
+      },
+      "after": {
+        "median": 78,
+        "min": 78,
+        "max": 80
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 404792,
+        "min": 404791,
+        "max": 404794
+      },
+      "after": {
+        "median": 405077,
+        "min": 405070,
+        "max": 405700
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 91,
+      "elapsedMax": 112,
+      "httpStatuses": {
+        "200": 27
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 91,
+      "elapsedMax": 117,
+      "httpStatuses": {
+        "200": 21
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "meda",
+    "visit": "navigation",
+    "usefulMs": {
+      "before": {
+        "median": 181,
+        "min": 175,
+        "max": 188
+      },
+      "after": {
+        "median": 183,
+        "min": 169,
+        "max": 202
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 192,
+        "min": 183,
+        "max": 201
+      },
+      "after": {
+        "median": 195,
+        "min": 181,
+        "max": 210
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "after": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 9724,
+        "min": 9724,
+        "max": 9724
+      },
+      "after": {
+        "median": 9724,
+        "min": 9724,
+        "max": 9724
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "after": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 99,
+      "elapsedMax": 107,
+      "httpStatuses": {
+        "200": 3
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 92,
+      "elapsedMax": 99,
+      "httpStatuses": {
+        "200": 3
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "public",
+    "visit": "first",
+    "usefulMs": {
+      "before": {
+        "median": 327,
+        "min": 296,
+        "max": 431
+      },
+      "after": {
+        "median": 318,
+        "min": 301,
+        "max": 422
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 360,
+        "min": 322,
+        "max": 443
+      },
+      "after": {
+        "median": 343,
+        "min": 337,
+        "max": 437
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 69,
+        "min": 69,
+        "max": 69
+      },
+      "after": {
+        "median": 68,
+        "min": 64,
+        "max": 68
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 403117,
+        "min": 403116,
+        "max": 403119
+      },
+      "after": {
+        "median": 403948,
+        "min": 360798,
+        "max": 403950
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 91,
+      "elapsedMax": 103,
+      "httpStatuses": {
+        "200": 15
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 89.5,
+      "elapsedMax": 97,
+      "httpStatuses": {
+        "200": 12
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "public",
+    "visit": "repeat",
+    "usefulMs": {
+      "before": {
+        "median": 204,
+        "min": 179,
+        "max": 240
+      },
+      "after": {
+        "median": 233,
+        "min": 201,
+        "max": 242
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 241,
+        "min": 203,
+        "max": 264
+      },
+      "after": {
+        "median": 270,
+        "min": 220,
+        "max": 276
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 69,
+        "min": 69,
+        "max": 69
+      },
+      "after": {
+        "median": 68,
+        "min": 68,
+        "max": 72
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 403119,
+        "min": 403117,
+        "max": 403121
+      },
+      "after": {
+        "median": 403948,
+        "min": 403948,
+        "max": 403952
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 101,
+      "elapsedMax": 104,
+      "httpStatuses": {
+        "200": 15
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 93.0,
+      "elapsedMax": 103,
+      "httpStatuses": {
+        "200": 12
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "public",
+    "visit": "navigation",
+    "usefulMs": {
+      "before": {
+        "median": 1216,
+        "min": 1187,
+        "max": 1258
+      },
+      "after": {
+        "median": 1179,
+        "min": 1177,
+        "max": 1279
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 1297,
+        "min": 1252,
+        "max": 1299
+      },
+      "after": {
+        "median": 1282,
+        "min": 1247,
+        "max": 1302
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 87,
+        "min": 87,
+        "max": 88
+      },
+      "after": {
+        "median": 85,
+        "min": 85,
+        "max": 85
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 2442874,
+        "min": 2442874,
+        "max": 2443346
+      },
+      "after": {
+        "median": 2443561,
+        "min": 2443560,
+        "max": 2443848
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 90,
+      "elapsedMax": 98,
+      "httpStatuses": {
+        "200": 16
+      },
+      "unfinished": 9
+    },
+    "afterAPI": {
+      "elapsedMedian": 90.5,
+      "elapsedMax": 102,
+      "httpStatuses": {
+        "200": 14
+      },
+      "unfinished": 4
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "restaurant",
+    "visit": "first",
+    "usefulMs": {
+      "before": {
+        "median": 1160,
+        "min": 1126,
+        "max": 1205
+      },
+      "after": {
+        "median": 1118,
+        "min": 1100,
+        "max": 1309
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 1982,
+        "min": 1554,
+        "max": 2039
+      },
+      "after": {
+        "median": 1470,
+        "min": 1445,
+        "max": 1568
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 53,
+        "min": 53,
+        "max": 53
+      },
+      "after": {
+        "median": 53,
+        "min": 53,
+        "max": 53
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 542771,
+        "min": 542771,
+        "max": 542771
+      },
+      "after": {
+        "median": 543331,
+        "min": 543331,
+        "max": 543331
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 96,
+      "elapsedMax": 117,
+      "httpStatuses": {
+        "200": 30,
+        "404": 3
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 98,
+      "elapsedMax": 148,
+      "httpStatuses": {
+        "200": 30,
+        "404": 3
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "restaurant",
+    "visit": "repeat",
+    "usefulMs": {
+      "before": {
+        "median": 1154,
+        "min": 1083,
+        "max": 1170
+      },
+      "after": {
+        "median": 1103,
+        "min": 1057,
+        "max": 1120
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 1394,
+        "min": 1310,
+        "max": 1501
+      },
+      "after": {
+        "median": 1352,
+        "min": 1347,
+        "max": 1408
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 53,
+        "min": 53,
+        "max": 53
+      },
+      "after": {
+        "median": 53,
+        "min": 53,
+        "max": 53
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 542771,
+        "min": 542771,
+        "max": 542771
+      },
+      "after": {
+        "median": 543331,
+        "min": 543331,
+        "max": 543331
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 96,
+      "elapsedMax": 120,
+      "httpStatuses": {
+        "200": 30,
+        "404": 3
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 95,
+      "elapsedMax": 124,
+      "httpStatuses": {
+        "200": 30,
+        "404": 3
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "restaurant",
+    "visit": "navigation",
+    "usefulMs": {
+      "before": {
+        "median": 99,
+        "min": 83,
+        "max": 122
+      },
+      "after": {
+        "median": 83,
+        "min": 60,
+        "max": 88
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 950,
+        "min": 491,
+        "max": 999
+      },
+      "after": {
+        "median": 922,
+        "min": 912,
+        "max": 940
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 5,
+        "min": 5,
+        "max": 5
+      },
+      "after": {
+        "median": 5,
+        "min": 5,
+        "max": 5
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 9541,
+        "min": 9541,
+        "max": 9541
+      },
+      "after": {
+        "median": 9541,
+        "min": 9541,
+        "max": 9541
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "after": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 93.5,
+      "elapsedMax": 109,
+      "httpStatuses": {
+        "200": 12
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 97.5,
+      "elapsedMax": 106,
+      "httpStatuses": {
+        "200": 12
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "services",
+    "visit": "first",
+    "usefulMs": {
+      "before": {
+        "median": 1383,
+        "min": 723,
+        "max": 1455
+      },
+      "after": {
+        "median": 698,
+        "min": 629,
+        "max": 730
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 1408,
+        "min": 749,
+        "max": 1484
+      },
+      "after": {
+        "median": 718,
+        "min": 642,
+        "max": 747
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 59,
+        "min": 59,
+        "max": 59
+      },
+      "after": {
+        "median": 55,
+        "min": 55,
+        "max": 55
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 535176,
+        "min": 535176,
+        "max": 535176
+      },
+      "after": {
+        "median": 480643,
+        "min": 480643,
+        "max": 480643
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 121,
+      "elapsedMax": 148,
+      "httpStatuses": {
+        "200": 27
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 100.5,
+      "elapsedMax": 139,
+      "httpStatuses": {
+        "200": 24
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "services",
+    "visit": "repeat",
+    "usefulMs": {
+      "before": {
+        "median": 679,
+        "min": 666,
+        "max": 691
+      },
+      "after": {
+        "median": 583,
+        "min": 553,
+        "max": 744
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 701,
+        "min": 691,
+        "max": 716
+      },
+      "after": {
+        "median": 597,
+        "min": 567,
+        "max": 760
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 58,
+        "min": 58,
+        "max": 58
+      },
+      "after": {
+        "median": 54,
+        "min": 54,
+        "max": 54
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 535176,
+        "min": 535176,
+        "max": 535176
+      },
+      "after": {
+        "median": 480643,
+        "min": 480643,
+        "max": 480643
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 103,
+      "elapsedMax": 124,
+      "httpStatuses": {
+        "200": 27
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 95.5,
+      "elapsedMax": 138,
+      "httpStatuses": {
+        "200": 24
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "services",
+    "visit": "navigation",
+    "usefulMs": {
+      "before": {
+        "median": 70,
+        "min": 60,
+        "max": 93
+      },
+      "after": {
+        "median": 77,
+        "min": 77,
+        "max": 85
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 193,
+        "min": 183,
+        "max": 234
+      },
+      "after": {
+        "median": 196,
+        "min": 185,
+        "max": 199
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "after": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 9390,
+        "min": 9390,
+        "max": 9390
+      },
+      "after": {
+        "median": 9390,
+        "min": 9390,
+        "max": 9390
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "after": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 106,
+      "elapsedMax": 111,
+      "httpStatuses": {
+        "200": 3
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 100,
+      "elapsedMax": 122,
+      "httpStatuses": {
+        "200": 3
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "space",
+    "visit": "first",
+    "usefulMs": {
+      "before": {
+        "median": 579,
+        "min": 558,
+        "max": 585
+      },
+      "after": {
+        "median": 549,
+        "min": 536,
+        "max": 643
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 594,
+        "min": 571,
+        "max": 595
+      },
+      "after": {
+        "median": 559,
+        "min": 546,
+        "max": 654
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 104,
+        "min": 103,
+        "max": 104
+      },
+      "after": {
+        "median": 102,
+        "min": 101,
+        "max": 102
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 693284,
+        "min": 692539,
+        "max": 693284
+      },
+      "after": {
+        "median": 693579,
+        "min": 693098,
+        "max": 693580
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 102.5,
+      "elapsedMax": 116,
+      "httpStatuses": {
+        "200": 42
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 107.5,
+      "elapsedMax": 125,
+      "httpStatuses": {
+        "200": 36
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "space",
+    "visit": "repeat",
+    "usefulMs": {
+      "before": {
+        "median": 525,
+        "min": 524,
+        "max": 541
+      },
+      "after": {
+        "median": 544,
+        "min": 471,
+        "max": 551
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 552,
+        "min": 548,
+        "max": 554
+      },
+      "after": {
+        "median": 568,
+        "min": 479,
+        "max": 575
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 104,
+        "min": 103,
+        "max": 104
+      },
+      "after": {
+        "median": 102,
+        "min": 101,
+        "max": 102
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 693281,
+        "min": 692807,
+        "max": 693281
+      },
+      "after": {
+        "median": 693577,
+        "min": 692835,
+        "max": 693579
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 93.0,
+      "elapsedMax": 131,
+      "httpStatuses": {
+        "200": 42
+      },
+      "unfinished": 0
+    },
+    "afterAPI": {
+      "elapsedMedian": 100.0,
+      "elapsedMax": 113,
+      "httpStatuses": {
+        "200": 36
+      },
+      "unfinished": 0
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "space",
+    "visit": "navigation",
+    "usefulMs": {
+      "before": {
+        "median": 324,
+        "min": 270,
+        "max": 362
+      },
+      "after": {
+        "median": 299,
+        "min": 261,
+        "max": 355
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 356,
+        "min": 356,
+        "max": 376
+      },
+      "after": {
+        "median": 397,
+        "min": 357,
+        "max": 404
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "after": {
+        "median": 98,
+        "min": 97,
+        "max": 98
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 665624,
+        "min": 665617,
+        "max": 665721
+      },
+      "after": {
+        "median": 655861,
+        "min": 651415,
+        "max": 666027
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 96,
+      "elapsedMax": 136,
+      "httpStatuses": {
+        "200": 13
+      },
+      "unfinished": 35
+    },
+    "afterAPI": {
+      "elapsedMedian": 91.0,
+      "elapsedMax": 97,
+      "httpStatuses": {
+        "200": 8
+      },
+      "unfinished": 34
+    }
+  },
+  {
+    "profile": "normal",
+    "journey": "space",
+    "visit": "sign-in",
+    "usefulMs": {
+      "before": {
+        "median": 405,
+        "min": 390,
+        "max": 452
+      },
+      "after": {
+        "median": 435,
+        "min": 426,
+        "max": 452
+      }
+    },
+    "usableMs": {
+      "before": {
+        "median": 416,
+        "min": 407,
+        "max": 463
+      },
+      "after": {
+        "median": 461,
+        "min": 436,
+        "max": 469
+      }
+    },
+    "requests": {
+      "before": {
+        "median": 15,
+        "min": 14,
+        "max": 15
+      },
+      "after": {
+        "median": 11,
+        "min": 11,
+        "max": 11
+      }
+    },
+    "bytes": {
+      "before": {
+        "median": 750,
+        "min": 750,
+        "max": 750
+      },
+      "after": {
+        "median": 425,
+        "min": 425,
+        "max": 425
+      }
+    },
+    "sessionReads": {
+      "before": {
+        "median": 4,
+        "min": 3,
+        "max": 4
+      },
+      "after": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "beforeAPI": {
+      "elapsedMedian": 104.0,
+      "elapsedMax": 122,
+      "httpStatuses": {
+        "200": 42
+      },
+      "unfinished": 2
+    },
+    "afterAPI": {
+      "elapsedMedian": 102,
+      "elapsedMax": 118,
+      "httpStatuses": {
+        "200": 33
+      },
+      "unfinished": 0
+    }
+  }
+]

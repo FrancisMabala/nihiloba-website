@@ -20,20 +20,20 @@ import {catalogCopy,offerPrice,communes,type OfferTerms} from "../../lib/service
 import type {CalendarSchedule} from "./services-personal-availability";
 import {workingDays} from "../../lib/services-hours-model";
 import "./services-catalog-editor.css";
-import {ServicesCounter} from "./services-counter";
+const ServicesCounter = lazy(() => import("./services-counter").then(module => ({default: module.ServicesCounter})));
 import {ServicesCalendar} from "./services-calendar";
 import {marketplaceEntryCopy} from "@/app/lib/marketplace-entry-copy";
 import {ServicesTransactions} from "./services-transactions";
-import {ServiceFinanceWorkspace} from "./service-finance-workspace";
+const ServiceFinanceWorkspace = lazy(() => import("./service-finance-workspace").then(module => ({default: module.ServiceFinanceWorkspace})));
 import {type FinanceTab} from "@/app/lib/service-finance-workspace";
 import {financeLabel} from "@/app/lib/service-finance-workspace-copy";
-import {ServicesFinancePanel} from "./services-finance-panel";
-import {ServicesTotalsPanel} from "./services-totals-panel";
-import {ServicesReportsPanel} from "./services-reports-panel";
+const ServicesFinancePanel = lazy(() => import("./services-finance-panel").then(module => ({default: module.ServicesFinancePanel})));
+const ServicesTotalsPanel = lazy(() => import("./services-totals-panel").then(module => ({default: module.ServicesTotalsPanel})));
+const ServicesReportsPanel = lazy(() => import("./services-reports-panel").then(module => ({default: module.ServicesReportsPanel})));
 import {docWords} from "../../lib/service-document";
-import {ServicesTemplateLibrary} from "./services-template-library";
-import {ServicesBillBranding} from "./services-bill-branding";
-import {useEffect, useRef, useState} from "react";
+const ServicesTemplateLibrary = lazy(() => import("./services-template-library").then(module => ({default: module.ServicesTemplateLibrary})));
+const ServicesBillBranding = lazy(() => import("./services-bill-branding").then(module => ({default: module.ServicesBillBranding})));
+import {lazy, Suspense, useEffect, useRef, useState} from "react";
 import {leaveWork, useWorkDraft} from "@/app/lib/restaurant-work";
 import {providerCopy, type ProviderView} from "@/app/lib/services-provider-copy";
 import {BusinessSidebar,BusinessIdentity,BusinessFullscreen} from "./connected-business-workspace";
@@ -137,10 +137,10 @@ export function ServicesManagement({binding,locale,accountName="",offeringRef=nu
    const ref=new URLSearchParams(window.location.search).get('provider')||profiles.find(row=>row.public_ref===offeringRef)?.provider_ref||options[0]?.provider_ref;
    return ref?profiles.filter(row=>row.provider_ref===ref):profiles;
  }
- async function call(path:string,method="GET",body?:object,key?:string):Promise<Record<string,unknown>>{
+ async function call(path:string,method="GET",body?:object,key?:string,signal?:AbortSignal):Promise<Record<string,unknown>>{
   const url=new URL(base+path,window.location.origin);
   if(!url.pathname.endsWith("/"))url.pathname+="/";
-  const response=await fetch(url,{method,credentials:"include",cache:"no-store",signal:AbortSignal.timeout(20000),headers:{Accept:"application/json","X-Shida-Session":binding,...(body?{"Content-Type":"application/json"}:{}) ,...(key?{"Idempotency-Key":key}:{})},body:body?JSON.stringify(body):undefined});
+  const response=await fetch(url,{method,credentials:"include",cache:"no-store",signal:signal?AbortSignal.any([signal,AbortSignal.timeout(20000)]):AbortSignal.timeout(20000),headers:{Accept:"application/json","X-Shida-Session":binding,...(body?{"Content-Type":"application/json"}:{}) ,...(key?{"Idempotency-Key":key}:{})},body:body?JSON.stringify(body):undefined});
   if(!response.ok){if(response.status===401)onUnauthorized?.();if([401,403,404].includes(response.status))setBlocked(true);throw new Error(String(response.status));}
   return await response.json() as Record<string,unknown>;
  }
@@ -170,7 +170,18 @@ export function ServicesManagement({binding,locale,accountName="",offeringRef=nu
  const profileAnchor=rows.find(row=>row.is_active==="yes")??rows[0];
  const serviceLimit=profileAnchor?.active_service_limit??5;
  const atLimit=rows.filter(row=>row.is_active==="yes").length>=serviceLimit;
- useEffect(()=>{let active=true;setReviews([]);setReviewsFailed(false);setReviewsLoading(true);if(current?.is_active==="yes")void call(`/${current.public_ref}/reviews?language=${lang}`).then(value=>{if(active&&Array.isArray(value.reviews))setReviews(value.reviews as Review[]);}).catch(()=>{if(active)setReviewsFailed(true);}).finally(()=>{if(active)setReviewsLoading(false);});return()=>{active=false;};},[current?.public_ref,current?.is_active,lang]); // eslint-disable-line react-hooks/exhaustive-deps
+ // Reviews belong to the final catalogue preview, not the daily work/calendar.
+ useEffect(()=>{
+  const controller=new AbortController();
+  setReviews([]);setReviewsFailed(false);setReviewsLoading(false);
+  if(view!=="services"||!editorOpen||editorStep!==4||current?.is_active!=="yes"||!capabilities.includes("profile"))return;
+  setReviewsLoading(true);
+  void call(`/${current.public_ref}/reviews?language=${lang}`,"GET",undefined,undefined,controller.signal)
+   .then(value=>{if(!controller.signal.aborted&&Array.isArray(value.reviews))setReviews(value.reviews as Review[]);})
+   .catch(()=>{if(!controller.signal.aborted)setReviewsFailed(true);})
+   .finally(()=>{if(!controller.signal.aborted)setReviewsLoading(false);});
+  return()=>controller.abort();
+ },[binding,view,editorOpen,editorStep,current?.public_ref,current?.is_active,current?.revision,lang,capabilities]); // eslint-disable-line react-hooks/exhaustive-deps
  const catalogDirty=Object.values(newDraft).some(Boolean)||Object.values(packageDraft).some(Boolean)||!!current&&(JSON.stringify(draft)!==JSON.stringify(draftFor(current))||socialLink!==(current.social_link??""));
  useEffect(()=>{
   const previous=draftScope.current;
@@ -285,6 +296,7 @@ export function ServicesManagement({binding,locale,accountName="",offeringRef=nu
   <div className="svc-content">
    <header data-heading-visibility={["overview","work","calendar","available","proposals"].includes(selectedView)?"accessible":"visible"} className={selectedView==="services"&&editorOpen?"svc-view-heading svc-catalog-editor-header":"svc-view-heading"}><div><h1 id="services-view-title" tabIndex={-1}>{selectedView==="activity"?bc.activity:["templates","documents"].includes(selectedView)?ui.finance:["available","proposals"].includes(selectedView)?bc.find:ui[selectedView as keyof typeof ui]}</h1>{selectedView!=="overview"&&!["activity","templates","documents"].includes(selectedView)&&<p>{selectedView==='work'?workText(lang,'intro'):ui[`${selectedView}Intro` as keyof typeof ui]}</p>}</div><div className="svc-heading-actions"><BusinessFullscreen locale={lang}/>{!["overview","work","calendar","available","proposals"].includes(selectedView)&&<button type="button" className="svc-refresh" disabled={busy||pending!==null||(selectedView==="work"&&workBusy)||((selectedView==="calendar"||selectedView==="share")&&calendarBusy)} onClick={async ()=>{if(selectedView==="finance"){if(await leaveWork())window.dispatchEvent(new Event("services:finance-refresh"));}else if(selectedView==="calendar"||selectedView==="share")setCalendarRefresh(value=>value+1);else if(selectedView==="work")setWorkRefresh(value=>value+1);else if((await leaveWork()))void refresh(true);}}>{ui.refresh}</button>}</div></header>
 
+   <Suspense fallback={<p role="status">{ui.loading}</p>}>
    {['available','proposals'].includes(selectedView)&&<nav className="business-local-tabs" aria-label={bc.find}>{(['available','proposals'] as const).filter(k=>navigation.includes(k)).map(k=><button key={k} aria-current={selectedView===k?'page':undefined} onClick={async()=>{if(await leaveWork())navigate(k);}}>{ui[k]}</button>)}</nav>}
    {['finance','templates','documents'].includes(selectedView)&&<nav className="business-local-tabs" aria-label={ui.finance}>{(['finance','documents','templates'] as const).filter(k=>navigation.includes(k)).map(k=><button key={k} aria-current={selectedView===k?'page':undefined} onClick={async()=>{if(await leaveWork())navigate(k);}}>{k==='finance'?bc.summary:bc[k]}</button>)}</nav>}
    {selectedView==='documents'&&<ServicesCounter base={base} binding={binding} locale={lang} offerings={rows} historyOnly onDenied={()=>setBlocked(true)}/>}
@@ -360,6 +372,7 @@ export function ServicesManagement({binding,locale,accountName="",offeringRef=nu
    </div>}
   </fieldset>}
    </div>
+   </Suspense>
   </div>
  </section>;
 }
