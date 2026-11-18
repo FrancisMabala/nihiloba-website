@@ -24,8 +24,8 @@ const routeFiles = [
 
 describe("versioned SHIDA legal documents", () => {
   it("registers six canonical bilingual documents and immutable Version 1.0 sources", () => {
-    expect(shidaLegalDocuments).toHaveLength(12);
-    expect(new Set(shidaLegalDocuments.map((item) => `${item.documentId}:${item.version}`)).size).toBe(6);
+    expect(shidaLegalDocuments).toHaveLength(16);
+    expect(new Set(shidaLegalDocuments.map((item) => `${item.documentId}:${item.version}`)).size).toBe(8);
     for (const document of shidaLegalDocuments.filter(d => d.version === "1.0")) {
       expect(document.version).toBe("1.0");
       expect(document.status).toBe("draft_pending_legal_review");
