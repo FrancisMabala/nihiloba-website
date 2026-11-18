@@ -1,5 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {fixture} from './wenze-checkout-fixture';
+import {sellerText} from '../../app/lib/wenze-seller-copy';
 const business=false;
 const evidence=process.env.SHIDA_MOBILE_EVIDENCE_DIR!;
 async function setup(page:Page,{locale='fr' as 'en'|'fr'|'ln'|'sw',count=22,edit=true,error=false}={}){
@@ -8,6 +9,7 @@ async function setup(page:Page,{locale='fr' as 'en'|'fr'|'ln'|'sw',count=22,edit
  const reads:string[]=[],writes:{path:string;body:unknown;key:string|undefined}[]=[];
  await page.route('**/api/**',async route=>{
  const req=route.request(),url=new URL(req.url()),path=url.pathname.replace(/\/$/,'');
+ if(path.endsWith('/purchase-costs'))return route.fulfill({json:{items:[],total:0}});
  if(!path.includes('/expenses'))return route.fallback();
  reads.push(url.search);
  if(path.endsWith('.csv'))return route.fulfill({body:'amount;currency\n45000;CDF',contentType:'text/csv',headers:{'content-disposition':'attachment; filename="expenses.csv"'}});
@@ -24,7 +26,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,3
  await expect(page.locator('.we-filters')).not.toHaveAttribute('open','');
  await expect(page.locator('.we-list')).not.toContainText('Note privée');await expect(rows.nth(1).locator('.we-badge')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- if(width<=760){await expect(page.locator('.we-section-select select')).toBeVisible();expect(await page.locator('.we-section-select option').count()).toBeGreaterThanOrEqual(5);}else{await expect(page.locator('.we-section-select select')).toBeHidden();}
+ if(width<768){const trigger=page.locator('.finance-section-trigger');await expect(trigger).toBeVisible();await trigger.click();expect(await page.locator('.finance-sheet-nav button').count()).toBeGreaterThanOrEqual(5);await page.keyboard.press('Escape');await expect(trigger).toBeFocused();}else{await expect(page.locator('.finance-section-trigger')).toBeHidden();}
  await rows.nth(10).scrollIntoViewIfNeeded();const scroll=await page.evaluate(()=>scrollY);await rows.nth(10).click();
  await expect(page.locator('.we-detail')).toBeVisible();await expect(page.locator('.we-detail')).toContainText('Note privée');
  expect(await page.locator('.we-detail').evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
@@ -57,7 +59,7 @@ test('period, timezone, export, pagination and section selection',async({page})=
  await page.locator('.we-secondary summary').click();const download=page.waitForEvent('download');await page.locator('.we-secondary button').click();expect((await download).suggestedFilename()).toBe('expenses.csv');
  expect(f.reads.at(-1)).toContain('period=last_7_days');if(!business)expect(f.reads.at(-1)).toContain('Africa%2FLubumbashi');
  await page.getByRole('button',{name:'Suivant',exact:true}).click();await expect(page.locator('.we-row')).toHaveCount(business?2:22);
- await page.locator('.we-section-select select').selectOption('costs');await expect(page.locator('.we-list')).toHaveCount(0);
+ await page.locator('.finance-section-trigger').click();await page.locator('.finance-sheet-nav').getByRole('button',{name:sellerText('fr','costs'),exact:true}).click();await expect(page.locator('.we-list')).toHaveCount(0);await expect(page.locator('.wm-purchase')).toContainText(sellerText('fr','empty'));expect(f.errors).toEqual([]);
 });
 
 test('cancellation on a later page retains the list and correction opens its editor',async({page})=>{

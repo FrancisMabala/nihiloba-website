@@ -1,27 +1,26 @@
 # SHIDA shared responsive design rules — proposal
 
-**Status: bounded Website Services work-view pilot adopted locally · 18 November 2026.
-All other adoption remains proposed.**
-Proposed canonical presentation contract for Website and Business; grounded in the
-[code and screenshot audit](shida-design-system-audit-20261118.md). Approval and a
-bounded pilot precede wider adoption. No new feature, route, endpoint, financial rule,
-permission, marketplace, or general chat is proposed.
+**Status: shared presentation rollout implemented locally · 18 November 2026.**
+The original audit and bounded Services work-view pilot remain historical evidence.
+This revision records the approved wider adoption, not a replacement of every page.
+See [rollout scope and validation](shida-responsive-rollout-20261118.md).
 
 ### Adoption boundary
 
-Only Website Services `view=work` opts into `.shida-responsive`. See the
-[pilot evidence and validation](services-work-responsive-pilot-20261118.md).
-This does not adopt the contract in Business, Restaurant, Wenze, public pages,
-or the other Services views.
-
-| Adopted in this pilot | Still proposed / unchanged |
+| Adopted through shared components/tokens | Still reviewed per workflow |
 | --- | --- |
-| Opt-in color, font-stack, spacing, radius, focus and target tokens in `shida-presentation.css` | Global token replacement, shared package, Business parity |
-| Reusable flat blue/amber/green/purple summary presentation with original data/actions | Replacing other marketplaces' metric components |
-| Explicit accessible heading mode for this management landing view at every width | Changing other pages' title visibility |
-| Scoped gutters, wrapping filters, readable table/mobile rows, selected-tab reveal | New filter panels, form redesign, financial/list-detail migrations |
-| Existing 1024px navigation boundary; pilot Plus sheet below 768px, centered dialog at/above 768px | Changing shared navigation behavior or other overlay consumers |
-| Existing native modal focus lifecycle, measured bottom clearance and permission guards | Physical-device certification or new navigation/history semantics |
+| Identical `shida-presentation.css` and `shida-responsive.css` in Website and Business; existing fonts, no dependency | No global replacement of legacy variables or branding |
+| Website public/account foundation tokens and focus treatment; management styling explicitly scoped | Public search, editorial headings, account hierarchy and landing layouts retain their existing composition |
+| Wenze, Restaurant and Services dashboard summary variants retain independent metrics, permissions and actions | No merging financial data models or unlike currencies |
+| Explicit accessible heading API; Services landing views, Wenze landing lists, Website Restaurant menu | Detail/edit/settings/organization identity headings remain visible; legacy module-specific headings need individual review |
+| Website/Business management navigation switches at 1024px, including Business shell CSS and JS | Permission-aware destination registration, context, guards and history semantics unchanged |
+| Shared Plus, selection and finance sheets use the 768px boundary, dynamic viewport and safe area | Confirmation, calendar editors, POS and print/receipts keep specialized layouts and safeguards |
+| Readable field values, summary grids, compact Services sections and measured navigation clearance | Form-column and table-to-record conversions remain module adapters, not a blanket CSS conversion |
+
+The contract is enforced by the shared CSS/component APIs above. Data-state truth,
+translation quality, useful hierarchy, permission parity, focus after navigation,
+complete mobile information and keyboard behavior remain review/test obligations.
+Do not claim a page fully adopted merely because it inherits tokens.
 
 ## 1. Identity and invariants
 
@@ -39,8 +38,9 @@ existing FR/EN/LN/SW dictionaries and category-specific vocabulary.
 
 ## 2. Proposed tokens
 
-Values below are the explicit contract. The pilot defines the used subset as
-opt-in custom properties in `app/components/shida/shida-presentation.css`; unused
+Values below are the explicit contract. The adopted subset is defined in Website
+`app/components/shida/shida-presentation.css` and Business
+`components/shida-presentation.css`; unused
 roles such as accent/layers and broader layout policies remain proposals.
 Map legacy aliases such as `--forest` to these values during a scoped migration;
 do not override all global styles at once. Use `rem` for type/spacing and allow

@@ -32,7 +32,7 @@ export function PurchaseCosts({base,locale,initialFilter,initialCurrency}:{base:
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[edit,setEdit]=useState<Target|null>(null),[amount,setAmount]=useState(''),[currency,setCurrency]=useState('CDF');
  const [saving,setSaving]=useState(false),[saveError,setSaveError]=useState(''),[history,setHistory]=useState<Revision[]|null>(null),[historyOpen,setHistoryOpen]=useState(false),[historyError,setHistoryError]=useState(false);
  const [mobile,setMobile]=useState(false),[detail,setDetail]=useState<Target|null>(null);
- useEffect(()=>{const media=matchMedia('(max-width:760px)'),update=()=>setMobile(media.matches);update();media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
+ useEffect(()=>{const media=matchMedia('(max-width:767px)'),update=()=>setMobile(media.matches);update();media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
  const listScroll=useRef(0);
  useEffect(()=>{if(!detail)return;const back=()=>{if(window.history.state?.wenzeCost===detail.target_ref)return;if(saving){window.history.forward();return;}void leaveWork().then(ok=>{if(ok){setEdit(null);setDetail(null);requestAnimationFrame(()=>window.scrollTo(0,listScroll.current));}else window.history.forward();});};window.addEventListener('popstate',back);return()=>window.removeEventListener('popstate',back);},[detail,saving]);
  const lock=useRef(false),editSequence=useRef(0);

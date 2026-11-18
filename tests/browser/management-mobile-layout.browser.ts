@@ -21,10 +21,10 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,3
  await fits(page);
  if(width<1024){
   await labelsFit(page);await expect(page.locator('.business-fullscreen')).toBeHidden();
-  const menu=page.locator('.business-secondary-actions');await expect(menu).toBeVisible();
+  const menu=page.locator('.business-secondary-actions:visible');await expect(menu).toBeVisible();
   await menu.locator('summary').click();await expect(menu.locator('button')).toBeVisible();await page.keyboard.press('Escape');await expect(menu.locator('summary')).toBeFocused();
   if(width<=760){const card=await identity.boundingBox(),meta=await page.locator('.ws-shop-metadata').boundingBox(),name=await page.locator('.ws-shop-name').boundingBox(),photoAction=await page.locator('.ws-upload').boundingBox();expect(meta!.width).toBeGreaterThan(card!.width*.8);expect(meta!.y).toBeGreaterThanOrEqual(name!.y+name!.height-1);expect(photoAction!.y).toBeGreaterThan(meta!.y);}
- }else {await expect(page.locator('.business-fullscreen')).toBeVisible();await expect(page.locator('.wz-desktop-navigation')).toBeVisible();}
+ }else {await expect(page.locator('.wz-desktop-navigation')).toBeVisible();const menu=page.locator('.wz-desktop-navigation .business-secondary-actions');await menu.locator('summary').click();await expect(menu.locator('.business-fullscreen-action')).toBeVisible();await page.keyboard.press('Escape');await expect(menu.locator('summary')).toBeFocused();}
  if(locale==='fr')await page.screenshot({path:`${evidence}/shop-${width}.png`,fullPage:true});
  for(const index of [1,2]){await page.locator('.wz-shop-tabs button').nth(index).click();await fits(page);}
  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
@@ -48,7 +48,7 @@ test('shop actions, unsupported fullscreen and changing viewport',async({page})=
 test('fullscreen from secondary menu, normal identity and mobile photo panel',async({page})=>{
  await page.setViewportSize({width:390,height:844});const f=await setup(page,'active','fr');await page.goto(f.url+'&view=shop');await expect(page.locator('.ws-shop-name')).toContainText('Boutique du Fleuve');
  const header=await page.locator('.wz-header').boundingBox(),identityBar=await page.locator('.connected-mobile-bar').boundingBox();expect(identityBar!.y-header!.y-header!.height).toBeLessThanOrEqual(8);
- const menu=page.locator('.business-secondary-actions');await menu.locator('summary').click();await menu.locator('button').click();
+ const menu=page.locator('.business-secondary-actions:visible');await menu.locator('summary').click();await menu.locator('button').click();
  await expect.poll(()=>page.evaluate(()=>!!document.fullscreenElement)).toBe(true);
  await menu.locator('summary').click();await menu.locator('button').click();await expect.poll(()=>page.evaluate(()=>!!document.fullscreenElement)).toBe(false);
  await page.screenshot({path:`${evidence}/shop-390-normal.png`,fullPage:true});

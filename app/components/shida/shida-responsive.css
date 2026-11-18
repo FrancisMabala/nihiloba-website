@@ -1,0 +1,127 @@
+/* Shared Website/Business presentation. Keep this file identical in both repositories.
+   Page-specific composition, data states and permission rules stay with each module. */
+.shida-ui :is(a,button,input,select,textarea,summary,[tabindex]):focus-visible {
+  outline: 3px solid var(--shida-forest);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px var(--shida-surface);
+}
+.shida-ui .shida-responsive {
+  color: var(--shida-text);
+  font-family: var(--shida-font-sans);
+  line-height: 1.5;
+  min-width: 0;
+}
+.shida-ui .shida-responsive :is(button,input,select,textarea) {
+  font-family: var(--shida-font-sans);
+}
+.shida-ui .shida-responsive :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea) {
+  min-width: 0;
+  max-width: 100%;
+  font-size: 1rem;
+  min-height: var(--shida-target);
+}
+.shida-ui .shida-responsive :is(.seller-content,.svc-content,.rst-business-content) {
+  min-width: 0;
+}
+.shida-ui .shida-responsive.seller-workspace :is(.seller-content,.svc-content) { padding-inline: 32px; }
+.shida-ui .shida-responsive .svc-daily { gap: 16px; }
+.shida-ui .shida-responsive .svc-daily-panel { padding: 16px; min-height: 0; }
+.shida-ui .shida-responsive .svc-daily-panel > header { flex-wrap: wrap; margin-bottom: 8px; }
+.shida-ui .shida-responsive .svc-daily-panel > header button { min-height: 44px; font-size: .875rem; }
+.shida-ui .shida-responsive .svc-daily-panel :is(p,small) { font-size: .875rem; }
+.shida-ui .shida-responsive .svc-daily-panel .svc-daily-empty { padding: 8px 0; text-align: left; }
+.shida-ui .shida-responsive .svc-daily-banner { min-height: 0; padding: 0; border: 0; background: transparent; }
+.shida-ui .shida-responsive .svc-daily-landscape { display: none; }
+.shida-ui .shida-responsive .svc-daily-banner > div { max-width: 100%; }
+.shida-ui .shida-responsive .svc-daily-banner h2 { font-size: 1.25rem; }
+.shida-ui .shida-responsive .seller-heading:has(>[data-heading-visibility=accessible]):not(:has(.seller-heading-actions)) { margin: 0; padding: 0; }
+.shida-ui .shida-responsive :is(.svc-daily-kpis,.wt-metrics,.wz-today-metrics,.rst-ops-metrics,.svc-work-kpis) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,13.75rem),1fr));
+  gap: var(--shida-space-3);
+  container-type: inline-size;
+}
+/* Nested labels and multi-currency amounts remain separate, readable values. */
+.shida-ui .shida-responsive .shida-summary-card :is(button,.svc-daily-icon,.wt-icon,.wz-metric-icon,i) {
+  color: inherit;
+  background: transparent;
+}
+.shida-ui .shida-responsive .shida-summary-card button { min-height: var(--shida-target); }
+.shida-ui .shida-responsive .shida-summary-card :is(strong,span) { max-width: 100%; overflow-wrap: anywhere; }
+.shida-ui .shida-responsive .shida-summary-card strong { display: block; }
+.shida-ui .shida-responsive :is(.seller-navigation,.rst-local-tabs,.svc-work-tabs) {
+  gap: var(--shida-space-2);
+  scroll-padding-inline: 6px;
+  scrollbar-width: thin;
+}
+.shida-ui .shida-responsive :is(.seller-navigation,.rst-local-tabs,.svc-work-tabs) button {
+  min-height: var(--shida-target);
+  word-break: normal;
+}
+.shida-ui .management-more-sheet {
+  width: min(560px,calc(100% - 32px));
+  max-height: calc(100dvh - 16px);
+  margin: auto;
+  border: 1px solid var(--shida-border);
+  border-radius: var(--shida-radius-modal);
+  background: var(--shida-surface);
+  color: var(--shida-forest);
+  box-shadow: var(--shida-shadow-overlay);
+  font: 400 1rem/1.5 var(--shida-font-sans);
+}
+.shida-ui :is(.management-more-sheet,.selection-sheet,.finance-sheet)::backdrop { background: var(--shida-backdrop); }
+.shida-ui .management-sheet-content { padding: var(--shida-space-6); }
+.shida-ui .management-sheet-content :is(button,a) { min-height: var(--shida-target); font: 600 1rem/1.35 var(--shida-font-sans); }
+.shida-ui :is(.selection-sheet,.finance-sheet) {
+  border-color: var(--shida-border);
+  background: var(--shida-surface);
+  color: var(--shida-forest);
+  max-height: calc(100dvh - 16px);
+  border-radius: var(--shida-radius-modal);
+  box-shadow: var(--shida-shadow-overlay);
+}
+.shida-ui .selection-sheet-content { max-height: calc(100dvh - 16px); }
+@media(max-width:1023px) {
+  .shida-ui .shida-responsive.seller-workspace :is(.seller-content,.svc-content) { padding-inline: 24px; }
+  .shida-ui .shida-responsive :is(.svc-daily-kpis,.wt-metrics,.wz-today-metrics,.rst-ops-metrics,.svc-work-kpis) { grid-template-columns: repeat(auto-fit,minmax(min(100%,9rem),1fr)); }
+  .shida-ui :is(.seller-design,.app-frame) .management-mobile-nav.management-mobile-nav button {
+    grid-template-rows: 24px auto;
+    font: 600 .8125rem/1.25 var(--shida-font-sans);
+    color: var(--shida-forest);
+    min-height: var(--shida-target);
+  }
+  .shida-ui .management-mobile-nav svg { width: 24px; height: 24px; }
+  .shida-ui :is(.seller-design,.app-frame) .management-mobile-nav.management-mobile-nav { background: var(--shida-surface); border-color: var(--shida-border); }
+  .shida-ui .shida-responsive :is(input,select,textarea,button) { scroll-margin-bottom: calc(var(--management-nav-space,84px) + 16px); }
+}
+@media(max-width:767px) {
+  .shida-ui .shida-responsive.seller-workspace :is(.seller-content,.svc-content) { padding-inline: 16px; }
+  .shida-ui .shida-responsive :is(.svc-daily-kpis,.wt-metrics,.wz-today-metrics,.rst-ops-metrics,.svc-work-kpis) { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .shida-ui :is(.management-more-sheet,.selection-sheet,.finance-sheet) { width: 100%; inset: auto 0 0; margin: auto auto 0; border-radius: 16px 16px 0 0; }
+  .shida-ui :is(.management-sheet-content,.selection-sheet-content) { padding: 16px 16px max(16px,env(safe-area-inset-bottom)); }
+}
+@container(max-width:17.5rem) {
+  .shida-ui .shida-responsive .shida-summary-card { grid-column: 1/-1; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .shida-ui .shida-responsive :is(button,a,dialog) { transition: none; scroll-behavior: auto; }
+}
+
+/* Business activity retains its separate permission-aware data model. */
+.shida-ui .app-frame .svc-work-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,13.75rem),1fr)); gap:12px; container-type:inline-size; }
+.shida-ui .app-frame .svc-work-kpi > svg { display:block; }
+.shida-ui .app-frame .svc-activity-loading-row { background:var(--shida-surface-muted); }
+@media(max-width:767px) { .shida-ui .app-frame .svc-work-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+/* Operational buttons remain readable, including at enlarged text sizes. */
+.shida-ui .shida-responsive button { min-height:var(--shida-target); font-size:1rem; }
+.shida-ui .shida-responsive .shida-summary-card small { font-size:.875rem; font-weight:400; }
+.shida-ui .shida-responsive .svc-work-desktop-options:empty { display:none; }
+
+/* Legacy Wenze attention grids must not squeeze enlarged translated labels. */
+.shida-ui .shida-responsive .wz-attention .shida-summary-card[data-summary-tone] { display:flex; flex-direction:column; }
+.shida-ui .shida-responsive .wz-attention .shida-summary-card[data-summary-tone] > span { width:100%; min-width:0; white-space:normal; overflow-wrap:anywhere; }
+
+/* Section actions wrap with enlarged labels instead of imposing a minimum width. */
+.shida-ui .shida-responsive .svc-daily-panel > header > * { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+.shida-ui .shida-responsive .svc-daily-panel > header button { flex:0 1 auto; white-space:normal; }

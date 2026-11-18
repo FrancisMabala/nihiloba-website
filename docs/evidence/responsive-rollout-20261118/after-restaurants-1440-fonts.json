@@ -1,0 +1,44 @@
+[
+  {
+    "selector": "shida-ui",
+    "font": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    "size": "16px",
+    "color": "rgb(16, 38, 32)",
+    "background": "rgb(255, 252, 247)"
+  },
+  {
+    "selector": "management-mobile-nav ",
+    "font": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    "size": "16px",
+    "color": "rgb(16, 38, 32)",
+    "background": "rgba(0, 0, 0, 0)"
+  },
+  {
+    "selector": "rst-metric-incoming shida-summary-card",
+    "font": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    "size": "16px",
+    "color": "rgb(8, 75, 117)",
+    "background": "rgb(230, 242, 255)"
+  },
+  {
+    "selector": "rst-metric-preparing shida-summary-card",
+    "font": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    "size": "16px",
+    "color": "rgb(116, 70, 0)",
+    "background": "rgb(255, 240, 210)"
+  },
+  {
+    "selector": "rst-metric-stock shida-summary-card",
+    "font": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    "size": "16px",
+    "color": "rgb(116, 70, 0)",
+    "background": "rgb(255, 240, 210)"
+  },
+  {
+    "selector": "rst-metric-visits shida-summary-card",
+    "font": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    "size": "16px",
+    "color": "rgb(88, 57, 134)",
+    "background": "rgb(238, 231, 250)"
+  }
+]

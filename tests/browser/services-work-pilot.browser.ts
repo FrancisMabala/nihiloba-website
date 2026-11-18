@@ -136,7 +136,7 @@ test.describe('adopted pilot',()=>{
 
  test('keyboard, navigation, direct links, return destination and unaffected views',async({page})=>{
   await workPilotFixture(page);await page.setViewportSize({width:820,height:900});await ready(page);
-  const nav=page.locator('.management-mobile-nav');await nav.locator('button').nth(2).click();await expect(page.locator('.svc-planner')).toBeVisible();await expect(page.locator('.shida-responsive')).toHaveCount(0);
+  const nav=page.locator('.management-mobile-nav');await nav.locator('button').nth(2).click();await expect(page.locator('.svc-planner')).toBeVisible();await expect(page.locator('.shida-responsive')).toHaveCount(1);
   await nav.locator('button').nth(1).click();await expect(page.locator('.svc-client-work tbody tr')).toHaveCount(2);await expect(page.locator('#services-view-title')).toBeFocused();
   await page.reload();await expect(page.locator('.svc-client-work tbody tr')).toHaveCount(2);
   await page.goto(route('fr','overview'));await expect(page.locator('.svc-daily')).toBeVisible();await page.goto(route());await expect(page.locator('.svc-client-work')).toBeVisible();
@@ -174,7 +174,7 @@ test.describe('adopted pilot',()=>{
   test.info().annotations.push({type:'fullscreen',description:fullscreen.active?'Entered fullscreen':`Browser denied fullscreen: ${fullscreen.error}; destination and graceful fallback verified.`});
   if(fullscreen.active)await page.evaluate(()=>document.exitFullscreen());
   await expect(page.locator('.svc-work-desktop-options details')).not.toHaveAttribute('open','');
-  await page.locator('.management-desktop-navigation .seller-navigation button').first().click();await expect(page.locator('.svc-daily')).toBeVisible();await expect(page.locator('.shida-responsive')).toHaveCount(0);
+  await page.locator('.management-desktop-navigation .seller-navigation button').first().click();await expect(page.locator('.svc-daily')).toBeVisible();await expect(page.locator('.shida-responsive')).toHaveCount(1);
  });
 
  test('enlarged text, long list, pagination, focus and bottom clearance',async({page})=>{

@@ -1,5 +1,5 @@
 "use client";
-import {useEffect, useRef, type Ref, type ReactNode} from "react";
+import {useEffect, useImperativeHandle, useRef, type Ref, type ReactNode} from "react";
 import "./seller-workspace.css";
 
 import {SellerWorkspaceIcon} from "./services-workspace-icon";
@@ -23,6 +23,10 @@ export function SellerWorkspaceNavigation({id,label,items,current,onNavigate,dis
  },[current]);
  return <nav ref={navigation} id={id} className={`seller-navigation ${className}`} aria-label={label}>{items.map(item=><button key={item.key} type="button" disabled={disabled} aria-current={item.active || current===item.key ? "page" : undefined} onClick={()=>onNavigate(item.key)}><SellerWorkspaceIcon name={item.icon}/>{item.label}</button>)}</nav>;
 }
-export function SellerWorkspaceHeading({eyebrow,title,children,actions,headingRef}:{headingRef?:Ref<HTMLHeadingElement>;eyebrow:string;title:string;children?:ReactNode;actions?:ReactNode}) {
- return <header className="seller-heading"><div><p className="seller-eyebrow">{eyebrow}</p><h1 ref={headingRef} tabIndex={headingRef?-1:undefined}>{title}</h1>{children}</div>{actions&&<div className="seller-heading-actions">{actions}</div>}</header>;
+export function SellerWorkspaceHeading({eyebrow,title,children,actions,headingRef,visibility="visible"}:{visibility?:"visible"|"accessible";headingRef?:Ref<HTMLHeadingElement>;eyebrow:string;title:string;children?:ReactNode;actions?:ReactNode}) {
+ const localHeading=useRef<HTMLHeadingElement>(null);
+ useImperativeHandle(headingRef,()=>localHeading.current!,[]);
+ const previousTitle=useRef(title);
+ useEffect(()=>{if(previousTitle.current!==title&&visibility==="accessible")localHeading.current?.focus({preventScroll:true});previousTitle.current=title;},[title,visibility]);
+ return <header className="seller-heading"><div data-heading-visibility={visibility}><p className="seller-eyebrow">{eyebrow}</p><h1 ref={localHeading} tabIndex={-1}>{title}</h1>{children}</div>{actions&&<div className="seller-heading-actions">{actions}</div>}</header>;
 }

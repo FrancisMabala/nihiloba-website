@@ -1,4 +1,4 @@
-/* Bounded adoption: only the Website Services work view opts into these rules. */
+/* Services adapter for the shared presentation contract. Work-specific table rules remain scoped to .svc-work. */
 .seller-design .svc-workspace.shida-responsive {
   color: var(--shida-text);
   background: var(--shida-canvas);
@@ -167,7 +167,7 @@
   .seller-design .svc-workspace.shida-responsive .svc-work-kpis { grid-template-columns: minmax(0,1fr); }
 }
 
-/* Pilot overlay only: other consumers retain their existing sheet contract. */
+/* Services overlay adapter; the shared contract covers the other consumers. */
 .seller-design .svc-workspace.shida-responsive .management-more-sheet {
   width: min(560px,calc(100% - 32px));
   max-height: calc(100dvh - 16px);

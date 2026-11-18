@@ -1,5 +1,6 @@
 "use client";
 import "./wenze-expense-list.css";
+import {BusinessFullscreen} from "./connected-business-workspace";
 import {useEffect,useState} from "react";
 import {FinanceSheet} from "./finance-sheet";
 import {SellerWorkspaceIcon} from "./seller-workspace";
@@ -19,7 +20,7 @@ export function WenzeNavigation({locale,view,onNavigate,physical=false,showOrder
  const items:SellerNavigationItem[]=[{key:"today",label:sellerText(locale,"today"),icon:"overview"},{key:"sales",label:checkoutText(locale,"counter"),icon:"finance"},{key:"orders",label:ordersText(locale,"title"),icon:"work"},{key:"catalog",label:u("productsStock"),icon:"stock"},{key:"money",label:u("money"),icon:"reports"},{key:"shop",label:u("shop"),icon:"settings"}];
  const short={en:["Today","Sell","Orders","Products","Money","My shop"],fr:["Aujourd’hui","Vendre","Commandes","Produits","Finances","Boutique"],ln:["Lelo","Teka","Mitindo","Biloko","Mbongo","Butiki"],sw:["Leo","Uza","Maagizo","Bidhaa","Fedha","Duka"]}[locale];
  const visible=items.filter(item=>(physical||item.key!=="sales")&&(showOrders||item.key!=="orders"));
- return <><div className="wz-desktop-navigation"><SellerWorkspaceNavigation label={sellerText(locale,"navigation")} items={visible} current={view==='sales'?'sales':wenzeGroup(view)} onNavigate={onNavigate}/></div><ManagementMobileNavigation locale={locale} items={visible.filter(item=>item.key!=='sales').map(item=>({...item,shortLabel:short[items.indexOf(item)]}))} primary={['today','orders','catalog','money','shop']} current={wenzeGroup(view)} onNavigate={onNavigate}/></>;
+ return <><div className="wz-desktop-navigation"><SellerWorkspaceNavigation label={sellerText(locale,"navigation")} items={visible} current={view==='sales'?'sales':wenzeGroup(view)} onNavigate={onNavigate}/><div className="svc-work-desktop-options"><BusinessFullscreen locale={locale} menu/></div></div><ManagementMobileNavigation locale={locale} items={visible.filter(item=>item.key!=='sales').map(item=>({...item,shortLabel:short[items.indexOf(item)]}))} primary={['today','orders','catalog','money','shop']} current={wenzeGroup(view)} onNavigate={onNavigate}/></>;
 
 }
 export function WenzeSubnavigation({locale,view,onNavigate,physical=false}:{physical?:boolean;locale:WenzeLocale;view:string;onNavigate:(view:string)=>void}){

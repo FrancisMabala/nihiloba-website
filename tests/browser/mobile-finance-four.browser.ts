@@ -34,12 +34,12 @@ test('report archive distinguishes unavailable history from an empty successful 
  fail=false;await page.locator('.wm-period>[role=alert]').getByRole('button',{name:sellerText('fr','retry')}).click();
  await expect(archive).toContainText(sellerText('fr','empty'));await expect(page.locator('.wm-period>[role=alert]')).toHaveCount(0);
 });
-for(const width of [320,375,390,430,768,1440])test(`finance costs, details and exact edit ${width}`,async({page})=>{
+for(const width of [320,375,390,430,767,768,1440])test(`finance costs, details and exact edit ${width}`,async({page})=>{
  await page.setViewportSize({width,height:850});const f=await setup(page);await page.goto(f.url+'&view=costs');
- const mobile=width<=760;
+ const mobile=width<768;
  await expect(page.locator(mobile?'.finance-cost-row':'.finance-cost-desktop tbody>tr').first()).toBeVisible();await noOverflow(page);
  if(mobile){await expect(page.locator('.finance-cost-group')).toHaveCount(1);await expect(page.locator('.finance-cost-group strong')).toHaveText(f.name);await expect(page.locator('.finance-cost-row').first()).toContainText('0 CDF');await expect(page.locator('.finance-cost-row').nth(1)).toContainText('À renseigner');
- await page.locator('.finance-cost-row').nth(1).tap();const dialog=page.getByRole('dialog');await expect(dialog).toContainText('Autonomie 2 heures');await expect(dialog.locator('.finance-cost-facts>div').last()).toContainText('—');await shot(page,'cost-detail-'+width);
+ await page.locator('.finance-cost-row').nth(1).tap();const dialog=page.getByRole('dialog');await expect(dialog).toContainText('Autonomie 2 heures');const box=(await dialog.boundingBox())!;expect(Math.abs(box.y+box.height-850)).toBeLessThan(2);await expect(dialog.locator('.finance-cost-facts>div').last()).toContainText('—');await shot(page,'cost-detail-'+width);
  await dialog.getByRole('button',{name:'Ajouter le coût'}).click();await dialog.locator('input[name=amount]').fill('8000');await dialog.getByRole('button',{name:'Enregistrer',exact:true}).click();await expect(dialog.locator('.finance-cost-facts')).toContainText('8 000 CDF');await dialog.getByRole('button',{name:'Fermer',exact:true}).click();await expect(page.locator('.finance-cost-row').nth(1)).toContainText('8 000 CDF');expect(f.writes).toEqual([{expected_revision:1,amount:'8000',currency:'CDF'}]);
  await page.getByRole('button',{name:sellerText('fr','next'),exact:true}).click();await expect(page.locator('.finance-cost-group')).toHaveCount(2);await noOverflow(page);
  }await shot(page,'purchase-costs-'+width);expect(f.errors).toEqual([]);
