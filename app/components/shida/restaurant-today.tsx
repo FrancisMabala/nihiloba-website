@@ -6,6 +6,7 @@ import {operationsCopy,operationDay,operationTime} from '../../lib/restaurant-op
 import {displayMoney} from '../../lib/restaurant-counter-values';
 import './restaurant-operations.css';
 import {SpaceIcon} from './account-space-icon';
+import {todayOrderKeys,validTodayOrders} from '../../lib/restaurant-today-contract';
 
 type Locale='fr'|'en'|'ln'|'sw';
 type Order={order_ref:string;state:string;submitted_at:string;fulfillment_method:string};
@@ -17,6 +18,7 @@ type Failure='unavailable'|'restricted'|'zoneRequired';
 export function RestaurantToday({path,binding,locale,zone,canSell,canStock,canEditIntake,canReservations=false,onOpen}:{path:string;binding:string;locale:Locale;zone:string|null;canPrepare:boolean;canSell:boolean;canStock:boolean;canEditIntake:boolean;canReservations?:boolean;onOpen:(tab:string)=>void}){
  const c=operationsCopy[locale], [data,setData]=useState<Snapshot>({}),[errors,setErrors]=useState<Partial<Record<Key,Failure>>>({}),[busy,setBusy]=useState<Key[]>([]),[updated,setUpdated]=useState<string|null>(null),[now,setNow]=useState(()=>new Date());
  const active=useRef(new Map<Key,AbortController>()),epoch=useRef(0),retryQueue=useRef<Key[]>([]);
+ const summarySupported=useRef(true);
  const day=operationDay(zone,now);
  const load=useCallback(async(only?:Key)=>{
   if(active.current.size){
@@ -42,11 +44,28 @@ export function RestaurantToday({path,binding,locale,zone,canSell,canStock,canEd
   // These reads share ownership locks on the backend. A dashboard must not
   // occupy all four admission slots with a burst of competing requests.
   let complete=true;
+  const orderPages=new Map<Key,unknown>();
+  let summaryAttempted=false;
   while(selected.length){
    const {key,url,controller}=selected.shift()!;
    if(generation!==epoch.current||controller.signal.aborted)return;
    try{
-    const value=await request(url,{signal:controller.signal},binding);
+    if(!only&&!summaryAttempted&&key==='pending'&&summarySupported.current){
+     summaryAttempted=true;
+     try{
+      const summary=await request(`${path}/today-orders`,{signal:controller.signal},binding);
+      if(!validTodayOrders(summary))throw new Error('Invalid Today projection');
+      for(const section of todayOrderKeys)orderPages.set(section,summary.sections[section]);
+     }catch(error){
+      if(controller.signal.aborted||generation!==epoch.current)return;
+      if(error instanceof DashboardApiError&&[401,403].includes(error.status))throw error;
+      if(error instanceof DashboardApiError&&[404,405].includes(error.status))summarySupported.current=false;
+      // Older backends, oversized backlogs and failed summaries retain the
+      // independently authorized serial reads and each section's own retry.
+     }
+    }
+    const value=orderPages.has(key)?orderPages.get(key):await request(url,{signal:controller.signal},binding);
+    orderPages.delete(key);
     if(generation!==epoch.current)return;
     setData(previous=>({...previous,[key]:value}));
     setErrors(previous=>{const next={...previous};delete next[key];return next;});

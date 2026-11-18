@@ -1,0 +1,118 @@
+[
+  {
+    "profile": "normal",
+    "stage": "before",
+    "visit": "first",
+    "usefulMs": 1153,
+    "sectionReadyMs": 1173,
+    "usableMs": 1496,
+    "requests": 54,
+    "bytes": 544186
+  },
+  {
+    "profile": "normal",
+    "stage": "before",
+    "visit": "repeat",
+    "usefulMs": 1040,
+    "sectionReadyMs": 1063,
+    "usableMs": 1353,
+    "requests": 54,
+    "bytes": 544186
+  },
+  {
+    "profile": "normal",
+    "stage": "before",
+    "visit": "navigation",
+    "usefulMs": 94,
+    "usableMs": 943,
+    "requests": 5,
+    "bytes": 9541
+  },
+  {
+    "profile": "normal",
+    "stage": "after",
+    "visit": "first",
+    "usefulMs": 1180,
+    "sectionReadyMs": 1195,
+    "usableMs": 1344,
+    "requests": 52,
+    "bytes": 544712
+  },
+  {
+    "profile": "normal",
+    "stage": "after",
+    "visit": "repeat",
+    "usefulMs": 1110,
+    "sectionReadyMs": 1126,
+    "usableMs": 1132,
+    "requests": 52,
+    "bytes": 544712
+  },
+  {
+    "profile": "normal",
+    "stage": "after",
+    "visit": "navigation",
+    "usefulMs": 62,
+    "usableMs": 927,
+    "requests": 5,
+    "bytes": 9541
+  },
+  {
+    "profile": "mobile",
+    "stage": "before",
+    "visit": "first",
+    "usefulMs": 7584,
+    "sectionReadyMs": 8293,
+    "usableMs": 11416,
+    "requests": 54,
+    "bytes": 544186
+  },
+  {
+    "profile": "mobile",
+    "stage": "before",
+    "visit": "repeat",
+    "usefulMs": 7427,
+    "sectionReadyMs": 7698,
+    "usableMs": 11188,
+    "requests": 54,
+    "bytes": 544186
+  },
+  {
+    "profile": "mobile",
+    "stage": "before",
+    "visit": "navigation",
+    "usefulMs": 204,
+    "usableMs": 2677,
+    "requests": 5,
+    "bytes": 9541
+  },
+  {
+    "profile": "mobile",
+    "stage": "after",
+    "visit": "first",
+    "usefulMs": 7906,
+    "sectionReadyMs": 7938,
+    "usableMs": 10379,
+    "requests": 52,
+    "bytes": 544712
+  },
+  {
+    "profile": "mobile",
+    "stage": "after",
+    "visit": "repeat",
+    "usefulMs": 7395,
+    "sectionReadyMs": 7443,
+    "usableMs": 9837,
+    "requests": 52,
+    "bytes": 544712
+  },
+  {
+    "profile": "mobile",
+    "stage": "after",
+    "visit": "navigation",
+    "usefulMs": 177,
+    "usableMs": 2686,
+    "requests": 5,
+    "bytes": 9541
+  }
+]

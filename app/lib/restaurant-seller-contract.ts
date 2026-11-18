@@ -7,6 +7,7 @@ import {serviceRoutes,isServicePath,validServiceBody,validServiceQuery} from './
 import {dailyRoutes,isDailyPath,validDailyBody,validDailyQuery} from './restaurant-daily-contract';
 // Exact Personal seller surface, not a general Dashboard proxy.
 export const sellerRoutes: [RegExp, readonly string[]][] = [
+  [/^RST_[A-Za-z0-9_-]+\/today-orders$/, ['GET']],
   [/^onboarding\/current$/, ['GET']],
   [/^onboarding$/, ['POST']],
   [/^onboarding\/RON_[a-f0-9]+$/, ['GET','PATCH']],
@@ -53,6 +54,7 @@ export function allowedSellerRoute(path: string, method: string): boolean {
   return !path.includes('/stations/') && path.length < 400 && sellerRoutes.some(([pattern, methods]) => pattern.test(path) && methods.includes(method));
 }
 export function validSellerQuery(path: string, method: string, query: URLSearchParams): boolean {
+  if(path.endsWith('/today-orders'))return method==='GET'&&query.size===0;
   if (/\/menu\/items(?:\/RMI_[A-Za-z0-9_-]+)?$/.test(path) && method === 'GET') {
     const list=path.endsWith('/items');
     return [...query].every(([key,value])=>query.getAll(key).length===1 && (key==='language'?['fr','en','ln','sw'].includes(value):key==='overview'?['true','false'].includes(value):!list?false:key==='search'?value.length<=200:key==='category_ref'?/^RMC_[A-Za-z0-9_-]+$/.test(value):key==='menu_state'?['available','unavailable','hidden'].includes(value):['page','page_size'].includes(key)&&/^[1-9]\d{0,6}$/.test(value)&&(key!=='page_size'||Number(value)<=50)));

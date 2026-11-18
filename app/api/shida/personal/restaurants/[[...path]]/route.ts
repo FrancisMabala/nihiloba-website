@@ -1,6 +1,7 @@
 import { isPhotoPath, isPhotoUpload, PHOTO_MAX_BYTES, PHOTO_TYPES, validPhotoEnvelope } from '../../../../../lib/restaurant-photo-contract';
 import {isPreparationPath,validPreparationResponse} from '../../../../../lib/restaurant-preparation-contract';
 import { validMenuPreview, validOrderProjections } from "../../../../../lib/restaurant-projections";
+import {validTodayOrders} from '../../../../../lib/restaurant-today-contract';
 import { cookies } from "next/headers";
 import { personalRequestOrigin } from "../../../../../lib/personal-request-origin";
 import { allowedSellerRoute, validSellerBody, validSellerQuery, validShare, sellerErrorCodes } from "../../../../../lib/restaurant-seller-contract";
@@ -62,6 +63,7 @@ async function handle(request: Request, context: Context) {
     const value = await response.json().catch(() => null);
     if (!response.ok) return fail(response.status >= 400 && response.status < 600 ? response.status : 502, sellerErrorCodes.has(value?.detail) ? value.detail : "restaurant_unavailable");
     if (!value || typeof value !== "object" || Array.isArray(value)) return fail(502);
+    if (path.endsWith('/today-orders') && !validTodayOrders(value)) return fail(502);
     if (photo && !validPhotoEnvelope(value)) return fail(502);
     if (photo) return Response.json({ upload_ref: value.upload_ref, target: value.target, item_ref: value.item_ref, status: value.status, expires_at: value.expires_at, revision: value.revision }, { headers: PRIVATE_HEADERS });
     if (isPreparationPath(path) && !validPreparationResponse(path,request.method,value)) return fail(502);

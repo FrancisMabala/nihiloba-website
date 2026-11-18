@@ -1,5 +1,10 @@
 # Waiting performance follow-up — 18 November 2026
 
+> Release update, later on 18 November: the phase-two code described here is now
+> deployed. See [exact release verification and the separate local-only Restaurant
+> follow-up](waiting-phase2-release-and-restaurant-followup-20261118.md). The original
+> pre-release observations below are retained as historical evidence.
+
 ## Release boundary and current infrastructure
 
 The previous performance release is **pushed and deployed**:
