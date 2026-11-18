@@ -1,0 +1,110 @@
+{
+  "audit_date": "2026-11-18",
+  "note": "Unmodified retained browser screenshots, not live production verification. Full-page dimensions may exceed original viewport height. See audit for limitations.",
+  "images": [
+    {
+      "file": "services-work-390.png",
+      "source": "C:/NIHILOBA/release-evidence/services-mobile-20261118/after-work-390.png",
+      "evidence_batch_date": "2026-11-18",
+      "provenance": "Production-preview browser; synthetic API fixtures",
+      "image_pixels": [
+        390,
+        1279
+      ],
+      "sha256": "aa4b8723b2dee879986c2b5302314cf017bc895d9390bb7f88b51ecc8f4701a3",
+      "bytes": 44242,
+      "fresh_capture_for_audit": false
+    },
+    {
+      "file": "services-more-390.png",
+      "source": "C:/NIHILOBA/release-evidence/services-mobile-20261118/after-more-390.png",
+      "evidence_batch_date": "2026-11-18",
+      "provenance": "Production-preview browser; synthetic API fixtures",
+      "image_pixels": [
+        390,
+        844
+      ],
+      "sha256": "b13296d63db945866aeae15a8ce7d041a386fe456a5b2444d4783b4e9c5b4472",
+      "bytes": 31234,
+      "fresh_capture_for_audit": false
+    },
+    {
+      "file": "restaurant-today-390.png",
+      "source": "C:/NIHILOBA/release-evidence/restaurant-five-batches-20261117/today-390.png",
+      "evidence_batch_date": "2026-11-17",
+      "provenance": "Retained browser fixture capture",
+      "image_pixels": [
+        390,
+        1414
+      ],
+      "sha256": "b15dedf59bac0c1352d9969fd29c1d7d595c882081082def05b6003973cab4cb",
+      "bytes": 49046,
+      "fresh_capture_for_audit": false
+    },
+    {
+      "file": "restaurant-today-1440.png",
+      "source": "C:/NIHILOBA/release-evidence/restaurant-five-batches-20261117/today-1440.png",
+      "evidence_batch_date": "2026-11-17",
+      "provenance": "Retained browser fixture capture",
+      "image_pixels": [
+        1440,
+        1013
+      ],
+      "sha256": "4e9264175812b2a65699a1f2528198e02de200f580e3c82965e92faf8df62637",
+      "bytes": 67398,
+      "fresh_capture_for_audit": false
+    },
+    {
+      "file": "wenze-today-390.png",
+      "source": "C:/NIHILOBA/release-evidence/wenze-mobile-20261116/batch1/today-390.png",
+      "evidence_batch_date": "2026-11-16",
+      "provenance": "Retained browser fixture capture",
+      "image_pixels": [
+        390,
+        2891
+      ],
+      "sha256": "1c2b5e3faa4029615bfd3ef68a190fec7ebdfdec6d5423b5e938e11dfb4fd768",
+      "bytes": 95123,
+      "fresh_capture_for_audit": false
+    },
+    {
+      "file": "wenze-orders-1440.png",
+      "source": "C:/NIHILOBA/release-evidence/wenze-mobile-20261116/batch1/list-1440.png",
+      "evidence_batch_date": "2026-11-16",
+      "provenance": "Retained browser fixture capture",
+      "image_pixels": [
+        1440,
+        1011
+      ],
+      "sha256": "789eaa39ab7c8dde147834291e4a2520730948027e63228d199aebb33bf9c892",
+      "bytes": 61147,
+      "fresh_capture_for_audit": false
+    },
+    {
+      "file": "business-settings-390.png",
+      "source": "C:/NIHILOBA/release-evidence/organization-mobile-20261116/after-general-390.png",
+      "evidence_batch_date": "2026-11-16",
+      "provenance": "Retained browser fixture capture",
+      "image_pixels": [
+        390,
+        1027
+      ],
+      "sha256": "819842ddf9e36ecbbd6aa5a35bf1e2ae250bbaabb6a9966e5472a537a074a23a",
+      "bytes": 52727,
+      "fresh_capture_for_audit": false
+    },
+    {
+      "file": "business-settings-1280.png",
+      "source": "C:/NIHILOBA/release-evidence/organization-mobile-20261116/after-general-1280.png",
+      "evidence_batch_date": "2026-11-16",
+      "provenance": "Retained browser fixture capture",
+      "image_pixels": [
+        1280,
+        844
+      ],
+      "sha256": "b3817d6060cf56e75303637c8d69faa4ac7440fa2396dd27330339404829f1cf",
+      "bytes": 75265,
+      "fresh_capture_for_audit": false
+    }
+  ]
+}
