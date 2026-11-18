@@ -1,34 +1,11 @@
-import {test,expect,type Page} from '@playwright/test';
-import {restaurantFixture} from './responsive-rollout-fixtures';
+import {test,expect} from '@playwright/test';
+import {restaurantPanelFixture as fixture} from './restaurant-panel-fixtures';
 import {restaurantText} from '../../app/lib/restaurant-seller-copy';
 import {managementNavigation} from './restaurant-management-navigation';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 
 const at='2026-11-18T12:00:00Z';
-async function fixture(page:Page){
- await restaurantFixture(page);
- await page.route('**/today-orders/**',route=>route.fulfill({json:{version:1,intake_released:true,sections:Object.fromEntries(['pending','ready','preparing'].map(key=>[key,{items:[],total:0,as_of:at}]))}}));
- await page.route('**/service/daily/summary/**',route=>route.fulfill({json:{as_of:at,time_zone:'Africa/Kinshasa',currencies:{CDF:{recorded_net:'3000',balance_due:'0'},USD:{recorded_net:'5',balance_due:'0'}}}}));
- await page.route('**/RST_0/hours/**',route=>route.fulfill({json:{revision:at,result:{status:'known',timezone_name:'Africa/Kinshasa',schedule:{windows:[{weekday:0,start:'09:00',end:'17:00'}]},exceptional_closures:[]}}}));
- await page.route('**/service/financial/invoices/**',route=>route.fulfill({json:{items:[],has_more:false}}));
- await page.route('**/api/**',route=>{
-  const p=new URL(route.request().url()).pathname.replace(/\/$/,'');
-  if(p.endsWith('/time-zone'))return route.fulfill({json:{time_zone:'Africa/Kinshasa',time_zone_revision:1,confirmed_at:at}});
-  if(p.endsWith('/reports'))return route.fulfill({json:{reports:[],next_before:null}});
-  if(p.includes('/days/')&&p.endsWith('/preview')){
-   const cash={opening:null,counted:null,cash_receipts_net:'3000',actual_cash_refunds:'0',cash_expense_effect:'0',cash_movements:'0',expected:null,discrepancy:null};
-   return route.fulfill({json:{local_date:p.split('/days/')[1].split('/')[0],time_zone:'Africa/Kinshasa',revision:1,closed:false,preview_revision:'a'.repeat(64),currencies:{CDF:{opening:null,counted:null},USD:{opening:null,counted:null}},cash:{CDF:cash,USD:{...cash,cash_receipts_net:'0'}},expenses:{CDF:'0',USD:'0'},outstanding:{CDF:{balance_due:'0',refund_owed:'0'},USD:{balance_due:'0',refund_owed:'0'}},open_orders:{count:0,refs:[]},stock_exceptions:{count:0,refs:[]},methods:[],supplemental_adjustment_count:0,supplemental_adjustments:[]}});
-  }
-  if(p.endsWith('/service/financial/entries'))return route.fulfill({json:{entries:[],financial_revision:0,next_after_revision:null}});
-  if(p.endsWith('/service/financial/activity'))return route.fulfill({json:{items:[],next_before:null}});
-  if(p.endsWith('/service/payment-methods'))return route.fulfill({json:{items:[{method_ref:'RPM_cash',label:'Espèces',kind:'cash',currencies:['CDF','USD'],enabled:true}]}});
-  // This destination deliberately exercises recoverable read failures. A 404
-  // means access loss in this workflow and must retain its real denial behavior.
-  if(p.endsWith('/insights')||p.endsWith('/order-summary'))return route.fulfill({status:503,json:{detail:'synthetic_read_failure'}});
-  return route.fallback();
- });
-}
 
 const destinations=[
  ['orders','.rst-orders-screen'],['items','.rst-menu-workspace'],
@@ -44,6 +21,7 @@ for(const width of [390,1440])for(const [tab,selector] of destinations){
   await fixture(page);await page.setViewportSize({width,height:900});
   await page.goto(`/fr/shida/seller/restaurants/?establishment=RST_0&tab=${tab}`);
   await expect(page.locator(selector)).toBeVisible();
+  if(tab==='settings')await expect(page.locator('.rst-qr-choices input').first()).toBeChecked();
   await expect(page.locator('.rst-panel-loading')).toHaveCount(0);
   await expect(page.locator('.rst-today')).toHaveCount(0);
   await expect(page.locator('.rst-restaurant-identity:visible strong').first()).toContainText('Chez maman');

@@ -1,0 +1,6 @@
+.rst .rst-panel-recovery{padding:1rem;min-height:0;max-width:42rem;overflow-wrap:anywhere}
+.rst .rst-panel-recovery h2{font-size:1.25rem;margin:0 0 .5rem}
+.rst .rst-panel-recovery p{margin:.5rem 0}
+.rst .rst-panel-recovery .rst-actions{gap:.5rem;flex-wrap:wrap}
+.rst .rst-panel-recovery button{min-height:44px;white-space:normal}
+.rst .rst-panel-recovery:focus-visible{outline:2px solid var(--color-primary,#173e32);outline-offset:3px}

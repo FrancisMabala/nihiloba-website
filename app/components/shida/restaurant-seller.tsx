@@ -3,7 +3,7 @@ import {WenzeHeader} from "./wenze-header";
 import { managementCopy } from "../../lib/restaurant-management-copy";
 import { leaveWork } from "../../lib/restaurant-work";
 import { sellerDesignCopy } from "../../lib/restaurant-seller-design-copy";
-import { lazy, Suspense, useEffect, useState, useRef, useCallback } from "react";
+import { Suspense, useEffect, useState, useRef, useCallback } from "react";
 import { DashboardApiError } from '@/app/lib/restaurant-seller-browser';
 import { endEmploymentSession } from "../../services/shida/employment-browser-client";
 import { restorePersonalSession, PersonalSessionError, PERSONAL_SESSION_EVENT, type PersonalSession } from "../../lib/personal-session-browser";
@@ -14,8 +14,10 @@ import type { RestaurantLocale } from "../../services/shida/restaurants-client";
 import { RestaurantWorkspace } from "./restaurant-seller-workspace";
 import "./restaurant-seller.css";
 
-const SellerLanding = lazy(() => import('./seller-landing').then(module => ({default: module.SellerLanding})));
-const ProtectedReceipt = lazy(() => import('./restaurant-receipt').then(module => ({default: module.ProtectedReceipt})));
+import {deferredRestaurantPanel,RestaurantPanelRecoveryContext} from './restaurant-deferred-panel';
+
+const SellerLanding = deferredRestaurantPanel(() => import('./seller-landing').then(module => ({default: module.SellerLanding})));
+const ProtectedReceipt = deferredRestaurantPanel(() => import('./restaurant-receipt').then(module => ({default: module.ProtectedReceipt})));
 
 export const sellerPath = (locale: RestaurantLocale) => `${locale === "en" ? "" : `/${locale}`}/shida/seller/restaurants`;
 export function RestaurantSeller({ locale, receipt }: { locale: RestaurantLocale; receipt?: {orderRef:string;establishment?:string} }) {
@@ -65,7 +67,7 @@ export function RestaurantSeller({ locale, receipt }: { locale: RestaurantLocale
   catch { setMessage(t.unavailable); }
   finally { if (alive.current) setPending(false); }
  }
- return <div lang={locale} className="rst-seller seller-design">
+ return <RestaurantPanelRecoveryContext.Provider value={{locale,scope:`${session?.binding??"signed-out"}:${locale}`,onBack:async()=>{if(await leaveWork())window.location.assign(session?sellerPath(locale):restaurantPath(locale));}}}><div lang={locale} className="rst-seller seller-design">
 <WenzeHeader locale={locale} marketplace="Restaurants" name={session?.user.display_name} brandHref={restaurantPath(locale)} beforeNavigate={leaveWork} pending={pending} onLanguage={async lang=>{if((await leaveWork()))window.location.assign(sellerPath(lang)+window.location.search);}} onAccount={()=>void logout(true)} onLogout={()=>void logout()}/>
 <section className="rst container rst-shell" hidden={!!session&&!message&&!connectionLost&&!loading&&!pending}>
    {loading || pending ? <p role="status">{restaurantText(locale, "loading")}</p> : !session && (signedOutView ? <div className="rst-signed-out"><p>{management.signedOut}</p><button className="button button-primary" onClick={()=>setSignedOutView(false)}>{management.signIn}</button></div> : <Suspense fallback={<p role="status">{restaurantText(locale, 'loading')}</p>}><SellerLanding marketplace="restaurants" locale={locale} design={design} browseHref={restaurantPath(locale)} onAuthenticated={() => { signedOut.current = false; }}/></Suspense>)}
@@ -73,5 +75,5 @@ export function RestaurantSeller({ locale, receipt }: { locale: RestaurantLocale
    {connectionLost && <p role="status">{sellerConnectionText[locale]}</p>}
   </section>
   {session && <fieldset className="rst-session-boundary" disabled={connectionLost} inert={connectionLost}>{receipt ? <div className="rst container"><Suspense fallback={<p role="status">{restaurantText(locale, 'loading')}</p>}><ProtectedReceipt key={`${session.binding}:${locale}:${receipt.orderRef}:${receipt.establishment}`} binding={session.binding} locale={locale} orderRef={receipt.orderRef} establishment={receipt.establishment} onFailure={receiptFailure}/></Suspense></div> : <RestaurantWorkspace key={`${session.binding}:${locale}`} binding={session.binding} locale={locale}/>}</fieldset>}
- </div>;
+ </div></RestaurantPanelRecoveryContext.Provider>;
 }
