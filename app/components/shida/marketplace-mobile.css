@@ -1,8 +1,8 @@
 /* Public collections only; detail, editing and management remain independent. */
 .marketplace-search-submit svg{width:22px;height:22px;flex:none}
 .rd-fields .rd-filter-explanation{grid-column:1/-1}
-@media(min-width:761px){.marketplace-search-submit svg,.job-card-save{display:none}}
-@media(max-width:760px){
+@media(min-width:768px){.marketplace-search-submit svg,.job-card-save{display:none}}
+@media(max-width:767px){
  body .market-surface .marketplace-public{padding-top:0;padding-bottom:calc(80px + env(safe-area-inset-bottom));font-family:Arial,sans-serif}
  body .market-surface .marketplace-public .container{width:calc(100% - 32px);min-width:0}
  body .market-surface .marketplace-public .container .container{width:100%}
@@ -142,20 +142,20 @@
  body .market-surface .marketplace-public .svc-discovery-invitations{display:flex;flex-wrap:wrap;gap:8px}
  body .market-surface .marketplace-public .st-invitation{display:block}
  /* Compact collection chrome retains account, language, cart and all markets. */
- body .market-surface:has(.marketplace-public) .market-header-inner{padding:6px 16px 0;gap:0 4px;flex-wrap:wrap}
- body .market-surface:has(.marketplace-public) .market-brand-group{gap:2px;min-height:50px;justify-content:center}
- body .market-surface:has(.marketplace-public) .market-home{min-height:0;font-size:8px}
- body .market-surface:has(.marketplace-public) .market-brand{font-size:26px}
- body .market-surface:has(.marketplace-public) .market-header-actions{gap:2px;min-width:0}
- body .market-surface:has(.marketplace-public) .market-header-actions>.shida-public-account{padding:0;border:0}
- body .market-surface:has(.marketplace-public) .market-controls{gap:4px}
- body .market-surface:has(.marketplace-public) .market-header .market-cart{padding:4px;gap:2px;min-width:44px;border-color:transparent;background:transparent}
- body .market-surface:has(.marketplace-public) .market-controls .market-language{min-width:44px;min-height:44px;padding:6px;background:transparent;color:#173e32;border-color:#bcbcaf;border-radius:6px}
- body .market-surface:has(.marketplace-public) .market-controls .market-avatar{width:44px;min-width:44px;height:44px}
- body .market-surface:has(.marketplace-public) .market-primary-nav{flex-basis:100%;order:3;gap:20px;min-width:0;max-width:100%;height:44px;margin:0;overflow-x:auto;scrollbar-width:thin}
- body .market-surface:has(.marketplace-public) .market-primary-nav a{display:flex;align-items:center;min-height:44px;padding:0;font-size:.875rem;box-sizing:border-box}
- body .market-surface:has(.marketplace-public) .market-primary-nav a[aria-current]{border-color:#173e32;border-bottom-width:3px;font-weight:700}
- body .market-surface:has(.marketplace-public) .shida-navigation{padding:4px 6px calc(4px + env(safe-area-inset-bottom));gap:4px}
- body .market-surface:has(.marketplace-public) .shida-navigation :is(a,button){min-height:52px;padding:4px 2px;font-size:.75rem;font-weight:400;gap:3px;overflow-wrap:normal;word-break:normal}
- body .market-surface:has(.marketplace-public) .shida-navigation [aria-current=page]{background:#e0ebd1;color:#173e32;border-radius:10px}
+ body .market-surface[data-public-marketplace] .market-header-inner{padding:6px 16px 0;gap:0 4px;flex-wrap:wrap}
+ body .market-surface[data-public-marketplace] .market-brand-group{gap:2px;min-height:50px;justify-content:center}
+ body .market-surface[data-public-marketplace] .market-home{min-height:0;font-size:8px}
+ body .market-surface[data-public-marketplace] .market-brand{font-size:26px}
+ body .market-surface[data-public-marketplace] .market-header-actions{gap:2px;min-width:0}
+ body .market-surface[data-public-marketplace] .market-header-actions>.shida-public-account{padding:0;border:0}
+ body .market-surface[data-public-marketplace] .market-controls{gap:4px}
+ body .market-surface[data-public-marketplace] .market-header .market-cart{padding:4px;gap:2px;min-width:44px;border-color:transparent;background:transparent}
+ body .market-surface[data-public-marketplace] .market-controls .market-language{min-width:44px;min-height:44px;padding:6px;background:transparent;color:#173e32;border-color:#bcbcaf;border-radius:6px}
+ body .market-surface[data-public-marketplace] .market-controls .market-avatar{width:44px;min-width:44px;height:44px}
+ body .market-surface[data-public-marketplace] .market-primary-nav{flex-basis:100%;order:3;gap:20px;min-width:0;max-width:100%;height:44px;margin:0;overflow-x:auto;scrollbar-width:thin}
+ body .market-surface[data-public-marketplace] .market-primary-nav a{display:flex;align-items:center;min-height:44px;padding:0;font-size:.875rem;box-sizing:border-box}
+ body .market-surface[data-public-marketplace] .market-primary-nav a[aria-current]{border-color:#173e32;border-bottom-width:3px;font-weight:700}
+ body .market-surface[data-public-marketplace] .shida-navigation{padding:4px 6px calc(4px + env(safe-area-inset-bottom));gap:4px}
+ body .market-surface[data-public-marketplace] .shida-navigation :is(a,button){min-height:52px;padding:4px 2px;font-size:.75rem;font-weight:400;gap:3px;overflow-wrap:normal;word-break:normal}
+ body .market-surface[data-public-marketplace] .shida-navigation [aria-current=page]{background:#e0ebd1;color:#173e32;border-radius:10px}
 }

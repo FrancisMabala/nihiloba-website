@@ -5,6 +5,13 @@ The original audit and bounded Services work-view pilot remain historical eviden
 This revision records the approved wider adoption, not a replacement of every page.
 See [rollout scope and validation](shida-responsive-rollout-20261118.md).
 
+Public discovery now has its own explicitly scoped adoption contract:
+[Public marketplace presentation standard](shida-public-marketplace-standard.md).
+It extends the shared identity to the eight collection routes, using the existing
+Wenze, Emplois, Services, Transport and Logement references. The historical
+management rollout below did not itself standardize those public pages. Public
+details, account forms and specialist workflows remain outside this collection rollout.
+
 ### Adoption boundary
 
 | Adopted through shared components/tokens | Still reviewed per workflow |

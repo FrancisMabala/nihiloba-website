@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useState,useSyncExternalStore} from 'react';
+import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {usePathname,useSearchParams} from 'next/navigation';
 import {SpaceIcon,type SpaceIconName} from './account-space-icon';
 import {usePersonalManagement} from './use-personal-management';
@@ -8,10 +8,18 @@ import {type MarketplaceLocale} from './marketplace-account-copy';
 const copy={en:['Home','Markets','My space','Manage','Menu','Help','Cart','Business workspace'],fr:['Accueil','Marchés','Mon espace','Gérer','Menu','Aide','Panier','Espace Business'],ln:['Ebandeli','Luka','Esika na ngai','Kamba','Menu','Lisalisi','Kitunga','Esika Business'],sw:['Nyumbani','Gundua','Eneo langu','Simamia','Menyu','Msaada','Kikapu','Eneo la Business']} as const;
 const subscribeHash=(notify:()=>void)=>{window.addEventListener('hashchange',notify);return()=>window.removeEventListener('hashchange',notify);};
 export function ShidaNavigation(){
+ const navigation=useRef<HTMLElement>(null);
  const hash=useSyncExternalStore(subscribeHash,()=>window.location.hash,()=> '');
  const pathname=usePathname(),query=useSearchParams(),locale=(pathname.match(/^\/(fr|en|ln|sw)(?:\/|$)/)?.[1]||'en') as MarketplaceLocale;
  const prefix=locale==='en'?'':`/${locale}`,base=`${prefix}/shida`,path=pathname.replace(/^\/(fr|en|ln|sw)(?=\/)/,'').replace(/\/$/,''),t=copy[locale];
  const management=usePersonalManagement(),[keyboard,setKeyboard]=useState(false);
+ useEffect(()=>{
+  const nav=navigation.current,root=nav?.closest<HTMLElement>('[data-public-marketplace]');
+  if(!nav||!root)return;
+  const measure=()=>root.style.setProperty('--public-nav-height',`${nav.getBoundingClientRect().height}px`);
+  const observer=new ResizeObserver(measure);observer.observe(nav);measure();
+  return()=>{observer.disconnect();root.style.removeProperty('--public-nav-height');};
+ },[pathname]);
  useEffect(()=>{
   const viewport=window.visualViewport;
   // Focus alone does not mean a keyboard is open (desktop and external keyboards).
@@ -28,5 +36,5 @@ export function ShidaNavigation(){
  const active=path==='/shida/wenze/sell'?3:path==='/shida/register'?2:path==='/shida'?(hash==='#explore'?1:0):personal?(query.get('view')==='manage'?3:2):1;
  const hrefs=[base,`${base}#explore`,`${base}/space`,...(management?[`${base}/space?view=manage`]:[])];
  const icons:SpaceIconName[]=['home','shop','requests','management'];
- return <nav className="shida-navigation" aria-label="SHIDA" data-keyboard={keyboard||undefined}>{hrefs.map((href,index)=><a key={href} href={href} aria-current={active===index?'page':undefined}><SpaceIcon name={icons[index]}/><span>{t[index]}</span></a>)}</nav>;
+ return <nav ref={navigation} className="shida-navigation" aria-label="SHIDA" data-keyboard={keyboard||undefined}>{hrefs.map((href,index)=><a key={href} href={href} aria-current={active===index?'page':undefined}><SpaceIcon name={icons[index]}/><span>{t[index]}</span></a>)}</nav>;
 }

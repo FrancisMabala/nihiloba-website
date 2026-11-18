@@ -10,7 +10,11 @@ async function account(page:Page,signedIn=true){
   return route.fulfill({status:401,json:{}});
  });
 }
-async function ready(page:Page){await expect(page.locator('.market-language')).toBeEnabled();}
+async function ready(page:Page){
+ await expect(page.locator('.market-language')).toBeEnabled();
+ // Production streams page content after the shared header is hydrated.
+ await expect.poll(()=>page.locator('.illustrated-marketplace-hero h1').evaluateAll(es=>({count:es.length,visible:es.filter(e=>e.getBoundingClientRect().height>0).length}))).toEqual({count:1,visible:1});
+}
 async function noOverflow(page:Page){
  const layout=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll('main *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1&&getComputedStyle(e).position!=='absolute').slice(0,6).map(e=>e.className)}));
  expect(layout.scroll,JSON.stringify(layout)).toBeLessThanOrEqual(layout.width+1);
@@ -61,11 +65,11 @@ test('Jobs search, category filters, type tabs, refresh and back preserve real d
  await account(page,false);await page.setViewportSize({width:390,height:844});await page.goto('/fr/shida/emplois/');await ready(page);
  await expect(page.locator('.job-result')).toHaveCount(3);
  const search=page.locator('.mp-search');await search.locator('[name=query]').fill('support');await search.locator('[name=city]').fill('Lubumbashi');await search.locator('summary').tap();
- await search.locator('[name=category]').selectOption('it_telecommunications');await search.locator('[name=contract]').selectOption('cdi');await search.locator('.marketplace-search-submit').tap();
+ await search.locator('[name=category]').selectOption('it_telecommunications');await search.locator('[name=contract]').selectOption('cdi');await search.locator('.marketplace-search-submit').tap();await ready(page);
  await expect(search.locator('[name=city]')).toHaveValue('Lubumbashi');await expect(search.locator('[name=category]')).toHaveValue('it_telecommunications');
  await page.locator('.job-offer-tabs').getByRole('link',{name:'Particuliers',exact:true}).tap();await expect(page.locator('.job-result')).toHaveCount(1);await expect(page.locator('.job-result')).toContainText('Aide à domicile');
  await page.locator('.job-offer-tabs').getByRole('link',{name:'Professionnelles',exact:true}).tap();await expect(page.locator('.job-result')).toHaveCount(2);await expect(page.locator('.job-result').first()).toContainText('Assistant support');
- await page.reload();await expect(page.locator('.job-offer-tabs [aria-current]')).toHaveText('Professionnelles');await page.goBack();await expect(page.locator('.job-result')).toHaveCount(1);
+ await page.reload();await ready(page);await expect(page.locator('.job-offer-tabs [aria-current]')).toHaveText('Professionnelles');await page.goBack();await expect(page.locator('.job-result')).toHaveCount(1);
  await page.locator('.job-offer-tabs').getByRole('link',{name:'Tout',exact:true}).tap();await expect(page.locator('.job-result')).toHaveCount(3);
  await page.locator('.job-card-save').first().tap();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('dialog').getByRole('button',{name:'Fermer',exact:true}).tap();await expect(search.locator('[name=query]')).toHaveValue('support');
  await page.locator('.job-result h3 a').first().tap();await expect(page.getByRole('dialog').getByRole('button',{name:'Se connecter',exact:true})).toBeVisible();
@@ -75,8 +79,8 @@ test('Wenze categories, shops/products, native search and empty/error recovery',
  await page.locator('.wz-category-browser summary').tap();await page.locator('.wz-all-categories').getByRole('link',{name:'Maison & équipement',exact:true}).tap();await expect(page).toHaveURL(/category=home_equipment/);
  await page.locator('.wz-public-tabs').getByRole('link',{name:'Boutiques',exact:true}).tap();await expect(page.locator('.wenze-store-card')).toHaveCount(1);
  await page.locator('.wz-public-tabs').getByRole('link',{name:'Produits',exact:true}).tap();await expect(page.locator('.wenze-product-card')).toHaveCount(4);
- await page.locator('.mp-search [name=city]').fill('Goma');await page.locator('.mp-search [name=query]').fill('fixture-empty');await page.locator('.mp-search [name=query]').press('Enter');await expect(page).toHaveURL(/query=fixture-empty/);await expect(page.locator('.mp-search [name=query]')).toHaveValue('fixture-empty');await expect(page.locator('.wenze-product-card')).toHaveCount(0);await expect(page.locator('.wz-results-state')).toContainText('Aucun');
- await page.locator('.mp-search [name=query]').fill('fixture-error');await page.locator('.marketplace-search-submit').tap();await expect(page).toHaveURL(/query=fixture-error/);await expect(page.locator('.wz-results-state[role=alert]')).toBeVisible();await expect(page.locator('.wz-results-state').getByRole('link',{name:'Réessayer'})).toHaveAttribute('href',/fixture-error/);
+ await page.locator('.mp-search [name=city]').fill('Goma');await page.locator('.mp-search [name=query]').fill('fixture-empty');await page.locator('.mp-search [name=query]').press('Enter');await expect(page).toHaveURL(/query=fixture-empty/);await ready(page);await expect(page.locator('.mp-search [name=query]')).toHaveValue('fixture-empty');await expect(page.locator('.wenze-product-card')).toHaveCount(0);await expect(page.locator('.wz-results-state')).toContainText('Aucun');
+ await page.locator('.mp-search [name=query]').fill('fixture-error');await page.locator('.marketplace-search-submit').tap();await expect(page).toHaveURL(/query=fixture-error/);await ready(page);await expect(page.locator('.wz-results-state[role=alert]')).toBeVisible();await expect(page.locator('.wz-results-state').getByRole('link',{name:'Réessayer'})).toHaveAttribute('href',/fixture-error/);
  await page.goto('/fr/shida/wenze/');await expect(page.locator('.wenze-product-card')).toHaveCount(4);
  const link=page.locator('.wenze-product-card h2 a').first(),href=await link.getAttribute('href');await link.tap();await expect(page).toHaveURL(new RegExp(href!.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));await page.goBack();await expect(page.locator('.wenze-product-card')).toHaveCount(4);
 });

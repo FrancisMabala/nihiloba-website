@@ -9,6 +9,7 @@ import { Footer } from "./footer";
 import { CartProvider } from "./shida/cart-provider";
 import "./shida/marketplace-surfaces.css";
 import "./shida/discovery-visual.css";
+import "./shida/public-marketplace-standard.css";
 
 export function SiteChrome({ children, locale }: { children: ReactNode; locale: Locale }) {
   const pathname = usePathname();
@@ -16,5 +17,6 @@ export function SiteChrome({ children, locale }: { children: ReactNode; locale: 
   const management = /^\/(?:fr\/|en\/|ln\/|sw\/)?shida\/seller\/(?:restaurants|wenze|services)(?:\/|$)/.test(pathname);
   if (management) return <main id="main-content">{children}</main>;
   const marketplace = /^\/(?:fr\/|en\/|ln\/|sw\/)?shida(?:\/|$)/.test(pathname);
-  return <div className={marketplace ? "market-surface" : undefined}><CartProvider><Header locale={locale}/>{marketplace&&<Suspense><ShidaNavigation/></Suspense>}<main id="main-content">{children}</main></CartProvider><Footer locale={locale} marketplace={marketplace} marketLocale={pathname.startsWith("/sw/")?"sw":pathname.startsWith("/ln/")?"ln":locale}/></div>;
+  const publicMarketplace = pathname.match(/^\/(?:fr\/|en\/|ln\/|sw\/)?shida\/(wenze|restaurants|services|emplois|transport|appartements|hotels|meda)\/?$/)?.[1];
+  return <div className={marketplace ? "market-surface" : undefined} data-public-marketplace={publicMarketplace}><CartProvider><Header locale={locale}/>{marketplace&&<Suspense><ShidaNavigation/></Suspense>}<main id="main-content">{children}</main></CartProvider><Footer locale={locale} marketplace={marketplace} marketLocale={pathname.startsWith("/sw/")?"sw":pathname.startsWith("/ln/")?"ln":locale}/></div>;
 }

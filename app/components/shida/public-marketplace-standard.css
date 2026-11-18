@@ -1,0 +1,60 @@
+/* Explicit public collection opt-in; no seller, account, detail or print rollout. */
+@media screen {
+ body .market-surface[data-public-marketplace] {
+  --public-canvas:#faf8f2;--public-ink:#173e32;--public-hero:#faf5ef;
+  --public-selected:#e0ebd1;--public-gutter:24px;--public-max-width:1180px;
+  background:var(--public-canvas);color:var(--public-ink);
+ }
+ body .market-surface[data-public-marketplace] #main-content :is(.marketplace-public,.meda:not(.meda-embedded)) {background:var(--public-canvas);padding-top:0;padding-bottom:16px}
+ body .market-surface[data-public-marketplace] #main-content>.meda {padding-top:0}
+ body .market-surface[data-public-marketplace] #main-content .container {width:calc(100% - 2 * var(--public-gutter));max-width:var(--public-max-width);min-width:0}
+ body .market-surface[data-public-marketplace] #main-content .container .container {width:100%}
+ body .market-surface[data-public-marketplace] #main-content :is(h1,h2,h3) {min-width:0;overflow-wrap:anywhere}
+ body .market-surface[data-public-marketplace] .illustrated-marketplace-hero {
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,28%);align-items:center;
+  gap:24px;padding:28px 30px;margin:20px 0;border:0;border-radius:14px;
+  background:var(--public-hero);min-height:0;
+ }
+ body .market-surface[data-public-marketplace] .illustrated-marketplace-hero>div {min-width:0}
+ body .market-surface[data-public-marketplace] .illustrated-marketplace-hero h1 {font:600 clamp(2rem,3.2vw,3rem)/1.12 Georgia,serif;margin:0 0 6px;overflow-wrap:anywhere}
+ body .market-surface[data-public-marketplace] .illustrated-marketplace-hero .marketplace-permanent-slogan {font:600 clamp(1.3rem,2.2vw,2rem)/1.25 Georgia,serif;color:var(--hero-accent);margin:0 0 10px;overflow-wrap:anywhere}
+ body .market-surface[data-public-marketplace] .illustrated-marketplace-hero .marketplace-hero-description {font:.94rem/1.6 Arial,sans-serif;max-width:780px;color:#52646b;margin:0}
+ body .market-surface[data-public-marketplace] .marketplace-hero-art {width:100%;max-width:300px;transform:none}
+ body .market-surface[data-public-marketplace] .marketplace-hero-art :is(img,svg) {width:100%;height:auto;max-height:175px;object-fit:contain}
+ body .market-surface[data-public-marketplace] :is(.rd-owner-invite,.st-invitation,.marketplace-image-fallback,.restaurant-photo-illustration,.rd-food-fallback) {background-image:none}
+ body .market-surface[data-public-marketplace] .rd-owner-invite {background-color:#f5ebd6}
+ body .market-surface[data-public-marketplace] .st-invitation {background-color:var(--st-tint,#edf5ed)}
+ body .market-surface[data-public-marketplace] :is(.mp-search,.meda-search) {min-width:0}
+ body .market-surface[data-public-marketplace] :is(.mp-search,.meda-search) :is(button,summary,.button) {min-height:44px}
+ body .market-surface[data-public-marketplace] .meda-categories {gap:8px}
+}
+@media screen and (max-width:1023px) {
+ body .market-surface[data-public-marketplace] {padding-bottom:calc(var(--public-nav-height,80px) + 16px)}
+ body .market-surface[data-public-marketplace]>.shida-navigation,
+ body .market-surface[data-public-marketplace] .shida-navigation {
+  position:fixed;bottom:0;left:0;right:0;z-index:50;display:grid;grid-auto-flow:column;
+  grid-auto-columns:minmax(0,1fr);gap:4px;padding:4px 6px calc(4px + env(safe-area-inset-bottom,0px));
+  border:0;border-top:1px solid #e0dfd6;background:#fffefa;
+ }
+ body .market-surface[data-public-marketplace] .shida-navigation :is(a,button) {
+  display:grid;grid-template-rows:22px auto;align-content:start;align-items:center;justify-items:center;
+  min-width:0;min-height:52px;padding:4px 2px;gap:3px;font:400 .75rem/1.3 Arial,sans-serif;
+  overflow-wrap:normal;word-break:normal;white-space:normal;text-align:center;
+ }
+ body .market-surface[data-public-marketplace] .shida-navigation svg {width:22px;height:22px}
+ body .market-surface[data-public-marketplace] .shida-navigation [aria-current=page] {background:var(--public-selected);color:var(--public-ink);border-radius:10px}
+ body .market-surface[data-public-marketplace] .shida-navigation[data-keyboard=true] {display:none}
+}
+@media screen and (max-width:767px) {
+ body .market-surface[data-public-marketplace] {--public-gutter:16px}
+ body .market-surface[data-public-marketplace] .illustrated-marketplace-hero {display:block;padding:0;margin:10px 0 12px;border-radius:0;background:transparent}
+ body .market-surface[data-public-marketplace] .illustrated-marketplace-hero h1 {font:600 1.75rem/1.15 Georgia,serif;margin:0 0 4px}
+ body .market-surface[data-public-marketplace] .illustrated-marketplace-hero .marketplace-permanent-slogan {font:400 .9375rem/1.35 Arial,sans-serif;color:var(--public-ink);max-width:none;margin:0}
+ body .market-surface[data-public-marketplace] .illustrated-marketplace-hero .marketplace-hero-description {font:.875rem/1.4 Arial,sans-serif;margin:6px 0 0}
+ body .market-surface[data-public-marketplace] .marketplace-hero-art {display:none}
+ body .market-surface[data-public-marketplace] .meda-access-layout {gap:12px}
+ body .market-surface[data-public-marketplace] .meda-access h2 {font-size:1.25rem}
+ body .market-surface[data-public-marketplace] .meda-access .meda-actions {margin-top:12px}
+ body .market-surface[data-public-marketplace] .meda-categories {display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:4px}
+ body .market-surface[data-public-marketplace] .meda-categories button {flex:0 0 auto;min-width:0;white-space:nowrap;font-size:.875rem}
+}
