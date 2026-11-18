@@ -51,7 +51,7 @@ const DOCUMENTS: readonly ShidaLegalDocumentMetadata[] = [
 ] as const;
 
 export const shidaLegalDocuments = DOCUMENTS;
-export const shidaLegalCurrentVersions: Readonly<Record<ShidaLegalDocumentKind, string>> = { terms: "1.1", privacy: "1.1", "business-terms": "1.1" };
+export const shidaLegalCurrentVersions: Readonly<Record<ShidaLegalDocumentKind, string>> = { terms: "1.2", privacy: "1.1", "business-terms": "1.2" };
 
 export function shidaLegalLocaleFallback(locale: ShidaLegalRequestedLocale): ShidaLegalSourceLocale {
   return locale === "en" ? "en" : "fr";

@@ -1,9 +1,11 @@
 // Untrusted form content only. Never store codes, challenges, cookies or identity.
 // Tab-scoped storage survives refresh/app switching; verified drafts live server-side.
+import {residenceKeys} from './residence-copy';
 export const FORM_DRAFT_KEY = "shida-registration-form-v1";
 export const FORM_DRAFT_TTL = 24 * 60 * 60 * 1000;
 const allowed = new Set(["region","postal_code","parcel_number","commune","quartier","avenue","first_name","family_name","additional_name","personal_name","city","country_code","area","name","organization_type","custom_organization_type","sector","commune_or_municipality","street_or_avenue","building_or_parcel","quartier_or_area","landmark"]);
 export type LocalDraft = {version:1;expires:number;kind:"personal"|"business";values:Record<string,string>;phone:string;language?:"en"|"fr"|"ln"|"sw"};
+for(const key of residenceKeys)allowed.add(`residence_${key}`);
 export function parseLocalDraft(raw:string|null,now=Date.now()):LocalDraft|null {
   try {
     if(!raw || raw.length>12000)return null;

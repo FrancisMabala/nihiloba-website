@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { acceptsAdultDeclaration } from "../../../../../../lib/registration/eligibility";
 import { personalRequestOrigin } from "../../../../../../lib/personal-request-origin";
 import { clearEmploymentToken, privateEmploymentJson, setEmploymentToken } from "../../../../employment/route-utils";
 
@@ -28,7 +29,7 @@ async function handle(request: Request, context: Context) {
   const registration = segments[0] === "registration";
   const path = registration ? segments.slice(1) : segments;
   const create = !path.length && request.method === "POST";
-  if (registration && create && request.headers.get("x-shida-eligibility") !== "adult-drc-v1") return privateEmploymentJson({error:{code:"eligibility_required"}},422);
+  if (registration && create && !acceptsAdultDeclaration(request.headers.get("x-shida-eligibility"))) return privateEmploymentJson({error:{code:"eligibility_required"}},422);
   const language = request.headers.get("x-shida-language") ?? "fr";
   if (create && !["fr","en","ln","sw"].includes(language)) return privateEmploymentJson({error:{code:"invalid_language"}},422);
   const cancel = path.length === 1 && reference.test(path[0]) && request.method === "DELETE";
@@ -74,7 +75,7 @@ async function handle(request: Request, context: Context) {
       method: request.method, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(8000),
       ...(exchange ? { body: codeBody } : {}),
       headers: { Accept: "application/json", Origin: publicOrigin,
-        ...(create ? { "X-Shida-Language":language, ...(registration ? {"X-Shida-Eligibility":"adult-drc-v1"} : {}) } : {}),
+        ...(create ? { "X-Shida-Language":language, ...(registration ? {"X-Shida-Eligibility":request.headers.get('x-shida-eligibility')!} : {}) } : {}),
         ...(exchange ? { "Content-Type": "application/json" } : {}),
         ...(!create ? { Cookie: `shida_dashboard_challenge=${verifier}` } : {}) },
     });

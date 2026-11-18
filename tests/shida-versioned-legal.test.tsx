@@ -64,13 +64,13 @@ describe("versioned SHIDA legal documents", () => {
     const english = getShidaLegalMetadata("terms", "en")!;
     const french = getOtherLanguageDocument(english);
     expect(english.canonicalRoute).toBe("/shida/terms");
-    expect(english.versionRoute).toBe("/shida/terms/1.1");
+    expect(english.versionRoute).toBe("/shida/terms/1.2");
     expect(french.canonicalRoute).toBe("/fr/shida/conditions");
     const currentMetadata = shidaLegalPageMetadata(english);
     const historicalMetadata = shidaLegalPageMetadata(english, true);
     expect(currentMetadata.alternates?.canonical).toBe("/shida/terms");
-    expect(historicalMetadata.alternates?.canonical).toBe("/shida/terms/1.1");
-    expect(currentMetadata.other).toMatchObject({ "shida-legal-document-id": "SHIDA_TERMS_OF_USE", "shida-legal-document-version": "1.1" });
+    expect(historicalMetadata.alternates?.canonical).toBe("/shida/terms/1.2");
+    expect(currentMetadata.other).toMatchObject({ "shida-legal-document-id": "SHIDA_TERMS_OF_USE", "shida-legal-document-version": "1.2" });
   });
 
   it("switches to the exact corresponding locale and keeps all internal links valid", () => {
@@ -111,14 +111,24 @@ describe("versioned SHIDA legal documents", () => {
 
 it("publishes complete bilingual 1.1 sources while keeping 1.0 available", () => {
  for (const kind of ["terms","privacy","business-terms"] as const) for (const locale of ["en","fr"] as const) {
-  const doc=loadShidaLegalDocument(kind,locale)!;
+  const doc=loadShidaLegalDocument(kind,locale,"1.1")!;
   expect(doc.metadata.version).toBe("1.1");
   const raw=readFileSync(join("content/legal/shida",doc.metadata.sourcePath),"utf8");
   expect(raw).toContain("Francis Mabala Lemoya");
   expect(raw).not.toMatch(/\[B\d{2}/);
   expect(loadShidaLegalDocument(kind,locale,"1.0")).not.toBeNull();
-  const html=renderToStaticMarkup(<ShidaVersionedLegalPage kind={kind} locale={locale}/>);
+  const html=renderToStaticMarkup(<ShidaVersionedLegalPage kind={kind} locale={locale} version="1.1"/>);
   expect(html).toContain("2026-10-22");
   expect(html).not.toContain("Pending legal review");
+ }
+});
+
+it('selects prepared country-neutral Terms 1.2 independently of Privacy 1.1',()=>{
+ for(const locale of ['fr','en'] as const)for(const kind of ['terms','business-terms'] as const){
+  const doc=loadShidaLegalDocument(kind,locale)!;
+  expect(doc.metadata.version).toBe('1.2');
+  expect(doc.metadata.publicationDate).toBeNull();
+  expect(doc.metadata.status).toBe('prepared_update');
+  expect(loadShidaLegalDocument('privacy',locale)!.metadata.version).toBe('1.1');
  }
 });

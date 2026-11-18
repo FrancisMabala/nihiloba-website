@@ -12,6 +12,18 @@ const codeReq = (value: unknown = { code: "610294" }) => new Request("https://ni
 function bound() { jar.set("nihiloba_personal_challenge", `${ref}.${Date.now() + 300000}.${verifier}`); }
 beforeEach(() => { jar.clear(); set.mockClear(); vi.unstubAllGlobals(); });
 describe("Personal WhatsApp restricted gateway", () => {
+  it('rejects absent age confirmation and forwards the exact adult-only marker',async()=>{
+    const fetcher=vi.fn(async()=>Response.json({challenge_ref:ref,expires_at:new Date(Date.now()+300000).toISOString(),whatsapp_url:'https://wa.me/243000000000?text=fixture'},{headers:{'set-cookie':`shida_dashboard_challenge=${verifier}; HttpOnly`}}));vi.stubGlobal('fetch',fetcher);
+    for(const marker of ['', 'false', 'adult-v2']) {
+      const request=req('POST');request.headers.set('X-Shida-Eligibility',marker);
+      expect((await POST(request,ctx(['registration']))).status).toBe(422);
+    }
+    expect(fetcher).not.toHaveBeenCalled();
+    const request=req('POST');request.headers.set('X-Shida-Eligibility','adult-v1');
+    expect((await POST(request,ctx(['registration']))).status).toBe(201);
+    const options=(fetcher.mock.calls as unknown[][])[0][1] as RequestInit;
+    expect(new Headers(options.headers).get('X-Shida-Eligibility')).toBe('adult-v1');
+  });
   it.each(['fr','en','ln','sw'])('forwards the selected login language %s without accepting identity input',async language=>{
     const fetcher=vi.fn<typeof fetch>(async()=>Response.json({challenge_ref:ref,expires_at:new Date(Date.now()+300000).toISOString(),whatsapp_url:'https://wa.me/243000000000?text=fixture'},{headers:{'set-cookie':`shida_dashboard_challenge=${verifier}; HttpOnly`}}));vi.stubGlobal('fetch',fetcher);
     const request=new Request('https://nihiloba.com/api/shida/personal/auth/whatsapp/',{method:'POST',headers:{origin:'https://nihiloba.com','X-Shida-Language':language}});

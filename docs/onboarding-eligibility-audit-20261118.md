@@ -263,3 +263,9 @@ real WhatsApp country/provider delivery, device UX, legal permission for every
 route, or production data quality. FR/EN/LN/SW copy was inspected; four-locale
 end-to-end browser onboarding was not run. Existing unrelated tests/work and
 shared dependencies were preserved. No application build was needed for this audit.
+
+## Product decision follow-up
+
+The owner subsequently approved country-neutral account creation and Meda journeys.
+See [the local implementation and coordinated release plan](onboarding-country-neutral-implementation-20261118.md).
+The audit above records the pre-change evidence; it is not the new policy.

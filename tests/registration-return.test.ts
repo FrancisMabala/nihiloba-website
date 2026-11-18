@@ -1,6 +1,19 @@
 import {expect,it} from 'vitest';
 import {registrationReturnPath} from '../app/lib/registration/return-path';
 
+it('retains only allowlisted Meda destinations and public references in each language',()=>{
+ for(const locale of ['', '/fr', '/en', '/ln', '/sw'])for(const suffix of [
+  '/meda/?view=detail&ref=MED_fixture', '/space/?view=listings&tab=meda&meda_view=create',
+  '/space/?view=listings&tab=meda&meda_view=detail&ref=MED_fixture',
+  '/space/?view=messages&market=meda&meda_view=conversation&ref=MEQ_fixture',
+  '/space/?view=messages&market=meda&listing=MED_fixture',
+ ]){const path=`${locale}/shida${suffix}`;expect(registrationReturnPath(path,'/shida/space')).toBe(path);}
+ for(const suffix of ['?view=detail&ref=MED_fixture&token=x','?view=detail&view=detail&ref=MED_fixture',
+  '?view=detail&ref=MED_fixture%26token=x','?view=detail&ref=MEQ_wrong','?view=publish&ref=MED_fixture',
+  '?view=detail&ref=MED_fixture#fragment','?view=detail&ref=MED_fixture?next=evil'])
+  expect(registrationReturnPath('/shida/meda/'+suffix,'/shida/space')).toBe('/shida/space');
+});
+
 it('preserves only an exact public job-action return, never credentials or additional query parameters',()=>{
  for(const locale of ['', '/fr', '/ln', '/sw'])for(const action of ['save','unsave','follow','unfollow']){
   const path=`${locale}/shida/emplois/JOB_fixture?job-action=${action}`;

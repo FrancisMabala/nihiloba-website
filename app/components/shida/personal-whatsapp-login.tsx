@@ -2,24 +2,35 @@
 import {EmailLogin} from './email-login';
 import {authDesignCopy} from '../../lib/auth-design-copy';
 import {PasskeyLogin} from './passkey-login';
+import {residenceCopy} from "@/app/lib/registration/residence-copy";
 import {VerificationCode} from './verification-code';
 import {SpaceIcon} from './account-space-icon';
 import './auth-design.css';
 import {mySpaceCopy} from "../../lib/my-space-refinement-copy";
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { usePathname } from "next/navigation";
 import { personalLoginCopy } from "../../lib/personal-login-copy";
 import { announceLoginAttempt, authMutation, LOGIN_EVENT, loginRequest, markLoginUnconfirmed } from "../../lib/personal-login-browser";
 import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib/personal-session-browser";
 import { registrationCopy, registrationEligibility, registrationFlowCopy } from "../../lib/registration/copy";
 import { refinementCopy } from "../../lib/registration/refinement-copy";
+import {registrationReturnPath} from '../../lib/registration/return-path';
 
-type State = "idle" | "creating" | "pending" | "code" | "exchanging" | "expired" | "onboarding_required" | "cancelled" | "unavailable" | "rate_limited" | "uncertain" | "phone_mismatch";
+const subscribeLocation = (changed:()=>void) => {
+  window.addEventListener('popstate',changed);
+  return ()=>window.removeEventListener('popstate',changed);
+};
+const locationSnapshot = ()=>window.location.pathname+window.location.search;
+const serverLocationSnapshot = ()=>'';
+
+type State = "eligibility_required" | "idle" | "creating" | "pending" | "code" | "exchanging" | "expired" | "onboarding_required" | "cancelled" | "unavailable" | "rate_limited" | "uncertain" | "phone_mismatch";
 type Challenge = { challenge_ref: string; whatsapp_url: string; expires_at: string };
 
 // In-place authentication deliberately leaves the complete local URL, filters and language intact.
 export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = false, heading, expectedPhone, returnTo }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void; registration?: boolean; heading?: string; expectedPhone?:string; returnTo?:string }) {
   const pathname = usePathname();
+  const currentLocation=useSyncExternalStore(subscribeLocation,locationSnapshot,serverLocationSnapshot);
+  const registrationDestination=registrationReturnPath(returnTo??currentLocation,pathname);
   const design=authDesignCopy[locale];
   const r=refinementCopy[locale];
   const t = { ...personalLoginCopy[locale],phone_mismatch:r.mismatch, ...(registration ? { start:personalLoginCopy[locale].open, help: registrationCopy[locale].verificationHelp, verify: registrationCopy[locale].verifyButton } : {}), ...(heading ? { title: heading } : {}) };
@@ -42,7 +53,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
     window.addEventListener(LOGIN_EVENT, stop); window.addEventListener(PERSONAL_SESSION_EVENT, stop); window.addEventListener("storage", storage);
     return () => { alive.current = false; read.current?.abort(); window.removeEventListener(LOGIN_EVENT, stop); window.removeEventListener(PERSONAL_SESSION_EVENT, stop); window.removeEventListener("storage", storage); };
   }, []);
-  const failure = (error: unknown): State => error instanceof Error && ["expired", "cancelled", "rate_limited"].includes(error.message) ? error.message as State : "unavailable";
+  const failure = (error: unknown): State => error instanceof Error && ["expired", "cancelled", "rate_limited", "eligibility_required"].includes(error.message) ? error.message as State : "unavailable";
   async function start() {
     if (registration && !eligible) return;
     announceLoginAttempt(); const current = ++epoch.current;
@@ -93,7 +104,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   }, [challenge, state]);
   async function verify(event: FormEvent) {
     event.preventDefault();
-    if (!challenge || state !== "code" || submitting.current || !/^[0-9]{6}$/.test(code)) return;
+    if ((registration && !eligible) || !challenge || state !== "code" || submitting.current || !/^[0-9]{6}$/.test(code)) return;
     submitting.current = true;
     const current = epoch.current, ref = challenge.challenge_ref, enteredCode = code;
     setCode(""); setCodeError(false); setState("exchanging");
@@ -141,17 +152,17 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   const busy = state === "creating" || state === "exchanging";
   return <section className="candidate-login candidate-private-panel" lang={locale}>
     <h2>{registration?t.title:state==="code"||state==="exchanging"?design.verifyTitle:design.title}</h2><p>{registration?t.help:state==="code"||state==="exchanging"?design.verifyHelp:state==="idle"?design.intro:t.help}</p>{!registration&&!["pending","code","exchanging","creating","uncertain"].includes(state)&&<><PasskeyLogin locale={locale} onAuthenticated={onAuthenticated}/><EmailLogin locale={locale} onAuthenticated={onAuthenticated}/></>}{registration && <><label htmlFor={eligibilityId} className="registration-consent"><input id={eligibilityId} type="checkbox" checked={eligible} onChange={event => setEligible(event.target.checked)}/><span>{registrationEligibility[locale]}</span></label><p>{registrationFlowCopy[locale].scope}</p></>}
-    {state !== "idle" && (registration || state !== "code") && <p role="status" aria-live="polite">{t[state]}</p>}
+    {state !== "idle" && (registration || state !== "code") && <p role="status" aria-live="polite">{state === "eligibility_required" ? residenceCopy[locale].ageError : t[state]}</p>}
     {state === "pending" && challenge && <><a className="button button-primary" href={challenge.whatsapp_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{t.open}</a><button className="button button-secondary" type="button" onClick={() => void cancel()}>{t.cancel}</button></>}
     {(state === "code" || state === "exchanging") && <form className="candidate-form" onSubmit={verify}>
       <label htmlFor={codeId}>{t.codeLabel}</label>
       <VerificationCode id={codeId} label={t.codeLabel} value={code} disabled={busy} invalid={codeError} onChange={value=>{setCode(value);setCodeError(false);}}/>{challenge&&<p className="auth-expiry">{design.expires} {new Date(challenge.expires_at).toLocaleTimeString(locale,{hour:"2-digit",minute:"2-digit"})}.</p>}
       {codeError && <p id={`${codeId}-error`} role="alert">{t.invalidCode}</p>}
-      <button className="button button-primary" type="submit" disabled={busy || !/^[0-9]{6}$/.test(code)}>{busy ? t.exchanging : registration?t.verify:design.verify}</button>
+      <button className="button button-primary" type="submit" disabled={busy || (registration && !eligible) || !/^[0-9]{6}$/.test(code)}>{busy ? t.exchanging : registration?t.verify:design.verify}</button>
       <button className="button button-secondary" type="button" disabled={busy} onClick={() => void cancel()}>{design.restart}</button>
     </form>}
     {state === "uncertain" ? <button className="button button-secondary" type="button" onClick={() => void cancel(true)}>{t.reset}</button> : !["pending", "code", "exchanging"].includes(state) && <button className="button button-secondary auth-method" type="button" disabled={busy || registration && !eligible} onClick={() => void start()}>{state === "idle"&&!registration ? <><SpaceIcon name="whatsapp"/>{design.whatsapp}<span aria-hidden="true">›</span></> : state === "idle"?t.start:busy ? t[state] : t.retry}</button>}
-    {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <p className="login-register">{r.noAccount} <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/?returnTo=${encodeURIComponent(returnTo??pathname)}`}>{r.signup}</a></p>}
+    {!registration && process.env.NEXT_PUBLIC_SHIDA_WEB_REGISTRATION_ENABLED === "true" && <p className="login-register">{r.noAccount} <a href={`${locale === "en" ? "" : `/${locale}`}/shida/register/?returnTo=${encodeURIComponent(registrationDestination)}`}>{r.signup}</a></p>}
     {!registration&&<p><a href={`${locale==='en'?'':`/${locale}`}/shida/space?view=recovery`}>{mySpaceCopy[locale].lost}</a></p>}
   </section>;
 }

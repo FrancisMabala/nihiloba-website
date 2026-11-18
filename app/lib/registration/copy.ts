@@ -20,10 +20,10 @@ export const registrationCopy: Record<RegistrationLocale, typeof en> = {
 };
 
 export const registrationEligibility = {
- en: "I am at least 18 and will use SHIDA for activities in the DRC.",
- fr: "J’ai au moins 18 ans et j’utiliserai SHIDA pour des activités en RDC.",
- ln: "Nazali na mbula 18 to koleka mpe nakosalela SHIDA mpo na misala na RDC.",
- sw: "Nina miaka 18 au zaidi na nitatumia SHIDA kwa shughuli nchini DRC.",
+ en: "I confirm that I am at least 18 years old.",
+ fr: "Je confirme avoir au moins 18 ans.",
+ ln: "Nandimi ete nazali na mbula 18 to koleka.",
+ sw: "Ninathibitisha kuwa nina angalau miaka 18.",
 };
 
 export const registrationFlowCopy = {

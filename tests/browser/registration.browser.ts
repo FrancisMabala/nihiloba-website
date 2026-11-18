@@ -1,5 +1,5 @@
 import {fillName,fillCountry,fixture} from './registration-fixture';
-import {test,expect,type Page} from '@playwright/test';
+import {test,expect} from '@playwright/test';
 import {registrationCopy,registrationEligibility,registrationFlowCopy,existingAccountContinue} from '../../app/lib/registration/copy';
 import {personalLoginCopy} from '../../app/lib/personal-login-copy';
 import {PERSONAL_SESSION_EVENT} from '../../app/lib/personal-session-browser';
@@ -124,7 +124,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`${locale}: Organization
  await page.setViewportSize({width:390,height:900});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/register/`);
  await page.locator('input[value="business"]').check();await page.getByRole('button',{name:t.next,exact:true}).click();
  await page.locator('#registration-name').fill('Synthetic School');await page.locator('#registration-organization_type').selectOption('school');await page.locator('#registration-sector').selectOption('commerce_distribution');await page.locator('#registration-phone').fill('+243910004001');
- await fillName(page,'Synthetic Creator');await fillCountry(page,'CD');await page.locator('#registration-city').fill('Kinshasa');
+ await fillName(page,'Synthetic Creator');await page.locator('#creator-residence-country_code').fill('SE');await page.locator('#creator-residence-city').fill('Stockholm');await fillCountry(page,'CD');await page.locator('#registration-city').fill('Kinshasa');
  for(const [key,value] of Object.entries({commune_or_municipality:'Gombe',street_or_avenue:'Private street',building_or_parcel:'42'}))await page.locator(`#registration-${key}`).fill(value);
  await page.getByRole('button',{name:t.next,exact:true}).click();expect(state.values).toEqual({});
  await page.getByLabel(registrationEligibility[locale]).check();await page.getByRole('button',{name:personalLoginCopy[locale].open,exact:true}).click();
