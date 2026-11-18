@@ -1,0 +1,251 @@
+{
+  "method": "Medians of three Chrome samples per journey/profile; same fixtures, 390x844, production builds, no backend latency claims",
+  "rows": [
+    {
+      "profile": "normal",
+      "journey": "space",
+      "visit": "first",
+      "before-final": {
+        "usefulMs": 557,
+        "usableMs": 568,
+        "requests": 102,
+        "bytes": 693573
+      },
+      "after": {
+        "usefulMs": 489,
+        "usableMs": 503,
+        "requests": 84,
+        "bytes": 435321
+      }
+    },
+    {
+      "profile": "normal",
+      "journey": "space",
+      "visit": "repeat",
+      "before-final": {
+        "usefulMs": 486,
+        "usableMs": 496,
+        "requests": 102,
+        "bytes": 693577
+      },
+      "after": {
+        "usefulMs": 437,
+        "usableMs": 451,
+        "requests": 84,
+        "bytes": 435321
+      }
+    },
+    {
+      "profile": "normal",
+      "journey": "space",
+      "visit": "navigation",
+      "before-final": {
+        "usefulMs": 309,
+        "usableMs": 584,
+        "requests": 99,
+        "bytes": 666634
+      },
+      "after": {
+        "usefulMs": 260,
+        "usableMs": 684,
+        "requests": 94,
+        "bytes": 483180
+      }
+    },
+    {
+      "profile": "normal",
+      "journey": "space",
+      "visit": "sign-in",
+      "before-final": {
+        "usefulMs": 381,
+        "usableMs": 393,
+        "requests": 11,
+        "bytes": 425
+      },
+      "after": {
+        "usefulMs": 388,
+        "usableMs": 400,
+        "requests": 11,
+        "bytes": 425
+      }
+    },
+    {
+      "profile": "normal",
+      "journey": "restaurant",
+      "visit": "first",
+      "before-final": {
+        "usefulMs": 1114,
+        "usableMs": 1462,
+        "sectionReadyMs": 1131,
+        "requests": 53,
+        "bytes": 543331
+      },
+      "after": {
+        "usefulMs": 1147,
+        "usableMs": 1533,
+        "sectionReadyMs": 1189,
+        "requests": 54,
+        "bytes": 544186
+      }
+    },
+    {
+      "profile": "normal",
+      "journey": "restaurant",
+      "visit": "repeat",
+      "before-final": {
+        "usefulMs": 1075,
+        "usableMs": 1290,
+        "sectionReadyMs": 1092,
+        "requests": 53,
+        "bytes": 543331
+      },
+      "after": {
+        "usefulMs": 1182,
+        "usableMs": 1434,
+        "sectionReadyMs": 1214,
+        "requests": 54,
+        "bytes": 544186
+      }
+    },
+    {
+      "profile": "normal",
+      "journey": "restaurant",
+      "visit": "navigation",
+      "before-final": {
+        "usefulMs": 69,
+        "usableMs": 937,
+        "requests": 5,
+        "bytes": 9541
+      },
+      "after": {
+        "usefulMs": 99,
+        "usableMs": 977,
+        "requests": 5,
+        "bytes": 9541
+      }
+    },
+    {
+      "profile": "mobile",
+      "journey": "space",
+      "visit": "first",
+      "before-final": {
+        "usefulMs": 6095,
+        "usableMs": 6149,
+        "requests": 102,
+        "bytes": 693581
+      },
+      "after": {
+        "usefulMs": 4277,
+        "usableMs": 4316,
+        "requests": 84,
+        "bytes": 435321
+      }
+    },
+    {
+      "profile": "mobile",
+      "journey": "space",
+      "visit": "repeat",
+      "before-final": {
+        "usefulMs": 5883,
+        "usableMs": 5918,
+        "requests": 102,
+        "bytes": 693579
+      },
+      "after": {
+        "usefulMs": 4188,
+        "usableMs": 4225,
+        "requests": 84,
+        "bytes": 435324
+      }
+    },
+    {
+      "profile": "mobile",
+      "journey": "space",
+      "visit": "navigation",
+      "before-final": {
+        "usefulMs": 796,
+        "usableMs": 6174,
+        "requests": 96,
+        "bytes": 665191
+      },
+      "after": {
+        "usefulMs": 794,
+        "usableMs": 5027,
+        "requests": 87,
+        "bytes": 455267
+      }
+    },
+    {
+      "profile": "mobile",
+      "journey": "space",
+      "visit": "sign-in",
+      "before-final": {
+        "usefulMs": 2147,
+        "usableMs": 2186,
+        "requests": 11,
+        "bytes": 425
+      },
+      "after": {
+        "usefulMs": 2153,
+        "usableMs": 2175,
+        "requests": 11,
+        "bytes": 425
+      }
+    },
+    {
+      "profile": "mobile",
+      "journey": "restaurant",
+      "visit": "first",
+      "before-final": {
+        "usefulMs": 7929,
+        "usableMs": 11380,
+        "sectionReadyMs": 8945,
+        "requests": 53,
+        "bytes": 543331
+      },
+      "after": {
+        "usefulMs": 7766,
+        "usableMs": 11471,
+        "sectionReadyMs": 8218,
+        "requests": 54,
+        "bytes": 544186
+      }
+    },
+    {
+      "profile": "mobile",
+      "journey": "restaurant",
+      "visit": "repeat",
+      "before-final": {
+        "usefulMs": 7460,
+        "usableMs": 10771,
+        "sectionReadyMs": 8356,
+        "requests": 53,
+        "bytes": 543331
+      },
+      "after": {
+        "usefulMs": 7506,
+        "usableMs": 11143,
+        "sectionReadyMs": 7667,
+        "requests": 54,
+        "bytes": 544186
+      }
+    },
+    {
+      "profile": "mobile",
+      "journey": "restaurant",
+      "visit": "navigation",
+      "before-final": {
+        "usefulMs": 217,
+        "usableMs": 2733,
+        "requests": 5,
+        "bytes": 9541
+      },
+      "after": {
+        "usefulMs": 233,
+        "usableMs": 2782,
+        "requests": 5,
+        "bytes": 9541
+      }
+    }
+  ]
+}

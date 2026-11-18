@@ -1,0 +1,115 @@
+{
+  "method": "Three alternating public country-dictionary GETs from Windows/Sweden; separate curl/TLS connections, no authentication, no load test; not isolated inter-region RTT",
+  "redirect_probe": [
+    {
+      "sample": 1,
+      "path": "direct",
+      "status": "200",
+      "ttfb": 0.219953,
+      "total": 0.220072,
+      "bytes": 124,
+      "exit_code": 0
+    },
+    {
+      "sample": 1,
+      "path": "website_gateway",
+      "status": "308",
+      "ttfb": 0.349577,
+      "total": 0.34976,
+      "bytes": 55,
+      "exit_code": 0
+    },
+    {
+      "sample": 2,
+      "path": "direct",
+      "status": "200",
+      "ttfb": 0.173057,
+      "total": 0.173163,
+      "bytes": 124,
+      "exit_code": 0
+    },
+    {
+      "sample": 2,
+      "path": "website_gateway",
+      "status": "308",
+      "ttfb": 0.299374,
+      "total": 0.299496,
+      "bytes": 55,
+      "exit_code": 0
+    },
+    {
+      "sample": 3,
+      "path": "direct",
+      "status": "200",
+      "ttfb": 0.168104,
+      "total": 0.169034,
+      "bytes": 124,
+      "exit_code": 0
+    },
+    {
+      "sample": 3,
+      "path": "website_gateway",
+      "status": "308",
+      "ttfb": 0.279773,
+      "total": 0.279871,
+      "bytes": 55,
+      "exit_code": 0
+    }
+  ],
+  "samples": [
+    {
+      "sample": 1,
+      "path": "direct",
+      "status": "200",
+      "ttfb": 0.206752,
+      "total": 0.206927,
+      "bytes": 124,
+      "exit_code": 0
+    },
+    {
+      "sample": 1,
+      "path": "website_gateway",
+      "status": "200",
+      "ttfb": 0.630996,
+      "total": 0.631342,
+      "bytes": 124,
+      "exit_code": 0
+    },
+    {
+      "sample": 2,
+      "path": "direct",
+      "status": "200",
+      "ttfb": 0.145984,
+      "total": 0.14609,
+      "bytes": 124,
+      "exit_code": 0
+    },
+    {
+      "sample": 2,
+      "path": "website_gateway",
+      "status": "200",
+      "ttfb": 0.596401,
+      "total": 0.596545,
+      "bytes": 124,
+      "exit_code": 0
+    },
+    {
+      "sample": 3,
+      "path": "direct",
+      "status": "200",
+      "ttfb": 0.173221,
+      "total": 0.173365,
+      "bytes": 124,
+      "exit_code": 0
+    },
+    {
+      "sample": 3,
+      "path": "website_gateway",
+      "status": "200",
+      "ttfb": 0.532354,
+      "total": 0.532478,
+      "bytes": 124,
+      "exit_code": 0
+    }
+  ]
+}

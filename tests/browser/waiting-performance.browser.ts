@@ -22,6 +22,8 @@ async function fixture(page:Page,journey:string){
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Synthetic Visitor'}});
   if(path.endsWith('/meda/discovery'))return reply({items:[meda],page:1,has_more:false});
   if(path.endsWith('/meda/discovery/MED_fixture'))return reply(meda);
+  if(path==='/api/shida/personal/security')return reply({passkeys:[],email:null,email_ready_at:null,protected:false});
+  if(path==='/api/shida/personal/security/phone')return reply({changes:[]});
   if(path.endsWith('/security/navigation'))return reply({can_manage:true,markets:[],organization_management:false,activity_counts:{},travel_profiles:[]});
   if(path.includes('/wenze/stores'))return reply({stores:[]});
   if(path.endsWith('/services'))return reply({profiles:[]});
@@ -59,12 +61,14 @@ for(const profile of ['normal','mobile'] as const)for(const journey of ['public'
   async function measure(visit:string,action:()=>Promise<unknown>,useful:()=>Locator){
    const first=requests.length,start=Date.now();await action();await expect(useful()).toBeVisible();const usefulMs=Date.now()-start;
    const controls=page.locator('main button:visible:not(:disabled),main a:visible').first();if(await controls.count())await expect(controls).toBeEnabled();
-   if(journey==='restaurant'&&visit!=='navigation')await expect(page.locator('.rst-today-refresh')).toBeEnabled();
+   let sectionReadyMs:number|undefined;
+   if(journey==='restaurant'&&visit!=='navigation'){await expect(page.locator('.rst-ops-incomplete')).toHaveCount(0);sectionReadyMs=Date.now()-start;await expect(page.locator('.rst-today-refresh')).toBeEnabled();}
+   if(journey==='space'&&visit==='navigation')await expect(page.locator('#add-passkey')).toBeEnabled({timeout:20000});
    if(journey==='services')await expect(page.locator(visit==='navigation'?'.svc-planner-toolbar button[aria-busy]':'.svc-work-filters button[aria-busy]')).toBeEnabled();
    if(journey==='restaurant'&&visit==='navigation')await expect(page.getByRole('button',{name:'Actualiser les commandes',exact:true})).toBeEnabled();
    const usableMs=Date.now()-start;await page.waitForTimeout(delay+100);
    const reads=requests.slice(first).map(row=>({...row,start:row.start-start,end:row.end?row.end-start:undefined}));
-   results.push({sample,visit,usefulMs,usableMs,requests:reads.length,bytes:reads.reduce((sum,row)=>sum+(row.bytes??0),0),sessionReads:reads.filter(row=>row.url.endsWith('/employment/session/')).length,reads});
+   results.push({sample,visit,usefulMs,usableMs,sectionReadyMs,requests:reads.length,bytes:reads.reduce((sum,row)=>sum+(row.bytes??0),0),sessionReads:reads.filter(row=>row.url.endsWith('/employment/session/')).length,reads});
   }
   await measure('first',()=>page.goto(route),ready);
   await measure('repeat',()=>page.reload(),ready);

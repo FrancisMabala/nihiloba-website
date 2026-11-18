@@ -1,20 +1,21 @@
 'use client';
 import {ManagementSpaceSelector} from './management-space-selector';
 import {individualApplicationCopy} from '../../lib/individual-application-copy';
-import {JobSearchSpace} from './job-search-space';
+const JobSearchSpace=lazy(()=>import('./job-search-space').then(module=>({default:module.JobSearchSpace})));
 import {missionText} from '../../lib/mission-copy';
-import {MissionApply,PersonalListings} from './personal-missions';
-import {PersonalOfferSpace} from './personal-offer-space';
+const MissionApply=lazy(()=>import('./personal-missions').then(module=>({default:module.MissionApply})));
+const PersonalListings=lazy(()=>import('./personal-missions').then(module=>({default:module.PersonalListings})));
+const PersonalOfferSpace=lazy(()=>import('./personal-offer-space').then(module=>({default:module.PersonalOfferSpace})));
 import {jobSearchCopy} from '../../lib/job-search-copy';
 import {SpaceSidebar} from './space-sidebar';
-import {useEffect,useState} from 'react';
+import {lazy,Suspense,useEffect,useState} from 'react';
 import type {MarketplaceLocale} from './marketplace-account-copy';
 import {accountSpaceCopy} from '../../lib/account-space-copy';
 import {PERSONAL_SESSION_EVENT,restorePersonalSession,type PersonalSession} from '../../lib/personal-session-browser';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {SpaceIcon,type SpaceIconName} from './account-space-icon';
-import {AccountSpaceOrders} from './account-space-orders';
-import {PersonalTransactions} from './personal-transactions';
+const AccountSpaceOrders=lazy(()=>import('./account-space-orders').then(module=>({default:module.AccountSpaceOrders})));
+const PersonalTransactions=lazy(()=>import('./personal-transactions').then(module=>({default:module.PersonalTransactions})));
 import {PersonalActivities} from './personal-activities';
 import {universalSpaceCopy} from '../../lib/universal-space-copy';
 import {workspaceText} from '../../lib/personal-workspace-copy';
@@ -22,17 +23,17 @@ import './account-space.css';
 import './personal-space-mobile.css';
 import './account-settings-design.css';
 import './activities-design.css';
-import {AccountRecovery} from './account-recovery';
+const AccountRecovery=lazy(()=>import('./account-recovery').then(module=>({default:module.AccountRecovery})));
 import {securityText} from '../../lib/account-security-copy';
-import {AccountSecurity} from './account-security';
-import {AccountRecoveryReview} from './account-recovery-review';
-import {AccountDeletionAdmin} from './account-deletion-admin';
-import {HelpQuestions} from './help-questions';
+const AccountSecurity=lazy(()=>import('./account-security').then(module=>({default:module.AccountSecurity})));
+const AccountRecoveryReview=lazy(()=>import('./account-recovery-review').then(module=>({default:module.AccountRecoveryReview})));
+const AccountDeletionAdmin=lazy(()=>import('./account-deletion-admin').then(module=>({default:module.AccountDeletionAdmin})));
+const HelpQuestions=lazy(()=>import('./help-questions').then(module=>({default:module.HelpQuestions})));
 import {helpText} from '../../lib/help-questions-copy';
-import {AccountSupport} from './account-support';
+const AccountSupport=lazy(()=>import('./account-support').then(module=>({default:module.AccountSupport})));
 import {accountSupportCopy} from '../../lib/account-support-copy';
 import {accountNavigationCopy} from '../../lib/account-navigation-copy';
-import {MessagesSpace} from './messages-space';
+const MessagesSpace=lazy(()=>import('./messages-space').then(module=>({default:module.MessagesSpace})));
 
 import {WenzeApiProvider} from '../../lib/wenze-seller-api';
 import {usePersonalActivityData} from '../../lib/use-personal-activity-data';
@@ -76,6 +77,7 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
   <div className="space-content">
    {view==='manage'&&(checking?<p role="status">{t.loading}</p>:session?<ManagementSpaceSelector locale={locale} data={activityData} onRetry={()=>setActivityRevision(v=>v+1)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view!=='manage'&&((view!=='management'&&view!=='listings'&&view!=='support'&&(view!=='job-offer'||apply))||checking||!session)&&<h1 className="space-page-title">{view==='job-offer'?(apply?individualApplicationCopy[locale].title:missionText(locale,'title')):(view==='candidate'||view==='job-search')?jobSearchCopy[locale].title:view==='listings'?listingCopy[locale].title:view==='overview'?universalSpaceCopy[locale].overview:view==='management'?n.activities:view==='transactions'?n.transactions:view==='settings'?n.account:view==='questions'?helpText(locale,'title'):view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>}
+   <Suspense fallback={<p role="status">{t.loading}</p>}>
    {view==='job-offer'&&(checking?<p role="status">{t.loading}</p>:session?apply?<MissionApply key={session.binding+apply} locale={locale} binding={session.binding} offer={apply}/>:<PersonalOfferSpace key={session.binding} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='listings'&&(checking?<p role="status">{t.loading}</p>:session?<WenzeApiProvider key={session.binding} binding={session.binding} onUnauthorized={()=>setSession(null)}><PersonalListings locale={locale} binding={session.binding}/></WenzeApiProvider>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {(view==='candidate'||view==='job-search')&&(checking?<p role="status">{t.loading}</p>:session?<JobSearchSpace key={session.binding} initialSection={view==='candidate'?'profiles':initialSection} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
@@ -94,6 +96,7 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
    {!session&&securityResult&&<p role="status">{securityText(locale,securityResult)}</p>}
    {view==='settings'&&session&&<div className="account-settings-cards"><AccountSecurity key={'security:'+session.binding} binding={session.binding} locale={locale} onCompleted={setSecurityResult}/></div>}
 
+   </Suspense>
   </div>
  </div>;
 }

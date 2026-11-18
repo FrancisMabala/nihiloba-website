@@ -16,10 +16,17 @@ type Key=keyof Snapshot;
 type Failure='unavailable'|'restricted'|'zoneRequired';
 export function RestaurantToday({path,binding,locale,zone,canSell,canStock,canEditIntake,canReservations=false,onOpen}:{path:string;binding:string;locale:Locale;zone:string|null;canPrepare:boolean;canSell:boolean;canStock:boolean;canEditIntake:boolean;canReservations?:boolean;onOpen:(tab:string)=>void}){
  const c=operationsCopy[locale], [data,setData]=useState<Snapshot>({}),[errors,setErrors]=useState<Partial<Record<Key,Failure>>>({}),[busy,setBusy]=useState<Key[]>([]),[updated,setUpdated]=useState<string|null>(null),[now,setNow]=useState(()=>new Date());
- const active=useRef(new Map<Key,AbortController>()),epoch=useRef(0);
+ const active=useRef(new Map<Key,AbortController>()),epoch=useRef(0),retryQueue=useRef<Key[]>([]);
  const day=operationDay(zone,now);
  const load=useCallback(async(only?:Key)=>{
-  if(active.current.size)return;
+  if(active.current.size){
+   // Queue a failed section behind the current read instead of holding its retry
+   // control disabled until unrelated money/stock requests finish. Deduplicate taps.
+   if(only&&!active.current.has(only)&&!retryQueue.current.includes(only)){
+    retryQueue.current.push(only);setBusy(keys=>[...new Set([...keys,only])]);
+   }
+   return;
+  }
   const generation=epoch.current;
   const until=day?new Date(Date.parse(day+'T12:00:00Z')+7*86400000).toISOString().slice(0,10):null;
   const reads:[Key,string][]=[['pending',`${path}/orders?states=pending&page=1&page_size=5`],['preparing',`${path}/orders?states=accepted&states=preparing&page=1&page_size=1`],['ready',`${path}/orders?states=ready&page=1&page_size=5`],['intake',`${path}/order-configuration`]];
@@ -27,13 +34,16 @@ export function RestaurantToday({path,binding,locale,zone,canSell,canStock,canEd
   if(canSell)reads.push(['visits',`${path}/service/groups?page=1`]);
   if(canSell&&canEditIntake)reads.push(['money',`${path}/service/daily/summary`]);
   if(canStock)reads.push(['stock',`${path}/inventory?low_stock=true&page=1&page_size=3`]);
+  const priority:Key[]=['pending','ready','reservations','preparing','stock','visits','money','upcoming','intake'];
+  reads.sort((a,b)=>priority.indexOf(a[0])-priority.indexOf(b[0]));
   const selected=reads.filter(([key])=>(!only||key===only)&&!active.current.has(key)).map(([key,url])=>{const controller=new AbortController();active.current.set(key,controller);return {key,url,controller};});
   if(!selected.length)return;
   setBusy(keys=>[...new Set([...keys,...selected.map(r=>r.key)])]);
   // These reads share ownership locks on the backend. A dashboard must not
   // occupy all four admission slots with a burst of competing requests.
   let complete=true;
-  for(const {key,url,controller} of selected){
+  while(selected.length){
+   const {key,url,controller}=selected.shift()!;
    if(generation!==epoch.current||controller.signal.aborted)return;
    try{
     const value=await request(url,{signal:controller.signal},binding);
@@ -49,13 +59,18 @@ export function RestaurantToday({path,binding,locale,zone,canSell,canStock,canEd
    }finally{
     if(generation===epoch.current){if(active.current.get(key)===controller)active.current.delete(key);setBusy(keys=>keys.filter(value=>value!==key));}
    }
+   // Still exactly one request in flight. A retry takes the next queue slot.
+   for(const retry of retryQueue.current.splice(0).reverse()){
+    const read=reads.find(([candidate])=>candidate===retry);
+    if(read&&!active.current.has(retry)){const next=new AbortController();active.current.set(retry,next);selected.unshift({key:retry,url:read[1],controller:next});}
+   }
   }
   if(!only&&complete)setUpdated(new Date().toISOString());
  },[path,binding,day,canSell,canEditIntake,canStock,canReservations]);
- useEffect(()=>{epoch.current++;const controllers=active.current,generation=epoch;queueMicrotask(()=>void load());const refresh=(event:Event)=>{if((event as CustomEvent).detail?.path===path){setNow(new Date());void load();}};window.addEventListener('rst-refresh',refresh);return()=>{generation.current++;controllers.forEach(controller=>controller.abort());controllers.clear();window.removeEventListener('rst-refresh',refresh);};},[load,path]);
+ useEffect(()=>{epoch.current++;const controllers=active.current,generation=epoch;queueMicrotask(()=>void load());const refresh=(event:Event)=>{if((event as CustomEvent).detail?.path===path){setNow(new Date());void load();}};window.addEventListener('rst-refresh',refresh);return()=>{generation.current++;retryQueue.current=[];controllers.forEach(controller=>controller.abort());controllers.clear();window.removeEventListener('rst-refresh',refresh);};},[load,path]);
  function open(tab:string,query:Record<string,string>={}){const url=new URL(location.href);['order','orderStates','reservation','stockFilter'].forEach(key=>url.searchParams.delete(key));Object.entries(query).forEach(([key,value])=>url.searchParams.set(key,value));history.replaceState(history.state,'',url);onOpen(tab);}
  const number=(key:Key)=>{const page=data[key];if(!page)return busy.includes(key)?'…':'—';if('items' in page)return new Intl.NumberFormat(locale).format(page.total??page.items.length)+(page.total===undefined&&page.has_more?'+':'');return '—';};
- const problem=(key:Key)=>errors[key]?<div className="rst-ops-error" role="status"><span>{c[errors[key]!]} {data[key]?c.stale:''}</span><button type="button" disabled={busy.length>0} onClick={()=>void load(key)}>{c.retry}</button></div>:null;
+ const problem=(key:Key)=>errors[key]?<div className="rst-ops-error" role="status"><span>{c[errors[key]!]} {data[key]?c.stale:''}</span><button type="button" disabled={busy.includes(key)} onClick={()=>void load(key)}>{c.retry}</button></div>:null;
  const money=(value:string)=>`${value.startsWith('-')?'−':''}${displayMoney(value.replace(/^-/,'') ,locale)}`;
  const work=[...(data.pending?.items??[]),...(data.ready?.items??[])].sort((a,b)=>Number(b.state==='pending')-Number(a.state==='pending')||a.submitted_at.localeCompare(b.submitted_at)).slice(0,5);
  const reservations=(data.reservations?.items??[]).slice(0,Math.max(0,5-work.length));
