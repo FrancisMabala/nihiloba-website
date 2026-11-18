@@ -1,0 +1,192 @@
+/* Bounded adoption: only the Website Services work view opts into these rules. */
+.seller-design .svc-workspace.shida-responsive {
+  color: var(--shida-text);
+  background: var(--shida-canvas);
+  font: 400 1rem/1.5 var(--shida-font-sans);
+}
+.seller-design .svc-workspace.shida-responsive > .svc-content {
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding: var(--shida-space-6) var(--shida-space-8);
+  min-width: 0;
+}
+.seller-design .svc-workspace.shida-responsive .svc-panel-stack { gap: 0; }
+.seller-design .svc-workspace.shida-responsive .svc-work {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  margin: 0;
+}
+.seller-design .svc-workspace.shida-responsive .svc-work :is(button,select,input,textarea) {
+  min-height: var(--shida-target);
+  max-width: 100%;
+  border-radius: var(--shida-radius-control);
+  font: 600 1rem/1.35 var(--shida-font-sans);
+  color: var(--summary-fg,var(--shida-forest));
+  border-color: var(--shida-control-border);
+  background: var(--shida-surface);
+  transition: background-color 120ms, color 120ms;
+  transform: none;
+}
+.seller-design .svc-workspace.shida-responsive .svc-work button:hover:not(:disabled) {
+  box-shadow: none;
+  border-color: var(--shida-forest);
+}
+.seller-design .svc-workspace.shida-responsive .svc-work :is(button:disabled,fieldset:disabled button,select:disabled,fieldset:disabled select) {
+  opacity: 1;
+  cursor: default;
+  color: var(--shida-text-muted);
+}
+.seller-design .svc-workspace.shida-responsive :is(button,a,input,select,textarea,summary):focus-visible {
+  outline: 3px solid var(--shida-forest);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px var(--shida-surface);
+}
+.seller-design .svc-workspace.shida-responsive .svc-work :is(.svc-primary,[type=submit]) {
+  background: var(--shida-forest);
+  color: var(--shida-on-action);
+}
+.seller-design .svc-workspace.shida-responsive .svc-work :is(.svc-primary,[type=submit]):hover:not(:disabled) { background: var(--shida-green); }
+.seller-design .svc-workspace.shida-responsive .svc-work :is(.svc-primary,[type=submit]):active:not(:disabled) { background: var(--shida-forest-deep); }
+.seller-design .svc-workspace.shida-responsive .svc-work-summary {
+  /* services-workplace.css also uses this legacy name for a flex chip group. */
+  display: block;
+  margin: 0 0 var(--shida-space-4);
+}
+.seller-design .svc-workspace.shida-responsive .svc-work-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,13.75rem),1fr));
+  gap: var(--shida-space-3);
+}
+.seller-design .svc-workspace.shida-responsive .svc-work-toolbar { margin: 0; min-width: 0; }
+.seller-design .svc-workspace.shida-responsive .svc-work-tabs {
+  gap: var(--shida-space-2);
+  padding: 6px;
+  margin: 0;
+  scrollbar-width: thin;
+  scroll-padding-inline: 6px;
+}
+.seller-design .svc-workspace.shida-responsive .svc-work-tabs button { font-size: 1rem; padding: .5rem .75rem !important; }
+.seller-design .svc-workspace.shida-responsive .svc-work-tabs button[aria-pressed=true] {
+  background: var(--shida-selected-bg);
+  color: var(--shida-green);
+  border-color: var(--shida-green);
+}
+.seller-design .svc-workspace.shida-responsive .svc-work-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--shida-space-3);
+  margin: var(--shida-space-3) 0 var(--shida-space-4);
+}
+.seller-design .svc-workspace.shida-responsive .svc-work-filters label {
+  flex: 1 1 18rem;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+  font: 600 .875rem/1.45 var(--shida-font-sans);
+  color: var(--shida-text);
+}
+.seller-design .svc-workspace.shida-responsive .svc-work-filters select { margin-top: var(--shida-space-1); width: 100%; }
+.seller-design .svc-workspace.shida-responsive .svc-icon-button { width: var(--shida-target); flex-basis: var(--shida-target); }
+.seller-design .svc-workspace.shida-responsive .svc-work-list,
+.seller-design .svc-workspace.shida-responsive .svc-work-detail {
+  min-width: 0;
+  padding: var(--shida-space-3) !important;
+  border: 1px solid var(--shida-border) !important;
+  border-radius: var(--shida-radius-card);
+  background: var(--shida-surface) !important;
+}
+.seller-design .svc-workspace.shida-responsive .svc-client-work {
+  color: var(--shida-text);
+  table-layout: fixed;
+  font: 400 .875rem/1.45 var(--shida-font-sans);
+}
+.seller-design .svc-workspace.shida-responsive .svc-client-work :is(th,td) {
+  padding: var(--shida-space-3);
+  font-size: inherit;
+  border-color: var(--shida-border);
+  overflow-wrap: break-word;
+}
+.seller-design .svc-workspace.shida-responsive .svc-client-work th { color: var(--shida-forest); background: var(--shida-canvas); }
+.seller-design .svc-workspace.shida-responsive .svc-client-work small { font-size: .875rem; color: var(--shida-text-muted); overflow-wrap: anywhere; }
+.seller-design .svc-workspace.shida-responsive .svc-work-status { font: 400 .875rem/1.45 var(--shida-font-sans); }
+.seller-design .svc-workspace.shida-responsive .svc-work-empty { padding: var(--shida-space-6) var(--shida-space-3); }
+.seller-design .svc-workspace.shida-responsive .svc-work-empty > svg { width: 32px; height: 32px; padding: var(--shida-space-3); }
+.seller-design .svc-workspace.shida-responsive .svc-work :is(h3,h4) { font: 600 1.125rem/1.35 var(--shida-font-sans); }
+.seller-design .svc-workspace.shida-responsive .svc-work-empty p { margin: var(--shida-space-2) 0 var(--shida-space-4); font-size: 1rem; }
+.seller-design .svc-workspace.shida-responsive .svc-work [role=status] { font-size: 1rem; }
+.seller-design .svc-workspace.shida-responsive .svc-work-list > .transaction-actions:empty { display: none; }
+.svc-work-desktop-options { margin: var(--shida-space-4) 3px 0; }
+.svc-work-desktop-options .business-secondary-actions > div { left: 0; right: auto; }
+
+/* Existing shell CSS/JS already switches navigation at 1024px. */
+@media (max-width:1023px) {
+  .seller-design .svc-workspace.shida-responsive > .svc-content {
+    padding: var(--shida-space-3) var(--shida-space-6) calc(var(--management-nav-space,84px) + var(--shida-space-4));
+  }
+  .seller-design .svc-workspace.shida-responsive .svc-work-kpis { grid-template-columns: repeat(auto-fit,minmax(min(100%,8.5rem),1fr)); }
+  .seller-design .svc-workspace.shida-responsive .management-mobile-nav {
+    background: var(--shida-surface);
+    border-color: var(--shida-border);
+  }
+  .seller-design .svc-workspace.shida-responsive .management-mobile-nav button {
+    font: 600 .8125rem/1.25 var(--shida-font-sans);
+    min-height: var(--shida-target);
+    grid-template-rows: 24px auto;
+    color: var(--shida-forest);
+  }
+  .seller-design .svc-workspace.shida-responsive .management-mobile-nav svg { width: 24px; height: 24px; }
+  .seller-design .svc-workspace.shida-responsive .management-mobile-nav [aria-current=page] { background: var(--shida-selected-bg); }
+  .seller-design .svc-workspace.shida-responsive .svc-client-work thead { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
+  .seller-design .svc-workspace.shida-responsive .svc-client-work,
+  .seller-design .svc-workspace.shida-responsive .svc-client-work tbody { display: block; }
+  .seller-design .svc-workspace.shida-responsive .svc-client-work tr {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+    gap: var(--shida-space-2);
+    padding: var(--shida-space-3) 0;
+    border-bottom: 1px solid var(--shida-border);
+  }
+  .seller-design .svc-workspace.shida-responsive .svc-client-work tr:last-child { border-bottom: 0; }
+  .seller-design .svc-workspace.shida-responsive .svc-client-work td { padding: 0; border: 0; grid-column: auto; font-size: 1rem; }
+  .seller-design .svc-workspace.shida-responsive .svc-client-work td:first-child { font-weight: 600; }
+  .seller-design .svc-workspace.shida-responsive .svc-client-work td:nth-child(4) { font-size: .875rem; color: var(--shida-text-muted); }
+  .seller-design .svc-workspace.shida-responsive :is(button,input,select,textarea) { scroll-margin-bottom: calc(var(--management-nav-space,84px) + var(--shida-space-4)); }
+}
+@media (max-width:767px) {
+  .seller-design .svc-workspace.shida-responsive > .svc-content { padding-inline: var(--shida-space-4); }
+  .seller-design .svc-workspace.shida-responsive .svc-work-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .seller-design .svc-workspace.shida-responsive .svc-work-filters { display: grid; grid-template-columns: minmax(0,1fr) var(--shida-target); }
+  .seller-design .svc-workspace.shida-responsive .svc-work-filters:has(>label:nth-of-type(2)) > label:first-child { grid-column: 1/-1; }
+}
+/* The rem threshold lets enlarged text use a single column at narrow widths. */
+.seller-design .svc-workspace.shida-responsive .svc-work-summary { container-type: inline-size; }
+@container (max-width:17.5rem) {
+  .seller-design .svc-workspace.shida-responsive .svc-work-kpis { grid-template-columns: minmax(0,1fr); }
+}
+
+/* Pilot overlay only: other consumers retain their existing sheet contract. */
+.seller-design .svc-workspace.shida-responsive .management-more-sheet {
+  width: min(560px,calc(100% - 32px));
+  max-height: calc(100dvh - 16px);
+  margin: auto;
+  border-color: var(--shida-border);
+  border-radius: var(--shida-radius-modal);
+  background: var(--shida-surface);
+  color: var(--shida-forest);
+  box-shadow: var(--shida-shadow-overlay);
+  font: 400 1rem/1.5 var(--shida-font-sans);
+}
+.seller-design .svc-workspace.shida-responsive .management-more-sheet::backdrop { background: var(--shida-backdrop); }
+.seller-design .svc-workspace.shida-responsive .management-sheet-content { padding: var(--shida-space-6); }
+.seller-design .svc-workspace.shida-responsive .management-sheet-content h2 { font: 600 1.5rem/1.25 var(--shida-font-serif); }
+.seller-design .svc-workspace.shida-responsive .management-sheet-content :is(button,a) { min-height: var(--shida-target); font: 600 1rem/1.35 var(--shida-font-sans); }
+@media (max-width:767px) {
+  .seller-design .svc-workspace.shida-responsive .management-more-sheet { width: 100%; margin: auto auto 0; border-radius: var(--shida-radius-modal) var(--shida-radius-modal) 0 0; }
+  .seller-design .svc-workspace.shida-responsive .management-sheet-content { padding: var(--shida-space-4) var(--shida-space-4) max(var(--shida-space-4),env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .seller-design .svc-workspace.shida-responsive * { transition: none; scroll-behavior: auto; }
+}

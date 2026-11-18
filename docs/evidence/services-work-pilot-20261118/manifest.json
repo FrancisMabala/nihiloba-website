@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-18",
+  "baselineCheckout": "44ca1619b90a48cff834e24ae2829cff8cfa6471",
+  "baselineApplication": "16ce335c6450260fb4327f717d38d51936f8ff03",
+  "baselineBuildId": "not retained",
+  "afterBuildId": "daBVmZyeb_jiJOMp7bBMM",
+  "server": "http://127.0.0.1:3017",
+  "api": "synthetic browser interception; server fallback loopback only",
+  "locale": "fr",
+  "fixedClock": "2026-11-18T10:00:00Z",
+  "filters": "Requests and quotes; all services; all statuses",
+  "screenshots": "viewport capture; top of document; 390x900 and 1440x900; Plus also 820x900",
+  "sourceSha256": {
+    "app/components/shida/shida-presentation.css": "8493F1E98F80D782C2B3565466CF369726DFA687CFB47588D5833FBAB7D4B4F0",
+    "app/components/shida/services-work-pilot.css": "660ED97E4EF322F5BF12D4F059D5E8621DA1B0700932EA729662EE12AF3D392E",
+    "app/components/shida/services-transactions.tsx": "3AA8CFAA299FF703EBD4FA4DE7FDA8F124F10876F243424E50DCCBD7850EFEF7",
+    "tests/browser/fixtures/services-work-pilot.ts": "45F8B7F9B27E59F65AC278CEA214AC4FE85143EB16324E2660303AF7896291ED",
+    "app/components/shida/services-work-summary.tsx": "6F61D90497E0DE22D70ED2EAF5F0C3AF3D3CD3A654399B67C8C28A14BF338258",
+    "app/components/shida/services-provider-navigation.tsx": "8075C196137BB5252716579173DCFF513A3C974CC6370DDAAE8F280F43B47A96",
+    "app/components/shida/services-management.tsx": "21AF62CFBB7A6137E65EA4D2FB395E09820BC18D72EDC1021C09578FB3414C07"
+  },
+  "physicalDeviceVerified": false
+}

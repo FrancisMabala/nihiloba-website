@@ -1,0 +1,728 @@
+[
+  {
+    "width": 390,
+    "mode": "populated",
+    "fonts": {
+      "body": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "26.4px",
+        "weight": "400",
+        "color": "rgb(16, 38, 32)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-work-kpi": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgb(230, 242, 255)"
+      },
+      ".svc-work-kpi strong": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "28px",
+        "lineHeight": "32.2px",
+        "weight": "700",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      ".svc-work-tabs button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(13, 73, 60)",
+        "background": "rgb(225, 237, 207)"
+      },
+      ".svc-work-filters select": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "normal",
+        "weight": "600",
+        "color": "rgb(8, 45, 37)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-client-work td": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "23.2px",
+        "weight": "600",
+        "color": "rgb(16, 38, 32)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      ".management-mobile-nav button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "13px",
+        "lineHeight": "16.25px",
+        "weight": "600",
+        "color": "rgb(8, 45, 37)",
+        "background": "rgba(0, 0, 0, 0)"
+      }
+    },
+    "renderedFonts": {
+      ".svc-work-kpi span": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        },
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      ".svc-work-tabs button": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ],
+      ".svc-work-filters select": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ],
+      ".svc-client-work td": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 23
+        }
+      ]
+    }
+  },
+  {
+    "width": 390,
+    "mode": "empty",
+    "fonts": {
+      "body": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "26.4px",
+        "weight": "400",
+        "color": "rgb(16, 38, 32)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-work-kpi": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgb(230, 242, 255)"
+      },
+      ".svc-work-kpi strong": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "28px",
+        "lineHeight": "32.2px",
+        "weight": "700",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      ".svc-work-tabs button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(13, 73, 60)",
+        "background": "rgb(225, 237, 207)"
+      },
+      ".svc-work-filters select": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "normal",
+        "weight": "600",
+        "color": "rgb(8, 45, 37)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-client-work td": null,
+      ".management-mobile-nav button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "13px",
+        "lineHeight": "16.25px",
+        "weight": "600",
+        "color": "rgb(8, 45, 37)",
+        "background": "rgba(0, 0, 0, 0)"
+      }
+    },
+    "renderedFonts": {
+      ".svc-work-kpi span": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        },
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      ".svc-work-tabs button": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ],
+      ".svc-work-filters select": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ]
+    }
+  },
+  {
+    "width": 390,
+    "mode": "error",
+    "fonts": {
+      "body": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "26.4px",
+        "weight": "400",
+        "color": "rgb(16, 38, 32)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-work-kpi": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgb(230, 242, 255)"
+      },
+      ".svc-work-kpi strong": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "28px",
+        "lineHeight": "32.2px",
+        "weight": "700",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      ".svc-work-tabs button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(13, 73, 60)",
+        "background": "rgb(225, 237, 207)"
+      },
+      ".svc-work-filters select": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "normal",
+        "weight": "600",
+        "color": "rgb(8, 45, 37)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-client-work td": null,
+      ".management-mobile-nav button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "13px",
+        "lineHeight": "16.25px",
+        "weight": "600",
+        "color": "rgb(8, 45, 37)",
+        "background": "rgba(0, 0, 0, 0)"
+      }
+    },
+    "renderedFonts": {
+      ".svc-work-kpi span": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        },
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      ".svc-work-tabs button": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ],
+      ".svc-work-filters select": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ]
+    }
+  },
+  {
+    "width": 390,
+    "mode": "loading",
+    "fonts": {
+      "body": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "26.4px",
+        "weight": "400",
+        "color": "rgb(16, 38, 32)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-work-kpi": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(93, 107, 101)",
+        "background": "rgb(230, 242, 255)"
+      },
+      ".svc-work-kpi strong": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "28px",
+        "lineHeight": "32.2px",
+        "weight": "700",
+        "color": "rgb(93, 107, 101)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      ".svc-work-tabs button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(93, 107, 101)",
+        "background": "rgb(225, 237, 207)"
+      },
+      ".svc-work-filters select": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "normal",
+        "weight": "600",
+        "color": "rgb(93, 107, 101)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-client-work td": null,
+      ".management-mobile-nav button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "13px",
+        "lineHeight": "16.25px",
+        "weight": "600",
+        "color": "rgb(8, 45, 37)",
+        "background": "rgba(0, 0, 0, 0)"
+      }
+    },
+    "renderedFonts": {
+      ".svc-work-kpi span": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        },
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      ".svc-work-tabs button": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ],
+      ".svc-work-filters select": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ]
+    }
+  },
+  {
+    "width": 1440,
+    "mode": "populated",
+    "fonts": {
+      "body": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "26.4px",
+        "weight": "400",
+        "color": "rgb(16, 38, 32)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-work-kpi": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgb(230, 242, 255)"
+      },
+      ".svc-work-kpi strong": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "28px",
+        "lineHeight": "32.2px",
+        "weight": "700",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      ".svc-work-tabs button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(13, 73, 60)",
+        "background": "rgb(225, 237, 207)"
+      },
+      ".svc-work-filters select": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "normal",
+        "weight": "600",
+        "color": "rgb(8, 45, 37)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-client-work td": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "14px",
+        "lineHeight": "20.3px",
+        "weight": "400",
+        "color": "rgb(16, 38, 32)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      ".management-mobile-nav button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "22.4px",
+        "weight": "400",
+        "color": "rgb(23, 62, 50)",
+        "background": "rgb(255, 253, 248)"
+      }
+    },
+    "renderedFonts": {
+      ".svc-work-kpi span": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 18
+        },
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      ".svc-work-tabs button": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ],
+      ".svc-work-filters select": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ],
+      ".svc-client-work td": [
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI",
+          "isCustomFont": false,
+          "glyphCount": 23
+        }
+      ]
+    }
+  },
+  {
+    "width": 1440,
+    "mode": "empty",
+    "fonts": {
+      "body": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "26.4px",
+        "weight": "400",
+        "color": "rgb(16, 38, 32)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-work-kpi": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgb(230, 242, 255)"
+      },
+      ".svc-work-kpi strong": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "28px",
+        "lineHeight": "32.2px",
+        "weight": "700",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      ".svc-work-tabs button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(13, 73, 60)",
+        "background": "rgb(225, 237, 207)"
+      },
+      ".svc-work-filters select": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "normal",
+        "weight": "600",
+        "color": "rgb(8, 45, 37)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-client-work td": null,
+      ".management-mobile-nav button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "22.4px",
+        "weight": "400",
+        "color": "rgb(23, 62, 50)",
+        "background": "rgb(255, 253, 248)"
+      }
+    },
+    "renderedFonts": {
+      ".svc-work-kpi span": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 18
+        },
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      ".svc-work-tabs button": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ],
+      ".svc-work-filters select": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ]
+    }
+  },
+  {
+    "width": 1440,
+    "mode": "error",
+    "fonts": {
+      "body": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "26.4px",
+        "weight": "400",
+        "color": "rgb(16, 38, 32)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-work-kpi": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgb(230, 242, 255)"
+      },
+      ".svc-work-kpi strong": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "28px",
+        "lineHeight": "32.2px",
+        "weight": "700",
+        "color": "rgb(8, 75, 117)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      ".svc-work-tabs button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(13, 73, 60)",
+        "background": "rgb(225, 237, 207)"
+      },
+      ".svc-work-filters select": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "normal",
+        "weight": "600",
+        "color": "rgb(8, 45, 37)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-client-work td": null,
+      ".management-mobile-nav button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "22.4px",
+        "weight": "400",
+        "color": "rgb(23, 62, 50)",
+        "background": "rgb(255, 253, 248)"
+      }
+    },
+    "renderedFonts": {
+      ".svc-work-kpi span": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 18
+        },
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      ".svc-work-tabs button": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ],
+      ".svc-work-filters select": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ]
+    }
+  },
+  {
+    "width": 1440,
+    "mode": "loading",
+    "fonts": {
+      "body": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "26.4px",
+        "weight": "400",
+        "color": "rgb(16, 38, 32)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-work-kpi": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(93, 107, 101)",
+        "background": "rgb(230, 242, 255)"
+      },
+      ".svc-work-kpi strong": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "28px",
+        "lineHeight": "32.2px",
+        "weight": "700",
+        "color": "rgb(93, 107, 101)",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      ".svc-work-tabs button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "21.6px",
+        "weight": "600",
+        "color": "rgb(93, 107, 101)",
+        "background": "rgb(225, 237, 207)"
+      },
+      ".svc-work-filters select": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "normal",
+        "weight": "600",
+        "color": "rgb(93, 107, 101)",
+        "background": "rgb(255, 252, 247)"
+      },
+      ".svc-client-work td": null,
+      ".management-mobile-nav button": {
+        "family": "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px",
+        "lineHeight": "22.4px",
+        "weight": "400",
+        "color": "rgb(23, 62, 50)",
+        "background": "rgb(255, 253, 248)"
+      }
+    },
+    "renderedFonts": {
+      ".svc-work-kpi span": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 18
+        },
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      ".svc-work-tabs button": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ],
+      ".svc-work-filters select": [
+        {
+          "familyName": "Segoe UI Semibold",
+          "postScriptName": "SegoeUI-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 17
+        }
+      ]
+    }
+  }
+]

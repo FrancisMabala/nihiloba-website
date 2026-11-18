@@ -1,10 +1,27 @@
 # SHIDA shared responsive design rules — proposal
 
-**Status: DRAFT FOR REVIEW · 18 November 2026 · Not implemented.**
+**Status: bounded Website Services work-view pilot adopted locally · 18 November 2026.
+All other adoption remains proposed.**
 Proposed canonical presentation contract for Website and Business; grounded in the
 [code and screenshot audit](shida-design-system-audit-20261118.md). Approval and a
-bounded pilot precede adoption. No new feature, route, endpoint, financial rule,
+bounded pilot precede wider adoption. No new feature, route, endpoint, financial rule,
 permission, marketplace, or general chat is proposed.
+
+### Adoption boundary
+
+Only Website Services `view=work` opts into `.shida-responsive`. See the
+[pilot evidence and validation](services-work-responsive-pilot-20261118.md).
+This does not adopt the contract in Business, Restaurant, Wenze, public pages,
+or the other Services views.
+
+| Adopted in this pilot | Still proposed / unchanged |
+| --- | --- |
+| Opt-in color, font-stack, spacing, radius, focus and target tokens in `shida-presentation.css` | Global token replacement, shared package, Business parity |
+| Reusable flat blue/amber/green/purple summary presentation with original data/actions | Replacing other marketplaces' metric components |
+| Explicit accessible heading mode for this management landing view at every width | Changing other pages' title visibility |
+| Scoped gutters, wrapping filters, readable table/mobile rows, selected-tab reveal | New filter panels, form redesign, financial/list-detail migrations |
+| Existing 1024px navigation boundary; pilot Plus sheet below 768px, centered dialog at/above 768px | Changing shared navigation behavior or other overlay consumers |
+| Existing native modal focus lifecycle, measured bottom clearance and permission guards | Physical-device certification or new navigation/history semantics |
 
 ## 1. Identity and invariants
 
@@ -22,7 +39,9 @@ existing FR/EN/LN/SW dictionaries and category-specific vocabulary.
 
 ## 2. Proposed tokens
 
-Values below are an explicit target, not a claim that these names already exist.
+Values below are the explicit contract. The pilot defines the used subset as
+opt-in custom properties in `app/components/shida/shida-presentation.css`; unused
+roles such as accent/layers and broader layout policies remain proposals.
 Map legacy aliases such as `--forest` to these values during a scoped migration;
 do not override all global styles at once. Use `rem` for type/spacing and allow
 the user's root font size to scale; pixel equivalents assume 16px. Breakpoints
@@ -213,7 +232,7 @@ mode in the existing shell rather than broad CSS hiding all headings.
 
 | Context | Proposed visible-heading rule |
 | --- | --- |
-| Management landing view clearly identified by persistent active navigation and identity | Visually hide redundant `h1` on compact/medium; remove its wrapper's reserved space. Wide pages may also opt out when the persistent active navigation provides equally clear orientation; review rather than hide every desktop title automatically. |
+| Management landing view clearly identified by persistent active navigation and identity | Explicitly opt into an accessible-only `h1` on **both desktop and mobile**, removing its wrapper's reserved space. Website Services `view=work` adopts this mode. Other views require individual review before opting in; there is no global heading-hiding rule. |
 | Nested order/product/request detail, creation/editing, settings or ambiguous context | Keep a compact visible task/detail title and useful back/context link. A parent bottom-nav label does not identify a specific record or operation. |
 | Public marketplace / public listing | Keep visible page or listing title for discovery and orientation. Public headings are not redundant management titles. |
 | Section or dialog | Keep useful `h2`/`h3` and labelled dialog heading; do not replace with unlabeled cards to save space. |
@@ -222,13 +241,18 @@ Visually hidden headings use an accessible clipping utility, not `display:none`,
 `visibility:hidden` or `aria-hidden`. Give the existing route-focus target a usable
 focus destination without changing DOM reading order. Refresh/timezone/status
 controls remain visible in a compact wrapping row even when the title is hidden.
+The pilot keeps `#services-view-title`, its `tabIndex=-1`, and the existing
+route-change focus effect. Request details retain their existing meaningful
+detail headings. Fullscreen remains available through the existing secondary
+menu on desktop; mobile retains the identity menu.
 
 ## 6. Consolidation and legitimate exceptions
 
 **Reuse now as design references:** SHIDA headers; connected business identity;
 ManagementMobileNavigation; ConfirmationDialog; FinanceSheet/SelectionSheet;
-existing metrics, icon slots and calendar. **Proposed future primitives:** semantic
-token sheet, scoped page-heading mode, summary-card presentation, compact toolbar,
+existing metrics, icon slots and calendar. **Adopted pilot primitives:** opt-in
+semantic token sheet, explicit page-heading mode, flat summary-card presentation.
+**Proposed future primitives:** compact toolbar,
 field/state wrapper and responsive list presentation. These names are concepts,
 not a request to add a component library during this audit.
 
@@ -275,8 +299,8 @@ with scoped evidence. Shared tests cannot prove business correctness by themselv
 
 ## 8. Pilot and staged adoption
 
-1. **Review this proposal:** settle token values, heading rules and 1024/768 shell/
-   sheet boundaries. Record approval before application edits.
+1. **Bounded pilot authorized:** token values, explicit heading rules and 1024/768
+   shell/sheet boundaries are adopted only for the requested Website pilot.
 2. **Pilot Website Services → Demandes et missions** (`view=work`) on desktop and
    mobile. Preserve all current tabs (including activity messages), metrics,
    search/filter/status behavior and permissions. Use existing shared shell and
@@ -284,7 +308,12 @@ with scoped evidence. Shared tests cannot prove business correctness by themselv
    styles change through a global token swap.
 3. **Pilot acceptance:** matching desktop/mobile captures, all states/locales,
    focused navigation/work-list checks, human visual review, keyboard and touch
-   checks below. Compare same data/viewport before and after. Investigate any
+   checks below. Require paired screenshots with **identical fixtures, fixed time,
+   locale, filters, selected tab, data state, viewport and scroll position**.
+   Record source/build revisions and fixture provenance. Historical screenshots
+   or a different empty state are not a valid pair. Verify computed font stacks
+   and actual rendered fonts on the page; do not add a font dependency to force
+   a mockup match. Investigate any
    difference in content/actions; an updated screenshot alone is not acceptance.
 4. **Business parity:** adapt its Services management presentation while preserving
    organization/team controls. Confirm the different shell boundary and all

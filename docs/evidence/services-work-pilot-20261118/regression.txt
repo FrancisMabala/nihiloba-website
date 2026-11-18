@@ -1,0 +1,19 @@
+
+Running 12 tests using 1 worker
+
+(node:38952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\services-mobile-batches.browser.ts:52:5 › matching baseline and release screenshots (7.4s)
+  ok  2 tests\browser\services-mobile-batches.browser.ts:65:5 › responsive actual pages, touch navigation, and enlarged text (12.3s)
+  ok  3 tests\browser\services-mobile-batches.browser.ts:79:5 › enlarged calendar and touch sheet (828ms)
+  ok  4 tests\browser\services-mobile-batches.browser.ts:86:5 › Today real metrics, summary destinations, refresh, partial errors and share (941ms)
+  ok  5 tests\browser\services-mobile-batches.browser.ts:97:5 › work summaries match filtered lists, all tabs, details, refresh and failures (1.4s)
+  ok  6 tests\browser\services-mobile-batches.browser.ts:109:5 › one calendar agenda, shared date and service, month boundaries, details and return (1.9s)
+  ok  7 tests\browser\services-mobile-batches.browser.ts:123:5 › saved availability, lazy preview errors, split hours, failed save preserves input and retry identity (1.5s)
+  ok  8 tests\browser\services-mobile-batches.browser.ts:134:5 › discovery tabs keep drafts across services, precise empty/error states and no eligible service (1.7s)
+  ok  9 tests\browser\services-mobile-batches.browser.ts:145:5 › Plus destinations, one return row, locale preservation, sheet focus and safe-area clearance (3.5s)
+  ok 10 tests\browser\services-mobile-batches.browser.ts:156:5 › FR EN LN SW labels fit and denied responses cannot show empty work (2.1s)
+  ok 11 tests\browser\services-mobile-batches.browser.ts:162:5 › loading prevents refresh storms; failed availability does not invent closed hours (2.6s)
+  ok 12 tests\browser\services-mobile-batches.browser.ts:169:5 › manual booking conflict keeps input and rechecks slots; provider-wide block saves explicitly (2.3s)
+
+  12 passed (39.9s)

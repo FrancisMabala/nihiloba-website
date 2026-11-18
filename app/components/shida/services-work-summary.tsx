@@ -7,6 +7,6 @@ export function ServicesWorkSummary({requests,reservations,locale,onSelect,disab
  return <div className="svc-work-summary"><div className="svc-work-kpis">{(["new","quotes","bookings","jobs"] as const).map((filter,index)=>{
   const kind=filter==="new"||filter==="quotes"?"requests":"reservations";
   const source=kind==="requests"?requests:reservations;
-  return <button key={filter} type="button" disabled={disabled} onClick={()=>onSelect(kind,filter)} className={`svc-work-kpi ${["blue","amber","green","purple"][index]}`}><SellerWorkspaceIcon name={filter==="bookings"?"calendar":filter==="quotes"?"document":"work"}/><span>{workText(locale,filter)}<strong>{failed?"—":source?source.filter(row=>workMatches(row,filter,kind)).length:"…"}</strong></span></button>;
+  return <button key={filter} type="button" disabled={disabled} onClick={()=>onSelect(kind,filter)} data-summary-tone={["blue","amber","green","purple"][index]} className={`svc-work-kpi shida-summary-card ${["blue","amber","green","purple"][index]}`}><SellerWorkspaceIcon name={filter==="bookings"?"calendar":filter==="quotes"?"document":"work"}/><span>{workText(locale,filter)}<strong>{failed?"—":source?source.filter(row=>workMatches(row,filter,kind)).length:"…"}</strong></span></button>;
  })}</div></div>;
 }

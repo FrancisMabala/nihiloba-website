@@ -1,8 +1,12 @@
 # SHIDA responsive design audit — 18 November 2026
 
-**Status: evidence and proposal for review. No application changes.** The companion
-[proposed canonical rules](shida-responsive-design-rules-proposal.md) are not yet
-implemented or approved. This audit does not authorize a broad redesign.
+**Historical audit status: evidence and proposal for review; no application changes
+were made by the audit.** A subsequent bounded Website Services work-view pilot
+is documented in [the pilot report](services-work-responsive-pilot-20261118.md).
+The [canonical rules proposal](shida-responsive-design-rules-proposal.md) now
+distinguishes that local adoption from the still-proposed wider rollout. This
+audit does not authorize a broad redesign; its original observations below are
+retained as historical evidence.
 
 ## Scope and evidence
 

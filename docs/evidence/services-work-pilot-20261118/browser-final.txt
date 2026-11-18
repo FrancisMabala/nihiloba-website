@@ -1,0 +1,22 @@
+
+Running 15 tests using 1 worker
+
+(node:26848) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\services-work-pilot.browser.ts:26:5 › paired fixtures and actual computed fonts (4.6s)
+  ok  2 tests\browser\services-work-pilot.browser.ts:59:57 › adopted pilot › responsive boundaries, labels and fonts fr (4.8s)
+  ok  3 tests\browser\services-work-pilot.browser.ts:59:57 › adopted pilot › responsive boundaries, labels and fonts en (4.5s)
+  ok  4 tests\browser\services-work-pilot.browser.ts:59:57 › adopted pilot › responsive boundaries, labels and fonts ln (5.0s)
+  ok  5 tests\browser\services-work-pilot.browser.ts:59:57 › adopted pilot › responsive boundaries, labels and fonts sw (4.9s)
+  ok  6 tests\browser\services-work-pilot.browser.ts:99:57 › adopted pilot › all tabs, metrics, filters, details and activity messages fr (2.2s)
+  ok  7 tests\browser\services-work-pilot.browser.ts:99:57 › adopted pilot › all tabs, metrics, filters, details and activity messages en (2.3s)
+  ok  8 tests\browser\services-work-pilot.browser.ts:99:57 › adopted pilot › all tabs, metrics, filters, details and activity messages ln (2.2s)
+  ok  9 tests\browser\services-work-pilot.browser.ts:99:57 › adopted pilot › all tabs, metrics, filters, details and activity messages sw (2.2s)
+  ok 10 tests\browser\services-work-pilot.browser.ts:125:57 › adopted pilot › loading, empty, failure, retry and denial fr (6.3s)
+  ok 11 tests\browser\services-work-pilot.browser.ts:125:57 › adopted pilot › loading, empty, failure, retry and denial en (6.3s)
+  ok 12 tests\browser\services-work-pilot.browser.ts:125:57 › adopted pilot › loading, empty, failure, retry and denial ln (6.3s)
+  ok 13 tests\browser\services-work-pilot.browser.ts:125:57 › adopted pilot › loading, empty, failure, retry and denial sw (6.4s)
+  ok 14 tests\browser\services-work-pilot.browser.ts:137:6 › adopted pilot › keyboard, navigation, direct links, return destination and unaffected views (3.4s)
+  ok 15 tests\browser\services-work-pilot.browser.ts:180:6 › adopted pilot › enlarged text, long list, pagination, focus and bottom clearance (18.3s)
+
+  15 passed (1.4m)

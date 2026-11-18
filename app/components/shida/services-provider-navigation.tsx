@@ -1,4 +1,5 @@
 "use client";
+import {BusinessFullscreen} from "./connected-business-workspace";
 import {SellerWorkspaceIcon} from "./services-workspace-icon";
 import type {ReactNode} from "react";
 import {useRouter} from "next/navigation";
@@ -17,5 +18,5 @@ export function ServicesProviderNavigation({locale,items,current,onNavigate,iden
  const visible=keys.filter(key=>items.includes(key)||key==='finance'&&items.includes('templates'));
  const destinations=visible.map(key=>({key,label:key==='available'?c.find:key==='activity'?c.activity:t[key as keyof typeof t],icon:icon[key]}));
  const choose=(key:string)=>onNavigate((key==='finance'&&!items.includes('finance')?'templates':key) as ProviderView);
- return <><div className="management-desktop-navigation"><SellerWorkspaceNavigation label={t.navigation} items={destinations} current={mapped} onNavigate={choose}/></div><ManagementMobileNavigation variant="services" identity={identity} locale={locale} items={destinations.filter(item=>item.key!=="activity")} primary={['overview','work','calendar']} current={mapped} onNavigate={choose} extra={<button type="button" className="svc-return-space" onClick={async event=>{const dialog=event.currentTarget.closest("dialog");if(!await leaveWork())return;dialog?.close();router.push(`${locale==="en"?"":"/"+locale}/shida/space`);}}><SellerWorkspaceIcon name="profile"/>{servicesMobileCopy(locale).back}<span aria-hidden="true">›</span></button>}/></>;
+ return <><div className="management-desktop-navigation"><SellerWorkspaceNavigation label={t.navigation} items={destinations} current={mapped} onNavigate={choose}/>{current==="work"&&<div className="svc-work-desktop-options"><BusinessFullscreen locale={locale} menu/></div>}</div><ManagementMobileNavigation variant="services" identity={identity} locale={locale} items={destinations.filter(item=>item.key!=="activity")} primary={['overview','work','calendar']} current={mapped} onNavigate={choose} extra={<button type="button" className="svc-return-space" onClick={async event=>{const dialog=event.currentTarget.closest("dialog");if(!await leaveWork())return;dialog?.close();router.push(`${locale==="en"?"":"/"+locale}/shida/space`);}}><SellerWorkspaceIcon name="profile"/>{servicesMobileCopy(locale).back}<span aria-hidden="true">›</span></button>}/></>;
 }

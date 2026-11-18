@@ -132,6 +132,14 @@ function BoundTransactions({issuer,accent,base,binding,locale,initialKind='reque
   if(pendingCommand.current||!(await leaveWork()))return;
   clear();setFilter(nextFilter);setMissionTab(missions);setOffset(0);setKind(next);setNotice('');
  }
+ const tabs=useRef<HTMLDivElement>(null);
+ useEffect(()=>{
+  const strip=tabs.current,selected=strip?.querySelector<HTMLElement>('[aria-pressed=true]');
+  if(!strip||!selected||!strip.closest('.shida-responsive'))return;
+  const outer=strip.getBoundingClientRect(),inner=selected.getBoundingClientRect();
+  if(inner.left<outer.left+6)strip.scrollLeft-=outer.left+6-inner.left;
+  else if(inner.right>outer.right-6)strip.scrollLeft+=inner.right-outer.right+6;
+ },[kind,missionTab,detail]);
  const pageSize=20;
  const scoped=(source:Kind)=>sources?.[source].filter(row=>(!offerings.length||offerings.some(item=>item.public_ref===row.offering_ref))&&(!service||row.offering_ref===service))??null;
  const filtered=(scoped(kind)||[]).filter(row=>workMatches(row,filter,kind)&&(!missionTab||workMatches(row,'jobs','reservations')||workMatches(row,'closed','reservations')));
@@ -151,7 +159,7 @@ function BoundTransactions({issuer,accent,base,binding,locale,initialKind='reque
  if(command.status==='denied')return <p role="alert">{t('denied')}</p>;
  return <section className="services-transactions svc-financial-panel svc-work" aria-label={t('workspace')}>
   {!detail&&<><ServicesWorkSummary requests={scoped('requests')} reservations={scoped('reservations')} locale={locale} onSelect={choose} failed={readFailed} disabled={busy||command.busy||!!command.pending}/>
-  <fieldset disabled={busy||command.busy||!!command.pending}><div className="svc-work-toolbar"><div className="svc-work-tabs" role="group" aria-label={t('workspace')}>{(['requests','reservations','missions','messages'] as const).map(tab=><button type="button" key={tab} aria-pressed={missionTab?tab==='missions':kind===tab} onClick={()=>choose(tab==='missions'?'reservations':tab,tab==='missions'?'jobs':'all',tab==='missions')}>{tab==='missions'?wt('missions'):tab==='requests'?wt('requestList'):t(tab)}</button>)}</div></div>
+  <fieldset disabled={busy||command.busy||!!command.pending}><div className="svc-work-toolbar"><div ref={tabs} className="svc-work-tabs" role="group" aria-label={t('workspace')}>{(['requests','reservations','missions','messages'] as const).map(tab=><button type="button" key={tab} aria-pressed={missionTab?tab==='missions':kind===tab} onClick={()=>choose(tab==='missions'?'reservations':tab,tab==='missions'?'jobs':'all',tab==='missions')}>{tab==='missions'?wt('missions'):tab==='requests'?wt('requestList'):t(tab)}</button>)}</div></div>
   <div className="svc-work-filters">{offerings.length>1&&<label>{wt('service')}<select value={service} onChange={e=>{setService(e.target.value);setOffset(0);}}><option value="">{wt('allServices')}</option>{offerings.map(row=><option key={row.public_ref} value={row.public_ref}>{row.service_name}</option>)}</select></label>}
   {kind!=='messages'&&<label>{wt('status')}<select value={filter} onChange={e=>{setFilter(e.target.value as WorkFilter);setOffset(0);}}>{(kind==='requests'?['all','new','quotes','sent','closed']:missionTab?['all','jobs','closed']:['all','bookings','closed']).map(value=><option key={value} value={value}>{wt(value)}</option>)}</select></label>}<button type="button" className="svc-icon-button" aria-label={t("refresh")} aria-busy={busy} disabled={busy||command.busy} onClick={()=>void refresh()}><ServicesRefreshIcon/></button></div></fieldset></>}
   {(busy||command.busy)&&<p role="status" aria-live="polite">{t('loading')}</p>}{notice&&<p role="status">{notice}</p>}
