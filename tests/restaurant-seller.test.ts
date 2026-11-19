@@ -35,6 +35,26 @@ describe("Personal Restaurant restricted gateway", () => {
   expect(validSellerQuery("", "GET", new URLSearchParams("status=draft&page=2&page_size=20&language=ln"))).toBe(true);
   for (const query of ["owner=USR_a", "business_id=2", "phone=123", "page=1&page=2", "page_size=100", "language=de"]) expect(validSellerQuery("", "GET", new URLSearchParams(query))).toBe(false);
  });
+ it("forwards the locale-free preparation routing read with the existing bound session and private cache policy", async () => {
+  const routing = { items: [{ item_ref: "RMI_a", station: "serve" }], has_more: false, revision };
+  const fetcher = vi.fn(async () => Response.json(routing)); vi.stubGlobal("fetch", fetcher);
+  const path = "RST_a/preparation-routing";
+  const result = await GET(req(path + "?page=1"), ctx(path));
+  expect(result.status).toBe(200); expect(await result.json()).toEqual(routing);
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  const [url, init] = fetcher.mock.calls[0] as unknown as [URL, RequestInit];
+  expect(url.pathname).toBe("/api/dashboard/personal/restaurants/RST_a/preparation-routing");
+  expect(url.search).toBe("?page=1"); expect(init.method).toBe("GET");
+  expect(init.headers).toMatchObject({ Cookie: `shida_dashboard_session=${token}` });
+  expect(init.cache).toBe("no-store"); expect(result.headers.get("cache-control")).toContain("no-store");
+ });
+ it.each(["fr", "en", "ln", "sw"])("still rejects an unsupported %s locale selector on preparation routing before any upstream read", async locale => {
+  const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
+  const path = "RST_a/preparation-routing";
+  const result = await GET(req(`${path}?page=1&language=${locale}`), ctx(path));
+  expect(result.status).toBe(422); expect(await result.json()).toEqual({ detail: "restaurant_invalid_input" });
+  expect(fetcher).not.toHaveBeenCalled();
+ });
  it("rejects absent/cross-site Origin on writes", async () => {
   const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
   for (const origin of ["", "https://other.example"]) expect((await POST(req("", "POST", {}, { origin }), ctx())).status).toBe(403);

@@ -20,7 +20,7 @@ import Link from "next/link";
 import {marketplaceEntryCopy} from "@/app/lib/marketplace-entry-copy";
 import {restaurantPath} from "@/app/lib/restaurant-i18n";
 import { Suspense, useEffect, useRef, useState, useCallback, type FormEvent } from "react";
-import { DashboardApiError } from "@/app/lib/restaurant-seller-browser";
+import { DashboardApiError, request } from "@/app/lib/restaurant-seller-browser";
 import type { RestaurantLocale } from "@/app/services/shida/restaurants-client";
 import { restaurantText } from "@/app/lib/restaurant-seller-copy";
 import { sellerDesignCopy } from "@/app/lib/restaurant-seller-design-copy";
@@ -150,7 +150,7 @@ export function RestaurantWorkspace({ binding, locale }: { binding: string; loca
     const linkedPreview=initialTab==='preview'?await readRestaurant<Establishment>(`${root}/${encodeURIComponent(ref)}/preview`,locale):null;
     const kitchen = availability?.capabilities.some(entry=>entry.capability==='restaurant.kitchen'&&entry.available) ?? false;
     const menu = ["items","categories"].includes(initialTab) ? await readRestaurant<Envelope<Page<Row>>>(`${root}/${encodeURIComponent(ref)}/menu/${initialTab}?page=1&page_size=20`, locale) : null;
-    const routes = initialTab === "items" ? await readRestaurant<RoutingPage>(`${root}/${encodeURIComponent(ref)}/preparation-routing?page=1`, locale).catch(() => null) : null;
+    const routes = initialTab === "items" ? await request(`${root}/${encodeURIComponent(ref)}/preparation-routing?page=1`, {}, binding).then(value => value as RoutingPage).catch(() => null) : null;
     if (alive.current) { setSelected(value); setCapabilities(availability?.capabilities.filter(entry=>entry.available).map(entry=>entry.capability) ?? []); setKitchenAvailable(kitchen);setPosAvailable(availability?.capabilities.some(entry=>entry.capability==='restaurant.pos'&&entry.available)??false); setTab(initialTab); setRows(menu?.result.items ?? []); setRoutingPage(routes); setRowPage(1); setRowTotal(menu?.result.total ?? 0); setHours(linkedHours?.result??null); setPreview(linkedPreview?.preview??null); }
   }
   async function loadTab(next: string, nextPage = 1, leavingEditor = false) {

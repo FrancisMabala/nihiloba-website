@@ -8,7 +8,7 @@ const stamp='2026-11-14T09:00:00Z';
 async function seed(page:Page){
  const category={public_ref:'RMC_one',name:'Plats',visible:true};
  const item={public_ref:'RMI_one',name:'Pondu avec accompagnement et une très longue description du plat',category,pricing_model:'UNIT_PRICED',currency:'CDF',unit_price:'3000.00',sale_unit_label:'assiette',availability:'available',visible:true,presentation:'fixed_dish',permanent:true,image_url:null,preparation_station:'serve',enable_blocker:null,menu_state:'available'};
- const state={failItems:false,revision:stamp,items:[item] as Record<string,unknown>[],lost:'',keys:new Map<string,unknown>(),writes:[] as {path:string;body:Record<string,unknown>}[],queries:[] as URLSearchParams[]};
+ const state={failItems:false,revision:stamp,items:[item] as Record<string,unknown>[],lost:'',keys:new Map<string,unknown>(),writes:[] as {path:string;body:Record<string,unknown>}[],queries:[] as URLSearchParams[],routingQueries:[] as string[]};
  const bump=()=>state.revision=new Date(Date.parse(state.revision)+1000).toISOString();
  const parent=()=>({public_ref:'RST_menu',revision:state.revision,status:'active',menu_currency:'CDF',location_confirmed:true,missing_publication_fields:[],actions:['read','edit','menu','hours','preview','links'],profile:{name:'Menu acceptance fixture',food_business_type:'malewa',city:'Kinshasa',commune:'Lemba',timezone_name:'Africa/Kinshasa'}});
  await page.route('**/api/**',async route=>{
@@ -22,6 +22,11 @@ async function seed(page:Page){
   if(p.endsWith('/restaurants'))return send({items:[parent()],total:1,page:1,page_size:20,actions:['create']});
   if(p.endsWith('/RST_menu'))return send(parent());
   if(p.endsWith('/menu/categories'))return send({revision:state.revision,currency:'CDF',result:{items:[category],total:1,page:1,page_size:50}});
+  if(req.method()==='GET'&&p.endsWith('/preparation-routing')){
+   state.routingQueries.push(url.search);
+   if(url.search!=='?page=1')return send({detail:'restaurant_invalid_input'},422);
+   return send({items:state.items.map(row=>({item_ref:row.public_ref,station:row.preparation_station})),has_more:false,revision:state.revision});
+  }
   if(req.method()==='GET'&&p.endsWith('/menu/items')){
    if(state.failItems)return send({},503);state.queries.push(url.searchParams);const rows=state.items.filter(row=>(!url.searchParams.get('search')||String(row.name).toLowerCase().includes(url.searchParams.get('search')!.toLowerCase()))&&(!url.searchParams.get('menu_state')||row.menu_state===url.searchParams.get('menu_state')));const start=(Number(url.searchParams.get('page')||1)-1)*20;
    return send({revision:state.revision,currency:'CDF',result:{items:rows.slice(start,start+20),total:rows.length,page:1,page_size:20}});
@@ -42,6 +47,23 @@ async function seed(page:Page){
  });return state;
 }
 async function enter(page:Page,locale:'fr'|'en'|'ln'|'sw'='fr'){await page.goto(`/${locale}/shida/seller/restaurants`);await managementNavigation(page,sellerDesignCopy[locale].menu);await expect(page.locator('.rst-menu-card')).toHaveCount(1);}
+for(const locale of ['fr','en','ln','sw'] as const)test(`Menu bootstrap keeps preparation routing locale-free ${locale}`,async({page,baseURL})=>{
+ if(!baseURL)throw new Error('Menu regression requires an isolated loopback baseURL.');
+ const target=new URL(baseURL);
+ if(!['http:','https:'].includes(target.protocol)||!['127.0.0.1','localhost','[::1]'].includes(target.hostname)||target.username||target.password)throw new Error('Menu regression requires an isolated loopback target.');
+ await page.context().route('**/*',route=>new URL(route.request().url()).origin===target.origin?route.continue():route.abort('blockedbyclient'));
+ const state=await seed(page),prefix=locale==='en'?'':`/${locale}`;
+ for(const width of [390,1440]){
+  state.routingQueries.length=0;
+  await page.setViewportSize({width,height:900});
+  await page.goto(`${prefix}/shida/seller/restaurants/?establishment=RST_menu&tab=items`);
+  await expect.poll(()=>state.routingQueries.length).toBeGreaterThan(0);
+  await expect(page.locator('.rst-menu-card')).toHaveCount(1);
+  expect(state.routingQueries.every(query=>query==='?page=1')).toBe(true);
+  await expect(page.locator('.rst-menu-card')).toContainText(String(state.items[0].name));
+  expect(state.writes).toHaveLength(0);
+ }
+});
 for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,390,820,1440])test(`menu layout ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:950});await seed(page);await enter(page,locale);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
