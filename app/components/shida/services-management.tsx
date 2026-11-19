@@ -199,7 +199,7 @@ export function ServicesManagement({binding,locale,accountName="",offeringRef=nu
   }
   if(previous&&current&&previous.ref===current.public_ref&&catalogDirty){setCatalogStale(true);return;}
   draftScope.current=current?{ref:current.public_ref,revision:current.revision}:null;
-  setCatalogStale(false);setSocialLink(current?.social_link??"");setDraft(draftFor(current));setPackageRef(null);setPackageDraft({});
+  setCatalogStale(false);setSocialLink(current?.social_link??"");setDraft(old=>!current&&Object.keys(old).length===0?old:draftFor(current));setPackageRef(null);setPackageDraft({});
  },[current,catalogDirty,draft]);
  useWorkDraft(pending!==null||(catalogDirty&&!(view==="calendar"&&calendarReturn)),ui.leave,lang);
  async function runOperation(operation:NonNullable<typeof pending>){

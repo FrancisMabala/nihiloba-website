@@ -25,6 +25,7 @@ const links = [
 export function Header({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const marketNav = useRef<HTMLElement>(null);
   useEffect(() => {
     const nav = marketNav.current;
@@ -90,7 +91,14 @@ export function Header({ locale }: { locale: Locale }) {
   }
 
   return (
-    <header className={shida ? "site-header shida-header" : "site-header"} lang={locale}>
+    <header className={shida ? "site-header shida-header" : "site-header"} lang={locale}
+      onKeyDown={event => {
+        if (open && event.key === "Escape") {
+          event.preventDefault();
+          setOpen(false);
+          menuButton.current?.focus();
+        }
+      }}>
       <div className="container nav-shell">
         <Link
           className="header-logo"
@@ -101,6 +109,7 @@ export function Header({ locale }: { locale: Locale }) {
         </Link>
 
         <button
+          ref={menuButton}
           className="menu-button"
           type="button"
           aria-expanded={open}

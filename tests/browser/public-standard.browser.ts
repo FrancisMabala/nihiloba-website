@@ -73,3 +73,110 @@ test('public chrome navigation, keyboard clearance and excluded routes',async({p
  await page.evaluate(()=>{Reflect.deleteProperty(window.visualViewport!,'height');window.visualViewport!.dispatchEvent(new Event('resize'));});await expect(page.locator('.shida-navigation')).toBeVisible();
  for(const route of ['/fr/shida/space/?view=listings&tab=meda','/fr/shida/register/']){await page.goto(route);await expect(page.locator('[data-public-marketplace]')).toHaveCount(0);}
 });
+
+async function isolatedGuest(page:Page,baseURL:string|undefined){
+ if(!baseURL)throw new Error('UX audit requires an explicitly configured isolated loopback baseURL.');
+ const target=new URL(baseURL);
+ if(!['http:','https:'].includes(target.protocol)||!['127.0.0.1','localhost','[::1]'].includes(target.hostname)||target.username||target.password){
+  throw new Error('UX audit may run only against the approved isolated loopback target.');
+ }
+ // Real guest requests reach the accepted synthetic Backend; never mock API outcomes.
+ // Block other ports/origins too, so the test cannot contact another local task.
+ await page.context().route('**/*',route=>{
+  const url=new URL(route.request().url());
+  return url.origin===target.origin?route.continue():route.abort('blockedbyclient');
+ });
+}
+
+for(const locale of ['en','fr'])test(`UX audit corporate navigation ${locale}`,async({page,context,baseURL})=>{
+ test.skip(baseline);await isolatedGuest(page,baseURL);
+ for(const width of [390,1440]){
+  await page.setViewportSize({width,height:900});await page.goto(`/${locale}/`);
+  await expect(page.locator('#home-title')).toBeVisible();
+  if(width===390){
+   const trigger=page.locator('.menu-button'),nav=page.locator('#primary-navigation');
+   await trigger.click();await expect(trigger).toHaveAttribute('aria-expanded','true');
+   await nav.getByRole('link').first().focus();await page.keyboard.press('Escape');
+   await expect(trigger).toHaveAttribute('aria-expanded','false');await expect(trigger).toBeFocused();
+   await expect(nav).toBeHidden();
+   await trigger.click();await nav.getByRole('link').nth(1).click();
+   await expect(page).toHaveURL(new RegExp(`/${locale}/about/?$`));
+   await expect(trigger).toHaveAttribute('aria-expanded','false');await page.goBack();
+  }
+  const transport=page.locator('.home-markets a[href*="/shida/transport"]');
+  await expect(transport).not.toHaveAttribute('target','_blank');
+  await expect(page.locator('.home-shida a[href^="https://wa.me/"]')).toHaveAttribute('target','_blank');
+  const pageCount=context.pages().length;
+  await transport.click();await expect(page).toHaveURL(new URL(`${locale==='en'?'':'/fr'}/shida/transport/`,baseURL).href);
+  await ready(page);expect(context.pages()).toHaveLength(pageCount);
+  await page.goBack();await expect(page).toHaveURL(new RegExp(`/${locale}/?$`));
+  await expect(page.locator('#home-title')).toBeVisible();await fits(page);
+ }
+});
+
+// These scoped cases use the coordinator's real accepted empty local Wenze fixture.
+// Browser requests remain on its origin; public GETs only, no seller/account mutation.
+for(const locale of ['en','fr','ln','sw'] as const)test(`UX audit Wenze empty state and shops controls ${locale}`,async({page,baseURL})=>{
+ test.skip(baseline);await isolatedGuest(page,baseURL);
+ const base=`${locale==='en'?'':'/'+locale}/shida/wenze/`;
+ const generic={en:'No listings are available yet.',fr:'Aucune annonce disponible pour le moment.',ln:'Piblisite ezali naino te awa.',sw:'Bado hakuna matangazo yanayopatikana.'}[locale]!;
+ for(const width of [320,390,1440]){
+  await page.setViewportSize({width,height:900});
+  for(const view of ['', '?view=shops']){
+   await page.goto(base+view);await ready(page);
+   const welcome=page.locator('.market-welcome');await expect(welcome).toBeVisible();
+   await expect(welcome.getByRole('status')).toHaveCount(1);
+   await expect(welcome.getByRole('status')).not.toHaveText(generic);
+   await expect(welcome.locator(':scope>p')).toHaveCount(1);
+   await expect(welcome.locator('.market-welcome-actions a')).toHaveCount(2);await fits(page);
+  }
+  const form=page.locator('.wzp-filters'),details=form.locator('.wzp-filter-bottom>details');
+  const summary=details.locator(':scope>summary'),clear=form.locator('.wzp-filter-bottom>a');
+  await summary.scrollIntoViewIfNeeded();
+  if(width<768){
+   const cityBox=(await form.locator('[name=city]').boundingBox())!,filterBox=(await summary.boundingBox())!,clearBox=(await clear.boundingBox())!;
+   expect(filterBox.width).toBeGreaterThanOrEqual(44);expect(filterBox.height).toBeGreaterThanOrEqual(44);
+   expect(cityBox.x+cityBox.width).toBeLessThanOrEqual(filterBox.x-7);
+   expect(Math.abs(cityBox.y-filterBox.y)).toBeLessThanOrEqual(1);
+   expect(clearBox.y).toBeGreaterThanOrEqual(Math.max(cityBox.y+cityBox.height,filterBox.y+filterBox.height));
+   expect(clearBox.height).toBeGreaterThanOrEqual(44);
+  }
+  await summary.click();await expect(details).toHaveAttribute('open','');
+  await expect(form.locator('[name=area]')).toBeVisible();await expect(form.locator('[name=category]')).toBeVisible();await fits(page);
+  const filterArea=(await form.locator('.marketplace-filter-grid').boundingBox())!,clearOpen=(await clear.boundingBox())!;
+  if(width<768)expect(clearOpen.y).toBeGreaterThanOrEqual(filterArea.y+filterArea.height);
+  await summary.click();await expect(details).not.toHaveAttribute('open','');
+  const categories=page.locator('.wz-category-browser'),categorySummary=categories.locator(':scope>details>summary'),strip=categories.locator(':scope>nav').first();
+  await categorySummary.scrollIntoViewIfNeeded();
+  if(width<768){
+   const stripBox=(await strip.boundingBox())!,categoryBox=(await categorySummary.boundingBox())!;
+   expect(stripBox.x+stripBox.width).toBeLessThanOrEqual(categoryBox.x-7);
+   expect(await categorySummary.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+8,r.y+r.height/2));})).toBe(true);
+   await strip.evaluate(el=>{el.scrollLeft=el.scrollWidth;});
+   const last=(await strip.locator('a').last().boundingBox())!;
+   expect(last.x+last.width).toBeLessThanOrEqual(stripBox.x+stripBox.width+1);
+  }
+  await categorySummary.click();await expect(categories.locator('.wz-all-categories')).toBeVisible();await fits(page);
+  await categorySummary.click();
+  await page.goto(base+'?view=shops&city=Goma&area=Centre&category=fashion_clothing');await ready(page);
+  await expect(form.locator('[name=city]')).toHaveValue('Goma');await expect(details).toHaveAttribute('open','');
+  await clear.click();await ready(page);expect(new URL(page.url()).search).toBe('?view=shops');
+  await expect(form.locator('[name=city]')).toHaveValue('');await expect(form.locator('[name=area]')).toHaveValue('');
+  await expect(form.locator('[name=category]')).toHaveValue('');await fits(page);
+ }
+});
+
+// The accepted runtime intentionally disables web registration. A public Meda
+// explanation must preserve sign-in without offering a link to its disabled page.
+for(const locale of ['en','fr','ln','sw'])test(`UX audit Meda guest registration availability ${locale}`,async({page,baseURL})=>{
+ test.skip(baseline);await isolatedGuest(page,baseURL);
+ const route=`${locale==='en'?'':'/'+locale}/shida/meda/`;
+ for(const width of [390,1440]){
+  await page.setViewportSize({width,height:900});await page.goto(route);await ready(page);
+  const access=page.locator('.meda-access');await expect(access).toBeVisible();
+  await expect(access.locator('.meda-actions>button')).toBeEnabled();
+  await expect(access.locator('a[href*="/shida/register/"]')).toHaveCount(0);
+  await expect(page.locator('.meda-search')).toHaveCount(0);
+  await expect(page.locator('.meda-invitation')).toBeVisible();await fits(page);
+ }
+});

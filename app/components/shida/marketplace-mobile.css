@@ -33,6 +33,11 @@
  body .market-surface .marketplace-public .mp-search :is(.active-search-filters,.rd-types,.mp-inventory-help){grid-column:1/-1}
  body .market-surface .marketplace-public .mp-search :is(.marketplace-filter-grid,.jobs-search-advanced,.rd-fields){grid-template-columns:minmax(0,1fr);gap:10px}
  body .market-surface .marketplace-public .mp-search .mp-inventory-help{padding:0;margin:0;border:0;background:none;font-size:.8125rem}
+ /* Shops use the same location/filter grid; their desktop flex wrapper must not
+    squeeze the disclosure and reset link into the narrow filter column. */
+ body .market-surface .marketplace-public .wzp-landing .wzp-filter-bottom{display:contents}
+ body .market-surface .marketplace-public .wzp-landing .wzp-filter-bottom>details>summary{height:auto}
+ body .market-surface .marketplace-public .wzp-landing .wzp-filter-bottom>a{grid-column:1/-1;display:flex;align-items:center;justify-self:start;min-height:44px}
  body .market-surface .marketplace-public .mp-inventory-help summary{min-height:44px;display:flex;align-items:center;text-decoration:underline;cursor:pointer}
  body .market-surface .marketplace-public .mp-inventory-help p{margin:6px 0}
  body .market-surface .marketplace-public :is(.mp-chips,.rd-types){display:flex;flex-wrap:nowrap;overflow-x:auto;max-width:100%;min-width:0;gap:8px;scrollbar-width:thin;padding:0 0 4px;margin:8px 0}

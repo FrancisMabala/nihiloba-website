@@ -15,6 +15,7 @@ async function fixture(page:Page){
   if(path.endsWith('/employment/session'))return state.signedIn?reply({binding:state.binding,user:{display_name:'Pilot Customer'}}):reply({},401);
   if(path==='/api/shida/personal/services'){state.profileReads++;return reply({profiles:state.profiles},state.status);}
   if(path.endsWith('/personal/services/capabilities'))return reply({capabilities:state.capabilities},state.status);
+  if(path.endsWith('/personal/services/onboarding')&&request.method()==='GET')return reply({progress:[],professional_profile:null,remaining_capacity:5});
   if(path.endsWith('/service-requests/briefs'))return reply({briefs:[],has_more:false});
   if(path.endsWith('/service-requests/postings'))return reply({requests:[],next_ref:null});
   if(path.endsWith('/employment/logout')){state.signedIn=false;return reply({authenticated:false});}
@@ -49,4 +50,30 @@ test('guest hero preserves new French request through WhatsApp code sign-in',asy
  await page.getByLabel(t.codeLabel).fill('610294');await page.getByRole('button',{name:t.verify,exact:true}).click();
  await expect(page.getByRole('region',{name:requestWords('fr').title,exact:true})).toBeVisible();
  await expect(page.locator('input[type=file]')).toHaveCount(0);expect(new URL(page.url()).searchParams.get('new')).toBe('1');
+});
+
+for(const locale of ['en','fr','ln','sw'] as const)test(`empty Services setup settles and opens its first-service entry without writes ${locale}`,async({page})=>{
+ const state=await fixture(page),consoleErrors:string[]=[],pageErrors:string[]=[];
+ page.on('console',message=>{if(message.type()==='error')consoleErrors.push(message.text());});
+ page.on('pageerror',error=>pageErrors.push(error.message));
+ const prefix=locale==='en'?'':`/${locale}`;
+ for(const width of [390,1440]){
+  await page.setViewportSize({width,height:900});await page.goto(`${prefix}/shida/seller/services/`);
+  await expect(page.locator('.svc-provider-setup')).toBeVisible();
+  await expect(page.locator('.svc-setup-start')).toBeEnabled();
+  // Observe more than one passive-effect cycle: a visible setup alone concealed
+  // the baseline loop, which repeatedly logged errors while retaining its UI.
+  await page.waitForTimeout(300);
+  expect(consoleErrors.filter(message=>message.includes('Maximum update depth exceeded'))).toEqual([]);
+  await page.locator('.svc-setup-start').click();
+  await expect(page.locator('.svc-onboarding')).toBeVisible();
+  await expect(page.locator('.svc-onboarding')).toHaveAttribute('aria-busy','false');
+  await expect(page.locator('.svc-onboarding-main>button')).toBeEnabled();
+  expect(state.writes).toBe(0);
+  await page.locator('.wz-header-brand').click();await expect(page).toHaveURL(new RegExp(`${prefix}/shida/services/?$`));
+  await page.goto(`${prefix}/shida/seller/services/`);await expect(page.locator('.svc-provider-setup')).toBeVisible();
+  await page.waitForTimeout(300);
+  expect(consoleErrors.filter(message=>message.includes('Maximum update depth exceeded'))).toEqual([]);
+  expect(pageErrors).toEqual([]);expect(state.writes).toBe(0);
+ }
 });
