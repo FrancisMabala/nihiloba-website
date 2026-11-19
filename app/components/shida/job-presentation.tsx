@@ -74,15 +74,15 @@ const detailCopy={...baseDetailCopy,
  sw:{summary:"Muhtasari",responsibilities:"Majukumu",qualifications:"Sifa",experience:"Uzoefu",education:"Elimu na mafunzo",skills:"Ujuzi",qualities:"Sifa binafsi",languages:"Lugha",benefits:"Manufaa",conditions:"Masharti ya kazi",social:"Kiungo cha mwajiri",source:"Chanzo cha kazi",overview:"Muhtasari wa kazi",years:(value:number)=>`Angalau miaka ${value}`}
 };
 
-function jobPath(locale:Locale,item:Pick<PublicJobSummary,"slug"|"public_ref">){return marketplacePath(locale,`/shida/emplois/${encodeURIComponent(item.slug||item.public_ref)}`);}
-function employerPath(locale:Locale,item:PublicJobEmployerSummary){const key=publicJobEmployerKey(item);return key?marketplacePath(locale,`/shida/emplois/employeurs/${encodeURIComponent(key)}`):null;}
+export function jobPath(locale:Locale,item:Pick<PublicJobSummary,"slug"|"public_ref">){return marketplacePath(locale,`/shida/emplois/${encodeURIComponent(item.slug||item.public_ref)}`);}
+export function employerPath(locale:Locale,item:PublicJobEmployerSummary){const key=publicJobEmployerKey(item);return key?marketplacePath(locale,`/shida/emplois/employeurs/${encodeURIComponent(key)}`):null;}
 export function employerLocation(item:PublicJobEmployerSummary){return publicLocation(item.area,item.city);}
 function initials(name:string){return name.split(/\s+/).filter(Boolean).slice(0,2).map((part)=>part[0]?.toUpperCase()).join("")||"SH";}
 function displayDate(value:string|null,locale:Locale){if(!value)return null;const date=new Date(value);return Number.isNaN(date.getTime())?null:new Intl.DateTimeFormat(locale,{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(date);}
 // The public API's external_verified flag reflects metadata presence, not an
 // independent verification of the employer or vacancy.
-function originLabel(item:PublicJobSummary,locale:Locale){return item.origin==="external"?({fr:"Offre externe",en:"External offer",ln:"Mosala ya libándá",sw:"Nafasi kutoka nje"})[locale]:({en:"Published on SHIDA",fr:"Publié sur SHIDA",ln:"Epesami na SHIDA",sw:"Imechapishwa kwenye SHIDA"})[locale];}
-function organizationLabel(item:PublicJobSummary,locale:Locale){if(item.origin!=="direct"||!item.organization_verified)return null;return item.organization_verified_label||(({fr:"Organisation vérifiée",en:"Verified organization",ln:"Ebongiseli oyo endimami",sw:"Shirika lililothibitishwa"})[locale]);}
+export function originLabel(item:PublicJobSummary,locale:Locale){return item.origin==="external"?({fr:"Offre externe",en:"External offer",ln:"Mosala ya libándá",sw:"Nafasi kutoka nje"})[locale]:({en:"Published on SHIDA",fr:"Publié sur SHIDA",ln:"Epesami na SHIDA",sw:"Imechapishwa kwenye SHIDA"})[locale];}
+export function organizationLabel(item:PublicJobSummary,locale:Locale){if(item.origin!=="direct"||!item.organization_verified)return null;return item.organization_verified_label||(({fr:"Organisation vérifiée",en:"Verified organization",ln:"Ebongiseli oyo endimami",sw:"Shirika lililothibitishwa"})[locale]);}
 export function contractLabel(value: string | null, locale: Locale) {
   const key = value?.trim().toLowerCase();
   if (key === 'cdi' || key === 'cdd') return key.toUpperCase();
@@ -91,9 +91,9 @@ export function contractLabel(value: string | null, locale: Locale) {
   return humanize(value);
 }
 function humanize(value:string|null){return value?value.replaceAll("_"," ").replace(/^./,(letter)=>letter.toUpperCase()):null;}
-function jobFactText(value:string,locale:Locale){const labels:Record<string,Record<Locale,string>>={full_time:{en:"Full time",fr:"Temps plein",ln:"Ntango nyonso",sw:"Muda wote"},part_time:{en:"Part time",fr:"Temps partiel",ln:"Ndambu ya ntango",sw:"Muda wa sehemu"},hybrid:{en:"Hybrid",fr:"Hybride",ln:"Na esika mpe mosika",sw:"Mchanganyiko"},remote:{en:"Remote",fr:"À distance",ln:"Mosika",sw:"Kwa mbali"},onsite:{en:"On site",fr:"Sur place",ln:"Na esika",sw:"Mahali pa kazi"},weekend:{en:"Weekend",fr:"Week-end",ln:"Nsuka ya poso",sw:"Mwisho wa wiki"}};return labels[value]?.[locale]||humanize(value);}
+export function jobFactText(value:string,locale:Locale){const labels:Record<string,Record<Locale,string>>={full_time:{en:"Full time",fr:"Temps plein",ln:"Ntango nyonso",sw:"Muda wote"},part_time:{en:"Part time",fr:"Temps partiel",ln:"Ndambu ya ntango",sw:"Muda wa sehemu"},hybrid:{en:"Hybrid",fr:"Hybride",ln:"Na esika mpe mosika",sw:"Mchanganyiko"},remote:{en:"Remote",fr:"À distance",ln:"Mosika",sw:"Kwa mbali"},onsite:{en:"On site",fr:"Sur place",ln:"Na esika",sw:"Mahali pa kazi"},weekend:{en:"Weekend",fr:"Week-end",ln:"Nsuka ya poso",sw:"Mwisho wa wiki"}};return labels[value]?.[locale]||humanize(value);}
 function salaryText(salary:PublicJobSalary|null,locale:Locale){if(!salary)return null;const format=(value:string|null)=>{if(!value)return null;const number=Number(value);return Number.isFinite(number)?new Intl.NumberFormat(locale,{maximumFractionDigits:2}).format(number):value;};const min=format(salary.minimum),max=format(salary.maximum),amount=min&&max&&min!==max?`${min}–${max}`:min||max;if(!amount)return null;return `${amount}${salary.currency?` ${salary.currency}`:""}${salary.period?` / ${compensationPeriod(salary.period,locale)}`:""}`;}
-function cardCompensation(item:PublicJobSummary,locale:Locale){if(item.salary_visibility==="hidden")return null;const structured=salaryText(item.salary,locale);if(item.offer_type==="enterprise")return structured;return structured||item.compensation;}
+export function cardCompensation(item:PublicJobSummary,locale:Locale){if(item.salary_visibility==="hidden")return null;const structured=salaryText(item.salary,locale);if(item.offer_type==="enterprise")return structured;return structured||item.compensation;}
 function matchingExternalAction(item:PublicJobSummary){const action=item.application.external_action;if(item.origin!=="external"||!item.application.available||!action)return null;if(item.application.capability==="external_redirect"&&action.mode==="redirect"&&action.action==="redirect")return action;if(item.application.capability==="external_instructions"&&action.mode==="instructions"&&action.action==="instructions")return action;return null;}
 function directApplicationUrl(item:PublicJobSummary){return item.origin==="direct"&&item.application.available&&item.application.capability==="shida_application"&&item.application.mode==="shida"?safePublicActionUrl(item.application.apply_url):null;}
 function hasRecruitmentContact(item: PublicJobSummary) {
@@ -144,17 +144,17 @@ const factsCopy = {
 };
 function DetailItem({label,value}:{label:string;value:string|number|null}){return value!=null&&value!==""?<div><dt>{label}</dt><dd>{value}</dd></div>:null;}
 
-export function JobDetailContent({locale,item,similar}:{locale:Locale;item:PublicJob;similar:PublicJobSummary[]}) {
-  const t=copy[locale],d=detailCopy[locale],u=jobDiscoveryCopy[locale];
+export function JobDetailContent({locale,item,similar,embedded=false}:{locale:Locale;item:PublicJob;similar:PublicJobSummary[];embedded?:boolean}) {
+  const t=copy[locale],d=detailCopy[locale],u=jobDiscoveryCopy[locale],Title=embedded?"h2":"h1",Content=embedded?"div":"main";
   const location=jobLocation(item),published=displayDate(item.published_at,locale),deadline=displayDate(item.application_deadline,locale),start=displayDate(item.start_date,locale),social=safePublicExternalUrl(item.public_social_link),source=safePublicExternalUrl(item.external_source?.canonical_url),href=jobPath(locale,item),salary=cardCompensation(item,locale),experience=experienceText(item,locale),inactive=["expired","archived","closed","source_invalid"].includes(item.lifecycle_state);
   const structuredValues=[item.short_summary,item.responsibilities,item.qualifications,experience,item.education,item.skills,item.personal_qualities,item.languages,item.benefits,item.employment_conditions],hasStructuredContent=structuredValues.some((value)=>Boolean(value?.trim())),legacyFallback=hasStructuredContent?null:item.description_fallback||item.description;
   if(item.origin==='direct'&&item.offer_type==='individual'){
     const c=individualApplicationCopy[locale],timing=missionTiming(item.duration_frequency,locale);
     const facts=[[t.compensation,item.salary_visibility==="hidden"?null:item.salary?.period?salary:item.compensation||salary],[missionText(locale,'frequency'),timing.condition],[missionText(locale,'daysLabel'),timing.days],[individualEligibilityCopy[locale].schedule,item.work_schedule],[individualEligibilityCopy[locale].start,start]].filter(([,value])=>value);
     return <section className="section mission-public-section"><div className="container mission-public">
-     <JobResultsLink href={marketplacePath(locale,'/shida/emplois')} locale={locale}/>
+     {!embedded&&<JobResultsLink href={marketplacePath(locale,'/shida/emplois')} locale={locale}/>}
      <div className="mission-public-status"><span className="job-type-label">{listingText(locale,'jobType')}</span></div>
-     <h1>{item.title}</h1>{location&&<p>{location}</p>}
+     <Title>{item.title}</Title>{location&&<p>{location}</p>}
      <IndividualJobAction key={`${item.public_ref}:${item.lifecycle_state}:${hasSupportedApplication(item)}`} locale={locale} reference={item.public_ref} available={hasSupportedApplication(item)} lifecycle={item.lifecycle_state}/>
      {facts.length>0&&<dl className="mission-public-facts">{facts.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
      <section className="mission-card"><h2>{listingText(locale,'mission')}</h2><OfferText value={item.short_summary||item.description_fallback||item.description||''}/>
@@ -173,9 +173,9 @@ export function JobDetailContent({locale,item,similar}:{locale:Locale;item:Publi
   return <>
     {item.origin==="external"&&<JobViewTracker jobReference={item.public_ref}/>}
     <section className="marketplace-detail-hero job-detail-hero"><div className="container">
-      <nav className="job-detail-return"><JobResultsLink href={marketplacePath(locale,"/shida/emplois")} locale={locale}/><Link href={jobSearchPath(locale)}>{jobSearchCopy[locale].title} →</Link></nav>
+      {!embedded&&<nav className="job-detail-return"><JobResultsLink href={marketplacePath(locale,"/shida/emplois")} locale={locale}/><Link href={jobSearchPath(locale)}>{jobSearchCopy[locale].title} →</Link></nav>}
       <div className="job-detail-labels"><span className="job-type-label">{item.offer_type==="enterprise"?u.company:listingText(locale,'jobType')}</span>{item.origin==="external"&&<span className="job-origin-label job-origin-external">{{fr:'Offre externe',en:'External offer',ln:'Mosala ya libándá',sw:'Nafasi kutoka nje'}[locale]}</span>}{organizationLabel(item,locale)&&<span className="job-origin-label">{organizationLabel(item,locale)}</span>}{stateText&&<strong className="job-lifecycle-state" role="status">{stateText}</strong>}</div>
-      <div className="job-detail-title"><JobCategoryIcon category={item.professional_category||item.category} individual={item.offer_type==="individual"}/><h1>{item.title}</h1></div>
+      <div className="job-detail-title"><JobCategoryIcon category={item.professional_category||item.category} individual={item.offer_type==="individual"}/><Title>{item.title}</Title></div>
       <div className="job-detail-identity">{item.offer_type==="enterprise"?<EmployerIdentity employer={item.employer} locale={locale}/>:<p className="job-personal-employer">{t.personalEmployer}</p>}<span id="detail-follow-control"/>
         {employerOffers && <ButtonLink href={employerOffers} variant="text">{t.employerProfile}</ButtonLink>}
       </div>
@@ -188,7 +188,7 @@ export function JobDetailContent({locale,item,similar}:{locale:Locale;item:Publi
       <div className="job-detail-primary-actions"><JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin={item.origin} canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save} canFollow={item.relationship_capabilities.can_follow_employer} showFollow={!employerOffers}/>{published && <span>{t.published} {published}</span>}</div>
     </div></section>
     <section className="section"><div className="container job-detail-layout">
-      <main className="job-detail-content">
+      <Content className="job-detail-content">
         <StructuredJobSection title={d.summary} value={item.short_summary}/>
         <StructuredJobSection title={d.responsibilities} value={item.responsibilities}/>
         <StructuredJobSection title={d.qualifications} value={item.qualifications}/>
@@ -210,10 +210,10 @@ export function JobDetailContent({locale,item,similar}:{locale:Locale;item:Publi
         </dl>}
         {item.origin === 'external' && <StructuredJobSection title={factsCopy[locale].instructions} value={item.external_source?.application_instructions || null}/>}
         {item.origin==="external"&&item.external_source&&<section className="job-external-source"><h2>{d.source}</h2><p>{item.external_source.explanation}</p>{source&&<a href={source} target="_blank" rel="noopener noreferrer">{item.external_source.source_label}</a>}</section>}
-        <section className="job-final-action"><ButtonLink href={marketplacePath(locale,"/shida/emplois")} variant="text">{inactive?(({fr:"Voir des offres similaires",en:"View similar jobs",ln:"Tala misala ya ndenge moko",sw:"Tazama kazi zinazofanana"})[locale]):t.back}</ButtonLink></section>
-      </main>
+        {!embedded&&<section className="job-final-action"><ButtonLink href={marketplacePath(locale,"/shida/emplois")} variant="text">{inactive?(({fr:"Voir des offres similaires",en:"View similar jobs",ln:"Tala misala ya ndenge moko",sw:"Tazama kazi zinazofanana"})[locale]):t.back}</ButtonLink></section>}
+      </Content>
       <aside className="job-detail-sidebar"><section className="job-application-panel" id="job-application"><h2>{u.applicationSection}</h2>{directAction&&<><p>{u.handoff}</p><p className="job-application-account">{u.account}</p></>}{(!inactive&&applyButton&&<JobMobileApplication>{applyButton}</JobMobileApplication>)||<p className="marketplace-action-unavailable">{t.actionUnavailable}</p>}{item.origin==='external'&&!inactive&&<p className="job-no-profile">{{fr:'Aucun profil de chercheur d’emploi SHIDA requis pour postuler.',en:'No SHIDA jobseeker profile is required to apply.',ln:'Profil ya moluki mosala ya SHIDA esengami te mpo na kotinda bosɛngi.',sw:'Wasifu wa mtafuta kazi wa SHIDA hauhitajiki kutuma ombi.'}[locale]}</p>}{directAction&&<Link href={marketplacePath(locale,`/shida/space?view=candidate&job=${encodeURIComponent(item.public_ref)}`)}>{candidateCopy[locale].title}</Link>}{item.origin!=="external"&&<Link className="job-my-applications" href={jobSearchPath(locale,'applications')}>{u.applications} →</Link>}</section><section className="job-applicant-safety"><p><SpaceIcon name="warning"/><span>{u.safety}</span></p><JobReportLink locale={locale} jobReference={item.public_ref} reportUrl={item.report_url}/></section></aside>
     </div></section>
-    {similar.length>0&&<section className="section job-similar"><div className="container"><h2>{u.similar}</h2><div className="job-result-list">{similar.map(other=><JobCard key={other.public_ref} item={other} locale={locale}/>)}</div></div></section>}
+    {!embedded&&similar.length>0&&<section className="section job-similar"><div className="container"><h2>{u.similar}</h2><div className="job-result-list">{similar.map(other=><JobCard key={other.public_ref} item={other} locale={locale}/>)}</div></div></section>}
   </>;
 }

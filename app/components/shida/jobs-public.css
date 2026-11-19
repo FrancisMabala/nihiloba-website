@@ -187,7 +187,8 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
 .employer-page {padding-block:clamp(1.25rem,3vw,3rem);color:#14392d}
 .employer-back,.employer-entry-links>a:last-child,.employer-vacancies>a {font-weight:650;text-decoration:underline;text-underline-offset:.18em}
 .employer-title-row,.employer-entry-links {display:flex;align-items:center;flex-wrap:wrap;gap:1rem}
-.employer-title-row {margin:1.5rem 0 .75rem}
+.employer-title-row {margin:1.5rem 0 .75rem;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start}
+.employer-title-row>.job-relationship-actions {justify-self:end;min-width:0;max-width:100%}
 .employer-heading {display:flex;align-items:center;gap:1rem;flex:1;min-width:0}
 .employer-page h1,.employer-page h2 {font-family:Georgia,serif;font-weight:600}
 .employer-title-row h1 {font-size:clamp(1.65rem,4.3vw,3.6rem);margin:0;min-width:0;overflow-wrap:anywhere;word-break:normal}
@@ -238,3 +239,18 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
 .job-offer-facts dd,.job-other-facts dd {margin:.2rem 0 0;font-weight:650;overflow-wrap:anywhere}
 .job-other-facts {display:flex;flex-wrap:wrap;gap:1rem 2rem}
 @media(max-width:600px){.job-offer-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Jobs owns its pagination layout: shared marketplace span rules stack all
+   three controls in the same mobile grid cell. Keep each control explicit. */
+.jobs-pagination {display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:.75rem;margin:1.5rem 0;color:#14392d;font-size:.9375rem}
+.jobs-pagination :is(.jobs-page-previous,.jobs-page-next) {display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.65rem 1rem;border:1px solid #bdc9bb;border-radius:6px;background:#fffdf8;font-weight:600;line-height:1.35;overflow-wrap:anywhere;text-align:center}
+.jobs-pagination .jobs-page-previous {justify-self:start}
+.jobs-pagination .jobs-page-next {justify-self:end}
+.jobs-pagination [aria-disabled] {color:#5b655d;background:#efeee7;border-color:#d7d7cb}
+.jobs-pagination .jobs-page-position {text-align:center;color:#314d3f;line-height:1.4}
+.jobs-pagination a:hover {background:#edf1e6;border-color:#14392d}
+@media(max-width:600px) {
+ .jobs-pagination {grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+ .jobs-pagination .jobs-page-position {grid-column:1/-1;grid-row:1}
+ .jobs-pagination :is(.jobs-page-previous,.jobs-page-next) {grid-row:2;justify-self:stretch;padding:.65rem .5rem}
+}
