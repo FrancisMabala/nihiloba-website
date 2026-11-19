@@ -7,7 +7,7 @@ import {restaurantText} from '../../lib/restaurant-seller-copy';
 import {leaveWork} from '../../lib/restaurant-work';
 import './restaurant-panel-recovery.css';
 
-type Recovery={locale:RestaurantLocale;scope:string;onBack:()=>void;backLabel?:string};
+type Recovery={locale:RestaurantLocale;scope:string;onBack:()=>void;backLabel?:string;backToMarketplace?:boolean};
 export const RestaurantPanelRecoveryContext=createContext<Recovery|null>(null);
 
 class DownloadBoundary extends Component<{children:ReactNode;fallback:ReactNode},{error:unknown}> {
@@ -36,7 +36,7 @@ function RecoveryNotice({context,onRetry,attempts}:{context:Recovery;onRetry:()=
   if(allowed)window.location.reload();else setLeaving(false);
  }
  return <div ref={notice} tabIndex={-1} role="alert" className="rst-card rst-panel-recovery">
-  <h2>{copy.title}</h2><p>{copy.help}</p>
+  <h2>{copy.title}</h2><p>{context.backToMarketplace?copy.publicHelp:copy.help}</p>
   <div className="rst-actions">
    <button type="button" className="button button-primary" disabled={leaving} onClick={onRetry}>{copy.retry}</button>
    <button type="button" className="button button-secondary" disabled={leaving} onClick={context.onBack}>{context.backLabel??copy.back}</button>

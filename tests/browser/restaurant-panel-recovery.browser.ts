@@ -9,6 +9,7 @@ import {sellerDesignCopy} from '../../app/lib/restaurant-seller-design-copy';
 import {workflowText} from '../../app/lib/restaurant-workflow-copy';
 import {workText} from '../../app/lib/restaurant-work-copy';
 import {restaurantText} from '../../app/lib/restaurant-seller-copy';
+import {restaurantPath} from '../../app/lib/restaurant-i18n';
 
 type Locale=keyof typeof restaurantPanelRecoveryCopy;
 const destinations=[
@@ -45,6 +46,19 @@ async function shell(page:Page){
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 }
 
+async function failLandingDownload(page:Page){
+ const state={fail:true};
+ // SellerLanding also appears in other marketplace entry bundles. Inspect the
+ // requested local asset instead of assuming its marker is unique on disk.
+ await page.route('**/_next/static/chunks/**',async route=>{
+  if(!new URL(route.request().url()).pathname.endsWith('.js'))return route.fallback();
+  const response=await route.fetch();
+  if(state.fail&&(await response.text()).includes('ssl-entry'))return route.abort('failed');
+  return route.fulfill({response});
+ });
+ return state;
+}
+
 if(process.env.PANEL_RECOVERY_BASELINE==='1')for(const width of [390,1440])test(`baseline actual Orders chunk failure ${width}`,async({page})=>{
  await restaurantPanelFixture(page);await page.setViewportSize({width,height:900});
  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
@@ -68,6 +82,36 @@ if(process.env.PANEL_RECOVERY_BASELINE==='1')for(const width of [390,1440])test(
 // The application must not add retries; assert the exact runtime-specific bound.
 const requestsPerFailure=readdirSync('.next/static/chunks').some(file=>file.startsWith('turbopack-'))?2:1;
 if(process.env.PANEL_RECOVERY_BASELINE!=='1'){
+ const publicHelp={fr:'Réessayez ou revenez au marché.',en:'Try again or return to the marketplace.',ln:'Meka lisusu to zonga na zando.',sw:'Jaribu tena au rudi sokoni.'};
+ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [390,1440])test(`signed-out recovery returns to the public marketplace ${locale} ${width}`,async({page})=>{
+  const account=await restaurantPanelFixture(page);account.logout=true;
+  await page.setViewportSize({width,height:900});
+  const state=await failLandingDownload(page);
+  const entry=`${locale==='en'?'':`/${locale}`}/shida/seller/restaurants/`;
+  await page.goto(entry);
+  const recovery=page.locator('.rst-panel-recovery'),copy=restaurantPanelRecoveryCopy[locale];
+  await expect(recovery).toContainText(publicHelp[locale]);
+  await expect(recovery).not.toContainText(copy.help);
+  await expect(recovery).toBeFocused();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  if(process.env.PERF_OUTPUT){
+   mkdirSync(process.env.PERF_OUTPUT,{recursive:true});
+   await page.screenshot({path:join(process.env.PERF_OUTPUT,`signed-out-recovery-${locale}-${width}.png`),fullPage:true});
+  }
+  state.fail=false;
+  await recovery.getByRole('button',{name:copy.retry,exact:true}).click();
+  await expect(page.locator('.ssl-entry')).toBeVisible();
+  await expect(page.locator('.ssl-browse')).toHaveAttribute('href',new RegExp('^'+restaurantPath(locale)+'/?$'));
+  await expect(page).toHaveURL(new RegExp(entry+'$'));
+  // A fresh document makes the lazy asset unavailable again, so the recovery
+  // action itself must reach the existing public destination in this locale.
+  state.fail=true;await page.reload();
+  await expect(recovery).toContainText(publicHelp[locale]);
+  await recovery.getByRole('button',{name:copy.back,exact:true}).click();
+  await expect(page).toHaveURL(new RegExp(restaurantPath(locale)+'/?$'));
+  await expect(page.locator('.rst-panel-recovery')).toHaveCount(0);
+ });
+
  for(const width of [390,1440])for(const destination of destinations)test(`failed ${destination.tab} download retries in place ${width}`,async({page})=>{
   await restaurantPanelFixture(page);await page.setViewportSize({width,height:900});
   const scripts:string[]=[];page.on('request',request=>{if(request.resourceType()==='script')scripts.push(new URL(request.url()).pathname);});
@@ -76,6 +120,8 @@ if(process.env.PANEL_RECOVERY_BASELINE!=='1'){
   await managementNavigation(page,destination.name('fr'));
   const recovery=page.locator('.rst-panel-recovery');
   await expect(recovery).toContainText(restaurantPanelRecoveryCopy.fr.title);
+  await expect(recovery).toContainText(restaurantPanelRecoveryCopy.fr.help);
+  await expect(recovery).not.toContainText(restaurantPanelRecoveryCopy.fr.publicHelp);
   await expect(recovery).toBeFocused();await shell(page);
   await expect(recovery).not.toContainText(/chunk|\.js|offline|hors ligne/i);
   await page.waitForTimeout(800);expect(state.attempts).toBe(requestsPerFailure);
@@ -99,6 +145,7 @@ if(process.env.PANEL_RECOVERY_BASELINE!=='1'){
   const state=await failDownload(page);await managementNavigation(page,workText(locale,'orders'));
   const recovery=page.locator('.rst-panel-recovery'),copy=restaurantPanelRecoveryCopy[locale];
   await expect(recovery).toContainText(copy.title);await expect(recovery).toBeFocused();
+  await expect(recovery).toContainText(copy.help);await expect(recovery).not.toContainText(copy.publicHelp);
   await page.keyboard.press('Tab');await expect(recovery.getByRole('button',{name:copy.retry,exact:true})).toBeFocused();
   await page.keyboard.press('Enter');await expect(recovery).toContainText(copy.reloadHelp);
   await expect(recovery.getByRole('button',{name:copy.reload,exact:true})).toBeVisible();
