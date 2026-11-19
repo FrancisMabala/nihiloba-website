@@ -131,7 +131,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`UX audit Wenze empty st
    await expect(welcome.locator('.market-welcome-actions a')).toHaveCount(2);await fits(page);
   }
   const form=page.locator('.wzp-filters'),details=form.locator('.wzp-filter-bottom>details');
-  const summary=details.locator(':scope>summary'),clear=form.locator('.wzp-filter-bottom>a');
+  const summary=details.locator(':scope>summary'),clear=form.locator('.wzp-filter-bottom>.wzp-clear-filters');
   await summary.scrollIntoViewIfNeeded();
   if(width<768){
    const cityBox=(await form.locator('[name=city]').boundingBox())!,filterBox=(await summary.boundingBox())!,clearBox=(await clear.boundingBox())!;
@@ -163,6 +163,42 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`UX audit Wenze empty st
   await clear.click();await expect.poll(()=>new URL(page.url()).search).toBe('?view=shops');await ready(page);
   await expect(form.locator('[name=city]')).toHaveValue('');await expect(form.locator('[name=area]')).toHaveValue('');
   await expect(form.locator('[name=category]')).toHaveValue('');await fits(page);
+ }
+});
+
+// Native reset clears unsent shop filters without navigating or changing applied-filter semantics.
+for(const locale of ['en','fr','ln','sw'] as const)test(`UX audit Wenze unsent shops filters reset ${locale}`,async({page,baseURL})=>{
+ await isolatedGuest(page,baseURL);
+ const base=`${locale==='en'?'':'/'+locale}/shida/wenze/`,canonical=new URL(base+'?view=shops',baseURL).href;
+ const label={en:'Clear filters',fr:'Effacer les filtres',ln:'Longola baponami',sw:'Ondoa vichujio'}[locale];
+ for(const width of [390,1440]){
+  await page.setViewportSize({width,height:900});await page.goto(canonical);await ready(page);
+  const form=page.locator('.wzp-filters'),details=form.locator('.wzp-filter-bottom>details');
+  const clear=form.getByRole('button',{name:label,exact:true});
+  await expect(clear).toHaveAttribute('type','reset');
+  await details.locator(':scope>summary').click();await expect(details).toHaveAttribute('open','');
+  const bounds=(await clear.boundingBox())!;expect(bounds.width).toBeGreaterThanOrEqual(44);expect(bounds.height).toBeGreaterThanOrEqual(44);
+  for(let attempt=0;attempt<2;attempt++){
+   await form.locator('[name=query]').fill('chemise');await form.locator('[name=city]').fill('Kinshasa');
+   await form.locator('[name=area]').fill('Gombe');await form.locator('[name=category]').selectOption('fashion_clothing');
+   await expect(page).toHaveURL(canonical);
+   if(attempt===0)await clear.click();
+   else{await clear.focus();await clear.press('Space');await expect(clear).toBeFocused();}
+   for(const field of ['query','city','area','category'])await expect(form.locator(`[name=${field}]`)).toHaveValue('');
+   await expect(form.locator('input[type=hidden][name=view]')).toHaveValue('shops');
+   await expect(page).toHaveURL(canonical);await fits(page);
+  }
+  await Promise.all([
+   page.waitForURL(url=>url.searchParams.has('city')&&url.searchParams.get('view')==='shops'),
+   form.locator('[name=city]').press('Enter'),
+  ]);
+  await ready(page);
+  const submitted=new URL(page.url());expect(submitted.pathname).toBe(new URL(canonical).pathname);
+  expect(submitted.searchParams.get('view')).toBe('shops');
+  for(const field of ['query','city','area','category']){
+   expect(submitted.searchParams.get(field)).toBe('');await expect(form.locator(`[name=${field}]`)).toHaveValue('');
+  }
+  await expect(form.locator('input[type=hidden][name=view]')).toHaveValue('shops');await fits(page);
  }
 });
 

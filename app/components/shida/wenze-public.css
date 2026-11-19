@@ -11,6 +11,7 @@
 .wenze-public input,.wenze-public select { min-width:0; width:100%; border:1px solid var(--line); border-radius:6px; min-height:46px; padding:.65rem .8rem; background:var(--paper,#fffdf9); }
 .wzp-filter-bottom { display:flex; align-items:baseline; gap:1rem; margin-top:.8rem; font-size:.85rem; }
 .wzp-filter-bottom details { flex:1; }.wzp-filter-bottom summary { cursor:pointer; padding:.3rem 0; }.wzp-filter-bottom .marketplace-filter-grid { padding-top:.7rem; }
+.wzp-landing .wzp-filter-bottom>.wzp-clear-filters { display:inline-flex; align-items:center; min-height:44px; margin:0; border:0; padding:0; background:transparent; color:inherit; font:inherit; text-align:start; cursor:pointer; }
 .wzp-categories { display:flex; flex-wrap:wrap; gap:.5rem; padding:1rem 0 1.8rem; }
 .wzp-categories a { border:1px solid var(--line); border-radius:24px; padding:.55rem .9rem; font-size:.82rem; background:var(--cream,#f6f3ec); }
 .wzp-categories a[aria-current=page] { color:#fff; background:var(--forest); border-color:var(--forest); }
