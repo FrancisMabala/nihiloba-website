@@ -70,7 +70,9 @@ function Workspace({locale,actor,embedded,activity}:{locale:MedaLocale;activity:
     else {const row:Listing=await call(`listings/${reference}/`);if(alive.current&&ticket===generation.current){setSelected(row);setView('review');}}});return;}
    await load(next==='enquiries'||next==='mine'?next:'browse',1,params.get('listing'),initialFilters);
   }
-  void initial();return()=>{alive.current=false;};
+  // Effect replay can supersede this setup before its locked read completes.
+  // Only the current setup may acquire the work lock; keep response guards too.
+  queueMicrotask(()=>{if(alive.current&&ticket===generation.current)void initial();});return()=>{alive.current=false;};
  // Each authenticated identity remounts this workspace, clearing private data.
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[]);

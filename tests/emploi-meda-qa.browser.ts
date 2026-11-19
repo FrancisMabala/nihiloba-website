@@ -3,7 +3,7 @@ import {test,expect,type Page} from '@playwright/test';
 import {medaCopy,type MedaLocale} from '../app/lib/meda-copy';
 import {medaParticipationCopy} from '../app/lib/meda-participation-copy';
 import {medaDiscoveryCopy} from '../app/lib/meda-discovery-copy';
-import {mkdirSync,readFileSync} from 'node:fs';
+import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
 const evidence=process.env.SHIDA_QA_OUTPUT!;
 const sample={reference:'MED_QA',status:'published',title:'Paris → Kinshasa · 10 kg',side:'offer',category:'luggage',origin_country:'FR',origin_city:'Saint-Quentin-en-Yvelines – Montigny-le-Bretonneux',destination_country:'CD',destination_city:'Kinshasa – Mont-Ngafula',departure_at:'2027-02-20T14:00:00Z',deadline_at:'2027-02-19T14:00:00Z',capacity:'10',unit:'kg',description:'Clothing and books. Collection discussed privately.',price:'8',currency:'EUR',price_basis:'kg'};
 test.beforeEach(async({context})=>{await context.route('**/*',r=>{const u=new URL(r.request().url());return ['127.0.0.1','localhost'].includes(u.hostname)?r.continue():r.abort('blockedbyclient');});});
@@ -103,7 +103,7 @@ test('Meda real QA member filters and synthetic draft publication',async({page})
  await page.goto('/fr/shida/space/?view=listings&tab=meda&meda_view=create');const form=page.locator('.meda-form');await expect(form).toBeVisible();
  await page.locator('#meda-from-country').fill('FR');await expect(page.locator('#meda-from-country')).toHaveValue('France');await page.locator('#meda-to-country').fill('CD');await expect(page.locator('#meda-to-country')).toHaveValue(/Congo/);
  await form.locator('[name=origin_city]').fill('Paris');await form.locator('[name=destination_city]').fill('Kinshasa');await form.locator('[name=departure_at]').fill('2027-02-20T14:00');await form.locator('[name=deadline_at]').fill('2027-02-19T14:00');await form.getByRole('button',{name:medaCopy.fr.next,exact:true}).click();
- await form.locator('[name=capacity]').fill('3');await form.locator('[name=description]').fill('Livres emballés pour le contrôle synthétique local.');await form.getByRole('button',{name:medaCopy.fr.next,exact:true}).click();await form.locator('[name=title]').fill('Contrôle synthétique Meda '+Date.now());
+ await form.locator('[name=capacity]').fill('3');await form.locator('[name=description]').fill('Livres emballés pour le contrôle synthétique local.');await form.getByRole('button',{name:medaCopy.fr.next,exact:true}).click();await form.locator('[name=title]').fill('Contrôle synthétique Meda local');
  const created=page.waitForResponse(r=>r.url().includes('/personal/meda/listings/')&&r.request().method()==='POST');await form.getByRole('button',{name:medaCopy.fr.save,exact:true}).click();const response=await created;const diagnostic=await response.json();expect(response.status(),JSON.stringify({detail:diagnostic.detail,origin:response.request().headers().origin,fetchSite:response.request().headers()['sec-fetch-site']})).toBe(200);await expect(page.locator('.meda-detail')).toContainText(medaCopy.fr.draft);
  const publish=page.locator('.meda-detail').getByRole('button',{name:medaCopy.fr.publish,exact:true});await publish.click();await expect(page.locator('.meda-detail')).toContainText(medaCopy.fr.published);await page.reload();await expect(page.locator('.meda-detail')).toContainText(medaCopy.fr.published);await fits(page);await capture(page,'meda-published-real');
 });
@@ -122,4 +122,32 @@ test('Meda real QA guest keeps member listings private',async({page})=>{
  const reads:string[]=[];page.on('request',r=>{if(r.url().includes('/personal/meda/'))reads.push(new URL(r.url()).pathname);});
  await page.goto('/fr/shida/meda/');await expect(page.locator('.meda-access')).toBeVisible();await expect(page.locator('.meda-result')).toHaveCount(0);expect(reads).toHaveLength(0);
  const result=await page.evaluate(async()=>{const r=await fetch('/api/shida/personal/meda/discovery/',{cache:'no-store'});return {status:r.status,containsItems:Array.isArray((await r.json()).items)};});expect([401,403]).toContain(result.status);expect(result.containsItems).toBe(false);
+});
+test('Meda QA diagnostic persisted synthetic detail reload',async({page})=>{
+ await realIdentity(page);await page.goto('/fr/shida/space/?view=listings&tab=meda');
+ const listing=await page.evaluate(async()=>{const session=await fetch('/api/shida/employment/session/').then(r=>r.json());const r=await fetch('/api/shida/personal/meda/listings/',{headers:{'x-shida-session':session.binding}});const data=await r.json();const row=data.items?.find((item:{title:string})=>item.title==='Contrôle synthétique Meda local');return {status:r.status,reference:row?.reference,state:row?.status};});
+ expect(listing.status).toBe(200);expect(listing.reference).toBeTruthy();const responses:{path:string;status:number}[]=[];page.on('response',r=>{const url=new URL(r.url());if(url.pathname.includes('/meda/'))responses.push({path:url.pathname,status:r.status()});});
+ const url='/fr/shida/space/?view=listings&tab=meda&meda_view=review&ref='+listing.reference;
+ await page.goto(url);await page.waitForTimeout(3000);const before={url:page.url(),detail:await page.locator('.meda-detail').count(),search:await page.locator('.meda-search').count()};await capture(page,'meda-direct-published-detail');
+ await page.reload();await page.waitForTimeout(3000);const after={url:page.url(),detail:await page.locator('.meda-detail').count(),search:await page.locator('.meda-search').count()};await capture(page,'meda-direct-published-reload');
+ writeFileSync(evidence+'/meda-reload-diagnostic.json',JSON.stringify({listing,before,after,responses},null,2));expect(after.detail).toBe(1);
+});
+test('Jobs real QA mobile detail returns to filtered page',async({page})=>{
+ await realIdentity(page);await page.setViewportSize({width:390,height:844});await page.goto('/fr/shida/emplois/?city=Kinshasa&page=2');const row=page.locator('.job-list-row').first();await expect(row).toBeVisible();const href=await row.getAttribute('href');await row.click();await expect(page).toHaveURL(new RegExp(href!.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$'));await expect(page.locator('.job-detail-content')).toBeVisible();
+ const back=page.locator('.job-detail-return').getByRole('link',{name:'← Toutes les offres',exact:true});await expect(back).toHaveAttribute('href',/city=Kinshasa.*page=2/);await back.click();await expect(page).toHaveURL(/city=Kinshasa.*page=2/);await expect(page.locator('.job-list-row')).toHaveCount(2);await fits(page);
+});
+test('Jobs real QA modified native link opens gated canonical detail',async({page,context})=>{
+ await page.setViewportSize({width:1440,height:900});await page.goto('/fr/shida/emplois/');const row=page.locator('.job-list-row').nth(1),href=await row.getAttribute('href'),original=page.url();expect(href).toMatch(/^\/fr\/shida\/emplois\/[^/]+\/$/);
+ const popupPromise=context.waitForEvent('page');await row.click({modifiers:['Control']});const popup=await popupPromise;await popup.waitForLoadState('domcontentloaded');await expect(popup).toHaveURL(/\/fr\/shida\/emplois\/\?offer=/);await expect(popup.locator('.job-access-dialog')).toBeVisible();await expect(popup.locator('.job-detail-content')).toHaveCount(0);expect(page.url()).toBe(original);await popup.close();
+});
+for(const width of [320,1440])test(`Jobs Meda real QA enlarged text ${width}`,async({page})=>{
+ await realIdentity(page);await page.setViewportSize({width,height:900});for(const market of ['emplois','meda']){await page.goto('/fr/shida/'+market+'/');await expect(page.locator(market==='emplois'?'.job-list-row':'.meda-result').first()).toBeVisible();await page.addStyleTag({content:'html{font-size:200%}'});await fits(page);await capture(page,`${market}-real-text200-${width}`);}
+});
+test('Jobs QA delayed selection cannot overwrite newer offer and retry keeps focus',async({page})=>{
+ await realIdentity(page);await page.setViewportSize({width:1440,height:900});await page.goto('/fr/shida/emplois/');await expect(page.locator('.job-list-pane .job-detail-content')).toBeVisible();
+ const rows=page.locator('.job-list-row'),secondHref=await rows.nth(1).getAttribute('href'),thirdHref=await rows.nth(2).getAttribute('href'),thirdTitle=await rows.nth(2).locator('h3').innerText();
+ const slug=(href:string)=>href.split('/').filter(Boolean).at(-1)!;let ready!:()=>void,release!:()=>void;const started=new Promise<void>(resolve=>{ready=resolve}),gate=new Promise<void>(resolve=>{release=resolve});
+ await page.route(`**/api/shida/public-jobs/${slug(secondHref!)}/full/**`,async route=>{const response=await route.fetch();ready();await gate;await route.fulfill({response}).catch(()=>{});});
+ await rows.nth(1).click();await started;await rows.nth(2).click();await expect(page.locator('.job-list-pane .job-detail-title h2')).toHaveText(thirdTitle);release();await page.waitForTimeout(150);await expect(page.locator('.job-list-pane .job-detail-title h2')).toHaveText(thirdTitle);
+ let fail=true;await page.route(`**/api/shida/public-jobs/${slug(thirdHref!)}/full/**`,route=>{if(fail){fail=false;return route.fulfill({status:503,json:{}});}return route.continue();});await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));const retry=page.locator('.job-pane-error button');await expect(retry).toBeVisible();await retry.focus();await page.keyboard.press('Enter');await expect(page.locator('.job-list-pane .job-detail-title h2')).toHaveText(thirdTitle);expect(await page.locator('.job-list-pane').evaluate(el=>el.contains(document.activeElement))).toBe(true);
 });
