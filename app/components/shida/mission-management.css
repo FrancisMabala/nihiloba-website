@@ -10,6 +10,7 @@
 .mission-manager>.mission-card{max-width:none;margin:1rem 0}
 .mission-toolbar,.mission-tabs,.mission-review-links{display:flex;align-items:center;flex-wrap:wrap;gap:1rem}
 .mission-toolbar{justify-content:space-between}.mission-toolbar .mission-actions{margin:0}
+.mission-manager .finance-sheet > header > button{min-width:44px;flex-shrink:0}
 .mission-status{display:inline-block;border-radius:2rem;background:#e2eddf;color:#214b35;padding:.35rem .85rem;margin-right:.6rem}
 .mission-actions details{position:relative}.mission-actions summary{cursor:pointer;padding:.6rem;border:1px solid #c9c5b9;border-radius:.4rem}
 .mission-actions details>div{position:absolute;right:0;z-index:2;min-width:12rem;background:white;padding:.5rem;border:1px solid #d5d1c5;display:grid}
