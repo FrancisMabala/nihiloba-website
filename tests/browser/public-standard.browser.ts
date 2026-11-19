@@ -160,7 +160,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`UX audit Wenze empty st
   await categorySummary.click();
   await page.goto(base+'?view=shops&city=Goma&area=Centre&category=fashion_clothing');await ready(page);
   await expect(form.locator('[name=city]')).toHaveValue('Goma');await expect(details).toHaveAttribute('open','');
-  await clear.click();await ready(page);expect(new URL(page.url()).search).toBe('?view=shops');
+  await clear.click();await expect.poll(()=>new URL(page.url()).search).toBe('?view=shops');await ready(page);
   await expect(form.locator('[name=city]')).toHaveValue('');await expect(form.locator('[name=area]')).toHaveValue('');
   await expect(form.locator('[name=category]')).toHaveValue('');await fits(page);
  }
