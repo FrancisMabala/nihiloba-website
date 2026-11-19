@@ -50,7 +50,7 @@ async function failLandingDownload(page:Page){
  const state={fail:true};
  // SellerLanding also appears in other marketplace entry bundles. Inspect the
  // requested local asset instead of assuming its marker is unique on disk.
- await page.route('**/_next/static/chunks/**',async route=>{
+ await page.route((process.env.ROLLOUT_BASE_URL??'http://127.0.0.1:3017')+'/_next/static/chunks/**',async route=>{
   if(!new URL(route.request().url()).pathname.endsWith('.js'))return route.fallback();
   const response=await route.fetch();
   if(state.fail&&(await response.text()).includes('ssl-entry'))return route.abort('failed');
