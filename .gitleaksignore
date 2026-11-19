@@ -3,3 +3,6 @@
 # Scope exceptions to these exact commit/file/rule/line fingerprints only.
 63817ae0bd9e123d5839c3eede954c68a1cea6ed:tests/integration/restaurant-guest-backend.py:generic-api-key:19
 63817ae0bd9e123d5839c3eede954c68a1cea6ed:tests/integration/restaurant-guest-backend.py:generic-api-key:20
+# Historical validation prose, reviewed as a false positive; approved 2026-11-19.
+# Match only this finding. All scanner rules and history scanning stay enabled.
+0d2a4f83f5b8a0e1a357dabb3d3cb421f67751c1:docs/evidence/restaurant-startup-performance-20261118/validation-summary.txt:generic-api-key:28
