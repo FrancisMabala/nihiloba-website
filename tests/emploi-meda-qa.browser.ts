@@ -30,6 +30,7 @@ for(const [locale,width] of cases)test(`Meda QA filters ${locale} ${width}`,asyn
  await page.goto(`${locale==='en'?'':'/'+locale}/shida/meda/`);await expect(page.locator('.meda-result')).toHaveCount(1);await fits(page);
  await expect(page.locator('.meda h1')).toHaveCount(1);await expect(page.locator('.meda .st-invitation-icon,.meda-empty-icon')).toHaveCount(0);
  for(const locator of [page.locator('.meda-categories button').first(),page.locator('.meda-sides button').first(),page.locator('.meda-filter-details summary')]){const b=await locator.boundingBox();expect(b!.height).toBeGreaterThanOrEqual(44);}
+ if(width<768){const group=await page.locator('.meda-categories').boundingBox();for(const button of await page.locator('.meda-categories button').all()){const box=await button.boundingBox();expect(box!.x).toBeGreaterThanOrEqual(group!.x-1);expect(box!.x+box!.width).toBeLessThanOrEqual(group!.x+group!.width+1);}expect(await page.locator('.meda-categories').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);}
  await capture(page,`meda-filter-${locale}-${width}`);
  await page.locator('.meda-filter-details summary').focus();await page.keyboard.press('Enter');await page.getByLabel(t.after,{exact:true}).fill('2027-01-01');await page.locator('.meda-filter-details').getByRole('button',{name:t.search,exact:true}).click();
  await expect.poll(()=>state.queries.at(-1)?.searchParams.has('after')).toBe(true);await expect(page.locator('.meda-filter-count')).toHaveText('1');
@@ -51,6 +52,7 @@ for(const [locale,width,category] of [['en',1440,'luggage'],['fr',320,'container
  await capture(page,`meda-form-step0-${locale}-${width}`);await form.getByRole('button',{name:t.next,exact:true}).click();
  await expect(form.locator('[aria-current=step]')).toBeFocused();await expect(form.locator('[data-step="1"]')).toBeVisible();
  await form.locator('[name=capacity]').fill('10');await form.locator('[name=description]').fill('Books and clothing packed in two small boxes.');await form.locator('[name=accepted_objects][value=books]').check();
+ await expect(form.locator('.meda-objects h3')).toHaveText(x.photos+(category==='container'?' *':''));await expect(form.locator('.meda-objects label').filter({hasText:x.photos})).toHaveCount(0);await expect(form.locator('input[type=file]')).toHaveAccessibleName(x.photos+(category==='container'?' *':''));
  if(category==='container'){await form.getByLabel(x.contents,{exact:true}).fill('Books and clothing packed in two small boxes.');await form.getByLabel(x.weight,{exact:true}).fill('3');await form.getByLabel(x.packages,{exact:true}).fill('2');}
  await capture(page,`meda-form-step1-${locale}-${width}`);await fits(page);
  await form.getByRole('button',{name:t.previous,exact:true}).click();await expect(form.locator('[name=origin_city]')).toHaveValue('Paris');await expect(form.locator('[aria-current=step]')).toBeFocused();await form.getByRole('button',{name:t.next,exact:true}).click();await expect(form.locator('[name=description]')).toHaveValue('Books and clothing packed in two small boxes.');
@@ -73,7 +75,7 @@ async function realIdentity(page:Page){
  const pub=JSON.parse(readFileSync(work+'fixture-public.json','utf8'));
  const privateFixture=JSON.parse(readFileSync(work+'fixture-private.json','utf8'));
  if(owner.uuid!=='2f654732-a44d-4755-99df-55a111aa50cf'||privateFixture.owner_uuid!==owner.uuid||privateFixture.generation!==pub.generation)throw Error('Synthetic identity ownership differs');
- await page.context().addCookies([{name:'nihiloba_personal_session',value:privateFixture.personal.token,domain:'127.0.0.1',path:'/api/shida',httpOnly:true,secure:false,sameSite:'Lax'}]);
+ await page.context().addCookies([{name:'nihiloba_personal_session',value:privateFixture.personal.token,domain:'localhost',path:'/api/shida',httpOnly:true,secure:false,sameSite:'Lax'}]);
 }
 for(const [locale,width] of cases)test(`Jobs real QA layout ${locale} ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900});const full:string[]=[];page.on('request',r=>{if(/\/public-jobs\/[^/]+\/full\//.test(r.url()))full.push(new URL(r.url()).pathname);});
@@ -102,6 +104,22 @@ test('Meda real QA member filters and synthetic draft publication',async({page})
  await page.locator('#meda-from-country').fill('FR');await expect(page.locator('#meda-from-country')).toHaveValue('France');await page.locator('#meda-to-country').fill('CD');await expect(page.locator('#meda-to-country')).toHaveValue(/Congo/);
  await form.locator('[name=origin_city]').fill('Paris');await form.locator('[name=destination_city]').fill('Kinshasa');await form.locator('[name=departure_at]').fill('2027-02-20T14:00');await form.locator('[name=deadline_at]').fill('2027-02-19T14:00');await form.getByRole('button',{name:medaCopy.fr.next,exact:true}).click();
  await form.locator('[name=capacity]').fill('3');await form.locator('[name=description]').fill('Livres emballés pour le contrôle synthétique local.');await form.getByRole('button',{name:medaCopy.fr.next,exact:true}).click();await form.locator('[name=title]').fill('Contrôle synthétique Meda '+Date.now());
- const created=page.waitForResponse(r=>r.url().includes('/personal/meda/listings/')&&r.request().method()==='POST');await form.getByRole('button',{name:medaCopy.fr.save,exact:true}).click();expect((await created).status()).toBe(200);await expect(page.locator('.meda-detail')).toContainText(medaCopy.fr.draft);
+ const created=page.waitForResponse(r=>r.url().includes('/personal/meda/listings/')&&r.request().method()==='POST');await form.getByRole('button',{name:medaCopy.fr.save,exact:true}).click();const response=await created;const diagnostic=await response.json();expect(response.status(),JSON.stringify({detail:diagnostic.detail,origin:response.request().headers().origin,fetchSite:response.request().headers()['sec-fetch-site']})).toBe(200);await expect(page.locator('.meda-detail')).toContainText(medaCopy.fr.draft);
  const publish=page.locator('.meda-detail').getByRole('button',{name:medaCopy.fr.publish,exact:true});await publish.click();await expect(page.locator('.meda-detail')).toContainText(medaCopy.fr.published);await page.reload();await expect(page.locator('.meda-detail')).toContainText(medaCopy.fr.published);await fits(page);await capture(page,'meda-published-real');
+});
+
+for(const embedded of [true,false])test(`Jobs QA reader clears interrupted session ${embedded?'pane':'standalone'}`,async({page})=>{
+ await realIdentity(page);await page.setViewportSize({width:1440,height:900});
+ const fixtureData=JSON.parse(readFileSync('C:/NIHILOBA/release-evidence/emploi-meda-mobile-20261119/environment/marketplace-fixtures.json','utf8'));
+ await page.goto(embedded?'/fr/shida/emplois/':'/fr/shida/emplois/'+fixtureData.jobs[0].slug+'/');await expect(page.locator('.job-detail-content')).toBeVisible();
+ await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-login-attempt')));await expect(page.locator('.job-detail-content')).toHaveCount(0);
+ await page.evaluate(()=>window.dispatchEvent(new Event('shida-personal-session-changed')));await expect(page.locator('.job-detail-content')).toBeVisible();
+ await page.route('**/api/shida/employment/session/',r=>r.fulfill({status:401,json:{}}));
+ await page.evaluate(()=>window.dispatchEvent(new StorageEvent('storage',{key:null})));await expect(page.locator('.job-detail-content')).toHaveCount(0);
+ if(embedded)await expect(page.locator('.job-list-preview')).toBeVisible();else await expect(page).toHaveURL(/emplois\/\?offer=/);
+});
+test('Meda real QA guest keeps member listings private',async({page})=>{
+ const reads:string[]=[];page.on('request',r=>{if(r.url().includes('/personal/meda/'))reads.push(new URL(r.url()).pathname);});
+ await page.goto('/fr/shida/meda/');await expect(page.locator('.meda-access')).toBeVisible();await expect(page.locator('.meda-result')).toHaveCount(0);expect(reads).toHaveLength(0);
+ const result=await page.evaluate(async()=>{const r=await fetch('/api/shida/personal/meda/discovery/',{cache:'no-store'});return {status:r.status,containsItems:Array.isArray((await r.json()).items)};});expect([401,403]).toContain(result.status);expect(result.containsItems).toBe(false);
 });

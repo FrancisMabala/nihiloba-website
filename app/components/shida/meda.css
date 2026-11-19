@@ -71,6 +71,7 @@ body .meda.market-surface .meda-hero.illustrated-meda .marketplace-hero-descript
 .meda-form .meda-objects>h3{margin:12px 0;font-size:1.2rem}
 .meda-form .meda-objects>p{font-size:.875rem;color:var(--muted)}
 .meda-form .meda-objects label{display:grid;gap:6px;margin:18px 0}
+.meda-photo-upload{margin:18px 0}
 .meda-form input[type=file]{padding:8px;font-size:.875rem}
 .meda-form input[type=file]::file-selector-button{min-height:36px;max-width:100%;border:1px solid var(--line);border-radius:6px;background:var(--ivory);color:var(--forest);font:inherit;margin-right:8px;padding:6px 10px}
 .meda-form-review{display:grid;gap:18px;min-width:0}
@@ -84,6 +85,9 @@ body .meda.market-surface .meda-hero.illustrated-meda .marketplace-hero-descript
 .meda-form .meda-actions>button{min-height:48px}
 
 @media(max-width:767px){
+ /* Override the shared public-marketplace horizontal chip rail for Meda's four choices. */
+ body .market-surface[data-public-marketplace] .meda-search .meda-categories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;padding-bottom:0}
+ body .market-surface[data-public-marketplace] .meda-search .meda-categories button{min-width:0;min-height:44px;white-space:normal;overflow-wrap:anywhere;font-size:.82rem}
  .meda-search{padding:12px}
  .meda-route-search{grid-template-columns:minmax(0,1fr);background:transparent}
  .meda-route-search>.button{min-height:48px}

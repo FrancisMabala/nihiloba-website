@@ -5,12 +5,28 @@ import {MedaInvitation,MedaSearch,defaultMedaFilters} from '../app/components/sh
 import {medaCopy} from '../app/lib/meda-copy';
 import {medaParticipationCopy} from '../app/lib/meda-participation-copy';
 import {medaDestination} from '../app/lib/meda-navigation';
+import {ObjectFields,emptyObjects} from '../app/components/shida/meda-participation';
 
 const draft:MedaListing={reference:'MED_layout_fixture',revision:1,status:'draft',title:'Paris to Kinshasa books',side:'request',category:'container',origin_country:'FR',origin_city:'Paris',destination_country:'CD',destination_city:'Kinshasa',departure_at:'2027-02-20T14:00:00Z',deadline_at:'2027-02-19T14:00:00Z',capacity:null,unit:'m3',description:'Books packed in two small boxes.',price:null,currency:null,price_basis:'discuss',details:{volume_unknown:true,collection_area:'Paris centre',objects:{photos:[],contents:'Books packed in two small boxes.',weight_kg:'3',packages:2,dimensions_cm:'20 x 30 x 40'}}};
 const escape=(value:string)=>value.replaceAll('&','&amp;').replaceAll("'",'&#x27;').replaceAll('"','&quot;');
 
 describe('Meda mobile form structure and preserved contracts',()=>{
  for(const locale of ['en','fr','ln','sw'] as const){
+  it(`labels each ${locale} photo input once using its unique heading and preserves audience help`,()=>{
+   const html=renderToStaticMarkup(<><ObjectFields locale={locale} value={emptyObjects} onChange={vi.fn()} call={vi.fn()} binding="unit-only" required memberAudience/><ObjectFields locale={locale} value={emptyObjects} onChange={vi.fn()} call={vi.fn()} binding="unit-only"/></>);
+   const headings=[...html.matchAll(/<h3 id="([^"]+)">([^<]+)<\/h3>/g)];
+   expect(headings).toHaveLength(2);
+   expect(headings[0][1]).not.toBe(headings[1][1]);
+   expect(headings[0][2]).toBe(`${escape(medaParticipationCopy[locale].photos)} *`);
+   expect(headings[1][2]).toBe(escape(medaParticipationCopy[locale].photos));
+   for(const [,id] of headings){
+    expect(html).toContain(`type="file" aria-labelledby="${id}" aria-describedby="${id}-help ${id}-audience"`);
+    expect(html).toContain(`id="${id}-help"`);expect(html).toContain(`id="${id}-audience"`);
+   }
+   expect(html).not.toContain(`<label>${escape(medaParticipationCopy[locale].photos)}`);
+   expect(html).toContain(escape(medaParticipationCopy[locale].memberPhotos));
+   expect(html).toContain(escape(medaParticipationCopy[locale].privatePhotos));
+  });
   it(`keeps every ${locale} step and draft field mounted, with one current step`,()=>{
    const html=renderToStaticMarkup(<MedaListingForm locale={locale} initial={draft} busy={false} onSave={vi.fn()} onCancel={vi.fn()} call={vi.fn()} binding="unit-only"/>);
    expect(html.match(/aria-current="step"/g)).toHaveLength(1);

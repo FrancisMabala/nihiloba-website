@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useRef,useState,type FormEvent,type Dispatch,type SetStateAction} from 'react';
+import {useEffect,useId,useRef,useState,type FormEvent,type Dispatch,type SetStateAction} from 'react';
 import {medaParticipationCopy} from '../../lib/meda-participation-copy';
 import {medaCopy,type MedaLocale} from '../../lib/meda-copy';
 
@@ -24,6 +24,7 @@ export function MedaPhoto({reference,binding,locale="en"}:{reference:string;bind
 
 export function ObjectFields({locale,value,onChange,call,binding,required=false,memberAudience=false,onBusy}:{locale:MedaLocale;value:Objects;onChange:Dispatch<SetStateAction<Objects>>;call:MedaCall;binding:string;required?:boolean;memberAudience?:boolean;onBusy?:(busy:boolean)=>void}){
  const t=medaParticipationCopy[locale],[busy,setBusy]=useState(false),[error,setError]=useState(''),fileRef=useRef<HTMLInputElement>(null),pending=useRef<{file:File;key:string}|null>(null);
+ const photoHeading=useId();
  async function upload(file:File){setBusy(true);onBusy?.(true);setError('');try{
    if(file.size>5*1024*1024||!['image/jpeg','image/png','image/webp'].includes(file.type)||value.photos.length>=5)throw Error();
    if(pending.current?.file!==file)pending.current={file,key:crypto.randomUUID()};
@@ -32,9 +33,9 @@ export function ObjectFields({locale,value,onChange,call,binding,required=false,
   }catch{setError(t.error)}finally{setBusy(false);onBusy?.(false)}}
  const dimensions=value.dimensions_cm.match(/^\s*(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)\s*$/i);
  const volume=dimensions?dimensions.slice(1).reduce((a,b)=>a*Number(b.replace(',','.')),1)*(value.packages||1)/1000000:null;
- return <section className="meda-objects"><h3>{t.photos}{required?' *':''}</h3><p>{t.photoHelp}</p><p>{memberAudience?t.memberPhotos:t.privatePhotos}</p>
+ return <section className="meda-objects"><h3 id={photoHeading}>{t.photos}{required?' *':''}</h3><p id={`${photoHeading}-help`}>{t.photoHelp}</p><p id={`${photoHeading}-audience`}>{memberAudience?t.memberPhotos:t.privatePhotos}</p>
   <div className="meda-photos">{value.photos.map(ref=><div key={ref}><MedaPhoto locale={locale} reference={ref} binding={binding}/><button type="button" onClick={()=>onChange(current=>({...current,photos:current.photos.filter(p=>p!==ref)}))}>{t.remove}</button></div>)}</div>
-  <label>{t.photos}<input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy||value.photos.length>=5} onChange={e=>{const file=e.target.files?.[0];if(file)void upload(file)}}/></label>
+  <div className="meda-photo-upload"><input ref={fileRef} type="file" aria-labelledby={photoHeading} aria-describedby={`${photoHeading}-help ${photoHeading}-audience`} accept="image/jpeg,image/png,image/webp" disabled={busy||value.photos.length>=5} onChange={e=>{const file=e.target.files?.[0];if(file)void upload(file)}}/></div>
   {busy&&<p role="status">{t.uploading}</p>}{error&&<p role="alert">{error}<button type="button" onClick={()=>{if(pending.current)void upload(pending.current.file)}}>{t.next}</button></p>}
   {required&&<><label>{t.contents}<textarea required minLength={10} maxLength={2000} value={value.contents} onChange={e=>{const contents=e.currentTarget.value;onChange(current=>({...current,contents}))}}/></label>
   <label>{t.weight}<input required type="number" min="0.001" max="1000000" step="0.001" value={value.weight_kg??''} onChange={e=>{const weight_kg=e.currentTarget.value||null;onChange(current=>({...current,weight_kg}))}}/></label>
