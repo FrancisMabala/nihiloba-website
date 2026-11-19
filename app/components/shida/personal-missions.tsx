@@ -26,12 +26,20 @@ import './personal-listings.css';
 import './personal-space-mobile.css';
 import {personalSpaceMobileCopy} from '../../lib/personal-space-mobile-copy';
 
-type Status='draft'|'closed'|'open'|'available'|'online'|'hidden'|'sold'|'pending'|'archived';
+type Status='draft'|'closed'|'open'|'paused'|'available'|'online'|'hidden'|'sold'|'pending'|'archived';
 type Kind='article'|'job'|'service';
 type Row={type:Kind;reference:string;title:string;status:Status;location?:string;photo?:string;count?:number;price?:string;currency?:string};
 type Work={example?:string;name:string;city:string;communes:string[];days:string[];slots:string[];frequency:string[];missions:{name:string;category:string;tasks:string[];experience:string;rate:string;amount:string;currency:string;unit:string}[];message?:string};
-type Model=Row&{locations?:{kinshasa_communes:string[];quartiers:Record<string,string[]>};rows:Row[];version:string;values:MissionValues;profile:Work|null;application?:string};
+type Model=Row&{locations?:{kinshasa_communes:string[];quartiers:Record<string,string[]>};rows:Row[];version:string;values:MissionValues;profile:Work|null;application?:string;allowed_actions?:string[]};
 type Props={locale:MissionLocale;binding:string};
+type ManagementAction='pause'|'reactivate'|'close'|'remove';
+export function missionManagementActions(data:{status:string;allowed_actions?:string[]}){
+ return (['pause','reactivate','close','remove'] as const).filter(action=>Array.isArray(data.allowed_actions)?data.allowed_actions.includes(action):action==='remove'||action==='close'&&data.status==='open');
+}
+export function MissionActionConfirmation({locale,action,busy,onCancel,onConfirm,cancelRef}:{locale:MissionLocale;action:ManagementAction;busy:boolean;onCancel:()=>void;onConfirm:()=>void;cancelRef?:React.Ref<HTMLButtonElement>}){
+ const t=(key:Parameters<typeof listingText>[1])=>listingText(locale,key);
+ return <><p>{t(action==='pause'?'pauseHelp':action==='reactivate'?'reactivateHelp':action==='remove'?'removeHelp':'closeHelp')}</p><button ref={cancelRef} disabled={busy} onClick={onCancel}>{t('cancel')}</button><button className={action==='close'||action==='remove'?'listing-danger':'button button-primary'} disabled={busy} onClick={onConfirm}>{action==='close'?missionText(locale,'closeListing'):t(action)}</button></>;
+}
 export const missionQuery=(view:string,query:Record<string,string>)=>'?'+new URLSearchParams({view,...query});
 function useMission(binding:string,kind:string,offer:string){
  const [data,set]=useState<Model|null>(null),[error,fail]=useState(''),[round,reload]=useState(0);
@@ -84,26 +92,63 @@ export function MissionApply({locale,binding,offer}:Props&{offer:string}){
 
 function Manager({locale,binding,offer,kind}:Props&{offer:string;kind:string}){
  const t=(k:Parameters<typeof listingText>[1])=>listingText(locale,k),{api,data,set,error,fail,retry}=useMission(binding,'manage',offer);
- const [edit,editing]=useState(false),[form,change]=useState<MissionValues>({}),[confirm,ask]=useState<'close'|'remove'|null>(null),[busy,lock]=useState(false);
- const [actions,showActions]=useState(false),cancelAction=useRef<HTMLButtonElement>(null);
+ const [edit,editing]=useState(false),[form,change]=useState<MissionValues>({}),[confirm,ask]=useState<'close'|'remove'|'pause'|'reactivate'|null>(null),[busy,lock]=useState(false);
+ const [actions,showActions]=useState(false),cancelAction=useRef<HTMLButtonElement>(null),firstAction=useRef<HTMLButtonElement>(null),checkAction=useRef<HTMLButtonElement>(null);
+ const [notice,setNotice]=useState<'pausedSaved'|'reactivatedSaved'|'missionChanged'|'missionReconciled'|''>(''),[uncertain,setUncertain]=useState(false);
+ const sending=useRef(false),alive=useRef(true);
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  const listingTab=typeof window==='undefined'?'':new URLSearchParams(window.location.search).get('listing_tab')||'';
  const returnTab=['article','job','service'].includes(listingTab)?listingTab:'';
  const list=missionQuery('listings',returnTab?{tab:returnTab}:{}),dest=(k:string)=>missionQuery('listings',{offer,kind:k,...(returnTab?{listing_tab:returnTab}:{})});
  useWorkDraft(edit&&JSON.stringify(form)!==JSON.stringify(data?.values),t('error'));
- useEffect(()=>{if(confirm)cancelAction.current?.focus();},[confirm]);
- async function send(action:string){if(!data||busy)return;lock(true);fail('');try{const d=await api({action,confirmed:true,version:data.version,language:locale,...(action==='edit'?{values:payload(form)}:{})});if(d.removed){window.location.assign(list);return}set(d);editing(false);ask(null);showActions(false)}catch(e){fail((e as Error).message)}finally{lock(false)}}
+ useEffect(()=>{if(actions&&!busy)(uncertain?checkAction:confirm?cancelAction:firstAction).current?.focus();},[confirm,actions,busy,uncertain]);
+ const allowed=(action:string,fallback=false)=>Array.isArray(data?.allowed_actions)?data.allowed_actions.includes(action):fallback;
+ async function reconcile(message:'missionChanged'|'missionReconciled'){
+  // A lost response may have committed. Read current state; never repeat the command automatically.
+  ask(null);setUncertain(true);
+  try{const latest=await api();if(alive.current){set(latest);setUncertain(false);setNotice(message);fail('');showActions(false);}}
+  catch{if(alive.current)fail('reconcile');}
+ }
+ async function checkStatus(){if(sending.current)return;sending.current=true;lock(true);try{await reconcile('missionReconciled');}finally{sending.current=false;if(alive.current)lock(false);}}
+ async function send(action:string){
+  if(!data||sending.current||uncertain)return;
+  const lifecycle=action==='pause'||action==='reactivate';
+  if(lifecycle&&!allowed(action))return;
+  sending.current=true;lock(true);fail('');setNotice('');
+  try{
+   const d=await api({action,confirmed:true,version:data.version,language:locale,...(action==='edit'?{values:payload(form)}:{})});
+   if(!alive.current)return;
+   if(d.removed){window.location.assign(list);return;}
+   set(d);editing(false);ask(null);showActions(false);
+   if(lifecycle)setNotice(action==='pause'?'pausedSaved':'reactivatedSaved');
+  }catch(e){
+   if(!alive.current)return;
+   const code=(e as Error).message;
+   if(lifecycle){
+    if(code==='409')await reconcile('missionChanged');
+    else if(!/^4\d\d$/.test(code))await reconcile('missionReconciled');
+    else{ask(null);fail(code);}
+   }else fail(code);
+  }finally{sending.current=false;if(alive.current)lock(false);}
+ }
  if(!data)return <p role="status">{error?t('error'):t('loading')} {error&&<button onClick={retry}>{t('retry')}</button>}</p>;
  const mt=(k:string)=>missionText(locale,k),v=data.values,open=data.status==='open',tab=kind==='candidates'&&open?'candidates':'applications';
  const stopEdit=async()=>{if(await leaveWork()){editing(false);fail('')}};
  return <section className="mission-manager"><WenzeLeaveDialog locale={locale}/>
  {edit?<><button className="mission-link" disabled={busy} onClick={()=>void stopEdit()}>← {mt('backListing')}</button><h1>{mt('editTitle')}</h1><p>{data.title}</p></>:<><a href={list} onClick={event=>{if(document.referrer){const previous=new URL(document.referrer);if(previous.origin===location.origin&&previous.pathname===location.pathname&&previous.searchParams.get('view')==='listings'&&!previous.searchParams.has('offer')&&!previous.searchParams.has('item')){event.preventDefault();history.back();}}}}>← {t('list')}</a><h1>{data.title}</h1></>}
- {error&&<p role="alert">{t('error')}</p>}
+ {notice&&!actions&&<p role="status">{t(notice)}</p>}
+ {!actions&&error&&<p role="alert">{t('error')}</p>}
+ {uncertain&&!actions&&<p role="status">{t('missionUncertain')} <button disabled={busy} onClick={()=>void checkStatus()}>{t('checkStatus')}</button></p>}
  {edit?<MissionWizard locations={data.locations} locale={locale} values={form} change={change} busy={busy} pending={false} editLabel={t('save')} preview={v=>api({action:'preview_edit',version:data.version,language:locale,values:v})} cancel={()=>void stopEdit()} publish={()=>void send('edit')}/>:<>
  <div className="mission-toolbar"><div><span className="mission-status">{t(data.status)}</span> {data.location}</div><div className="mission-actions">
- {open&&<><button className="button button-primary" onClick={()=>{change(data.values);editing(true);fail('')}}>{mt('editTitle')}</button><a className="button" href={(locale==='en'?'':'/'+locale)+'/shida/emplois/'+encodeURIComponent(offer)}>{t('view')}</a></>}
+ {allowed('edit',open)&&<button disabled={busy||uncertain} className="button button-primary" onClick={()=>{change(data.values);editing(true);fail('')}}>{mt('editTitle')}</button>}{open&&<a className="button" href={(locale==='en'?'':'/'+locale)+'/shida/emplois/'+encodeURIComponent(offer)}>{t('view')}</a>}
  <button type="button" aria-haspopup="dialog" aria-expanded={actions} onClick={()=>showActions(true)}>{mt('more')}</button></div></div>
  {actions&&<FinanceSheet title={confirm?t(confirm):mt('more')} locale={locale} onClose={()=>{if(!busy){showActions(false);ask(null)}}}><div className="listing-action-sheet">
- {confirm?<><p>{t(confirm==='remove'?'removeHelp':'closeHelp')}</p><button ref={cancelAction} disabled={busy} onClick={()=>ask(null)}>{t('cancel')}</button><button className="listing-danger" disabled={busy} onClick={()=>void send(confirm)}>{confirm==='close'?mt('closeListing'):t(confirm)}</button>{error&&<p role="alert">{t('error')}</p>}</>:<>{open&&<button onClick={()=>ask('close')}>{mt('closeListing')}</button>}<button className="listing-danger" onClick={()=>ask('remove')}>{t('remove')}</button></>}
+ {confirm?<MissionActionConfirmation locale={locale} action={confirm} busy={busy||uncertain} cancelRef={cancelAction} onCancel={()=>ask(null)} onConfirm={()=>void send(confirm)}/>:<>
+ {missionManagementActions(data).map((action,index)=><button key={action} ref={index===0?firstAction:undefined} disabled={busy||uncertain} className={action==='remove'?'listing-danger':undefined} onClick={()=>{fail('');setNotice('');ask(action);}}>{action==='close'?mt('closeListing'):t(action)}</button>)}
+ </>}
+ {notice&&<p role="status">{t(notice)}</p>}{busy&&<p role="status">{t('loading')}</p>}{error&&<p role="alert">{t('error')}</p>}
+ {uncertain&&<p role="status">{t('missionUncertain')} <button ref={checkAction} disabled={busy} onClick={()=>void checkStatus()}>{t('checkStatus')}</button></p>}
  </div></FinanceSheet>}
  <section className="mission-card"><MissionPresentation locale={locale} title="" description={v.short_summary} frequency={v.duration_frequency} hours={v.work_schedule} pay={v.budget} experience={v.optional_experience}/></section>
  <section className="mission-card"><nav className="mission-tabs"><a aria-current={tab==='applications'?'page':undefined} href={dest('applications')}>{t('applications')} ({data.count})</a>{open&&<a aria-current={tab==='candidates'?'page':undefined} href={dest('candidates')}>{t('find')}</a>}</nav>
@@ -114,7 +159,7 @@ export function PersonalListings(props:Props) {
  const query = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
  if(query.get('tab')==='meda'&&query.has('meda_view')&&query.get('meda_view')!=='mine')return <><a href={missionQuery('listings',{})}>{listingCopy[props.locale].all}</a><MedaMarketplace locale={props.locale} embedded/></>;
  const offer = query.get('offer');
- if (offer) return <Manager {...props} offer={offer} kind={query.get('kind') || 'manage'}/>;
+ if (offer) return <Manager key={JSON.stringify([props.binding,offer])} {...props} offer={offer} kind={query.get('kind') || 'manage'}/>;
  const initial = query.get('tab');
  return <Catalogue {...props} initial={filters.find(key => key === initial) || 'all'}/>;
 }

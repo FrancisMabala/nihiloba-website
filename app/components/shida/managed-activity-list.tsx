@@ -38,7 +38,7 @@ function statusText(locale:MarketplaceLocale,row:OverviewEntry){
  case 'pending':return activitiesDesignCopy[locale].pending;
  case 'mixed':return t.mixed;
  case 'open':return t.published;
- case 'closed':case 'online':case 'archived':case 'sold':return listingText(locale,row.status);
+ case 'paused':case 'closed':case 'online':case 'archived':case 'sold':return listingText(locale,row.status);
  }
 }
 function ShopPreview({row,binding,locale}:{row:OverviewEntry;binding:string;locale:MarketplaceLocale}){

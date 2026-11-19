@@ -3,6 +3,7 @@
 .mission-heading{display:flex;align-items:center;gap:.65rem}.mission-heading>svg{flex:none;width:2.8rem;height:2.8rem;padding:.6rem;background:#e3efdf;border-radius:.65rem}
 
 .mission-manager,.mission-wizard{min-width:0;width:100%;max-width:74rem}
+.mission-manager>p button{min-height:44px}
 .mission-manager>a,.mission-link,.mission-review-links button{color:#174934;text-underline-offset:3px}
 .mission-link,.mission-wizard button.mission-link{border:0;background:transparent;padding:.4rem 0;text-decoration:underline;cursor:pointer;font:inherit}
 .mission-manager h1,.personal-offer-workspace h1{font-family:Georgia,serif;color:#14392d;margin:.8rem 0}
@@ -86,7 +87,7 @@
 }
 
 /* Owner listing views: do not change the public offer or application layout. */
-.mission-progress{display:none}.listing-action-sheet{display:grid;gap:12px}.listing-action-sheet button{text-align:left;width:100%;overflow-wrap:anywhere}.listing-action-sheet .listing-danger{color:#8a2b20;border-color:#cda89f;background:#fff8f5}.listing-action-sheet p{margin:0;white-space:pre-line}
+.mission-progress{display:none}.listing-action-sheet{display:grid;gap:12px}.listing-action-sheet button{text-align:left;width:100%;min-height:44px;overflow-wrap:anywhere}.listing-action-sheet .listing-danger{color:#8a2b20;border-color:#cda89f;background:#fff8f5}.listing-action-sheet p{margin:0;white-space:pre-line}
 .mission-progress progress{appearance:none;border:0;background:#e4e3d9}.mission-progress progress::-webkit-progress-bar{background:#e4e3d9}.mission-progress progress::-webkit-progress-value{background:#164331}.mission-progress progress::-moz-progress-bar{background:#164331}
 @media(max-width:700px){
  .mission-manager h1,.personal-offer-workspace h1{font-size:1.75rem;line-height:1.2;margin:12px 0;overflow-wrap:anywhere}
