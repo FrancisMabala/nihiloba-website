@@ -187,7 +187,8 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
 .employer-page {padding-block:clamp(1.25rem,3vw,3rem);color:#14392d}
 .employer-back,.employer-entry-links>a:last-child,.employer-vacancies>a {font-weight:650;text-decoration:underline;text-underline-offset:.18em}
 .employer-title-row,.employer-entry-links {display:flex;align-items:center;flex-wrap:wrap;gap:1rem}
-.employer-title-row {margin:1.5rem 0 .75rem;align-items:center;justify-content:flex-start}
+/* Shrink the name before wrapping text, keeping Follow beside the identity. */
+.employer-title-row {margin:1.5rem 0 .75rem;align-items:center;justify-content:flex-start;flex-wrap:nowrap}
 .employer-title-row>.job-relationship-actions {flex:0 0 auto;min-width:0;max-width:100%}
 .employer-heading {display:flex;align-items:center;gap:1rem;flex:0 1 auto;min-width:0;max-width:100%}
 .employer-page h1,.employer-page h2 {font-family:Georgia,serif;font-weight:600}
