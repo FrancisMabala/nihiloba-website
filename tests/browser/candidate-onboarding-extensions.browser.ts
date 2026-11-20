@@ -42,10 +42,12 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [390,1440]
  await expect(wizard.locator('datalist option')).toHaveAttribute('value','Published assistant');
  await expect(wizard.locator('.candidate-chips')).toContainText('Custom role');
  await wizard.getByRole('button',{name:t.next,exact:true}).click();
- await wizard.getByLabel(t.fields.description,{exact:true}).fill('Preserve my introduction');
+ // The label also contains required/help/counter text; identify its unique field and role.
+ const description=wizard.locator('[data-field="description"]').getByRole('textbox',{name:t.fields.description});
+ await expect(description).toHaveCount(1);await description.fill('Preserve my introduction');
  const upload=wizard.locator('input[accept="image/jpeg,image/png,image/webp"]'),file={name:'Professional.png',mimeType:'image/png',buffer:Buffer.from('isolated-upload-fixture')};
  await upload.setInputFiles(file);await expect(wizard.getByRole('alert')).toContainText(t.error);
- await expect(wizard.getByLabel(t.fields.description,{exact:true})).toHaveValue('Preserve my introduction');
+ await expect(description).toHaveValue('Preserve my introduction');
  await upload.setInputFiles(file);await expect(wizard.getByRole('button',{name:formText(locale,'removePhoto'),exact:true})).toBeVisible();
  await expect(wizard.getByRole('alert')).toContainText(formText(locale,'photoUnavailable'));
  await wizard.getByRole('button',{name:formText(locale,'removePhoto'),exact:true}).click();await expect(wizard.getByRole('button',{name:formText(locale,'removePhoto'),exact:true})).toHaveCount(0);
@@ -59,11 +61,13 @@ test('existing professional alert preference survives photo retry and revision c
  const {writes}=await fixture(page,'en',{existing:true,conflict:true});await page.goto('/shida/space/?view=job-search&section=profiles&profile=professional');
  const wizard=page.locator('.professional-wizard'),t=candidateCopy.en;
  await expect(wizard.getByRole('checkbox',{name:formText('en','alerts'),exact:true})).toBeChecked();
- await wizard.getByRole('button',{name:t.next,exact:true}).click();await wizard.getByLabel(t.fields.description,{exact:true}).fill('Preserve edit');
+ await wizard.getByRole('button',{name:t.next,exact:true}).click();
+ const description=wizard.locator('[data-field="description"]').getByRole('textbox',{name:t.fields.description});
+ await expect(description).toHaveCount(1);await description.fill('Preserve edit');
  const upload=wizard.locator('input[accept="image/jpeg,image/png,image/webp"]'),file={name:'photo.png',mimeType:'image/png',buffer:Buffer.from('isolated-upload-fixture')};
  await upload.setInputFiles(file);await expect(wizard.getByRole('alert')).toContainText(t.error);await upload.setInputFiles(file);
  await wizard.getByRole('button',{name:formText('en','removePhoto'),exact:true}).click();await expect(page.locator('.candidate-notice[role="alert"]')).toContainText(t.conflict);
- await expect(wizard.getByLabel(t.fields.description,{exact:true})).toHaveValue('Preserve edit');await expect(wizard.getByRole('button',{name:t.save,exact:true})).toBeDisabled();
+ await expect(description).toHaveValue('Preserve edit');await expect(wizard.getByRole('button',{name:t.save,exact:true})).toBeDisabled();
  const update=writes.find(w=>w.body.action==='update');expect(update?.body.values).toMatchObject({job_alerts_enabled:true,description:'Preserve edit'});
  const photos=writes.filter(w=>w.path.endsWith('/photo'));expect(photos[0].body.version).toBe('2026-11-20T10:00:01Z');expect(photos[2].body.version).toBe('2026-11-20T10:00:03Z');
 });

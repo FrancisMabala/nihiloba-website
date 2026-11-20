@@ -1,4 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
+import {statisticsCopy} from '../../app/lib/website-statistics-consent';
 
 const copy={
  en:{required:'This field is required.',selection:'Please select an option.'},
@@ -13,7 +14,8 @@ async function fixture(page:Page,html:string,locale='en'){
  await page.route('**/api/**',route=>route.fulfill({status:404,json:{}}));
  await page.addInitScript(()=>localStorage.setItem('shida_statistics_consent_v1',JSON.stringify({choice:'declined',expires:Date.now()+86400000})));
  await page.goto('/en/privacy/');
- // An actual hydrated client control, not a sleep, establishes client readiness.
+ // SSR consent is unknown; this status proves the persisted decline has hydrated.
+ await expect(page.locator('.website-statistics-control [role="status"]')).toHaveText(statisticsCopy.en.off);
  const preferences=page.getByRole('button',{name:'Statistics preferences',exact:true});
  await preferences.click();await expect(preferences).toHaveAttribute('aria-expanded','true');
  await page.evaluate(({html,locale})=>{
