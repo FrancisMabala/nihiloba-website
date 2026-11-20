@@ -14,7 +14,7 @@ const messages = {
 function fieldMessage(field:Field){
  const language=field.closest('[lang]')?.getAttribute('lang')?.toLowerCase().split('-')[0] || 'en';
  const t=messages[language as keyof typeof messages] || messages.en,v=field.validity;
- if(v.valueMissing)return field instanceof HTMLSelectElement?t.selection:t.required;
+ if(v.valueMissing)return field instanceof HTMLSelectElement || field instanceof HTMLInputElement && field.type==='radio'?t.selection:t.required;
  if(v.typeMismatch)return field instanceof HTMLInputElement && field.type==='email'?t.email:t.url;
  if(v.badInput || v.stepMismatch)return t.number;
  if(v.rangeUnderflow)return `${t.min} ${field.getAttribute('min')}.`;
@@ -27,40 +27,94 @@ function fieldMessage(field:Field){
 /** Presents native constraints inline; does not disable constraints or change submission. */
 export function LocalizedFormValidation(){
  useEffect(()=>{
-  const errors=new Map<Field,{node:HTMLSpanElement;previousInvalid:string|null}>();
-  let serial=0,first:Field|null=null,disposed=false;
+  type Previous={invalid:string|null;marked:string|null};
+  type ErrorEntry={node:HTMLSpanElement;fields:Map<Field,Previous>};
+  const errors=new Map<Field,ErrorEntry>();
+  let serial=0,first:Field|null=null,focusTask:ReturnType<typeof setTimeout>|null=null,disposed=false;
   const isField=(target:EventTarget|null):target is Field=>target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement;
-  const clear=(field:Field)=>{
-   const entry=errors.get(field);if(!entry)return;
-   const described=(field.getAttribute('aria-describedby')||'').split(/\s+/).filter(id=>id && id!==entry.node.id);
-   if(described.length)field.setAttribute('aria-describedby',described.join(' '));else field.removeAttribute('aria-describedby');
-   if(entry.previousInvalid===null)field.removeAttribute('aria-invalid');else field.setAttribute('aria-invalid',entry.previousInvalid);
-   field.removeAttribute('data-shida-invalid');entry.node.remove();errors.delete(field);
+  const invalidField=(field:Field)=>field.isConnected && field.willValidate && !field.validity.valid;
+  const group=(field:Field):Field[]=>{
+   if(!(field instanceof HTMLInputElement) || field.type!=='radio' || !field.name)return [field];
+   const root=field.getRootNode();
+   if(!(root instanceof Document || root instanceof ShadowRoot))return [field];
+   // Form ownership, tree and name define a native group; a fieldset alone does not.
+   return Array.from(root.querySelectorAll<HTMLInputElement>('input[type="radio"]')).filter(radio=>radio.form===field.form && radio.name===field.name);
   };
-  const show=(field:Field)=>{
-   let entry=errors.get(field);
-   if(!entry){
-    const node=document.createElement('span');node.id=`shida-constraint-error-${++serial}`;node.className='shida-field-error';node.setAttribute('role','alert');
-    entry={node,previousInvalid:field.getAttribute('aria-invalid')};errors.set(field,entry);
-    (field.closest('label') || field).insertAdjacentElement('afterend',node);
-    field.setAttribute('aria-describedby',[field.getAttribute('aria-describedby'),node.id].filter(Boolean).join(' '));
+  const clear=(entry:ErrorEntry)=>{
+   for(const [field,previous] of entry.fields){
+    const described=(field.getAttribute('aria-describedby')||'').split(/\s+/).filter(id=>id && id!==entry.node.id);
+    if(described.length)field.setAttribute('aria-describedby',described.join(' '));else field.removeAttribute('aria-describedby');
+    if(previous.invalid===null)field.removeAttribute('aria-invalid');else field.setAttribute('aria-invalid',previous.invalid);
+    if(previous.marked===null)field.removeAttribute('data-shida-invalid');else field.setAttribute('data-shida-invalid',previous.marked);
+    errors.delete(field);
    }
-   entry.node.textContent=fieldMessage(field);field.setAttribute('aria-invalid','true');field.setAttribute('data-shida-invalid','true');
+   entry.node.remove();
+  };
+  const sameFields=(entry:ErrorEntry,fields:Field[])=>entry.fields.size===fields.length && fields.every(field=>entry.fields.has(field));
+  const show=(field:Field)=>{
+   const members=group(field),fields=members.filter(invalidField);
+   if(!fields.length)return;
+   let entry=errors.get(field);
+   if(entry && !sameFields(entry,fields)){clear(entry);entry=undefined;}
+   if(!entry){
+    for(const member of fields){const old=errors.get(member);if(old)clear(old);}
+    const node=document.createElement('span');
+    do{node.id=`shida-constraint-error-${++serial}`;}while(document.getElementById(node.id));
+    node.className='shida-field-error';node.setAttribute('role','alert');
+    entry={node,fields:new Map()};
+    const firstField=fields[0],fieldset=firstField instanceof HTMLInputElement && firstField.type==='radio'?firstField.closest('fieldset'):null;
+    const ownsGroup=fieldset && members.every(member=>fieldset.contains(member)) && Array.from(fieldset.querySelectorAll('input,select,textarea')).every(control=>members.includes(control as Field));
+    const anchor=ownsGroup?fieldset:fields[fields.length-1].closest('label') || fields[fields.length-1];
+    anchor.insertAdjacentElement('afterend',node);
+    for(const member of fields){
+     entry.fields.set(member,{invalid:member.getAttribute('aria-invalid'),marked:member.getAttribute('data-shida-invalid')});errors.set(member,entry);
+     member.setAttribute('aria-describedby',[member.getAttribute('aria-describedby'),node.id].filter(Boolean).join(' '));
+    }
+   }
+   for(const member of fields){member.setAttribute('aria-invalid','true');member.setAttribute('data-shida-invalid','true');}
+   const message=fieldMessage(fields[0]);if(entry.node.textContent!==message)entry.node.textContent=message;
+  };
+  const schedule=()=>{
+   // Native invalid callbacks can have microtask checkpoints between them. Keep
+   // the first control until the task finishes. Reconcile after application event
+   // handlers have also updated controlled values, including validation proxies.
+   if(focusTask===null)focusTask=setTimeout(()=>{
+    const field=first;first=null;focusTask=null;
+    if(disposed)return;
+    reconcile();
+    if(!field || !invalidField(field))return;
+    const selector=field.getAttribute('data-validation-focus');
+    const target=selector?field.closest('fieldset')?.querySelector<HTMLElement>(selector):null;
+    if(target?.isConnected && !target.matches(':disabled'))target.focus();else field.focus();
+   },0);
   };
   const invalid=(event:Event)=>{
    if(!isField(event.target))return;
    event.preventDefault();show(event.target);
-   if(!first){first=event.target;queueMicrotask(()=>{if(!disposed && first?.isConnected){const selector=first.getAttribute('data-validation-focus');const target=selector?first.closest('fieldset')?.querySelector<HTMLElement>(selector):null;(target || first).focus();}first=null;});}
+   if(!first || first.form!==event.target.form)first=group(event.target).find(invalidField) || event.target;
+   schedule();
   };
   const update=(event:Event)=>{
-   if(isField(event.target) && errors.has(event.target)){if(event.target.validity.valid)clear(event.target);else show(event.target);}
+   if(!isField(event.target))return;
+   for(const member of group(event.target)){const entry=errors.get(member);if(entry){if(member.validity.valid)clear(entry);else show(member);}}
+   schedule();
   };
-  const reset=(event:Event)=>{for(const field of errors.keys())if(field.form===event.target)clear(field);};
-  const observer=new MutationObserver(records=>{const languageChanged=records.some(record=>record.type==='attributes');for(const field of errors.keys()){if(!field.isConnected || field.disabled || field.validity.valid)clear(field);else if(languageChanged)show(field);}});
+  const reset=(event:Event)=>{
+   if(first?.form===event.target){if(focusTask!==null)clearTimeout(focusTask);focusTask=null;first=null;}
+   for(const entry of new Set(errors.values()))if(Array.from(entry.fields.keys()).some(field=>field.form===event.target))clear(entry);
+  };
+  const reconcile=(languageChanged=false)=>{
+   for(const entry of new Set(errors.values())){
+    const field=Array.from(entry.fields.keys()).find(invalidField);
+    if(!field){clear(entry);continue;}
+    if(languageChanged || !sameFields(entry,group(field).filter(invalidField)))show(field);
+   }
+  };
+  const observer=new MutationObserver(records=>reconcile(records.some(record=>record.attributeName==='lang')));
   // Refresh translations and release detached controls without rewriting on child mutations.
-  observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang'],childList:true,subtree:true});
+  observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','disabled','required','name','form','type'],childList:true,subtree:true});
   document.addEventListener('invalid',invalid,true);document.addEventListener('input',update,true);document.addEventListener('change',update,true);document.addEventListener('reset',reset,true);
-  return()=>{disposed=true;observer.disconnect();document.removeEventListener('invalid',invalid,true);document.removeEventListener('input',update,true);document.removeEventListener('change',update,true);document.removeEventListener('reset',reset,true);for(const field of errors.keys())clear(field);};
+  return()=>{disposed=true;if(focusTask!==null)clearTimeout(focusTask);first=null;observer.disconnect();document.removeEventListener('invalid',invalid,true);document.removeEventListener('input',update,true);document.removeEventListener('change',update,true);document.removeEventListener('reset',reset,true);for(const entry of new Set(errors.values()))clear(entry);};
  },[]);
  return null;
 }

@@ -29,10 +29,17 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',768],['sw',360]] as co
  await page.locator('.svc-setup-start').click();
  const wizard=page.locator('.svc-onboarding');await expect(wizard).toBeVisible();
  await wizard.getByRole('button',{name:t.title,exact:true}).click();
+ const beforeEmpty=JSON.stringify(f.getProgress()),writesBeforeEmpty=f.writes.length;
+ await wizard.getByRole('button',{name:new RegExp(t.next)}).click();
+ await expect(wizard.getByLabel(t.name,{exact:false})).toBeFocused();await expect(wizard.locator('.shida-field-error')).toHaveCount(2);
+ expect(f.writes).toHaveLength(writesBeforeEmpty);expect(JSON.stringify(f.getProgress())).toBe(beforeEmpty);
  await wizard.getByRole('button',{name:t.personal,exact:true}).click();
  await expect(wizard.getByLabel(t.name,{exact:false})).toHaveValue('Test owner');
  await wizard.getByLabel(t.name,{exact:false}).fill('Horizon');
+ await wizard.getByRole('button',{name:new RegExp(t.next)}).click();
+ await expect(wizard.locator('input[name="primary_category"]').first()).toBeFocused();await expect(wizard.locator('.shida-field-error')).toHaveCount(1);
  await wizard.locator('input[name="primary_category"][value="professional_services"]').check();
+ await expect(wizard.locator('.shida-field-error')).toHaveCount(0);
  await page.screenshot({path:`test-results/services-onboarding/identity-${locale}-${width}.png`,fullPage:true});
  await wizard.getByRole('button',{name:new RegExp(t.next)}).click();
  await wizard.getByLabel(t.service,{exact:false}).fill('Business tutoring');
@@ -57,8 +64,16 @@ test('existing nullable identity skips identity editing and keeps shared name un
  const wizard=page.locator('.svc-onboarding');await wizard.getByRole('button',{name:'Add a service',exact:true}).click();
  await expect(wizard.locator('input[name="primary_category"]')).toHaveCount(0);
  await expect(wizard).toContainText('Horizon');
+ const before=JSON.stringify(f.getProgress()),writes=f.writes.length;
+ for(let attempt=0;attempt<2;attempt++){
+  await wizard.getByRole('button',{name:/Continue/}).click();
+  await expect(wizard.getByLabel('Service name',{exact:false})).toBeFocused();await expect(wizard.locator('.shida-field-error')).toHaveCount(2);
+ }
+ expect(f.writes).toHaveLength(writes);expect(JSON.stringify(f.getProgress())).toBe(before);
  await wizard.getByLabel('Service name',{exact:false}).fill('Mixed category offering');
+ await wizard.getByRole('button',{name:/Continue/}).click();await expect(wizard.locator('input[name="category"]').first()).toBeFocused();
  await wizard.locator('input[name="category"][value="education_training"]').check();
+ await expect(wizard.locator('.shida-field-error')).toHaveCount(0);
  await wizard.getByRole('button',{name:/Continue/}).click();
  expect(f.getProgress()?.fields.name).toBeUndefined();
  expect(f.getProgress()?.fields.primary_category).toBeUndefined();

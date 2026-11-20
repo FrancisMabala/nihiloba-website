@@ -33,8 +33,16 @@ for(const [locale,width] of [['en',1440],['fr',390],['ln',768],['sw',360],['fr',
  await page.screenshot({path:`test-results/personal-offer/step1-${locale}-${width}.png`,fullPage:true});
  await form.getByRole('button',{name:t.next,exact:true}).click();
  await form.getByLabel(t.fields.duration_frequency,{exact:true}).selectOption(f.duration[1]);
+ await form.getByLabel(f.from,{exact:true}).fill('09:00');
+ await form.getByLabel(f.to,{exact:true}).fill('13:00');
+ const savesBeforeMissingDays=writes.filter(w=>w.action==='save').length;
+ await form.getByRole('button',{name:t.next,exact:true}).click();
+ await expect(form.getByLabel(f.week[0],{exact:true})).toBeFocused();
+ await expect(form.locator('[data-validation-focus]')).toHaveAttribute('aria-invalid','true');
+ expect(writes.filter(w=>w.action==='save')).toHaveLength(savesBeforeMissingDays);
  await form.getByLabel(f.week[0],{exact:true}).check();
  await form.getByLabel(f.week[4],{exact:true}).check();
+ await expect(form.locator('[data-validation-focus]')).not.toHaveAttribute('data-shida-invalid');
  await form.getByLabel(f.from,{exact:true}).fill('09:00');
  await form.getByLabel(f.to,{exact:true}).fill('13:00');
  await form.getByLabel(f.skip,{exact:true}).uncheck();
