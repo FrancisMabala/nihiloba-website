@@ -1,8 +1,8 @@
 import {test,expect} from '@playwright/test';
 import {statisticsCopy} from '../../app/lib/website-statistics-consent';
-for(const locale of ['fr','en','ln','sw'] as const)for(const width of [390,1440])test(`optional statistics consent and revocation ${locale} ${width}`,async({page},info)=>{
+for(const locale of ['fr','en','ln','sw'] as const)for(const width of [360,390,1440])test(`optional statistics consent and revocation ${locale} ${width}`,async({page},info)=>{
  const events:Record<string,unknown>[]=[];await page.route('**/api/shida/statistics/**',route=>{events.push(route.request().postDataJSON());return route.fulfill({status:204});});
- await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/emplois/`);const t=statisticsCopy[locale],panel=page.locator('.website-statistics');
+ await page.setViewportSize({width,height:844});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/emplois/`);const t=statisticsCopy[locale],panel=page.locator('.website-statistics');
  await expect(panel.getByRole('button',{name:t.accept,exact:true})).toBeVisible();expect(events).toHaveLength(0);
  expect(await page.evaluate(()=>Object.keys(localStorage).some(key=>key.startsWith('shida_statistics_')))).toBe(false);
  for(const name of [t.accept,t.decline]){const box=await panel.getByRole('button',{name,exact:true}).boundingBox();expect(box!.height).toBeGreaterThanOrEqual(44);}

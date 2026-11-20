@@ -8,3 +8,8 @@
 .website-statistics-options a{display:inline-flex;align-items:center;min-height:44px;margin-bottom:8px;color:inherit;text-decoration:underline}.website-statistics-options a:focus-visible{outline:3px solid #aa771e;outline-offset:3px}
 .website-statistics-actions{display:flex;gap:10px;flex-wrap:wrap}.website-statistics-actions button{flex:1 1 180px}
 @media(max-width:540px){.website-statistics-control{align-items:flex-start;flex-direction:column}.website-statistics-actions{flex-direction:column}.website-statistics-actions button{flex:auto;width:100%}}
+/* This footer is outside the page shells that reserve room for fixed navigation. */
+@media screen and (max-width:1023px){
+ .website-statistics{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+ .website-statistics button,.website-statistics a{scroll-margin-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+}

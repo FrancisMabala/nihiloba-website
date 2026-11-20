@@ -1,11 +1,11 @@
 'use client';
 import {useRouter} from 'next/navigation';
-import {useEffect,useRef,useState,type FormEvent} from 'react';
+import {useEffect,useLayoutEffect,useRef,useState,type FormEvent} from 'react';
 import {WenzeBuyerProvider,useWenzeBuyer} from './wenze-buyer';
 import {MedaListingForm,type MedaListing as Listing} from './meda-listing-form';
 import {ApplicationForm,MedaAgreement,MedaReport,MedaPhoto,type MedaEnquiry as Enquiry} from './meda-participation';
 import {medaParticipationCopy} from '../../lib/meda-participation-copy';
-import {medaCopy,type MedaLocale} from '../../lib/meda-copy';
+import {medaCopy,medaHistoryCopy,type MedaLocale} from '../../lib/meda-copy';
 import {MedaHero,MedaInvitation,MedaSearch,MedaResultCard,defaultMedaFilters,readMedaFilters,type MedaFilters} from './meda-discovery';
 import {SpaceIcon} from './account-space-icon';
 import {medaDiscoveryCopy} from '../../lib/meda-discovery-copy';
@@ -125,11 +125,48 @@ function Workspace({locale,actor,embedded,activity}:{locale:MedaLocale;activity:
    {closing&&<div role="alert"><p>{t.closeNote}</p><button disabled={busy} onClick={()=>void listingAction('close')}>{t.confirmClose}</button><button disabled={busy} onClick={()=>setClosing(false)}>{t.cancel}</button></div>}
   </aside></div>}
   {view==='enquiries'&&<><div className="meda-grid">{enquiries?.items.map(item=><article className="meda-card" key={item.reference}><h2>{item.listing.title}</h2><p>{item.listing.origin_city} → {item.listing.destination_city}</p><p>{item.unread} {t.unread}</p><p>{item.can_reply?t.published:t.closed}</p><button disabled={busy} onClick={()=>void openEnquiry(item.reference)}>{t.details}</button><p>{item.participant_label}</p></article>)}</div>{enquiries?.items.length===0&&<p className="meda-empty">{t.emptyEnquiries}</p>}<Pagination data={enquiries} t={t} busy={busy} load={page=>void load('enquiries',page,enquiryListing)}/></>}
-  {view==='conversation'&&conversation&&<div className="meda-conversation meda-panel"><button onClick={()=>void load('enquiries')}>{v.backMessages}</button><header className="meda-conversation-summary"><h2>{conversation.listing.title}</h2><p><strong>{conversation.participant_label||t.other}</strong></p><p>{conversation.listing.origin_city} → {conversation.listing.destination_city}</p><p>{t[conversation.listing.category]} · {t.notBooking}</p></header>{conversation.older&&<button disabled={busy} onClick={()=>void work(async()=>{const ticket=conversationState.current.begin(conversation.older!);const result=await call(`enquiries/${conversation.reference}/?before=${encodeURIComponent(conversation.older!)}`);if(alive.current){const accepted=conversationState.current.accept(ticket,result);if(accepted)setConversation(accepted);}})}>{t.older}</button>}<ol className="meda-messages">{conversation.messages?.map(message=><li key={message.reference} data-mine={message.mine}><strong>{message.mine?t.you:t.other}</strong><p>{message.body||(message.event?.kind?x[message.event.kind==='handover'?'handover_event':message.event.kind]??x.agreement:'')}</p>{message.event?.values&&<details><summary>{x.agreement}</summary><p>{message.event.values.objects.contents}</p><p>{message.event.values.objects.weight_kg} kg · {message.event.values.objects.packages} {x.packages}</p><p>{message.event.values.price} {message.event.values.currency}</p><p>{message.event.values.collection}</p><p>{message.event.values.destination}</p><p>{message.event.values.conditions}</p></details>}{message.event?.handover&&<details><summary>{x.handover_event}</summary><p>{message.event.handover.contact}</p><p>{message.event.handover.address}</p></details>}<time dateTime={message.created_at}>{date(message.created_at)}</time></li>)}</ol><MedaAgreement key={`${conversation.reference}:${(conversation.agreement as {version?:number})?.version??0}`} locale={locale} conversation={conversation} call={conversationCall} binding={actor.binding??''}/><MedaReport locale={locale} reference={conversation.reference} call={call}/>{conversation.can_reply?<MessageForm t={t} busy={busy} onSubmit={send} label={t.reply}/>:<p>{t.readOnly}</p>}{conversation.status==='open'&&<button disabled={busy} onClick={()=>setClosing(true)}>{t.closeEnquiry}</button>}{closing&&<div><p>{t.closeNote}</p><button disabled={busy} onClick={()=>void work(async()=>{await conversationCall(`enquiries/${conversation.reference}/close/`,{revision:conversation.revision});if(alive.current)setClosing(false);})}>{t.confirmClose}</button><button disabled={busy} onClick={()=>setClosing(false)}>{t.cancel}</button></div>}</div>}
+  {view==='conversation'&&conversation&&<div className="meda-conversation meda-panel"><button onClick={()=>void load('enquiries')}>{v.backMessages}</button><header className="meda-conversation-summary"><h2>{conversation.listing.title}</h2><p><strong>{conversation.participant_label||t.other}</strong></p><p>{conversation.listing.origin_city} → {conversation.listing.destination_city}</p><p>{t[conversation.listing.category]} · {t.notBooking}</p></header><MedaConversationHistory key={conversation.reference} conversation={conversation} locale={locale} busy={busy} onOlder={()=>void work(async()=>{const ticket=conversationState.current.begin(conversation.older!);const result=await call(`enquiries/${conversation.reference}/?before=${encodeURIComponent(conversation.older!)}`);if(alive.current){const accepted=conversationState.current.accept(ticket,result);if(accepted)setConversation(accepted);}})}/><MedaAgreement key={`${conversation.reference}:${(conversation.agreement as {version?:number})?.version??0}`} locale={locale} conversation={conversation} call={conversationCall} binding={actor.binding??''}/><MedaReport locale={locale} reference={conversation.reference} call={call}/>{conversation.can_reply?<MessageForm t={t} busy={busy} onSubmit={send} label={t.reply}/>:<p>{t.readOnly}</p>}{conversation.status==='open'&&<button disabled={busy} onClick={()=>setClosing(true)}>{t.closeEnquiry}</button>}{closing&&<div><p>{t.closeNote}</p><button disabled={busy} onClick={()=>void work(async()=>{await conversationCall(`enquiries/${conversation.reference}/close/`,{revision:conversation.revision});if(alive.current)setClosing(false);})}>{t.confirmClose}</button><button disabled={busy} onClick={()=>setClosing(false)}>{t.cancel}</button></div>}</div>}
   </>}
   <footer className="meda-notes"><p className="meda-safety"><SpaceIcon name="shield"/>{v.safety}</p><details><summary>{v.explanation}</summary><p>{t.payment}</p><p>{t.safety}</p><a href={`${prefix}/shida/space/?view=support`}>{t.support}</a></details></footer>
  </div></section>;
 }
+type HistoryPosition={first:string|undefined;anchor:string|undefined;offset:number;top:number;following:boolean};
+export function captureMedaHistoryPosition(region:HTMLDivElement):HistoryPosition{
+ const rows=Array.from(region.querySelectorAll<HTMLElement>('[data-message-ref]')),top=region.getBoundingClientRect().top;
+ const anchor=rows.find(row=>row.getBoundingClientRect().bottom>top);
+ return {first:rows[0]?.dataset.messageRef,anchor:anchor?.dataset.messageRef,offset:anchor?anchor.getBoundingClientRect().top-top:0,top:region.scrollTop,following:region.scrollHeight-region.clientHeight-region.scrollTop<=48};
+}
+export function restoreMedaHistoryPosition(region:HTMLDivElement,previous:HistoryPosition|null):HistoryPosition{
+ const rows=Array.from(region.querySelectorAll<HTMLElement>('[data-message-ref]'));
+ // New messages follow only readers already at the end. Prepending older pages
+ // preserves the visible message, even if a newer message arrived concurrently.
+ if(!previous||!previous.first||(previous.following&&previous.first===rows[0]?.dataset.messageRef))region.scrollTop=region.scrollHeight;
+ else {
+  const anchor=rows.find(row=>row.dataset.messageRef===previous.anchor);
+  region.scrollTop=anchor?region.scrollTop+anchor.getBoundingClientRect().top-region.getBoundingClientRect().top-previous.offset:previous.top;
+ }
+ return captureMedaHistoryPosition(region);
+}
+export function MedaConversationHistory({conversation,locale,busy,onOlder}:{conversation:Enquiry;locale:MedaLocale;busy:boolean;onOlder:()=>void}){
+ const t=medaCopy[locale],x=medaParticipationCopy[locale],copy=medaHistoryCopy[locale];
+ const region=useRef<HTMLDivElement>(null),position=useRef<HistoryPosition|null>(null);
+ const date=(value:string)=>new Intl.DateTimeFormat(locale==='ln'?'fr':locale,{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
+ useLayoutEffect(()=>{if(region.current)position.current=restoreMedaHistoryPosition(region.current,position.current);},[conversation.messages]);
+ useEffect(()=>{
+  if(!region.current||typeof ResizeObserver==='undefined')return;
+  const observer=new ResizeObserver(()=>{if(region.current)position.current=restoreMedaHistoryPosition(region.current,position.current);});
+  observer.observe(region.current);const list=region.current.querySelector('ol');if(list)observer.observe(list);return()=>observer.disconnect();
+ },[]);
+ function remember(){if(region.current)position.current=captureMedaHistoryPosition(region.current);}
+ function latest(){if(!region.current)return;region.current.scrollTop=region.current.scrollHeight;remember();region.current.focus({preventScroll:true});}
+ return <div className="meda-history">
+  <div className="meda-history-actions">{conversation.older&&<button type="button" disabled={busy} onClick={onOlder}>{t.older}</button>}<button type="button" onClick={latest}>{copy.latest}</button></div>
+  <div className="meda-history-scroll" ref={region} role="region" aria-label={copy.history} tabIndex={0} onScroll={remember} onToggle={remember}>
+   <ol className="meda-messages">{conversation.messages?.map(message=><li key={message.reference} data-message-ref={message.reference} data-mine={message.mine}><strong>{message.mine?t.you:t.other}</strong><p>{message.body||(message.event?.kind?x[message.event.kind==='handover'?'handover_event':message.event.kind]??x.agreement:'')}</p>{message.event?.values&&<details><summary>{x.agreement}</summary><p>{message.event.values.objects.contents}</p><p>{message.event.values.objects.weight_kg} kg · {message.event.values.objects.packages} {x.packages}</p><p>{message.event.values.price} {message.event.values.currency}</p><p>{message.event.values.collection}</p><p>{message.event.values.destination}</p><p>{message.event.values.conditions}</p></details>}{message.event?.handover&&<details><summary>{x.handover_event}</summary><p>{message.event.handover.contact}</p><p>{message.event.handover.address}</p></details>}<time dateTime={message.created_at}>{date(message.created_at)}</time></li>)}</ol>
+  </div>
+ </div>;
+}
+
 type Copy=typeof medaCopy[MedaLocale];
 function Pagination({data,t,busy,load}:{data:Page<unknown>|null;t:Copy;busy:boolean;load:(page:number)=>void}){return data&&<nav className="meda-pagination" aria-label={t.browse}>{data.page>1&&<button disabled={busy} onClick={()=>load(data.page-1)}>{t.previous}</button>}{data.has_more&&<button disabled={busy} onClick={()=>load(data.page+1)}>{t.next}</button>}</nav>;}
 function MessageForm({t,busy,onSubmit,label}:{t:Copy;busy:boolean;onSubmit:(event:FormEvent<HTMLFormElement>)=>void;label:string}){return <form onSubmit={onSubmit}><label>{t.message}<textarea name="message" required minLength={1} maxLength={2000} rows={4} disabled={busy}/></label><p className="meda-hint">{t.privacy}</p><button disabled={busy} className="button button-primary">{label}</button></form>;}

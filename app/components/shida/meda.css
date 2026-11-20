@@ -1,4 +1,5 @@
 /* Meda composes the shared SHIDA palette, hero, invitation and account patterns. */
+.meda-history{min-width:0;margin:16px 0}.meda-history-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.meda-history-actions button{min-height:44px;max-width:100%}.meda-history-scroll{max-height:min(50vh,28rem);max-height:min(50dvh,28rem);overflow-y:auto;overflow-anchor:none;scrollbar-gutter:stable;padding:6px;min-width:0;border:1px solid var(--line);border-radius:8px}.meda-history-scroll:focus-visible{outline:3px solid var(--gold);outline-offset:3px}.meda-history-scroll .meda-messages{margin:0}.meda-history-scroll summary{min-height:44px;padding-block:10px}
 .meda{background:var(--ivory);color:var(--forest);padding:18px 0 calc(88px + env(safe-area-inset-bottom));min-height:65vh}
 .meda .container{max-width:1180px;min-width:0}.meda-embedded{background:transparent;padding:0 0 24px;min-height:0}.meda-embedded>.container{padding:0}
 .meda h1,.meda h2,.meda h3{font-family:Georgia,'Times New Roman',serif;color:var(--forest);overflow-wrap:anywhere}.meda h1{font-size:2rem;line-height:1.2}.meda h2{line-height:1.25}.meda p{line-height:1.5;overflow-wrap:anywhere}
