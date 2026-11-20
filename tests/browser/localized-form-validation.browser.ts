@@ -80,8 +80,37 @@ test('native form ownership separates same names and does not merge unnamed radi
  await expect(root.locator('.shida-field-error')).toHaveCount(2);expect(await root.getByLabel('First B').getAttribute('aria-describedby')).not.toBe(firstId);
  await root.getByLabel('Second B').check();await expect(root.locator('.shida-field-error')).toHaveCount(1);await expect(root.getByLabel('First A')).toHaveAttribute('aria-invalid','true');
  await root.getByRole('button',{name:'Reset A',exact:true}).click();await expect(root.locator('.shida-field-error')).toHaveCount(0);await expect(root.getByLabel('External A')).not.toHaveAttribute('aria-describedby');
+ // An unnamed radio's required attribute alone does not produce valueMissing.
+ // Give each independent control a real native constraint before submitting.
+ await root.locator('#validation-unnamed input').evaluateAll(nodes=>nodes.forEach(node=>(node as HTMLInputElement).setCustomValidity('Synthetic constraint')));
+ expect(await root.locator('#validation-unnamed input').evaluateAll(nodes=>nodes.every(node=>(node as HTMLInputElement).validity.customError))).toBe(true);
  await root.getByRole('button',{name:'Validate unnamed',exact:true}).click();await expect(root.getByLabel('Unnamed one')).toBeFocused();await expect(root.locator('.shida-field-error')).toHaveCount(2);
+ const unnamedIds=await root.locator('#validation-unnamed input').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('aria-describedby')));
+ expect(unnamedIds.every(Boolean)).toBe(true);expect(new Set(unnamedIds).size).toBe(2);
+ await root.getByLabel('Unnamed two').evaluate(node=>(node as HTMLInputElement).setCustomValidity(''));
  await root.getByLabel('Unnamed two').check();await expect(root.locator('.shida-field-error')).toHaveCount(1);
+ await expect(root.getByLabel('Unnamed one')).toHaveAttribute('aria-invalid','true');await expect(root.getByLabel('Unnamed two')).not.toHaveAttribute('aria-invalid');
+ await expect(root.locator('#validation-unnamed')).not.toHaveAttribute('data-submissions');
+});
+
+test('native validation proxy focuses its visible control and clears after its change handler',async({page})=>{
+ // This exercises the shared validator contract, not the current MissionWizard.
+ const root=await fixture(page,`<form><fieldset><legend>Schedule</legend>
+  <label><input id="proxy-visible" type="checkbox">Monday</label>
+  <input aria-label="Selected days" data-validation-focus="#proxy-visible" required tabindex="-1" aria-describedby="proxy-help" style="position:absolute;width:1px;height:1px;opacity:0">
+  <p id="proxy-help">Choose a day</p></fieldset><label>Notes<textarea required></textarea></label><button>Continue</button></form>`);
+ await root.getByLabel('Monday').evaluate(checkbox=>checkbox.addEventListener('change',()=>{
+  // A controlled-value update runs after the document capture listener.
+  checkbox.closest('fieldset')!.querySelector<HTMLInputElement>('[data-validation-focus]')!.value=(checkbox as HTMLInputElement).checked?'selected':'';
+ }));
+ await root.getByRole('button',{name:'Continue'}).click();await expect(root.getByLabel('Monday')).toBeFocused();
+ await expect(root.locator('.shida-field-error')).toHaveCount(2);await expect(root.getByLabel('Selected days')).toHaveAttribute('aria-invalid','true');
+ await expect(root.locator('form')).not.toHaveAttribute('data-submissions');
+ await root.getByLabel('Monday').check();await expect(root.locator('.shida-field-error')).toHaveCount(1);
+ await expect(root.getByLabel('Selected days')).toHaveAttribute('aria-describedby','proxy-help');await expect(root.getByLabel('Selected days')).not.toHaveAttribute('aria-invalid');
+ await root.getByRole('button',{name:'Continue'}).click();await expect(root.getByLabel('Notes')).toBeFocused();
+ await root.getByLabel('Notes').fill('Synthetic schedule note');await root.getByRole('button',{name:'Continue'}).click();
+ await expect(root.locator('form')).toHaveAttribute('data-submissions','1');await expect(root.locator('.shida-field-error')).toHaveCount(0);
 });
 
 test('translations, disable/reset and detached pending targets do not leave stale errors or focus',async({page})=>{
