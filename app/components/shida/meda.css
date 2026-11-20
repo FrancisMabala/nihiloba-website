@@ -30,3 +30,81 @@ body .meda.market-surface .meda-hero.illustrated-meda .marketplace-hero-descript
 .meda label.meda-route-field{margin:0}
 
 @media(max-width:767px){.meda :is(input,select,textarea),.meda .meda-route-field input{font-size:16px}}
+
+/* Use the marketplace's paper, outline and dark-green control hierarchy. */
+.meda-search{padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--ivory)}
+.meda-route-search{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:stretch;gap:8px;background:#fffefb}
+.meda-route-search>.button{align-self:stretch;min-height:56px}
+.meda .meda-route-field input{min-height:32px;background:transparent}
+.meda-categories{gap:8px;margin:16px 0}
+.meda-categories button{border-radius:8px;min-width:0;background:#fffefb;padding:10px 14px}
+.meda-sides{border-radius:8px;background:#fffefb;gap:4px;padding:4px}
+.meda-sides button{border-radius:6px;background:transparent}
+.meda .meda-categories [aria-pressed=true],.meda .meda-sides [aria-pressed=true]{background:var(--forest);border-color:var(--forest);color:#fff}
+.meda-filter-details summary{background:#fffefb}
+.meda-filter-details[open] summary{border-color:var(--forest)}
+.meda-filter-details>div{background:#fffefb}
+.meda-active-filters{padding-top:14px;border-top:1px solid var(--line)}
+.meda-active-filters>span:not(:first-child){padding:6px 10px;background:#fffefb;border:1px solid var(--line);border-radius:6px}
+.meda-active-filters>button{margin-left:auto;background:transparent;text-decoration:underline;text-underline-offset:3px}
+
+/* All steps stay mounted so previous/next never clears the user's draft. */
+.meda .meda-form{max-width:860px;background:#fffefb;padding:28px}
+.meda-form>h2{font-size:1.75rem;margin:0 0 22px}
+.meda-form-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;list-style:none;margin:0 0 28px;padding:0}
+.meda-form-steps li{display:flex;align-items:center;gap:8px;min-width:0;padding:12px 0;border-bottom:2px solid var(--line);color:var(--muted);font-size:.875rem;line-height:1.4;overflow-wrap:anywhere}
+.meda-form-steps li>span{display:grid;place-items:center;flex-shrink:0;width:28px;height:28px;border:1px solid var(--line);border-radius:50%;font-weight:700}
+.meda-form-steps [aria-current=step]{color:var(--forest);border-color:var(--forest);font-weight:700;scroll-margin-top:90px}
+.meda-form-steps [aria-current=step]>span{background:var(--forest);border-color:var(--forest);color:#fff}
+.meda-form-steps li:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.meda-form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+.meda-country-field{display:grid;gap:6px;min-width:0}
+.meda-form-grid>:is(p,fieldset,section,.meda-form-wide),.meda-form-grid>label:has(textarea){grid-column:1/-1}
+.meda-form-grid>.meda-hint{margin:0}
+.meda-form :is(input:not([type=checkbox]),select,textarea){background:#fff;min-height:48px}
+.meda-form textarea{line-height:1.5}
+.meda-form .meda-choice-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--ivory)}
+.meda-choice-group legend{padding:0 6px;font-size:.875rem;font-weight:650}
+.meda-form label.meda-choice{display:flex;align-items:center;gap:10px;min-height:44px;margin:0;font-weight:400;line-height:1.4}
+.meda-form .meda-choice input[type=checkbox]{flex:0 0 20px;width:20px;height:20px;min-height:20px;padding:0;margin:0;accent-color:var(--forest)}
+.meda-form .meda-objects{border-top:1px solid var(--line);padding-top:8px}
+.meda-form .meda-objects>h3{margin:12px 0;font-size:1.2rem}
+.meda-form .meda-objects>p{font-size:.875rem;color:var(--muted)}
+.meda-form .meda-objects label{display:grid;gap:6px;margin:18px 0}
+.meda-photo-upload{margin:18px 0}
+.meda-form input[type=file]{padding:8px;font-size:.875rem}
+.meda-form input[type=file]::file-selector-button{min-height:36px;max-width:100%;border:1px solid var(--line);border-radius:6px;background:var(--ivory);color:var(--forest);font:inherit;margin-right:8px;padding:6px 10px}
+.meda-form-review{display:grid;gap:18px;min-width:0}
+.meda-form-review>button{justify-self:start}
+.meda-form-review>div:not(.meda-form-submit){padding:18px;border-radius:8px;background:var(--ivory);border:1px solid var(--line)}
+.meda-form-review h3{margin-top:0}
+.meda-form-review>p{margin:0}
+.meda-form-submit{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:12px}
+.meda-form .meda-actions{margin:4px 0 0;padding-top:20px;border-top:1px solid var(--line);align-items:center}
+.meda-form .meda-actions>button:last-child{margin-left:auto;background:transparent;border-color:transparent;text-decoration:underline;text-underline-offset:3px}
+.meda-form .meda-actions>button{min-height:48px}
+
+@media(max-width:767px){
+ /* Override the shared public-marketplace horizontal chip rail for Meda's four choices. */
+ body .market-surface[data-public-marketplace] .meda-search .meda-categories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;padding-bottom:0}
+ body .market-surface[data-public-marketplace] .meda-search .meda-categories button{min-width:0;min-height:44px;white-space:normal;overflow-wrap:anywhere;font-size:.82rem}
+ .meda-search{padding:12px}
+ .meda-route-search{grid-template-columns:minmax(0,1fr);background:transparent}
+ .meda-route-search>.button{min-height:48px}
+ .meda-categories button{padding:10px 8px;gap:6px}
+ .meda-sides{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .meda-sides button{border-radius:6px}
+ .meda-filter-details>div{grid-template-columns:minmax(0,1fr);padding:12px}
+ .meda .meda-form{padding:16px}
+ .meda-form>h2{font-size:1.5rem;margin-bottom:16px}
+ .meda-form-steps{gap:8px;margin-bottom:22px}
+ .meda-form-steps li{flex-direction:column;align-items:flex-start;gap:6px;font-size:.75rem;padding:8px 0}
+ .meda-form-grid{grid-template-columns:minmax(0,1fr);gap:20px}
+ .meda-form .meda-choice-group{grid-template-columns:minmax(0,1fr);padding:12px}
+ .meda-form-review>div:not(.meda-form-submit){padding:14px}
+ .meda-form-submit{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+ .meda-form-submit>.button{width:100%;min-height:48px}
+ .meda-form .meda-actions{gap:8px}
+ .meda-form .meda-actions>button{flex:1 1 auto;padding-inline:12px}
+ .meda-form .meda-actions>button:last-child{flex-basis:100%;margin-left:0}
+}

@@ -70,7 +70,9 @@ function Workspace({locale,actor,embedded,activity}:{locale:MedaLocale;activity:
     else {const row:Listing=await call(`listings/${reference}/`);if(alive.current&&ticket===generation.current){setSelected(row);setView('review');}}});return;}
    await load(next==='enquiries'||next==='mine'?next:'browse',1,params.get('listing'),initialFilters);
   }
-  void initial();return()=>{alive.current=false;};
+  // Effect replay can supersede this setup before its locked read completes.
+  // Only the current setup may acquire the work lock; keep response guards too.
+  queueMicrotask(()=>{if(alive.current&&ticket===generation.current)void initial();});return()=>{alive.current=false;};
  // Each authenticated identity remounts this workspace, clearing private data.
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[]);
@@ -97,7 +99,7 @@ function Workspace({locale,actor,embedded,activity}:{locale:MedaLocale;activity:
   {(view==='browse'||view==='mine')&&<>
    {view==='browse'&&listings&&listings.items.length>0&&<h2 className="meda-results-title">{filters.side==='request'?v.requests:v.results}</h2>}
    <div className="meda-grid">{listings?.items.flatMap((row,index)=>[<MedaResultCard key={row.reference} row={row} locale={locale} busy={busy} onOpen={()=>void openListing(row)}/>,...(view==='browse'&&index===0?[<MedaInvitation key="invitation" locale={locale}/>]:[])])}</div>
-   {listings?.items.length===0&&!busy&&!error&&<div className="meda-empty"><span className="meda-empty-icon"><SpaceIcon name="meda"/></span><h2>{view==='mine'?t.empty:searched?v.noMatch:v.empty}</h2>{view==='browse'&&searched&&<button onClick={()=>{document.querySelector<HTMLInputElement>('.meda-route-field input')?.focus();}}>{v.editFilters}</button>}{view==='browse'&&<MedaInvitation locale={locale}/>}</div>}
+   {listings?.items.length===0&&!busy&&!error&&<div className="meda-empty"><h2>{view==='mine'?t.empty:searched?v.noMatch:v.empty}</h2>{view==='browse'&&searched&&<button onClick={()=>{document.querySelector<HTMLInputElement>('.meda-route-field input')?.focus();}}>{v.editFilters}</button>}{view==='browse'&&<MedaInvitation locale={locale}/>}</div>}
    <Pagination data={listings} t={t} busy={busy} load={page=>void load(view,page)}/>
   </>}
   {view==='create'&&<MedaListingForm call={call} binding={actor.binding??''} locale={locale} initial={editing} busy={busy} onCancel={()=>void load('mine')} onSave={async(values,operation,publish)=>{await work(async()=>{const row=await call(editing?`listings/${editing.reference}/`:'listings/',editing?{action:'save',revision:editing.revision,values}:{operation_key:operation,values});if(alive.current){setSelected(row);navigate('review',row.reference);}if(publish){const published=await call(`listings/${row.reference}/`,{action:'publish',revision:row.revision});if(alive.current){setSelected(published);setNotice(t.saved);}}});}}/>}
