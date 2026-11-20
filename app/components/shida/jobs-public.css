@@ -187,12 +187,12 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
 .employer-page {padding-block:clamp(1.25rem,3vw,3rem);color:#14392d}
 .employer-back,.employer-entry-links>a:last-child,.employer-vacancies>a {font-weight:650;text-decoration:underline;text-underline-offset:.18em}
 .employer-title-row,.employer-entry-links {display:flex;align-items:center;flex-wrap:wrap;gap:1rem}
-/* Shrink the name before wrapping text, keeping Follow beside the identity. */
-.employer-title-row {margin:1.5rem 0 .75rem;align-items:center;justify-content:flex-start;flex-wrap:nowrap}
-.employer-title-row>.job-relationship-actions {flex:0 0 auto;min-width:0;max-width:100%}
-.employer-heading {display:flex;align-items:center;gap:1rem;flex:0 1 auto;min-width:0;max-width:100%}
+.employer-title-row {margin:1.5rem 0 .75rem;align-items:flex-start;justify-content:flex-start}
+.employer-heading {display:flex;align-items:flex-start;gap:1rem;flex:1;min-width:0;max-width:100%}
+.employer-identity-text {display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;gap:10px;flex:1;min-width:0}
+.employer-identity-text>.job-relationship-actions {min-width:0;max-width:100%}
 .employer-page h1,.employer-page h2 {font-family:Georgia,serif;font-weight:600}
-.employer-title-row h1 {font-size:clamp(1.65rem,4.3vw,3.6rem);margin:0;min-width:0;overflow-wrap:anywhere;word-break:normal}
+.employer-title-row h1 {font-size:clamp(1.65rem,4.3vw,3.6rem);line-height:1.15;margin:0;min-width:0;overflow-wrap:anywhere;word-break:normal}
 .employer-avatar {position:relative;flex:none;width:clamp(3rem,7vw,5rem);aspect-ratio:1;background:#ece7db;border-radius:.4rem;overflow:hidden}
 .employer-avatar .marketplace-image-fallback {position:absolute;inset:0;min-height:0;padding:0;display:grid;place-items:center;height:100%;font:700 1.8rem Georgia,serif;color:#14392d}
 .employer-avatar img {object-fit:contain}
@@ -206,7 +206,7 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
 .employer-job-arrow {flex:none}
 .employer-vacancies .employer-job-card h3 {display:block;overflow:visible;-webkit-line-clamp:unset;margin:.25rem 0;word-break:normal;overflow-wrap:anywhere}
 .employer-job-link:focus-visible,.employer-page :is(button,a):focus-visible {outline:3px solid var(--gold,#9c7b33);outline-offset:3px}
-.employer-title-row .job-action-button {border-radius:.4rem;min-height:44px;padding:0 1rem}
+.employer-title-row .job-action-button {border-radius:.4rem;min-height:44px;max-width:100%;padding:0 1rem;white-space:normal}
 .employer-invitation {display:flex;align-items:flex-start;gap:1rem;background:#f0f0e7;padding:clamp(1rem,2.4vw,2rem);border-radius:.75rem;overflow-wrap:anywhere}
 .employer-invitation>div {min-width:0}
 .employer-invitation>svg {width:1.75rem;flex:none}
@@ -217,7 +217,6 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
  .employer-heading {gap:12px;align-items:flex-start}
  .employer-title-row h1 {flex:1;min-width:0;font-size:clamp(1.25rem,5vw,1.6rem);line-height:1.25}
  .employer-avatar {width:44px}
- .employer-title-row>.job-relationship-actions {min-width:0;justify-self:start;margin-left:56px;max-width:calc(100% - 56px)}
  .employer-page header :is(.employer-provenance,.employer-intro,.employer-description) {font-size:.875rem;line-height:1.45;overflow-wrap:anywhere}
  .employer-vacancies {margin-top:16px}
  .employer-vacancies .job-result-list {gap:8px}

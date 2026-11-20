@@ -112,8 +112,9 @@ export async function JobEmployerPage({locale,slug}:{locale:Locale;slug:string})
     <Link className="employer-back" href={jobsPath}>← {c.back}</Link>
     <header>
       <div className="employer-title-row"><div className="employer-heading"><div className="employer-avatar"><MarketplaceImage src={safePublicImageUrl(employer.profile_image?.url)} alt="" fallback={Array.from(employer.name.trim())[0]?.toLocaleUpperCase(locale)||"•"} sizes="80px"/></div>
-        <h1>{employer.name}</h1></div>
+        <div className="employer-identity-text"><h1>{employer.name}</h1>
         {employer.identity_type!=="individual"&&<JobRelationshipActions locale={locale} employerReference={employer.public_ref} canFollow canSave={false}/>}
+        </div></div>
       </div>
       {(invitation||managed)&&<p className="employer-provenance">{managed?c.managedProfile:c.created}</p>}
       {directory&&!managed&&<p className="employer-intro">{c.intro}</p>}

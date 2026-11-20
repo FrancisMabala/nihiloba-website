@@ -48,8 +48,8 @@ export function ServicesOnboardingWizard({locale,accountName,categories,call,onC
  function set(name:string,value:string){if(finalIntent)return;setValues(old=>({...old,[name]:value}));setConfirmed(false);}
  const identity=data?.professional_profile;
  const category=(name:string,label:string)=><fieldset className="svc-onboarding-categories"><legend>{label} *</legend>{Object.entries(categories).map(([id,title])=><label key={id} className={values[name]===id?'is-selected':''}><input type="radio" name={name} required value={id} checked={values[name]===id} onChange={()=>set(name,id)}/><span>{title}</span></label>)}</fieldset>;
- return <section className="svc-onboarding" aria-busy={busy}>
-  <aside><h2>{identity?t.add:t.title}</h2><p>{t.intro}</p><Image src="/shida/services-onboarding-professions.png" width={1536} height={1024} sizes="(max-width:760px) 220px, 360px" alt="" className="svc-onboarding-art"/><p>{t.private}</p></aside>
+ return <section className="svc-onboarding" aria-busy={busy} data-active={progress?.status==='active'||undefined}>
+  {progress?.status!=='active'&&<aside><h2>{identity?t.add:t.title}</h2><p>{t.intro}</p><Image src="/shida/services-onboarding-professions.png" width={1536} height={1024} sizes="(max-width:760px) 220px, 360px" alt="" className="svc-onboarding-art"/><p>{t.private}</p></aside>}
   <div className="svc-onboarding-main">{data&&<p>{t.remaining}: <strong>{data.remaining_capacity??'—'}</strong></p>}
    <p role="status">{message}</p>{message&&<button type="button" disabled={busy} onClick={async ()=>{if(!dirty||(await leaveWork()))void load();}}>{t.reload}</button>}
    {!data&&<p>{t.loading}</p>}
