@@ -1,4 +1,5 @@
 'use client';
+import {ReceiptLinkInvite} from './receipt-link-invite';
 import {restaurantOrderLabel} from '../../lib/restaurant-order-number';
 import {ThermalReceipt} from './restaurant-thermal-receipt';
 import {receiptCopy} from '../../lib/restaurant-receipt-copy';
@@ -31,5 +32,5 @@ export function ProtectedReceipt({binding,locale,orderRef,establishment,onFailur
   void read();window.addEventListener('focus',resume);window.addEventListener('online',resume);window.addEventListener('offline',offline);document.addEventListener('visibilitychange',resume);
   return()=>{alive=false;controller.abort();window.removeEventListener('focus',resume);window.removeEventListener('online',resume);window.removeEventListener('offline',offline);document.removeEventListener('visibilitychange',resume);};
  },[binding,orderRef,establishment,onFailure]);
- return <>{!fresh && <p role="status">{workText(locale,error?'unavailable':order?'stale':'loading')}</p>}{order && fresh && <><ReceiptCard order={order} locale={locale}/>{!order.customer_receipt&&<ReceiptQR order={order} locale={locale} establishment={establishment}/>}</>}</>;
+ return <>{!fresh && <p role="status">{workText(locale,error?'unavailable':order?'stale':'loading')}</p>}{order && fresh && <><ReceiptCard order={order} locale={locale}/>{establishment&&order.entry_source==='counter'&&<ReceiptLinkInvite locale={locale} binding={binding} source="restaurant" merchantRef={establishment} receiptRef={orderRef}/>}{!order.customer_receipt&&<ReceiptQR order={order} locale={locale} establishment={establishment}/>}</>}</>;
 }

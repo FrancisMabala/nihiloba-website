@@ -7,8 +7,8 @@ import {wenzeScanCode} from "@/app/lib/wenze-scan-code";
 
 type Detector={detect:(video:HTMLVideoElement)=>Promise<{rawValue:string}[]>};
 type DetectorClass={new(options:{formats:string[]}):Detector;getSupportedFormats?:()=>Promise<string[]>};
-export function WenzeCamera({onCode,locale}:{onCode:(value:string)=>void;locale:WenzeLocale}){
- const t=cameraCopy[locale],video=useRef<HTMLVideoElement>(null),stream=useRef<MediaStream|null>(null);
+export function WenzeCamera({onCode,locale,parseCode=wenzeScanCode,scanCopy,requiredFormats}:{onCode:(value:string)=>void;locale:WenzeLocale;parseCode?:(value:string)=>string|null;requiredFormats?:readonly ("code_128"|"qr_code")[];scanCopy?:{guide:string;invalid:string;timeout:string}}){
+ const t={...cameraCopy[locale],...scanCopy},video=useRef<HTMLVideoElement>(null),stream=useRef<MediaStream|null>(null);
  const controls=useRef<{stop:()=>void}|null>(null),generation=useRef(0),frame=useRef(0),timer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const [open,setOpen]=useState(false),[message,setMessage]=useState("");
  const cleanup=useCallback(()=>{++generation.current;cancelAnimationFrame(frame.current);if(timer.current)clearTimeout(timer.current);controls.current?.stop();controls.current=null;stream.current?.getTracks().forEach(track=>track.stop());stream.current=null;if(video.current)video.current.srcObject=null;},[]);
@@ -18,7 +18,7 @@ export function WenzeCamera({onCode,locale}:{onCode:(value:string)=>void;locale:
   if(open)return;
   if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){setMessage(t.secure);return;}
   cleanup();const version=generation.current;setOpen(true);setMessage(t.starting);
-  const accept=(raw:string)=>{if(version!==generation.current)return;const code=wenzeScanCode(raw);if(!code){setMessage(t.invalid);return;}stop();setMessage("");onCode(code);};
+  const accept=(raw:string)=>{if(version!==generation.current)return;const code=parseCode(raw);if(!code){setMessage(t.invalid);return;}stop();setMessage("");onCode(code);};
   try{
    const acquired=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}}});
    if(version!==generation.current){acquired.getTracks().forEach(track=>track.stop());return;}
@@ -28,13 +28,20 @@ export function WenzeCamera({onCode,locale}:{onCode:(value:string)=>void;locale:
    const fallback=async()=>{
     const [{BrowserMultiFormatReader},{BarcodeFormat,DecodeHintType}]=await Promise.all([import("@zxing/browser"),import("@zxing/library")]);
     if(version!==generation.current||!video.current)return;
-    const reader=new BrowserMultiFormatReader(new Map([[DecodeHintType.POSSIBLE_FORMATS,[BarcodeFormat.CODE_128,BarcodeFormat.QR_CODE]]]),{delayBetweenScanAttempts:120,delayBetweenScanSuccess:500});
+    const wanted=requiredFormats?.length?requiredFormats:["code_128","qr_code"];
+    const reader=new BrowserMultiFormatReader(new Map([[DecodeHintType.POSSIBLE_FORMATS,wanted.map(format=>format==="qr_code"?BarcodeFormat.QR_CODE:BarcodeFormat.CODE_128)]]),{delayBetweenScanAttempts:120,delayBetweenScanSuccess:500});
     const running=await reader.decodeFromStream(acquired,video.current,result=>{if(result)accept(result.getText());});
     if(version!==generation.current)running.stop();else controls.current=running;
    };
    const Native=(window as unknown as {BarcodeDetector?:DetectorClass}).BarcodeDetector;
    let detector:Detector|null=null;
-   if(Native){try{const formats=await Native.getSupportedFormats?.();if(!formats||formats.includes("code_128"))detector=new Native({formats:formats?.includes("qr_code")?["code_128","qr_code"]:["code_128"]});}catch{/* use compatible decoder */}}
+   if(Native){try{
+    const formats=await Native.getSupportedFormats?.(),required=requiredFormats?.length?requiredFormats:["code_128"];
+    // A QR-only caller must not get stuck in a native product-barcode decoder.
+    // Unknown native capabilities use ZXing for explicitly required formats.
+    if(formats?required.every(format=>formats.includes(format)):!requiredFormats?.length)
+     detector=new Native({formats:requiredFormats?.length?[...requiredFormats]:formats?.includes("qr_code")?["code_128","qr_code"]:["code_128"]});
+   }catch{/* use compatible decoder */}}
    if(version!==generation.current)return;
    if(!detector){await fallback();return;}
    const tick=async()=>{if(version!==generation.current||!video.current)return;try{const codes=await detector!.detect(video.current);if(codes[0])accept(codes[0].rawValue);}catch{try{await fallback();}catch{if(version===generation.current){stop();setMessage(t.failed);}}return;}if(version===generation.current)frame.current=requestAnimationFrame(()=>void tick());};

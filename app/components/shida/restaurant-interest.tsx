@@ -1,5 +1,6 @@
 'use client';
-import {useEffect} from 'react';
+import {useEffect,useSyncExternalStore} from 'react';
+import {statisticsConsentSnapshot,statisticsServerSnapshot,subscribeStatisticsConsent} from '../../lib/website-statistics-consent';
 import {restorePersonalSession} from '../../lib/personal-session-browser';
 import {request} from '../../lib/restaurant-seller-browser';
 import {eligibleInterest,interestReceipt,type InterestKind} from '../../lib/restaurant-interest';
@@ -7,17 +8,22 @@ import {insightsCopy} from '../../lib/restaurant-insights-copy';
 import type {RestaurantLocale} from '../../services/shida/restaurants-client';
 
 export function RestaurantInterest({establishmentRef,locale,menuOnly,menuAvailable}:{establishmentRef:string;locale:RestaurantLocale;menuOnly:boolean;menuAvailable:boolean}){
+ const consent=useSyncExternalStore(subscribeStatisticsConsent,statisticsConsentSnapshot,statisticsServerSnapshot);
  useEffect(()=>{
-  const receipt=interestReceipt(),sent=new Set<string>(),timers=new Map<string,ReturnType<typeof setTimeout>>();let alive=true;
+  if(consent!=='accepted')return;
+  const controller=new AbortController(),receipt=interestReceipt(),sent=new Set<string>(),timers=new Map<string,ReturnType<typeof setTimeout>>();let alive=true;
+  const permitted=()=>alive&&!controller.signal.aborted&&statisticsConsentSnapshot()==='accepted';
+  const stop=()=>{alive=false;controller.abort();timers.forEach(clearTimeout);timers.clear();};
+  const unsubscribe=subscribeStatisticsConsent(()=>{if(statisticsConsentSnapshot()!=='accepted')stop();});
   const visible=(element:Element|null)=>{if(document.visibilityState!=='visible'||!element)return false;const r=element.getBoundingClientRect();return r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight;};
   const send=(kind:InterestKind,element:Element|null,item?:string)=>{
-   const key=receipt(kind,item);if(sent.has(key)||timers.has(key)||!visible(element))return;
-   timers.set(key,setTimeout(()=>{timers.delete(key);if(!alive||(kind!=='item_selections'&&!visible(element))||kind==='item_views'&&!element?.hasAttribute('open'))return;
-    sent.add(key);void restorePersonalSession().then(session=>{if(!alive)return;return request(`personal/restaurant-orders/establishments/${establishmentRef}/interest`,{method:'POST',body:JSON.stringify({kind,operation_key:key,...(item?{item_ref:item}:{})})},session.binding);}).catch(()=>{sent.delete(key);});
+   if(!permitted())return;const key=receipt(kind,item);if(sent.has(key)||timers.has(key)||!visible(element))return;
+   timers.set(key,setTimeout(()=>{timers.delete(key);if(!permitted()||(kind!=='item_selections'&&!visible(element))||kind==='item_views'&&!element?.hasAttribute('open'))return;
+    sent.add(key);void restorePersonalSession(controller.signal).then(session=>{if(!permitted())return;return request(`personal/restaurant-orders/establishments/${establishmentRef}/interest`,{method:'POST',signal:controller.signal,body:JSON.stringify({kind,operation_key:key,...(item?{item_ref:item}:{})})},session.binding);}).catch(()=>{sent.delete(key);});
    },1000));
   };
   const interact=(event:Event)=>{
-   if(!eligibleInterest(event,document.visibilityState==='visible',navigator.webdriver,navigator.doNotTrack==='1'))return;
+   if(!permitted()||!eligibleInterest(event,document.visibilityState==='visible',navigator.webdriver,navigator.doNotTrack==='1'))return;
    if(!menuOnly)send('profile_opens',document.querySelector('.restaurant-detail-header'));
    if(menuAvailable)send('menu_opens',document.querySelector('#guest-order .rst-checkout-items'));
    if(event.type!=='click'||!(event.target instanceof Element))return;
@@ -29,7 +35,7 @@ export function RestaurantInterest({establishmentRef,locale,menuOnly,menuAvailab
    if(selection&&!selection.disabled)send('item_selections',selection,selection.dataset.restaurantItemSelection);
   };
   const events=['click','pointerdown','keydown','scroll'];events.forEach(name=>document.addEventListener(name,interact,{passive:true}));
-  return()=>{alive=false;timers.forEach(clearTimeout);events.forEach(name=>document.removeEventListener(name,interact));};
- },[establishmentRef,menuOnly,menuAvailable]);
+  return()=>{stop();unsubscribe();events.forEach(name=>document.removeEventListener(name,interact));};
+ },[establishmentRef,menuOnly,menuAvailable,consent]);
  return <p className="restaurant-note">{insightsCopy[locale].customerNotice}</p>;
 }

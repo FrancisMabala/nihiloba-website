@@ -1,5 +1,7 @@
 export const medaParticipationCopy: Record<"en"|"fr"|"ln"|"sw",Record<string,string>> = {
   "en": {
+    "version": "Version",
+    "total": "Total agreed price",
     "home": "Transport space and objects",
     "browse": "Browse",
     "create": "Publish on the web",
@@ -86,6 +88,8 @@ export const medaParticipationCopy: Record<"en"|"fr"|"ln"|"sw",Record<string,str
     "handover_event": "Private handover details shared"
   },
   "fr": {
+    "version": "Version",
+    "total": "Prix total convenu",
     "home": "Transporter ou envoyer un colis",
     "browse": "Parcourir",
     "create": "Publier sur le web",
@@ -172,6 +176,8 @@ export const medaParticipationCopy: Record<"en"|"fr"|"ln"|"sw",Record<string,str
     "handover_event": "Coordonnées de remise partagées en privé"
   },
   "ln": {
+    "version": "Version",
+    "total": "Ntalo nyonso toyokani",
     "home": "Komema to kotinda colis",
     "browse": "Tala",
     "create": "Bimisa na site",
@@ -258,6 +264,8 @@ export const medaParticipationCopy: Record<"en"|"fr"|"ln"|"sw",Record<string,str
     "handover_event": "Makambo ya kopesa etindami na sekele"
   },
   "sw": {
+    "version": "Toleo",
+    "total": "Jumla ya bei iliyokubaliwa",
     "home": "Kubeba au kutuma kifurushi",
     "browse": "Vinjari",
     "create": "Chapisha kwenye tovuti",

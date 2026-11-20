@@ -4,7 +4,8 @@ import { EmployerPageView } from "./employer-page-view";
 import {MarketplaceWelcome} from "./marketplace-welcome";
 import {SpaceIcon} from "./account-space-icon";
 import {JobRelationshipActions} from "./job-relationship-actions";
-import {employerCopy} from "../../lib/employer-page-copy";
+import {employerCopy, employerCandidateCopy} from "../../lib/employer-page-copy";
+import {jobSearchPath} from "../../lib/job-search-copy";
 import {JobCategories, JobCategoryIcon, jobDiscoveryCopy, type JobCategory} from "./job-discovery-ui";
 import {ActiveSearchFilters} from "./active-search-filters";
 import {marketplaceDiscoveryCopy} from "../../lib/marketplace-discovery-copy";
@@ -82,12 +83,12 @@ export async function JobCollectionPage({locale,search,initialOffer}:{locale:Loc
       <div className="jobs-results-heading mp-results-heading"><h2 id="job-discovery-title">{compactMarketplaceCopy[locale].jobs}</h2>{collection&&<p className="marketplace-result-count" role="status">{collection.pagination.total_items} {collection.pagination.total_items===1?t.result:t.results}</p>}</div>
       <div className="job-results" id="job-results">
         {collection?<>
-          {activeItems.length?<JobListDetail key={jobSearchQuery(search)} items={activeItems} locale={locale}/>:welcome?<MarketplaceWelcome market="emplois" locale={locale}><ButtonLink href={marketplacePath(locale,"/shida/space?view=job-search")}>{({fr:"Ma recherche d’emploi",en:"My job search",ln:"Boluki mosala na ngai",sw:"Utafutaji wangu wa kazi"})[locale]}</ButtonLink><ButtonLink variant="secondary" href={marketplacePath(locale,"/shida/space?view=job-offer")}>{({fr:"Publier une offre",en:"Post a job",ln:"Tia mosala",sw:"Chapisha nafasi ya kazi"})[locale]}</ButtonLink></MarketplaceWelcome>:<div className="job-view-empty"><JobCategoryIcon category={null}/><MarketplaceState>{emptyMessage}</MarketplaceState>{filtered&&<ButtonLink href={marketplacePath(locale,"/shida/emplois")} variant="secondary">{u.clear}</ButtonLink>}<ButtonLink href={marketplacePath(locale,"/shida")} variant="text">{t.exploreMarketplaces}</ButtonLink></div>}
+          {activeItems.length?<JobListDetail key={jobSearchQuery(search)} items={activeItems} locale={locale}/>:welcome?<MarketplaceWelcome market="emplois" locale={locale}>{null}</MarketplaceWelcome>:<div className="job-view-empty"><JobCategoryIcon category={null}/><MarketplaceState>{emptyMessage}</MarketplaceState>{filtered&&<ButtonLink href={marketplacePath(locale,"/shida/emplois")} variant="secondary">{u.clear}</ButtonLink>}<ButtonLink href={marketplacePath(locale,"/shida")} variant="text">{t.exploreMarketplaces}</ButtonLink></div>}
           <JobPagination locale={locale} search={search} collection={collection}/>
         </>:<div className="job-api-error" role="alert"><MarketplaceState>{t.unavailable}</MarketplaceState><ButtonLink href={pageHref(locale,search,search.page??1)} variant="secondary">{t.retry}</ButtonLink></div>}
       </div>
     </section>
-    {!welcome&&<JobsInvitations locale={locale}/>}
+    <JobsInvitations locale={locale}/>
     </div>
   </div></JobAccess>;
 }
@@ -121,6 +122,7 @@ export async function JobEmployerPage({locale,slug}:{locale:Locale;slug:string})
     <section id="vacancies" className="employer-vacancies"><h2>{employer.open_job_count?`${employer.open_job_count} ${employer.open_job_count===1?t.result:t.results}`:c.empty}</h2>
       {employer.jobs.length?<div className="job-result-list">{employer.jobs.map(item=><JobCard key={item.public_ref} item={item} locale={locale} forEmployer/>)}</div>:<Link href={jobsPath}>{c.back} →</Link>}
     </section>
+    {employer.identity_type!=="individual"&&<aside className="employer-invitation"><SpaceIcon name="people"/><div><h2>{employerCandidateCopy[locale].title}</h2><p>{employerCandidateCopy[locale].body}</p><div className="employer-entry-links"><ButtonLink href={jobSearchPath(locale,"profiles")} variant="secondary">{employerCandidateCopy[locale].profile}</ButtonLink><Link href={jobSearchPath(locale,"alerts")}>{employerCandidateCopy[locale].alerts} →</Link></div></div></aside>}
     {invitation&&<aside className="employer-invitation"><SpaceIcon name="business"/><div><h2>{c.represent.replace("{name}",employer.name)}</h2><p>{c.body}</p><p>{c.review}</p>
       <div className="employer-entry-links"><ButtonLink href={registration} variant="secondary">{c.create}</ButtonLink>
       <a href={businessEntry}>{c.login} →</a></div></div></aside>}

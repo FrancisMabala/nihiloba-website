@@ -1,4 +1,6 @@
 'use client';
+import {myProfilesCopy} from '../../lib/my-profiles-copy';
+const MyProfiles=lazy(()=>import('./my-profiles').then(module=>({default:module.MyProfiles})));
 import {ManagementSpaceSelector} from './management-space-selector';
 import {individualApplicationCopy} from '../../lib/individual-application-copy';
 const JobSearchSpace=lazy(()=>import('./job-search-space').then(module=>({default:module.JobSearchSpace})));
@@ -49,7 +51,7 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
  const [securityResult,setSecurityResult]=useState<'deleted'|'logout'|null>(null);
  const n=accountNavigationCopy[locale];
  const [activityRevision,setActivityRevision]=useState(0);
- const activityData=usePersonalActivityData(session?.binding??null,1,activityRevision,requestedView==='overview'||requestedView==='management',requestedView==='manage');
+ const activityData=usePersonalActivityData(session?.binding??null,1,activityRevision,requestedView==='overview'||requestedView==='management',requestedView==='manage'||requestedView==='profiles');
  const individualOnly=individualOnlyActivities(activityData);
  // Personal listings is also the entry point for a first listing or draft.
  const hasListings=true;
@@ -76,11 +78,12 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
   {view!=='manage'&&<SpaceSidebar binding={session?.binding} locale={locale} view={view==='candidate'?'job-search':view} individualOnly={individualOnly&&view!=='management'} hasListings={hasListings} onNavigate={async event=>{event.preventDefault();const destination=event.currentTarget.href;if(await leaveWork())window.location.assign(destination);}}/>}
   <div className="space-content">
    {view==='manage'&&(checking?<p role="status">{t.loading}</p>:session?<ManagementSpaceSelector locale={locale} data={activityData} onRetry={()=>setActivityRevision(v=>v+1)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
-   {view!=='manage'&&((view!=='management'&&view!=='listings'&&view!=='support'&&(view!=='job-offer'||apply))||checking||!session)&&<h1 className="space-page-title">{view==='job-offer'?(apply?individualApplicationCopy[locale].title:missionText(locale,'title')):(view==='candidate'||view==='job-search')?jobSearchCopy[locale].title:view==='listings'?listingCopy[locale].title:view==='overview'?universalSpaceCopy[locale].overview:view==='management'?n.activities:view==='transactions'?n.transactions:view==='settings'?n.account:view==='questions'?helpText(locale,'title'):view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):t[view]}</h1>}
+   {view!=='manage'&&((view!=='management'&&view!=='listings'&&view!=='support'&&(view!=='job-offer'||apply))||checking||!session)&&<h1 className="space-page-title">{view==='job-offer'?(apply?individualApplicationCopy[locale].title:missionText(locale,'title')):(view==='candidate'||view==='job-search')?jobSearchCopy[locale].title:view==='listings'?listingCopy[locale].title:view==='overview'?universalSpaceCopy[locale].overview:view==='management'?n.activities:view==='transactions'?n.transactions:view==='settings'?n.account:view==='questions'?helpText(locale,'title'):view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):view==='profiles'?myProfilesCopy[locale].title:t[view]}</h1>}
    <Suspense fallback={<p role="status">{t.loading}</p>}>
    {view==='job-offer'&&(checking?<p role="status">{t.loading}</p>:session?apply?<MissionApply key={session.binding+apply} locale={locale} binding={session.binding} offer={apply}/>:<PersonalOfferSpace key={session.binding} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='listings'&&(checking?<p role="status">{t.loading}</p>:session?<WenzeApiProvider key={session.binding} binding={session.binding} onUnauthorized={()=>setSession(null)}><PersonalListings locale={locale} binding={session.binding}/></WenzeApiProvider>:<section className="space-sign-in"><p>{t.login}</p><PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/></section>)}
    {(view==='candidate'||view==='job-search')&&(checking?<p role="status">{t.loading}</p>:session?<JobSearchSpace key={session.binding} initialSection={view==='candidate'?'profiles':initialSection} locale={locale} binding={session.binding} onUnauthorized={()=>setSession(null)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
+   {view==='profiles'&&(checking?<p role="status">{t.loading}</p>:session?<MyProfiles key={session.binding} locale={locale} binding={session.binding} name={session.user.display_name} data={activityData} onRetry={()=>setActivityRevision(v=>v+1)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='messages'&&(checking?<p role="status">{t.loading}</p>:session?<MessagesSpace key={session.binding} binding={session.binding} locale={locale}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view==='recovery'&&<AccountRecovery locale={locale}/>}
    {!session&&view!=='recovery'&&<p><a href={href('recovery')}>{securityText(locale,'report')}</a></p>}

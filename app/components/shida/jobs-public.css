@@ -187,9 +187,9 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
 .employer-page {padding-block:clamp(1.25rem,3vw,3rem);color:#14392d}
 .employer-back,.employer-entry-links>a:last-child,.employer-vacancies>a {font-weight:650;text-decoration:underline;text-underline-offset:.18em}
 .employer-title-row,.employer-entry-links {display:flex;align-items:center;flex-wrap:wrap;gap:1rem}
-.employer-title-row {margin:1.5rem 0 .75rem;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start}
-.employer-title-row>.job-relationship-actions {justify-self:end;min-width:0;max-width:100%}
-.employer-heading {display:flex;align-items:center;gap:1rem;flex:1;min-width:0}
+.employer-title-row {margin:1.5rem 0 .75rem;align-items:center;justify-content:flex-start}
+.employer-title-row>.job-relationship-actions {flex:0 0 auto;min-width:0;max-width:100%}
+.employer-heading {display:flex;align-items:center;gap:1rem;flex:0 1 auto;min-width:0;max-width:100%}
 .employer-page h1,.employer-page h2 {font-family:Georgia,serif;font-weight:600}
 .employer-title-row h1 {font-size:clamp(1.65rem,4.3vw,3.6rem);margin:0;min-width:0;overflow-wrap:anywhere;word-break:normal}
 .employer-avatar {position:relative;flex:none;width:clamp(3rem,7vw,5rem);aspect-ratio:1;background:#ece7db;border-radius:.4rem;overflow:hidden}
@@ -216,7 +216,7 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
  .employer-heading {gap:12px;align-items:flex-start}
  .employer-title-row h1 {flex:1;min-width:0;font-size:clamp(1.25rem,5vw,1.6rem);line-height:1.25}
  .employer-avatar {width:44px}
- .employer-title-row>.job-relationship-actions {min-width:0;justify-self:start}
+ .employer-title-row>.job-relationship-actions {min-width:0;justify-self:start;margin-left:56px;max-width:calc(100% - 56px)}
  .employer-page header :is(.employer-provenance,.employer-intro,.employer-description) {font-size:.875rem;line-height:1.45;overflow-wrap:anywhere}
  .employer-vacancies {margin-top:16px}
  .employer-vacancies .job-result-list {gap:8px}
@@ -255,3 +255,4 @@ body .market-surface .jobs-public.marketplace-public .job-category-strip .job-ca
  /* A text-relative basis stacks controls when enlarged labels need more room. */
  .jobs-pagination :is(.jobs-page-previous,.jobs-page-next) {flex:1 1 9em;padding:.65rem .5rem}
 }
+.personal-employer-identity{display:inline-flex;align-items:center;gap:10px;max-width:100%;vertical-align:middle}.personal-employer-portrait{position:relative;display:inline-block;width:48px;height:48px;flex:0 0 48px;overflow:hidden;border-radius:50%;background:#eef1e8}.personal-employer-portrait img{object-fit:cover}.mission-publisher>.personal-employer-identity{margin-inline-start:4px}.job-list-row>.personal-employer-identity{align-self:flex-start}

@@ -6,8 +6,8 @@ export const candidateUX={
 };
 export const candidateSearchFields=['primary_category','desired_titles','city','work_types','availability'];
 export const candidateOptionalFields=['education','certifications','languages','social_link','work_mode_preference','salary_expectation'];
-export function candidateResumeStep(values:Record<string,string|string[]|null>,required:string[],kind:string){
- const present=(key:string)=>Array.isArray(values[key])?(values[key] as string[]).length>0:Boolean(values[key]?.trim());
+export function candidateResumeStep(values:Record<string,string|string[]|boolean|null>,required:string[],kind:string){
+ const present=(key:string)=>Array.isArray(values[key])?(values[key] as string[]).length>0:typeof values[key]==='string'?Boolean(values[key].trim()):values[key]===true;
  const search=kind==='professional'?candidateSearchFields:['work_types','city','preferred_areas','availability'];
  if(search.some(key=>required.includes(key)&&!present(key)))return 0;
  if(required.some(key=>key!=='cv_choice'&&!present(key)))return 1;

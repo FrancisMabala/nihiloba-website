@@ -1,8 +1,9 @@
 import { LocalizedFormValidation } from "./localized-form-validation";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import type { Locale } from "../lib/i18n";
 import { nav } from "../lib/i18n";
 import { SiteChrome } from "./site-chrome";
+import { WebsiteStatisticsConsent } from "./shida/website-statistics-consent";
 import "./shida/shida-presentation.css";
 import "./shida/shida-responsive.css";
 
@@ -13,6 +14,7 @@ export function SiteDocument({ children, locale, documentLanguage = locale }: { 
         <LocalizedFormValidation />
         <a className="skip-link" lang={documentLanguage} href="#main-content">{documentLanguage==="ln"?"Kende na makambo ya lokasa":documentLanguage==="sw"?"Nenda kwenye maudhui":nav[locale].skip}</a>
         <SiteChrome locale={locale}>{children}</SiteChrome>
+        <Suspense fallback={null}><WebsiteStatisticsConsent language={documentLanguage}/></Suspense>
       </body>
     </html>
   );

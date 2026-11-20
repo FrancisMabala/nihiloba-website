@@ -26,6 +26,7 @@ export function safePublicActionUrl(value: string | null | undefined): string | 
 
 export function safePublicImageUrl(value: string | null | undefined): string | null {
   if (!value) return null;
+  const employerPhoto=safePersonalEmployerPhotoUrl(value);if(employerPhoto)return employerPhoto;
   try {
     const url = new URL(value);
     if(url.origin === 'https://api.nihiloba.com' && !url.username && !url.password && !url.search && !url.hash && /^\/api\/apartments\/photos\/APF_[a-f0-9]{32}$/.test(url.pathname)) return value;
@@ -41,6 +42,13 @@ export function safePublicImageUrl(value: string | null | undefined): string | n
   } catch {
     return null;
   }
+}
+
+// Only newly consented portraits use this revocable public route. Never treat a
+// historical provider URL or the generic authenticated asset route as consent.
+export function safePersonalEmployerPhotoUrl(value:string|null|undefined):string|null{
+  const match=value?.match(/^\/(?:api\/public\/emploi\/employer-photos|api\/shida\/employer-photo)\/(AST_[A-Za-z0-9_-]{1,76})\/?$/);
+  return match?'/api/shida/employer-photo/'+match[1]+'/':null;
 }
 
 export function safePublicExternalUrl(value: string | null | undefined): string | null {

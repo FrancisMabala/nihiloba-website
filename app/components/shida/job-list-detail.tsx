@@ -9,7 +9,8 @@ import {rememberJobResults} from "../../lib/job-results-return";
 import {JobAccessLink} from "./job-access";
 import {JobDetailPage} from "./job-detail-reader";
 import {JobCategoryIcon} from "./job-discovery-ui";
-import {cardCompensation,contractLabel,copy,employerPath,jobFactText,jobPath,organizationLabel,originLabel} from "./job-presentation";
+import {cardCompensation,contractLabel,copy,employerPath,jobFactText,jobPath,organizationLabel,originLabel,PersonalEmployerIdentity} from "./job-presentation";
+import {safePersonalEmployerPhotoUrl} from '../../lib/safe-public-url';
 import {plainOfferText} from "./offer-text";
 import "./job-list-detail.css";
 
@@ -31,6 +32,7 @@ function JobPreview({item,locale}:{item:PublicJobSummary;locale:ServiceLocale}){
     <span className="job-list-type">{item.origin==="external"?originLabel(item,locale):item.offer_type==="individual"?compactMarketplaceCopy[locale].individualOffer:compactMarketplaceCopy[locale].professionalOffer}</span>
     <h2>{item.title}</h2>
     {item.offer_type==="enterprise"&&(employer?<a className="job-list-employer" href={employer}>{item.employer.name}</a>:<p className="job-list-employer">{item.employer.name}</p>)}
+    {item.offer_type==='individual'&&<PersonalEmployerIdentity employer={item.employer} locale={locale}/>}
     {location&&<p>{location}</p>}
     <dl className="job-list-facts">
       {(item.contract_type||item.contract_type_raw)&&<div><dt>{t.contract}</dt><dd>{contractLabel(item.contract_type||item.contract_type_raw,locale)}</dd></div>}
@@ -62,7 +64,7 @@ export function JobListDetail({items,locale}:{items:PublicJobSummary[];locale:Se
         const salary=cardCompensation(item,locale),location=jobLocation(item),trust=organizationLabel(item,locale);
         return <li key={item.public_ref}>
           <JobAccessLink href={jobPath(locale,item)} className="job-list-row" current={desktop&&item.public_ref===current.public_ref} controls={desktop?paneId:undefined} onClick={event=>select(event,item)}>
-            <JobCategoryIcon category={item.professional_category||item.category} individual={item.offer_type==="individual"}/>
+            {item.offer_type==='individual'&&safePersonalEmployerPhotoUrl(item.employer.profile_image?.url)?<PersonalEmployerIdentity employer={item.employer} locale={locale} compact/>:<JobCategoryIcon category={item.professional_category||item.category} individual={item.offer_type==="individual"}/>}
             <div className="job-list-row-body">
               <span className="job-list-type">{item.offer_type==="individual"?compactMarketplaceCopy[locale].individualOffer:compactMarketplaceCopy[locale].professionalOffer}</span>
               <h3>{item.title}</h3>

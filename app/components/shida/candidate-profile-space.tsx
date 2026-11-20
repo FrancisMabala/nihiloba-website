@@ -18,13 +18,14 @@ import {occText} from '../../lib/occasional-copy';
 import './candidate-profile-space.css';
 type Locale=keyof typeof candidateCopy;
 type Kind='professional'|'occasional_work';
-type Values=Record<string,string|string[]|null>;
-type Draft={editing?:string|null;public_ref:string;profile_type:Kind;state:string;revision:number;values:Values;return_job_ref:string|null;updated_at?:string};
-type Profile={reference:string;type:Kind;version:string;archived:boolean;visibility:string;values:Values;has_cv:boolean};
+type Values=Record<string,string|string[]|boolean|null>;
+type Photo={asset_ref:string;url:string};
+type Draft={editing?:string|null;public_ref:string;profile_type:Kind;state:string;revision:number;values:Values;return_job_ref:string|null;updated_at?:string;photo?:Photo|null};
+type Profile={reference:string;type:Kind;version:string;archived:boolean;visibility:string;values:Values;has_cv:boolean;photo?:Photo|null};
 type Data={progress:Draft[];profiles:Profile[];metadata:{communes?:string[];categories:{id:string;label:string}[];required:Record<Kind,string[]>}};
 const lists=new Set(['desired_titles','skills','work_types','languages','preferred_areas']);
-const inputValues=(values:Values)=>Object.fromEntries(Object.entries(values).map(([key,value])=>[key,Array.isArray(value)?value.join(', '):value??'']));
-export function candidateValues(values:Record<string,string>):Values{return Object.fromEntries(Object.entries(values).map(([key,value])=>[key,lists.has(key)?value.split(',').map(v=>v.trim()).filter(Boolean):value]));}
+const inputValues=(values:Values):Record<string,string>=>Object.fromEntries(Object.entries(values).map(([key,value])=>[key,Array.isArray(value)?value.join(', '):value==null?'':String(value)]));
+export function candidateValues(values:Record<string,string>):Values{return Object.fromEntries(Object.entries(values).map(([key,value])=>[key,key==='job_alerts_enabled'?value==='true':lists.has(key)?value.split(',').map(v=>v.trim()).filter(Boolean):value]));}
 function SavedHouseholdProfile({profile,communes,locale,compact=false}:{profile:Profile;communes:string[];locale:Locale;compact?:boolean}){
  const values=inputValues(profile.values);
  const answers=initial(values,communes);
@@ -47,7 +48,19 @@ export function CandidateProfileSpace({locale,binding,onUnauthorized}:{locale:Lo
  const unauthorized=useRef(onUnauthorized);useEffect(()=>{unauthorized.current=onUnauthorized;},[onUnauthorized]);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  useWorkDraft(dirty,t.error);
- const api=useCallback(async(path='',body?:unknown)=>{const pdf=body instanceof File;const response=await fetch(`/api/shida/personal/candidate${path}/?language=${locale}`,{method:body===undefined?'GET':'POST',cache:'no-store',credentials:'same-origin',headers:{'X-Shida-Session':binding,...(body!==undefined?{'Content-Type':pdf?'application/pdf':'application/json'}:{})},body:body===undefined?undefined:pdf?body:JSON.stringify(body)});if(response.status===401){unauthorized.current();throw new Error('401');}if(!response.ok)throw new Error(String(response.status));return response.json();},[binding,locale]);
+ const api=useCallback(async(path='',body?:unknown,query:Record<string,string>={},method?:string,signal?:AbortSignal)=>{const file=body instanceof File;const response=await fetch(`/api/shida/personal/candidate${path}/?${new URLSearchParams({language:locale,...query})}`,{method:method??(body===undefined?'GET':'POST'),cache:'no-store',credentials:'same-origin',signal,headers:{'X-Shida-Session':binding,...(body!==undefined?{'Content-Type':file?body.type:'application/json'}:{})},body:body===undefined?undefined:file?body:JSON.stringify(body)});if(response.status===401){unauthorized.current();throw new Error('401');}if(!response.ok)throw new Error(String(response.status));return response.json();},[binding,locale]);
+ const suggestTitles=useCallback(async(category:string,query:string,signal:AbortSignal)=>{
+  const result=await api('/title-suggestions',undefined,{category,query},undefined,signal);
+  if(!Array.isArray(result.suggestions))throw Error();
+  return result.suggestions.slice(0,12).filter((item:unknown):item is {title:string}=>Boolean(item&&typeof item==='object'&&'title' in item&&typeof item.title==='string'&&item.title.length<=140)).map((item:{title:string})=>item.title);
+ },[api]);
+ const loadPhoto=useCallback(async(reference:string,signal:AbortSignal)=>{
+  if(!/^AST_[A-Za-z0-9_-]{1,76}$/.test(reference))throw Error();
+  const response=await fetch(`/api/shida/personal/candidate/photo/?${new URLSearchParams({asset_ref:reference})}`,{cache:'no-store',credentials:'same-origin',signal,headers:{'X-Shida-Session':binding}});
+  if(response.status===401){unauthorized.current();throw Error('401');}
+  if(!response.ok||response.headers.get('content-type')?.split(';')[0]!=='image/jpeg')throw Error();
+  const blob=await response.blob();if(blob.size>5*1024*1024)throw Error();return blob;
+ },[binding]);
  const opened=useRef(false);
  const [recoverRef,setRecoverRef]=useState<string|null>(null);
  const load=useCallback(()=>api().then((result:Data)=>{
@@ -104,6 +117,30 @@ export function CandidateProfileSpace({locale,binding,onUnauthorized}:{locale:Lo
   finalIntent.current=null;setFinalPending(false);delete keys.current.professional;
   setDraft(null);setDirty(false);setSuccess('professional');await load();
  }
+ async function changePhoto(file?:File){
+  if(file){const error=fileValidation(file,locale,5,['image/jpeg','image/png','image/webp'],'JPEG, PNG, WebP');if(error)throw Error(error);}
+  if(lock.current||finalPending||conflict)throw Error(t.error);
+  lock.current=true;setBusy(true);setMessage('');finalIntent.current=null;setConfirmed(false);
+  try{
+   let target:Record<string,string>;
+   if(profile){
+    const saved:Profile=dirty?await api('/profile',{action:'update',reference:profile.reference,version:profile.version,values:candidateValues(values)}):profile;
+    if(alive.current){setProfile(saved);setDirty(false);}
+    target={target:'profile',reference:saved.reference,version:saved.version};
+   }else{
+    const saved=await save();if(!saved)throw Error();
+    target={target:'draft',reference:saved.public_ref,revision:String(saved.revision)};
+   }
+   const result:Draft|Profile=file?await api('/photo',file,target):await api('/photo',{...target,...(target.target==='draft'?{revision:Number(target.revision)}:{})},{},'DELETE');
+   if(alive.current){
+    if(target.target==='draft')setDraft(result as Draft);else setProfile(result as Profile);
+    setValues(inputValues(result.values));setDirty(false);
+   }
+  }catch(error){
+   if(alive.current&&error instanceof Error&&error.message==='409'){setConflict(true);setMessage(t.conflict);}
+   throw Error(error instanceof Error&&error.message==='409'?t.conflict:t.error);
+  }finally{lock.current=false;if(alive.current)setBusy(false);}
+ }
  if(profile?.type==='occasional_work'&&typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('preview')==='1'){
   const c=individualApplicationCopy[locale],editUrl=new URL(window.location.href);editUrl.searchParams.delete('preview');
   return <section className="candidate-workspace"><h2>{c.profile}</h2><SavedHouseholdProfile profile={profile} communes={data?.metadata.communes??[]} locale={locale}/><a href={editUrl.pathname+editUrl.search}>{c.edit}</a>{returnRef&&<p><a href={prefix+'/shida/space?'+new URLSearchParams({view:'job-offer',kind:'apply',offer:returnRef})}>{c.title}</a></p>}</section>;
@@ -118,6 +155,7 @@ export function CandidateProfileSpace({locale,binding,onUnauthorized}:{locale:Lo
     categories={data.metadata.categories} editing={Boolean(profile)} existingCV={Boolean(profile?.has_cv)}
     busy={busy||conflict} frozen={finalPending} confirmed={confirmed} setConfirmed={setConfirmed}
     setStep={setStep} change={change} save={()=>void run(exit)} finish={()=>void run(finishProfessional)}
+    photo={profile?.photo??draft?.photo} uploadPhoto={file=>changePhoto(file)} removePhoto={()=>changePhoto()} loadPhoto={loadPhoto} suggestTitles={suggestTitles}
     upload={async file=>{
      const error=fileValidation(file,locale,10,['application/pdf'],'PDF');if(error)throw Error(error);
      if(lock.current)throw Error(t.error);lock.current=true;setBusy(true);

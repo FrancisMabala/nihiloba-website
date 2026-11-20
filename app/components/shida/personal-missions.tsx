@@ -19,6 +19,7 @@ import {useWorkDraft,WenzeLeaveDialog,leaveWork} from '../../lib/wenze-work';
 import {MissionPeople} from './mission-people';
 import {SpaceIcon} from './account-space-icon';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
+import {PersonalEmployerPhoto} from './personal-employer-photo';
 import {QuickSell} from './quick-sell';
 import {listingCopy} from '../../lib/wenze-listings-copy';
 import './mission-management.css';
@@ -151,6 +152,7 @@ function Manager({locale,binding,offer,kind}:Props&{offer:string;kind:string}){
  {uncertain&&<p role="status">{t('missionUncertain')} <button ref={checkAction} disabled={busy} onClick={()=>void checkStatus()}>{t('checkStatus')}</button></p>}
  </div></FinanceSheet>}
  <section className="mission-card"><MissionPresentation locale={locale} title="" description={v.short_summary} frequency={v.duration_frequency} hours={v.work_schedule} pay={v.budget} experience={v.optional_experience}/></section>
+ {kind==='manage'&&<PersonalEmployerPhoto locale={locale} binding={binding} offerRef={offer} disabled={busy||uncertain||actions}/>}
  <section className="mission-card"><nav className="mission-tabs"><a aria-current={tab==='applications'?'page':undefined} href={dest('applications')}>{t('applications')} ({data.count})</a>{open&&<a aria-current={tab==='candidates'?'page':undefined} href={dest('candidates')}>{t('find')}</a>}</nav>
  <MissionPeople locale={locale} binding={binding} defaultKind={tab} discovery={open}/></section></>}</section>
 

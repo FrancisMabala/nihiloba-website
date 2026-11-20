@@ -1,7 +1,7 @@
 "use client";
 import {createContext,useContext,useMemo,useRef,useEffect,type ReactNode} from 'react';
 export class DashboardApiError extends Error {constructor(public kind:string,public status:number,public detail?:string){super(kind);}}
-type Api={request:(path:string,init?:RequestInit)=>Promise<unknown>;download:(path:string)=>Promise<void>;file:(path:string,init?:RequestInit)=>Promise<File>};
+type Api={binding:string;request:(path:string,init?:RequestInit)=>Promise<unknown>;download:(path:string)=>Promise<void>;file:(path:string,init?:RequestInit)=>Promise<File>};
 const Context=createContext<Api|null>(null);
 export function personalWenzePath(path:string){
  const clean=path.replace(/^wenze\/contexts\/personal\//,'');
@@ -28,7 +28,7 @@ export function WenzeApiProvider({binding,onUnauthorized,children}:{binding:stri
    if(!response.ok){const data=await response.json().catch(()=>null);throw new DashboardApiError(response.status===409?'conflict':response.status===422?'validation':'unavailable',response.status,typeof data?.detail==='string'?data.detail:undefined);}
    return {response,complete:()=>!supplied&&pending.delete(slot)};
   }
-  return {file:async(path,init)=>{const {response,complete}=await fetchPrivate(path,init);const blob=await response.blob();complete();return new File([blob],downloadName(response,'wenze.pdf'),{type:response.headers.get('content-type')??'application/pdf'});},request:async(path,init)=>{const {response,complete}=await fetchPrivate(path,init);const data=await response.json();complete();return data;},download:async(path)=>{const {response,complete}=await fetchPrivate(path);const blob=await response.blob();complete();const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=downloadName(response,'wenze-report');link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}};
+  return {binding,file:async(path,init)=>{const {response,complete}=await fetchPrivate(path,init);const blob=await response.blob();complete();return new File([blob],downloadName(response,'wenze.pdf'),{type:response.headers.get('content-type')??'application/pdf'});},request:async(path,init)=>{const {response,complete}=await fetchPrivate(path,init);const data=await response.json();complete();return data;},download:async(path)=>{const {response,complete}=await fetchPrivate(path);const blob=await response.blob();complete();const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=downloadName(response,'wenze-report');link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}};
  },[binding]);
  return <Context.Provider value={api}>{children}</Context.Provider>;
 }

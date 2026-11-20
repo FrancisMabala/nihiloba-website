@@ -12,7 +12,7 @@ import Link from "next/link";
 import "./jobs-public.css";
 import type {ServiceLocale as Locale} from "../../lib/services-i18n";
 import {publicJobEmployerKey} from "../../lib/job-employer";
-import {safePublicActionUrl, safePublicExternalUrl, safePublicImageUrl} from "../../lib/safe-public-url";
+import {safePersonalEmployerPhotoUrl,safePublicActionUrl, safePublicExternalUrl, safePublicImageUrl} from "../../lib/safe-public-url";
 import type {PublicJob, PublicJobEmployerSummary, PublicJobSalary, PublicJobSummary} from "../../types/shida-public";
 import {ButtonLink} from "../button-link";
 import {missionTiming} from './mission-presentation';
@@ -117,6 +117,11 @@ function experienceText(item:PublicJob,locale:Locale){if(item.experience.text)re
 
 
 function EmployerIdentity({employer,locale,large=false,heading=false}:{employer:PublicJobEmployerSummary;locale:Locale;large?:boolean;heading?:boolean}){const image=safePublicImageUrl(employer.profile_image?.url),href=employerPath(locale,employer),location=employerLocation(employer),avatar=<MarketplaceImage src={image} alt={employer.name} fallback={initials(employer.name)} sizes={large?"96px":"48px"}/>;return <div className={large?"job-employer-identity job-employer-identity-large":"job-employer-identity"}>{href?<Link className="job-employer-image" href={href}>{avatar}</Link>:<span className="job-employer-image">{avatar}</span>}<div>{heading?<h1 className="job-employer-name">{employer.name}</h1>:href?<Link className="job-employer-name" href={href}>{employer.name}</Link>:<span className="job-employer-name">{employer.name}</span>}{large&&location&&<p>{location}</p>}</div></div>;}
+export function PersonalEmployerIdentity({employer,locale,compact=false}:{employer:PublicJobEmployerSummary;locale:Locale;compact?:boolean}){
+ const image=safePersonalEmployerPhotoUrl(employer.profile_image?.url),label=copy[locale].personalEmployer;
+ if(!image)return compact?null:<span className="mission-publisher">{label}</span>;
+ return <span className="personal-employer-identity"><span className="personal-employer-portrait"><MarketplaceImage key={image} src={image} alt="" fallback="" sizes="48px"/></span>{!compact&&<span>{label}</span>}</span>;
+}
 function JobFacts({item,locale}:{item:PublicJobSummary;locale:Locale}){const t=copy[locale],facts:Array<[string,string|number|null]>=[[t.contract,item.contract_type||item.contract_type_raw],[t.mode,item.work_mode||item.work_mode_raw],[t.experience,item.seniority],[t.schedule,item.work_schedule],[t.vacancies,item.vacancies]];return <div className="job-facts">{facts.map(([label,value])=>value!=null&&value!==""&&<span key={label}><b>{label}:</b> {typeof value==="string"?(label===t.contract?contractLabel(value,locale):jobFactText(value,locale)):value}</span>)}</div>;}
 
 export function JobCard({item,locale,forEmployer=false}:{item:PublicJobSummary;locale:Locale;forEmployer?:boolean}) {
@@ -160,7 +165,7 @@ export function JobDetailContent({locale,item,similar,embedded=false}:{locale:Lo
      <section className="mission-card"><h2>{listingText(locale,'mission')}</h2><OfferText value={item.short_summary||item.description_fallback||item.description||''}/>
      {item.responsibilities&&<StructuredJobSection title={d.responsibilities} value={item.responsibilities}/>}
      {(item.qualifications||item.optional_experience||item.employment_conditions||item.skills||item.personal_qualities||item.education||item.languages)&&<><h2>{c.requirements}</h2><OfferText value={[item.qualifications,item.optional_experience,item.employment_conditions,item.skills,item.personal_qualities,item.education,item.languages].filter(Boolean).join('\n\n')}/></>}</section>
-     <p className="mission-publisher">{c.publisher} · {item.employer.name||t.personalEmployer}</p>
+     <div className="mission-publisher">{c.publisher} · <PersonalEmployerIdentity employer={item.employer} locale={locale}/></div>
      <div className="mission-actions"><JobPublicActions locale={locale} jobReference={item.public_ref} title={item.title} path={href} origin="direct" canShare={item.relationship_capabilities.can_share} canSave={item.relationship_capabilities.can_save}/></div>
      <JobReportLink locale={locale} jobReference={item.public_ref} reportUrl={item.report_url}/>
     </div></section>;

@@ -21,6 +21,14 @@
 .candidate-review .review-introduction{display:block}
 .professional-wizard [role=alert]{color:#922a1c}
 .professional-wizard .candidate-review-group button{background:transparent;border:0;text-decoration:underline}
+.professional-wizard .candidate-alert-choice{margin-top:18px;padding:12px 0;border-top:1px solid #e1e4d9}
+.professional-wizard .candidate-alert-choice .candidate-checkbox{display:flex;align-items:flex-start;gap:10px;min-height:44px;line-height:1.5}
+.professional-wizard .candidate-alert-choice input{flex:0 0 20px;width:20px;height:20px;margin-top:3px}
+.professional-wizard .candidate-alert-choice p{margin:4px 0;font-size:.875rem;line-height:1.5}
+.professional-wizard .candidate-photo img,.professional-wizard .candidate-review img{object-fit:cover;border-radius:12px;max-width:100%}
+.professional-wizard .candidate-photo .candidate-upload{margin-block:12px;min-height:44px}
+.professional-wizard .candidate-chips button{min-width:44px;min-height:44px}
+.professional-wizard .candidate-chip-field>small{display:block;margin-top:6px;line-height:1.4}
 @media(max-width:800px){
  .professional-wizard .candidate-wizard-art,.professional-wizard .candidate-steps{display:none}
  .professional-wizard .mobile-step{display:block;margin:4px 0 10px}

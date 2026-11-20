@@ -8,6 +8,9 @@ test('an employer page observes visible visits with separate receipts and compan
   });
   const open = (ref:string)=>page.goto('/fr/shida/emplois/employeurs/ORGDIR_'+ref);
   await open('one');
+  await expect(page.getByRole('button',{name:'Accepter les statistiques',exact:true})).toBeVisible();
+  expect(events).toHaveLength(0);
+  await page.getByRole('button',{name:'Accepter les statistiques',exact:true}).click();
   await expect.poll(()=>events.length).toBe(1);
   await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
   await page.reload();

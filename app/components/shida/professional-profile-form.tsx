@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {candidateWorkspaceCopy} from '../../lib/candidate-workspace-copy';
 import {candidateCopy} from '../../lib/candidate-profile-copy';
 import {candidateUX,candidateSearchFields,candidateOptionalFields} from '../../lib/candidate-ux';
@@ -13,14 +13,39 @@ type Props={
  editing:boolean; existingCV:boolean; busy:boolean; frozen:boolean; confirmed:boolean;
  setConfirmed:(value:boolean)=>void; setStep:(step:number)=>void; change:(key:string,value:string)=>void;
  save:()=>void; finish:()=>void; upload:(file:File)=>Promise<void>;
+ photo?:{asset_ref:string}|null; uploadPhoto?:(file:File)=>Promise<void>; removePhoto?:()=>Promise<void>;
+ loadPhoto?:(reference:string,signal:AbortSignal)=>Promise<Blob>;
+ suggestTitles?:(category:string,query:string,signal:AbortSignal)=>Promise<string[]>;
 };
 const experienceFields=['experience_level','skills','description'];
 const split=(value='')=>value.split(',').map(part=>part.trim()).filter(Boolean);
-export function ProfessionalProfileForm({locale,values,step,categories,editing,existingCV,busy,frozen,confirmed,setConfirmed,setStep,change,save,finish,upload}:Props){
+export function ProfessionalProfileForm({locale,values,step,categories,editing,existingCV,busy,frozen,confirmed,setConfirmed,setStep,change,save,finish,upload,photo,uploadPhoto,removePhoto,loadPhoto,suggestTitles}:Props){
  const t=candidateCopy[locale],u=candidateUX[locale],c=(key:Parameters<typeof formText>[1])=>formText(locale,key);
  const form=useRef<HTMLFormElement>(null),fileInput=useRef<HTMLInputElement>(null);
  const [errors,setErrors]=useState<string[]>([]),[returning,setReturning]=useState(false),[optional,setOptional]=useState(false),[fileError,setFileError]=useState('');
  const [uploading,setUploading]=useState(false),uploadLock=useRef(false);
+ const [titleQuery,setTitleQuery]=useState(''),[suggestionState,setSuggestionState]=useState<{category:string;query:string;items:string[];status:'ready'|'loading'|'error'}|null>(null);
+ const [photoPreview,setPhotoPreview]=useState<{ref:string;url:string;loader:Props['loadPhoto']}|null>(null),[photoFailed,setPhotoFailed]=useState(false),[photoRetry,setPhotoRetry]=useState(0),[photoError,setPhotoError]=useState('');
+ const category=values.primary_category||'',photoRef=photo?.asset_ref;
+ useEffect(()=>{
+  if(!category||!suggestTitles)return;
+  const controller=new AbortController();
+  const timer=setTimeout(()=>{
+   setSuggestionState({category,query:titleQuery,items:[],status:'loading'});
+   void suggestTitles(category,titleQuery.slice(0,80),controller.signal).then(items=>{if(!controller.signal.aborted)setSuggestionState({category,query:titleQuery,items,status:'ready'});}).catch(()=>{if(!controller.signal.aborted)setSuggestionState({category,query:titleQuery,items:[],status:'error'});});
+  },250);
+  return()=>{clearTimeout(timer);controller.abort();};
+ },[category,titleQuery,suggestTitles]);
+ useEffect(()=>{
+  if(!photoRef||!loadPhoto)return;
+  const controller=new AbortController();let objectUrl:string|undefined;
+  void loadPhoto(photoRef,controller.signal).then(blob=>{
+   if(controller.signal.aborted)return;objectUrl=URL.createObjectURL(blob);setPhotoPreview({ref:photoRef,url:objectUrl,loader:loadPhoto});setPhotoFailed(false);
+  }).catch(()=>{if(!controller.signal.aborted)setPhotoFailed(true);});
+  return()=>{controller.abort();if(objectUrl)URL.revokeObjectURL(objectUrl);};
+ },[photoRef,photoRetry,loadPhoto]);
+ const shownPhoto=photoPreview&&photoPreview.ref===photoRef&&photoPreview.loader===loadPhoto?photoPreview.url:null;
+ const suggestions=suggestionState?.category===category&&suggestionState.query===titleQuery?suggestionState:null;
  const title=(field:string)=>t.fields[field as keyof typeof t.fields]||field;
  const missing=(keys:string[])=>keys.filter(key=>!values[key]?.trim());
  const invalid=missing([...candidateSearchFields,...experienceFields]);
@@ -48,9 +73,9 @@ export function ProfessionalProfileForm({locale,values,step,categories,editing,e
   if(['primary_category','experience_level','availability'].includes(key)){
    const items=key==='primary_category'?categories.map(item=>({value:item.id,label:item.label})):(key==='availability'?u.availability:u.experience).map(item=>({value:item,label:item}));
    if(value&&!items.some(item=>item.value===value))items.push({value,label:value});
-   control=<CandidateSelector label={name} value={value} options={items} prompt={c(key==='primary_category'?'sector':key==='availability'?'availability':'level')} onChange={v=>change(key,v)} invalid={error}/>;
+   control=<CandidateSelector label={name} value={value} options={items} prompt={c(key==='primary_category'?'sector':key==='availability'?'availability':'level')} onChange={v=>{if(key==='primary_category')setTitleQuery('');change(key,v);}} invalid={error}/>;
   }else if(['desired_titles','skills','languages'].includes(key)){
-   control=<CandidateChips label={name} value={value} onChange={v=>change(key,v)} required={required} max={key==='desired_titles'?3:20} add={u.add} remove={u.removeItem} hint={key==='desired_titles'?c('roles'):undefined} placeholder={key==='skills'?c('skill'):undefined}/>;
+   control=<><CandidateChips key={key==='desired_titles'?category:key} label={name} value={value} onChange={v=>change(key,v)} required={required} max={key==='desired_titles'?3:20} add={u.add} remove={u.removeItem} hint={key==='desired_titles'?c('roles'):undefined} placeholder={key==='skills'?c('skill'):undefined} suggestions={key==='desired_titles'?suggestions?.items:undefined} onQueryChange={key==='desired_titles'?setTitleQuery:undefined}/>{key==='desired_titles'&&category&&<small role="status">{suggestions?.status==='error'?c('suggestionsUnavailable'):suggestions?.status==='loading'?c('suggestionsLoading'):c('suggestedTitles')}</small>}</>;
   }else if(key==='work_types'){
    control=<fieldset className="work-types"><legend>{name} *</legend><div>{[true,false].map(schedule=><div key={String(schedule)}><strong>{c(schedule?'schedule':'contract')}</strong>{contracts.filter(option=>schedules.includes(option)===schedule).map(option=><label key={option}><input type="checkbox" checked={choices.includes(option)} onChange={e=>change(key,(e.target.checked?[...choices,option]:choices.filter(item=>item!==option)).join(', '))}/>{option}</label>)}</div>)}</div></fieldset>;
   }else{
@@ -68,7 +93,13 @@ export function ProfessionalProfileForm({locale,values,step,categories,editing,e
    <h2 tabIndex={-1}>{step===0?c('question'):step===1?groups[1]:t.review}</h2>
    {step!==2&&<p className="mobile-step">{candidateWorkspaceCopy[locale].privacy}</p>}
    {step<2?<><div className="candidate-fields">{(step===0?candidateSearchFields:experienceFields).map(field)}</div>
+    {step===0&&<div className="candidate-alert-choice"><label className="candidate-checkbox"><input type="checkbox" checked={values.job_alerts_enabled==='true'} onChange={e=>change('job_alerts_enabled',String(e.target.checked))}/>{c('alerts')}</label><p>{c('alertsHelp')}</p></div>}
     {step===1&&<><details className="candidate-optional" open={optional} onToggle={e=>setOptional(e.currentTarget.open)}><summary>{c('optional')}</summary><div className="candidate-fields">{candidateOptionalFields.map(field)}</div></details>
+     {uploadPhoto&&<fieldset className="candidate-photo"><legend>{c('photo')}</legend><p>{c('photoHelp')}</p>{shownPhoto&&<Image unoptimized src={shownPhoto} width={96} height={96} alt={c('photo')}/>}{photoRef&&photoFailed&&<p role="alert">{c('photoUnavailable')} <button type="button" disabled={unavailable} onClick={()=>{setPhotoFailed(false);setPhotoRetry(n=>n+1);}}>{t.reload}</button></p>}
+      <label className="candidate-upload">{photoRef?c('replace'):c('addPhoto')}<input aria-label={photoRef?`${c('replace')} · ${c('photo')}`:c('addPhoto')} type="file" accept="image/jpeg,image/png,image/webp" disabled={unavailable} onChange={async e=>{
+       const file=e.target.files?.[0];e.target.value='';if(!file||uploadLock.current)return;uploadLock.current=true;setUploading(true);setPhotoError('');
+       try{await uploadPhoto(file);}catch(error){setPhotoError(error instanceof Error?error.message:t.error);}finally{uploadLock.current=false;setUploading(false);}
+      }}/></label>{photoRef&&removePhoto&&<button type="button" disabled={unavailable} onClick={async()=>{if(uploadLock.current)return;uploadLock.current=true;setUploading(true);setPhotoError('');try{await removePhoto();}catch(error){setPhotoError(error instanceof Error?error.message:t.error);}finally{uploadLock.current=false;setUploading(false);}}}>{c('removePhoto')}</button>}{photoError&&<p role="alert">{photoError}</p>}</fieldset>}
      <fieldset><legend>CV</legend><p>{c('pdf')}</p>{attached&&<p>{filename}</p>}
       <label className="candidate-upload">{attached?c('replace'):c('upload')}<input ref={fileInput} aria-label={attached?c('replace'):c('upload')} type="file" accept="application/pdf" disabled={unavailable} onChange={async e=>{
        const file=e.target.files?.[0];e.target.value='';if(!file||uploadLock.current)return;
@@ -76,7 +107,7 @@ export function ProfessionalProfileForm({locale,values,step,categories,editing,e
        try{await upload(file);}catch(error){setFileError(error instanceof Error?error.message:t.error);}finally{uploadLock.current=false;setUploading(false);}
       }}/></label>{attached&&<button type="button" disabled={unavailable} onClick={()=>{change('cv_asset_ref','');change('cv_filename','');change('cv_choice','2');setFileError('');}}>{u.removeItem}</button>}{fileError&&<p role="alert">{fileError}</p>}</fieldset></>}
    </>:<>{groups.map((name,index)=><section className="candidate-review-group" key={name}><header><h3>{name}</h3><button type="button" disabled={unavailable} onClick={()=>edit(index===0?0:1,index===2?'details':undefined)}>{c((['editSearch','editExperience','editDetails'] as const)[index])}</button></header>
-   <dl className="candidate-review">{index===0?<>{reviewRow('primary_category',categories.find(cat=>cat.id===values.primary_category)?.label||values.primary_category)}{['desired_titles','city'].map(key=>reviewRow(key,values[key]))}{[true,false].map(schedule=>reviewRow(String(schedule),choices.filter(option=>schedules.includes(option)===schedule).join(', '),c(schedule?'schedule':'contract')))}{reviewRow('availability',values.availability)}</>:index===1?experienceFields.map(key=>reviewRow(key,values[key])):<>{candidateOptionalFields.map(key=>reviewRow(key,values[key]))}<div><dt>CV</dt><dd>{attached?filename:<>{c('noFile')} <button type="button" disabled={unavailable} onClick={()=>edit(1,'cv')}>{c('upload')}</button></>}</dd></div></>}</dl></section>)}
+   <dl className="candidate-review">{index===0?<>{reviewRow('primary_category',categories.find(cat=>cat.id===values.primary_category)?.label||values.primary_category)}{['desired_titles','city'].map(key=>reviewRow(key,values[key]))}{[true,false].map(schedule=>reviewRow(String(schedule),choices.filter(option=>schedules.includes(option)===schedule).join(', '),c(schedule?'schedule':'contract')))}{reviewRow('availability',values.availability)}{reviewRow('job_alerts_enabled',c(values.job_alerts_enabled==='true'?'alertsOn':'alertsOff'),c('alerts'))}</>:index===1?experienceFields.map(key=>reviewRow(key,values[key])):<>{candidateOptionalFields.map(key=>reviewRow(key,values[key]))}<div><dt>{c('photo')}</dt><dd>{shownPhoto?<Image unoptimized src={shownPhoto} width={80} height={80} alt={c('photo')}/>:photoRef?c('photo'):c('noPhoto')}</dd></div><div><dt>CV</dt><dd>{attached?filename:<>{c('noFile')} <button type="button" disabled={unavailable} onClick={()=>edit(1,'cv')}>{c('upload')}</button></>}</dd></div></>}</dl></section>)}
    <p className="candidate-notice">{t.privacy}</p>{!editing&&<label className="candidate-checkbox"><input type="checkbox" checked={confirmed} disabled={unavailable} onChange={e=>setConfirmed(e.target.checked)}/>{t.confirm}</label>}</>}
    <div className="candidate-actions">{step>0&&<button type="button" disabled={unavailable} onClick={()=>{setReturning(false);go(step-1);}}>{t.back}</button>}<button type="button" disabled={unavailable} onClick={save}>{t.save}</button><button className="button-primary" disabled={busy||uploading||step===2&&(invalid.length>0||!editing&&!confirmed)}>{step===2?(editing?t.update:t.create):returning?c('backReview'):step===1?c('check'):t.next}</button></div>
   </form></div></div>;

@@ -166,8 +166,8 @@ for (const [width,withCV] of [[360,true],[1440,false]] as const) test(`professio
  await wizard.locator('.candidate-optional summary').click();await wizard.getByLabel(t.fields.education,{exact:true}).fill('Graduat');
  if(withCV){
   const pdf={name:'Parcours.pdf',mimeType:'application/pdf',buffer:Buffer.from('%PDF-1.7 fixture')};
-  await wizard.locator('input[type=file]').setInputFiles(pdf);await expect(wizard.getByText(pdf.name,{exact:true})).toBeVisible();
-  await wizard.locator('input[type=file]').setInputFiles({...pdf,name:'Autre.pdf'});await expect(wizard.getByRole('alert')).toBeVisible();await expect(wizard.getByText(pdf.name,{exact:true})).toBeVisible();
+  await wizard.locator('input[accept="application/pdf"]').setInputFiles(pdf);await expect(wizard.getByText(pdf.name,{exact:true})).toBeVisible();
+  await wizard.locator('input[accept="application/pdf"]').setInputFiles({...pdf,name:'Autre.pdf'});await expect(wizard.getByRole('alert')).toBeVisible();await expect(wizard.getByText(pdf.name,{exact:true})).toBeVisible();
  }
  await wizard.getByRole('button',{name:t.save}).click();await page.reload();
  await expect(wizard.getByRole('heading',{name:t.review})).toBeVisible();

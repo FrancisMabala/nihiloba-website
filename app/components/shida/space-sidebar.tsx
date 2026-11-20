@@ -1,3 +1,4 @@
+import {myProfilesCopy} from '../../lib/my-profiles-copy';
 import {accountSupportCopy} from '../../lib/account-support-copy';
 import {usePersonalNotificationCount} from '../../lib/personal-notification-count';
 import {jobSearchCopy} from '../../lib/job-search-copy';
@@ -26,6 +27,7 @@ export function SpaceSidebar({locale,view,onNavigate,binding,individualOnly=fals
  if(individualOnly&&view!=='job-offer')entries[0]=['listings',listingCopy[locale].title,'orders'];
  else if(hasListings||view==='listings')entries.splice(1,0,['listings',listingCopy[locale].title,'orders']);
  entries.splice(entries.findIndex(e=>e[0]==='transactions'),0,['job-search',jobSearchCopy[locale].title,'people']);
+ entries.unshift(['profiles',myProfilesCopy[locale].title,'people']);
  entries.unshift(['overview',universalSpaceCopy[locale].overview,'home']);
  const selected=(key:string)=>key===view||key==='listings'&&view==='job-offer'||key==='job-search'&&view==='candidate'||key==='settings'&&view==='recovery'||key==='support'&&view==='questions'||key==='transactions'&&['orders','requests','receipts'].includes(view);
  const links=()=>entries.map(([key,label,icon])=><a key={key} onClick={event=>{if(selector.current)selector.current.open=false;onNavigate?.(event);}} href={`${base}?view=${key}`} aria-current={selected(key)?'page':undefined}><SpaceIcon name={icon}/><span>{label}{key==='messages'&&unread!=null&&unread>0&&<strong className="space-notice-count"> {unread>99?'99+':unread}</strong>}</span>{selected(key)&&<span className="space-selected-mark" aria-hidden="true">✓</span>}</a>);
