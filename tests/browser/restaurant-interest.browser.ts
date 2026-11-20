@@ -51,7 +51,8 @@ test('automated browser traffic is excluded even when it clicks',async({page})=>
  await open();await consent(page,true);await page.locator('.restaurant-detail-header h1').click();await quiet(events,0);expect(unexpectedWrites).toEqual([]);
 });
 
-test('declining and revoking optional interest keeps menu and basket actions available',async({page})=>{
+test('mobile declining and revoking optional interest keeps menu and sticky basket actions available',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
  const {events,unexpectedWrites,open}=await fixture(page);await open(true);await consent(page,false);
  const opener=page.locator('button[data-restaurant-item-open]').first();await expect(opener).toBeEnabled();await opener.click();
  const add=page.locator('dialog[open] button[data-restaurant-item-selection]');await expect(add).toBeEnabled();await add.click();await expect(page.locator('.rst-sticky-basket')).toBeVisible();

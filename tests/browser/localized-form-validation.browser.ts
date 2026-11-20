@@ -12,7 +12,11 @@ async function fixture(page:Page,html:string,locale='en'){
  const baseURL=test.info().project.use.baseURL;
  if(!baseURL || !['localhost','127.0.0.1','[::1]'].includes(new URL(baseURL).hostname))throw Error('Use the approved isolated loopback Website runtime');
  await page.route('**/api/**',route=>route.fulfill({status:404,json:{}}));
- await page.addInitScript(()=>localStorage.setItem('shida_statistics_consent_v1',JSON.stringify({choice:'declined',expires:Date.now()+86400000})));
+ await page.addInitScript(expectedOrigin=>{
+  // Init hooks also run on teardown documents such as opaque about:blank.
+  if(!['http:','https:'].includes(location.protocol)||location.origin!==expectedOrigin)return;
+  localStorage.setItem('shida_statistics_consent_v1',JSON.stringify({choice:'declined',expires:Date.now()+86400000}));
+ },new URL(baseURL).origin);
  await page.goto('/en/privacy/');
  // SSR consent is unknown; this status proves the persisted decline has hydrated.
  await expect(page.locator('.website-statistics-control [role="status"]')).toHaveText(statisticsCopy.en.off);
