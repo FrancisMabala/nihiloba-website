@@ -123,3 +123,10 @@
  .svc-workspace[data-services-view] .svc-cal-event{grid-template-columns:repeat(auto-fit,minmax(min(100%,8em),1fr));overflow-wrap:normal;word-break:normal}
  .svc-workspace[data-services-view] .management-mobile-nav.management-services-nav>button{display:grid;grid-template-rows:24px auto;align-content:start;justify-items:center;gap:5px}
 }
+
+/* The selected provider replaces the repeated mobile context label. */
+@media(max-width:1023px){
+ .seller-design .svc-workspace .connected-mobile-bar .business-identity>div:has(>.svc-provider-selector)>strong{display:none}
+ .seller-design .svc-workspace .connected-mobile-bar .svc-provider-selector select{min-height:44px}
+ .seller-design .svc-workspace[data-services-view="activity"] .svc-professional-summary>div>h2{display:none}
+}

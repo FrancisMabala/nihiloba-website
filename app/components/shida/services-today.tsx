@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useRef,useState,type ReactNode} from "react";
 import {readWorkList} from "../../lib/services-work-list";
+import {servicesOverviewRead} from '../../lib/services-overview-loading';
 import {workMatches,type WorkFilter} from "../../lib/services-work-model";
 import {serviceTimestamp,SERVICE_TIME_ZONE,shiftDay} from "../../lib/service-time";
 import {localDate} from "../../lib/shida-calendar";
@@ -30,27 +31,28 @@ function Today({base,binding,locale,onOpen,onAll,onDenied,actions,offerings=[],c
  const day=data.value?.date??localDate(new Date().toISOString(),SERVICE_TIME_ZONE);
  const retry=()=>{if(refreshing.current||calendarRefreshing.current)return;refreshing.current=true;setRefreshBusy(true);setRefresh(value=>value+1);onRefresh?.();};
  useEffect(()=>{
-  const controller=new AbortController();let alive=true;
+  const controller=new AbortController(),workController=new AbortController();let alive=true;
   refreshing.current=true;outstanding.current=canWork?2:0;
   const settled=()=>{if(alive&&--outstanding.current<=0){refreshing.current=false;setRefreshBusy(false);}};
   async function get(path:string){const response=await fetch(`${base}${path}`,{credentials:"include",cache:"no-store",signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)]),headers:{Accept:"application/json","X-Shida-Session":binding}});if(!response.ok){if(alive&&[401,403].includes(response.status))denied.current();throw Error();}return response.json();}
   queueMicrotask(()=>{if(alive){setData({value:null,failed:false});setJobs({value:null,failed:false});setNewCount(null);if(!canWork){refreshing.current=false;setRefreshBusy(false);}}});
   if(canWork){
-   void get(`/today?language=${locale}`).then(value=>{if(!["requests","pending","upcoming","messages"].every(key=>Array.isArray(value[key]?.items)))throw Error();if(alive)setData({value,failed:false});}).catch(()=>{if(alive)setData({value:null,failed:true});}).finally(settled);
-   void Promise.all((["requests","reservations"] as const).map(source=>readWorkList(base,binding,source,()=>alive))).then(([requests,reservations])=>{
+   void servicesOverviewRead(binding,controller.signal,()=>get(`/today?language=${locale}`)).then(value=>{if(!["requests","pending","upcoming","messages"].every(key=>Array.isArray(value[key]?.items)))throw Error();if(alive)setData({value,failed:false});}).catch(()=>{if(alive)setData({value:null,failed:true});}).finally(settled);
+   void Promise.all((["requests","reservations"] as const).map(source=>servicesOverviewRead(binding,workController.signal,()=>readWorkList(base,binding,source,()=>alive&&!workController.signal.aborted)))).then(([requests,reservations])=>{
     if(alive){setNewCount(requests.filter(row=>workMatches(row,"new","requests")).length);setJobs({value:{items:reservations.filter(row=>workMatches(row,"jobs","reservations")),more:false},failed:false});}
-   }).catch(error=>{if(alive){if(["401","403"].includes(error.message))denied.current();setJobs({value:null,failed:true});}}).finally(settled);
+   }).catch(error=>{workController.abort();if(alive){if(["401","403"].includes(error.message))denied.current();setJobs({value:null,failed:true});}}).finally(settled);
 
   }
   const focus=()=>{if(!refreshing.current&&!calendarRefreshing.current){refreshing.current=true;setRefreshBusy(true);setRefresh(value=>value+1);}};window.addEventListener("focus",focus);
-  return()=>{alive=false;controller.abort();window.removeEventListener("focus",focus);};
+  return()=>{alive=false;controller.abort();workController.abort();window.removeEventListener("focus",focus);};
  },[base,binding,locale,refresh,canWork]);
  useEffect(()=>{
   if(!canCalendar)return;
   let alive=true;const controller=new AbortController();calendarRefreshing.current=true;
   queueMicrotask(()=>{if(alive){setCalendarBusy(true);setCalendar({value:null,failed:false});}});
-  const signal=AbortSignal.any([controller.signal,AbortSignal.timeout(20000)]);
-  const request=loadAppointments?loadAppointments(day,signal):(async()=>{
+  const request=servicesOverviewRead(binding,controller.signal,()=>{
+   const signal=AbortSignal.any([controller.signal,AbortSignal.timeout(20000)]);
+   return loadAppointments?loadAppointments(day,signal):(async()=>{
    const items:TodayAppointment[]=[];
    for(let page=1;;page++){
     const params=new URLSearchParams({date_from:day,date_to:shiftDay(day,1),page:String(page)});
@@ -62,7 +64,7 @@ function Today({base,binding,locale,onOpen,onAll,onDenied,actions,offerings=[],c
     if(!value.has_more)return {items,more:false};
     if(page>=10000)throw Error();
    }
-  })();
+  })();});
   void request.then(value=>{if(!Array.isArray(value.items))throw Error();if(alive)setCalendar({value:{items:appointmentsForDay(value.items,day),more:value.more},failed:false});}).catch(error=>{if(alive){if(["401","403"].includes(error.message))denied.current();setCalendar({value:null,failed:true});}}).finally(()=>{if(alive){calendarRefreshing.current=false;setCalendarBusy(false);}});
   return()=>{alive=false;controller.abort();};
  },[base,binding,day,refresh,canCalendar,loadAppointments]);
