@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ShidaVersionedLegalPage } from "../app/components/legal/shida-versioned-legal-page";
+import { PrivacyPolicyPage } from "../app/components/pages/privacy-policy-page";
 import {
   getOtherLanguageDocument,
   getShidaLegalMetadata,
@@ -23,6 +24,27 @@ const routeFiles = [
 ];
 
 describe("versioned SHIDA legal documents", () => {
+  it("links the current operational notice only from canonical privacy, preserving permanent versions", () => {
+    for (const locale of ["en", "fr"] as const) {
+      const current = renderToStaticMarkup(<ShidaVersionedLegalPage kind="privacy" locale={locale}/>);
+      expect(current).toContain(`/${locale}/privacy#account-whatsapp-records`);
+      expect(current).toContain('data-document-version="1.1"');
+      for (const version of ["1.0", "1.1"]) {
+        for (const historical of [false, true]) {
+          const permanent = renderToStaticMarkup(<ShidaVersionedLegalPage kind="privacy" locale={locale} version={version} historical={historical}/>);
+          expect(permanent).not.toContain('privacy#account-whatsapp-records');
+          expect(permanent).toContain(`data-document-version="${version}"`);
+        }
+      }
+      expect(renderToStaticMarkup(<ShidaVersionedLegalPage kind="terms" locale={locale}/>)).not.toContain('privacy#account-whatsapp-records');
+      const policy = renderToStaticMarkup(<PrivacyPolicyPage locale={locale}/>);
+      expect(policy).toContain('id="account-whatsapp-records"');
+      expect(policy).toContain(locale === "fr" ? '21 novembre 2026' : '21 November 2026');
+      expect(policy).toContain(locale === "fr" ? 'elles ne sont pas anonymes' : 'they are not anonymous');
+      expect(policy).toContain(locale === "fr" ? 'n’active ni ne désactive' : 'does not enable or disable');
+      expect(policy).toContain(locale === "fr" ? 'jusqu’à son exécution' : 'until the cleanup job processes them');
+    }
+  });
   it("registers six canonical bilingual documents and immutable Version 1.0 sources", () => {
     expect(shidaLegalDocuments).toHaveLength(16);
     expect(new Set(shidaLegalDocuments.map((item) => `${item.documentId}:${item.version}`)).size).toBe(8);

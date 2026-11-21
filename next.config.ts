@@ -43,6 +43,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   trailingSlash: true,
+  experimental: {
+    // Bound per-image native work and avoid retaining decoded operation caches.
+    // This does not limit the number of simultaneous image requests.
+    imgOptConcurrency: 1,
+    imgOptOperationCache: false,
+  },
   async headers() {
     return [
       { source: "/shida/space/:path*", headers: privatePageHeaders },
