@@ -43,6 +43,19 @@ describe('Meda conditional authoring',()=>{
  it('keeps all required language keys meaningful',()=>{
   for(const copy of Object.values(medaIntentionCopy)){expect(Object.keys(copy).sort()).toEqual(Object.keys(medaIntentionCopy.en).sort());for(const value of Object.values(copy))expect(value.trim().length).toBeGreaterThan(0);}
  });
+ it.each(['fr','en','ln','sw'] as const)('labels each carton without repeating the group title (%s)',locale=>{
+  const html=renderToStaticMarkup(<MedaListingForm {...props} locale={locale} initial={{...listing,side:'offer',category:'container'}}/>),copy=medaIntentionCopy[locale];
+  expect(html).toContain(`<legend>${escape(copy.cartons)}</legend>`);expect(html).toContain(`<legend>${escape(copy.carton)} 1</legend>`);expect(html).not.toContain(`<legend>${escape(copy.cartons)} 1</legend>`);
+ });
+ it('accepts ordinary whole carton dimensions and fractional kilograms on the browser number grid',()=>{
+  const html=renderToStaticMarkup(<MedaListingForm {...props} locale="en" initial={{...listing,side:'offer',category:'container'}}/>);
+  const fields=[...html.matchAll(/<input[^>]*type="number"[^>]*>/g)].map(([input])=>({min:Number(input.match(/ min="([^"]+)"/)?.[1]),step:Number(input.match(/ step="([^"]+)"/)?.[1]),required:input.includes('required=""')}));
+  expect(fields).toHaveLength(5);expect(fields.slice(0,3)).toEqual(Array.from({length:3},()=>({min:.01,step:.01,required:true})));
+  expect(fields[3]).toEqual({min:0,step:.01,required:true});expect(fields[4]).toEqual({min:.001,step:.001,required:false});
+  // HTML step mismatch is determined relative to min. Previously min=.001 /
+  // step=.01 rejected whole centimetres (60), so the form could never advance.
+  for(const [index,value] of [60,40,50,25.50,12.125].entries()){const grid=(value-fields[index].min)/fields[index].step;expect(grid).toBeCloseTo(Math.round(grid),7);}
+ });
 });
 describe('Meda publication recovery',()=>{
  it('does not finish authoring until publication resolves',async()=>{

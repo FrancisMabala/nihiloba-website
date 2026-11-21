@@ -8,6 +8,8 @@ import {marketplaceLanguagePath} from "../../lib/marketplace-navigation";
 import {useCallback,useEffect,useId,useRef,useState} from 'react';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {PERSONAL_SESSION_EVENT,PersonalSessionError,restorePersonalSession,type PersonalSession} from '../../lib/personal-session-browser';
+import {PERSONAL_PROFILE_EVENT} from '../../lib/personal-profile-browser';
+import {LOGIN_EVENT,loginUnconfirmed} from '../../lib/personal-login-browser';
 import {endEmploymentSession} from '../../services/shida/employment-browser-client';
 import {publicAccountCopy} from '../../lib/public-account-copy';
 import {leaveWork} from '../../lib/restaurant-work';
@@ -67,7 +69,7 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
     }catch{setLanguageError(true);choosing.current=false;setPending(false);}
   }
 
-  const check=useCallback(async(clear=false)=>{
+  const check=useCallback(async(clear=false,profileRefresh=false)=>{
     if(mutating.current||!alive.current)return;
     const current=++generation.current;
     reading.current?.abort();
@@ -79,8 +81,9 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
       if(alive.current&&current===generation.current){setSession(value);setFailed(false);}
     } catch(error) {
       if(alive.current&&current===generation.current){
-        setSession(null);
-        setFailed(!(error instanceof PersonalSessionError&&[401,403].includes(error.status)));
+        const denied=loginUnconfirmed()||(error instanceof PersonalSessionError&&[401,403,409].includes(error.status));
+        if(!profileRefresh||denied)setSession(null);
+        setFailed(!denied);
       }
     } finally {
       clearTimeout(timeout);
@@ -93,12 +96,13 @@ export function PublicShidaAccount({locale}:{locale:keyof typeof publicAccountCo
     alive.current=true;
     const currentGeneration=generation;
     const changed=()=>void check(true);
-    const storage=(event:StorageEvent)=>{if(event.key===PERSONAL_SESSION_EVENT)changed();};
+    const profile=()=>void check(false,true);
+    const storage=(event:StorageEvent)=>{if(event.key===PERSONAL_PROFILE_EVENT)profile();else if(!event.key||[PERSONAL_SESSION_EVENT,LOGIN_EVENT,'shida-personal-login-unconfirmed'].includes(event.key))changed();};
     const focus=()=>{if(!document.hidden)void check();};
     queueMicrotask(()=>void check());
-    window.addEventListener(PERSONAL_SESSION_EVENT,changed);window.addEventListener('storage',storage);
+    window.addEventListener(PERSONAL_SESSION_EVENT,changed);window.addEventListener(LOGIN_EVENT,changed);window.addEventListener(PERSONAL_PROFILE_EVENT,profile);window.addEventListener('storage',storage);
     window.addEventListener('focus',focus);window.addEventListener('online',focus);document.addEventListener('visibilitychange',focus);
-    return()=>{alive.current=false;++currentGeneration.current;reading.current?.abort();window.removeEventListener(PERSONAL_SESSION_EVENT,changed);window.removeEventListener('storage',storage);window.removeEventListener('focus',focus);window.removeEventListener('online',focus);document.removeEventListener('visibilitychange',focus);};
+    return()=>{alive.current=false;++currentGeneration.current;reading.current?.abort();window.removeEventListener(PERSONAL_SESSION_EVENT,changed);window.removeEventListener(LOGIN_EVENT,changed);window.removeEventListener(PERSONAL_PROFILE_EVENT,profile);window.removeEventListener('storage',storage);window.removeEventListener('focus',focus);window.removeEventListener('online',focus);document.removeEventListener('visibilitychange',focus);};
   },[check]);
 
   useEffect(()=>{if(open&&!dialog.current?.open)dialog.current?.showModal();},[open]);

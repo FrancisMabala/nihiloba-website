@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {registrationCopy,type RegistrationLocale} from '../../lib/registration/copy';
 import {onboardingText} from '../../lib/registration/onboarding-copy';
 import {accountNavigationCopy} from '../../lib/account-navigation-copy';
-import {announcePersonalSessionChange} from '../../lib/personal-session-browser';
+import {announcePersonalProfileChange} from '../../lib/personal-profile-browser';
 import './registration.css';
 import {addressCopy} from "../../lib/registration/address-copy";
 import {RegistrationLocation} from "./registration-location";
@@ -39,7 +39,7 @@ export function PersonalProfileSettings({locale,binding,onPhone}:{locale:Registr
   try{const current=await readAccount('',binding,AbortSignal.timeout(12000));if(live.current)void signalPasskeyUser(current.passkey_user);}catch{/* Profile is saved even if metadata refresh is unavailable. */}
   if(!live.current)return;
   if(window.location.hash==='#passkey-profile')window.location.hash='job-alert-passkey';
-  announcePersonalSessionChange();
+  announcePersonalProfileChange();
  }catch{if(live.current)setMessage(t.error);}finally{lock.current=false;if(live.current)setBusy(false);}}
  const editFields=[...(profile?.values.first_name?[]:["personal_name"]),"first_name","family_name","additional_name","preferred_language"];
  const label=(key:string)=>profileLabel(locale,key)??(key in addressCopy[locale]?addressCopy[locale][key as keyof typeof addressCopy.en]:key==='country_code'?accountDesignText(locale,'country'):key==='area'?t.area:onboardingText(locale,key));

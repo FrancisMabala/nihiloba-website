@@ -4,6 +4,7 @@ import {createContext,useContext,useEffect,useRef,useState,useCallback,type Reac
 import type {ServiceLocale as Locale} from '../../lib/services-i18n';
 import {restorePersonalSession,PERSONAL_SESSION_EVENT,type PersonalSession,PersonalSessionError} from '../../lib/personal-session-browser';
 import {LOGIN_EVENT,loginUnconfirmed} from '../../lib/personal-login-browser';
+import {PERSONAL_PROFILE_EVENT} from '../../lib/personal-profile-browser';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {restaurantReviewCopy,restaurantReviewReasons} from '../../lib/restaurant-review-copy';
 
@@ -25,9 +26,9 @@ export function WenzeBuyerProvider({locale,children,loginMessage}:{locale:Locale
    catch(error){if(alive&&ticket===epoch){const denied=loginUnconfirmed()||(error instanceof PersonalSessionError&&[401,403,409].includes(error.status));if(denied)setSession(null);setFailed(!denied);}}
    finally{clearTimeout(timer);if(alive&&ticket===epoch)setChecking(false);}
   }
-  const changed=()=>void check(true),focus=()=>void check(),storage=(e:StorageEvent)=>{if(!e.key||[PERSONAL_SESSION_EVENT,LOGIN_EVENT,'shida-personal-login-unconfirmed'].includes(e.key))changed();};
-  void check();window.addEventListener(PERSONAL_SESSION_EVENT,changed);window.addEventListener(LOGIN_EVENT,changed);window.addEventListener('focus',focus);window.addEventListener('storage',storage);
-  return()=>{alive=false;++epoch;request?.abort();window.removeEventListener(PERSONAL_SESSION_EVENT,changed);window.removeEventListener(LOGIN_EVENT,changed);window.removeEventListener('focus',focus);window.removeEventListener('storage',storage);};
+  const changed=()=>void check(true),focus=()=>void check(),storage=(e:StorageEvent)=>{if(e.key===PERSONAL_PROFILE_EVENT)focus();else if(!e.key||[PERSONAL_SESSION_EVENT,LOGIN_EVENT,'shida-personal-login-unconfirmed'].includes(e.key))changed();};
+  void check();window.addEventListener(PERSONAL_SESSION_EVENT,changed);window.addEventListener(LOGIN_EVENT,changed);window.addEventListener(PERSONAL_PROFILE_EVENT,focus);window.addEventListener('focus',focus);window.addEventListener('storage',storage);
+  return()=>{alive=false;++epoch;request?.abort();window.removeEventListener(PERSONAL_SESSION_EVENT,changed);window.removeEventListener(LOGIN_EVENT,changed);window.removeEventListener(PERSONAL_PROFILE_EVENT,focus);window.removeEventListener('focus',focus);window.removeEventListener('storage',storage);};
  },[]);
  return <Context.Provider value={{binding:session?.binding??null,checking,login:()=>setOpen(true)}}>{open&&<section ref={loginPanel} tabIndex={-1} className="wzp-buyer-login container" role="region" aria-label={t.signIn}><button className="wzp-close" onClick={()=>setOpen(false)}>{t.close}</button><p>{loginMessage??t.login}</p>{failed&&<p role="alert">{t.failed}</p>}<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>{window.dispatchEvent(new Event(PERSONAL_SESSION_EVENT));}}/></section>}{children}</Context.Provider>;
 }
