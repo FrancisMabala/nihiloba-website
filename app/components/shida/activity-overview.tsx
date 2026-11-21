@@ -1,5 +1,5 @@
 'use client';
-import {Fragment,useState,type CSSProperties,type ReactNode} from 'react';
+import {Fragment,useEffect,useRef,useState,type CSSProperties,type ReactNode} from 'react';
 import {overviewCopy} from '../../lib/activity-overview-copy';
 import {overviewEntries,type ActivityKind} from '../../lib/overview-records';
 import type {ActivityData} from '../../lib/use-personal-activity-data';
@@ -16,15 +16,35 @@ import './activity-overview.css';
 const icons:Record<ActivityKind,SpaceIconName>={shop:'shop',restaurant:'restaurant',malewa:'restaurant',profile:'tool',job:'management',apartment:'home',hotel:'business',driver:'people',item:'orders'};
 export function ActivityOverview({locale,current,creation,onRetry}:{locale:MarketplaceLocale;current:ActivityData|null;creation:ReactNode;onRetry:()=>void}){
  const [expanded,setExpanded]=useState<ActivityKind|null>(null),[creating,setCreating]=useState(false);
+ const heading=useRef<HTMLHeadingElement>(null);
+ const retryFocus=useRef<{button:HTMLButtonElement;binding:string;stop:()=>void}|null>(null);
+ useEffect(()=>()=>{retryFocus.current?.stop();retryFocus.current=null;},[]);
+ useEffect(()=>{
+  const retry=retryFocus.current;
+  if(!retry)return;
+  if(current&&current.binding!==retry.binding){retry.stop();retryFocus.current=null;return;}
+  if(!current?.overview||current.pending)return;
+  retry.stop();retryFocus.current=null;
+  if(!current.failed&&!retry.button.isConnected&&(document.activeElement===document.body||document.activeElement===document.documentElement))heading.current?.focus({preventScroll:true});
+ },[current]);
  const d=activitiesDesignCopy[locale],c=mySpaceCopy[locale],labels=overviewCopy[locale],prefix=locale==='en'?'':'/'+locale;
  if(!current?.overview)return <p role="status">{accountSpaceCopy[locale].loading}</p>;
  const entries=overviewEntries(locale,current.items,current.overview);
  const kinds=(Object.keys(labels) as ActivityKind[]).filter(kind=>entries.some(row=>row.kind===kind));
  const empty=!kinds.length&&!current.failed&&!current.pending;
  return <section className="activity-overview">
-   <header><h2>{accountNavigationCopy[locale].activities}</h2><button aria-expanded={creating} aria-controls="overview-create" onClick={()=>setCreating(!creating)}>{creating?d.close:'+ '+d.newActivity}</button></header>
+   <header><h2 ref={heading} tabIndex={-1}>{accountNavigationCopy[locale].activities}</h2><button aria-expanded={creating} aria-controls="overview-create" onClick={()=>setCreating(!creating)}>{creating?d.close:'+ '+d.newActivity}</button></header>
    {creating&&<div id="overview-create">{creation}</div>}
-   {current.failed&&<div role="alert">{workspaceText(locale,'partial')} <button onClick={onRetry}>{c.retry}</button></div>}
+   {current.failed&&<div role="alert">{workspaceText(locale,'partial')} <button onClick={event=>{
+    retryFocus.current?.stop();retryFocus.current=null;
+    const button=event.currentTarget;
+    if(document.activeElement===button){
+     const moved=(event:FocusEvent)=>{if(event.target!==button&&event.target!==document.body&&event.target!==document.documentElement){retryFocus.current?.stop();retryFocus.current=null;}};
+     const stop=()=>document.removeEventListener('focusin',moved);
+     retryFocus.current={button,binding:current.binding,stop};document.addEventListener('focusin',moved);
+    }
+    onRetry();
+   }}>{c.retry}</button></div>}
    {current.pending&&<p role="status">{accountSpaceCopy[locale].loading}</p>}
    {empty&&<div className="overview-welcome"><h3>{d.start}</h3><p>{d.empty}</p>{!creating&&creation}</div>}
    <div className="overview-grid">{kinds.map((kind,index)=>{
