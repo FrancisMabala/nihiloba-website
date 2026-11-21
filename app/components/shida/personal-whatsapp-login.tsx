@@ -15,6 +15,8 @@ import { announcePersonalSessionChange, PERSONAL_SESSION_EVENT } from "../../lib
 import { registrationCopy, registrationEligibility, registrationFlowCopy } from "../../lib/registration/copy";
 import { refinementCopy } from "../../lib/registration/refinement-copy";
 import {registrationReturnPath} from '../../lib/registration/return-path';
+import type {ResumedChallenge} from '../../lib/registration/challenge-resume';
+import {registrationResumeCopy} from '../../lib/registration/resume-copy';
 
 const subscribeLocation = (changed:()=>void) => {
   window.addEventListener('popstate',changed);
@@ -24,18 +26,18 @@ const locationSnapshot = ()=>window.location.pathname+window.location.search;
 const serverLocationSnapshot = ()=>'';
 
 type State = "eligibility_required" | "idle" | "creating" | "pending" | "code" | "exchanging" | "expired" | "onboarding_required" | "cancelled" | "unavailable" | "rate_limited" | "uncertain" | "phone_mismatch";
-type Challenge = { challenge_ref: string; whatsapp_url: string; expires_at: string };
+type Challenge = { challenge_ref: string; whatsapp_url?: string; expires_at: string };
 
 // In-place authentication deliberately leaves the complete local URL, filters and language intact.
-export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = false, heading, expectedPhone, returnTo }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void; registration?: boolean; heading?: string; expectedPhone?:string; returnTo?:string }) {
+export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = false, heading, expectedPhone, returnTo, initialChallenge, initialUncertain=false }: { locale: keyof typeof personalLoginCopy; onAuthenticated: () => void; registration?: boolean; heading?: string; expectedPhone?:string; returnTo?:string; initialChallenge?:ResumedChallenge|null; initialUncertain?:boolean }) {
   const pathname = usePathname();
   const currentLocation=useSyncExternalStore(subscribeLocation,locationSnapshot,serverLocationSnapshot);
   const registrationDestination=registrationReturnPath(returnTo??currentLocation,pathname);
   const design=authDesignCopy[locale];
   const r=refinementCopy[locale];
   const t = { ...personalLoginCopy[locale],phone_mismatch:r.mismatch, ...(registration ? { start:personalLoginCopy[locale].open, help: registrationCopy[locale].verificationHelp, verify: registrationCopy[locale].verifyButton } : {}), ...(heading ? { title: heading } : {}) };
-  const [state, setState] = useState<State>("idle");
-  const [challenge, setChallenge] = useState<Challenge | null>(null);
+  const [state, setState] = useState<State>(()=>initialUncertain?'uncertain':registration&&initialChallenge ? initialChallenge.status==='verified'?'code':'pending' : 'idle');
+  const [challenge, setChallenge] = useState<Challenge | null>(()=>registration&&initialChallenge?initialChallenge:null);
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState(false);
   const codeId = useId();
@@ -43,7 +45,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   const [eligible, setEligible] = useState(false);
   const submitting = useRef(false);
   const epoch = useRef(0), alive = useRef(false), read = useRef<AbortController | null>(null);
-  const started = useRef(false);
+  const started = useRef(Boolean(registration&&initialChallenge));
   const callback = useRef(onAuthenticated);
   useEffect(() => { callback.current = onAuthenticated; }, [onAuthenticated]);
   useEffect(() => {
@@ -153,7 +155,7 @@ export function PersonalWhatsAppLogin({ locale, onAuthenticated, registration = 
   return <section className="candidate-login candidate-private-panel" lang={locale}>
     <h2>{registration?t.title:state==="code"||state==="exchanging"?design.verifyTitle:design.title}</h2><p>{registration?t.help:state==="code"||state==="exchanging"?design.verifyHelp:state==="idle"?design.intro:t.help}</p>{!registration&&!["pending","code","exchanging","creating","uncertain"].includes(state)&&<><PasskeyLogin locale={locale} onAuthenticated={onAuthenticated}/><EmailLogin locale={locale} onAuthenticated={onAuthenticated}/></>}{registration && <><label htmlFor={eligibilityId} className="registration-consent"><input id={eligibilityId} type="checkbox" checked={eligible} onChange={event => setEligible(event.target.checked)}/><span>{registrationEligibility[locale]}</span></label><p>{registrationFlowCopy[locale].scope}</p></>}
     {state !== "idle" && (registration || state !== "code") && <p role="status" aria-live="polite">{state === "eligibility_required" ? residenceCopy[locale].ageError : t[state]}</p>}
-    {state === "pending" && challenge && <><a className="button button-primary" href={challenge.whatsapp_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{t.open}</a><button className="button button-secondary" type="button" onClick={() => void cancel()}>{t.cancel}</button></>}
+    {state === "pending" && challenge && <>{challenge.whatsapp_url?<a className="button button-primary" href={challenge.whatsapp_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{t.open}</a>:<p>{registrationResumeCopy[locale].pending}</p>}<button className="button button-secondary" type="button" onClick={() => void cancel()}>{challenge.whatsapp_url?t.cancel:design.restart}</button></>}
     {(state === "code" || state === "exchanging") && <form className="candidate-form" onSubmit={verify}>
       <label htmlFor={codeId}>{t.codeLabel}</label>
       <VerificationCode id={codeId} label={t.codeLabel} value={code} disabled={busy} invalid={codeError} onChange={value=>{setCode(value);setCodeError(false);}}/>{challenge&&<p className="auth-expiry">{design.expires} {new Date(challenge.expires_at).toLocaleTimeString(locale,{hour:"2-digit",minute:"2-digit"})}.</p>}

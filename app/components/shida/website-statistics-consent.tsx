@@ -20,7 +20,17 @@ export function WebsiteStatisticsConsent({language}:{language:string}){
  },[consent,pathname,language]);
  function choose(value:'accepted'|'declined'){websiteStatistics()?.choose(value);setExpanded(false);requestAnimationFrame(()=>control.current?.focus());}
  return <section className="website-statistics" aria-label={t.settings} lang={locale}>
+  {(expanded||consent==='unknown')&&<div id="website-statistics-options" className="website-statistics-options" aria-labelledby="website-statistics-title">
+   <div className="website-statistics-copy">
+    <h2 id="website-statistics-title">{t.title}</h2>
+    <p className="website-statistics-purpose">{t.description}</p>
+    <p>{t.details}</p>
+    <p>{t.choiceHelp}</p>
+   </div>
+   {consent==='blocked'&&<p>{t.blocked}</p>}
+   <div className="website-statistics-actions"><button type="button" disabled={consent==='blocked'} onClick={()=>choose('accepted')}>{t.accept}</button><button type="button" onClick={()=>choose('declined')}>{t.decline}</button></div>
+   <div className="website-statistics-links"><a href={locale==='en'?'/en/privacy':'/fr/privacy'} hrefLang={locale==='en'?'en':'fr'}>{t.privacy}</a>{consent!=='unknown'&&<button type="button" onClick={()=>{setExpanded(false);control.current?.focus();}}>{t.close}</button>}</div>
+  </div>}
   <div className="website-statistics-control"><button ref={control} type="button" aria-expanded={expanded||consent==='unknown'} aria-controls="website-statistics-options" onClick={()=>setExpanded(value=>!value)}>{t.settings}</button>{consent!=='unknown'&&<span role="status">{consent==='accepted'?t.on:consent==='blocked'?t.blocked:t.off}</span>}</div>
-  {(expanded||consent==='unknown')&&<div id="website-statistics-options" className="website-statistics-options"><h2>{t.title}</h2><p>{t.description}</p><a href={locale==='en'?'/en/privacy':'/fr/privacy'} hrefLang={locale==='en'?'en':'fr'}>{t.privacy}</a>{consent==='blocked'&&<p>{t.blocked}</p>}<div className="website-statistics-actions"><button type="button" disabled={consent==='blocked'} onClick={()=>choose('accepted')}>{t.accept}</button><button type="button" onClick={()=>choose('declined')}>{t.decline}</button>{consent!=='unknown'&&<button type="button" onClick={()=>{setExpanded(false);control.current?.focus();}}>{t.close}</button>}</div></div>}
  </section>;
 }

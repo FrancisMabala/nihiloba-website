@@ -12,10 +12,10 @@ export function markLoginUnconfirmed(value: boolean) {
 export function loginUnconfirmed(): boolean {
   try { return localStorage.getItem(UNCONFIRMED) === "1"; } catch { return unconfirmed; }
 }
-export async function authMutation<T>(work: () => Promise<T>): Promise<T> {
+export async function authMutation<T>(work: () => Promise<T>, signal?:AbortSignal): Promise<T> {
   // Fail closed on browsers without cross-tab serialization rather than race session cookies.
   if (!navigator.locks) return Promise.reject(new Error("unavailable"));
-  return await navigator.locks.request(LOGIN_LOCK, work);
+  return signal ? await navigator.locks.request(LOGIN_LOCK,{signal},work) : await navigator.locks.request(LOGIN_LOCK,work);
 }
 export async function personalAuthBusy(): Promise<boolean> {
   if (typeof navigator === "undefined" || !navigator.locks) return false;

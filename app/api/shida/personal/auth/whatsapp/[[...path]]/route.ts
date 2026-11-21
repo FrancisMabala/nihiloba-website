@@ -34,8 +34,9 @@ async function handle(request: Request, context: Context) {
   if (create && !["fr","en","ln","sw"].includes(language)) return privateEmploymentJson({error:{code:"invalid_language"}},422);
   const cancel = path.length === 1 && reference.test(path[0]) && request.method === "DELETE";
   const status = path.length === 1 && reference.test(path[0]) && request.method === "GET";
+  const resume = registration && path.length === 1 && path[0] === "resume" && request.method === "GET";
   const exchange = path.length === 2 && reference.test(path[0]) && path[1] === "session" && request.method === "POST";
-  if (!create && !cancel && !status && !exchange || new URL(request.url).search) return privateEmploymentJson({ error: { code: "not_found" } }, 404);
+  if (!create && !cancel && !status && !resume && !exchange || new URL(request.url).search) return privateEmploymentJson({ error: { code: "not_found" } }, 404);
   const jar = await cookies();
   const clear = () => jar.set(CHALLENGE_COOKIE, "", { ...options, maxAge: 0 });
   const [ref, deadline, verifier] = (jar.get(CHALLENGE_COOKIE)?.value ?? "").split(".");
@@ -44,7 +45,7 @@ async function handle(request: Request, context: Context) {
     if (ref === path[0]) clear();
     return privateEmploymentJson({ status: "cancelled" });
   }
-  if (!create && (ref !== path[0] || !secret.test(verifier ?? "") || !(Number(deadline) > Date.now())))
+  if (!create && ((!resume && ref !== path[0]) || !reference.test(ref ?? "") || !secret.test(verifier ?? "") || !(Number(deadline) > Date.now())))
     return privateEmploymentJson({ error: { code: "expired" } }, 404);
   let codeBody: string | undefined;
   if (exchange) {
@@ -70,8 +71,9 @@ async function handle(request: Request, context: Context) {
   try {
     const origin = new URL(process.env.SHIDA_API_BASE_URL ?? "https://api.nihiloba.com");
     if (origin.protocol !== "https:" || origin.username || origin.password) throw new Error();
-    const endpoint = registration && (create || exchange) ? "registration/challenge" : "auth/whatsapp-challenge";
-    const response = await fetch(`${origin.origin}/api/dashboard/${endpoint}${path.length ? `/${path.join("/")}` : ""}`, {
+    const endpoint = registration && (create || exchange || resume) ? "registration/challenge" : "auth/whatsapp-challenge";
+    const suffix = resume ? `/${ref}/resume` : path.length ? `/${path.join("/")}` : "";
+    const response = await fetch(`${origin.origin}/api/dashboard/${endpoint}${suffix}`, {
       method: request.method, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(8000),
       ...(exchange ? { body: codeBody } : {}),
       headers: { Accept: "application/json", Origin: publicOrigin,
@@ -84,6 +86,15 @@ async function handle(request: Request, context: Context) {
       return privateEmploymentJson({ error: { code: registration && exchange && error?.detail==="phone_mismatch" ? "phone_mismatch" : exchange && response.status === 400 ? "invalid_code" : response.status === 429 ? "rate_limited" : response.status === 404 ? "expired" : response.status === 409 ? "cancelled" : "unavailable" } }, response.status >= 400 ? response.status : 502);
     }
     const data = await response.json();
+    if (resume) {
+      const expires=Date.parse(data.expires_at);
+      if (data.challenge_ref!==ref || !["pending","verified"].includes(data.status) ||
+          !["fr","en","ln","sw"].includes(data.language) || !Number.isFinite(expires) ||
+          expires<=Date.now() || expires>Number(deadline)) throw new Error();
+      // The reference comes from our HttpOnly cookie, never browser storage/input.
+      // Resuming cannot issue or extend either a challenge cookie or a session.
+      return privateEmploymentJson({status:data.status,challenge_ref:ref,expires_at:data.expires_at,language:data.language});
+    }
     if (create) {
       const binding = upstreamCookie(response, "shida_dashboard_challenge");
       const expires = Date.parse(data.expires_at);
