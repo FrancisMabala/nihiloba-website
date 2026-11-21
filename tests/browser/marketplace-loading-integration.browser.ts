@@ -48,7 +48,10 @@ test('real Personal Restaurant management preserves existing startup',async({pag
  await signIn(context);await page.setViewportSize({width:390,height:844});
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(origin+'/fr/shida/seller/restaurants/?establishment='+fixture().personal.establishment+'&tab=today');
+ await expect(page.locator('.rst-ops-updated')).toBeVisible({timeout:30000});
  await expect(page.locator('.rst-today-refresh')).toBeEnabled({timeout:30000});
+ await expect(page.locator('.rst-today-refresh')).toHaveAttribute('aria-busy','false');
+ await expect(page.locator('.rst-ops-money')).not.toContainText('Chargement');
  await expect(page.locator('.rst-ops-incomplete')).toHaveCount(0);await expect(page.locator('.rst-ops-error')).toHaveCount(0);
  expect(errors).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:info.outputPath('real-restaurant-mobile.png'),fullPage:true});
