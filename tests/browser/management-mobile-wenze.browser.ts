@@ -12,7 +12,7 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,3
   if(path.endsWith('/employment/session'))return reply({binding:'a'.repeat(64),user:{display_name:'Demo seller'}});
   if(path.endsWith('/me'))return reply({user:{account_type:'both',display_name:'Demo seller'},businesses:[]});
   if(path.endsWith('/contexts'))return reply({contexts:[{type:'organization',public_ref:'BUS_fixture',name:'SHIDA Boutique Test',role:'owner',restricted:false,onboarding_status:'complete',operational_state:'operational'}]});
-  if(path.endsWith('/stores'))return reply({stores:[shop],categories:[{code:'other',labels:{en:'Other products',fr:'Autres produits',ln:'Biloko mosusu',sw:'Bidhaa nyingine'}}],currencies:['CDF','USD']});
+  if(path.endsWith('/stores'))return reply({stores:width===390?[shop,{...shop,public_ref:'WNZ_other',name:'Autre boutique test'}]:[shop],categories:[{code:'other',labels:{en:'Other products',fr:'Autres produits',ln:'Biloko mosusu',sw:'Bidhaa nyingine'}}],currencies:['CDF','USD']});
   if(path.endsWith('/WNZ_fixture'))return reply(shop);
   if(path.endsWith('/products'))return reply({products:[product],total:1});
   if(path.endsWith('/WNP_fixture'))return reply(product);
@@ -35,7 +35,20 @@ for(const locale of ['fr','en','ln','sw'] as const)for(const width of [320,375,3
   return reply({});
  });
 
- await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/wenze/?store=WNZ_fixture`);
+ await page.setViewportSize({width,height:900});await page.goto(`${locale==='en'?'':`/${locale}`}/shida/seller/wenze/?store=WNZ_fixture&view=shop`);
+ const mobileIdentity=page.locator('.connected-mobile-bar .business-identity');
+ if(width<1024){
+  await expect(mobileIdentity).toBeVisible();
+  await expect(page.locator('.ws-shop-name>h2')).toBeHidden();
+  if(width===390){
+   await expect(mobileIdentity.locator('strong')).toBeHidden();
+   await expect(mobileIdentity.locator('select')).toHaveValue(shop.public_ref);
+   expect((await mobileIdentity.locator('select').boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  }else await expect(mobileIdentity.locator('strong')).toHaveText(shop.name);
+ }else{
+  await expect(mobileIdentity).toBeHidden();
+  await expect(page.locator('.ws-shop-name>h2')).toBeVisible();
+ }
  const nav=page.locator('.management-mobile-nav');await expect(nav).toHaveCount(1);
  if(width<1024){await expect(nav).toBeVisible();expect(await nav.locator('button').count()).toBeLessThanOrEqual(5);for(const index of Array.from({length:await nav.locator('button:not([aria-haspopup])').count()},(_,i)=>i)){await nav.locator('button').nth(index).click();await expect(nav.locator('button').nth(index)).toHaveAttribute('aria-current','page');}
  }else {await expect(nav).toBeHidden();await expect(page.locator('.wz-desktop-navigation')).toBeVisible();}

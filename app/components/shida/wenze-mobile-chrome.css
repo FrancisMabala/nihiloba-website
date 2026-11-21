@@ -50,4 +50,11 @@
  .seller-design .wz-personal .wz-section-tabs{flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:thin}
  .seller-design .wz-personal .wz-section-tabs button{flex:none;white-space:nowrap}
 }
+/* The mobile context bar already names the shop. A selector replaces that
+   label when there are several shops; profile metadata keeps its own actions. */
+@media(max-width:1023px){
+ .seller-design .wz-personal .connected-mobile-bar .business-identity>div:has(>.wz-store-selector)>strong{display:none}
+ .seller-design .wz-personal .connected-mobile-bar .wz-store-selector select{min-height:44px}
+ .seller-design .wz-personal.ws-shop .ws-shop-name>h2{display:none}
+}
 @media(prefers-reduced-motion:no-preference){.seller-design .wz-header-panel{animation:wz-menu-appear .12s ease-out}@keyframes wz-menu-appear{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}}
