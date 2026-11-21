@@ -157,17 +157,26 @@ export function WenzeWorkspace({locale,binding,onFlowShop}:{onFlowShop?:(name:st
       if (ticket !== generation.current) return;
       const data = value as { stores: Item[]; kinshasa_communes?:string[]; categories: Category[]; product_categories?: Category[]; currencies?: string[] }; data.stores=data.stores.filter(row=>row.selling_mode!=="individual");setCommunes(data.kinshasa_communes??[]);setStores(data.stores); setCategories(data.categories); setProductCategories(data.product_categories ?? data.categories); setCurrencies(data.currencies?.length ? data.currencies : ["CDF", "USD"]);
       const params = new URLSearchParams(window.location.search), storeRef = params.get("store"), productRef = params.get("product");
-      if (!storeRef && data.stores.length===1 && !archived) {setStore(data.stores[0]);await loadProducts(data.stores[0],0);}
-      if (!storeRef && params.get("view")==="catalog")setView("catalog");
-      if (storeRef) {
-        const [selected, selectedProduct] = await Promise.all([request(`${root}/${enc(storeRef)}`), productRef ? request(`${root}/${enc(storeRef)}/products/${enc(productRef)}`) : Promise.resolve(null)]) as Item[];
+      const requested=params.get("view")??"today";
+      const destination=productRef?"catalog":["today","catalog","orders","imports","inventory","sales","costs","expenses","money","reports","schedules","receipts","shop"].includes(requested)?requested:"today";
+      const [selected,selectedProduct]=await Promise.all([
+        storeRef?request(`${root}/${enc(storeRef)}`) as Promise<Item>:Promise.resolve(!archived&&data.stores.length===1?data.stores[0]:null),
+        storeRef&&productRef?request(`${root}/${enc(storeRef)}/products/${enc(productRef)}`) as Promise<Item>:Promise.resolve(null)
+      ]);
+      if(ticket!==generation.current)return;
+      setView(destination);
+      if (selected) {
         if(selected.selling_mode==="individual"){router.replace(`${locale==="en"?"":`/${locale}`}/shida/wenze/sell`);return;}
-        if (ticket === generation.current) { setStore(selected); setProduct(selectedProduct); if(productRef)setView("catalog"); if(selected.status==="active"){
+        setStore(selected);
+        setProduct(selectedProduct);
+        if(destination==="catalog"&&selected.status==="active"){
           const query=params.get("search")??"", status=params.get("status")??"active", page=Number(params.get("offset"));
           const listStatus=["active","hidden","archived","all"].includes(status)?status:"active";
           setFilter(listStatus);setSearch(query);
           await loadProducts(selected,Number.isSafeInteger(page)&&page>=0&&page%20===0?page:0,listStatus,query);
-        } const destination=params.get("view");const order=params.get("order");if(destination==="orders"&&order&&/^[A-Za-z0-9_-]{1,100}$/.test(order))setDashboardOrder(order);if(destination==="shop")setShopTab(selected.status==="active"?"shopDetails":"settings");if(destination&&["today","catalog","orders","imports","inventory","sales","costs","expenses","money","reports","schedules","receipts","shop"].includes(destination))setView(destination); }
+        }
+        if(ticket!==generation.current)return;
+        const order=params.get("order");if(destination==="orders"&&order&&/^[A-Za-z0-9_-]{1,100}$/.test(order))setDashboardOrder(order);if(destination==="shop")setShopTab(selected.status==="active"?"shopDetails":"settings");
       }
     }).catch(() => { if (ticket === generation.current) {setError("unavailable");setSellerCheckFailed(true);} }).finally(()=>{if(ticket===generation.current)setCheckingSeller(false);});
   }, [context, archived, checkAttempt]); // eslint-disable-line react-hooks/exhaustive-deps

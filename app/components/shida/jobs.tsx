@@ -61,11 +61,12 @@ export function JobPagination({locale,search,collection}:{locale:Locale;search:J
 }
 export async function JobCollectionPage({locale,search,initialOffer}:{locale:Locale;search:JobSearch;initialOffer?:string}) {
   const t=copy[locale],u=jobDiscoveryCopy[locale];
+  const collectionRequest=getJobs({...search,page:search.page??1,page_size:search.page_size??12},locale);
+  const categoriesRequest=getJobCategories(locale).catch(()=>[] as JobCategory[]);
   let collection:JobCollection|undefined;
-  try { collection=await getJobs({...search,page:search.page??1,page_size:search.page_size??12},locale); }
+  try { collection=await collectionRequest; }
   catch(error){if(!(error instanceof ShidaApiError)||error.kind==="not-found")throw error;}
-  let categories:JobCategory[]=[];
-  try{categories=await getJobCategories(locale);}catch{/* Discovery still works if the optional catalog cannot load. */}
+  const categories=await categoriesRequest; // Optional discovery metadata starts alongside the job list.
   const activeItems=collection?.items??[];
   const filtered=Boolean(search.query||search.city||search.area||search.commune||search.contract||search.category||search.view||(search.page??1)>1);
   const welcome=collection?.pagination.total_items===0&&!filtered;

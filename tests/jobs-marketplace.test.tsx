@@ -25,6 +25,16 @@ afterEach(()=>vi.unstubAllGlobals());
 function collection(items:unknown[]){return {items,pagination:{page:1,page_size:12,total_items:items.length,total_pages:items.length?1:0}};}
 
 describe("Employment Batch 5B structured public frontend",()=>{
+  it('starts optional categories before the job request finishes',async()=>{
+    let release!:(response:Response)=>void;
+    const fetcher=vi.fn((url:unknown)=>String(url).includes('/jobs/catalogs')?Promise.resolve(Response.json({job_categories:[]})):new Promise<Response>(resolve=>{release=resolve;}));
+    vi.stubGlobal('fetch',fetcher);
+    const page=JobCollectionPage({locale:'en',search:{}});
+    await vi.waitFor(()=>expect(fetcher).toHaveBeenCalledTimes(2));
+    expect(fetcher.mock.calls.some(([url])=>String(url).includes('/jobs/catalogs'))).toBe(true);
+    release(Response.json(collection([professional])));
+    expect(renderToStaticMarkup(await page)).toContain('IT Support Engineer');
+  });
   it('reads and localizes volunteering and travel without inventing missing requirements',async()=>{
     for(const [locale,label,travel] of [['fr','Bénévolat / volontariat','Déplacements requis'],['en','Volunteering','Travel required'],['ln','Mosala ya bolingo','Esengeli kosala mibembo'],['sw','Kazi ya kujitolea','Safari zinahitajika']] as const){
       expect(contractLabel('volunteer',locale)).toBe(label);

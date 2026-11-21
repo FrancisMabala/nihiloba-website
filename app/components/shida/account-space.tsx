@@ -1,4 +1,5 @@
 'use client';
+import {useRouter} from 'next/navigation';
 import {myProfilesCopy} from '../../lib/my-profiles-copy';
 const MyProfiles=lazy(()=>import('./my-profiles').then(module=>({default:module.MyProfiles})));
 import {ManagementSpaceSelector} from './management-space-selector';
@@ -44,6 +45,7 @@ import {leaveWork} from '../../lib/wenze-work';
 import {listingCopy} from '../../lib/wenze-listings-copy';
 import {resolveSpaceView,type SpaceView as View} from '../../lib/space-view';
 export function AccountSpace({locale,initialView,initialSection,transactionRole,applyOffer,inbox=false}:{locale:MarketplaceLocale;initialView?:string;initialSection?:string;transactionRole?:string;applyOffer?:string;inbox?:boolean}){
+ const router=useRouter();
  const w=(key:Parameters<typeof workspaceText>[1])=>workspaceText(locale,key);
  const t=accountSpaceCopy[locale],prefix=locale==='en'?'':`/${locale}`,bilingual=locale==='en'?'':'/fr',base=`${prefix}/shida/space`;
  const requestedView=resolveSpaceView(initialView,inbox);
@@ -51,8 +53,8 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
  const [securityResult,setSecurityResult]=useState<'deleted'|'logout'|null>(null);
  const n=accountNavigationCopy[locale];
  const [activityRevision,setActivityRevision]=useState(0);
- const activityData=usePersonalActivityData(session?.binding??null,1,activityRevision,requestedView==='overview'||requestedView==='management',requestedView==='manage'||requestedView==='profiles');
- const individualOnly=individualOnlyActivities(activityData);
+ const activityData=usePersonalActivityData(session?.binding??null,1,activityRevision,requestedView==='overview'||requestedView==='management',requestedView==='manage'||requestedView==='profiles',requestedView==='overview');
+ const individualOnly=!activityData?.pending&&individualOnlyActivities(activityData);
  // Personal listings is also the entry point for a first listing or draft.
  const hasListings=true;
  const view=!initialView&&requestedView==='overview'&&individualOnly?'listings':requestedView;
@@ -75,7 +77,13 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
  const orders:[string,string,SpaceIconName][]=[[t.wenzeOrders,`${bilingual}/shida/wenze/orders`,'shop'],[t.foodOrders,`${prefix}/shida/restaurant-orders`,'restaurant']];
  const requests:[string,string,SpaceIconName][]=[[t.serviceRequests,`${prefix}/shida/service-requests`,'requests'],[w('applications'),locale==='fr'?'/fr/shida/mes-candidatures':`${prefix}/shida/my-applications`,'requests'],[w('reservations'),`${prefix}/shida/restaurant-reservations`,'restaurant']];
  return <div className={`account-space${view==='manage'?' management-selector-page':''}${view==='settings'?' account-settings-page':(view==='management'||view==='overview')?' account-activities-page':view==='transactions'?' account-transactions-page':''}`} lang={locale}>
-  {view!=='manage'&&<SpaceSidebar binding={session?.binding} locale={locale} view={view==='candidate'?'job-search':view} individualOnly={individualOnly&&view!=='management'} hasListings={hasListings} onNavigate={async event=>{event.preventDefault();const destination=event.currentTarget.href;if(await leaveWork())window.location.assign(destination);}}/>}
+  {view!=='manage'&&<SpaceSidebar binding={session?.binding} locale={locale} view={view==='candidate'?'job-search':view} individualOnly={individualOnly&&view!=='management'} hasListings={hasListings} onNavigate={async event=>{
+   if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+   const destination=new URL(event.currentTarget.href);
+   if(destination.origin!==window.location.origin)return;
+   event.preventDefault();
+   if(await leaveWork())router.push(destination.pathname+destination.search+destination.hash);
+  }}/>}
   <div className="space-content">
    {view==='manage'&&(checking?<p role="status">{t.loading}</p>:session?<ManagementSpaceSelector locale={locale} data={activityData} onRetry={()=>setActivityRevision(v=>v+1)}/>:<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>setAttempt(n=>n+1)}/>)}
    {view!=='manage'&&((view!=='management'&&view!=='listings'&&view!=='support'&&(view!=='job-offer'||apply))||checking||!session)&&<h1 className="space-page-title">{view==='job-offer'?(apply?individualApplicationCopy[locale].title:missionText(locale,'title')):(view==='candidate'||view==='job-search')?jobSearchCopy[locale].title:view==='listings'?listingCopy[locale].title:view==='overview'?universalSpaceCopy[locale].overview:view==='management'?n.activities:view==='transactions'?n.transactions:view==='settings'?n.account:view==='questions'?helpText(locale,'title'):view==='support'?accountSupportCopy[locale].title:view==='recovery'?securityText(locale,'report'):view==='profiles'?myProfilesCopy[locale].title:t[view]}</h1>}

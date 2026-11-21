@@ -20,11 +20,12 @@ export function ActivityOverview({locale,current,creation,onRetry}:{locale:Marke
  if(!current?.overview)return <p role="status">{accountSpaceCopy[locale].loading}</p>;
  const entries=overviewEntries(locale,current.items,current.overview);
  const kinds=(Object.keys(labels) as ActivityKind[]).filter(kind=>entries.some(row=>row.kind===kind));
- const empty=!kinds.length&&!current.failed;
+ const empty=!kinds.length&&!current.failed&&!current.pending;
  return <section className="activity-overview">
    <header><h2>{accountNavigationCopy[locale].activities}</h2><button aria-expanded={creating} aria-controls="overview-create" onClick={()=>setCreating(!creating)}>{creating?d.close:'+ '+d.newActivity}</button></header>
    {creating&&<div id="overview-create">{creation}</div>}
    {current.failed&&<div role="alert">{workspaceText(locale,'partial')} <button onClick={onRetry}>{c.retry}</button></div>}
+   {current.pending&&<p role="status">{accountSpaceCopy[locale].loading}</p>}
    {empty&&<div className="overview-welcome"><h3>{d.start}</h3><p>{d.empty}</p>{!creating&&creation}</div>}
    <div className="overview-grid">{kinds.map((kind,index)=>{
      const rows=entries.filter(row=>row.kind===kind),single=rows.length===1,open=expanded===kind;
