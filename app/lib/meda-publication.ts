@@ -19,7 +19,7 @@ export class MedaPublication {
    try{result=await call(`listings/${row.reference}/`,{action:'publish',revision:row.revision});}
    catch(error){
     const status=error&&typeof error==='object'&&'status' in error?error.status:null;
-    if(status===401||status===403||status===404)throw error;
+    if(status===401||status===403||status===404||status===429)throw error;
     // A response can be lost after commit. Re-read the exact owner-only resource;
     // neither a different revision nor modified terms prove this publication.
     const current=await call(`listings/${row.reference}/`);

@@ -98,6 +98,19 @@ describe('Meda publication recovery',()=>{
   const state=new MedaPublication(),denied=Object.assign(Error('forbidden'),{status:403}),call=vi.fn().mockResolvedValueOnce(listing).mockRejectedValueOnce(Error('lost')).mockRejectedValueOnce(denied);
   await expect(state.save(call,null,{title:'Books'},'synthetic-operation',true,vi.fn())).rejects.toBe(denied);
  });
+ it('keeps a saved draft on429 without automatic reads or retries and reuses it on explicit retry',async()=>{
+  const state=new MedaPublication(),rate=Object.assign(Error('meda_rate_limited'),{status:429}),onDraft=vi.fn();
+  const call=vi.fn().mockResolvedValueOnce(listing).mockRejectedValueOnce(rate).mockResolvedValueOnce({...listing,status:'published',revision:2});
+  await expect(state.save(call,null,{title:'Books'},'synthetic-operation',true,onDraft)).rejects.toBe(rate);
+  expect(call).toHaveBeenCalledTimes(2);expect(onDraft).toHaveBeenCalledWith(listing);
+  await state.save(call,null,{title:'Books'},'synthetic-operation',true,onDraft);
+  expect(call).toHaveBeenCalledTimes(3);expect(call.mock.calls[2]).toEqual(['listings/MED_synthetic/',{action:'publish',revision:1}]);
+ });
+ it('preserves the creation operation and payload for a manual retry after429',async()=>{
+  const state=new MedaPublication(),rate=Object.assign(Error('meda_rate_limited'),{status:429}),call=vi.fn().mockRejectedValueOnce(rate).mockResolvedValueOnce(listing);
+  const values={title:'Books'};await expect(state.save(call,null,values,'synthetic-operation',false,vi.fn())).rejects.toBe(rate);expect(call).toHaveBeenCalledTimes(1);
+  await state.save(call,null,values,'synthetic-operation',false,vi.fn());expect(call.mock.calls[1]).toEqual(call.mock.calls[0]);
+ });
  it.each([
   {...listing,status:'published',revision:3},
   {...listing,status:'published',revision:2,title:'Changed by another tab'},

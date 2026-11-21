@@ -5,7 +5,11 @@ export const dynamic='force-dynamic';
 type Context={params:Promise<{path?:string[]}>};
 async function handle(request:Request,context:Context){
  const path=((await context.params).path??[]).join('/'),url=new URL(request.url);
- const fail=(status:number,detail='meda_unavailable')=>Response.json({detail},{status,headers:PRIVATE_HEADERS});
+ const fail=(status:number,detail='meda_unavailable',rawRetryAfter:string|null=null)=>{
+  const seconds=rawRetryAfter&&/^\d{1,6}$/.test(rawRetryAfter)?Number(rawRetryAfter):null;
+  const retryAfter=seconds!==null&&seconds>0&&seconds<=86400?seconds:null;
+  return Response.json({detail},{status,headers:{...PRIVATE_HEADERS,...(retryAfter!==null?{'Retry-After':String(retryAfter)}:{})}});
+ };
  const read=request.method==='GET';
  const allowed=read?/^(airports|discovery(?:\/MED_[A-Za-z0-9_-]{1,60})?|photos\/MPH_[A-Za-z0-9_-]{1,60}|listings(?:\/MED_[A-Za-z0-9_-]{1,60})?|enquiries(?:\/MEQ_[A-Za-z0-9_-]{1,60})?)$/:/^(photos|reports\/(?:MED|MEQ)_[A-Za-z0-9_-]{1,60}|listings(?:\/MED_[A-Za-z0-9_-]{1,60}(?:\/(?:enquiries|proposals))?)?|enquiries\/MEQ_[A-Za-z0-9_-]{1,60}\/(messages|close|read|agreement|handover|proposal))$/;
  if(!allowed.test(path))return fail(404);
@@ -26,7 +30,11 @@ async function handle(request:Request,context:Context){
   const base=new URL(process.env.SHIDA_API_BASE_URL??'https://api.nihiloba.com');
   if(base.protocol!=='https:'||base.username||base.password)return fail(503);
   const response=await fetch(new URL(`/api/dashboard/personal/meda/${path}${url.search}`,base.origin),{method:request.method,body,cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(15000),headers:{Cookie:`shida_dashboard_session=${token}`,Accept:'application/json',...(origin?{Origin:origin}:{}),...(body?{'Content-Type':'application/json'}:{})}});
-  if(!response.ok){const value=await response.json().catch(()=>null);const code=['meda_contact','meda_expired','meda_stale','meda_closed','meda_invalid','meda_personal_required'].includes(value?.detail)?value.detail:'meda_unavailable';return fail(response.status>=400&&response.status<600?response.status:502,code);}
+  if(!response.ok){
+   if(response.status===429)return fail(429,'meda_rate_limited',response.headers.get('retry-after'));
+   const value=await response.json().catch(()=>null);const code=['meda_contact','meda_expired','meda_stale','meda_closed','meda_invalid','meda_personal_required'].includes(value?.detail)?value.detail:'meda_unavailable';
+   return fail(response.status>=400&&response.status<600?response.status:502,code,response.status===503?response.headers.get('retry-after'):null);
+  }
   if(path.startsWith('photos/')&&read)return new Response(await response.arrayBuffer(),{headers:{...PRIVATE_HEADERS,'Content-Type':'image/jpeg','X-Content-Type-Options':'nosniff'}});
   return Response.json(await response.json(),{headers:PRIVATE_HEADERS});
  }catch{return fail(503);}

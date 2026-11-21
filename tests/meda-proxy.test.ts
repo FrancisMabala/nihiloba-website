@@ -44,6 +44,25 @@ describe('Meda gateway',()=>{
   vi.mocked(fetch).mockResolvedValueOnce(Response.json({detail:'private backend contents'},{status:500}));
   expect(await (await GET(request('listings'),context('listings'))).json()).toEqual({detail:'meda_unavailable'});
  });
+ it.each(['1','60','3600','86400','000060'])('preserves429 with only a bounded Retry-After value (%s)',async delay=>{
+  vi.mocked(fetch).mockResolvedValueOnce(Response.json({detail:{code:'rate_limited',private:'must not pass'}},{status:429,headers:{'Retry-After':delay,'Set-Cookie':'untrusted=1','X-Upstream-Private':'hidden'}}));
+  const response=await POST(request('listings','POST',{'Content-Type':'application/json',Origin:'https://nihiloba.com'},'{}'),context('listings'));
+  expect(response.status).toBe(429);expect(await response.json()).toEqual({detail:'meda_rate_limited'});expect(response.headers.get('retry-after')).toBe(String(Number(delay)));
+  expect(response.headers.get('set-cookie')).toBeNull();expect(response.headers.get('x-upstream-private')).toBeNull();expect(response.headers.get('cache-control')).toContain('no-store');expect(response.headers.get('vary')).toContain('Cookie');expect(fetch).toHaveBeenCalledTimes(1);
+ });
+ it.each(['0','-1','86401','999999999','1.5','1e3','Infinity','30,60','Sat, 21 Nov 2026 15:00:00 GMT','invalid'])('drops invalid or excessive Retry-After without hiding429 (%s)',async delay=>{
+  vi.mocked(fetch).mockResolvedValueOnce(new Response('not-json',{status:429,headers:{'Retry-After':delay}}));
+  const response=await GET(request('listings'),context('listings'));expect(response.status).toBe(429);expect(response.headers.get('retry-after')).toBeNull();expect(await response.json()).toEqual({detail:'meda_rate_limited'});expect(fetch).toHaveBeenCalledTimes(1);
+ });
+ it('retains fail-closed503 with a bounded availability delay and safe generic details',async()=>{
+  vi.mocked(fetch).mockResolvedValueOnce(Response.json({detail:{code:'temporarily_unavailable',private:'hidden'}},{status:503,headers:{'Retry-After':'60'}}));
+  const response=await POST(request('listings','POST',{'Content-Type':'application/json',Origin:'https://nihiloba.com'},'{}'),context('listings'));
+  expect(response.status).toBe(503);expect(await response.json()).toEqual({detail:'meda_unavailable'});expect(response.headers.get('retry-after')).toBe('60');expect(fetch).toHaveBeenCalledTimes(1);
+ });
+ it('does not forward Retry-After on unrelated errors',async()=>{
+  vi.mocked(fetch).mockResolvedValueOnce(Response.json({detail:'private'},{status:403,headers:{'Retry-After':'60'}}));
+  const response=await GET(request('listings'),context('listings'));expect(response.status).toBe(403);expect(response.headers.get('retry-after')).toBeNull();
+ });
  it('anonymous browsing is blocked before any upstream request',async()=>{
   const result=await PUBLIC();
   expect(result.status).toBe(401);expect(fetch).not.toHaveBeenCalled();
