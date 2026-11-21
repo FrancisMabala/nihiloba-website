@@ -23,17 +23,21 @@ export function WenzeToday({store,stores,locale,onChoose,onNavigate,onOpenOrder}
  const [daily,setDaily]=useState<Daily|null>(null),[orders,setOrders]=useState<Orders|null>(null),[stock,setStock]=useState<Row|null>(null);
  const [zone,setZone]=useState(store?.city?.toLowerCase()==='lubumbashi'?'Africa/Lubumbashi':'Africa/Kinshasa');
  const [refresh,setRefresh]=useState(0),[busy,setBusy]=useState(true),[partial,setPartial]=useState(false);
- useEffect(()=>{if(!store)return;let active=true;const generation=new AbortController();const read=(path:string)=>readQueue(path,generation.signal);const base=`wenze/contexts/personal/stores/${encodeURIComponent(store.public_ref)}`;
-  async function stockSummary(){
+ useEffect(()=>{if(!store)return;let active=true,currentLoad:AbortController|undefined;const base=`wenze/contexts/personal/stores/${encodeURIComponent(store.public_ref)}`;
+  async function stockSummary(read:(path:string)=>Promise<unknown>){
     const [summary,items]=await Promise.all([read(base+'/inventory/summary'),loadInventoryCatalogue(path=>read(base+'/'+path))]);
     const groups=inventoryCatalogue(items.catalogue,items.stock);
     return {...summary as Row,untracked_items:groups.filter(g=>matchesStock(g,'untracked')).length,uninitialized_items:groups.filter(g=>matchesStock(g,'uninitialized')).length,low_stock_items:groups.filter(g=>matchesStock(g,'low')).length,items_out_of_stock:groups.filter(g=>matchesStock(g,'out')).length};
   }
   let loading=false;
-  async function load(){if(loading)return;loading=true;setBusy(true);setDaily(null);setOrders(null);setStock(null);setPartial(false);
-   const results=await Promise.allSettled([read(`${base}/today?timezone=${encodeURIComponent(zone)}`),read(`wenze/contexts/personal/orders?store_ref=${encodeURIComponent(store!.public_ref)}&language=${locale}&bucket=all&limit=5`),stockSummary()]);
+  async function load(){if(loading||!active)return;loading=true;setBusy(true);setDaily(null);setOrders(null);setStock(null);setPartial(false);
+   const batch=new AbortController();currentLoad=batch;const read=(path:string)=>readQueue(path,batch.signal);
+   const results=await Promise.allSettled([read(`${base}/today?timezone=${encodeURIComponent(zone)}`),read(`wenze/contexts/personal/orders?store_ref=${encodeURIComponent(store!.public_ref)}&language=${locale}&bucket=all&limit=5`),stockSummary(read)]);
+   // A failed summary/page can settle its panel before sibling pagination.
+   // Retire that batch before allowing a poll to start another traversal.
+   batch.abort();
    loading=false;if(!active)return;setDaily(results[0].status==='fulfilled'?results[0].value as Daily:null);setOrders(results[1].status==='fulfilled'?results[1].value as Orders:null);setStock(results[2].status==='fulfilled'?results[2].value as Row:null);setPartial(results.some(r=>r.status==='rejected'));setBusy(false);
-  }void load();const timer=setInterval(()=>{if(document.visibilityState==='visible')void load();},60000);return()=>{active=false;generation.abort();clearInterval(timer);};
+  }void load();const timer=setInterval(()=>{if(document.visibilityState==='visible')void load();},60000);return()=>{active=false;currentLoad?.abort();clearInterval(timer);};
  },[store,locale,readQueue,refresh,zone]);
  if(!store)return <section className="wz-today"><h2>{t('todayTitle')}</h2><p>{t('choose')}</p><div className="wz-grid">{stores.map(shop=><button className="wz-card" key={shop.public_ref} onClick={()=>onChoose(shop)}>{shop.name}</button>)}</div><button onClick={()=>onNavigate('catalog')}>{t('create')}</button></section>;
  const money=(value:string,currency:string)=>`${new Intl.NumberFormat(locale,{maximumFractionDigits:2}).format(Number(value))} ${currency}`;

@@ -66,6 +66,27 @@ it('does not poll hidden or overlapping work and recovers on the next visible in
  vi.stubGlobal('document',{visibilityState:'hidden'});await vi.advanceTimersByTimeAsync(120000);expect(lifecycle.request).toHaveBeenCalledTimes(failedCount);
  vi.stubGlobal('document',{visibilityState:'visible'});await vi.advanceTimersByTimeAsync(60000);expect(lifecycle.request).toHaveBeenCalledTimes(failedCount+5);
 });
+it.each(['summary','products'])('abandons residual pagination after %s fails before the next poll',async failure=>{
+ vi.useFakeTimers();let first=true;
+ const held:Array<{path:string;resolve:(value:unknown)=>void}>=[];const paths:string[]=[];
+ lifecycle.request.mockImplementation((path:string)=>{
+  paths.push(path);
+  if(first&&path.includes(failure==='summary'?'/inventory/summary':'/products?'))return Promise.reject(Error('Synthetic partial failure'));
+  if(first&&(path.includes('/products?')||path.includes('/inventory/stock?')))return new Promise(resolve=>held.push({path,resolve}));
+  if(path.includes('/products?'))return Promise.resolve({products:[],total:0});
+  if(path.includes('/inventory/stock?'))return Promise.resolve({items:[]});
+  return Promise.resolve({});
+ });
+ mount();for(let i=0;i<10;i++)await tick();expect(held.length).toBeGreaterThan(0);
+ first=false;await vi.advanceTimersByTimeAsync(180000);
+ held.forEach(({path,resolve})=>resolve(path.includes('/products?')?{products:[{public_ref:'p1'}],total:2}:{items:[],next_cursor:'obsolete-next'}));
+ for(let i=0;i<20;i++)await tick();
+ expect(paths.some(path=>path.includes('offset=1')||path.includes('cursor=obsolete-next'))).toBe(false);
+ // Two occupied slots defer polling; a single occupied slot still permits
+ // completed fresh polls. Neither case may revive the failed old traversal.
+ const polls=paths.filter(path=>path.includes('/today?')).length;
+ expect(polls).toBeGreaterThanOrEqual(2);expect(polls).toBeLessThanOrEqual(4);
+});
 it('retains occupied slots across cancelled generations and does not launch stale queued reads',async()=>{
  const finish:Array<()=>void>=[];let active=0,max=0;const sent:string[]=[];
  const read=createWenzeTodayReads(path=>{sent.push(path);active++;max=Math.max(max,active);return new Promise(resolve=>finish.push(()=>{active--;resolve(path);}));});
