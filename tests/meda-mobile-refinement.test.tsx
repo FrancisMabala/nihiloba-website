@@ -3,6 +3,7 @@ import {describe,expect,it,vi} from 'vitest';
 import {MedaListingForm,type MedaListing} from '../app/components/shida/meda-listing-form';
 import {MedaInvitation,MedaSearch,defaultMedaFilters} from '../app/components/shida/meda-discovery';
 import {medaCopy,medaHistoryCopy} from '../app/lib/meda-copy';
+import {medaIntentionCopy} from '../app/lib/meda-intention-copy';
 import {medaParticipationCopy} from '../app/lib/meda-participation-copy';
 import {medaDestination} from '../app/lib/meda-navigation';
 import {ObjectFields,emptyObjects} from '../app/components/shida/meda-participation';
@@ -33,7 +34,7 @@ describe('Meda mobile form structure and preserved contracts',()=>{
    const html=renderToStaticMarkup(<MedaListingForm locale={locale} initial={draft} busy={false} onSave={vi.fn()} onCancel={vi.fn()} call={vi.fn()} binding="unit-only"/>);
    expect(html.match(/aria-current="step"/g)).toHaveLength(1);
    expect(html).toContain('tabindex="-1"');
-   for(const label of medaParticipationCopy[locale].steps.split('|'))expect(html).toContain(escape(label));
+   for(const label of medaIntentionCopy[locale].steps.split('|'))expect(html).toContain(escape(label));
    expect(html).toContain('data-step="0"');
    expect(html).toContain('data-step="1" hidden=""');
    expect(html).toContain('data-step="2" hidden=""');
@@ -41,12 +42,12 @@ describe('Meda mobile form structure and preserved contracts',()=>{
    expect(html).toContain('name="destination_city"');expect(html).toContain('value="Kinshasa"');
    expect(html).toContain('for="meda-from-country"');expect(html).toContain('id="meda-from-country"');
    expect(html).toContain('for="meda-to-country"');expect(html).toContain('id="meda-to-country"');
-   expect(html).toContain('name="accepted_objects"');expect(html).toContain('name="included_services"');
-   expect(html).toContain('name="arrival_from"');expect(html).toContain('name="arrival_to"');
+   expect(html).not.toContain('name="accepted_objects"');expect(html).not.toContain('name="included_services"');
+   expect(html).not.toContain('name="arrival_from"');expect(html).not.toContain('name="arrival_to"');
    expect(html).toContain('accept="image/jpeg,image/png,image/webp"');
    expect(html).toContain(escape(medaParticipationCopy[locale].memberPhotos));
-   // A request without photos must still be blocked from explicit publication.
-   expect(html).toMatch(/<button[^>]*value="publish"[^>]*disabled=""/);
+   // Ordinary sender photos are optional; only airport publication requires them.
+   expect(html).not.toMatch(/<button[^>]*value="publish"[^>]*disabled=""/);
    expect(html).toContain(`>${escape(medaCopy[locale].save)}</button>`);
   });
   it(`keeps ${locale} discovery controls and the existing localized create destination`,()=>{

@@ -7,7 +7,7 @@ async function handle(request:Request,context:Context){
  const path=((await context.params).path??[]).join('/'),url=new URL(request.url);
  const fail=(status:number,detail='meda_unavailable')=>Response.json({detail},{status,headers:PRIVATE_HEADERS});
  const read=request.method==='GET';
- const allowed=read?/^(discovery(?:\/MED_[A-Za-z0-9_-]{1,60})?|photos\/MPH_[A-Za-z0-9_-]{1,60}|listings(?:\/MED_[A-Za-z0-9_-]{1,60})?|enquiries(?:\/MEQ_[A-Za-z0-9_-]{1,60})?)$/:/^(photos|reports\/(?:MED|MEQ)_[A-Za-z0-9_-]{1,60}|listings(?:\/MED_[A-Za-z0-9_-]{1,60}(?:\/enquiries)?)?|enquiries\/MEQ_[A-Za-z0-9_-]{1,60}\/(messages|close|read|agreement|handover))$/;
+ const allowed=read?/^(airports|discovery(?:\/MED_[A-Za-z0-9_-]{1,60})?|photos\/MPH_[A-Za-z0-9_-]{1,60}|listings(?:\/MED_[A-Za-z0-9_-]{1,60})?|enquiries(?:\/MEQ_[A-Za-z0-9_-]{1,60})?)$/:/^(photos|reports\/(?:MED|MEQ)_[A-Za-z0-9_-]{1,60}|listings(?:\/MED_[A-Za-z0-9_-]{1,60}(?:\/(?:enquiries|proposals))?)?|enquiries\/MEQ_[A-Za-z0-9_-]{1,60}\/(messages|close|read|agreement|handover|proposal))$/;
  if(!allowed.test(path))return fail(404);
  if([...url.searchParams.keys()].some(k=>!(read?['page','before','category','side','origin','destination','after','listing']:[]).includes(k)||url.searchParams.getAll(k).length!==1)||url.search.length>700)return fail(422);
  const origin=personalRequestOrigin(request);

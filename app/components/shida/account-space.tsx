@@ -14,7 +14,8 @@ import {SpaceSidebar} from './space-sidebar';
 import {lazy,Suspense,useEffect,useState} from 'react';
 import type {MarketplaceLocale} from './marketplace-account-copy';
 import {accountSpaceCopy} from '../../lib/account-space-copy';
-import {PERSONAL_SESSION_EVENT,restorePersonalSession,type PersonalSession} from '../../lib/personal-session-browser';
+import {PERSONAL_SESSION_EVENT,restorePersonalSession,PersonalSessionError,type PersonalSession} from '../../lib/personal-session-browser';
+import {LOGIN_EVENT,loginUnconfirmed} from '../../lib/personal-login-browser';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {SpaceIcon,type SpaceIconName} from './account-space-icon';
 const AccountSpaceOrders=lazy(()=>import('./account-space-orders').then(module=>({default:module.AccountSpaceOrders})));
@@ -64,12 +65,12 @@ export function AccountSpace({locale,initialView,initialSection,transactionRole,
    const ticket=++generation;controller?.abort();controller=new AbortController();const current=controller;
    if(clear){setSession(null);setChecking(true);}const timer=setTimeout(()=>current.abort(),12000);
    try{const value=await restorePersonalSession(current.signal);if(alive&&ticket===generation)setSession(value);}
-   catch{if(alive&&ticket===generation)setSession(null);}
+   catch(error){if(alive&&ticket===generation&&(loginUnconfirmed()||(error instanceof PersonalSessionError&&[401,403,409].includes(error.status))))setSession(null);}
    finally{clearTimeout(timer);if(alive&&ticket===generation)setChecking(false);}
   };
-  const refresh=()=>void load(),reset=()=>void load(true),storage=(event:StorageEvent)=>{if(event.key===PERSONAL_SESSION_EVENT)reset();},visible=()=>{if(!document.hidden)refresh();};
-  void load(true);window.addEventListener(PERSONAL_SESSION_EVENT,reset);window.addEventListener('storage',storage);window.addEventListener('focus',refresh);window.addEventListener('online',refresh);document.addEventListener('visibilitychange',visible);
-  return()=>{alive=false;++generation;controller?.abort();window.removeEventListener(PERSONAL_SESSION_EVENT,reset);window.removeEventListener('storage',storage);window.removeEventListener('focus',refresh);window.removeEventListener('online',refresh);document.removeEventListener('visibilitychange',visible);};
+  const refresh=()=>void load(),reset=()=>void load(true),storage=(event:StorageEvent)=>{if(!event.key||[PERSONAL_SESSION_EVENT,LOGIN_EVENT,'shida-personal-login-unconfirmed'].includes(event.key))reset();},visible=()=>{if(!document.hidden)refresh();};
+  void load(true);window.addEventListener(PERSONAL_SESSION_EVENT,reset);window.addEventListener(LOGIN_EVENT,reset);window.addEventListener('storage',storage);window.addEventListener('focus',refresh);window.addEventListener('online',refresh);document.addEventListener('visibilitychange',visible);
+  return()=>{alive=false;++generation;controller?.abort();window.removeEventListener(PERSONAL_SESSION_EVENT,reset);window.removeEventListener(LOGIN_EVENT,reset);window.removeEventListener('storage',storage);window.removeEventListener('focus',refresh);window.removeEventListener('online',refresh);document.removeEventListener('visibilitychange',visible);};
  },[attempt]);
  const apply=applyOffer&&/^JOB_[A-Za-z0-9_-]+$/.test(applyOffer)?applyOffer:null;
  const href=(key:View)=>`${base}?view=${key}`;

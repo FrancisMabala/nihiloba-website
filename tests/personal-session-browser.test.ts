@@ -31,6 +31,13 @@ it('redirects a freshly authenticated pending account without cancelling deletio
  expect(assign).toHaveBeenCalledWith('/sw/shida/deletion/');
  expect(fetcher.mock.calls.every(call=>call[1]?.method===undefined)).toBe(true);
 });
+it.each(['network','invalid-json','unavailable'])('preserves the authoritative deletion restriction when its explanation fails (%s)',async failure=>{
+ const fetcher=vi.fn().mockResolvedValueOnce(Response.json({}, {status:409}));
+ if(failure==='network')fetcher.mockRejectedValueOnce(new TypeError('offline'));
+ else fetcher.mockResolvedValueOnce(failure==='invalid-json'?new Response('invalid',{status:200}):Response.json({}, {status:503}));
+ vi.stubGlobal('fetch',fetcher);
+ await expect(restorePersonalSession()).rejects.toMatchObject({status:409});
+});
 it("avoids seller redirects while preserving locale, pagination and private transport", async () => {
  const fetcher = vi.fn().mockResolvedValue(Response.json({ items: [] })); vi.stubGlobal("fetch", fetcher);
  await request("personal/restaurants?language=ln&page=2", {}, "synthetic-binding");

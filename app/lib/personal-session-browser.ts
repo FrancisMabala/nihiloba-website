@@ -31,16 +31,24 @@ function observeIdentityChanges() {
   });
 }
 async function readSession(signal: AbortSignal): Promise<PersonalSession> {
+  const startedGeneration=generation;
   // This endpoint also migrates the legacy Employment-path cookie after validation.
   const response = await fetch("/api/shida/employment/session/", { cache: "no-store", credentials: "same-origin", signal });
   signal.throwIfAborted();
   if(response.status===409){
-    const status=await fetch('/api/shida/personal/deletion/',{cache:'no-store',signal});
-    if(status.ok&&(await status.json()).deletion){
-      signal.throwIfAborted();
-      const prefix=window.location.pathname.match(/^\/(fr|ln|sw)(?:\/|$)/)?.[0]?.replace(/\/$/,'')||'';
-      window.location.assign(prefix+'/shida/deletion/');
-      throw new PersonalSessionError(401);
+    try {
+      const status=await fetch('/api/shida/personal/deletion/',{cache:'no-store',signal});
+      if(status.ok&&(await status.json()).deletion){
+        signal.throwIfAborted();
+        const prefix=window.location.pathname.match(/^\/(fr|ln|sw)(?:\/|$)/)?.[0]?.replace(/\/$/,'')||'';
+        window.location.assign(prefix+'/shida/deletion/');
+        throw new PersonalSessionError(401);
+      }
+    } catch(error) {
+      if(generation!==startedGeneration)throw error;
+      if(error instanceof PersonalSessionError)throw error;
+      // A failed explanatory lookup cannot erase the authoritative restriction.
+      throw new PersonalSessionError(409);
     }
   }
   if (!response.ok) throw new PersonalSessionError(response.status);

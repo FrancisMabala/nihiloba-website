@@ -9,6 +9,14 @@ const context=(path:string)=>({params:Promise.resolve({path:path.split('/')})});
 const request=(path:string,method='GET',headers:Record<string,string>={},body?:string)=>new Request('https://nihiloba.com/api/shida/personal/meda/'+path,{method,headers:{'x-shida-session':personalSessionBinding(state.token),...headers},body});
 beforeEach(()=>{vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],page:1,has_more:false})));});
 describe('Meda gateway',()=>{
+ it('keeps airport references behind the existing Personal binding',async()=>{
+  expect((await GET(request('airports'),context('airports'))).status).toBe(200);
+  vi.mocked(fetch).mockClear();expect((await GET(request('airports','GET',{'x-shida-session':'wrong'}),context('airports'))).status).toBe(401);expect(fetch).not.toHaveBeenCalled();
+ });
+ it.each(['listings/MED_synthetic/proposals','enquiries/MEQ_synthetic/proposal'])('allows only the bound proposal mutation path %s',async path=>{
+  expect((await POST(request(path,'POST',{'Content-Type':'application/json',Origin:'https://nihiloba.com'},'{}'),context(path))).status).toBe(200);
+  vi.mocked(fetch).mockClear();expect((await POST(request(path,'POST',{'Content-Type':'application/json',Origin:'https://evil.example'},'{}'),context(path))).status).toBe(403);expect(fetch).not.toHaveBeenCalled();
+ });
  it('requires the existing per-login binding before forwarding private reads',async()=>{
   const response=await GET(request('listings','GET',{'x-shida-session':'old-binding'}),context('listings'));
   expect(response.status).toBe(401);expect(fetch).not.toHaveBeenCalled();

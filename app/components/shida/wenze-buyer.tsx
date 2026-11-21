@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {createContext,useContext,useEffect,useRef,useState,useCallback,type ReactNode} from 'react';
 import type {ServiceLocale as Locale} from '../../lib/services-i18n';
 import {restorePersonalSession,PERSONAL_SESSION_EVENT,type PersonalSession,PersonalSessionError} from '../../lib/personal-session-browser';
+import {LOGIN_EVENT,loginUnconfirmed} from '../../lib/personal-login-browser';
 import {PersonalWhatsAppLogin} from './personal-whatsapp-login';
 import {restaurantReviewCopy,restaurantReviewReasons} from '../../lib/restaurant-review-copy';
 
@@ -21,12 +22,12 @@ export function WenzeBuyerProvider({locale,children,loginMessage}:{locale:Locale
  useEffect(()=>{let alive=true,epoch=0;let request:AbortController|null=null;
   async function check(clear=false){const ticket=++epoch;request?.abort();const controller=new AbortController();request=controller;if(clear)setSession(null);setChecking(true);const timer=setTimeout(()=>controller.abort(),12000);
    try{const value=await restorePersonalSession(controller.signal);if(alive&&ticket===epoch){setSession(value);setFailed(false);setOpen(false);}}
-   catch(error){if(alive&&ticket===epoch){setSession(null);setFailed(!(error instanceof PersonalSessionError&&[401,403].includes(error.status)));}}
+   catch(error){if(alive&&ticket===epoch){const denied=loginUnconfirmed()||(error instanceof PersonalSessionError&&[401,403,409].includes(error.status));if(denied)setSession(null);setFailed(!denied);}}
    finally{clearTimeout(timer);if(alive&&ticket===epoch)setChecking(false);}
   }
-  const changed=()=>void check(true),focus=()=>void check(),storage=(e:StorageEvent)=>{if(e.key===PERSONAL_SESSION_EVENT)changed();};
-  void check();window.addEventListener(PERSONAL_SESSION_EVENT,changed);window.addEventListener('focus',focus);window.addEventListener('storage',storage);
-  return()=>{alive=false;++epoch;request?.abort();window.removeEventListener(PERSONAL_SESSION_EVENT,changed);window.removeEventListener('focus',focus);window.removeEventListener('storage',storage);};
+  const changed=()=>void check(true),focus=()=>void check(),storage=(e:StorageEvent)=>{if(!e.key||[PERSONAL_SESSION_EVENT,LOGIN_EVENT,'shida-personal-login-unconfirmed'].includes(e.key))changed();};
+  void check();window.addEventListener(PERSONAL_SESSION_EVENT,changed);window.addEventListener(LOGIN_EVENT,changed);window.addEventListener('focus',focus);window.addEventListener('storage',storage);
+  return()=>{alive=false;++epoch;request?.abort();window.removeEventListener(PERSONAL_SESSION_EVENT,changed);window.removeEventListener(LOGIN_EVENT,changed);window.removeEventListener('focus',focus);window.removeEventListener('storage',storage);};
  },[]);
  return <Context.Provider value={{binding:session?.binding??null,checking,login:()=>setOpen(true)}}>{open&&<section ref={loginPanel} tabIndex={-1} className="wzp-buyer-login container" role="region" aria-label={t.signIn}><button className="wzp-close" onClick={()=>setOpen(false)}>{t.close}</button><p>{loginMessage??t.login}</p>{failed&&<p role="alert">{t.failed}</p>}<PersonalWhatsAppLogin locale={locale} onAuthenticated={()=>{window.dispatchEvent(new Event(PERSONAL_SESSION_EVENT));}}/></section>}{children}</Context.Provider>;
 }
