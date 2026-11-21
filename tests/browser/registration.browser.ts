@@ -135,7 +135,7 @@ for(const locale of ['en','fr','ln','sw'] as const)test(`${locale}: Organization
  await expect(page).toHaveURL('https://business.nihiloba.com/handoff');expect(handedOff&&state.completed).toBe(true);expect(page.url()).not.toContain('token');
 });
 test('stale drafts require explicit reload, cancellation is deliberate',async({page})=>{
- const state=await fixture(page,true);await page.goto('/shida/register/');await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();
+ const state=await fixture(page,true);await page.goto('/shida/register/');await expect(page.locator('#registration-first_name')).toBeVisible();
  state.stale=true;await page.locator('#registration-first_name').fill('Draft');await page.locator('#registration-first_name').press('Tab');
  await expect(page.getByText(registrationCopy.en.changed,{exact:true})).toBeVisible();expect(state.values.personal_name).toBeUndefined();
  state.stale=false;await page.getByRole('button',{name:registrationCopy.en.reload}).click();
@@ -145,7 +145,7 @@ test('stale drafts require explicit reload, cancellation is deliberate',async({p
 
 test('mobile navigation follows keyboard viewport without covering form actions',async({page})=>{
  await fixture(page,true);await page.setViewportSize({width:390,height:900});await page.goto('/shida/register/');
- await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();await page.locator('#registration-first_name').focus();
+ await page.locator('#registration-first_name').focus();
  const nav=page.locator('.shida-navigation');await expect(nav).toBeVisible();
  // Emulate only the keyboard's visual viewport contraction; focus alone is insufficient.
  await page.evaluate(()=>{Object.defineProperty(window.visualViewport!,'height',{configurable:true,value:450});window.visualViewport!.dispatchEvent(new Event('resize'));});
@@ -156,7 +156,7 @@ test('mobile navigation follows keyboard viewport without covering form actions'
 });
 
 test('another tab changing account clears private draft values',async({page})=>{
- await fixture(page,true);await page.goto('/shida/register/');await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();
+ await fixture(page,true);await page.goto('/shida/register/');await expect(page.locator('#registration-first_name')).toBeVisible();
  await fillName(page,'Private Draft');
  await page.evaluate(key=>window.dispatchEvent(new StorageEvent('storage',{key,newValue:'other-tab'})),PERSONAL_SESSION_EVENT);
  await expect(page.locator('#registration-personal_name')).toHaveCount(0);await expect(page.getByText('Private Draft',{exact:true})).toHaveCount(0);
@@ -169,8 +169,8 @@ test('account changes during a slow resume cannot reveal the old draft',async({p
  await page.route('**/api/shida/registration/personal/',async route=>{
   started=true;await pending;await route.fulfill({json:{onboarding_ref:'POD_old',revision:1,status:'active',values:{personal_name:'Previous Account'},remaining_fields:[],legal:[]}});
  });
- await page.goto('/shida/register/');await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();
- await expect.poll(()=>started).toBe(true);await expect(page.getByRole('button',{name:'Back',exact:true})).toBeDisabled();
+ await page.goto('/shida/register/');
+ await expect.poll(()=>started).toBe(true);await expect(page.getByRole('button',{name:registrationCopy.en.resume,exact:true})).toBeDisabled();
  await page.evaluate(key=>window.dispatchEvent(new StorageEvent('storage',{key,newValue:'other-tab'})),PERSONAL_SESSION_EVENT);release();
  await expect(page.getByRole('heading',{name:registrationCopy.en.title,exact:true})).toBeVisible();
  await expect(page.locator('#registration-personal_name')).toHaveCount(0);await expect(page.getByText('Previous Account',{exact:true})).toHaveCount(0);
@@ -194,7 +194,7 @@ test('Personal settings edits canonical profile without exposing credentials',as
 
 
 test('local input never overwrites a saved cross-channel draft',async({page})=>{
- const state=await fixture(page,true);state.values={personal_name:'Saved Person',city:'Kinshasa',country_code:'CD'};
+ const state=await fixture(page);state.values={personal_name:'Saved Person',city:'Kinshasa',country_code:'CD'};
  await page.goto('/shida/register/');await page.getByRole('button',{name:'Next',exact:true}).click();
  await fillName(page,'Unverified Person');await page.locator('#registration-phone').fill('+243910004001');
  await page.locator('#registration-city').fill('Goma');await fillCountry(page,'CD');await page.getByRole('button',{name:'Next',exact:true}).click();
@@ -204,7 +204,7 @@ test('local input never overwrites a saved cross-channel draft',async({page})=>{
 });
 test('existing Personal identity does not repeat profile onboarding and returns to selling',async({page})=>{
  const state=await fixture(page,true);state.existingAccount=true;state.accepted=true;state.values={personal_name:'Existing Person'};
- await page.goto('/shida/register/?returnTo=%2Fshida%2Fwenze%2Fsell');await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();
+ await page.goto('/shida/register/?returnTo=%2Fshida%2Fwenze%2Fsell');
  await expect(page.getByText(registrationCopy.en.existing,{exact:true})).toBeVisible();await expect(page.locator('#registration-personal_name')).toHaveCount(0);
  await expect(page.locator('.registration-consent input')).toHaveCount(0);await page.getByRole('button',{name:existingAccountContinue.en,exact:true}).click();
  await expect(page).toHaveURL(/\/shida\/wenze\/sell\/?$/);expect(state.completed).toBe(false);
@@ -303,7 +303,7 @@ for(const width of [390,1440])test(`visual reference states ${width}`,async({pag
 });
 for(const width of [390,1440])test(`visual existing account ${width}`,async({page},testInfo)=>{
  const state=await fixture(page,true);state.existingAccount=true;state.accepted=true;state.values={personal_name:'Existing Fixture'};
- await page.setViewportSize({width,height:900});await page.goto('/shida/register/');await page.getByRole('button',{name:registrationCopy.en.resume,exact:true}).click();
+ await page.setViewportSize({width,height:900});await page.goto('/shida/register/');
  await expect(page.locator('.registration-existing')).toBeVisible();
  await page.screenshot({path:`test-results/registration/${testInfo.project.name}-existing-${width}.png`,fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

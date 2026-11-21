@@ -85,5 +85,10 @@ describe('optional statistics privacy boundary',()=>{
  });
  it.each(['fr','en','ln','sw'] as const)('renders equally usable consent choices without server-side browser access in %s',language=>{
   const html=renderToStaticMarkup(<WebsiteStatisticsConsent language={language}/>);expect(html).toContain(statisticsCopy[language].accept);expect(html).toContain(statisticsCopy[language].decline);expect(html).toContain(`href="/${language==='en'?'en':'fr'}/privacy"`);expect(html).not.toContain('aria-modal');expect(html).not.toContain('checked');expect(html).not.toContain('disabled');
+  // Material collection/privacy disclosures and the right to decline stay visible before either choice.
+  const t=statisticsCopy[language];
+  for(const copy of [t.description,t.details,t.choiceHelp])expect(html).toContain(copy);
+  expect(html).not.toContain('<details');expect(html).not.toContain('autofocus');
+  expect(Object.keys(t).sort()).toEqual(Object.keys(statisticsCopy.en).sort());
  });
 });
