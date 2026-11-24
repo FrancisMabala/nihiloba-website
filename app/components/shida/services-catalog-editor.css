@@ -31,3 +31,21 @@
 .svc-catalog-editor-header>div:first-child,.svc-catalog-editor-header .svc-heading-actions{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .svc-catalog-editor-header:focus-within .svc-heading-actions{position:static;width:auto;height:auto;clip-path:none}
 @media(max-width:650px){.svc-workspace .svc-catalog .svc-editor-steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:.25rem}.svc-workspace .svc-catalog .svc-editor-steps button{justify-content:flex-start;padding:.45rem;gap:.35rem;font-size:.83rem}}
+
+/* Personal Services: shared hierarchy for phone and desktop. */
+.svc-catalog .svc-service-list>header{display:flex;justify-content:flex-end;margin:.75rem 0}
+.svc-catalog .svc-service-provider{font-size:.9rem;color:#53665d}
+.svc-service-actions{position:relative}.svc-service-actions>summary{cursor:pointer;min-width:44px;min-height:44px;display:grid;place-items:center;border:1px solid #d7d2c8;border-radius:.5rem;list-style:none}
+.svc-service-actions>div{position:absolute;z-index:4;right:0;top:100%;min-width:14rem;max-width:80vw;padding:.5rem;background:#fffdfa;border:1px solid #d7d2c8;border-radius:.6rem;box-shadow:0 4px 15px #153f3120;display:grid;gap:.4rem}
+.svc-workspace .svc-catalog-preview{grid-template-columns:minmax(0,1fr)}
+.svc-preview-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.svc-catalog-preview .svc-preview-controls>section{margin:0;background:#edf3e6}.svc-catalog-preview .svc-preview-controls>section+section{background:#eaf2f9}
+.svc-catalog-preview .svc-customer-preview{width:100%;box-sizing:border-box;min-width:0}
+.svc-preview-hours{border-block:1px solid #dedbd2;padding:.8rem 0;margin:1rem 0}.svc-preview-hours summary{cursor:pointer;font-weight:600;min-height:32px}
+.svc-workspace .svc-catalog-fields>label{display:grid;grid-template-columns:minmax(0,1fr);gap:.4rem}
+.svc-workspace .svc-catalog-fields{gap:1rem}.svc-workspace .svc-catalog-fields textarea{min-height:7rem}
+.svc-workspace .svc-catalog .svc-editor-steps button>span{display:none}
+.svc-workspace .svc-editor-heading p{margin:.4rem 0;font-size:1rem}
+.svc-cal-drawer:has(.svc-compact-hours){width:min(860px,calc(100vw - 24px));max-width:calc(100vw - 24px);box-sizing:border-box}
+.svc-cal-drawer .svc-compact-hours{min-width:0}.svc-hours-impact{background:#edf3e6;padding:1rem;border-radius:.5rem}
+@media(max-width:650px){.svc-preview-controls{grid-template-columns:minmax(0,1fr)}.svc-catalog .svc-service-list>header{justify-content:stretch}.svc-catalog .svc-service-list>header label{width:100%}.svc-cal-drawer .svc-hours-range{flex-wrap:wrap}.svc-cal-drawer input[type=time]{min-width:0;width:100%;box-sizing:border-box}.svc-cal-drawer .svc-hours-range>label{flex:1;min-width:6rem}.svc-catalog .svc-professional-service{gap:.6rem}.svc-catalog .svc-service-pricing{display:grid;gap:.35rem}}

@@ -1,14 +1,15 @@
 "use client";
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {localDate} from '../../lib/shida-calendar';
 import {personalCalendarCopy} from '../../lib/services-personal-calendar-copy';
 import {scheduleCopy} from '../../lib/services-calendar-copy';
 import {plannerCopy} from '../../lib/services-planner-copy';
-import {copyWorkingHours,validWorkingHours,workingDays,type WorkingInterval} from '../../lib/services-hours-model';
+import {validWorkingHours,workingDays,type WorkingInterval} from '../../lib/services-hours-model';
 import type {ProviderLocale} from '../../lib/services-provider-copy';
 import type {AgendaOffering,CalendarRequest} from './services-personal-agenda';
 import {ServicesBookingPreview} from './services-booking-preview';
 import {servicesMobileCopy} from '../../lib/services-mobile-copy';
+import {ServicesHoursEditor} from './services-hours-editor';
 import {useWorkDraft,leaveWork} from '../../lib/restaurant-work';
 export type PersonalPolicy={shared_revision:number;week:WorkingInterval[];absences:{start:string;end:string}[];inherit_week:boolean;travel_minutes:number};
 export type CalendarSchedule={offering_ref:string;revision:number;mode:'appointments'|'flexible';confirmation:'provider_approval'|'automatic';hours:WorkingInterval[];duration_minutes:number|null;timezone:string;personal_calendar?:PersonalPolicy};
@@ -32,33 +33,25 @@ function DraftSlots({draft,request,locale}:{draft:PersonalSchedule;request:Calen
 function HoursDrawer({kind,initial,locale,request,save,close,name,pending,saveNotice}:{pending?:boolean;saveNotice?:string;kind:'week'|'service'|'absence';initial:PersonalSchedule;locale:ProviderLocale;request:CalendarRequest;save:(s:CalendarSchedule)=>Promise<boolean>;close:()=>void;name:string}){
  const c=personalCalendarCopy(locale),s=scheduleCopy[locale],p=plannerCopy[locale];
  const dialog=useRef<HTMLDialogElement>(null);
- const [draft,setDraft]=useState(initial),[which,setWhich]=useState<string>('monday'),[copy,setCopy]=useState<string[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const [draft,setDraft]=useState(initial),[hoursEditing,setHoursEditing]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
  useWorkDraft(JSON.stringify(initial)!==JSON.stringify(draft),s.leave,locale);
  useEffect(()=>{const el=dialog.current;el?.showModal();return()=>el?.close();},[]);
  async function cancel(){if(!busy&&await leaveWork())close();}
- const rule=draft.personal_calendar,shared=kind==='week',hours=shared?rule.week:draft.hours,rows=hours.filter(x=>x.day===which);
+ const rule=draft.personal_calendar,shared=kind==='week',hours=shared?rule.week:draft.hours;
  const setPolicy=(next:Partial<PersonalPolicy>)=>setDraft({...draft,personal_calendar:{...rule,...next}});
  function setHours(next:WorkingInterval[]){if(shared)setPolicy({week:next});else setDraft({...draft,hours:next});}
- const replaceDay=(values:WorkingInterval[])=>setHours([...hours.filter(x=>x.day!==which),...values]);
- const final=useMemo(()=>{
-  if(kind!=='week'||!copy.length)return draft;
-  const week=draft.personal_calendar.week;
-  const copied=copyWorkingHours(week,which,copy);
-  return {...draft,personal_calendar:{...draft.personal_calendar,week:copied}};
- },[draft,kind,copy,which]);
- async function submit(){if(busy)return;if(!validWorkingHours(final.hours)||!validWorkingHours(final.personal_calendar.week)||rule.absences.some(x=>!x.start||!x.end||x.end<x.start)){setError(s.invalid);return;}
+ const final=draft;
+ async function submit(){if(busy||hoursEditing)return;if(!validWorkingHours(final.hours)||!validWorkingHours(final.personal_calendar.week)||rule.absences.some(x=>!x.start||!x.end||x.end<x.start)){setError(s.invalid);return;}
  setBusy(true);setError('');if(await save(final))close();else{setBusy(false);setError(s.failed);}}
  return <dialog className="svc-cal-drawer" ref={dialog} aria-labelledby="svc-cal-editor-title" onCancel={e=>{e.preventDefault();void cancel();}}><header><h3 id="svc-cal-editor-title">{shared?c.editWeek:kind==='absence'?c.block:c.editService}</h3><button disabled={busy} aria-label={p.cancel} onClick={()=>void cancel()}>×</button></header>
- <p>{kind==='service'?name+' · ':''}{s.zone}</p><fieldset disabled={busy||pending}>
+ <p>{kind==='service'?name+' · ':''}{initial.timezone==='Africa/Kinshasa'?s.zone:initial.timezone}</p><fieldset disabled={busy||pending}>
  {kind==='absence'?<><h4>{c.blocked}</h4>{rule.absences.map((row,i)=><div className="svc-hours-range" key={i}>{(['start','end'] as const).map(k=><label key={k}>{k==='start'?s.opens:s.closes}<input type="date" value={row[k]} onChange={e=>setPolicy({absences:rule.absences.map((item,n)=>n===i?{...item,[k]:e.target.value}:item)})}/></label>)}<button aria-label={s.remove} onClick={()=>setPolicy({absences:rule.absences.filter((_,n)=>n!==i)})}>×</button></div>)}<button onClick={()=>setPolicy({absences:[...rule.absences,{start:'',end:''}]})}>{c.block}</button></>:<>
  {kind==='service'&&<><label>{s.mode}<select value={draft.mode} onChange={e=>setDraft({...draft,mode:e.target.value as CalendarSchedule['mode']})}><option value="appointments">{s.appointments}</option><option value="flexible">{s.flexible}</option></select></label>{draft.mode==='appointments'&&<label>{s.confirmation}<select value={draft.confirmation} onChange={e=>setDraft({...draft,confirmation:e.target.value as CalendarSchedule['confirmation']})}><option value="automatic">{s.instant}</option><option value="provider_approval">{s.approval}</option></select></label>}
- {[true,false].map(inherit=><label key={String(inherit)}><input type="radio" name="svc-inherit" checked={rule.inherit_week===inherit} onChange={()=>setPolicy({inherit_week:inherit})}/>{inherit?c.inherit:c.custom}</label>)}</>}
- {(shared||!rule.inherit_week)&&<><div className="svc-cal-days">{workingDays.map((day,i)=><button type="button" aria-pressed={which===day} key={day} onClick={()=>{setWhich(day);setCopy([]);}}>{s.days[i]}</button>)}</div>
- <label><input type="checkbox" checked={rows.length>0} onChange={e=>replaceDay(e.target.checked?[{day:which,start:'09:00',end:'17:00'}]:[])}/>{s.days[workingDays.indexOf(which)]} · {s.open}</label>
- {rows.map((row,i)=><div className="svc-hours-range" key={i}>{(['start','end'] as const).map(k=><label key={k}>{k==='start'?s.opens:s.closes}<input type="time" value={row[k]} onChange={e=>replaceDay(rows.map((x,n)=>i===n?{...x,[k]:e.target.value}:x))}/></label>)}<button aria-label={s.remove} onClick={()=>replaceDay(rows.filter((_,n)=>n!==i))}>×</button></div>)}<button disabled={rows.length>=3} onClick={()=>replaceDay([...rows,{day:which,start:rows.at(-1)?.end??'09:00',end:''}])}>{p.addInterval}</button>
- {shared&&<fieldset><legend>{p.copy}</legend><div className="svc-cal-days">{workingDays.filter(x=>x!==which).map(day=><label key={day}><input type="checkbox" checked={copy.includes(day)} onChange={e=>setCopy(e.target.checked?[...copy,day]:copy.filter(x=>x!==day))}/>{s.days[workingDays.indexOf(day)]}</label>)}</div><p>{p.targets} · {[which,...copy].map(x=>s.days[workingDays.indexOf(x)]).join(', ')}</p></fieldset>}</>}
+ {[true,false].map(inherit=><label key={String(inherit)}><input type="radio" name="svc-inherit" disabled={hoursEditing} checked={rule.inherit_week===inherit} onChange={()=>setPolicy({inherit_week:inherit})}/>{inherit?c.inherit:c.custom}</label>)}</>}
+ {(shared||!rule.inherit_week)&&<ServicesHoursEditor hours={hours} onChange={setHours} locale={locale} onEditing={setHoursEditing}/>}
+ {shared&&<p className="svc-hours-impact">{{fr:"Ces horaires s’appliquent à tous les services qui utilisent votre semaine habituelle. Les rendez-vous existants sont conservés.",en:"These hours apply to every service using your usual week. Existing appointments are kept.",ln:"Bangonga oyo etali misala nyonso oyo esalelaka pɔsɔ na yo. Ba rendez-vous oyo ezali ekotikala.",sw:"Saa hizi zinatumika kwa huduma zote zinazotumia wiki yako ya kawaida. Miadi iliyopo inabaki."}[locale]}</p>}
  {kind==='service'&&<label>{c.travel}<input type="number" min="0" max="480" value={rule.travel_minutes} onChange={e=>setPolicy({travel_minutes:Number(e.target.value)})}/></label>}</>}
- </fieldset>{error&&<p role="alert">{saveNotice||error}</p>}<DraftSlots draft={final} locale={locale} request={request}/><footer><button disabled={busy} onClick={()=>void cancel()}>{p.cancel}</button><button className="svc-primary" disabled={busy} onClick={submit}>{c.save}</button></footer></dialog>;
+ </fieldset>{error&&<p role="alert">{saveNotice||error}</p>}<DraftSlots draft={final} locale={locale} request={request}/><footer><button disabled={busy} onClick={()=>void cancel()}>{p.cancel}</button><button className="svc-primary" disabled={busy||pending||hoursEditing} onClick={submit}>{c.save}</button></footer></dialog>;
 }
 export function PersonalAvailability({schedule,offering,locale,request,save,edit,pending,saveNotice}:{pending?:boolean;saveNotice?:string;schedule:PersonalSchedule;offering?:AgendaOffering;locale:ProviderLocale;request:CalendarRequest;save:(s:CalendarSchedule)=>Promise<boolean>;edit?:()=>void}){
  const mobile=servicesMobileCopy(locale);const [preview,setPreview]=useState(false);

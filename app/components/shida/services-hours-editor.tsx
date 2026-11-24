@@ -8,8 +8,8 @@ import type {ProviderLocale} from '../../lib/services-provider-copy';
 export function ServicesHoursEditor({hours,onChange,locale,onEditing}:{hours:WorkingInterval[];onChange:(hours:WorkingInterval[])=>void;locale:ProviderLocale;onEditing:(value:boolean)=>void}){
  const t=plannerCopy[locale],s=scheduleCopy[locale];
  const [editing,setEditing]=useState<string|null>(null),[draft,setDraft]=useState<WorkingInterval[]>([]),[error,setError]=useState(false),[copying,setCopying]=useState(false),[source,setSource]=useState('monday'),[targets,setTargets]=useState<string[]>([]),[review,setReview]=useState(false);
- useWorkDraft(editing!==null,s.leave,locale);
- useEffect(()=>{onEditing(editing!==null);return()=>onEditing(false);},[editing,onEditing]);
+ useWorkDraft(editing!==null||copying,s.leave,locale);
+ useEffect(()=>{onEditing(editing!==null||copying);return()=>onEditing(false);},[editing,copying,onEditing]);
  const rows=(day:string)=>hours.filter(row=>row.day===day).sort((a,b)=>a.start.localeCompare(b.start));
  function edit(day:string){setEditing(day);setDraft(rows(day).map(row=>({...row})));setError(false);}
  function finish(){if(!editing)return;if(!validWorkingHours(draft)){setError(true);return;}onChange([...hours.filter(row=>row.day!==editing),...draft]);setEditing(null);}
