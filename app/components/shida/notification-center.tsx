@@ -7,7 +7,7 @@ import {mySpaceCopy} from '../../lib/my-space-refinement-copy';
 
 import {notificationCopy as copy,notificationLayoutCopy,notificationTimestamp,modules,moduleNames} from '../../lib/notification-center-copy';
 import {NotificationActionMenu} from './notification-action-menu';
-import {publishPersonalNotificationCount,usePersonalNotificationCount} from '../../lib/personal-notification-count';
+import {publishPersonalNotificationCount,usePersonalNotificationCount,readNotificationCount} from '../../lib/personal-notification-count';
 import {helpText} from '../../lib/help-questions-copy';
 import {messagesText} from '../../lib/messages-design-copy';
 import {SpaceIcon,type SpaceIconName} from './account-space-icon';
@@ -61,12 +61,12 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
   const res=await fetch(apiBase+pathname.replace(/\/$/,'')+'/'+(query?'?'+query:''),{method:body?method:'GET',credentials:'include',cache:'no-store',signal:AbortSignal.timeout(12000),headers:{'X-Shida-Session':binding,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
   if(!res.ok) throw new Error('unavailable'); return res.json();
  },[apiBase,binding]);
- const refresh=useCallback(async()=>{
-  const g=generation.current;let value:number|null=null;
-  try{const data=await call('/count');if(Number.isSafeInteger(data.unread_count)&&data.unread_count>=0)value=data.unread_count;}catch{/* Retry on focus or the next poll. */}
-  if(g!==generation.current)return;
+ const refresh=useCallback(async(fresh=false)=>{
+  const g=generation.current;
+  const value=await readNotificationCount(apiBase,binding,()=>call('/count'),fresh);
+  if(g!==generation.current||value===undefined)return;
   if(personal)publishPersonalNotificationCount(binding,value);else setLocalCount(value);
- },[call,binding,personal]);
+ },[apiBase,call,binding,personal]);
  const load=useCallback(async(before?:string)=>{
   const g=++generation.current;setBusy(true);setError(false);setTicket(null);if(!before)setItems([]);
   try{let next=before;const target=before?1:restorePages.current;restorePages.current=1;if(!before)pages.current=0;
@@ -74,7 +74,7 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
     const data=await call('?'+new URLSearchParams({language:locale,mode,...(market?{marketplace:market}:{}),...(next?{before:next}:{})}));if(!validPage(data))throw Error();if(g!==generation.current)return;
     setItems(old=>page===0&&!before?data.items:[...old,...data.items.filter(row=>!old.some(existing=>existing.reference===row.reference))]);setCursor(data.next_cursor);pages.current++;next=data.next_cursor??undefined;
     if(!next)break;if(cursors.has(next))throw Error();cursors.add(next);
-   }await refresh();}
+   }void refresh();}
   catch{if(g===generation.current)setError(true);}finally{if(g===generation.current)setBusy(false);}
  },[call,locale,market,mode,refresh]);
  useEffect(()=>{const epoch=generation;let live=true;const tick=()=>{if(live&&document.visibilityState==='visible')void refresh();};tick();const timer=setInterval(tick,30000);window.addEventListener('shida-notifications-changed',tick);window.addEventListener('focus',tick);window.addEventListener('online',tick);document.addEventListener('visibilitychange',tick);return()=>{live=false;epoch.current++;clearInterval(timer);window.removeEventListener('shida-notifications-changed',tick);window.removeEventListener('focus',tick);window.removeEventListener('online',tick);document.removeEventListener('visibilitychange',tick);};},[refresh]);
@@ -89,7 +89,7 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
  },[call,items,open]);
  function applyAction(references:string[],action:string){setItems(old=>old.map(row=>references.includes(row.reference)?{...row,...(action==='read'?{read:true}:{acknowledged:true})}:row).filter(row=>mode!=='unread'||!row.read));}
  async function act(references:string[],action:string){if(mutation.current)return false;mutation.current=true;const g=generation.current,focused=document.activeElement,focusedRow=focused?.closest('article');setBusy(true);setError(false);
-  try{await call('/actions',{references,action});if(g!==generation.current)return false;applyAction(references,action);await refresh();window.dispatchEvent(new Event('shida-notifications-changed'));
+  try{await call('/actions',{references,action});if(g!==generation.current)return false;applyAction(references,action);await refresh(true);window.dispatchEvent(new Event('shida-notifications-changed'));
    requestAnimationFrame(()=>{if(focused instanceof HTMLElement&&!focused.isConnected)(focusedRow?.isConnected?focusedRow.querySelector<HTMLElement>('a,button'):panel.current?.querySelector<HTMLButtonElement>('.notification-tabs button[aria-pressed=true]'))?.focus({preventScroll:true});});return true;
   }catch{if(g===generation.current)setError(true);return false;}finally{mutation.current=false;if(g===generation.current)setBusy(false);}
  }
@@ -114,9 +114,9 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
    if(g!==generation.current)return;if(!validPage(data))throw Error();
    if(data.items.length){const references=data.items.map(row=>row.reference);await call('/actions',{references,action:'read'});if(g===generation.current)applyAction(references,'read');}
    if(g!==generation.current)return;
-   if(!data.next_cursor){window.dispatchEvent(new Event('shida-notifications-changed'));await refresh();return;}
+   if(!data.next_cursor){window.dispatchEvent(new Event('shida-notifications-changed'));await refresh(true);return;}
    if(cursors.has(data.next_cursor))throw Error();cursors.add(data.next_cursor);before=data.next_cursor;
-  }throw Error();}catch{if(g===generation.current){setError(true);await refresh();}}finally{if(g===generation.current)setBusy(false);}
+  }throw Error();}catch{if(g===generation.current){setError(true);await refresh(true);}}finally{if(g===generation.current)setBusy(false);}
  }
  if(destination)return <a className="notification-bell notification-header-link" href={destination} aria-label={t[0]+(count===null?'':` (${count})`)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>{count!==null&&count>0&&<strong aria-live="polite">{count>99?'99+':count}</strong>}</a>;
  return <div className={inline?"notification-center notification-inline":"notification-center"}>
@@ -127,7 +127,7 @@ export default function NotificationCenter({binding,apiBase,locale,inline=false,
     <button className="notification-filter-toggle" type="button" aria-expanded={filtersOpen} aria-controls={filterId} disabled={busy} onClick={()=>setFiltersOpen(v=>!v)}>{layout.filters}{(market||mode==='action_required')&&' · '+[Boolean(market),mode==='action_required'].filter(Boolean).length}</button>
    </div>
    <div id={filterId} className="notification-filters" data-open={filtersOpen}><select disabled={busy} aria-label={t[2]} value={mode} onChange={e=>filter(e.target.value,market)}>{['all','unread','action_required'].map((v,i)=><option key={v} value={v}>{t[i+2]}</option>)}</select><select disabled={busy} aria-label={t[5]} value={market} onChange={e=>filter(mode,e.target.value)}><option value="">{t[5]}</option>{modules.map((m,i)=><option key={m} value={m}>{moduleNames[locale][i]}</option>)}</select>{(market||mode!=='all')&&<button type="button" disabled={busy} onClick={()=>filter('all','')}>{layout.clear}</button>}</div>
-   {!inline&&market&&market!=='security'&&market!=='support'&&<label><input type="checkbox" checked={badge} disabled={busy} onChange={async e=>{const value=e.target.checked,g=generation.current;setBusy(true);try{await call('/preferences',{marketplace:market,optional_badge:value},'PUT');if(g===generation.current){setBadge(value);await refresh();}}catch{if(g===generation.current)setError(true);}finally{if(g===generation.current)setBusy(false);}}}/>{t[18]}<small>{t[19]}</small></label>}
+   {!inline&&market&&market!=='security'&&market!=='support'&&<label><input type="checkbox" checked={badge} disabled={busy} onChange={async e=>{const value=e.target.checked,g=generation.current;setBusy(true);try{await call('/preferences',{marketplace:market,optional_badge:value},'PUT');if(g===generation.current){setBadge(value);await refresh(true);}}catch{if(g===generation.current)setError(true);}finally{if(g===generation.current)setBusy(false);}}}/>{t[18]}<small>{t[19]}</small></label>}
    {error&&<p role="alert">{t[13]} <button disabled={busy} onClick={()=>{restorePages.current=Math.max(1,pages.current);restoreScroll.current=window.scrollY;void load();}}>{t[20]}</button></p>}
    {busy&&<p role="status">{t[15]}</p>}
    {!busy&&!error&&!items.length&&(cursor?<p>{t[6]}</p>:mode==='all'&&!market?<section className="messages-empty"><Image unoptimized src="/images/shida/notifications-empty.svg" alt="" width={420} height={220}/><h2>{mySpaceCopy[locale].emptyNotifications}</h2><p>{messagesText(locale,'emptyBody')}</p><a href={`${locale==='en'?'':'/'+locale}/shida/`}>{messagesText(locale,'explore')} <span aria-hidden="true">→</span></a></section>:<p>{t[6]}</p>)}

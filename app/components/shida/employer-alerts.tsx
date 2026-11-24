@@ -21,8 +21,13 @@ export function EmployerAlerts({locale,binding,unauthorized,revision}:{locale:ke
  useEffect(()=>{if(!notice)return;const timer=window.setTimeout(()=>setNotice(''),5000);return()=>window.clearTimeout(timer);},[notice]);
  useEffect(()=>{const ctrl=new AbortController(),seq=++generation.current;
  const get=<T,>(path:string)=>jobSearchRequest<T>(binding,locale,path,'GET',undefined,ctrl.signal);
- Promise.all([get<JobSearchList>('following?cards=1&page='+page),get<Preference>('delivery-channel'),get<JobAlerts>('alerts')]).then(([list,pref,profiles])=>{
- if(!ctrl.signal.aborted&&seq===generation.current){if(page>1&&!list.items.length){setPage(page-1);return;}setData({list,pref,profiles});setFailed(false);}
+ Promise.all([get<JobSearchList>('following?page='+page),get<Preference>('delivery-channel'),get<JobAlerts>('alerts')]).then(([list,pref,profiles])=>{
+ if(!ctrl.signal.aborted&&seq===generation.current){if(page>1&&!list.items.length){setPage(page-1);return;}setData({list,pref,profiles});setFailed(false);
+  // Public card decoration must not hold the account's alert controls hostage.
+  if(list.items.some(item=>item.available&&item.reference))void get<JobSearchList>('following?cards=1&page='+page).then(enriched=>{
+   if(!ctrl.signal.aborted&&seq===generation.current)setData(previous=>previous?{...previous,list:enriched}:previous);
+  },e=>{if(!ctrl.signal.aborted&&seq===generation.current&&e.status===401)auth.current();});
+ }
  },e=>{if(!ctrl.signal.aborted&&seq===generation.current){if(e.status===401)auth.current();else setFailed(true);}});
  return()=>ctrl.abort();},[binding,locale,page,revision,reload]);
  async function save(action:Mutation){
