@@ -89,6 +89,7 @@ describe('optional statistics privacy boundary',()=>{
   const t=statisticsCopy[language];
   for(const copy of [t.description,t.details,t.choiceHelp])expect(html).toContain(copy);
   expect(html).not.toContain('<details');expect(html).not.toContain('autofocus');
+  expect(html).toContain('<dialog');expect(html).toContain('aria-haspopup="dialog"');expect(html).toContain(`aria-label="${t.close}"`);
   expect(Object.keys(t).sort()).toEqual(Object.keys(statisticsCopy.en).sort());
  });
 });
