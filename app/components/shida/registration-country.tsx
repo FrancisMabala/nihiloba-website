@@ -1,4 +1,5 @@
 "use client";
+import "./registration-country.css";
 import {useEffect,useRef,useState} from 'react';
 import type {RegistrationLocale} from '../../lib/registration/copy';
 import {locationCopy} from '../../lib/registration/location-copy';

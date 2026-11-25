@@ -17,7 +17,7 @@ html:has(.registration-shell){scroll-behavior:auto}
 
 .registration-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}.registration-steps span{height:4px;border-radius:4px;background:#e8e7de}.registration-steps .complete{background:#164e3b}
 #registration-language{min-height:48px;width:100%;padding:.7rem;border:1px solid #b8c6bb;border-radius:.55rem;background:#fff;font:inherit;color:inherit}
-.registration-location-hint{grid-column:1/-1;color:#607166}.registration-country{min-width:0;display:grid;gap:.4rem}.registration-country ul{list-style:none;padding:.3rem;margin:0;max-height:14rem;overflow:auto;border:1px solid #b8c6bb;border-radius:.55rem;background:#fff}.registration-country li button{min-height:44px;width:100%;border:0;background:transparent;color:inherit;text-align:left;padding:.6rem;font:inherit;overflow-wrap:anywhere}.registration-country li button:hover,.registration-country li button:focus-visible{background:#eff4eb}.registration-country summary{cursor:pointer;font-size:.85rem}.registration-country small:empty{display:none}
+.registration-location-hint{grid-column:1/-1;color:#607166}
 .registration-review{grid-template-columns:repeat(2,minmax(0,1fr))}.registration-review>div{padding:.5rem 0;border-bottom:1px solid #eeede5}.registration-card input,.registration-card select{min-width:0}
 @media(max-width:600px){.registration-review{grid-template-columns:1fr}.registration-section{gap:.8rem}.registration-card{box-shadow:none}}
 
@@ -59,9 +59,9 @@ html:has(.registration-shell){scroll-behavior:auto}
 .registration-address-note{display:flex;align-items:flex-start;gap:.65rem;grid-column:1/-1;padding:.75rem;background:#fcf5e4;border-radius:.45rem;color:#5a5949;font-size:.78rem;line-height:1.5}
 .registration-address-note>span{font-size:1.1rem;line-height:1.1;color:#234a3e}
 .registration-optional-address summary{min-height:44px;display:list-item;padding:.65rem 0;font-size:.8rem}
-.registration-country ul{max-height:min(17rem,42svh);overscroll-behavior:contain;scrollbar-gutter:stable;border-color:#d7dfd7;box-shadow:0 5px 16px #153e3508}
-.registration-country li button{padding:.7rem .65rem;font-size:.9rem;line-height:1.4;border-radius:.3rem}
-.registration-country li+li{border-top:1px solid #f0f0e8}.registration-country summary{padding:.45rem 0;line-height:1.5}
+
+
+
 .registration-card .candidate-login{display:grid;gap:1rem;min-width:0;background:transparent}
 .registration-card .candidate-login>.registration-consent{padding:.85rem;background:#f2f5ec;border-radius:.45rem}
 .registration-card .candidate-login>p:has(+.registration-consent){padding:.85rem;background:#f2f5ec;border-radius:.45rem}
@@ -88,7 +88,7 @@ html:has(.registration-shell){scroll-behavior:auto}
  .registration-card .auth-code-cells span{height:2.8rem}.registration-review{grid-template-columns:1fr}
 }
 
-.registration-country-empty{padding:.8rem;color:#62756e;font-size:.85rem;line-height:1.5}
+
 
 /* Equal label tracks keep all desktop name inputs aligned when translations wrap. */
 @media(min-width:601px){.registration-section[data-section=names]>div{grid-template-rows:minmax(2.5rem,auto) auto}}

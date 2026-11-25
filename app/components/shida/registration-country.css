@@ -1,0 +1,14 @@
+/* Shared country selector: original registration styles, available to every caller. */
+.registration-country{min-width:0;display:grid;gap:.4rem}
+.registration-country ul{list-style:none;padding:.3rem;margin:0;max-height:14rem;overflow:auto;border:1px solid #b8c6bb;border-radius:.55rem;background:#fff}
+.registration-country li button{min-height:44px;width:100%;border:0;background:transparent;color:inherit;text-align:left;padding:.6rem;font:inherit;overflow-wrap:anywhere}
+.registration-country li button:hover,.registration-country li button:focus-visible{background:#eff4eb}
+.registration-country summary{cursor:pointer;font-size:.85rem}
+.registration-country small:empty{display:none}
+.registration-country ul{max-height:min(17rem,42svh);overscroll-behavior:contain;scrollbar-gutter:stable;border-color:#d7dfd7;box-shadow:0 5px 16px #153e3508}
+.registration-country li button{padding:.7rem .65rem;font-size:.9rem;line-height:1.4;border-radius:.3rem}
+.registration-country li+li{border-top:1px solid #f0f0e8}
+.registration-country summary{padding:.45rem 0;line-height:1.5}
+.registration-country-empty{padding:.8rem;color:#62756e;font-size:.85rem;line-height:1.5}
+.registration-country>input{box-sizing:border-box;width:100%;min-width:0;min-height:44px;border:1px solid #b8c6bb;border-radius:.55rem;padding:.65rem .75rem;background:#fff;color:inherit;font:inherit}
+.registration-country ul{overscroll-behavior:contain}

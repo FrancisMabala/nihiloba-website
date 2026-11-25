@@ -254,3 +254,13 @@
     gap: .6rem;
   }
 }
+
+/* Compact filters and truthful summary data in the established SHIDA palette. */
+.sf-workspace>.sf-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(12rem,18rem) minmax(5rem,7rem);padding:.85rem;background:#fffefa;border:1px solid #dedbd0;border-radius:.8rem;gap:.75rem}
+.sf-workspace>.sf-toolbar>.sf-tabs{gap:.3rem}.sf-workspace>.sf-toolbar label{min-width:0}.sf-workspace>.sf-toolbar select,.sf-workspace>.sf-toolbar input{width:100%;box-sizing:border-box;min-height:44px}
+.sf-workspace .sf-metrics{grid-template-columns:repeat(5,minmax(0,1fr));gap:.75rem}
+.sf-workspace .sf-metrics section{border:0;overflow-wrap:anywhere}.sf-metrics .sf-metric-billed{background:#e5eff8}.sf-metrics .sf-metric-received{background:#e7f2df}.sf-metrics .sf-metric-spent{background:#fff0d9}.sf-metrics .sf-metric-outstanding{background:#eee7f7}.sf-metrics .sf-metric-flow{background:#e2efea}
+.sf-workspace .sf-metrics strong{font:600 clamp(1.15rem,2vw,1.65rem)/1.25 Georgia,serif;font-variant-numeric:tabular-nums}.sf-workspace .sf-metrics span{display:block;line-height:1.35}
+.sf-recent li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:1rem}.sf-recent small{display:block;color:#5f6c62;margin-top:.3rem}.sf-recent strong{overflow-wrap:anywhere}
+@media(max-width:1050px){.sf-workspace>.sf-toolbar{grid-template-columns:minmax(0,1fr) minmax(5rem,7rem)}.sf-workspace>.sf-toolbar>.sf-tabs{grid-column:1/-1}.sf-workspace .sf-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.sf-workspace .sf-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}.sf-workspace .sf-metrics section:last-child{grid-column:1/-1}.sf-workspace .sf-metrics strong{font-size:1.2rem}.sf-workspace>.sf-toolbar{padding:.65rem;gap:.6rem}.sf-workspace>.sf-toolbar>.sf-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.sf-recent li{grid-template-columns:minmax(0,1fr) auto;gap:.5rem}.sf-recent li>.sf-link{justify-self:start;grid-column:1/-1;min-height:44px}}

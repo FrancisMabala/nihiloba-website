@@ -1,5 +1,7 @@
 export type FinanceLocale = "fr" | "en" | "ln" | "sw";
 const labels:Record<string, readonly string[]> = {
+  latest:["Dernières opérations de la période","Latest entries in this period","Makomi ya sika ya eleko oyo","Rekodi za karibuni katika kipindi hiki"],
+  viewAll:["Tout voir","View all","Tala nyonso","Angalia zote"],
   confirmed:["Confirmée","Confirmed","Endimami","Imethibitishwa"],
   in_progress:["En cours","In progress","Ezali kosalema","Inaendelea"],
   completed:["Terminée","Completed","Esili","Imekamilika"],
