@@ -49,3 +49,15 @@
 .svc-cal-drawer:has(.svc-compact-hours){width:min(860px,calc(100vw - 24px));max-width:calc(100vw - 24px);box-sizing:border-box}
 .svc-cal-drawer .svc-compact-hours{min-width:0}.svc-hours-impact{background:#edf3e6;padding:1rem;border-radius:.5rem}
 @media(max-width:650px){.svc-preview-controls{grid-template-columns:minmax(0,1fr)}.svc-catalog .svc-service-list>header{justify-content:stretch}.svc-catalog .svc-service-list>header label{width:100%}.svc-cal-drawer .svc-hours-range{flex-wrap:wrap}.svc-cal-drawer input[type=time]{min-width:0;width:100%;box-sizing:border-box}.svc-cal-drawer .svc-hours-range>label{flex:1;min-width:6rem}.svc-catalog .svc-professional-service{gap:.6rem}.svc-catalog .svc-service-pricing{display:grid;gap:.35rem}}
+
+/* Compact catalogue only; other workspace headings/toolbars stay unchanged. */
+.svc-catalog .svc-catalog-toolbar{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.6rem 0;background:transparent;border:0;box-shadow:none}
+.svc-catalog .svc-catalog-toolbar>.svc-primary{margin-left:auto}.svc-catalog-toolbar>small{flex-basis:100%}
+.svc-catalog .svc-service-list>header{justify-content:flex-start;margin:.6rem 0 1rem}
+.svc-catalog-filters{display:flex;flex-wrap:wrap;gap:.45rem}.svc-catalog-filters button{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:44px;padding:.5rem .75rem;background:#fffdfa;border:1px solid #d7d2c8;border-radius:.5rem;color:#153f31;font:inherit}
+.svc-workspace .svc-catalog .svc-catalog-filters button[aria-pressed=true]{background:#153f31;color:white;border-color:#153f31}.svc-catalog-filters button>span{padding:.05rem .4rem;border-radius:1rem;background:#eaf0e5;color:#153f31;font-size:.8rem}
+.svc-catalog .svc-service-pricing{display:flex;flex-wrap:wrap;gap:.35rem}.svc-catalog .svc-publication-state{background:#e7efdf}.svc-catalog .svc-booking-state{background:#e6eff7;color:#1f4857}
+@media(min-width:851px){.svc-workspace .svc-catalog-list-heading{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);margin:0;padding:0}}
+@media(max-width:850px){.svc-workspace .svc-catalog-list-heading{margin:0 0 .5rem;padding:0}.svc-catalog-list-heading h1{font-size:1.65rem}.svc-catalog .svc-professional-service{padding:.85rem;gap:.5rem .7rem}.svc-catalog .svc-professional-service h3{font-size:1.15rem}.svc-catalog .svc-service-provider{font-size:.85rem}.svc-catalog .svc-row-actions{justify-content:space-between}.svc-catalog .svc-service-pricing{grid-column:1/-1}.svc-catalog .svc-catalog-toolbar{display:flex;flex-direction:column;align-items:stretch}.svc-catalog .svc-catalog-toolbar>.svc-status{align-self:flex-start}.svc-catalog .svc-catalog-toolbar .svc-primary{width:100%;max-width:100%;margin:0;white-space:normal}.svc-catalog-filters{gap:.3rem}.svc-catalog-filters button{font-size:.85rem;padding:.45rem .55rem}}
+
+@media(min-width:851px){.svc-catalog-toolbar>.svc-catalog-filters{flex:1;min-width:0}.svc-catalog .svc-catalog-toolbar>.svc-primary{margin-left:0}.svc-catalog-toolbar>.svc-status{white-space:nowrap}}
