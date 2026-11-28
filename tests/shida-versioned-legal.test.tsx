@@ -28,16 +28,20 @@ describe("versioned SHIDA legal documents", () => {
     for (const locale of ["en", "fr"] as const) {
       const current = renderToStaticMarkup(<ShidaVersionedLegalPage kind="privacy" locale={locale}/>);
       expect(current).toContain(`/${locale}/privacy#account-whatsapp-records`);
+      expect(current).toContain(`/${locale}/privacy#cookies`);
       expect(current).toContain('data-document-version="1.1"');
       for (const version of ["1.0", "1.1"]) {
         for (const historical of [false, true]) {
           const permanent = renderToStaticMarkup(<ShidaVersionedLegalPage kind="privacy" locale={locale} version={version} historical={historical}/>);
           expect(permanent).not.toContain('privacy#account-whatsapp-records');
+          expect(permanent).not.toContain('privacy#cookies');
           expect(permanent).toContain(`data-document-version="${version}"`);
         }
       }
       expect(renderToStaticMarkup(<ShidaVersionedLegalPage kind="terms" locale={locale}/>)).not.toContain('privacy#account-whatsapp-records');
       const policy = renderToStaticMarkup(<PrivacyPolicyPage locale={locale}/>);
+      expect(policy).toContain(locale === 'fr' ? 'Gérer mes cookies' : 'Manage my cookies');
+      expect(policy).toContain(locale === 'fr' ? 'vues et partages' : 'views and shares');
       expect(policy).toContain('id="account-whatsapp-records"');
       expect(policy).toContain(locale === "fr" ? '21 novembre 2026' : '21 November 2026');
       expect(policy).toContain(locale === "fr" ? 'elles ne sont pas anonymes' : 'they are not anonymous');

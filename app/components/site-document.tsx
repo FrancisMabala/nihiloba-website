@@ -13,8 +13,8 @@ export function SiteDocument({ children, locale, documentLanguage = locale }: { 
       <body className="shida-ui">
         <LocalizedFormValidation />
         <a className="skip-link" lang={documentLanguage} href="#main-content">{documentLanguage==="ln"?"Kende na makambo ya lokasa":documentLanguage==="sw"?"Nenda kwenye maudhui":nav[locale].skip}</a>
-        <SiteChrome locale={locale}>{children}</SiteChrome>
         <Suspense fallback={null}><WebsiteStatisticsConsent language={documentLanguage}/></Suspense>
+        <SiteChrome locale={locale}>{children}</SiteChrome>
       </body>
     </html>
   );

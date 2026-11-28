@@ -1,6 +1,7 @@
 "use client";
 import {jobResultsReturn,markJobResultsReturn} from '../../lib/job-results-return';
 
+import {websiteStatistics} from '../../lib/website-statistics-consent';
 import {jobReportUrl} from "../../lib/job-report-url";
 import {candidateWorkspaceCopy} from '../../lib/candidate-workspace-copy';
 import { useEffect, useState, useId, useRef } from "react";
@@ -16,12 +17,22 @@ const copy = {
   sw: {save:"Hifadhi kwenye SHIDA",follow:"Fuata kwenye SHIDA",share:"Shiriki",shared:"Kiungo kimenakiliwa",report:"Ripoti tangazo",hint:"Itafunguka kwenye kichupo kipya.",blocked:"Ruhusu SHIDA kufungua kichupo kipya, kisha ujaribu tena.",redirect:"Omba kwenye tovuti ya mwajiri",instructions:"Ona jinsi ya kuomba",opening:"Inafungua tovuti ya mwajiri…",unavailable:"Kazi hii haipokei maombi tena.",failed:"Kiungo cha ombi hakipatikani kwa sasa."},
 } as const;
 
-async function recordEvent(jobReference:string,event:"view"|"share") {
-  try { await fetch(`/api/shida/public-jobs/${encodeURIComponent(jobReference)}/${event}`, { method:"POST", credentials:"same-origin" }); } catch { /* Analytics must never block the public experience. */ }
-}
-
 export function JobViewTracker({ jobReference }: { jobReference:string }) {
-  useEffect(()=>{const key=`shida_job_viewed_${jobReference}`;try{if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,"1");}catch{/* A blocked session store only reduces client-side deduplication. */}void recordEvent(jobReference,"view");},[jobReference]);
+  useEffect(()=>{
+    const stats=websiteStatistics();
+    if(!stats)return;
+    let recorded=false;
+    const track=()=>{
+      if(stats.consent()!=='accepted'){
+        recorded=false;
+      }else if(!recorded){
+        recorded=true;
+        stats.job(jobReference,'view');
+      }
+    };
+    track();
+    return stats.subscribe(track);
+  },[jobReference]);
   return null;
 }
 
@@ -94,7 +105,16 @@ export function ExternalJobAction({ locale, jobReference, action, label }: { loc
 
 export function JobPublicActions({ locale, jobReference, title, path, origin, canShare=true, canSave=false, canFollow=false, compact=false, showFollow=true }: { locale:Locale; jobReference:string; title:string; path:string; origin:"direct"|"external"; canShare?:boolean; canSave?:boolean; canFollow?:boolean; compact?:boolean; showFollow?:boolean }) {
   const t=copy[locale], [shared,setShared]=useState(false);
-  async function share(){const url=new URL(path,window.location.origin).toString();try{if(navigator.share)await navigator.share({title,url});else await navigator.clipboard.writeText(url);if(origin==="external")void recordEvent(jobReference,"share");setShared(true);}catch{/* Cancellation leaves the page unchanged. */}}
+  async function share(){
+    const url=new URL(path,window.location.origin).toString();
+    const measure=origin==="external"?websiteStatistics()?.prepareJobShare(jobReference):undefined;
+    try{
+      if(navigator.share)await navigator.share({title,url});
+      else await navigator.clipboard.writeText(url);
+      measure?.();
+      setShared(true);
+    }catch{/* Cancellation leaves the page unchanged. */}
+  }
   // Report links live alongside the applicant safety information.
   return <div className={compact?"job-public-actions job-public-actions-compact":"job-public-actions"}>
     <JobRelationshipActions key={`${locale}:${jobReference}`} locale={locale} jobReference={jobReference} canSave={canSave} canFollow={canFollow} detail={!compact} showFollow={showFollow}/>

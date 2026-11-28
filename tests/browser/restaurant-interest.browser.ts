@@ -23,12 +23,13 @@ async function fixture(page:Page,human=true){
   if(path===`/api/shida/restaurant-guests/establishments/${reference}/entry`&&request.method()==='GET')return route.fulfill({json:{entry_context:'synthetic-read-only-entry',expires_at:'2099-01-01T00:00:00Z',methods:{pickup:{windows:[]}},copy:{}}});
   if(request.method()!=='GET')unexpectedWrites.push(path);return route.fulfill({status:404,json:{}});
  });
- const open=async(menu=false)=>{const response=await page.goto(`/shida/restaurants/${reference}/${menu?'menu/':''}`);expect(response?.ok()).toBe(true);await expect(page.locator('.restaurant-detail-header')).toBeVisible();await expect(page.locator('.website-statistics-control [role=status]')).toHaveText(t.off);await expect(page.locator('button[data-restaurant-item-open]').first()).toBeEnabled();};
+ const open=async(menu=false)=>{const response=await page.goto(`/shida/restaurants/${reference}/${menu?'menu/':''}`);expect(response?.ok()).toBe(true);await expect(page.locator('.restaurant-detail-header')).toBeVisible();await expect(page.locator('.website-statistics-notice')).toBeHidden();await expect(page.locator('button[data-restaurant-item-open]').first()).toBeEnabled();};
  return {events,unexpectedWrites,open};
 }
 async function consent(page:Page,accepted:boolean){
- const preferences=page.getByRole('button',{name:t.settings,exact:true});await preferences.click();await expect(preferences).toHaveAttribute('aria-expanded','true');
- await page.getByRole('button',{name:accepted?t.accept:t.decline,exact:true}).click();await expect(page.locator('.website-statistics-control [role=status]')).toHaveText(accepted?t.on:t.off);
+ const preferences=page.getByRole('button',{name:t.settings,exact:true});await preferences.click();const dialog=page.getByRole('dialog',{name:t.preferences});await expect(dialog).toBeVisible();
+ await dialog.getByRole('button',{name:accepted?t.accept:t.decline,exact:true}).click();await expect(dialog).toBeHidden();
+ expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('shida_statistics_consent_v1')!).choice)).toBe(accepted?'accepted':'declined');
 }
 async function quiet(events:Interest[],count:number){
  // A negative observation window must exceed RestaurantInterest's 1000ms dwell.

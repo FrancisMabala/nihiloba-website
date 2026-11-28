@@ -37,12 +37,24 @@ async function handle(request: Request, context: Context) {
   if (!token || !/^[A-Za-z0-9_-]{20,256}$/.test(token)) return fail(401);
   // A stale tab cannot execute creation or an edit after another login replaces its cookie.
   if (request.headers.get("x-shida-session") !== personalSessionBinding(token)) return fail(401);
+  const statisticsHeaders: Record<string,string> = {};
+  if (request.method === 'POST' && path === 'baskets') {
+    const veto = (header:string) => request.headers.get(header)?.split(',').some(value=>value.trim()==='1');
+    // Forward only this versioned, explicit opt-in; credentials stay unchanged.
+    if (request.headers.get('x-shida-statistics-consent') === 'web-statistics-v1'
+        && !veto('dnt') && !veto('sec-gpc')) {
+      statisticsHeaders['X-Shida-Statistics-Consent'] = 'web-statistics-v1';
+    }
+    for (const header of ['DNT', 'Sec-GPC']) {
+      if (veto(header)) statisticsHeaders[header] = '1';
+    }
+  }
   try {
     const base = new URL(process.env.SHIDA_API_BASE_URL ?? "https://api.nihiloba.com");
     if (base.protocol !== "https:" || base.username || base.password) return fail(503);
     const target = new URL(`/api/dashboard/personal/restaurant-orders${path ? `/${path}` : ""}`, base.origin);
     target.search = query.toString();
-    const response = await fetch(target, { method: request.method, body, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(12000), headers: { Accept: "application/json", ...(body ? { "Content-Type": "application/json" } : {}), Cookie: `shida_dashboard_session=${token}`, ...(publicOrigin ? { Origin: publicOrigin } : {}), ...(path.endsWith("/interest") ? { "DNT":request.headers.get("dnt")??"", "X-Shida-Test-Traffic":request.headers.get("x-shida-test-traffic")??"", "User-Agent": request.headers.get("user-agent") ?? "", "Sec-Fetch-Mode": request.headers.get("sec-fetch-mode") ?? "", "Sec-Fetch-Dest": request.headers.get("sec-fetch-dest") ?? "", ...(request.headers.get("purpose") ? { Purpose: request.headers.get("purpose")! } : {}), ...(request.headers.get("sec-purpose") ? { "Sec-Purpose": request.headers.get("sec-purpose")! } : {}) } : {}),  } });
+    const response = await fetch(target, { method: request.method, body, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(12000), headers: { Accept: "application/json", ...(body ? { "Content-Type": "application/json" } : {}), Cookie: `shida_dashboard_session=${token}`, ...statisticsHeaders, ...(publicOrigin ? { Origin: publicOrigin } : {}), ...(path.endsWith("/interest") ? { "DNT":request.headers.get("dnt")??"", "X-Shida-Test-Traffic":request.headers.get("x-shida-test-traffic")??"", "User-Agent": request.headers.get("user-agent") ?? "", "Sec-Fetch-Mode": request.headers.get("sec-fetch-mode") ?? "", "Sec-Fetch-Dest": request.headers.get("sec-fetch-dest") ?? "", ...(request.headers.get("purpose") ? { Purpose: request.headers.get("purpose")! } : {}), ...(request.headers.get("sec-purpose") ? { "Sec-Purpose": request.headers.get("sec-purpose")! } : {}) } : {}),  } });
     if (response.status === 401) await clearEmploymentToken();
     const value = await response.json().catch(() => null);
     if (!response.ok) {

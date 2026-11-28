@@ -18,10 +18,10 @@ async function fixture(page:Page,html:string,locale='en'){
   localStorage.setItem('shida_statistics_consent_v1',JSON.stringify({choice:'declined',expires:Date.now()+86400000}));
  },new URL(baseURL).origin);
  await page.goto('/en/privacy/');
- // SSR consent is unknown; this status proves the persisted decline has hydrated.
- await expect(page.locator('.website-statistics-control [role="status"]')).toHaveText(statisticsCopy.en.off);
- const preferences=page.getByRole('button',{name:'Statistics preferences',exact:true});
- await preferences.click();await expect(preferences).toHaveAttribute('aria-expanded','true');
+ // Verify interactive hydration before injecting the synthetic form.
+ const t=statisticsCopy.en,dialog=page.getByRole('dialog',{name:t.preferences});
+ await page.getByRole('button',{name:t.settings,exact:true}).click();await expect(dialog).toBeVisible();
+ await dialog.getByRole('button',{name:t.close,exact:true}).click();await expect(dialog).toBeHidden();
  await page.evaluate(({html,locale})=>{
   const root=document.createElement('section');root.id='validation-fixture';root.lang=locale;
   root.style.cssText='padding:24px 24px 160px;background:white';root.innerHTML=html;
