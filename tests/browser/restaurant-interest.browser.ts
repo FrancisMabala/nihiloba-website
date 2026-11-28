@@ -14,7 +14,7 @@ function restaurantFixture(){
 }
 async function fixture(page:Page,human=true){
  const reference=restaurantFixture(),events:Interest[]=[],unexpectedWrites:string[]=[];
- await page.addInitScript(human=>{if(human)Object.defineProperty(navigator,'webdriver',{get:()=>false});localStorage.setItem('shida_statistics_consent_v1',JSON.stringify({choice:'declined',expires:Date.now()+86400000}));},human);
+ await page.addInitScript(human=>{if(human)Object.defineProperty(navigator,'webdriver',{get:()=>false});localStorage.setItem('shida_statistics_consent_v1',JSON.stringify({choice:'accepted',expires:Date.now()+86400000}));},human);
  await page.route('**/api/**',route=>{
   const request=route.request(),path=new URL(request.url()).pathname.replace(/\/$/,'');
   if(path==='/api/shida/employment/session')return route.fulfill({json:{binding:'a'.repeat(64),user:{display_name:'Synthetic customer'}}});
@@ -23,13 +23,8 @@ async function fixture(page:Page,human=true){
   if(path===`/api/shida/restaurant-guests/establishments/${reference}/entry`&&request.method()==='GET')return route.fulfill({json:{entry_context:'synthetic-read-only-entry',expires_at:'2099-01-01T00:00:00Z',methods:{pickup:{windows:[]}},copy:{}}});
   if(request.method()!=='GET')unexpectedWrites.push(path);return route.fulfill({status:404,json:{}});
  });
- const open=async(menu=false)=>{const response=await page.goto(`/shida/restaurants/${reference}/${menu?'menu/':''}`);expect(response?.ok()).toBe(true);await expect(page.locator('.restaurant-detail-header')).toBeVisible();await expect(page.locator('.website-statistics-notice')).toBeHidden();await expect(page.locator('button[data-restaurant-item-open]').first()).toBeEnabled();};
+ const open=async(menu=false)=>{const response=await page.goto(`/shida/restaurants/${reference}/${menu?'menu/':''}`);expect(response?.ok()).toBe(true);await expect(page.locator('.restaurant-detail-header')).toBeVisible();await expect(page.locator('.website-statistics-control [role=status]')).toHaveText(t.blocked);await expect(page.locator('button[data-restaurant-item-open]').first()).toBeEnabled();};
  return {events,unexpectedWrites,open};
-}
-async function consent(page:Page,accepted:boolean){
- const preferences=page.getByRole('button',{name:t.settings,exact:true});await preferences.click();const dialog=page.getByRole('dialog',{name:t.preferences});await expect(dialog).toBeVisible();
- await dialog.getByRole('button',{name:accepted?t.accept:t.decline,exact:true}).click();await expect(dialog).toBeHidden();
- expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('shida_statistics_consent_v1')!).choice)).toBe(accepted?'accepted':'declined');
 }
 async function quiet(events:Interest[],count:number){
  // A negative observation window must exceed RestaurantInterest's 1000ms dwell.
@@ -37,28 +32,13 @@ async function quiet(events:Interest[],count:number){
  const until=Date.now()+1200;await expect.poll(()=>({elapsed:Date.now()>=until,count:events.length}),{intervals:[100],timeout:3000}).toEqual({elapsed:true,count});
 }
 
-test('public viewing requires visible human interaction; item details are distinct from menu impressions',async({page})=>{
- const {events,unexpectedWrites,open}=await fixture(page);await open();await quiet(events,0);
- await consent(page,true);await page.locator('.restaurant-detail-header h1').click();await expect.poll(()=>events.some(e=>e.kind==='profile_opens')).toBe(true);
- expect(events.filter(e=>e.kind==='item_views')).toHaveLength(0);
- const opener=page.locator('button[data-restaurant-item-open]').first();await opener.click();const detail=page.locator('dialog[open][data-restaurant-item-view]');await expect(detail).toBeVisible();
- await expect.poll(()=>events.filter(e=>e.kind==='item_views').length).toBe(1);
- const ref=await detail.getAttribute('data-restaurant-item-view');expect(events.find(e=>e.kind==='item_views')?.item_ref).toBe(ref);
- await detail.getByRole('button',{name:'Close',exact:true}).click();await opener.click();await expect(detail).toBeVisible();
- const count=events.length;await quiet(events,count);expect(events.filter(e=>e.kind==='item_views')).toHaveLength(1);expect(unexpectedWrites).toEqual([]);
-});
-test('automated browser traffic is excluded even when it clicks',async({page})=>{
- const {events,unexpectedWrites,open}=await fixture(page,false);expect(await page.evaluate(()=>navigator.webdriver)).toBe(true);
- await open();await consent(page,true);await page.locator('.restaurant-detail-header h1').click();await quiet(events,0);expect(unexpectedWrites).toEqual([]);
-});
-
-test('mobile declining and revoking optional interest keeps menu and sticky basket actions available',async({page})=>{
+test('paused optional interest keeps menu and mobile sticky basket actions available',async({page})=>{
  await page.setViewportSize({width:390,height:844});
- const {events,unexpectedWrites,open}=await fixture(page);await open(true);await consent(page,false);
+ const {events,unexpectedWrites,open}=await fixture(page);await open(true);
  const opener=page.locator('button[data-restaurant-item-open]').first();await expect(opener).toBeEnabled();await opener.click();
  const add=page.locator('dialog[open] button[data-restaurant-item-selection]');await expect(add).toBeEnabled();await add.click();await expect(page.locator('.rst-sticky-basket')).toBeVisible();
  await expect(page.locator('.rst-basket-lines li')).toHaveCount(1);await quiet(events,0);
- await consent(page,true);await consent(page,false);const after=events.length;
+ const after=events.length;
  await expect(opener).toBeEnabled();await opener.click();await expect(add).toBeEnabled();await add.click();await expect(page.locator('.rst-sticky-basket')).toBeVisible();
  await quiet(events,after);expect(unexpectedWrites).toEqual([]);
 });

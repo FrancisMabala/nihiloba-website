@@ -1,5 +1,4 @@
 import {personalRequestOrigin} from '../../../lib/personal-request-origin';
-import {publicJobsApiBase} from '../public-jobs/route-utils';
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'no-store, max-age=0','Pragma':'no-cache'};
 const fail=(status:number)=>Response.json({detail:'statistics_unavailable'},{status,headers});
@@ -20,7 +19,6 @@ export async function POST(request:Request){
   if(['visitor','session','visit'].some(key=>typeof value[key]!=='string'||!uuid.test(value[key] as string)))return fail(422);
   if(Object.entries(groups).some(([key,allowed])=>typeof value[key]!=='string'||!allowed.includes(value[key] as string)))return fail(422);
   if(!Number.isInteger(value.active_seconds)||(value.active_seconds as number)<0||(value.active_seconds as number)>14400)return fail(422);
-  const response=await fetch(publicJobsApiBase()+'/api/public/shida/statistics',{method:'POST',redirect:'manual',cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(8000),headers:{Origin:origin,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(value)});
-  return response.status===204?new Response(null,{status:204,headers}):fail(response.status===429?429:503);
+  return new Response(null,{status:204,headers});
  }catch{return fail(503);}
 }

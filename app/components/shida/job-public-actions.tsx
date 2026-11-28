@@ -1,7 +1,6 @@
 "use client";
 import {jobResultsReturn,markJobResultsReturn} from '../../lib/job-results-return';
 
-import {websiteStatistics} from '../../lib/website-statistics-consent';
 import {jobReportUrl} from "../../lib/job-report-url";
 import {candidateWorkspaceCopy} from '../../lib/candidate-workspace-copy';
 import { useEffect, useState, useId, useRef } from "react";
@@ -16,26 +15,6 @@ const copy = {
   ln: {save:"Bomba na SHIDA",follow:"Landa na SHIDA",share:"Kabola",shared:"Lien ekopiami",report:"Yebisa mokakatano na mosala",hint:"Ekofungwama na onglet ya sika.",blocked:"Pesa SHIDA nzela ya kofungola onglet ya sika, mpe meká lisusu.",redirect:"Senga na site ya mopesi mosala",instructions:"Tala ndenge ya kosenga",opening:"Site ezali kofungwama…",unavailable:"Bosengi ekangami mpo na mosala oyo.",failed:"Lien ya bosengi ezali kosala te."},
   sw: {save:"Hifadhi kwenye SHIDA",follow:"Fuata kwenye SHIDA",share:"Shiriki",shared:"Kiungo kimenakiliwa",report:"Ripoti tangazo",hint:"Itafunguka kwenye kichupo kipya.",blocked:"Ruhusu SHIDA kufungua kichupo kipya, kisha ujaribu tena.",redirect:"Omba kwenye tovuti ya mwajiri",instructions:"Ona jinsi ya kuomba",opening:"Inafungua tovuti ya mwajiri…",unavailable:"Kazi hii haipokei maombi tena.",failed:"Kiungo cha ombi hakipatikani kwa sasa."},
 } as const;
-
-export function JobViewTracker({ jobReference }: { jobReference:string }) {
-  useEffect(()=>{
-    const stats=websiteStatistics();
-    if(!stats)return;
-    let recorded=false;
-    const track=()=>{
-      if(stats.consent()!=='accepted'){
-        recorded=false;
-      }else if(!recorded){
-        recorded=true;
-        stats.job(jobReference,'view');
-      }
-    };
-    track();
-    return stats.subscribe(track);
-  },[jobReference]);
-  return null;
-}
-
 
 export function ExternalJobAction({ locale, jobReference, action, label }: { locale:Locale; jobReference:string; action:PublicJobExternalAction; label?:string }) {
   const statusId = useId(), hintId = useId(), t = copy[locale];
@@ -103,18 +82,9 @@ export function ExternalJobAction({ locale, jobReference, action, label }: { loc
   </div>;
 }
 
-export function JobPublicActions({ locale, jobReference, title, path, origin, canShare=true, canSave=false, canFollow=false, compact=false, showFollow=true }: { locale:Locale; jobReference:string; title:string; path:string; origin:"direct"|"external"; canShare?:boolean; canSave?:boolean; canFollow?:boolean; compact?:boolean; showFollow?:boolean }) {
+export function JobPublicActions({ locale, jobReference, title, path, canShare=true, canSave=false, canFollow=false, compact=false, showFollow=true }: { locale:Locale; jobReference:string; title:string; path:string; origin:"direct"|"external"; canShare?:boolean; canSave?:boolean; canFollow?:boolean; compact?:boolean; showFollow?:boolean }) {
   const t=copy[locale], [shared,setShared]=useState(false);
-  async function share(){
-    const url=new URL(path,window.location.origin).toString();
-    const measure=origin==="external"?websiteStatistics()?.prepareJobShare(jobReference):undefined;
-    try{
-      if(navigator.share)await navigator.share({title,url});
-      else await navigator.clipboard.writeText(url);
-      measure?.();
-      setShared(true);
-    }catch{/* Cancellation leaves the page unchanged. */}
-  }
+  async function share(){const url=new URL(path,window.location.origin).toString();try{if(navigator.share)await navigator.share({title,url});else await navigator.clipboard.writeText(url);setShared(true);}catch{/* Cancellation leaves the page unchanged. */}}
   // Report links live alongside the applicant safety information.
   return <div className={compact?"job-public-actions job-public-actions-compact":"job-public-actions"}>
     <JobRelationshipActions key={`${locale}:${jobReference}`} locale={locale} jobReference={jobReference} canSave={canSave} canFollow={canFollow} detail={!compact} showFollow={showFollow}/>

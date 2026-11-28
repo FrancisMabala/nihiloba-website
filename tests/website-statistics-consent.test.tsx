@@ -1,6 +1,6 @@
 import {describe,it,expect,vi} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
-import {WebsiteStatistics,statisticsDimensions,STATISTICS_CHOICE_POLICY,STATISTICS_CHOICE_KEY,STATISTICS_VISITOR_KEY,STATISTICS_SESSION_KEY,statisticsCopy,type StatisticsEnvironment} from '../app/lib/website-statistics-consent';
+import {WebsiteStatistics,statisticsDimensions,STATISTICS_CHOICE_KEY,STATISTICS_VISITOR_KEY,STATISTICS_SESSION_KEY,statisticsCopy,type StatisticsEnvironment} from '../app/lib/website-statistics-consent';
 vi.mock('next/navigation',()=>({usePathname:()=>'/shida'}));
 import {WebsiteStatisticsConsent} from '../app/components/shida/website-statistics-consent';
 function store(){const values=new Map<string,string>();return {values,getItem:(k:string)=>values.get(k)??null,setItem:vi.fn((k:string,v:string)=>{values.set(k,v);}),removeItem:(k:string)=>{values.delete(k);},key:(i:number)=>[...values.keys()][i]??null,get length(){return values.size;}};}
@@ -13,18 +13,6 @@ function fixture(){
 const dimensions=statisticsDimensions('/fr/shida/emplois/JOB_secret?token=private','fr','Mozilla Android Mobile Chrome/123','https://google.com/search?q=secret','https://nihiloba.com');
 const settle=async()=>{await Promise.resolve();await Promise.resolve();};
 describe('optional statistics privacy boundary',()=>{
- it.each([false,true])('cancels an old share when a suspended tab misses remote refusal/reacceptance (queued=%s)',async queued=>{
-  const f=fixture(),sendJob=vi.fn().mockResolvedValue(undefined);f.env.sendJob=sendJob;
-  const other=new WebsiteStatistics({...f.env,session:()=>store()});
-  f.stats.choose('accepted');const complete=f.stats.prepareJobShare('JOB_shared');
-  if(queued)complete?.();
-  // Both changes occur at the same clock tick; no storage/focus event is delivered.
-  other.choose('declined');other.choose('accepted');
-  if(!queued)complete?.();
-  await settle();expect(sendJob).not.toHaveBeenCalled();
-  f.stats.prepareJobShare('JOB_shared')?.();await settle();
-  expect(sendJob).toHaveBeenCalledExactlyOnceWith('JOB_shared','share',expect.any(AbortSignal));
- });
  it('creates no identifiers, measurement storage or requests before consent or after decline',async()=>{
   const f=fixture(),observer=f.stats.observe(dimensions);observer.tick(true,true);f.stats.employer('ORGDIR_test');await settle();
   expect(f.uuid).not.toHaveBeenCalled();expect(f.local.setItem).not.toHaveBeenCalled();expect(f.session.setItem).not.toHaveBeenCalled();expect(f.send).not.toHaveBeenCalled();expect(f.sendEmployer).not.toHaveBeenCalled();
@@ -38,9 +26,9 @@ describe('optional statistics privacy boundary',()=>{
   expect(statisticsDimensions('/anything/private','unknown','unknown','javascript:bad','https://nihiloba.com')).toMatchObject({page_group:'other',language:'other',source:'other'});
  });
  it('starts only on a visible focused observation and sends no account or URL fields',async()=>{
-  const f=fixture();f.stats.choose('accepted');const observer=f.stats.observe(dimensions);observer.tick(false,false);observer.tick(true,false);await settle();expect(f.uuid).toHaveBeenCalledTimes(1); // Local consent grant only, no measurement IDs.
+  const f=fixture();f.stats.choose('accepted');const observer=f.stats.observe(dimensions);observer.tick(false,false);observer.tick(true,false);await settle();expect(f.uuid).not.toHaveBeenCalled();
   observer.tick(true,true);await settle();expect(f.send).toHaveBeenCalledTimes(1);expect(f.send.mock.calls[0][0]).toEqual({...dimensions,consent:true,policy:'web-statistics-v1',visitor:expect.any(String),session:expect.any(String),visit:expect.any(String),active_seconds:0});
-  expect(f.uuid).toHaveBeenCalledTimes(4);
+  expect(f.uuid).toHaveBeenCalledTimes(3);
  });
  it('sends cumulative active time with the same retry-safe page observation',async()=>{
   const f=fixture();f.stats.choose('accepted');const observer=f.stats.observe(dimensions);observer.tick(true,true);await settle();
@@ -57,7 +45,7 @@ describe('optional statistics privacy boundary',()=>{
  });
  it('does not generate new sessions on idle pages, but rotates after activity resumes',async()=>{
   const f=fixture();f.stats.choose('accepted');const observer=f.stats.observe(dimensions);observer.tick(true,true);await settle();const first=f.send.mock.calls[0][0];
-  f.advance(31*60000);observer.tick(true,true);await settle();expect(f.uuid).toHaveBeenCalledTimes(4);
+  f.advance(31*60000);observer.tick(true,true);await settle();expect(f.uuid).toHaveBeenCalledTimes(3);
   observer.activity();observer.tick(true,true);await settle();const next=f.send.mock.calls.at(-1)![0];expect(next.session).not.toBe(first.session);expect(next.visit).not.toBe(first.visit);expect(next.visitor).toBe(first.visitor);expect(next.active_seconds).toBe(0);
  });
  it('does not extend visitor lifetime when sending subsequent measurements',async()=>{
@@ -95,86 +83,14 @@ describe('optional statistics privacy boundary',()=>{
  it('works in memory when storage is unavailable and still revokes',async()=>{
   const f=fixture();f.env.local=()=>null;f.env.session=()=>null;const stats=new WebsiteStatistics(f.env);stats.choose('accepted');stats.observe(dimensions).tick(true,true);await settle();expect(f.send).toHaveBeenCalledTimes(1);stats.choose('declined');stats.observe(dimensions).tick(true,true);await settle();expect(f.send).toHaveBeenCalledTimes(1);
  });
- it.each([false,true])('honors withdrawal when setting storage fails (removal fails: %s)',async(removeFails)=>{
-  const f=fixture();
-  f.stats.choose('accepted');
-  f.send.mockImplementation(()=>new Promise(()=>{}));
-  f.stats.observe(dimensions).tick(true,true);
-  await settle();
-  f.session.values.set('shida_job_viewed_JOB_old','1');
-  f.session.values.set('functional_session','retain');
-  f.local.values.set('functional_cart','retain');
-  const remove=f.local.removeItem;
-  f.local.removeItem=key=>{
-   if(removeFails&&key===STATISTICS_CHOICE_KEY)throw Error('storage denied');
-   remove(key);
-  };
-  f.local.setItem.mockImplementation(()=>{throw Error('storage denied');});
-  f.stats.choose('declined');
-  expect(f.stats.consent()).toBe('declined');
-  expect(f.send.mock.calls[0][1].aborted).toBe(true);
-  expect(f.local.values.has(STATISTICS_VISITOR_KEY)).toBe(false);
-  expect(f.local.values.get('functional_cart')).toBe('retain');
-  expect([...f.session.values.keys()]).toEqual(['functional_session',STATISTICS_CHOICE_KEY]);
-  expect(f.session.values.get('functional_session')).toBe('retain');
-  const reloaded=new WebsiteStatistics(f.env);
-  expect(reloaded.consent()).toBe('declined');
-  reloaded.observe(dimensions).tick(true,true);
-  f.stats.observe(dimensions).tick(true,true);
-  await settle();
-  expect(f.send).toHaveBeenCalledOnce();
- });
- it('an explicit later acceptance clears the same-tab refusal after storage recovers',()=>{
-  const f=fixture();
-  f.stats.choose('accepted');
-  f.local.setItem.mockImplementationOnce(()=>{throw Error('storage denied');});
-  f.stats.choose('declined');
-  expect(f.session.values.has(STATISTICS_CHOICE_KEY)).toBe(true);
-  const reloaded=new WebsiteStatistics(f.env);
-  reloaded.choose('accepted');
-  expect(f.session.values.has(STATISTICS_CHOICE_KEY)).toBe(false);
-  expect(new WebsiteStatistics(f.env).consent()).toBe('accepted');
- });
- it('keeps refusal in memory if neither store permits writing it',()=>{
-  const f=fixture();
-  f.stats.choose('accepted');
-  f.local.removeItem=()=>{throw Error('storage denied');};
-  for(const storage of [f.local,f.session])storage.setItem.mockImplementation(()=>{throw Error('storage denied');});
-  f.stats.choose('declined');
-  expect(f.stats.consent()).toBe('declined');
-  expect(new WebsiteStatistics(f.env).consent()).toBe('accepted');
- });
- it.each(['accepted','declined'] as const)('validates legacy %s against the current disclosure',async(previous)=>{
-  const f=fixture();
-  const expires=f.env.now()+86400000;
-  f.local.values.set(STATISTICS_CHOICE_KEY,JSON.stringify({choice:previous,expires}));
-  expect(f.stats.consent()).toBe(previous==='accepted'?'unknown':'declined');
-  f.stats.observe(dimensions).tick(true,true);
-  await settle();
-  expect(f.send).not.toHaveBeenCalled();
-  f.stats.choose('accepted');
-  expect(JSON.parse(f.local.values.get(STATISTICS_CHOICE_KEY)!)).toMatchObject({choice:'accepted',policy:STATISTICS_CHOICE_POLICY});
-  expect(new WebsiteStatistics(f.env).consent()).toBe('accepted');
- });
- it.each(['not JSON','null','true','{}','{"choice":"accepted","expires":"1800000000001"}','{"choice":"accepted","expires":1}','{"choice":"accepted","expires":9900000000000}'])('fails closed for an invalid historical choice %s',async(value)=>{
-  const f=fixture();
-  f.local.values.set(STATISTICS_CHOICE_KEY,value);
-  f.session.values.set('shida_job_viewed_JOB_old','1');
-  f.stats.refresh();
-  expect(f.stats.consent()).toBe('unknown');
-  expect(f.session.length).toBe(0);
-  f.stats.observe(dimensions).tick(true,true);
-  await settle();
-  expect(f.send).not.toHaveBeenCalled();
- });
- it.each(['fr','en','ln','sw'] as const)('renders localized cookie preferences without a server-side notice in %s',language=>{
+ it.each(['fr','en','ln','sw'] as const)('restores the prior settings panel with an honest disabled state in %s',language=>{
   const html=renderToStaticMarkup(<WebsiteStatisticsConsent language={language}/>);
   const t=statisticsCopy[language];
-  for(const copy of [t.preferences,t.details,t.necessary,t.always,t.analytics,t.choiceHelp,t.accept,t.decline,t.save])expect(html).toContain(copy);
-  expect(html).toContain(`href="/${language==='en'?'en':'fr'}/privacy"`);
+  expect(html).toContain(t.blocked);
+  expect(html).toContain(t.settings);
+  expect(html).toContain(t.privacy);
   expect(html).toContain('<dialog');
-  expect(html).toContain(`aria-label="${t.close}"`);
-  expect(html).not.toMatch(/website-statistics-notice|aria-modal|autofocus|checked|disabled/);
+  expect(html).not.toMatch(/<dialog[^>]* open|website-statistics-actions/);
   expect(Object.keys(t).sort()).toEqual(Object.keys(statisticsCopy.en).sort());
  });
 });

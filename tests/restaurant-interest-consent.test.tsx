@@ -17,7 +17,7 @@ function mount(){const html=renderToStaticMarkup(<RestaurantInterest establishme
 function click(){handlers.get('scroll')?.({isTrusted:true,type:'scroll'} as Event);}
 function revoke(){state.consent='declined';for(const listener of state.listeners)listener();}
 it.each(['unknown','declined','blocked'])('does not attach interest handlers, restore identity or post with consent %s',consent=>{
- state.consent=consent;const html=mount();click();vi.runAllTimers();expect(handlers.size).toBe(0);expect(state.restore).not.toHaveBeenCalled();expect(state.request).not.toHaveBeenCalled();expect(html).toContain('Ordering works without this consent.');expect(html).not.toContain('disabled');
+ state.consent=consent;const html=mount();click();vi.runAllTimers();expect(handlers.size).toBe(0);expect(state.restore).not.toHaveBeenCalled();expect(state.request).not.toHaveBeenCalled();expect(html).toContain('You can still place an order.');expect(html).not.toContain('disabled');
 });
 it('clears delayed interest timers on revocation before session restoration',async()=>{
  state.consent='accepted';mount();click();expect(vi.getTimerCount()).toBe(1);revoke();await vi.advanceTimersByTimeAsync(1100);expect(state.restore).not.toHaveBeenCalled();expect(state.request).not.toHaveBeenCalled();

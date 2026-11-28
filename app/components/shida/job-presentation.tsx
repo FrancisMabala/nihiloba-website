@@ -21,7 +21,7 @@ import {individualEligibilityCopy} from '../../lib/individual-job-eligibility';
 import {listingText} from "../../lib/personal-missions-copy";
 import "./mission-management.css";
 import {RecruitmentContact} from "./recruitment-contact";
-import {ExternalJobAction, JobPublicActions, JobViewTracker} from "./job-public-actions";
+import {ExternalJobAction, JobPublicActions} from "./job-public-actions";
 import {MarketplaceImage} from "./marketplace-image";
 import {JobResultsLink, JobReportLink} from "./job-public-actions";
 import {marketplacePath, publicLocation} from "./marketplace";
@@ -176,7 +176,6 @@ export function JobDetailContent({locale,item,similar,embedded=false}:{locale:Lo
   const applyButton=hasRecruitmentContact(item)?<RecruitmentContact key={item.public_ref} locale={locale} reference={item.public_ref}/>:directAction?<ButtonLink href={directAction} external>{u.continue}</ButtonLink>:externalAction?<ExternalJobAction locale={locale} jobReference={item.public_ref} action={externalAction} label={item.apply_label}/>:null;
   const stateText=inactive?(item.lifecycle_state==="expired"?jobSearchCopy[locale].expired:jobSearchCopy[locale].unavailable):null;
   return <>
-    {item.origin==="external"&&<JobViewTracker jobReference={item.public_ref}/>}
     <section className="marketplace-detail-hero job-detail-hero"><div className="container">
       {!embedded&&<nav className="job-detail-return"><JobResultsLink href={marketplacePath(locale,"/shida/emplois")} locale={locale}/><Link href={jobSearchPath(locale)}>{jobSearchCopy[locale].title} →</Link></nav>}
       <div className="job-detail-labels"><span className="job-type-label">{item.offer_type==="enterprise"?u.company:listingText(locale,'jobType')}</span>{item.origin==="external"&&<span className="job-origin-label job-origin-external">{{fr:'Offre externe',en:'External offer',ln:'Mosala ya libándá',sw:'Nafasi kutoka nje'}[locale]}</span>}{organizationLabel(item,locale)&&<span className="job-origin-label">{organizationLabel(item,locale)}</span>}{stateText&&<strong className="job-lifecycle-state" role="status">{stateText}</strong>}</div>
