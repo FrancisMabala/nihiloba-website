@@ -160,7 +160,7 @@ button.website-cookie-settings {
 }
 @media (max-width: 700px) {
   .website-statistics { --cookie-bottom: env(safe-area-inset-bottom, 0px); }
-  body:has(.rst-sticky-basket, .job-application-panel > .job-external-action:has(button), .job-application-panel > a.button-primary) .website-statistics {
+  body:has(.rst-sticky-basket, .job-application-panel > .job-external-action button, .job-application-panel > a.button-primary) .website-statistics {
     --cookie-bottom: calc(148px + env(safe-area-inset-bottom, 0px));
   }
   body:has(:is(input:not([type="checkbox"], [type="radio"]), textarea, [contenteditable="true"]):focus) .website-statistics-notice {
