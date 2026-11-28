@@ -1,15 +1,14 @@
 "use client";
 import Image from "next/image";
-import {useEffect,useRef,useState} from "react";
+import {useEffect,useMemo,useRef,useState,type ReactNode} from "react";
 import {useWenzeApi,DashboardApiError} from "@/app/lib/wenze-seller-api";
 import {sellerText} from "@/app/lib/wenze-seller-copy";
 import {individualSellingCopy} from "@/app/lib/individual-selling-copy";
 import {quickSellCopy} from "@/app/lib/quick-sell-copy";
 import type {WenzeLocale} from "@/app/lib/wenze-copy";
 import {useWorkDraft,WenzeLeaveDialog,leaveWork} from "@/app/lib/wenze-work";
-import {WenzeR6Workspace} from "./wenze-r6-workspace";
 import {useConfirmation} from "./confirmation-dialog";
-import {listingCopy} from "@/app/lib/wenze-listings-copy";
+import {listingCopy,articleListingCopy} from "@/app/lib/wenze-listings-copy";
 import {WenzeListingPhotos} from "./wenze-listing-photos";
 import {SpaceIcon} from "./account-space-icon";
 import {listingWorkspaceCopy} from "@/app/lib/listing-workspace-copy";
@@ -18,7 +17,8 @@ import {QuickListingCard} from "./quick-listing-card";
 import {draftUX} from "@/app/lib/draft-ux-copy";
 import "./quick-sell.css";
 import {personalSpaceMobileCopy} from "../../lib/personal-space-mobile-copy";
-import {RecordActions} from "./record-actions";
+import {QuickListingActions} from "./quick-listing-actions";
+import {articleFilters,matchesArticleFilter,readArticleFilter,type ArticleFilter} from "@/app/lib/quick-sell-listing";
 
 type SellingTerms={city?:string;commune?:string;area?:string;address?:string;public_address_confirmed?:boolean;fulfillment_mode?:string;payment_methods?:string[];delivery_areas?:string[];delivery_fee_type?:string;delivery_fee?:string;delivery_currency?:string};
 type Store={public_ref:string;revision:number;city:string;commune:string|null;quartier:string|null;address:string|null;fulfillment_mode:string|null;delivery_fee_type:string|null;delivery_fee:string|null;delivery_currency:string|null;delivery_areas:string[];order_ready:boolean;name:string};
@@ -28,16 +28,16 @@ const blank:Fields={name:"",category:"",condition:"used",description:"",price:""
 const root="wenze/contexts/personal",enc=encodeURIComponent;
 const bytes=(file:File)=>new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>resolve(String(reader.result).split(",")[1]);reader.readAsDataURL(file);});
 
-export function QuickSell({locale,embedded=false,onInventoryLoaded}:{locale:WenzeLocale;embedded?:boolean;onInventoryLoaded?:(total:number)=>void}){
- const mobile=personalSpaceMobileCopy[locale],w=listingWorkspaceCopy[locale],d=draftUX[locale],c=individualSellingCopy[locale],l=listingCopy[locale],t=quickSellCopy[locale],{request}=useWenzeApi(),{request:confirm,confirmation}=useConfirmation(locale);
+export function QuickSell({locale,embedded=false,onInventoryLoaded,heading,categoriesNav}:{locale:WenzeLocale;embedded?:boolean;onInventoryLoaded?:(total:number)=>void;heading?:ReactNode;categoriesNav?:ReactNode}){
+ const a=articleListingCopy[locale],mobile=personalSpaceMobileCopy[locale],w=listingWorkspaceCopy[locale],d=draftUX[locale],c=individualSellingCopy[locale],l=listingCopy[locale],t=quickSellCopy[locale],{request}=useWenzeApi(),{request:confirm,confirmation}=useConfirmation(locale);
  const [store,setStore]=useState<Store|null>(null),[city,setCity]=useState(""),[loaded,setLoaded]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState("");
  const [categories,setCategories]=useState<{code:string;labels:Record<WenzeLocale,string>}[]>([]),[items,setItems]=useState<Item[]>([]),[offset,setOffset]=useState(()=>{if(typeof window==='undefined')return 0;return Math.max(0,Number(new URLSearchParams(location.search).get('article_page'))||0)*20;}),[quota,setQuota]=useState<{active_products:number;active_product_limit:number}|null>(null);
- const [view,setView]=useState<"list"|"edit"|"orders">("list"),[step,setStep]=useState(0),[fields,setFields]=useState<Fields>(blank),[editing,setEditing]=useState<Item|null>(null),[draft,setDraft]=useState<{draft_ref:string;revision:number}|null>(null),[photos,setPhotos]=useState<{ref:string;url:string}[]>([]);
+ const [view,setView]=useState<"list"|"edit">("list"),[step,setStep]=useState(0),[fields,setFields]=useState<Fields>(blank),[editing,setEditing]=useState<Item|null>(null),[draft,setDraft]=useState<{draft_ref:string;revision:number}|null>(null),[photos,setPhotos]=useState<{ref:string;url:string}[]>([]);
  const [mode,setMode]=useState("pickup"),[commune,setCommune]=useState(""),[quartier,setQuartier]=useState(""),[point,setPoint]=useState(""),[consent,setConsent]=useState(false),[areas,setAreas]=useState(""),[feeType,setFeeType]=useState("free"),[fee,setFee]=useState(""),[feeCurrency,setFeeCurrency]=useState("CDF");
 
  const [payments,setPayments]=useState<string[]>([]),[confirmed,setConfirmed]=useState(false);
  const [uncertain,setUncertain]=useState(false);
- const [filter,setFilter]=useState(()=>{const value=typeof window==='undefined'?null:new URLSearchParams(location.search).get('article_status');return value&&['all','drafts','available','sold','archived','unpublished','pending'].includes(value)?value:'all';}),[photoItem,setPhotoItem]=useState<Item|null>(null);
+ const [filter,setFilter]=useState(()=>readArticleFilter(typeof window==='undefined'?null:new URLSearchParams(location.search).get('article_status'))),[photoItem,setPhotoItem]=useState<Item|null>(null);
  type SavedDraft={draft_ref:string;revision:number;fields:Fields;photos:{ref:string;url:string}[];step?:number;updated_at?:string;selling_terms?:SellingTerms};
  const [drafts,setDrafts]=useState<SavedDraft[]>([]);
  const stepHeading=useRef<HTMLParagraphElement>(null);
@@ -67,55 +67,106 @@ export function QuickSell({locale,embedded=false,onInventoryLoaded}:{locale:Wenz
  function change(key:keyof Fields,value:string){setFields(old=>({...old,[key]:value}));}
  async function upload(files:FileList|null){if(!files||!draft)return;const selected=Array.from(files);if(photos.length+selected.length>5||selected.some(file=>file.size>8*1024*1024||!["image/jpeg","image/png","image/webp"].includes(file.type))){setNotice(t.uploadHelp);return;}await guard(async()=>{for(const file of selected){const value=await send(`${storePath}/uploads`,{target_type:"product_draft",target_ref:draft.draft_ref,content_base64:await bytes(file)}) as {upload_ref:string};if(!alive.current)return;const url=URL.createObjectURL(file);urls.current.push(url);setPhotos(old=>[...old,{ref:value.upload_ref,url}]);}});}
  async function publish(){if(!store||!draft||!confirmed)return;await guard(async()=>{publication.current??={...fields,individual_terms:sellingTerms(),mode:"detailed",...draft,expected_revision:draft.revision,stock_quantity:1,upload_refs:photos.map(p=>p.ref)};const payload={...publication.current};delete payload.revision;try{await send(`${storePath}/products`,payload);}catch(error){if(alive.current)setUncertain(!(error instanceof DashboardApiError)||error.status>=500);if(error instanceof DashboardApiError&&error.status<500)publication.current=null;throw error;}if(!alive.current)return;setUncertain(false);listView();setDraft(null);publication.current=null;setNotice(`${t.published}. ${t.publishedHelp}`);await load();});}
- function action(item:Item,kind:string){
+ function action(item:Item,kind:string,returnFocus:()=>HTMLElement|null){
   const title=kind==="sold"?t.sold:kind==="archive"?l.archive:kind==="restore"?l.restore:kind==="hide"?t.hide:t.show;
   const path=`${storePath}/products/${enc(item.public_ref)}/${kind==="sold"?"sold":`lifecycle/${kind}`}`;
   const body={expected_revision:item.revision};let completed=false;
-  confirm({title,description:kind==="sold"?t.soldHelp:item.name,confirmLabel:title,severity:kind==="archive"?"warning":"normal",errorMessage:error=>error instanceof DashboardApiError&&error.status===409?t.conflict:t.failed,onConfirm:async()=>{
+  confirm({title,returnFocus,description:kind==="sold"?t.soldHelp:item.name,confirmLabel:title,severity:kind==="archive"?"warning":"normal",errorMessage:error=>error instanceof DashboardApiError&&error.status===409?t.conflict:t.failed,onConfirm:async()=>{
    if(lock.current)throw new Error("busy");lock.current=true;setBusy(true);
    try{if(!completed){await send(path,body);completed=true;}await load();}finally{lock.current=false;if(alive.current)setBusy(false);}
   }});
  }
- function removeDraft(saved:SavedDraft){
+ function editItem(item:Item){
+  setBaseline(null);setDraft(null);setEditing(item);
+  setFields({name:item.name,category:item.category,condition:item.condition||"used",description:item.description||"",price:item.price,currency:item.currency,price_negotiable:item.price_negotiable});
+  setView("edit");setStep(0);
+ }
+ function resumeDraft(saved:SavedDraft){
+  setBaseline(null);setDraft({draft_ref:saved.draft_ref,revision:saved.revision});
+  setFields({...blank,...saved.fields});setPhotos(saved.photos);restoreTerms(saved.selling_terms);
+  setEditing(null);setStep(saved.step??0);setView("edit");setUncertain(false);publication.current=null;
+ }
+ function removeDraft(saved:SavedDraft,returnFocus:()=>HTMLElement|null){
   const path=`${storePath}/quick-sell-drafts/${enc(saved.draft_ref)}`,body={expected_revision:saved.revision};let completed=false;
-  confirm({title:d.remove,description:d.removeHelp,confirmLabel:d.deleteDraft,cancelLabel:d.retainDraft,compactHeading:true,severity:"danger",errorMessage:error=>error instanceof DashboardApiError&&error.status===409?t.conflict:t.failed,onConfirm:async()=>{
+  confirm({title:d.remove,returnFocus,description:d.removeHelp,confirmLabel:d.deleteDraft,cancelLabel:d.retainDraft,compactHeading:true,severity:"danger",errorMessage:error=>error instanceof DashboardApiError&&error.status===409?t.conflict:t.failed,onConfirm:async()=>{
    if(lock.current)throw new Error("busy");lock.current=true;setBusy(true);
    try{if(!completed){await send(path,body,"DELETE");completed=true;}await load(store,0);}finally{lock.current=false;if(alive.current)setBusy(false);}
   }});
  }
- const counts:Record<string,number>={all:items.length+drafts.length,drafts:drafts.length,available:0,sold:0,archived:0,unpublished:0,pending:0};
- for(const item of items)if(item.quick_sell_state)counts[item.quick_sell_state]=(counts[item.quick_sell_state]??0)+1;
- const collection=[...(filter==="all"||filter==="drafts"?drafts.map(value=>({kind:"draft" as const,value})):[]),...(filter==="drafts"?[]:items.filter(item=>filter==="all"||item.quick_sell_state===filter).map(value=>({kind:"item" as const,value})))];
- const visible=collection.slice(offset,offset+20),visibleDrafts=visible.flatMap(row=>row.kind==="draft"?[row.value]:[]),visibleItems=visible.flatMap(row=>row.kind==="item"?[row.value]:[]);
+ const filterLabels:Record<ArticleFilter,string>={all:l.all,available:a.online,drafts:l.drafts,pending:l.pending,sold:a.sold,unpublished:a.hidden,unavailable:a.unavailable,archived:a.archived};
+ const {counts,productsByFilter}=useMemo(()=>{
+  const productsByFilter:Record<ArticleFilter,Item[]>={all:items,available:[],drafts:[],pending:[],sold:[],unpublished:[],unavailable:[],archived:[]};
+  const counts:Record<ArticleFilter,number>={all:items.length+drafts.length,drafts:drafts.length,available:0,sold:0,archived:0,unpublished:0,pending:0,unavailable:0};
+  for(const key of articleFilters){
+   if(key==='all'||key==='drafts')continue;
+   const matched=items.filter(item=>matchesArticleFilter(item,key));
+   productsByFilter[key]=matched;
+   counts[key]=matched.length;
+  }
+  return {counts,productsByFilter};
+ },[items,drafts.length]);
+ const filterLabel=(key:ArticleFilter)=>`${filterLabels[key]} (${counts[key]})`;
+ const collection=[...(filter==="all"||filter==="drafts"?drafts.map(value=>({kind:"draft" as const,value})):[]),...productsByFilter[filter].map(value=>({kind:"item" as const,value}))];
+ const pageOffset=Math.min(offset,Math.max(0,Math.floor((collection.length-1)/20)*20));
+ const visible=collection.slice(pageOffset,pageOffset+20),visibleDrafts=visible.flatMap(row=>row.kind==="draft"?[row.value]:[]),visibleItems=visible.flatMap(row=>row.kind==="item"?[row.value]:[]);
  const routed=useRef(false);
  useEffect(()=>{if(!loaded||routed.current||!embedded)return;const target=new URLSearchParams(window.location.search).get('item');if(!target)return;routed.current=true;
  if(target==='new'){void start();return}
- const saved=drafts.find(d=>d.draft_ref===target);if(saved){setBaseline(null);setDraft({draft_ref:saved.draft_ref,revision:saved.revision});setFields({...blank,...saved.fields});setPhotos(saved.photos);restoreTerms(saved.selling_terms);setEditing(null);setStep(saved.step??0);setView("edit");setUncertain(false);publication.current=null;;return}
- const item=items.find(r=>r.public_ref===target);if(item){setFilter('all');setOffset(Math.floor((drafts.length+items.indexOf(item))/20)*20);requestAnimationFrame(()=>document.getElementById('article-'+item.public_ref)?.scrollIntoView({block:'center'}))}
+ const saved=drafts.find(d=>d.draft_ref===target);if(saved){resumeDraft(saved);return;}
+ const item=items.find(r=>r.public_ref===target);if(item){
+  setFilter('all');setOffset(Math.floor((drafts.length+items.indexOf(item))/20)*20);
+  requestAnimationFrame(()=>{
+   const target=document.getElementById('article-'+item.public_ref);
+   target?.focus({preventScroll:true});target?.scrollIntoView({block:'center'});
+  });
+ }
  },[loaded,items,drafts,embedded]); // eslint-disable-line react-hooks/exhaustive-deps
- const filterStrip=useRef<HTMLElement>(null);
- useEffect(()=>{const nav=filterStrip.current,active=nav?.querySelector<HTMLElement>('[aria-pressed=true]');if(nav&&active){const a=active.getBoundingClientRect(),n=nav.getBoundingClientRect();if(a.right>n.right)nav.scrollLeft+=a.right-n.right+8;else if(a.left<n.left)nav.scrollLeft-=n.left-a.left+8;}},[filter,loaded]);
- useEffect(()=>{const sync=()=>{const q=new URLSearchParams(location.search),value=q.get('article_status');setFilter(value&&['all','drafts','available','sold','archived','unpublished','pending'].includes(value)?value:'all');setOffset(Math.max(0,Number(q.get('article_page'))||0)*20);};window.addEventListener('popstate',sync);return()=>window.removeEventListener('popstate',sync)},[]);
+ useEffect(()=>{const sync=()=>{const q=new URLSearchParams(location.search);setFilter(readArticleFilter(q.get('article_status')));setOffset(Math.max(0,Number(q.get('article_page'))||0)*20);};window.addEventListener('popstate',sync);return()=>window.removeEventListener('popstate',sync)},[]);
  function rememberList(){history.replaceState({...history.state,shidaArticles:{path:location.pathname+location.search,scrollY:scrollY}},'');}
  useEffect(()=>{if(!loaded||view!=='list')return;const saved=history.state?.shidaArticles;if(saved?.path===location.pathname+location.search){const id=requestAnimationFrame(()=>scrollTo(0,Number(saved.scrollY)||0));return()=>cancelAnimationFrame(id);}},[loaded,view,filter,offset,items.length,drafts.length]);
  function selectPage(page:number,key=filter){rememberList();const url=new URL(location.href);url.searchParams.delete('item');url.searchParams.set('article_status',key);url.searchParams.set('article_page',String(page/20));history.pushState({...history.state,shidaArticles:null},'',url);setFilter(key);setOffset(page);}
- const selectFilter=(key:string)=>selectPage(0,key);
+ const selectFilter=(key:ArticleFilter)=>selectPage(0,key);
  function listView(nextFilter=filter){const url=new URL(location.href);url.searchParams.delete('item');url.searchParams.set('article_status',nextFilter);setFilter(nextFilter);history.replaceState({...history.state},'',url);setView('list');}
 
  const input=(key:keyof Fields,label:string,required=false,type="text")=><label><span>{label}</span><input name={key} placeholder={key==="name"?t.name:undefined} value={fields[key]} required={required} type={type} maxLength={key==="name"?200:40} min={type==="number"?"0":undefined} step={type==="number"?"0.01":undefined} onChange={e=>change(key,e.target.value)}/></label>;
  const selects=<><label htmlFor="qs-category"><span>{t.category}</span><select id="qs-category" required value={fields.category} onChange={e=>change("category",e.target.value)}><option value="">—</option>{categories.map(c=><option key={c.code} value={c.code}>{c.labels[locale]}</option>)}</select></label><label htmlFor="qs-condition"><span>{t.condition}</span><select id="qs-condition" value={fields.condition} onChange={e=>change("condition",e.target.value)}>{(["new","like_new","used","other"] as const).map(c=><option key={c} value={c}>{t[c]}</option>)}</select></label></>;
+ const createAction=<button className="button button-primary qs-create" type="button" aria-label={t.title} disabled={busy||!loaded} onClick={()=>void start()}><span aria-hidden="true">＋ </span>{t.title}</button>;
  return <section className={`qs container${embedded?" qs-embedded":""}`} lang={locale} onClickCapture={event=>{if(view==='list'&&(event.target as HTMLElement).closest('a'))rememberList();}}><WenzeLeaveDialog locale={locale} onSave={view==="edit"&&!editing?async()=>{if(busy||uncertain)throw new Error("busy");await saveProgress();await load(store,0);setFilter("drafts");}:undefined}/>{confirmation}{!embedded&&<header><p className="qs-eyebrow">WENZE · {t.individual}</p><h1>{view==="edit"?t.title:l.title}</h1><p>{t.intro}</p><nav><a href={link("wenze")} onClick={async e=>{e.preventDefault();if(await leaveWork())window.location.assign(link("wenze"));}}>Wenze</a><a href={link("space")} onClick={async e=>{e.preventDefault();if(await leaveWork())window.location.assign(link("space"));}}>{({en:"My Space",fr:"Mon espace",ln:"Esika na ngai",sw:"Nafasi yangu"})[locale]}</a><a href={link("seller/wenze")} onClick={async e=>{e.preventDefault();if(await leaveWork())window.location.assign(link("seller/wenze"));}}>{t.shop}</a></nav></header>}
+
+ {embedded&&heading&&<header className="qs-embedded-heading">{heading}{view==='list'&&createAction}</header>}
+ {categoriesNav}
 
  <p className="qs-status" role="status" aria-live="polite">{busy?t.loading:notice}</p>
  {!loaded?<button disabled={busy} onClick={()=>window.location.reload()}>{t.retry}</button>:<>
- {view==="orders"&&<nav className="qs-tabs"><button onClick={()=>listView()} aria-pressed={false}>{l.title}</button><button onClick={()=>setView("orders")} aria-pressed={view==="orders"}>{t.orders}</button></nav>}
  {photoItem&&<WenzeListingPhotos key={photoItem.public_ref} item={photoItem} base={storePath} locale={locale} onClose={()=>{setPhotoItem(null);void guard(()=>load());}}/>}
- {view==="orders"?<WenzeR6Workspace ordersOnly context="personal" locale={locale} initialView="orders" initialStore={store?.public_ref}/>:view==="list"?<section className="qs-workspace">
- <button className="button button-primary qs-create" aria-label={t.title} disabled={busy} onClick={()=>void start()}><span aria-hidden="true">＋ </span>{t.title}</button>
- <nav ref={filterStrip} className="qs-tabs qs-primary-filters" aria-label={l.title}>{(["all","drafts","available","sold","unpublished","pending","archived"] as const).map(key=><button key={key} aria-pressed={filter===key} disabled={busy} onClick={()=>selectFilter(key)}>{key==="available"?w.online:l[key]} ({counts[key]})</button>)}</nav>
+ {view==="list"?<section className="qs-workspace">
+ {(!embedded||!heading)&&createAction}
+ <nav className="qs-tabs qs-primary-filters" aria-label={a.filter}>{articleFilters.map(key=><button type="button" key={key} aria-pressed={filter===key} disabled={busy} onClick={()=>selectFilter(key)}>{filterLabel(key)}</button>)}</nav>
+ <label className="qs-filter-select">{a.filter}<select value={filter} disabled={busy} onChange={event=>selectFilter(readArticleFilter(event.currentTarget.value))}>{articleFilters.map(key=><option key={key} value={key}>{filterLabel(key)}</option>)}</select></label>
  <div className="qs-workspace-columns"><div className="qs-workspace-results">
  {!collection.length&&<section className="qs-empty"><SpaceIcon name="orders"/><h3>{counts.all===0?mobile.empty:mobile.noMatches}</h3><p>{counts.all===0?mobile.emptyHelp:filter==='drafts'?l.draftHelp:''}</p>{filter!=='all'&&<button onClick={()=>selectFilter('all')}>{mobile.reset}</button>}</section>}
- {visibleDrafts.map(saved=><article className="qs-draft-card" key={saved.draft_ref}>{saved.photos[0]?<Image unoptimized className="qs-draft-photo" src={saved.photos[0].url} alt="" width={72} height={72}/>:<span className="qs-draft-icon"><SpaceIcon name="orders"/></span>}<div><h3>{saved.fields.name||d.untitled}</h3><p>{t.step} {(saved.step??0)+1} {t.of} 4 · {c.steps[saved.step??0]}</p><progress aria-label={t.step} value={(saved.step??0)+1} max={4}/>{saved.updated_at&&<p>{d.modified} {new Date(saved.updated_at).toLocaleString(locale==='ln'?'fr':locale,{dateStyle:"medium",timeStyle:"short"})}</p>}</div><div className="qs-actions"><button disabled={busy} onClick={()=>{setBaseline(null);setDraft({draft_ref:saved.draft_ref,revision:saved.revision});setFields({...blank,...saved.fields});setPhotos(saved.photos);restoreTerms(saved.selling_terms);setEditing(null);setStep(saved.step??0);setView("edit");setUncertain(false);publication.current=null;}}>{w.continue}</button><RecordActions locale={locale} name={saved.fields.name||d.untitled}><button className="qs-danger" disabled={busy} onClick={()=>void removeDraft(saved)}>{w.remove}</button></RecordActions></div></article>)}<div className="qs-grid">{visibleItems.map(item=><div key={item.public_ref} id={"article-"+item.public_ref}><QuickListingCard item={item} locale={locale} location={[item.individual_terms?.city??store?.city,item.individual_terms?.commune??store?.commune].filter(Boolean).join(", ")} href={link(`wenze/products/${enc(item.public_ref)}`)}><button disabled={busy} onClick={()=>setView("orders")}>{t.orders}</button><button disabled={busy||item.status!=="active"} onClick={()=>setPhotoItem(item)}>{l.photos}</button><button disabled={busy} onClick={()=>void action(item,item.status==="archived"?"restore":"archive")}>{item.status==="archived"?l.restore:l.archive}</button><button disabled={busy||item.status!=="active"} onClick={()=>{setBaseline(null);setDraft(null);setEditing(item);setFields({name:item.name,category:item.category,condition:item.condition||"used",description:item.description||"",price:item.price,currency:item.currency,price_negotiable:item.price_negotiable});setView("edit");setStep(0);}}>{t.edit}</button><button disabled={busy||item.status!=="active"} onClick={()=>void action(item,item.visible==="true"?"hide":"show")}>{item.visible==="true"?t.hide:t.show}</button><button disabled={busy||item.available_stock===0||item.status!=="active"} onClick={()=>void action(item,"sold")}>{t.sold}</button></QuickListingCard></div>)}</div>{(offset>0||offset+20<collection.length)&&<div className="qs-actions"><button disabled={busy||offset===0} onClick={()=>selectPage(Math.max(0,offset-20))}>{t.back}</button><button disabled={busy||offset+20>=collection.length} onClick={()=>selectPage(offset+20)}>{t.next}</button></div>}
+ {visibleDrafts.map(saved=>{
+  const name=saved.fields.name||d.untitled,draftStep=Math.max(0,Math.min(3,saved.step??0));
+  return <article className="qs-draft-card" key={saved.draft_ref}>
+   {saved.photos[0]?<Image unoptimized className="qs-draft-photo" src={saved.photos[0].url} alt="" width={72} height={72}/>:<span className="qs-draft-icon"><SpaceIcon name="orders"/></span>}
+   <div className="qs-draft-content"><h3>{name}</h3><span className="qs-listing-state qs-state-unpublished">{a.draft}</span>
+    <p>{t.step} {draftStep+1} {t.of} 4 · {c.steps[draftStep]}</p>
+    <progress aria-label={t.step} value={draftStep+1} max={4}/>
+    {saved.updated_at&&<p>{d.modified} {new Date(saved.updated_at).toLocaleString(locale==='ln'?'fr':locale,{dateStyle:"medium",timeStyle:"short"})}</p>}
+   </div>
+   <div className="qs-draft-controls"><button type="button" className="button button-primary qs-manage" disabled={busy} onClick={()=>resumeDraft(saved)}>{w.continue}</button>
+    <QuickListingActions locale={locale} name={name}>{(close,returnFocus)=><button type="button" className="qs-context-warning" disabled={busy} onClick={()=>{close();removeDraft(saved,returnFocus);}}>{w.remove}</button>}</QuickListingActions>
+   </div>
+  </article>;
+ })}
+ <div className="qs-grid">{visibleItems.map(item=><div key={item.public_ref} id={"article-"+item.public_ref} tabIndex={-1}>
+  <QuickListingCard item={item} locale={locale} busy={busy}
+   location={[item.individual_terms?.city??store?.city,item.individual_terms?.commune??store?.commune].filter(Boolean).join(", ")}
+   href={link(`wenze/${locale==='fr'?'produits':'products'}/${enc(item.public_ref)}`)}
+   onManage={()=>editItem(item)} onAction={(kind,returnFocus)=>action(item,kind,returnFocus)} onPhotos={()=>setPhotoItem(item)}/>
+ </div>)}</div>
+ {(pageOffset>0||pageOffset+20<collection.length)&&<div className="qs-actions"><button disabled={busy||pageOffset===0} onClick={()=>selectPage(Math.max(0,pageOffset-20))}>{t.back}</button><button disabled={busy||pageOffset+20>=collection.length} onClick={()=>selectPage(pageOffset+20)}>{t.next}</button></div>}
+
  </div><aside className="qs-supporting"><a className="qs-orders-link" href={link("space?view=transactions&role=seller")}><SpaceIcon name="orders"/>{mobile.sales} →</a><details className="qs-advice"><summary><SpaceIcon name="shield"/>{w.tips}</summary><ul>{w.advice.map(tip=><li key={tip}><SpaceIcon name="check"/>{tip}</li>)}</ul><p>{l.draftHelp}</p>{quota&&<p>{t.quota}: {quota.active_products} / {quota.active_product_limit}</p>}<button disabled={busy} onClick={()=>void guard(()=>load())}>{t.retry}</button></details>
  </aside></div></section>:<section>
  {embedded&&<h2 className="qs-wizard-title">{t.title}</h2>}<p ref={stepHeading} tabIndex={-1}>{t.step} {step+1} {t.of} {editing?1:4}</p>{!editing&&<ol className="qs-progress">{c.steps.map((label,index)=><li key={label} aria-current={index===step?"step":undefined}><span>{index+1}</span>{label}</li>)}</ol>}

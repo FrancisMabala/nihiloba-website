@@ -190,7 +190,7 @@ function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[numb
  const [menu,open] = useState(initial==='meda');
  const strip=useRef<HTMLDivElement>(null),restored=useRef(false);
  useEffect(()=>{const sync=()=>{const value=new URLSearchParams(location.search).get('tab');choose(filters.find(k=>k===value)||'all')};window.addEventListener('popstate',sync);return()=>window.removeEventListener('popstate',sync)},[]);
- useEffect(()=>{const button=strip.current?.querySelector<HTMLButtonElement>('[aria-pressed=true]');if(button&&strip.current){const box=button.getBoundingClientRect(),parent=strip.current.getBoundingClientRect();if(box.left<parent.left)strip.current.scrollLeft-=parent.left-box.left;else if(box.right>parent.right)strip.current.scrollLeft+=box.right-parent.right;}},[tab,data]);
+ useEffect(()=>{const button=strip.current?.querySelector<HTMLButtonElement>('[aria-pressed=true]');if(button&&strip.current&&tab!=='article'){const box=button.getBoundingClientRect(),parent=strip.current.getBoundingClientRect();if(box.left<parent.left)strip.current.scrollLeft-=parent.left-box.left;else if(box.right>parent.right)strip.current.scrollLeft+=box.right-parent.right;}},[tab,data]);
  useEffect(()=>{if(!data||restored.current)return;restored.current=true;const saved=history.state?.shidaListings;if(saved?.path===location.pathname+location.search)requestAnimationFrame(()=>window.scrollTo(0,Number(saved.scrollY)||0));},[data]);
  async function selectTab(value:typeof filters[number]){if(!await leaveWork())return;const url=new URL(location.href);if(value==='all')url.searchParams.delete('tab');else url.searchParams.set('tab',value);url.searchParams.delete('item');url.searchParams.delete('article_status');url.searchParams.delete('article_page');remember();window.location.assign(url.toString());}
  function remember(){history.replaceState({...history.state,shidaListings:{path:location.pathname+location.search,scrollY:window.scrollY}},'');}
@@ -233,19 +233,23 @@ function Catalogue({locale,binding,initial}:Props & {initial:typeof filters[numb
      <div className="listing-controls"><span className="listing-status">{t(row.status)}</span><a className="button" href={manage} aria-label={`${t(manageLabels[row.type])}: ${row.title||t('untitled')}`}>{t(row.status==='draft'?'resumeDraft':'manage')} <span aria-hidden="true">›</span></a></div>
    </article>;
  }
- return <div className="my-listings" onClickCapture={event=>{if((event.target as HTMLElement).closest('a'))remember()}}><header>{title}{tab!=='article'&&<button className="button button-primary" aria-expanded={menu} aria-controls="listing-publishing-choices" onClick={()=>open(!menu)}>+ {t('create')}</button>}</header>
-   {<>
-     {menu&&choices}
-     <div className="listing-filters" ref={strip} role="group" aria-label={t('list')}>{filters.map(key=><button className={'button'+(tab===key?' button-primary':'')} key={key} aria-pressed={key===tab} onClick={()=>selectTab(key)}>
+ const categoryNavigation=<div className="listing-filters" ref={strip} role="group" aria-label={t('list')}>{filters.map(key=><button className={'button'+(tab===key?' button-primary':'')} key={key} aria-pressed={key===tab} onClick={()=>selectTab(key)}>
        {key==='meda'?'Meda':personalSpaceMobileCopy[locale].listingTabs[key]} ({key==='meda'?(meda?.total??(meda?`${meda.items.length}${meda.has_more?'+':''}`:'…')):key==='all'?`${data.rows.filter(row=>row.type!=='article').length+(articleCount??data.rows.filter(row=>row.type==='article').length)+(meda?.total??meda?.items.length??0)}${!meda||meda.total===undefined&&meda.has_more?'+':''}`:key==='article'?(articleCount??data.rows.filter(row=>row.type==='article').length):data.rows.filter(row=>row.type===key).length})
-     </button>)}</div>
-     {tab==='article'?<QuickSell locale={locale} embedded onInventoryLoaded={setArticleCount}/>:rows.map(listing)}
-     {(tab==='all'||tab==='meda')&&<>{medaError?<p role="alert">{medaCopy[locale].error} <button onClick={()=>setMedaAttempt(n=>n+1)}>{t('retry')}</button></p>:!meda?<p role="status">{t('loading')}</p>:meda.items.map(row=><MedaListingRow key={row.reference} row={row} locale={locale}/>)}
-     {tab==='all'&&meda?.has_more&&<a href={missionQuery('listings',{tab:'meda'})}>{medaCopy[locale].mine} →</a>}
-     {tab==='meda'&&meda&&<nav className="meda-owner-pagination" aria-label={medaCopy[locale].mine}>{medaPage>1&&<button onClick={()=>{setMeda(null);setMedaPage(p=>p-1)}}>{medaCopy[locale].previous}</button>}{meda.has_more&&<button onClick={()=>{setMeda(null);setMedaPage(p=>p+1)}}>{medaCopy[locale].next}</button>}</nav>}</>}
-     {!data.rows.length&&tab==='all'&&!menu&&choices}
-     {!rows.length && tab!=='all' && tab!=='article' && tab!=='meda' && <section className="listing-choices"><p>{t(tab==='job'?'nojob':tab==='service'?'noservice':'noarticle')}</p>
-       <a className="button" href={forms[tab]}>{t(actionLabels[tab])}</a></section>}
-   </>}
+     </button>)}</div>;
+ return <div className={`my-listings${tab==='article'?' my-article-listings':''}`} onClickCapture={event=>{if((event.target as HTMLElement).closest('a'))remember()}}>
+  {tab==='article'
+   ?<QuickSell locale={locale} embedded heading={title} categoriesNav={categoryNavigation} onInventoryLoaded={setArticleCount}/>
+   :<><header>{title}<button className="button button-primary" aria-expanded={menu} aria-controls="listing-publishing-choices" onClick={()=>open(!menu)}>+ {t('create')}</button></header>
+    {menu&&choices}{categoryNavigation}{rows.map(listing)}</>}
+  {(tab==='all'||tab==='meda')&&<>
+   {medaError?<p role="alert">{medaCopy[locale].error} <button onClick={()=>setMedaAttempt(n=>n+1)}>{t('retry')}</button></p>:!meda?<p role="status">{t('loading')}</p>:meda.items.map(row=><MedaListingRow key={row.reference} row={row} locale={locale}/>)}
+   {tab==='all'&&meda?.has_more&&<a href={missionQuery('listings',{tab:'meda'})}>{medaCopy[locale].mine} →</a>}
+   {tab==='meda'&&meda&&<nav className="meda-owner-pagination" aria-label={medaCopy[locale].mine}>{medaPage>1&&<button onClick={()=>{setMeda(null);setMedaPage(p=>p-1)}}>{medaCopy[locale].previous}</button>}{meda.has_more&&<button onClick={()=>{setMeda(null);setMedaPage(p=>p+1)}}>{medaCopy[locale].next}</button>}</nav>}
+  </>}
+  {!data.rows.length&&tab==='all'&&!menu&&choices}
+  {!rows.length&&(tab==='job'||tab==='service')&&<section className="listing-choices">
+   <p>{t(tab==='job'?'nojob':'noservice')}</p><a className="button" href={forms[tab]}>{t(actionLabels[tab])}</a>
+  </section>}
+
  </div>;
 }
